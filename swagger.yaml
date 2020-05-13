@@ -18,11 +18,11 @@ servers:
         default: '443'
 
 paths:
-  /dataset/{datasetID}:
+  /v1/datasets/{datasetID}:
     get:
       summary: Returns details for a Dataset from the Metadata catalogue.
       tags:
-        - Data Sets
+        - Datasets
       parameters:
         - in: path
           name: datasetID
@@ -37,22 +37,69 @@ paths:
         '200':
           description: OK    
 
-  /datasets/detail/{datasetID}:
+  /v1/datasets/detail/{datasetID}:
     get:
       summary: Returns additional details for a dataset from the Metadata catalogue.
       tags:
-        - Data Sets
+        - Datasets
       parameters:
         - in: path
           name: datasetID
           required: true
           description: The ID of the datset
+        - in: query
+          name: id
+          required: false
+          description: The ID of the user
           schema:
            type : string
             example: d3a3935f-b28e-4e74-9b15-9432d611f26c
       responses: 
         '200':
           description: OK 
+
+  /datasets/search?search={searchTerm}:
+    get:
+      summary: Returns dataset search results by searchTerm
+      tags:
+        - Datasets
+      parameters:
+        - name: searchTerm
+          in: path
+          required: true
+          description: A search term.
+          schema:
+            type : string
+            example: epilepsy
+      responses: 
+        '200':
+          description: OK
+
+  /v1/datasets/access/request:
+    post:
+      summary: Access request for Dataset
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                title:
+                  type: string
+                userId:
+                  type: integer
+                dataSetId:
+                  type: string
+              example:   # Sample object
+                title: 'Epilepsy 12 - National organisation audit'
+                userId: 1234567823
+                dataSetId: '1225257754567654'
+      tags:
+        - Datasets
+      responses: 
+        '200':
+          description: OK
+        
 
   /person/{personID}:
     get:
@@ -143,20 +190,12 @@ paths:
         '200':
           description: OK
 
-  /datasets/search:
-   get:
-     summary: Returns all dataset results
-      tags:
-         - Search
-      responses: 
-        '200':
-      description: OK  
 
   /datasets/search?search={searchTerm}:
     get:
       summary: Returns dataset search results by searchTerm
       tags:
-        - Search
+        - Datasets
       parameters:
         - name: searchTerm
           in: path

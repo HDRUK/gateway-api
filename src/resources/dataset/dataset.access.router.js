@@ -1,32 +1,14 @@
 import express from 'express'
-import axios from 'axios';
 import { UserModel } from '../user/user.model';
 import { DataRequestModel } from '../datarequests/datarequests.model';
 const sgMail = require('@sendgrid/mail');
 const router = express.Router();
 
-/**
- * {get} /dataset/:id get a dataset
- * 
- * Pull data set from remote system
- */
-router.get('/:id', async (req, res) => {
-    var metadataCatalogue = process.env.metadataURL || 'https://metadata-catalogue.org/hdruk';
-  
-    axios.get(metadataCatalogue + '/api/dataModels/' + req.params.id)
-      .then(function (response) {
-        // handle success
-        return res.json({ 'success': true, 'data': response.data });
-      })
-      .catch(function (err) {
-        // handle error
-        return res.json({ success: false, error: err.message + ' (raw message from metadata catalogue)' });
-      })
-  
-  });
 
-
-  router.post('/sendgrid', async (req, res) => {
+// @router   POST /api/v1/dataset/access/request
+// @desc     Request Access for Datasets 
+// @access   Private
+  router.post('/request', async (req, res) => {
     const {
       researchAim,
       linkedDataSets,
@@ -47,7 +29,7 @@ router.get('/:id', async (req, res) => {
 
     try {
       const user = await UserModel.findOne({id: userId});
-
+      console.log(user);
       if (!user) {
         return res
           .status(400)
@@ -67,7 +49,7 @@ router.get('/:id', async (req, res) => {
       };
       sgMail.setApiKey(process.env.SENDGRID_API_KEY);
       await sgMail.send(msg); 
-      // handle main log future
+
       let dataAccessLog = new DataRequestModel();
       dataAccessLog.id = parseInt(Math.random().toString().replace(`0.`, ``));
       dataAccessLog.dataSetId = dataSetId;

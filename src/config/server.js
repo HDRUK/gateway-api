@@ -55,9 +55,7 @@ app.use('/api/v1/reviews', require('../resources/tool/review.route'));
 app.use('/api/v1/tools', require('../resources/tool/tool.route'));
 app.use('/api/v1/accounts', require('../resources/account/account.route'));
 app.use('/api/v1/search/filter', require('../resources/search/filter.route'));
-
-app.use('/api/search', require('../resources/search/search.router'));
-app.use('/api/dataset', require('../resources/dataset/dataset.route'));
+app.use('/api/search', require('../resources/search/search.router')); // tools projects people
 
 app.use('/api/stats', require('../resources/stats/stats.router'));
 
@@ -69,11 +67,11 @@ app.use('/api/counter', require('../resources/tool/counter.route'));
 
 app.use('/api/auth/register', require('../resources/user/user.register.route'));
 
-app.use('/api/datasets/search', require('../resources/dataset/dataset.search.router'));
-app.use('/api/datasetfilters', require('../resources/dataset/dataset.filter.router'));
-app.use('/api/datasets/detail', require('../resources/dataset/dataset.detail.router'));
-app.use('/api/datasets/sendgrid', require('../resources/dataset/dataset.route'));
-app.use('/api/datasets/filteredsearch', require('../resources/dataset/dataset.searchwithfilters.router'));
+app.use('/api/v1/datasets', require('../resources/dataset/dataset.router')); // get datasetId
+app.use('/api/v1/datasets/access', require('../resources/dataset/dataset.access.router'));
+app.use('/api/datasetfilters', require('../resources/dataset/dataset.filter.router')); // brings back filter options for datasets
+app.use('/api/v1/datasets/detail', require('../resources/dataset/dataset.detail.router')); // details
+app.use('/api/datasets/filteredsearch', require('../resources/dataset/dataset.searchwithfilters.router')); //search
 
 initialiseAuthentication(app);
 
