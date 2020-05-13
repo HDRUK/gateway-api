@@ -28,17 +28,6 @@ const router = express.Router();
           // handle error
           return res.json({ success: false, error: err.message + ' (raw message from metadata catalogue)' });
         })
-
-      // axios.get(modelCatalogue + '/api/dataModels/profile/values/uk.ac.hdrukgateway/HdrUkProfilePluginService?filter=' + filterTerm + '&search=' + searchString)
-      // .then(function (response) {
-      //   // handle success
-      //   return res.json({ 'success': true, 'data': response.data });
-      // })
-      // .catch(function (err) {
-      //   // handle error
-      //   return res.json({ success: false, error: err.message + ' (raw message from metadata catalogue)' });
-      // })
-    
     });
 
     module.exports = router;

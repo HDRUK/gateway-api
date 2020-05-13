@@ -375,7 +375,7 @@ paths:
         '200':
           description: OK
 
-  /auth/register:
+  /v1/auth/register:
     post:
       summary: Register User.
       tags:
@@ -384,7 +384,7 @@ paths:
         '200':
           description: OK
 
-  /auth/login:
+  /v1/auth/login:
     post:
       summary: Authenticate User.
       tags:
@@ -393,7 +393,7 @@ paths:
         '200':
           description: OK
 
-  /auth/logout:
+  /v1/auth/logout:
     get:
       summary: Logout.
       tags:
@@ -402,7 +402,7 @@ paths:
         '200':
           description: OK
   
-  /auth/status:
+  /v1/auth/status:
     get:
       summary: Auth status.
       tags:

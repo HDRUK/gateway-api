@@ -65,9 +65,9 @@ app.use('/api/mytools', require('../resources/mytools/mytools.route'));
 app.use('/api/project', require('../resources/project/project.route'));
 app.use('/api/counter', require('../resources/tool/counter.route'));
 
-app.use('/api/auth/register', require('../resources/user/user.register.route'));
+app.use('/api/v1/auth/register', require('../resources/user/user.register.route'));
 
-app.use('/api/v1/datasets', require('../resources/dataset/dataset.router')); // get datasetId
+app.use('/api/v1/datasets', require('../resources/dataset/dataset.router'));
 app.use('/api/v1/datasets/access', require('../resources/dataset/dataset.access.router'));
 app.use('/api/datasetfilters', require('../resources/dataset/dataset.filter.router')); // brings back filter options for datasets
 app.use('/api/v1/datasets/detail', require('../resources/dataset/dataset.detail.router')); // details
