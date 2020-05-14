@@ -208,23 +208,6 @@ paths:
           description: OK
 
 
-  /datasets/search?search={searchTerm}:
-    get:
-      summary: Returns dataset search results by searchTerm
-      tags:
-        - Datasets
-      parameters:
-        - name: searchTerm
-          in: path
-          required: true
-          description: A search term.
-          schema:
-            type : string
-            example: epilepsy
-      responses: 
-        '200':
-          description: OK
-
   /search?search={searchTerm}&maxResults={maxResults}:
     get:
       summary: Returns search results by searchTerm with a limit of maxResults
