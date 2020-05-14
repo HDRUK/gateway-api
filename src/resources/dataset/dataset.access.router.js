@@ -29,7 +29,6 @@ const router = express.Router();
 
     try {
       const user = await UserModel.findOne({id: userId});
-      console.log(user);
       if (!user) {
         return res
           .status(400)

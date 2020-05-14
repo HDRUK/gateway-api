@@ -67,11 +67,11 @@ app.use('/api/counter', require('../resources/tool/counter.route'));
 
 app.use('/api/v1/auth/register', require('../resources/user/user.register.route'));
 
-app.use('/api/v1/datasets', require('../resources/dataset/dataset.router'));
+app.use('/api/v1/datasets/filters', require('../resources/dataset/dataset.filters.router')); // brings back filter options for datasets
 app.use('/api/v1/datasets/access', require('../resources/dataset/dataset.access.router'));
-app.use('/api/datasetfilters', require('../resources/dataset/dataset.filter.router')); // brings back filter options for datasets
 app.use('/api/v1/datasets/detail', require('../resources/dataset/dataset.detail.router')); // details
 app.use('/api/datasets/filteredsearch', require('../resources/dataset/dataset.searchwithfilters.router')); //search
+app.use('/api/v1/datasets', require('../resources/dataset/dataset.router'));
 
 initialiseAuthentication(app);
 

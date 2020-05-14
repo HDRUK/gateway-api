@@ -12,18 +12,16 @@ const router = express.Router();
     axios.get(metadataCatalogue + '/api/facets/' + req.params.id + '/profile/uk.ac.hdrukgateway/HdrUkProfilePluginService')
       .then(function (response) {
         if (userId) {
-          console.log(userId)
+          // update to await in time
           var p = DataRequestModel.find({ $and: [{ userId: userId }, { dataSetId: req.params.id }]});
           p.exec((datarequestErr, datarequest) => {
             if (datarequestErr) return res.json({ success: false, error: datarequestErr });
-            console.log(datarequest)
             return res.json({ 'success': true, 'data': response.data, 'datarequest': datarequest });
           });
         }
         else {
           return res.json({ 'success': true, 'data': response.data, 'datarequest': [] });
         }
-        console.log(response.data)
       })
       .catch(function (err) {
         // handle error

@@ -99,6 +99,23 @@ paths:
       responses: 
         '200':
           description: OK
+  # here thursday am
+  /v1/datasets/filters?search={searchTerm}:
+    get:
+      summary: Returns filters options
+      tags:
+        - Datasets
+      parameters:
+        - name: search
+          in: query
+          required: false
+          description: Type of datasearch.
+          schema:
+            type : string
+            example: epilepsy
+      responses: 
+        '200':
+          description: OK        
         
 
   /person/{personID}:
@@ -135,6 +152,7 @@ paths:
       responses:
         '200':
           description: OK
+
   /search:
     get:
       summary: Returns search results with filters (filers can be added to searchTerms and have maxResults)

@@ -8,7 +8,7 @@ import passport from "passport";
 
 const router = express.Router()
 
-// @router   POST /api/auth/login
+// @router   POST /api/v1/auth/login
 // @desc     login user
 // @access   Public
 router.post('/login', async (req, res) => {
@@ -46,7 +46,7 @@ router.post('/login', async (req, res) => {
 
 });
 
-// @router   POST /api/auth/logout
+// @router   POST /api/v1/auth/logout
 // @desc     logout user
 // @access   Private
 router.get('/logout', function (req, res) {

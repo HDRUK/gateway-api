@@ -8,7 +8,6 @@ import { ROLES } from '../user/user.roles'
 const router = express.Router()
 
 router.get('/', async (req, res) => {
-    console.log("Here!")
     res.status(200).json({ hello: 'Hello, from the back-end world!' })    
 });
 
