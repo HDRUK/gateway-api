@@ -57,9 +57,9 @@ app.use('/api/v1/accounts', require('../resources/account/account.route'));
 app.use('/api/v1/search/filter', require('../resources/search/filter.route'));
 app.use('/api/search', require('../resources/search/search.router')); // tools projects people
 
-app.use('/api/stats', require('../resources/stats/stats.router'));
+app.use('/api/v1/stats', require('../resources/stats/stats.router'));
 
-app.use('/api/person', require('../resources/person/person.route'));
+app.use('/api/v1/person', require('../resources/person/person.route'));
 
 app.use('/api/mytools', require('../resources/mytools/mytools.route'));
 app.use('/api/project', require('../resources/project/project.route'));

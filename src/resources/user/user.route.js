@@ -7,7 +7,7 @@ import { Data } from '../tool/data.model'
 
 const router = express.Router();
 
-// @router   POST /api/v1/users/:userID
+// @router   GET /api/v1/users/:userID
 // @desc     find user by id
 // @access   Private
 router.get(
@@ -24,7 +24,7 @@ router.get(
     });
   });
 
-// @router   POST /api/v1/users
+// @router   GET /api/v1/users
 // @desc     get all
 // @access   Private
 router.get('/', async (req, res) => {

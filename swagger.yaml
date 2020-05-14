@@ -99,8 +99,8 @@ paths:
       responses: 
         '200':
           description: OK
-  # here thursday am
-  /v1/datasets/filters?search={searchTerm}:
+
+          /v1/datasets/filters?search={searchTerm}:
     get:
       summary: Returns filters options
       tags:
@@ -117,8 +117,7 @@ paths:
         '200':
           description: OK        
         
-
-  /person/{personID}:
+  /v1/person/{personID}:
     get:
       summary: Returns details for a person.
       tags:
@@ -135,7 +134,7 @@ paths:
         '200':
           description: OK 
           
-  /person/edit:
+  /v1/person/edit:
     post:
       summary: Edit a person.
       tags:
@@ -260,7 +259,7 @@ paths:
         '200':
           description: OK
 
-  /stats/recent:
+  /v1/stats/recent:
     get:
       summary: Return the details on the recent searches.
       tags:
@@ -269,7 +268,7 @@ paths:
         '200':
           description: OK
 
-  /stats/unmet:
+  /v1/stats/unmet:
     get:
       summary: Return the details on the unmet searches.
       tags:
@@ -278,7 +277,7 @@ paths:
         '200':
           description: OK
 
-  /stats/popular:
+  /v1/stats/popular:
     get:
       summary: Return the details on the popular objects.
       tags:
@@ -287,7 +286,7 @@ paths:
         '200':
           description: OK
 
-  /stats/updates:
+  /v1/stats/updates:
     get:
       summary: Return the details on the updated objects.
       tags:
