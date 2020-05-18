@@ -47,9 +47,9 @@ app.use(
 app.use('/api', router);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.use('/api/v1/auth/soo/discourse', require('../resources/auth/sso/sso.discourse.router'));
-app.use('/api/v1/auth', require('../resources/auth/auth.route'));
-app.use('/api/v1/auth/register', require('../resources/user/user.register.route'));
+app.use('/api/auth/soo/discourse', require('../resources/auth/sso/sso.discourse.router'));
+app.use('/api/auth', require('../resources/auth/auth.route'));
+app.use('/api/auth/register', require('../resources/user/user.register.route'));
 
 app.use('/api/v1/users', require('../resources/user/user.route'));
 app.use('/api/v1/messages', require('../resources/message/message.route'));

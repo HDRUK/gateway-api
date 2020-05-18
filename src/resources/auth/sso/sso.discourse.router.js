@@ -5,7 +5,7 @@ import { discourseLogin } from './sso.discourse.service';
 
 const router = express.Router();
 
-// @router   GET /api/v1/auth/soo/discourse
+// @router   GET /api/auth/soo/discourse
 // @desc     Single Sign On for Discourse forum
 // @access   Private
 router.get(
