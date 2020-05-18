@@ -12,7 +12,7 @@ describe("Wake up API", () => {
 
 describe("Search API", () => {
   test("Search without any parameters should return at least one result", async () => {
-    const response = await testURL.get("/api/search");
+    const response = await testURL.get("/api/v1/search");
     expect(response.statusCode).toBe(200);
     let payload = JSON.parse(response.text);
 
@@ -26,7 +26,7 @@ describe("Search API", () => {
   ['homebrew','cancer', 'disparity'].forEach(function(searchString) {
 
     test(`Search for string '${searchString}', first result should contain name or description '${searchString}'`, async () => {
-        const response = await testURL.get('/api/search?search='+searchString);
+        const response = await testURL.get('/api/v1/search?search='+searchString);
         expect(response.statusCode).toBe(200);
        	let payload = JSON.parse(response.text);
            
@@ -56,7 +56,7 @@ describe("Search API", () => {
   ['crap','zzz'].forEach(function(searchString) {
 
     test(`Search for string '${searchString}', nothing should be returned`, async () => {
-        const response = await testURL.get('/api/search?search='+searchString);
+        const response = await testURL.get('/api/v1/search?search='+searchString);
         expect(response.statusCode).toBe(200);
        	let payload = JSON.parse(response.text);
            
@@ -74,7 +74,7 @@ describe("Search API", () => {
     let searchString = "cancer";
     let maxResults = 3;
 
-    const response = await testURL.get('/api/search?search='+searchString+'&maxResults='+maxResults);
+    const response = await testURL.get('/api/v1/search?search='+searchString+'&maxResults='+maxResults);
     expect(response.statusCode).toBe(200);
     let payload = JSON.parse(response.text);
         

@@ -14,12 +14,9 @@ router.get('/', async (req, res) => {
 // @router   POST /api/mytools/add
 // @desc     Add tools user
 // @access   Private
-router.post(
-    '/add',
-    passport.authenticate('jwt'),
-    utils.checkIsInRole(ROLES.Admin, ROLES.Creator),
+router.post('/add', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator),
     async (req, res) => {
-    let data = new Data();
+      let data = new Data();
   
     const { type, name, link, description, categories, license, authors, tags, toolids } = req.body;
     data.id = parseInt(Math.random().toString().replace('0.', ''));

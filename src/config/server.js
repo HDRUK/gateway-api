@@ -47,7 +47,8 @@ app.use(
 app.use('/api', router);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.use('/api/auth', require('../resources/auth/auth.route'));
+app.use('/api/v1/auth', require('../resources/auth/auth.route'));
+app.use('/api/v1/auth/register', require('../resources/user/user.register.route'));
 
 app.use('/api/v1/users', require('../resources/user/user.route'));
 app.use('/api/v1/messages', require('../resources/message/message.route'));
@@ -55,22 +56,21 @@ app.use('/api/v1/reviews', require('../resources/tool/review.route'));
 app.use('/api/v1/tools', require('../resources/tool/tool.route'));
 app.use('/api/v1/accounts', require('../resources/account/account.route'));
 app.use('/api/v1/search/filter', require('../resources/search/filter.route'));
-app.use('/api/search', require('../resources/search/search.router')); // tools projects people
+app.use('/api/v1/search', require('../resources/search/search.router')); // tools projects people
 
 app.use('/api/v1/stats', require('../resources/stats/stats.router'));
 
 app.use('/api/v1/person', require('../resources/person/person.route'));
 
-app.use('/api/mytools', require('../resources/mytools/mytools.route'));
-app.use('/api/project', require('../resources/project/project.route'));
+app.use('/api/v1/mytools', require('../resources/mytools/mytools.route'));
+app.use('/api/v1/project', require('../resources/project/project.route'));
 app.use('/api/counter', require('../resources/tool/counter.route'));
 
-app.use('/api/v1/auth/register', require('../resources/user/user.register.route'));
 
-app.use('/api/v1/datasets/filters', require('../resources/dataset/dataset.filters.router')); // brings back filter options for datasets
+app.use('/api/v1/datasets/filters', require('../resources/dataset/dataset.filters.router')); 
 app.use('/api/v1/datasets/access', require('../resources/dataset/dataset.access.router'));
-app.use('/api/v1/datasets/detail', require('../resources/dataset/dataset.detail.router')); // details
-app.use('/api/datasets/filteredsearch', require('../resources/dataset/dataset.searchwithfilters.router')); //search
+app.use('/api/v1/datasets/detail', require('../resources/dataset/dataset.detail.router')); 
+app.use('/api/v1/datasets/filteredsearch', require('../resources/dataset/dataset.searchwithfilters.router')); //search
 app.use('/api/v1/datasets', require('../resources/dataset/dataset.router'));
 
 initialiseAuthentication(app);

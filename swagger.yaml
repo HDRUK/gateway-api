@@ -20,7 +20,7 @@ servers:
 paths:
   /v1/datasets/{datasetID}:
     get:
-      summary: Returns details for a Dataset from the Metadata catalogue.
+      summary: Returns details for a Dataset.
       tags:
         - Datasets
       parameters:
@@ -75,9 +75,28 @@ paths:
         '200':
           description: OK
 
+  /v1/datasets/filters?search={searchTerm}:
+    get:
+      summary: Returns filters options for datasets
+      tags:
+        - Datasets
+      parameters:
+        - name: search
+          in: query
+          required: false
+          description: Type of datasearch.
+          schema:
+            type : string
+            example: epilepsy
+      responses: 
+        '200':
+          description: OK
+                
   /v1/datasets/access/request:
     post:
-      summary: Access request for Dataset
+      summary: Access request for dataset
+      security:
+        - cookieAuth: []
       requestBody:
         content:
           application/json:
@@ -99,23 +118,6 @@ paths:
       responses: 
         '200':
           description: OK
-
-          /v1/datasets/filters?search={searchTerm}:
-    get:
-      summary: Returns filters options
-      tags:
-        - Datasets
-      parameters:
-        - name: search
-          in: query
-          required: false
-          description: Type of datasearch.
-          schema:
-            type : string
-            example: epilepsy
-      responses: 
-        '200':
-          description: OK        
         
   /v1/person/{personID}:
     get:
@@ -134,106 +136,53 @@ paths:
         '200':
           description: OK 
           
-  /v1/person/edit:
-    post:
-      summary: Edit a person.
-      tags:
-        - Person
-      responses: 
-        '200':
-          description: OK 
+#
 
-  /search:
+
+  /v1/search:
     get:
-      summary: Returns all results
       tags:
         - Search
-      responses:
-        '200':
-          description: OK
-
-  /search:
-    get:
-      summary: Returns search results with filters (filers can be added to searchTerms and have maxResults)
-      tags:
-        - Search
+      summary: Search for HDRUK /search?search
+      produces:
+        - application/json
       parameters:
-        - name: category
-          in: query
-          required: false
-          description: A category.
+        - in: query
+          name: params
           schema:
-            type : string
-            example: Notebook
-        - name: programmingLanguage
-          in: query
-          required: false
-          description: A programming language.
-          schema:
-            type : string
-            example: Java
-        - name: features
-          in: query
-          required: false
-          description: A feature.
-          schema:
-            type : string
-            example: Density Estimation
-        - name: topics
-          in: query
-          required: false
-          description: A topic.
-          schema:
-            type : string
-            example: Lung Cancer
+            type: object
+            properties:
+              search:
+                type: string
+                example: Epilepsy
+              type:
+                type: string
+                example: all
+              category:
+                type: string
+                example: API
+              programmingLanguage:
+                type: string
+                example: Javascript
+              features:
+                type: string
+                example: Arbitrage
+              topics:
+                type: string
+                example: Epilepsy
+              startIndex:
+                type: string
+                example: 0
+              maxResults:
+                type: string
+                example: 10
+          style: form
+          explode: true
       responses: 
         '200':
           description: OK
-
-  /search?search={searchTerm}:
-    get:
-      summary: Returns search results by searchTerm
-      tags:
-        - Search
-      parameters:
-        - name: searchTerm
-          in: path
-          required: true
-          description: A search term.
-          schema:
-            type : string
-            example: homebrew
-      responses: 
-        '200':
-          description: OK
-
-
-  /search?search={searchTerm}&maxResults={maxResults}:
-    get:
-      summary: Returns search results by searchTerm with a limit of maxResults
-      tags:
-        - Search
-      parameters:
-        - name: searchTerm
-          in: path
-          required: true
-          description: A search term.
-          schema:
-            type : string
-            example: a
-        - name: maxResults
-          in: path
-          required: true
-          description: A number to return
-          schema:
-            type : integer
-            format: int64
-            minimum: 1
-            default: 25
-      responses: 
-        '200':
-          description: OK
-  /stats:
+  
+  /v1/stats:
     get:
       summary: This will return a JSON document to show high level stats.
       tags:
@@ -278,6 +227,142 @@ paths:
         '200':
           description: OK
 
+  /v1/mytools/add:
+    post:
+      summary: Add a tool (Project / Tool).
+      security:
+        - cookieAuth: []
+      tags:
+        - MyTools
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              required:
+                - name
+              properties:
+                type:
+                  type: string
+                name:
+                  type: string
+                link:
+                  type: string
+                description:
+                  type: string
+                categories:
+                  type: object
+                  properties:
+                    category:
+                      type: string
+                    programmingLanguage:
+                      type: array
+                      items:
+                        type: string
+                    programmingLanguageVersion:
+                      type: string
+                licence:
+                  type: string
+                authors:
+                  type: array
+                  items:
+                    type: number
+                tags:
+                  type: object
+                  properties:
+                    features:
+                      type: array
+                      items:
+                        type: string
+                    topics:
+                      type: array
+                      items:
+                        type: string      
+              example:   # Sample object
+                type: 'tool || project'
+                name: 'Epilepsy data research'
+                link: 'http://epilepsy.org'
+                description: 'Epilespy data research description'
+                categories: { category: 'API', programmingLanguage: ['Javascript'], programmingLanguageVersion: '0.0.0'}
+                licence: 'MIT licence'
+                authors: [4495285946631793]
+                tags: {features: ['Arbitrage'], topics: ['Epilepsy']}
+      responses: 
+        '200':
+          description: OK
+        
+  /v1/mytools/edit:
+    put:
+      summary: Edit a (Project / tool).
+      security:
+        - cookieAuth: []
+      tags:
+        - MyTools
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              required:
+                - name
+              properties:
+                id:
+                  type: number
+                type:
+                  type: string
+                name:
+                  type: string
+                link:
+                  type: string
+                description:
+                  type: string
+                categories:
+                  type: object
+                  properties:
+                    category:
+                      type: string
+                    programmingLanguage:
+                      type: array
+                      items:
+                        type: string
+                    programmingLanguageVersion:
+                      type: string
+                licence:
+                  type: string
+                authors:
+                  type: array
+                  items:
+                    type: number
+                tags:
+                  type: object
+                  properties:
+                    features:
+                      type: array
+                      items:
+                        type: string
+                    topics:
+                      type: array
+                      items:
+                        type: string    
+                toolids:
+                  type: array
+                  items:
+                    type: string
+              example:   # Sample object
+                id: 26542005388306332
+                type: 'tool'
+                name: 'Research Data TEST EPILEPSY'
+                link: 'http://localhost:8080/epilepsy'
+                description: 'Epilespy data research description'
+                categories: { category: 'API', programmingLanguage: ['Javascript'], programmingLanguageVersion: '1.0.0'}
+                licence: 'MIT licence'
+                authors: [4495285946631793]
+                tags: {features: ['Arbitrage'], topics: ['Epilepsy']}
+                toolids: []
+      responses: 
+        '200':
+          description: OK
+    
   /v1/tools/{toolID}:
     get:
       summary: Returns details for a specific tool.
@@ -297,7 +382,7 @@ paths:
         '200':
           description: OK
 
-  /project/{projectId}:
+  /v1/project/{projectId}:
     get:
       summary: Return the details on the project based on the project ID.
       tags:
@@ -313,173 +398,5 @@ paths:
         '200':
           description: OK
 
-  /v1/accounts:
-    get:
-      summary: Account search.
-      tags:
-        - Account
-      responses: 
-        '200':
-          description: OK
-
-  /v1/accounts/admin:
-    get:
-      summary: Account search admins.
-      tags:
-        - Account
-      responses: 
-        '200':
-          description: OK
-
-  /v1/accounts/status:
-    put:
-      summary: Account update status.
-      tags:
-        - Account
-      responses: 
-        '200':
-          description: OK
-
-  /v1/accounts:
-    delete:
-      summary: Deletes an account.
-      tags:
-        - Account
-      responses: 
-        '200':
-          description: OK
-
-  /users/{userId}:
-    get:
-      summary: Find user by id.
-      tags:
-        - Users
-    parameters:
-      - name: userId
-        in: path
-        required: true
-        description: The ID of the user
-        schema:
-          type : string
-          example: b2475d19-75fe-422b-9d0c-c53cdfff8230
-    responses:
-      '200':
-        description: OK
-  
-  /v1/users:
-    get:
-      summary: Find all users
-      tags:
-        - users
-      responses: 
-        '200':
-          description: OK
-
-  /v1/auth/register:
-    post:
-      summary: Register User.
-      tags:
-        - Users
-      responses: 
-        '200':
-          description: OK
-
-  /v1/auth/login:
-    post:
-      summary: Authenticate User.
-      tags:
-        - Auth   
-      responses: 
-        '200':
-          description: OK
-
-  /v1/auth/logout:
-    get:
-      summary: Logout.
-      tags:
-        - Auth
-      responses: 
-        '200':
-          description: OK
-  
-  /v1/auth/status:
-    get:
-      summary: Auth status.
-      tags:
-        - Auth
-      responses: 
-        '200':
-          description: OK
-
-  /mytools/add:
-    post:
-      summary: Add a tool.
-      tags:
-        - MyTools
-      responses: 
-        '200':
-          description: OK
-
-  /mytools/edit:
-    put:
-      summary: Edit a tool.
-      tags:
-        - MyTools
-      responses: 
-        '200':
-          description: OK
-
-  /mytools/delete:
-    delete:
-      summary: delete a tool.
-      tags:
-        - MyTools
-      responses: 
-        '200':
-          description: OK
-  
-  /v1/messages/{personId}:
-    get:
-      summary: Find messages by person.
-      tags:
-        - Messages
-      parameters:
-        - name: personId
-          in: path
-          required: true
-          description: The ID of the person
-          schema:
-            type : string
-            example: b2475d19-75fe-422b-9d0c-c53cdfff8230
-
-  /v1/messages/admin/{personId}:
-    get:
-      summary: find messages for admin by person id
-      tags:
-        - Messages
-      parameters:
-        - name: personId
-          in: path
-          required: true
-          description: The ID of the person
-          schema:
-            type : string
-            example: b2475d19-75fe-422b-9d0c-c53cdfff8230
-
-  /v1/reviews:
-    get:
-      summary: find all reviews.
-      tags:
-        - Reviews
-
-  /v1/reviews/pending:
-    get:
-      summary: find all pending reviews.
-      tags:
-        - Reviews
-
-  /v1/reviews/admin/pending:
-    get:
-      summary: find all pending reviews for admins.
-      tags:
-        - Reviews
+ #
+    #
