@@ -18,11 +18,11 @@ servers:
         default: '443'
 
 paths:
-  /v1/dataset/{datasetID}:
+  /v1/datasets/{datasetID}:
     get:
       summary: Returns details for a Dataset.
       tags:
-        - Data Sets
+        - Datasets
       parameters:
         - in: path
           name: datasetID
@@ -41,7 +41,7 @@ paths:
     get:
       summary: Returns additional details for a dataset from the Metadata catalogue.
       tags:
-        - Data Sets
+        - Datasets
       parameters:
         - in: path
           name: datasetID
@@ -101,14 +101,46 @@ paths:
               properties:
                 title:
                   type: string
+                  example: 'Epilepsy 12 - National organisation audit'
                 userId:
                   type: integer
+                  example: 12345654323456
                 dataSetId:
+                  type: string,
+                  example: '2345654323456'
+                custodianEmail:
+                  type: string,
+                  example: 'yourCustodianEmail@email.com'
+                researchAim:
                   type: string
-              example:   # Sample object
-                title: 'Epilepsy 12 - National organisation audit'
-                userId: 1234567823
-                dataSetId: '1225257754567654'
+                  example: 'The aim of your research, description needed.'
+                linkedDataSets:
+                  type: boolean
+                  example: true
+                namesOfDataSets:
+                  type: string
+                  example: 'The name of the datasets that are linked.'
+                dataRequirements:
+                  type: boolean
+                  example: true
+                dataSetParts:
+                  type: string
+                  example: 'The dataset parts that you would like.'
+                startDate:
+                  type: string
+                  example: '19/12/2022'     
+                icoRegistration:
+                  type: string
+                  example: '66252AAA'
+                researchBenefits:
+                  type: string,
+                  example: 'Would benefit would this research provide.'
+                ethicalProcessingEvidence:
+                  type: string
+                  example: 'Ethical processing evidence'
+                contactNumber:
+                  type: string
+                  example: '07656788909'
       tags:
         - Datasets
       responses: 
