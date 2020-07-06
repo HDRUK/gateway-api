@@ -17,7 +17,7 @@ const CollectionSchema = new Schema(
     activeflag: String
   },
   { 
-    collection: 'collections', //will be created when first posting
+    collection: 'collections', //will be created when first posting 
     timestamps: true 
   }
 );

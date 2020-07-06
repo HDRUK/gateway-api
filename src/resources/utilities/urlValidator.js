@@ -14,5 +14,5 @@ const validateURL = (link) => {
 
   module.exports = {
       validateURL: validateURL,
-      validateOrcidURL: validateOrcidURL
+      validateOrcidURL: validateOrcidURL 
   }

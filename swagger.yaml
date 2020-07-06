@@ -127,7 +127,7 @@ paths:
                   type: string
                   example: '19/12/2022'     
                 icoRegistration:
-                  type: string
+                  type: string 
                   example: '66252AAA'
                 researchBenefits:
                   type: string,
@@ -207,6 +207,32 @@ paths:
       responses:
         '200':
           description: OK 
+
+  /v1/accounts/admin/collections?id={userId}:
+    get:
+      summary: Returns collections that the user is a collaborator on.
+      tags:
+        - Collections
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          description: The ID of the user
+          schema:
+            type : number
+            example: 46035149615760184
+      responses:
+        '200':
+          description: OK 
+
+  /v1/accounts/admin/collections:
+    get:
+      summary: This will return a JSON document to show all collections.
+      tags:
+        - Collections
+      responses: 
+        '200':
+          description: OK
           
   /v1/search:
     get:
