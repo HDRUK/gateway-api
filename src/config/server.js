@@ -95,6 +95,9 @@ app.use('/api/v1/dar', require('../resources/datarequests/datarequests.route'));
 
 app.use('/api/v1/collections', require('../resources/collections/collections.route'));
 
+app.use('/api/v1/analyticsdashboard', require('../resources/googleanalytics/googleanalytics.router'));
+
+
 
 initialiseAuthentication(app);
 

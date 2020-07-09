@@ -67,7 +67,7 @@ router.get('/', async (req, res) => {
             }
           ],
         }
-      }];
+      }]; 
   
     //set the aggregate queries
     var aggregateQueryTypes = [{ $group: { _id: "$type", count: { $sum: 1 } } }];
