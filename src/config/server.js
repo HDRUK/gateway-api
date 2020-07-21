@@ -91,7 +91,7 @@ app.use('/api/v1/datasets/relatedobjects', require('../resources/dataset/dataset
 app.use('/api/v1/datasets', require('../resources/dataset/dataset.route'));
 
 app.use('/api/v1/data-access-request/schema', require('../resources/datarequest/datarequest.schemas.route'));
-app.use('/api/v1/data-access-request', require('../resources/datarequest/datarequest.route'));
+app.use('/api/v1/data-access-request', require('../resources/datarequest/datarequest.route')); 
 app.use('/api/v1/dar', require('../resources/datarequests/datarequests.route'));
 
 app.use('/api/v1/collections', require('../resources/collections/collections.route'));

@@ -127,7 +127,7 @@ const _buildEmail = (fullQuestions, questionAnswers, options) => {
                   </tr>
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                     ${subject}
+                      ${subject}
                     </th>
                   </tr>
                 </thead>
@@ -199,7 +199,10 @@ const _buildEmail = (fullQuestions, questionAnswers, options) => {
     from: hdrukEmail,
     to: userType === 'dataCustodian' ? dataCustodianEmail : userEmail,
     subject: `Enquires for ${dataSetTitle} dataset healthdatagateway.org`,
-    html: table
+    templateId: 'd-29307d4931ba4b5585d4fc274f9371e7',
+    dynamicTemplateData: {
+      body: table
+    }
   };
 
   return msg;
@@ -219,7 +222,7 @@ const _groupByPageSection = (allQuestions) => {
   return grouped;
 };
 
-const _generateEmail = (
+const _generateEmail = ( 
   questions,
   pages,
   questionPanels,

@@ -23,7 +23,7 @@ router.get('/dataset/:dataSetId', passport.authenticate('jwt'), async (req, res)
       // 3. Find the matching record 
       accessRecord = await DataRequestModel.findOne({dataSetId, userId});
       // 4. if no record create it and pass back
-      if (!accessRecord) {
+      if (!accessRecord) { 
          // 1. GET the template from the custodian
          const accessRequestTemplate = await DataRequestSchemaModel.findOne({ $or: [{dataSetId}, {dataSetId: 'default'}] , status: 'active' }).sort({createdAt: -1});
          
@@ -113,17 +113,17 @@ router.post('/:id', passport.authenticate('jwt'), async (req, res) => {
       // declare recipientTypes, static until otherwise
       const emailRecipientTypes = ['requester', 'dataCustodian'];
       // set options
-      let options = {userType: '', userEmail: email, userName: `${firstname} ${lastname}`, custodianEmail: contactPoint, dataSetTitle: title, publisher, description, abstract };
+      let options = {userType: '', userEmail: email, userName: `${firstname} ${lastname}`, custodianEmail: contactPoint , dataSetTitle: title, publisher, description, abstract };
       console.log(options);
       // set sendGrid key
-      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY); 
 
       for (let emailRecipientType of emailRecipientTypes) {
         let emailTemplate = {};
 
         options = {...options, userType: emailRecipientType};
         // build email template
-        emailTemplate = await emailGenerator.generateEmail(questions, pages, questionPanels, answers, options);
+        emailTemplate = await emailGenerator.generateEmail(questions, pages, questionPanels, answers, options); 
         // send email
         await sgMail.send(emailTemplate);
       }

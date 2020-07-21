@@ -15,7 +15,7 @@ const setMessageProperties = (emailRecipientType, body, user) => {
     custodianEmail
   } = body;
   const hdrukEmail = `enquiry@healthdatagateway.org`;
-  const dataCustodianEmail = process.env.DATA_CUSTODIAN_EMAIL || custodianEmail;
+  const dataCustodianEmail = process.env.DATA_CUSTODIAN_EMAIL || custodianEmail; 
 
   const msg = {
     from: `${hdrukEmail}`,
