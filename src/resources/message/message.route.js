@@ -33,10 +33,10 @@ router.get('/test',
           topic: topic._id
         });
 
-        await message.save(function (err) {
+        await message.save(async function (err) {
           if (err) return handleError(err);
 
-          MessagesModel.
+          await MessagesModel.
             findOne({ messageID: 123 }).
             populate('topic').
             exec(function (err, message) {
