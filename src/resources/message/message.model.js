@@ -7,7 +7,8 @@ const MessageSchema = new Schema({
   messageType: String,
   messageSent: Date,
   isRead: String,
-  messageDescription: String 
+  messageDescription: String,
+  topic: { type: Schema.Types.ObjectId, ref: 'Topic'}
 })
 
 export const MessagesModel = model('Messages', MessageSchema);

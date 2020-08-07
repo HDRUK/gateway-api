@@ -3,9 +3,49 @@ import { utils } from "../auth";
 import passport from "passport";
 import { ROLES } from '../user/user.roles'
 import { MessagesModel } from '../message/message.model'
+import { TopicModel } from './topic.model'
+import mongoose from 'mongoose'
 
 
 const router = express.Router()
+
+router.get('/test',
+  passport.authenticate('jwt'), 
+  utils.checkIsInRole(ROLES.Admin),
+    async (req, res) => {
+      const topic = new TopicModel({
+        _id: new mongoose.Types.ObjectId(),
+        topicName : "This the topic name",
+        topicCreated: "01/01/2020"
+      });
+
+      await topic.save( async function (err) {
+        if (err) return handleError(err);
+      
+        const message = new MessagesModel({
+          messageID: 123,
+          messageTo: 12345,
+          messageObjectID: 123456,
+          messageType: 'Test',
+          messageSent: '10/01/2020',
+          isRead: "false",
+          messageDescription: "test message",
+          topic: topic._id
+        });
+
+        await message.save(function (err) {
+          if (err) return handleError(err);
+
+          MessagesModel.
+            findOne({ messageID: 123 }).
+            populate('topic').
+            exec(function (err, message) {
+              if (err) return handleError(err);
+              return res.json(message);
+            });
+        });
+      });
+  });
 
 router.get('/numberofunread/admin/:personID',
   passport.authenticate('jwt'), 
@@ -159,5 +199,6 @@ router.post('/add', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admi
   });
 
 
+  
 
 module.exports = router
