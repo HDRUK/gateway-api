@@ -46,7 +46,8 @@ router.get("", async (req, res) => {
 							obj[headers[j]] = currentline[j].replace(quotesRegex, "$1");
 						}
 
-						if (obj.publisher !== "HDR UK") {
+						const publisher = "HDR UK";
+						if (obj.publisher !== publisher) {
 							result.push(obj);
 						}
 					}
