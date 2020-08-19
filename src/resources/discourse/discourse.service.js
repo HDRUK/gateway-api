@@ -64,7 +64,6 @@ export async function createDiscourseTopic(tool) {
       'Content-Type': 'application/json',
     },
   };
-  debugger;
   // 2. Depending on tool type passed, generate initial post content based on tool description and original content link
   var rawIs, categoryIs;
   if (tool.type === 'tool') {

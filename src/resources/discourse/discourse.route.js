@@ -171,7 +171,6 @@ router.put(
       // 3. Perform update of post in Discourse
       const post = await updateDiscoursePost(postId, comment, req.user);
       // 4. Get the updated topic data
-      debugger;
       const topic = await getDiscourseTopic(post.topic_id, req.user);
       // 5. Return the topic data
       return res.json({success: true, topic });

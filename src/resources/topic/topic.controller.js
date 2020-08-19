@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Mongoose } from 'mongoose';
 import { TopicModel } from './topic.model';
 import { Data as ToolModel } from '../tool/data.model';
 import _ from 'lodash';
@@ -165,12 +165,24 @@ module.exports = {
     // GET api/v1/topics/:id
     getTopicById: async(req, res) => {
         try {
+            // 1. Get the topic from the database
             const topic = await module.exports.findTopic(req.params.id, req.user._id);
-
+            // 2. Keep a copy of the unmodified topic for returning in this response
+            const dispatchTopic = topic.toJSON();
             if(!topic)
                 return res.status(404).json({ success: false, message: 'Could not find topic specified.' });
-
-            return res.status(200).json({ success: true, topic });
+            // 3. If there any unread messages, mark them as read 
+            if(topic.unreadMessages > 0) {
+                topic.topicMessages.forEach(async (message) => {
+                    message.readBy.push(req.user._id)
+                    await message.save();
+                });
+                topic.unreadMessages = 0;
+                // 4. Save topic to Mongo
+                await topic.save();
+            }
+            // 5. Return original topic so unread messages are displayed correctly
+            return res.status(200).json({ success: true, topic: dispatchTopic });
 
         } catch (err) {
             console.error(err.message);

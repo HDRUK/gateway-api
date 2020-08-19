@@ -5,7 +5,7 @@ import { RecordSearchData } from '../search/record.search.model';
 import { Data } from '../tool/data.model'
 
 const router = express.Router();
-
+  
 /**
  * {get} /api/search Search tools
  * 
@@ -13,12 +13,19 @@ const router = express.Router();
  * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
  */
 router.get('/', async (req, res) => {
+    var authorID = parseInt(req.query.userID);
     var searchString = req.query.search || ""; //If blank then return all
     let searchQuery = { $and: [{ activeflag: 'active' }] };
+
+    if(req.query.form){
+        searchQuery = {$and:[{$or:[{$and:[{activeflag:'review'},{authors:authorID}]},{activeflag:'active'}]}]};
+    }
+
     var searchAll = false;
 
     if (searchString.length > 0) {
         searchQuery["$and"].push({ $text: { $search: searchString } });
+
         /* datasetSearchString = '"' + searchString.split(' ').join('""') + '"';
         //The following code is a workaround for the way search works TODO:work with MDC to improve API
         if (searchString.match(/"/)) {
@@ -88,11 +95,12 @@ router.get('/', async (req, res) => {
 function getObjectResult(type, searchAll, searchQuery) {
     var newSearchQuery = JSON.parse(JSON.stringify(searchQuery));
     newSearchQuery["$and"].push({ type: type })
+
     var q = '';
     
     if (searchAll) {
         q = Data.aggregate([
-            { $match: newSearchQuery },
+            { $match: newSearchQuery }, 
             { $lookup: { from: "tools", localField: "authors", foreignField: "id", as: "persons" } },            
             {
                 $project: {
@@ -120,6 +128,8 @@ function getObjectResult(type, searchAll, searchQuery) {
                             "persons.id": 1,
                             "persons.firstname": 1,
                             "persons.lastname": 1,
+
+                            "activeflag": 1,
                           }
               }
         ]).sort({ name : 1 });
@@ -154,6 +164,9 @@ function getObjectResult(type, searchAll, searchQuery) {
                             "persons.id": 1,
                             "persons.firstname": 1,
                             "persons.lastname": 1,
+
+                            "activeflag": 1,
+
                           }
               }
         ]).sort({ score: { $meta: "textScore" } });
@@ -320,7 +333,6 @@ function getObjectFilters(searchQueryStart, req, type) {
 
 /* function getDatasetFilters(req) {
     var filterString = '';
-
     if (req.query.publisher) {
         if (typeof (req.query.publisher) == 'string') {
             req.query.publisher.split('::').forEach((filterTerm) => {
@@ -328,7 +340,6 @@ function getObjectFilters(searchQueryStart, req, type) {
             });
         }
     }
-
     if (req.query.license) {
         if (typeof (req.query.license) == 'string') {
             req.query.license.split('::').forEach((filterTerm) => {
@@ -336,7 +347,6 @@ function getObjectFilters(searchQueryStart, req, type) {
             });
         }
     }
-
     if (req.query.geographiccover) {
         if (typeof (req.query.geographiccover) == 'string') {
             req.query.geographiccover.split('::').forEach((filterTerm) => {
@@ -344,7 +354,6 @@ function getObjectFilters(searchQueryStart, req, type) {
             });
         }
     }
-
     if (req.query.ageband) {
         if (typeof (req.query.ageband) == 'string') {
             req.query.ageband.split('::').forEach((filterTerm) => {
@@ -352,7 +361,6 @@ function getObjectFilters(searchQueryStart, req, type) {
             });
         }
     }
-
     if (req.query.sampleavailability) {
         if (typeof (req.query.sampleavailability) == 'string') {
             req.query.sampleavailability.split('::').forEach((filterTerm) => {
@@ -360,7 +368,6 @@ function getObjectFilters(searchQueryStart, req, type) {
             });
         }
     }
-
     if (req.query.keywords) {
         if (typeof (req.query.keywords) == 'string') {
             req.query.keywords.split('::').forEach((filterTerm) => {

@@ -11,7 +11,6 @@ const topicController = require('../topic/topic.controller');
 module.exports = {
     // POST /api/v1/messages
     createMessage: async (req, res) => {
-        debugger;
         try {
             const { _id: createdBy, firstname, lastname } = req.user
             let { messageType = 'notification', topic = '', messageDescription, relatedObjectId } = req.body;
@@ -141,7 +140,7 @@ module.exports = {
             if(!_.isEmpty(messageType)) {message.messageType = messageType; }
             // 5. Save message to Mongo
             await message.save();
-            // 5. Return success no content
+            // 6. Return success no content
             return res.status(204).json({ success:true });
         } catch(err) {
             console.error(err.message);
