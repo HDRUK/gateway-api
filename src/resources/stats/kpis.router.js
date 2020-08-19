@@ -46,10 +46,7 @@ router.get("", async (req, res) => {
 							obj[headers[j]] = currentline[j].replace(quotesRegex, "$1");
 						}
 
-						if (
-							obj.id !== "9e798632-442a-427b-8d0e-456f754d28dc" ||
-							obj.publisher !== "HDR UK"
-						) {
+						if (obj.publisher !== "HDR UK") {
 							result.push(obj);
 						}
 					}
