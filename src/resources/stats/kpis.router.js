@@ -19,55 +19,115 @@ router.get("", async (req, res) => {
 
 	switch (req.query.kpi) {
 		case "technicalmetadata":
-			var result = [];
-			var totalDatasets = 0;
-			var datasetsMetadata = 0;
+			var totalDatasetsQuery = [
+				{
+					$facet: {
+						TotalDataSets: [
+							{
+								$match: {
+									$and: [
+										{ activeflag: "active" },
+										{ type: "dataset" },
+										{ "datasetfields.publisher": { $ne: "HDR UK" } },
+									],
+								},
+							},
+							{ $count: "TotalDataSets" },
+						],
+						TotalMetaData: [
+							{
+								$match: {
+									activeflag: "active",
+									type: "dataset",
+									"datasetfields.technicaldetails": {
+										$exists: true,
+										$not: {
+											$size: 0,
+										},
+									},
+								},
+							},
+							{
+								$count: "TotalMetaData",
+							},
+						],
+					},
+				},
+			];
 
-			axios
-				.get(
-					"https://raw.githubusercontent.com/HDRUK/datasets/master/datasets.csv"
-				)
-				.then(function (csv) {
-					var lines = csv.data.split("\r\n");
+			var q = Data.aggregate(totalDatasetsQuery);
 
-					var commaRegex = /,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/g;
+			var result;
+			q.exec((err, dataSets) => {
+				if (err) return res.json({ success: false, error: err });
 
-					var quotesRegex = /^"(.*)"$/g;
+				if (typeof dataSets[0].TotalDataSets[0] === "undefined") {
+					dataSets[0].TotalDataSets[0].TotalDataSets = 0;
+				}
+				if (typeof dataSets[0].TotalMetaData[0] === "undefined") {
+					dataSets[0].TotalMetaData[0].TotalMetaData = 0;
+				}
 
-					var headers = lines[0]
-						.split(commaRegex)
-						.map((h) => h.replace(quotesRegex, "$1"));
-
-					for (var i = 1; i < lines.length - 1; i++) {
-						var obj = {};
-						var currentline = lines[i].split(commaRegex);
-
-						for (var j = 0; j < headers.length; j++) {
-							obj[headers[j]] = currentline[j].replace(quotesRegex, "$1");
-						}
-
-						const publisher = "HDR UK";
-						if (obj.publisher !== publisher) {
-							result.push(obj);
-						}
-					}
-
-					result.map((res) => {
-						if (res.dataClassesCount !== "0") {
-							datasetsMetadata++;
-						}
-					});
-
-					totalDatasets = result.length;
-
-					return res.json({
-						success: true,
-						data: {
-							totalDatasets: totalDatasets,
-							datasetsMetadata: datasetsMetadata,
-						},
-					});
+				result = res.json({
+					success: true,
+					data: {
+						totalDatasets: dataSets[0].TotalDataSets[0].TotalDataSets,
+						datasetsMetadata: dataSets[0].TotalMetaData[0].TotalMetaData,
+					},
 				});
+			});
+
+			return result;
+
+			// var result = [];
+			// var totalDatasets = 0;
+			// var datasetsMetadata = 0;
+
+			// axios
+			// 	.get(
+			// 		"https://raw.githubusercontent.com/HDRUK/datasets/master/datasets.csv"
+			// 	)
+			// 	.then(function (csv) {
+			// 		var lines = csv.data.split("\r\n");
+
+			// 		var commaRegex = /,(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)/g;
+
+			// 		var quotesRegex = /^"(.*)"$/g;
+
+			// 		var headers = lines[0]
+			// 			.split(commaRegex)
+			// 			.map((h) => h.replace(quotesRegex, "$1"));
+
+			// 		for (var i = 1; i < lines.length - 1; i++) {
+			// 			var obj = {};
+			// 			var currentline = lines[i].split(commaRegex);
+
+			// 			for (var j = 0; j < headers.length; j++) {
+			// 				obj[headers[j]] = currentline[j].replace(quotesRegex, "$1");
+			// 			}
+
+			// 			const publisher = "HDR UK";
+			// 			if (obj.publisher !== publisher) {
+			// 				result.push(obj);
+			// 			}
+			// 		}
+
+			// 		result.map((res) => {
+			// 			if (res.dataClassesCount !== "0") {
+			// 				datasetsMetadata++;
+			// 			}
+			// 		});
+
+			// 		totalDatasets = result.length;
+
+			// 		return res.json({
+			// 			success: true,
+			// 			data: {
+			// 				totalDatasets: totalDatasets,
+			// 				datasetsMetadata: datasetsMetadata,
+			// 			},
+			// 		});
+			// 	});
 			break;
 
 		case "searchanddar":
