@@ -1,5 +1,5 @@
 import express from 'express';
-import axios from 'axios';
+import axios from 'axios'; 
 
 var WidgetAuth = require('../../../WidgetAuth');
 
@@ -32,5 +32,19 @@ router.get('/totalusers', async (req, res) => {
       return res.json({'success': true, 'data' : result.data});
     })
 });
+
+//Pageviews
+router.get('/pageviews', async (req, res) => { 
+
+  var getPageViewsPromise = WidgetAuth.getPageViews();
+
+  getPageViewsPromise
+  .then(function (result){ 
+    JSON.stringify(result);
+
+    return res.json({'success': true, 'data' : result.data});
+  })
+});
+
 
 module.exports = router
