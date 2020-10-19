@@ -35,7 +35,7 @@ module.exports.getTotalUsersGA = async function() {
     return result;
 }
 
-//try - pageviews
+//pageviews - with previous page path
 module.exports.getPageViews = async function() {
   const response = await jwt.authorize()
   const result = await google.analytics('v3').data.ga.get({
@@ -45,6 +45,21 @@ module.exports.getPageViews = async function() {
     'end-date': 'today',
     'metrics': 'ga:pageviews',
     'dimensions': 'ga:pagePath, ga:previousPagePath'
+  })
+
+  return result;
+}
+
+//total pageviews by page
+module.exports.getTotalPageViews = async function() {
+  const response = await jwt.authorize()
+  const result = await google.analytics('v3').data.ga.get({
+    'auth': jwt,
+    'ids': 'ga:' + view_id,
+    'start-date': '2020-10-09',
+    'end-date': 'today',
+    'metrics': 'ga:pageviews',
+    'dimensions': 'ga:pagePath'
   })
 
   return result;

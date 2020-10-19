@@ -33,7 +33,7 @@ router.get('/totalusers', async (req, res) => {
     })
 });
 
-//Pageviews
+//Pageviews - with previous page path
 router.get('/pageviews', async (req, res) => { 
 
   var getPageViewsPromise = WidgetAuth.getPageViews();
@@ -46,5 +46,17 @@ router.get('/pageviews', async (req, res) => {
   })
 });
 
+//Pageviews - total per page
+router.get('/totalpageviews', async (req, res) => { 
+
+  var getTotalPageViewsPromise = WidgetAuth.getTotalPageViews();
+
+  getTotalPageViewsPromise
+  .then(function (result){ 
+    JSON.stringify(result);
+
+    return res.json({'success': true, 'data' : result.data});
+  })
+});
 
 module.exports = router
