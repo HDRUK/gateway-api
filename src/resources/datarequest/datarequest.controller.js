@@ -918,20 +918,31 @@ module.exports = {
 			// 3. descriptions and uniqueIds file from FE
 			let { descriptions, ids } = req.body;
 			// 4. get access record
-			let accessRecord = await DataRequestModel.findOne({ _id: id });
+			let accessRecord = await DataRequestModel.findOne({ _id: id }).populate(
+				{
+					path: 'datasets dataset',
+					populate: {
+						path: 'publisher',
+						populate: {
+							path: 'team',
+						},
+					},
+				}
+			);
+
 			if(!accessRecord) {
 				return res
 				.status(404)
 				.json({ status: 'error', message: 'Application not found.' });
 			}
 			// 5. Check if requesting user is custodian member or applicant/contributor
-			// let { authorised } = module.exports.getUserPermissionsForApplication(accessRecord, req.user.id, req.user._id);
+			let { authorised } = module.exports.getUserPermissionsForApplication(accessRecord, req.user.id, req.user._id);
 			// 6. check authorisation
-			// if (!authorised) {
-			// 	return res
-			// 		.status(401)
-			// 		.json({ status: 'failure', message: 'Unauthorised' });
-			// }
+			if (!authorised) {
+				return res
+					.status(401)
+					.json({ status: 'failure', message: 'Unauthorised' });
+			}
 			// 7. check files
 			if(_.isEmpty(files)) {
 				return res
@@ -1027,7 +1038,7 @@ module.exports = {
 			return res.status(200).sendFile(`${process.env.TMPDIR}${id}/${dbFileId}_${name}`);
 		} catch(err) {
 			console.log(err);
-			res.status(500).json({ status: 'error', message: err });
+			res.status(201).json({ status: 'error', message: err });
 		}  
 	},
 
