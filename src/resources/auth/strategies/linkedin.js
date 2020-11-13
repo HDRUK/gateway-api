@@ -12,6 +12,7 @@ import  queryString from 'query-string';
 import  Url from 'url';
 import { discourseLogin } from '../sso/sso.discourse.service'; 
 
+const eventLogController = require('../../eventlog/eventlog.controller');
 const LinkedinStrategy = passportLinkedin.OAuth2Strategy
 
 const strategy = app => {
@@ -126,6 +127,17 @@ const strategy = app => {
                         return res.status(500).send('Error authenticating the user.');
                     }
                 }
+
+                //Build event object for user login and log it to DB
+                let eventObj = {
+                    userId: req.user.id, 
+                    email: req.user.email, 
+                    event: 'user_login', 
+                    provider: req.user.provider, 
+                    providerId: req.user.providerId,
+                    timestamp: Date.now()
+                }
+                await eventLogController.logEvent(eventObj);
 
                 return res
                 .status(200)

@@ -6,7 +6,7 @@ import { createPerson } from '../person/person.service'
 import { getUserByUserId } from '../user/user.repository'
 import { registerDiscourseUser } from '../discourse/discourse.service'
 const urlValidator = require('../utilities/urlValidator');
-
+const eventLogController = require('../eventlog/eventlog.controller');
 const router = express.Router()
 
 // @router   Get /auth/register
@@ -91,6 +91,17 @@ router.post('/',
     if (redirectURLis === null || redirectURLis === '') {
         redirectURLis = ''
     }
+
+    //Build event object for user registered and log it to DB
+    let eventObj = {
+        userId: req.user.id, 
+        email: email, 
+        event: 'user_registered', 
+        provider: req.user.provider, 
+        providerId: req.user.providerId,
+        timestamp: Date.now()
+    }
+    await eventLogController.logEvent(eventObj);
 
     return res
         .status(200)
