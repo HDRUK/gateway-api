@@ -1401,7 +1401,8 @@ const _generateAttachment = (filename, content, type) => {
 		filename,
 		type,
 		disposition: 'attachment',
-	};
+  };
+};
 const _generateNewWorkflowCreatedEmail = (manager, workflowName, workflowReviewers) => {
   
   let emailRecipients = [];
