@@ -693,6 +693,9 @@ module.exports = {
 					path: 'publisher additionalInfo',
 					populate: {
 						path: 'team',
+						populate: {
+							path: 'users'
+						}
 					},
 				},
 			});
@@ -825,6 +828,51 @@ module.exports = {
 					});
 				}
 			});
+
+			// 17. Send email to Custodian team managers & Workflow phase reviewers
+
+			// Get details on the reviewers of each phase in the workflow
+			let steps = workflowObj.steps;
+			const workflowReviewers = await Promise.all(steps.map(async(step, index) => {
+
+				let phaseDetails = { phase: index+1, phaseName: step.stepName, reviewers: []};
+
+				phaseDetails.reviewers = await Promise.all(step.reviewers.map(async(reviewer) => {
+				  
+					const reviewerDetails = {};
+					const user = await UserModel.findById(reviewer).exec();
+				
+					reviewerDetails.firstName = user.firstname;
+					reviewerDetails.lastName = user.lastname;
+					reviewerDetails.email = user.email;
+					reviewerDetails.phaseName = step.stepName;
+					reviewerDetails.phase = index + 1; 
+					
+					return reviewerDetails;
+				}));
+				return phaseDetails;
+			}));
+
+			// Get manager (workflow creator) details
+			const manager = await UserModel.findById(req.user._id);
+			const workflowName = (req.body.workflowName);
+
+			// Build email
+			let { emailRecipients = [], subject = '', html = ''} = emailGenerator.generateWorkflowAssignedToApplicationEmail(manager, workflowName, workflowReviewers);
+
+			// Populate email recipients with custodian team managers emails
+			teamController.getTeamMembersByRole(
+					accessRecord.datasets[0].publisher.team, 
+					'manager'
+				).forEach(m => emailRecipients.push(m));
+
+			emailGenerator.sendEmail(
+				emailRecipients,
+				`${hdrukEmail}`,
+				subject,
+				html,
+				false
+			);
 		} catch (err) {
 			console.error(err.message);
 			return res.status(500).json({

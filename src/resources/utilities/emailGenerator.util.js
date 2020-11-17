@@ -1402,6 +1402,74 @@ const _generateAttachment = (filename, content, type) => {
 		type,
 		disposition: 'attachment',
 	};
+const _generateNewWorkflowCreatedEmail = (manager, workflowName, workflowReviewers) => {
+  
+  let emailRecipients = [];
+  let subject = `${manager.firstname} ${manager.lastname} has created a new workflow ${workflowName}`;
+  let html = `<div style="border: 1px solid #d0d3d4; border-radius: 15px; width: 700px; margin: 0 auto;">
+  <table style="font-family: Arial, sans-serif;" border="0" width="700" cellspacing="15" cellpadding="0" align="center">
+  <thead>
+  <tr>
+  <th style="border: 0; color: #29235c; font-size: 22px; text-align: left;">${manager.firstname} ${manager.lastname} has created a new workflow ${workflowName}</th>
+  </tr>
+    <td style="font-size: 16px; color: #29235c; padding: 10px 5px 0px 5px; width: 30%; text-align: left; vertical-align: top; font-weight:bold">Phases in workflow:</td>
+  </thead>`;
+  
+  workflowReviewers.forEach(phase => {
+    html += `<td style="font-size: 16px; color: #29235c; padding: 15px 5px 0px 5px; width: 30%; text-align: left; vertical-align: top; font-weight:bold" >${phase.phase} . ${phase.phaseName}</td>
+    <tr>
+      <td style="font-size: 14px; color: #29235c; padding: 0px 5px; width: 30%; text-align: left; vertical-align: top; font-weight:bold" >Reviewers in phase:</td>                 
+    </tr>`;
+    phase.reviewers.forEach(reviewer => {
+      html += `<tr>
+              <td style="font-size: 14px; padding: 0px 5px; width: 30%; text-align: left; vertical-align: top;" >${reviewer.firstName} ${reviewer.lastName}</td>
+              </tr>`;
+      emailRecipients.push(reviewer);
+    });
+  });
+
+  html+= `</table> </div>`;
+
+  return {
+            emailRecipients: emailRecipients, 
+            subject: subject,
+            html: html
+          }
+};
+
+const _generateWorkflowAssignedToApplicationEmail = (manager, workflowName, workflowReviewers) => {
+  
+  let emailRecipients = [];
+  let subject = `${manager.firstname} ${manager.lastname} has assigned a ${workflowName} workflow to a Data Access Request`;
+  let html = `<div style="border: 1px solid #d0d3d4; border-radius: 15px; width: 700px; margin: 0 auto;">
+  <table style="font-family: Arial, sans-serif;" border="0" width="700" cellspacing="15" cellpadding="0" align="center">
+  <thead>
+  <tr>
+  <th style="border: 0; color: #29235c; font-size: 22px; text-align: left;">${manager.firstname} ${manager.lastname} has assigned a workflow (${workflowName}) you are part of to a data access request</th>
+  </tr>
+    <td style="font-size: 16px; color: #29235c; padding: 10px 5px 0px 5px; width: 30%; text-align: left; vertical-align: top; font-weight:bold">Phases in workflow:</td>
+  </thead>`;
+  
+  workflowReviewers.forEach(phase => {
+    html += `<td style="font-size: 16px; color: #29235c; padding: 15px 5px 0px 5px; width: 30%; text-align: left; vertical-align: top; font-weight:bold" >${phase.phase} . ${phase.phaseName}</td>
+    <tr>
+      <td style="font-size: 14px; color: #29235c; padding: 0px 5px; width: 30%; text-align: left; vertical-align: top; font-weight:bold" >Reviewers in phase:</td>                 
+    </tr>`;
+    phase.reviewers.forEach(reviewer => {
+      html += `<tr>
+              <td style="font-size: 14px; padding: 0px 5px; width: 30%; text-align: left; vertical-align: top;" >${reviewer.firstName} ${reviewer.lastName}</td>
+              </tr>`;
+      emailRecipients.push(reviewer);
+    });
+  });
+
+  html+= `</table> </div>`;
+
+  return {
+            emailRecipients: emailRecipients, 
+            subject: subject,
+            html: html
+          }
 };
 
 export default {
@@ -1416,6 +1484,8 @@ export default {
 	generateRemovedFromTeam: _generateRemovedFromTeam,
 	generateAddedToTeam: _generateAddedToTeam,
 	sendEmail: _sendEmail,
-	generateEmailFooter: _generateEmailFooter,
 	generateAttachment: _generateAttachment,
+  generateEmailFooter: _generateEmailFooter,
+  generateNewWorkflowCreatedEmail: _generateNewWorkflowCreatedEmail,
+	generateWorkflowAssignedToApplicationEmail: _generateWorkflowAssignedToApplicationEmail
 };

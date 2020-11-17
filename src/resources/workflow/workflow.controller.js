@@ -7,6 +7,10 @@ import helper from '../utilities/helper.util';
 import moment from 'moment';
 import _ from 'lodash';
 import mongoose from 'mongoose';
+import { UserModel } from '../user/user.model';
+import emailGenerator from '../utilities/emailGenerator.util';
+
+const hdrukEmail = `enquiry@healthdatagateway.org`;
 
 	// GET api/v1/workflows/:id
 	const getWorkflowById = async (req, res) => {
@@ -160,6 +164,41 @@ import mongoose from 'mongoose';
 					});
 				}
 			});
+			// 7.  Send email to workflow phase reviewers
+			// Get manager (workflow creator) details
+			const manager = await UserModel.findById(userId);
+
+			// Get details on the reviewers of each phase in the workflow
+			const workflowReviewers = await Promise.all(steps.map(async(step, index) => {
+
+				let phaseDetails = { phase: index+1, phaseName: step.stepName, reviewers: []};
+
+				phaseDetails.reviewers = await Promise.all(step.reviewers.map(async(reviewer) => {
+				  
+					const reviewerDetails = {};
+					const user = await UserModel.findById(reviewer).exec();
+				
+					reviewerDetails.firstName = user.firstname;
+					reviewerDetails.lastName = user.lastname;
+					reviewerDetails.email = user.email;
+					reviewerDetails.phaseName = step.stepName;
+					reviewerDetails.phase = index + 1; 
+					
+					return reviewerDetails;
+				}));
+				return phaseDetails;
+			}));
+
+			// Build email
+			let { emailRecipients = [], subject = '', html = ''} = emailGenerator.generateNewWorkflowCreatedEmail(manager, workflowName, workflowReviewers);
+
+			emailGenerator.sendEmail(
+				emailRecipients,
+				`${hdrukEmail}`,
+				subject,
+				html,
+				false
+			);
 		} catch (err) {
 			console.error(err.message);
 			return res.status(500).json({
