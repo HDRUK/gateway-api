@@ -79,6 +79,7 @@ router.get('', async (req, res) => {
 					$match: {
 						$and: [
 							{ activeflag: "active" },
+							{ "datasetfields.publisher": { $ne: "OTHER > HEALTH DATA RESEARCH UK" } },
 							{ "datasetfields.publisher": { $ne: "HDR UK" } },
 						],
 					},
@@ -106,7 +107,10 @@ router.get('', async (req, res) => {
 						as: "publisher",
 					},
 				},
-				{ $match: { "publisher.datasetfields.publisher": { $ne: "HDR UK" } } },
+				{ $match: { $and: [
+                    {"publisher.datasetfields.publisher": { $ne: "OTHER > HEALTH DATA RESEARCH UK" } }, 
+                    {"publisher.datasetfields.publisher": { $ne: "HDR UK" } } 
+                ]}},
 				{ $group: { _id: "accessRequests", count: { $sum: 1 } } },
 			];
 
