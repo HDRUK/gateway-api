@@ -5,7 +5,8 @@ import passport from "passport";
 import { ROLES } from '../user/user.roles'
 import {addTool, editTool, deleteTool, setStatus, getTools, getToolsAdmin} from '../tool/data.repository';
 import emailGenerator from '../utilities/emailGenerator.util';
-import { UserModel } from '../user/user.model' 
+import { UserModel } from '../user/user.model'
+import helper from '../utilities/helper.util'; 
 const urlValidator = require('../utilities/urlValidator');
 const inputSanitizer = require('../utilities/inputSanitizer');
 
@@ -111,23 +112,36 @@ router.put('/unsubscribe/:userObjectId', async (req, res) => {
       })
 });
 
-  /**
- * {get} /person/:personID Person
- * 
- * Return the details on the tool based on the tool ID.
- */
+// @router   GET /api/v1/person/:id
+// @desc     Get person info based on personID
 router.get('/:id', async (req, res) => {
-    //req.params.id is how you get the id from the url
 
-    var q = Data.aggregate([
+    let person = Data.aggregate([
         { $match: { $and: [{ id: parseInt(req.params.id) }] } },
         { $lookup: { from: "tools", localField: "id", foreignField: "authors", as: "tools" } },
         { $lookup: { from: "reviews", localField: "id", foreignField: "reviewerID", as: "reviews" } }
     ]);
-    q.exec((err, data) => {
+    person.exec((err, data) => {
         if (err) return res.json({ success: false, error: err });
+
+        data = helper.hidePrivateProfileDetails(data);
         return res.json({ success: true, data: data });
     });
+});
+
+// @router   GET /api/v1/person/profile/:id
+// @desc     Get person info for their account
+router.get('/profile/:id', async (req, res) => {
+
+  let profileData = Data.aggregate([
+      { $match: { $and: [{ id: parseInt(req.params.id) }] } },
+      { $lookup: { from: "tools", localField: "id", foreignField: "authors", as: "tools" } },
+      { $lookup: { from: "reviews", localField: "id", foreignField: "reviewerID", as: "reviews" } }
+  ]);
+  profileData.exec((err, data) => {
+      if (err) return res.json({ success: false, error: err });
+      return res.json({ success: true, data: data });
+  });
 });
 
 // @router   GET /api/v1/person

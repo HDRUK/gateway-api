@@ -49,7 +49,7 @@ module.exports = {
                         console.error(`No team associated to publisher, cannot message`);
                         return res.status(500).json({ success: false, message: 'No team associated to publisher, cannot message' });
                     }
-                    topicObj.recipients = await topicController.buildRecipients(team, createdBy);
+                    topicObj.recipients = await topicController.buildRecipients(team, topicObj.createdBy);
                     await topicObj.save();
                 }
             }
@@ -124,7 +124,6 @@ module.exports = {
             return res.status(500).json(err);
         }
     },
-    
     // PUT /api/v1/messages
     updateMessage: async(req, res) => {
         try {
@@ -157,7 +156,6 @@ module.exports = {
             return res.status(500).json(err);
         }
     },
-
     // GET api/v1/messages/unread/count
     getUnreadMessageCount: async(req, res) => {
         try {

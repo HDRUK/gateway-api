@@ -3,6 +3,7 @@ import { ROLES } from '../user/user.roles'
 import { Reviews } from './review.model';
 import passport from "passport";
 import { utils } from "../auth";
+import helper from '../utilities/helper.util';
 
 const router = express.Router();
 
@@ -23,8 +24,12 @@ router.get(
       { $lookup: { from: "tools", localField: "toolID", foreignField: "id", as: "tool" } }
     ]);
     r.exec((err, data) => {
-        if (err) return res.json({ success: false, error: err });
-        return res.json({ success: true, data: data });
+      if (err) return res.json({ success: false, error: err });
+        
+      data.map(dat => {
+          dat.person = helper.hidePrivateProfileDetails(dat.person);
+        });
+      return res.json({ success: true, data: data });
     });
   });
   
@@ -85,6 +90,10 @@ router.get(
     ]);
     r.exec((err, data) => {
       if (err) return res.json({ success: false, error: err });
+
+      data.map(dat => {
+        dat.person = helper.hidePrivateProfileDetails(dat.person);
+      });
       return res.json({ success: true, data: data });
     });
   });

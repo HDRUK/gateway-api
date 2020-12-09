@@ -1,6 +1,6 @@
 'use strict';
 
-import express from 'express';
+import express from 'express'; 
 import Provider from 'oidc-provider';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yamljs';

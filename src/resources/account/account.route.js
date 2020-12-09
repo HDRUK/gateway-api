@@ -8,6 +8,7 @@ import { MessagesModel } from '../message/message.model';
 import { createDiscourseTopic } from '../discourse/discourse.service'
 import { UserModel } from '../user/user.model'
 import emailGenerator from '../utilities/emailGenerator.util';
+import helper from '../utilities/helper.util';
 
 const router = express.Router();
 const hdrukEmail = `enquiry@healthdatagateway.org`;
@@ -96,6 +97,10 @@ router.get(
       ])//.skip(parseInt(startIndex)).limit(parseInt(maxResults));
       q.exec((err, data) => {
         if (err) return res.json({ success: false, error: err });
+
+        data.map(dat => {
+          dat.persons = helper.hidePrivateProfileDetails(dat.persons);
+        });
         result = res.json({ success: true, data: data });
       });
       
@@ -177,6 +182,10 @@ router.get(
       ])//.skip(parseInt(startIndex)).limit(parseInt(maxResults));
       q.exec((err, data) => {
         if (err) return res.json({ success: false, error: err });
+
+        data.map(dat => {
+          dat.persons = helper.hidePrivateProfileDetails(dat.persons);
+        });
         result = res.json({ success: true, data: data });
       });
       return result;

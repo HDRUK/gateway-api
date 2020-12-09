@@ -4,7 +4,7 @@ import _ from 'lodash';
 import moment from 'moment';
 
 export function getObjectResult(type, searchAll, searchQuery, startIndex, maxResults, sort) {
-    let collection = Data;
+    let collection = Data; 
     if (type === 'course') collection = Course;
     var newSearchQuery = JSON.parse(JSON.stringify(searchQuery));
     newSearchQuery["$and"].push({ type: type })
@@ -70,13 +70,14 @@ export function getObjectResult(type, searchAll, searchQuery, startIndex, maxRes
                     "firstname": 1,
                     "lastname": 1,
                     "datasetid": 1,
-
+                    "pid": 1,
                     "datasetfields.publisher": 1,
                     "datasetfields.geographicCoverage": 1,
                     "datasetfields.physicalSampleAvailability": 1,
                     "datasetfields.abstract": 1,
                     "datasetfields.ageBand": 1,
                     "datasetfields.phenotypes": 1,
+                    "datasetv2": 1,
 
                     "persons.id": 1,
                     "persons.firstname": 1,
@@ -91,12 +92,24 @@ export function getObjectResult(type, searchAll, searchQuery, startIndex, maxRes
     }
     
     if (sort === '' || sort ==='relevance') {
-        if (searchAll) queryObject.push({ "$sort": { "name": 1 }});
-        else queryObject.push({ "$sort": { score: { $meta: "textScore" }}});
+        if (type === "person") {
+            if (searchAll) queryObject.push({ "$sort": { "lastname": 1 }});
+            else queryObject.push({ "$sort": { score: { $meta: "textScore" }}});
+        }
+        else {
+            if (searchAll) queryObject.push({ "$sort": { "name": 1 }});
+            else queryObject.push({ "$sort": { score: { $meta: "textScore" }}});
+        }
     }
     else if (sort === 'popularity') {
-        if (searchAll) queryObject.push({ "$sort": { "counter": -1, "name": 1 }});
-        else queryObject.push({ "$sort": { "counter": -1, score: { $meta: "textScore" }}});
+        if (type === "person") {
+            if (searchAll) queryObject.push({ "$sort": { "counter": -1, "lastname": 1 }});
+            else queryObject.push({ "$sort": { "counter": -1, score: { $meta: "textScore" }}});
+        }
+        else {
+            if (searchAll) queryObject.push({ "$sort": { "counter": -1, "name": 1 }});
+            else queryObject.push({ "$sort": { "counter": -1, score: { $meta: "textScore" }}});
+        }
     }
     else if (sort === 'metadata') {
         if (searchAll) queryObject.push({ "$sort": { "datasetfields.metadataquality.quality_score": -1, "name": 1 }});

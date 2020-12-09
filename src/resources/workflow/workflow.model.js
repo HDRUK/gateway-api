@@ -1,14 +1,14 @@
 import { model, Schema } from 'mongoose';
 
-const minReviewers = (val) => {
+export const minReviewers = (val) => {
   return val.length > 0;
 }
 
-const minSteps = (val) => {
+export const minSteps = (val) => {
   return val.length > 0;
 }
 
-const minSections = (val) => {
+export const minSections = (val) => {
   return val.length > 0;
 }
 

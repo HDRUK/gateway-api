@@ -9,7 +9,6 @@ import { MessagesModel } from '../message/message.model';
 import {
 	addTool,
 	editTool,
-	deleteTool,
 	setStatus,
 	getTools,
 	getToolsAdmin,
@@ -17,6 +16,7 @@ import {
 import emailGenerator from '../utilities/emailGenerator.util';
 import inputSanitizer from '../utilities/inputSanitizer';
 import _ from 'lodash';
+import helper from '../utilities/helper.util';
 const hdrukEmail = `enquiry@healthdatagateway.org`;
 const router = express.Router();
 
@@ -148,6 +148,7 @@ router.get('/:id', async (req, res) => {
 	]);
 	query.exec((err, data) => {
 		if (data.length > 0) {
+			data[0].persons = helper.hidePrivateProfileDetails(data[0].persons);
 			var p = Data.aggregate([
 				{
 					$match: {
@@ -205,6 +206,11 @@ router.get('/:id', async (req, res) => {
 				]);
 				r.exec(async (err, reviewData) => {
 					if (err) return res.json({ success: false, error: err });
+						
+					reviewData.map(reviewDat => {
+						reviewDat.person = helper.hidePrivateProfileDetails(reviewDat.person);
+						reviewDat.owner= helper.hidePrivateProfileDetails(reviewDat.owner);
+					});
 
 					return res.json({
 						success: true,

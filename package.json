@@ -29,7 +29,6 @@
     "jsonwebtoken": "^8.5.1",
     "keygrip": "^1.1.0",
     "lodash": "^4.17.19",
-    "mocha": "^7.1.2",
     "moment": "^2.27.0",
     "mongoose": "^5.9.12",
     "morgan": "^1.10.0",
@@ -48,7 +47,11 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
-    "jest": "^26.0.1",
+    "@babel/preset-env": "^7.12.1",
+    "@shelf/jest-mongodb": "^1.2.3",
+    "babel-jest": "^26.6.3",
+    "jest": "^26.6.3",
+    "mongodb-memory-server": "^6.9.2",
     "nodemon": "^2.0.3",
     "supertest": "^4.0.2"
   },
@@ -57,7 +60,7 @@
     "server": "nodemon index.js",
     "debug": "nodemon --inspect=0.0.0.0:3001 index.js",
     "build": "",
-    "test": "jest",
+    "test": "jest --runInBand",
     "eject": "",
     "snyk-protect": "snyk protect",
     "prepublish": "npm run snyk-protect"

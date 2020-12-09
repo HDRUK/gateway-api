@@ -28,6 +28,7 @@ router.get('', async (req, res) => {
                     $and: [
                       { activeflag: "active" },
                       { type: "dataset" },
+                      { "datasetfields.publisher": { $ne: "OTHER > HEALTH DATA RESEARCH UK" } },
                       { "datasetfields.publisher": { $ne: "HDR UK" } },
                     ],
                   },
@@ -136,7 +137,10 @@ router.get('', async (req, res) => {
                     as: "publisher",
                   },
                 },
-                { $match: { "publisher.datasetfields.publisher": { $ne: "HDR UK" } } },
+                { $match: { $and: [
+                    {"publisher.datasetfields.publisher": { $ne: "OTHER > HEALTH DATA RESEARCH UK" } }, 
+                    {"publisher.datasetfields.publisher": { $ne: "HDR UK" } } 
+                ]}},
                 { $group: { _id: 'accessRequestsMonth', count: { $sum: 1 } }, }
               ],
             }
@@ -300,7 +304,7 @@ const getHdrDatasetId = async() => {
   return new Promise(async (resolve, reject) => {
     let hdrDatasetID = Data.find(
       {   
-          "datasetfields.publisher": "HDR UK" 
+          "datasetfields.publisher": "OTHER > HEALTH DATA RESEARCH UK" 
         },
         {
           _id: 0,

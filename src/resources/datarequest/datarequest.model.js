@@ -57,7 +57,15 @@ const DataRequestSchema = new Schema({
       ref: 'User' 
     }
   }],
-
+  amendmentIterations: [{
+    dateCreated: { type: Date },
+    createdBy: { type : Schema.Types.ObjectId, ref: 'User' },
+    dateReturned: { type: Date },
+    returnedBy: { type : Schema.Types.ObjectId, ref: 'User' },
+    dateSubmitted: { type: Date },
+    submittedBy: { type : Schema.Types.ObjectId, ref: 'User' },
+    questionAnswers: { type: Object, default: {} }
+  }],
 }, {
     timestamps: true,
     toJSON:     { virtuals: true },

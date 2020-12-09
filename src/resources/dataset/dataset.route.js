@@ -2,6 +2,7 @@ import express from 'express'
 import { Data } from '../tool/data.model'
 import { loadDataset, loadDatasets } from './dataset.service';
 import { getToolsAdmin } from '../tool/data.repository';
+import _ from 'lodash';
 const router = express.Router();
 const rateLimit = require("express-rate-limit");
 
@@ -59,36 +60,51 @@ router.get(
     }
 );
 
-
-
-
+// @router   GET /api/v1/
+// @desc     Returns a dataset based on either datasetID or PID provided
+// @access   Public
 router.get('/:datasetID', async (req, res) => {
-    var q = Data.aggregate([
-        { $match: { $and: [{ datasetid: req.params.datasetID }] } }
-    ]);
-     q.exec(async (err, data) => {
-        if (data.length === 0) data[0] = await loadDataset(req.params.datasetID)
 
-        var p = Data.aggregate([
-            { $match: { $and: [{ "relatedObjects": { $elemMatch: { "objectId": req.params.datasetID } } }] } },
-        ]);
+    let { datasetID = ''} = req.params; 
+    if(_.isEmpty(datasetID)) { 
+        return res.status(400).json({ success: false })
+    };
 
-        p.exec( async (err, relatedData) => {
-            relatedData.forEach((dat) => {
-                dat.relatedObjects.forEach((x) => {
-                    if (x.objectId === req.params.datasetID && dat.id !== req.params.datasetID) {
-                        if (typeof data[0].relatedObjects === "undefined") data[0].relatedObjects=[];
-                        data[0].relatedObjects.push({ objectId: dat.id, reason: x.reason, objectType: dat.type, user: x.user, updated: x.updated })
-                    }
-                })
-            });
+    let isLatestVersion = true;
+    
+    // Search for a dataset based on pid
+    let dataset = await Data.findOne({ pid: datasetID, activeflag: 'active'}); 
 
-            if (err) return res.json({ success: false, error: err });
-            return res.json({ success: true, data: data });
-        });
+    if(!_.isNil(dataset)){ 
+        // Set the actual datasetId value based on pid provided 
+        datasetID = dataset.datasetid; 
+    }
+    else{
+        // Search for a dataset based on datasetID
+        dataset = await Data.findOne({ datasetid: datasetID}); 
+        
+        // Pull a dataset version from MDC if it doesn't exist on our DB
+        if(_.isNil(dataset)){ 
+            dataset = await loadDataset(datasetID)
+        }
+
+        isLatestVersion = (dataset.activeflag === 'active');
+    }
+
+    let pid = dataset.pid;
+    let relatedData = await Data.find({ "relatedObjects": { $elemMatch: { "objectId": {$in : [datasetID, pid] } } } });
+
+    relatedData.forEach((dat) => {
+        dat.relatedObjects.forEach((relatedObject) => {
+            if ((relatedObject.objectId === datasetID && dat.id !== datasetID) || (relatedObject.objectId === pid && dat.id !== pid)){
+                if (typeof dataset.relatedObjects === "undefined") dataset.relatedObjects=[];
+                dataset.relatedObjects.push({ objectId: dat.id, reason: relatedObject.reason, objectType: dat.type, user: relatedObject.user, updated: relatedObject.updated })
+            }
+        })
     });
-});
 
+    return res.json({ success: true, isLatestVersion: isLatestVersion, data: dataset });
+});
 
 // @router   GET /api/v1/
 // @desc     Returns List of Dataset Objects No auth

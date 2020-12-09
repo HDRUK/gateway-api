@@ -1115,14 +1115,38 @@ paths:
                       items:
                         type: string      
               example:   # Sample object
-                type: 'tool'
-                name: 'Epilepsy data research'
-                link: 'http://epilepsy.org'
-                description: 'Epilespy data research description'
-                categories: { category: 'API', programmingLanguage: ['Javascript'], programmingLanguageVersion: '0.0.0'}
-                licence: 'MIT licence'
-                authors: [4495285946631793]
-                tags: {features: ['Arbitrage'], topics: ['Epilepsy']}
+                id: 26542005388306332
+      responses: 
+        '200':
+          description: OK
+  
+  /v1/tools/:
+    get:
+      summary: Return List of Tool objects.
+      tags:
+        - Tools
+      parameters:
+      - in: query
+        name: limit
+        required: false
+        description: Limit the number of results
+        schema:
+          type : integer
+          example: 3
+      - in: query
+        name: offset
+        required: false
+        description: Index to offset the search results
+        schema:
+          type : integer
+          example: 1
+      - in: query
+        name: q
+        required: false
+        description: Filter using search query
+        schema:
+          type : string
+          example: epilepsy
       responses: 
         '200':
           description: OK

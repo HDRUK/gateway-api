@@ -1,5 +1,5 @@
 const request = require("supertest");
-const testURL  = request( process.env.URL || 'http://localhost:3001');
+const testURL  = request( process.env.URL || 'https://api.latest.healthdatagateway.org/');
 
 
 describe("Wake up API", () => {

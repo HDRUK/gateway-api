@@ -8,6 +8,7 @@ import { MessagesModel } from '../message/message.model';
 import { UserModel } from '../user/user.model'
 import { getObjectById } from '../tool/data.repository';
 import emailGenerator from '../utilities/emailGenerator.util';
+import helper from '../utilities/helper.util';
 const inputSanitizer = require('../utilities/inputSanitizer');
 
 const urlValidator = require('../utilities/urlValidator');
@@ -24,6 +25,7 @@ router.get('/:collectionID', async (req, res) => {
 
   ]); 
   q.exec((err, data) => {
+    data[0].persons = helper.hidePrivateProfileDetails(data[0].persons);
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true, data: data });
   });

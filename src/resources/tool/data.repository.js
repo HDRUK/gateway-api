@@ -3,6 +3,7 @@ import { MessagesModel } from '../message/message.model'
 import { UserModel } from '../user/user.model'
 import { createDiscourseTopic } from '../discourse/discourse.service'
 import emailGenerator from '../utilities/emailGenerator.util';
+import helper from '../utilities/helper.util';
 const asyncModule = require('async');
 const hdrukEmail = `enquiry@healthdatagateway.org`;
 const urlValidator = require('../utilities/urlValidator');
@@ -244,6 +245,9 @@ const editTool = async (req, res) => {
         { $sort: { updatedAt : -1}}
       ])//.skip(parseInt(startIndex)).limit(parseInt(maxResults));
       query.exec((err, data) => {
+        data.map(dat => {
+          dat.persons = helper.hidePrivateProfileDetails(dat.persons);
+        });
         if (err) reject({ success: false, error: err });
         resolve(data);
       });
@@ -431,6 +435,9 @@ function getObjectResult(type, searchAll, searchQuery, startIndex, limit) {
   }
   return new Promise((resolve, reject) => {
       q.exec((err, data) => {
+          data.map(dat => {
+            dat.persons = helper.hidePrivateProfileDetails(dat.persons);
+          });
           if (typeof data === "undefined") resolve([]);
           else resolve(data);
       })

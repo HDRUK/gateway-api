@@ -7,7 +7,7 @@ const removeNonBreakingSpaces = (str) => {
     }
     else if(!Array.isArray(str) && typeof(str) !== 'object'){
         var re = /&nbsp;/g
-        return (!str) ? str : str.replace(re ," ");
+        return (!str || !isNaN(str)) ? str : str.replace(re ," ");
     }
     return sanitizedValues;
 }

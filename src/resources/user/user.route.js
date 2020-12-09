@@ -53,8 +53,16 @@ router.get(
 					id: 1,
 					firstname: 1,
 					lastname: 1,
-					orcid: 1,
-					bio: 1,
+					orcid: {
+						$cond: [{
+							$eq: [ true, "$showOrcid" ]},
+							"$orcid", "$$REMOVE"]
+					},
+					bio: {
+						$cond: [{
+							$eq: [ true, "$showBio" ]},
+							"$bio", "$$REMOVE"]
+					},
 					email: '$user.email',
 				},
 			},
