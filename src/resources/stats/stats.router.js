@@ -128,10 +128,6 @@ router.get('', async (req, res) => {
 						if (err) return res.json({ success: false, error: err });
 
 						accessRequests.map(accessRequest => {
-							if (accessRequest.dataSetId && accessRequest.dataSetId.length > 0 && !hdrDatasetIds.includes(accessRequest.dataSetId)) {
-								accessRequestsCount++;
-							}
-
 							if (accessRequest.datasetIds && accessRequest.datasetIds.length > 0) {
 								accessRequest.datasetIds.map(datasetid => {
 									if (!hdrDatasetIds.includes(datasetid)) {

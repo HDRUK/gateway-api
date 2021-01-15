@@ -29,30 +29,11 @@ module.exports = {
 		try {
 			// 1. Deconstruct the
 			let { id: userId } = req.user;
-			// 2. Find all data access request applications created with single dataset version
-			let singleDatasetApplications = await DataRequestModel.find({
-				$and: [
-					{
-						$or: [{ userId: parseInt(userId) }, { authorIds: userId }],
-					},
-					{ dataSetId: { $ne: null } },
-				],
-			}).populate('dataset mainApplicant');
-			// 3. Find all data access request applications created with multi dataset version
-			let multiDatasetApplications = await DataRequestModel.find({
-				$and: [
-					{
-						$or: [{ userId: parseInt(userId) }, { authorIds: userId }],
-					},
-					{
-						$and: [{ datasetIds: { $ne: [] } }, { datasetIds: { $ne: null } }],
-					},
-				],
-			}).populate('datasets mainApplicant');
-			// 4. Return all users applications combined
-			const applications = [...singleDatasetApplications, ...multiDatasetApplications];
-
-			// 5. Append project name and applicants
+			// 2. Find all data access request applications
+			let applications = await DataRequestModel.find({ $or: [{ userId: parseInt(userId) }, { authorIds: userId }] }).populate(
+				'datasets mainApplicant'
+			);
+			// 3. Append project name and applicants
 			let modifiedApplications = [...applications]
 				.map(app => {
 					return module.exports.createApplicationDTO(app.toObject(), constants.userTypes.APPLICANT);
@@ -60,8 +41,7 @@ module.exports = {
 				.sort((a, b) => b.updatedAt - a.updatedAt);
 
 			let avgDecisionTime = module.exports.calculateAvgDecisionTime(applications);
-
-			// 6. Return payload
+			// 4. Return payload
 			return res.status(200).json({
 				success: true,
 				data: modifiedApplications,
@@ -216,12 +196,14 @@ module.exports = {
 					});
 				}
 				// 2. Build up the accessModel for the user
-				let { jsonSchema, version, _id:schemaId } = accessRequestTemplate;
+				let { jsonSchema, version, _id: schemaId } = accessRequestTemplate;
 				// 3. create new DataRequestModel
 				let record = new DataRequestModel({
 					version,
 					userId,
 					dataSetId,
+					datasetIds: [dataSetId],
+					datasetTitles: [dataset.name],
 					jsonSchema,
 					schemaId,
 					publisher,
@@ -321,7 +303,7 @@ module.exports = {
 					});
 				}
 				// 3. Build up the accessModel for the user
-				let { jsonSchema, version, _id:schemaId } = accessRequestTemplate;
+				let { jsonSchema, version, _id: schemaId } = accessRequestTemplate;
 				// 4. Create new DataRequestModel
 				let record = new DataRequestModel({
 					version,
@@ -1482,7 +1464,7 @@ module.exports = {
 			if (accessRecord.applicationStatus !== constants.applicationStatuses.INPROGRESS) {
 				return res.status(400).json({
 					success: false,
-					message: 'This application is no longer in pre-submission status and therefore this action cannot be performed'
+					message: 'This application is no longer in pre-submission status and therefore this action cannot be performed',
 				});
 			}
 			// 4. Get the requesting users permission levels
@@ -1505,7 +1487,7 @@ module.exports = {
 					questionAnswers = dynamicForm.removeQuestionSetAnswers(questionId, questionAnswers);
 					break;
 				case constants.formActions.ADDREPEATABLEQUESTIONS:
-					if(_.isEmpty(questionIds)) {
+					if (_.isEmpty(questionIds)) {
 						return res.status(400).json({
 							success: false,
 							message: 'You must supply the question identifiers to duplicate when performing this action',
@@ -1515,7 +1497,7 @@ module.exports = {
 					jsonSchema = dynamicForm.insertQuestions(questionSetId, questionId, duplicateQuestions, jsonSchema);
 					break;
 				case constants.formActions.REMOVEREPEATABLEQUESTIONS:
-					if(_.isEmpty(questionIds)) {
+					if (_.isEmpty(questionIds)) {
 						return res.status(400).json({
 							success: false,
 							message: 'You must supply the question identifiers to remove when performing this action',
@@ -1553,7 +1535,7 @@ module.exports = {
 						success: true,
 						accessRecord: {
 							jsonSchema,
-							questionAnswers
+							questionAnswers,
 						},
 					});
 				}
@@ -2248,5 +2230,5 @@ module.exports = {
 			if (totalDecisionTime > 0) return parseInt(totalDecisionTime / decidedApplications.length / 86400);
 		}
 		return 0;
-	}
+	},
 };

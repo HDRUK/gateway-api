@@ -7,6 +7,7 @@ const DataRequestSchema = new Schema({
   authorIds: [Number],
   dataSetId: String,
   datasetIds: [{ type: String}],
+  datasetTitles: [{ type: String}],
   projectId: String,
   workflowId: { type : Schema.Types.ObjectId, ref: 'Workflow' },
   workflow: { type: WorkflowSchema },
