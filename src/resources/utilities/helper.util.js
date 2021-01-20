@@ -1,5 +1,10 @@
 const _censorWord = str => {
-	return str[0] + '*'.repeat(str.length - 2) + str.slice(-1);
+	if(str.length === 1) 
+		return '*';
+	else if(str.length === 2) 
+		return `${str[0]}*`;
+	else
+		return str[0] + '*'.repeat(str.length - 2) + str.slice(-1);
 };
 
 const _censorEmail = email => {
