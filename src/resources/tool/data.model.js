@@ -49,6 +49,11 @@ const DataSchema = new Schema(
 		journal: String,
 		journalYear: Number,
 		isPreprint: Boolean,
+		document_links: {
+			pdf: String,
+			doi: String,
+			html: String,
+		},
 
 		//person related fields
 		firstname: String,
