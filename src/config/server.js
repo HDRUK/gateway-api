@@ -30,6 +30,7 @@ const configuration = require('./configuration');
 const API_PORT = process.env.PORT || 3001;
 const session = require('express-session');
 var app = express();
+app.disable('x-powered-by');
 
 configuration.findAccount = Account.findAccount;
 const oidc = new Provider(process.env.api_url || 'http://localhost:3001', configuration);
@@ -74,6 +75,11 @@ app.use(
 		secret: process.env.JWTSecret,
 		resave: false,
 		saveUninitialized: true,
+		name: 'sessionId',
+		cookie: {
+			secure: process.env.api_url ? true : false,
+			httpOnly: true
+		  }
 	})
 );
 

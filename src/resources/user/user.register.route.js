@@ -122,6 +122,7 @@ router.post('/', async (req, res) => {
 		.status(200)
 		.cookie('jwt', token, {
 			httpOnly: true,
+			secure: process.env.api_url ? true : false,
 		})
 		.json({ success: false, data: redirectURLis });
 });

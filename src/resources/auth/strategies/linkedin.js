@@ -132,6 +132,7 @@ const strategy = app => {
 					.status(200)
 					.cookie('jwt', signToken({ _id: req.user._id, id: req.user.id, timeStamp: Date.now() }), {
 						httpOnly: true,
+						secure: process.env.api_url ? true : false,
 					})
 					.redirect(redirectUrl);
 			});
