@@ -14,22 +14,22 @@ const router = express.Router();
 router.get('', async (req, res) => {
 	switch (req.query.rank) {
 		case undefined:
-			var result;
+			let result;
 
 			//get some dates for query
-			var lastDay = new Date();
+			let lastDay = new Date();
 			lastDay.setDate(lastDay.getDate() - 1);
 
-			var lastWeek = new Date();
+			let lastWeek = new Date();
 			lastWeek.setDate(lastWeek.getDate() - 7);
 
-			var lastMonth = new Date();
+			let lastMonth = new Date();
 			lastMonth.setMonth(lastMonth.getMonth() - 1);
 
-			var lastYear = new Date();
+			let lastYear = new Date();
 			lastYear.setYear(lastYear.getYear() - 1);
 
-			var aggregateQuerySearches = [
+			const aggregateQuerySearches = [
 				{
 					$facet: {
 						lastDay: [
@@ -73,7 +73,7 @@ router.get('', async (req, res) => {
 			];
 
 			//set the aggregate queries
-			var aggregateQueryTypes = [
+			const aggregateQueryTypes = [
 				{
 					$match: {
 						$and: [
@@ -88,18 +88,26 @@ router.get('', async (req, res) => {
 
 			var q = RecordSearchData.aggregate(aggregateQuerySearches);
 
-			var aggregateAccessRequests = [
+			const aggregateAccessRequests = [
 				{
 					$match: {
-						$or: [
-							{ applicationStatus: 'submitted' },
-							{ applicationStatus: 'approved' },
-							{ applicationStatus: 'rejected' },
-							{ applicationStatus: 'inReview' },
-							{ applicationStatus: 'approved with conditions' },
-						],
+						applicationStatus: {
+							$in: [
+								'submitted',
+								'approved',
+								'inReview',
+								'rejected',
+								'approved with conditions',
+							],
+						},
+						publisher: {
+							$nin: ['OTHER > HEALTH DATA RESEARCH UK', 'HDR UK'],
+						},
 					},
 				},
+				{
+					$count: 'totalCount',
+        }
 			];
 
 			var y = DataRequestModel.aggregate(aggregateAccessRequests);
@@ -118,26 +126,9 @@ router.get('', async (req, res) => {
 					}
 
 					y.exec(async (err, accessRequests) => {
-						let hdrDatasetID = await getHdrDatasetId();
-						let hdrDatasetIds = [];
-						hdrDatasetID.map(hdrDatasetid => {
-							hdrDatasetIds.push(hdrDatasetid.datasetid);
-						});
-						let accessRequestsCount = 0;
-
 						if (err) return res.json({ success: false, error: err });
 
-						accessRequests.map(accessRequest => {
-							if (accessRequest.datasetIds && accessRequest.datasetIds.length > 0) {
-								accessRequest.datasetIds.map(datasetid => {
-									if (!hdrDatasetIds.includes(datasetid)) {
-										accessRequestsCount++;
-									}
-								});
-							}
-
-							counts['accessRequests'] = accessRequestsCount;
-						});
+						counts['accessRequests'] = accessRequests[0].totalCount;
 
 						if (typeof dataSearches[0].lastDay[0] === 'undefined') {
 							dataSearches[0].lastDay[0] = { count: 0 };
