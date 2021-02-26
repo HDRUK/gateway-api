@@ -17,10 +17,10 @@ import helper from '../resources/utilities/helper.util';
 
 require('dotenv').config();
 
-if (helper.getEnvironment() !== 'local') {
+if (process.env.api_url) {
 	Sentry.init({
 		dsn: "https://b6ea46f0fbe048c9974718d2c72e261b@o444579.ingest.sentry.io/5653683",
-		environment: helper.getEnvironment()
+		environment: process.env.api_url
 	  });
 }
 
