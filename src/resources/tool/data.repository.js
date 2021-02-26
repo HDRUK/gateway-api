@@ -530,7 +530,7 @@ function getObjectResult(type, searchAll, searchQuery, startIndex, limit) {
 			{ $lookup: { from: 'tools', localField: 'id', foreignField: 'authors', as: 'objects' } },
 			{ $lookup: { from: 'reviews', localField: 'id', foreignField: 'toolID', as: 'reviews' } },
 		])
-			.sort({ updatedAt: -1 })
+			.sort({ updatedAt: -1, _id: 1 })
 			.skip(parseInt(startIndex))
 			.limit(parseInt(limit));
 	} else {
