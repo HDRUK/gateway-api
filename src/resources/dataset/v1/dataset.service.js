@@ -239,7 +239,7 @@ export async function loadDatasets(override) {
 		return;
 	}
 
-	//datasetsMDCCount = 10; //For testing to limit the number brought down
+	datasetsMDCCount = 1; //For testing to limit the number brought down
 
 	var datasetsMDCList = await new Promise(function (resolve, reject) {
 		axios
@@ -377,58 +377,47 @@ export async function loadDatasets(override) {
 									datasetV2Call,
 								]);
 
-								var technicaldetails = [];
+								// Safely destructure data class items to protect against undefined and HTTP failures
+								const { data: { items: dataClassItems = [] } = {} } = dataClass || [];
 
-								await dataClass.data.items.reduce(
-									(p, dataclassMDC) =>
-										p.then(
-											() =>
-												new Promise(resolve => {
-													setTimeout(async function () {
-														const dataClassElementCall = axios
-															.get(
-																metadataCatalogueLink +
-																	'/api/dataModels/' +
-																	datasetMDC.id +
-																	'/dataClasses/' +
-																	dataclassMDC.id +
-																	'/dataElements?max=300',
-																{ timeout: 5000 }
-															)
-															.catch(err => {
-																console.log('Unable to get dataclass element ' + err.message);
-															});
-														const [dataClassElement] = await axios.all([dataClassElementCall]);
-														var dataClassElementArray = [];
+								// Get technical details data classes
+								let technicaldetails = await dataClassItems.reduce(async (accumulator, dataClassMDC) => {
+									// Get data elements for each class
+									const { data: { items: dataClassElements = [] } = {} } = await axios
+										.get(`${metadataCatalogueLink}/api/dataModels/${datasetMDC.id}/dataClasses/${dataClassMDC.id}/dataElements?max=300`, {
+											timeout: 10000,
+										})
+										.catch(err => {
+											console.log('Unable to get dataclass element ' + err.message);
+										});
 
-														dataClassElement.data.items.forEach(element => {
-															dataClassElementArray.push({
-																id: element.id,
-																domainType: element.domainType,
-																label: element.label,
-																description: element.description,
-																dataType: {
-																	id: element.dataType.id,
-																	domainType: element.dataType.domainType,
-																	label: element.dataType.label,
-																},
-															});
-														});
+									// Map out data class elements to attach to class
+									const dataClassElementArray = dataClassElements.map(element => {
+										return {
+											id: element.id,
+											domainType: element.domainType,
+											label: element.label,
+											description: element.description,
+											dataType: {
+												id: element.dataType.id,
+												domainType: element.dataType.domainType,
+												label: element.dataType.label,
+											},
+										};
+									});
 
-														technicaldetails.push({
-															id: dataclassMDC.id,
-															domainType: dataclassMDC.domainType,
-															label: dataclassMDC.label,
-															description: dataclassMDC.description,
-															elements: dataClassElementArray,
-														});
+									// Create class object
+									const technicalDetailClass = {
+										id: dataClassMDC.id,
+										domainType: dataClassMDC.domainType,
+										label: dataClassMDC.label,
+										description: dataClassMDC.description,
+										elements: dataClassElementArray,
+									};
 
-														resolve(null);
-													}, 500);
-												})
-										),
-									Promise.resolve(null)
-								);
+									// Add processed class to reduced array
+									return [...accumulator, technicalDetailClass];
+								}, []);
 
 								let datasetv2Object = populateV2datasetObject(datasetV2.data.items);
 
