@@ -226,6 +226,8 @@ app.use('/api/v1/analyticsdashboard', require('../resources/googleanalytics/goog
 
 app.use('/api/v1/help', require('../resources/help/help.router'));
 
+app.use('/api/v2/filters', require('../resources/filters/filters.route'));
+
 initialiseAuthentication(app);
 
 // launch our backend into a port
