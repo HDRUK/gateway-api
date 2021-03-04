@@ -24,7 +24,7 @@ export const datasetFilters = [
 	{
 		id: 3,
 		label: 'Phenotype',
-		key: 'phenotype',
+		key: 'phenotypes',
 		tooltip: null,
 		closed: true,
 		isSearchable: false,
