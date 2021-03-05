@@ -223,7 +223,7 @@ export const datasetFilters = [
 	{
 		id: 21,
 		label: 'Data utility',
-		key: 'dataUtility',
+		key: 'datasetfields.datautility',
 		tooltip: null,
 		closed: true,
 		isSearchable: false,
@@ -232,7 +232,7 @@ export const datasetFilters = [
 			{
 				id: 22,
 				label: 'Documentation',
-				key: 'documentation',
+				key: 'datasetfields.datautility.availability_of_additional_documentation_and_support',
 				tooltip: null,
 				closed: true,
 				isSearchable: false,
@@ -252,7 +252,7 @@ export const datasetFilters = [
 					{
 						id: 24,
 						label: 'Data model',
-						key: 'data_model',
+						key: 'datasetfields.datautility.data_model',
 						tooltip: 'Availability of clear, documented data model.',
 						closed: true,
 						isSearchable: false,
@@ -263,7 +263,7 @@ export const datasetFilters = [
 					{
 						id: 25,
 						label: 'Data dictionary',
-						key: 'data_dictionary',
+						key: 'datasetfields.datautility.data_dictionary',
 						tooltip: 'Provided documented data dictionary and terminologies.',
 						closed: true,
 						isSearchable: false,
@@ -274,7 +274,7 @@ export const datasetFilters = [
 					{
 						id: 26,
 						label: 'Provenance',
-						key: 'provenance',
+						key: 'datasetfields.datautility.provenance',
 						tooltip: 'Clear descriptions of source and history of the dataset, providing a ‘transparent data pipeline’.',
 						closed: true,
 						isSearchable: false,
@@ -296,7 +296,7 @@ export const datasetFilters = [
 					{
 						id: 28,
 						label: 'Data Quality Management Process',
-						key: 'data_quality_management_process',
+						key: 'datasetfields.datautility.data_quality_management_process',
 						tooltip: 'Available dataset documentation in addition to the data dictionary.',
 						closed: true,
 						isSearchable: false,
@@ -318,7 +318,7 @@ export const datasetFilters = [
 					{
 						id: 30,
 						label: 'Allowable uses',
-						key: 'allowable_uses',
+						key: 'datasetfields.datautility.allowable_uses',
 						tooltip: 'Allowable dataset usages as per the licencing agreement.',
 						closed: true,
 						isSearchable: false,
@@ -329,7 +329,7 @@ export const datasetFilters = [
 					{
 						id: 31,
 						label: 'Time lag',
-						key: 'time_lag',
+						key: 'datasetfields.datautility.time_lag',
 						tooltip: 'Lag between the data being collected and added to the dataset.',
 						closed: true,
 						isSearchable: false,
@@ -343,7 +343,7 @@ export const datasetFilters = [
 					{
 						id: 32,
 						label: 'Timeliness',
-						key: 'timeliness',
+						key: 'datasetfields.datautility.timeliness',
 						tooltip: 'Average data access request timeframe.',
 						closed: true,
 						isSearchable: false,
@@ -365,7 +365,7 @@ export const datasetFilters = [
 					{
 						id: 34,
 						label: 'Linkages',
-						key: 'linkages',
+						key: 'datasetfields.datautility.linkages',
 						tooltip: 'Ability to link with other datasets.',
 						closed: true,
 						isSearchable: false,
@@ -376,7 +376,7 @@ export const datasetFilters = [
 					{
 						id: 35,
 						label: 'Data Enrichments',
-						key: 'data_enrichments',
+						key: 'datasetfields.datautility.data_enrichments',
 						tooltip: 'Data sources enriched with annotations, image labels, phenomes, derivations, NLP derived data labels.',
 						closed: true,
 						isSearchable: false,
@@ -398,7 +398,7 @@ export const datasetFilters = [
 					{
 						id: 37,
 						label: 'Pathway coverage',
-						key: 'pathway_coverage',
+						key: 'datasetfields.datautility.pathway_coverage',
 						tooltip: 'Representation of multi-disciplinary healthcare data.',
 						closed: true,
 						isSearchable: false,
@@ -409,7 +409,7 @@ export const datasetFilters = [
 					{
 						id: 38,
 						label: 'Length of follow up',
-						key: 'length_of_follow_up',
+						key: 'datasetfields.datautility.length_of_follow_up',
 						tooltip: 'Data sources enriched with annotations, image labels, phenomes, derivations, NLP derived data labels.',
 						closed: true,
 						isSearchable: false,
@@ -424,7 +424,8 @@ export const datasetFilters = [
 	{
 		id: 39,
 		label: 'Technical Metadata',
-		key: 'technicalMetadata',
+		key: 'datasetfields.technicaldetails',
+		type: 'boolean',
 		tooltip: null,
 		closed: true,
 		isSearchable: false,
