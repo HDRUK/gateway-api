@@ -1,6 +1,8 @@
 import { Data } from '../tool/data.model';
 import { Course } from '../course/course.model';
 import { Collections } from '../collections/collections.model';
+import { findNodeInTree } from '../filters/utils/filters.util';
+import { datasetFilters } from '../filters/filters.mapper';
 import _ from 'lodash';
 import moment from 'moment';
 
@@ -297,7 +299,6 @@ export function getObjectCount(type, searchAll, searchQuery) {
 }
 
 export function getObjectFilters(searchQueryStart, req, type) {
-
 	// if type = dataset
 	// we map over the searchQuery
 	// use our key as && then set or as value
@@ -335,58 +336,83 @@ export function getObjectFilters(searchQueryStart, req, type) {
 		collectionkeywords = '',
 	} = req.query;
 
+
 	if (type === 'dataset') {
-		if (license.length > 0) {
-			let filterTermArray = [];
-			license.split('::').forEach(filterTerm => {
-				filterTermArray.push({ license: filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
+		// iterate over query string keys
+		for (const key of Object.keys(req.query)) {
+			try {
+				// check mapper for query type
+				const filterNode = findNodeInTree(datasetFilters, key);
+				if (filterNode) {
+					// switch on query type	and build up query object
+					const { type = '', dataPath = '' } = filterNode;
+					switch (type) {
+						case 'contains':
+							searchQuery['$and'].push({ [`${dataPath}`]: { $in: req.query[key].split('::') } });
+							break;
+						case 'notEmpty':
+							searchQuery['$and'].push({ [`${dataPath}`]: { $exists: true, $size: { $gt: 0 }} });
+							break;
+						default:
+							break;
+					}
+				}
+			} catch (err) {
+				console.error(err.message);
+			}
 		}
 
-		if (sampleavailability.length > 0) {
-			let filterTermArray = [];
-			sampleavailability.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'datasetfields.physicalSampleAvailability': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
+		// if (license.length > 0) {
+		// 	let filterTermArray = [];
+		// 	license.split('::').forEach(filterTerm => {
+		// 		filterTermArray.push({ license: filterTerm });
+		// 	});
+		// 	searchQuery['$and'].push({ $or: filterTermArray });
+		// }
 
-		if (keywords.length > 0) {
-			let filterTermArray = [];
-			keywords.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'tags.features': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
+		// if (sampleavailability.length > 0) {
+		// 	let filterTermArray = [];
+		// 	sampleavailability.split('::').forEach(filterTerm => {
+		// 		filterTermArray.push({ 'datasetfields.physicalSampleAvailability': filterTerm });
+		// 	});
+		// 	searchQuery['$and'].push({ $or: filterTermArray });
+		// }
 
-		if (publisher.length > 0) {
-			searchQuery['$and'].push({ 'datasetfields.publisher': { $in : publisher.split('::') }});
-		}
+		// if (keywords.length > 0) {
+		// 	let filterTermArray = [];
+		// 	keywords.split('::').forEach(filterTerm => {
+		// 		filterTermArray.push({ 'tags.features': filterTerm });
+		// 	});
+		// 	searchQuery['$and'].push({ $or: filterTermArray });
+		// }
 
-		if (ageband.length > 0) {
-			let filterTermArray = [];
-			ageband.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'datasetfields.ageBand': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
+		// // if (publisher.length > 0) {
+		// // 	searchQuery['$and'].push({ 'datasetfields.publisher': { $in: publisher.split('::') } });
+		// // }
 
-		if (geographiccover.length > 0) {
-			let filterTermArray = [];
-			geographiccover.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'datasetfields.geographicCoverage': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
+		// if (ageband.length > 0) {
+		// 	let filterTermArray = [];
+		// 	ageband.split('::').forEach(filterTerm => {
+		// 		filterTermArray.push({ 'datasetfields.ageBand': filterTerm });
+		// 	});
+		// 	searchQuery['$and'].push({ $or: filterTermArray });
+		// }
 
-		if (phenotypes.length > 0) {
-			let filterTermArray = [];
-			phenotypes.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'datasetfields.phenotypes.name': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
+		// if (geographiccover.length > 0) {
+		// 	let filterTermArray = [];
+		// 	geographiccover.split('::').forEach(filterTerm => {
+		// 		filterTermArray.push({ 'datasetfields.geographicCoverage': filterTerm });
+		// 	});
+		// 	searchQuery['$and'].push({ $or: filterTermArray });
+		// }
+
+		// if (phenotypes.length > 0) {
+		// 	let filterTermArray = [];
+		// 	phenotypes.split('::').forEach(filterTerm => {
+		// 		filterTermArray.push({ 'datasetfields.phenotypes.name': filterTerm });
+		// 	});
+		// 	searchQuery['$and'].push({ $or: filterTermArray });
+		// }
 	}
 
 	if (type === 'tool') {
