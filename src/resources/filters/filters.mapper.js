@@ -447,7 +447,7 @@ export const datasetFilters = [
 			{
 				id: 36,
 				label: 'Coverage',
-				key: 'coverage',
+				key: 'dataUtility.coverage',
 				dataPath: 'datasetfields.datautility.coverage',
 				tooltip: null,
 				closed: true,
