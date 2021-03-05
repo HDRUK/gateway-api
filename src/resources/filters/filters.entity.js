@@ -22,12 +22,11 @@ export default class FiltersClass extends Entity {
 		if(!isEmpty(this.keys)) {
 			// 4. loop over filterKeys
 			for (const filterKey of filterKeys) {
-				let newFilterOptions = []
+				let newFilterOptions = [];
 				// 5. track new variable for filter values from our db
 				let filterValues = this.keys[filterKey];
 				// 6. check if filterKey exists in our tree, return {} or undefined
 				let nodeItem = findNodeInTree(filters, filterKey);
-				console.log(nodeItem);
 				// 7. if exists find and update tree
 				if (!isNil(nodeItem) && filterValues.length) {
 					// 8. build the new options for the filters within tree

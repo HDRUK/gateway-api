@@ -297,6 +297,11 @@ export function getObjectCount(type, searchAll, searchQuery) {
 }
 
 export function getObjectFilters(searchQueryStart, req, type) {
+
+	// if type = dataset
+	// we map over the searchQuery
+	// use our key as && then set or as value
+
 	var searchQuery = JSON.parse(JSON.stringify(searchQueryStart));
 
 	let {
@@ -356,11 +361,7 @@ export function getObjectFilters(searchQueryStart, req, type) {
 		}
 
 		if (publisher.length > 0) {
-			let filterTermArray = [];
-			publisher.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'datasetfields.publisher': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
+			searchQuery['$and'].push({ 'datasetfields.publisher': { $in : publisher.split('::') }});
 		}
 
 		if (ageband.length > 0) {

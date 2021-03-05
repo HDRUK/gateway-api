@@ -2,7 +2,7 @@ export const datasetFilters = [
 	{
 		id: 1,
 		label: 'Publisher',
-		key: 'publisher',
+		key: 'datasetfields.publisher',
 		tooltip: null,
 		closed: true,
 		isSearchable: false,
@@ -13,7 +13,7 @@ export const datasetFilters = [
 	{
 		id: 2,
 		label: 'Keywords',
-		key: 'keywords',
+		key: 'tags.features',
 		tooltip: null,
 		closed: true,
 		isSearchable: false,
@@ -24,7 +24,7 @@ export const datasetFilters = [
 	{
 		id: 3,
 		label: 'Phenotype',
-		key: 'phenotypes',
+		key: 'datasetfields.phenotypes',
 		tooltip: null,
 		closed: true,
 		isSearchable: false,
@@ -35,7 +35,7 @@ export const datasetFilters = [
 	{
 		id: 4,
 		label: 'Coverage',
-		key: 'coverage',
+		key: 'datasetv2.coverage',
 		tooltip: 'The geographical area covered by the dataset.',
 		closed: true,
 		isSearchable: false,
@@ -44,7 +44,7 @@ export const datasetFilters = [
 			{
 				id: 5,
 				label: 'Spatial',
-				key: 'spatial',
+				key: 'datasetv2.coverage.spatial',
 				tooltip: null,
 				closed: true,
 				isSearchable: false,
@@ -55,7 +55,7 @@ export const datasetFilters = [
 			{
 				id: 6,
 				label: 'Physical sample availability',
-				key: 'physicalSampleAvailability',
+				key: 'datasetv2.coverage.physicalSampleAvailability',
 				tooltip: null,
 				closed: true,
 				isSearchable: false,
@@ -66,7 +66,7 @@ export const datasetFilters = [
 			{
 				id: 7,
 				label: 'Follow up',
-				key: 'followup',
+				key: 'datasetv2.coverage.followup',
 				tooltip: 'The typical time span that a patient appears in the dataset',
 				closed: true,
 				isSearchable: false,
@@ -79,7 +79,7 @@ export const datasetFilters = [
 	{
 		id: 8,
 		label: 'Provenance',
-		key: 'provenance',
+		key: 'datasetv2.provenance',
 		tooltip: null,
 		closed: true,
 		isSearchable: false,
@@ -88,7 +88,7 @@ export const datasetFilters = [
 			{
 				id: 9,
 				label: 'Purpose',
-				key: 'purpose',
+				key: 'datasetv2.provenance.origin.purpose',
 				tooltip: null,
 				closed: true,
 				isSearchable: false,
@@ -99,7 +99,7 @@ export const datasetFilters = [
 			{
 				id: 10,
 				label: 'Source',
-				key: 'source',
+				key: 'datasetv2.provenance.origin.source',
 				tooltip: null,
 				closed: true,
 				isSearchable: false,
@@ -110,7 +110,7 @@ export const datasetFilters = [
 			{
 				id: 11,
 				label: 'Collection situation',
-				key: 'collectionSituation',
+				key: 'datasetv2.provenance.origin.collectionSituationation',
 				tooltip: null,
 				closed: true,
 				isSearchable: false,
@@ -121,7 +121,7 @@ export const datasetFilters = [
 			{
 				id: 12,
 				label: 'Accrual periodicity',
-				key: 'accrualPeriodicity',
+				key: 'datasetv2.provenance.temporal.accrualPeriodicity',
 				tooltip: 'The frequency of publishing.',
 				closed: true,
 				isSearchable: false,
@@ -132,7 +132,7 @@ export const datasetFilters = [
 			{
 				id: 13,
 				label: 'Time lag ',
-				key: 'timeLag',
+				key: 'datasetv2.provenance.temporal.timeLag',
 				tooltip: 'The typical time-lag between an event and the data for that event appearing in the dataset.',
 				closed: true,
 				isSearchable: false,
@@ -145,7 +145,7 @@ export const datasetFilters = [
 	{
 		id: 14,
 		label: 'Access',
-		key: 'access',
+		key: 'datasetv2.accessibility',
 		tooltip: null,
 		closed: true,
 		isSearchable: false,
@@ -154,7 +154,7 @@ export const datasetFilters = [
 			{
 				id: 15,
 				label: 'Delivery lead time',
-				key: 'deliveryLeadTime',
+				key: 'datasetv2.accessibility.access.deliveryLeadTime',
 				tooltip: 'Please provide an indication of the typical processing times based on the types of requests typically received.',
 				closed: true,
 				isSearchable: false,
@@ -165,7 +165,7 @@ export const datasetFilters = [
 			{
 				id: 16,
 				label: 'Jurisdiction',
-				key: 'jurisdiction',
+				key: 'datasetv2.accessibility.access.jurisdiction',
 				tooltip:
 					'Select the country/state under whose laws the data subjects’ data is collected, processed and stored. Select all that apply.',
 				closed: true,
@@ -179,7 +179,7 @@ export const datasetFilters = [
 	{
 		id: 17,
 		label: 'Format and standards',
-		key: 'formatAndStandards',
+		key: 'datasetv2.accessibility.formatAndStandards',
 		tooltip: null,
 		closed: true,
 		isSearchable: false,
@@ -188,7 +188,7 @@ export const datasetFilters = [
 			{
 				id: 18,
 				label: 'Vocabulary encoding scheme',
-				key: 'vocabularyEncodingScheme',
+				key: 'datasetv2.accessibility.formatAndStandards.vocabularyEncodingScheme',
 				tooltip: 'Terminologies, ontologies and controlled vocabularies being used by the dataset.',
 				closed: true,
 				isSearchable: false,
@@ -199,7 +199,7 @@ export const datasetFilters = [
 			{
 				id: 19,
 				label: 'Conforms to',
-				key: 'conformsTo',
+				key: 'datasetv2.accessibility.formatAndStandards.conformsTo',
 				tooltip: 'Standardised data models that the dataset has been stored in or transformed to.',
 				closed: true,
 				isSearchable: false,
@@ -210,7 +210,7 @@ export const datasetFilters = [
 			{
 				id: 20,
 				label: 'Language',
-				key: 'language',
+				key: 'datasetv2.accessibility.formatAndStandards.language',
 				tooltip: 'Standardised data models that the dataset has been stored in or transformed to.',
 				closed: true,
 				isSearchable: false,
