@@ -108,6 +108,10 @@ router.get('/', async (req, res) => {
 			),
 		]);
 	} else if (tab === 'Datasets') {
+		// build filter tree for highlights
+
+
+
 		datasetResults = await Promise.all([
 			getObjectResult(
 				'dataset',

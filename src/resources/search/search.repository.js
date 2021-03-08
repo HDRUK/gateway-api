@@ -345,10 +345,13 @@ export function getObjectFilters(searchQueryStart, req, type) {
 				const filterNode = findNodeInTree(datasetFilters, key);
 				if (filterNode) {
 					// switch on query type	and build up query object
-					const { type = '', dataPath = '' } = filterNode;
+					const { type = '', dataPath = '', matchField = '' } = filterNode;
 					switch (type) {
 						case 'contains':
 							searchQuery['$and'].push({ [`${dataPath}`]: { $in: req.query[key].split('::') } });
+							break;
+						case 'elementMatch':
+							searchQuery['$and'].push( { [`${dataPath}`]: { $elemMatch: { [`${matchField}`]: { $in: req.query[key].split('::') }}}});
 							break;
 						case 'notEmpty':
 							searchQuery['$and'].push({ [`${dataPath}`]: { $exists: true, $size: { $gt: 0 }} });

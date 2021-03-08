@@ -29,7 +29,7 @@ export const updateTree = (tree, key, values) => {
   tree.forEach(iter = (node) => {
     // 3. if found update filters
     if (node.key === key) {
-        // 4. test phenotypes
+        // 4. test phenotypes **** THIS NEEDS WORK AND FURTHER DEV ****
         if(key === 'phenotypes') {
           values = [...values].map(item => {
             return {
