@@ -303,7 +303,7 @@ export function getObjectFilters(searchQueryStart, req, type) {
 	// we map over the searchQuery
 	// use our key as && then set or as value
 
-	var searchQuery = JSON.parse(JSON.stringify(searchQueryStart));
+	let searchQuery = JSON.parse(JSON.stringify(searchQueryStart));
 
 	let {
 		license = '',
