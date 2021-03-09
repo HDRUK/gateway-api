@@ -12,4 +12,8 @@ export default class FiltersRepository extends Repository {
 		const options = { lean: false };
 		return this.findOne(query, options);
 	}
+
+	async updateFilterSet(filters, type) {
+		await Filters.findOneAndUpdate({ type }, { keys: filters });
+	}
 }

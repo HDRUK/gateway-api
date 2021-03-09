@@ -1,10 +1,9 @@
 import { Data } from '../../tool/data.model';
-import { Filters } from '../../filters/filters.model';
 import { MetricsData } from '../../stats/metrics.model';
 import axios from 'axios';
 import * as Sentry from '@sentry/node';
 import { v4 as uuidv4 } from 'uuid';
-import { isArray, isNil, isEmpty, uniq } from 'lodash';
+import { filtersService } from '../../filters/dependency'; 
 
 export async function loadDataset(datasetID) {
 	var metadataCatalogueLink = process.env.metadataURL || 'https://metadata-catalogue.org/hdruk';
@@ -200,8 +199,6 @@ export async function loadDataset(datasetID) {
 
 export async function loadDatasets(override) {
 	console.log('Starting run at ' + Date());
-	// Initialise filters
-	filters = {};
 	let metadataCatalogueLink = process.env.metadataURL || 'https://metadata-catalogue.org/hdruk';
 
 	let datasetsMDCCount = await new Promise(function (resolve, reject) {
@@ -499,8 +496,6 @@ export async function loadDatasets(override) {
 											datasetv2: datasetv2Object,
 										}
 									);
-									// Build performance optimised dataset filters
-									buildFilters(updatedDatasetHDR);
 								} else {
 									//Add
 									let uuid = uuidv4();
@@ -581,8 +576,6 @@ export async function loadDatasets(override) {
 									data.datasetfields.phenotypes = phenotypes;
 									data.datasetv2 = datasetv2Object;
 									await data.save();
-									// Build performance optimised dataset filters
-									buildFilters(data);
 								}
 								console.log(`Finished ${counter} of ${datasetsMDCCount} datasets (${datasetMDC.id})`);
 								resolve(null);
@@ -618,8 +611,9 @@ export async function loadDatasets(override) {
 	);
 
 	saveUptime();
-	saveFilters();
 
+	await filtersService.optimiseFilters('dataset');
+	
 	console.log('Update Completed at ' + Date());
 	return;
 }
@@ -957,67 +951,3 @@ async function saveUptime() {
 	metricsData.uptime = averageUptime;
 	await metricsData.save();
 }
-
-function buildFilters(dataset) {
-	// 1. Extract all properties used for filtering
-	const {
-		tags: { features = [] } = {},
-		datasetfields: { datautility = {}, publisher = '', phenotypes = [] } = {},
-		datasetv2: {
-			coverage = {},
-			provenance: { origin = {}, temporal = {} } = {},
-			accessibility: { access = {}, formatAndStandards = {} },
-		} = { coverage: {}, provenance: {}, accessibility: {} },
-	} = dataset.toObject();
-	// 2. Create flattened filter props object
-	const datasetProps = {
-		publisher,
-		...phenotypes,
-		features,
-		...datautility,
-		...coverage,
-		...origin,
-		...temporal,
-		...access,
-		...formatAndStandards,
-	};
-	// 3. Iterate through each prop
-	for (const prop in datasetProps) {
-		let values = [];
-		// 4. Normalise string and array data by maintaining only arrays in 'values'
-		if (isArray(datasetProps[prop])) {
-			if (!isEmpty(datasetProps[prop]) && !isNil(datasetProps[prop])) {
-				values = datasetProps[prop];
-			}
-		} else {
-			if (!isEmpty(datasetProps[prop]) && !isNil(datasetProps[prop])) {
-				values = [datasetProps[prop]];
-			}
-		}
-		// 5. Populate running filters with all values
-		if (!filters[prop]) {
-			filters[prop] = [...values];
-		} else {
-			filters[prop] = [...filters[prop], ...values];
-		}
-	}
-}
-
-async function saveFilters() {
-	// 1. Establish object for saving to MongoDb once populated
-	const sortedFilters = {};
-	// 2. Iterate through each filter
-	Object.keys(filters).forEach(filterKey => {
-		// 3. Distinct filter values
-		const distinctFilter = uniq(filters[filterKey]);
-		// 4. Sort filter values and update final object for saving
-		sortedFilters[filterKey] = distinctFilter.sort(function (a, b) {
-			return a.toString().toLowerCase().localeCompare(b.toString().toLowerCase());
-		});
-	});
-	// 5. Save filters to MongoDb
-	await Filters.findOneAndUpdate({ id: 'dataset' }, { keys: sortedFilters });
-}
-
-// Global param to store running filters during cache job
-let filters = {};
