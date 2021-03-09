@@ -12,8 +12,8 @@ const router = express.Router();
  * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
  */
 router.get('/', async (req, res) => {
-	var authorID = parseInt(req.query.userID);
-	var searchString = req.query.search || ''; //If blank then return all
+	let authorID = parseInt(req.query.userID);
+	let searchString = req.query.search || ''; //If blank then return all
 	//If searchString is applied, format any hyphenated words to enclose them as a phrase
 	if (searchString.includes('-') && !searchString.includes('"')) {
 		// Matches on any whole word containing a hyphen
@@ -21,14 +21,14 @@ router.get('/', async (req, res) => {
 		// Surround matching words in quotation marks
 		searchString = searchString.replace(regex, '"$1"');
 	}
-	var tab = req.query.tab || '';
+	let tab = req.query.tab || '';
 	let searchQuery = { $and: [{ activeflag: 'active' }] };
 
 	if (req.query.form) {
 		searchQuery = { $and: [{ $or: [{ $and: [{ activeflag: 'review' }, { authors: authorID }] }, { activeflag: 'active' }] }] };
 	}
 
-	var searchAll = false;
+	let searchAll = false;
 
 	if (searchString.length > 0) {
 		searchQuery['$and'].push({ $text: { $search: searchString } });
