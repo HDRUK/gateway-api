@@ -45,18 +45,15 @@ export default class DatasetClass extends Entity {
 
 		// Manually update identifier URL link
 		transformedObject.dataset.identifier = `https://web.www.healthdatagateway.org/dataset/${this.datasetid}`;
-
+		
 		// Append static schema details for v2
-		const formattedObject = {
-			'@schema': {
-				type: `Dataset`,
-				version: `2.0.0`,
-				url: `https://raw.githubusercontent.com/HDRUK/schemata/master/schema/dataset/latest/dataset.schema.json`,
-			},
-			...transformedObject,
-		};
+		transformedObject.dataset['@schema'] = {
+			type: `Dataset`,
+			version: `2.0.0`,
+			url: `https://raw.githubusercontent.com/HDRUK/schemata/master/schema/dataset/latest/dataset.schema.json`,
+		}
 
 		// Return v2 object
-		return formattedObject;
+		return transformedObject;
 	}
 }

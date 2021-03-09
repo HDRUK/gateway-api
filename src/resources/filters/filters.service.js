@@ -1,4 +1,5 @@
 import { isArray, isEmpty, isNil, uniq } from 'lodash';
+import helper from '../utilities/helper.util';
 
 export default class FiltersService {
 	constructor(filtersRepository, datasetRepository) {
@@ -16,16 +17,17 @@ export default class FiltersService {
 		// 1. Build filters from type using entire Db collection
 		const filters = await this.buildFilters(type);
 		// 2. Save updated filter values to filter cache
-		this.saveFilters(filters, type);
+		await this.saveFilters(filters, type);
 	}
 
 	async buildFilters(type, entities = []) {
 		let filters = {};
 		// 1. Query Db for required entity if array of entities has not been passed
 		if (isEmpty(entities)) {
+			const options = { lean: true };
 			switch (type) {
 				case 'dataset':
-					entities = await this.datasetRepository.getDatasets();
+					entities = await this.datasetRepository.getDatasets({ activeflag: 'active' }, options);
 					break;
 			}
 		}
@@ -39,7 +41,7 @@ export default class FiltersService {
 				// 5. Normalise string and array data by maintaining only arrays in 'values'
 				if (isArray(filterValues[key])) {
 					if (!isEmpty(filterValues[key]) && !isNil(filterValues[key])) {
-						values = filterValues[key];
+						values = filterValues[key].filter(value => !isEmpty(value.toString().trim()));
 					}
 				} else {
 					if (!isEmpty(filterValues[key]) && !isNil(filterValues[key])) {
@@ -63,6 +65,9 @@ export default class FiltersService {
 		switch (type) {
 			case 'dataset':
 				// 2. Extract all properties used for filtering
+				if (isEmpty(entity.datasetv2)) {
+					delete entity.datasetv2;
+				}
 				const {
 					tags: { features = [] } = {},
 					datasetfields: { datautility = {}, publisher = '', phenotypes = [] } = {},
@@ -71,11 +76,11 @@ export default class FiltersService {
 						provenance: { origin = {}, temporal = {} } = {},
 						accessibility: { access = {}, formatAndStandards = {} },
 					} = { coverage: {}, provenance: {}, accessibility: {} },
-				} = entity.toObject();
+				} = entity;
 				// 3. Create flattened filter props object
 				filterValues = {
 					publisher,
-					...phenotypes,
+					phenotypes: [ ...phenotypes.map(phenotype => phenotype.name) ],
 					features,
 					...datautility,
 					...coverage,
@@ -88,23 +93,23 @@ export default class FiltersService {
 		}
 		// 4. Return filter values
 		return filterValues;
-	};
-	
-	async saveFilters (filters, type) {
+	}
+
+	async saveFilters(filters, type) {
 		// 1. Establish object for saving to MongoDb once populated
 		const sortedFilters = {};
 		// 2. Iterate through each filter
 		Object.keys(filters).forEach(filterKey => {
-			// 3. Distinct filter values
+			// 3. Set filter values to title case and remove white space
+			filters[filterKey] = filters[filterKey].map(value => helper.toTitleCase(value.toString().trim()));
+			// 4. Distinct filter values
 			const distinctFilter = uniq(filters[filterKey]);
-			// 4. Sort filter values and update final object for saving
+			// 5. Sort filter values and update final object for saving
 			sortedFilters[filterKey] = distinctFilter.sort(function (a, b) {
 				return a.toString().toLowerCase().localeCompare(b.toString().toLowerCase());
 			});
 		});
-		// 5. Save filters to MongoDb
+		// 6. Save filters to MongoDb
 		await this.filtersRepository.updateFilterSet(sortedFilters, type);
-	};
+	}
 }
-
-

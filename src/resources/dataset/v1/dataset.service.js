@@ -3,7 +3,6 @@ import { MetricsData } from '../../stats/metrics.model';
 import axios from 'axios';
 import * as Sentry from '@sentry/node';
 import { v4 as uuidv4 } from 'uuid';
-import { filtersService } from '../../filters/dependency'; 
 
 export async function loadDataset(datasetID) {
 	var metadataCatalogueLink = process.env.metadataURL || 'https://metadata-catalogue.org/hdruk';
@@ -611,9 +610,6 @@ export async function loadDatasets(override) {
 	);
 
 	saveUptime();
-
-	await filtersService.optimiseFilters('dataset');
-	
 	console.log('Update Completed at ' + Date());
 	return;
 }

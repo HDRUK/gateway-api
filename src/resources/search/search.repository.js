@@ -3,6 +3,7 @@ import { Course } from '../course/course.model';
 import { Collections } from '../collections/collections.model';
 import { findNodeInTree } from '../filters/utils/filters.util';
 import { datasetFilters } from '../filters/filters.mapper';
+import { filtersService } from '../filters/dependency'; 
 import _ from 'lodash';
 import moment from 'moment';
 
@@ -130,11 +131,21 @@ export function getObjectResult(type, searchAll, searchQuery, startIndex, maxRes
 		else queryObject.push({ $sort: { 'courseOptions.startDate': 1, score: { $meta: 'textScore' } } });
 	}
 
-	var q = collection.aggregate(queryObject).skip(parseInt(startIndex)).limit(parseInt(maxResults));
+	// Query database for all results to retrieve all possible filter values
+	var q = collection.aggregate(queryObject)
+
 	return new Promise((resolve, reject) => {
-		q.exec((err, data) => {
+		q.exec( async (err, data) => {
 			if (typeof data === 'undefined') resolve([]);
-			else resolve(data);
+			else {
+				// build filters for highlighting values available based on search results
+				const filters = await filtersService.buildFilters(type, data);
+
+				// chunk data results based on page and limit set
+				//.skip(parseInt(startIndex)).limit(parseInt(maxResults));
+
+				resolve({data, filters});
+			} 
 		});
 	});
 }
@@ -336,11 +347,11 @@ export function getObjectFilters(searchQueryStart, req, type) {
 		collectionkeywords = '',
 	} = req.query;
 
-
 	if (type === 'dataset') {
 		// iterate over query string keys
 		for (const key of Object.keys(req.query)) {
 			try {
+				const filterValues = req.query[key].split('::');
 				// check mapper for query type
 				const filterNode = findNodeInTree(datasetFilters, key);
 				if (filterNode) {
@@ -348,13 +359,15 @@ export function getObjectFilters(searchQueryStart, req, type) {
 					const { type = '', dataPath = '', matchField = '' } = filterNode;
 					switch (type) {
 						case 'contains':
-							searchQuery['$and'].push({ [`${dataPath}`]: { $in: req.query[key].split('::') } });
+							// use regex to match without case sensitivity
+							searchQuery['$and'].push({ [`${dataPath}`]: { $in: filterValues.map(value => new RegExp(value, 'i')) } });
 							break;
 						case 'elementMatch':
-							searchQuery['$and'].push( { [`${dataPath}`]: { $elemMatch: { [`${matchField}`]: { $in: req.query[key].split('::') }}}});
+							// use regex to match objects within an array without case sensitivity
+							searchQuery['$and'].push({ [`${dataPath}`]: { $elemMatch: { [`${matchField}`]: { $in: filterValues.map(value => new RegExp(value, 'i')) } } } });
 							break;
 						case 'notEmpty':
-							searchQuery['$and'].push({ [`${dataPath}`]: { $exists: true, $size: { $gt: 0 }} });
+							searchQuery['$and'].push({ [`${dataPath}`]: { $exists: true, $size: { $gt: 0 } } });
 							break;
 						default:
 							break;

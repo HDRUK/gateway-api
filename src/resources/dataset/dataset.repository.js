@@ -7,13 +7,11 @@ export default class DatasetRepository extends Repository {
 		this.dataset = Dataset;
 	}
 
-	async getDataset(query) {
-		const options = { lean: false, populate: { path: 'submittedDataAccessRequests' } };
+	async getDataset(query, options) {
 		return this.findOne(query, options);
 	}
 
-	async getDatasets(query) {
-		const options = { lean: false, populate: { path: 'submittedDataAccessRequests' } };
+	async getDatasets(query, options) {
 		return this.find(query, options);
 	}
 

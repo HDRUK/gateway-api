@@ -15,7 +15,8 @@ export default class DatasetService {
 
 		// Get dataset from Db by datasetid first
 		query = { ...query, datasetid: id };
-		let dataset = await this.datasetRepository.getDataset(query);
+		const options = { lean: false, populate: { path: 'submittedDataAccessRequests' } };
+		let dataset = await this.datasetRepository.getDataset(query, options);
 
 		// Return undefined if no dataset found
 		if (!dataset) return;
@@ -38,7 +39,8 @@ export default class DatasetService {
 	}
 
 	async getDatasets(query = {}) {
-		return this.datasetRepository.getDatasets(query);
+		const options = { lean: false, populate: { path: 'submittedDataAccessRequests' } };
+		return this.datasetRepository.getDatasets(query, options);
 	}
 
 	async getRelatedObjects(pid) {

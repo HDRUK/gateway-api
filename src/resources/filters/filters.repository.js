@@ -14,6 +14,10 @@ export default class FiltersRepository extends Repository {
 	}
 
 	async updateFilterSet(filters, type) {
-		await Filters.findOneAndUpdate({ type }, { keys: filters });
+		await Filters.findOneAndUpdate({ id: type }, { keys: filters }, { upsert: true }, (err) => {
+			if(err) {
+				console.error(err.message);
+			}
+		});
 	}
 }

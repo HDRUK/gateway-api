@@ -46,144 +46,93 @@ router.get('/', async (req, res) => {
 		searchAll = true;
 	}
 
-	let allResults = [],
-		datasetResults = [],
-		toolResults = [],
-		projectResults = [],
-		paperResults = [],
-		personResults = [],
-		courseResults = [],
-		collectionResults = [];
+	let results = [];
 
-	if (tab === '') {
-		allResults = await Promise.all([
-			getObjectResult(
-				'dataset',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'dataset'),
-				req.query.datasetIndex || 0,
-				req.query.maxResults || 40,
-				req.query.datasetSort || ''
-			),
-			getObjectResult(
-				'tool',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'tool'),
-				req.query.toolIndex || 0,
-				req.query.maxResults || 40,
-				req.query.toolSort || ''
-			),
-			getObjectResult(
-				'project',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'project'),
-				req.query.projectIndex || 0,
-				req.query.maxResults || 40,
-				req.query.projectSort || ''
-			),
-			getObjectResult(
-				'paper',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'paper'),
-				req.query.paperIndex || 0,
-				req.query.maxResults || 40,
-				req.query.paperSort || ''
-			),
-			getObjectResult('person', searchAll, searchQuery, req.query.personIndex || 0, req.query.maxResults || 40, req.query.personSort),
-			getObjectResult(
-				'course',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'course'),
-				req.query.courseIndex || 0,
-				req.query.maxResults || 40,
-				'startdate'
-			),
-			getObjectResult(
-				'collection',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'collection'),
-				req.query.collectionIndex || 0,
-				req.query.maxResults || 40,
-				req.query.collectionSort || ''
-			),
-		]);
-	} else if (tab === 'Datasets') {
-		// build filter tree for highlights
+	//let allResults = [];
 
+	const typeMapper = {
+		Datasets: 'dataset',
+		Tools: 'tool',
+		Projects: 'project',
+		Papers: 'paper',
+		People: 'person',
+		Courses: 'course',
+		Collections: 'collection',
+	};
+	const entityType = typeMapper[`${tab}`];
 
-
-		datasetResults = await Promise.all([
-			getObjectResult(
-				'dataset',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'dataset'),
-				req.query.datasetIndex || 0,
-				req.query.maxResults || 40,
-				req.query.datasetSort || ''
-			),
-		]);
-	} else if (tab === 'Tools') {
-		toolResults = await Promise.all([
-			getObjectResult(
-				'tool',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'tool'),
-				req.query.toolIndex || 0,
-				req.query.maxResults || 40,
-				req.query.toolSort || ''
-			),
-		]);
-	} else if (tab === 'Projects') {
-		projectResults = await Promise.all([
-			getObjectResult(
-				'project',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'project'),
-				req.query.projectIndex || 0,
-				req.query.maxResults || 40,
-				req.query.projectSort || ''
-			),
-		]);
-	} else if (tab === 'Papers') {
-		paperResults = await Promise.all([
-			getObjectResult(
-				'paper',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'paper'),
-				req.query.paperIndex || 0,
-				req.query.maxResults || 40,
-				req.query.paperSort || ''
-			),
-		]);
-	} else if (tab === 'People') {
-		personResults = await Promise.all([
-			getObjectResult('person', searchAll, searchQuery, req.query.personIndex || 0, req.query.maxResults || 40, req.query.personSort || ''),
-		]);
-	} else if (tab === 'Courses') {
-		courseResults = await Promise.all([
-			getObjectResult(
-				'course',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'course'),
-				req.query.courseIndex || 0,
-				req.query.maxResults || 40,
-				'startdate'
-			),
-		]);
-	} else if (tab === 'Collections') {
-		collectionResults = await Promise.all([
-			getObjectResult(
-				'collection',
-				searchAll,
-				getObjectFilters(searchQuery, req, 'collection'),
-				req.query.collectionIndex || 0,
-				req.query.maxResults || 40,
-				req.query.collectionSort || ''
-			),
-		]);
+	if (!entityType) {
+		return res.status(400, {
+			success: false,
+			message: 'You must pass a entity type',
+		});
 	}
 
-	var summaryCounts = await Promise.all([
+	// if (tab === '') {
+	// 	allResults = await Promise.all([
+	// 		getObjectResult(
+	// 			'dataset',
+	// 			searchAll,
+	// 			getObjectFilters(searchQuery, req, 'dataset'),
+	// 			req.query.datasetIndex || 0,
+	// 			req.query.maxResults || 40,
+	// 			req.query.datasetSort || ''
+	// 		),
+	// 		getObjectResult(
+	// 			'tool',
+	// 			searchAll,
+	// 			getObjectFilters(searchQuery, req, 'tool'),
+	// 			req.query.toolIndex || 0,
+	// 			req.query.maxResults || 40,
+	// 			req.query.toolSort || ''
+	// 		),
+	// 		getObjectResult(
+	// 			'project',
+	// 			searchAll,
+	// 			getObjectFilters(searchQuery, req, 'project'),
+	// 			req.query.projectIndex || 0,
+	// 			req.query.maxResults || 40,
+	// 			req.query.projectSort || ''
+	// 		),
+	// 		getObjectResult(
+	// 			'paper',
+	// 			searchAll,
+	// 			getObjectFilters(searchQuery, req, 'paper'),
+	// 			req.query.paperIndex || 0,
+	// 			req.query.maxResults || 40,
+	// 			req.query.paperSort || ''
+	// 		),
+	// 		getObjectResult('person', searchAll, searchQuery, req.query.personIndex || 0, req.query.maxResults || 40, req.query.personSort),
+	// 		getObjectResult(
+	// 			'course',
+	// 			searchAll,
+	// 			getObjectFilters(searchQuery, req, 'course'),
+	// 			req.query.courseIndex || 0,
+	// 			req.query.maxResults || 40,
+	// 			'startdate'
+	// 		),
+	// 		getObjectResult(
+	// 			'collection',
+	// 			searchAll,
+	// 			getObjectFilters(searchQuery, req, 'collection'),
+	// 			req.query.collectionIndex || 0,
+	// 			req.query.maxResults || 40,
+	// 			req.query.collectionSort || ''
+	// 		),
+	// 	]);
+	// } else {
+	const sort = entityType === 'course' ? 'startdate' : req.query[`${entityType}Sort`] || '';
+	results = await getObjectResult(
+		entityType,
+		searchAll,
+		getObjectFilters(searchQuery, req, entityType),
+		req.query[`${entityType}Index`] || 0,
+		req.query.maxResults || 40,
+		sort
+	);
+	//}
+
+	const summaryCounts = await Promise.all([
 		getObjectCount('dataset', searchAll, getObjectFilters(searchQuery, req, 'dataset')),
 		getObjectCount('tool', searchAll, getObjectFilters(searchQuery, req, 'tool')),
 		getObjectCount('project', searchAll, getObjectFilters(searchQuery, req, 'project')),
@@ -193,7 +142,7 @@ router.get('/', async (req, res) => {
 		getObjectCount('collection', searchAll, getObjectFilters(searchQuery, req, 'collection')),
 	]);
 
-	var summary = {
+	const summary = {
 		datasets: summaryCounts[0][0] !== undefined ? summaryCounts[0][0].count : 0,
 		tools: summaryCounts[1][0] !== undefined ? summaryCounts[1][0].count : 0,
 		projects: summaryCounts[2][0] !== undefined ? summaryCounts[2][0].count : 0,
@@ -203,7 +152,7 @@ router.get('/', async (req, res) => {
 		collections: summaryCounts[6][0] !== undefined ? summaryCounts[6][0].count : 0,
 	};
 
-	let recordSearchData = new RecordSearchData();
+	const recordSearchData = new RecordSearchData();
 	recordSearchData.searched = searchString;
 	recordSearchData.returned.dataset = summaryCounts[0][0] !== undefined ? summaryCounts[0][0].count : 0;
 	recordSearchData.returned.tool = summaryCounts[1][0] !== undefined ? summaryCounts[1][0].count : 0;
@@ -215,28 +164,22 @@ router.get('/', async (req, res) => {
 	recordSearchData.datesearched = Date.now();
 	recordSearchData.save(err => {});
 
-	if (tab === '') {
-		return res.json({
-			success: true,
-			datasetResults: allResults[0],
-			toolResults: allResults[1],
-			projectResults: allResults[2],
-			paperResults: allResults[3],
-			personResults: allResults[4],
-			courseResults: allResults[5],
-			collectionResults: allResults[6],
-			summary: summary,
-		});
-	}
+	// if (tab === '') {
+	// 	return res.json({
+	// 		success: true,
+	// 		datasetResults: allResults[0],
+	// 		toolResults: allResults[1],
+	// 		projectResults: allResults[2],
+	// 		paperResults: allResults[3],
+	// 		personResults: allResults[4],
+	// 		courseResults: allResults[5],
+	// 		collectionResults: allResults[6],
+	// 		summary: summary,
+	// 	});
+	// }
 	return res.json({
 		success: true,
-		datasetResults: datasetResults[0],
-		toolResults: toolResults[0],
-		projectResults: projectResults[0],
-		paperResults: paperResults[0],
-		personResults: personResults[0],
-		courseResults: courseResults[0],
-		collectionResults: collectionResults[0],
+		[`${entityType}Results`]: [...results.data],
 		summary: summary,
 	});
 });
