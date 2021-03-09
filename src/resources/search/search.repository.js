@@ -134,7 +134,7 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 	}
 
 	// Get paged results based on query params
-	const searchResults = await collection.aggregate(queryObject).skip(parseInt(startIndex)).limit(parseInt(40));
+	const searchResults = await collection.aggregate(queryObject).skip(parseInt(startIndex)).limit(parseInt(maxResults));
 	// Build filter tree from available values
 	const filters = await filtersService.buildFilters(type, queryObject[0][`$match`]);
 	// Return data and valid filters
