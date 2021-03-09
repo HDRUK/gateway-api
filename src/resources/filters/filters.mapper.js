@@ -93,7 +93,7 @@ export const datasetFilters = [
 	{
 		id: 8,
 		label: 'Provenance',
-		key: 'provenance',
+		key: 'provenancev2',
 		dataPath: 'datasetv2.provenance',
 		tooltip: null,
 		closed: true,

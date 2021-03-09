@@ -9,13 +9,12 @@ export default class DatasetService {
 		this.courseRepository = courseRepository;
 	}
 
-	async getDataset(id, query = {}) {
+	async getDataset(id, query = {}, options = {}) {
 		// Protect for no id passed
 		if(!id) return;
 
 		// Get dataset from Db by datasetid first
 		query = { ...query, datasetid: id };
-		const options = { lean: false, populate: { path: 'submittedDataAccessRequests' } };
 		let dataset = await this.datasetRepository.getDataset(query, options);
 
 		// Return undefined if no dataset found
@@ -38,8 +37,7 @@ export default class DatasetService {
 		return dataset;
 	}
 
-	async getDatasets(query = {}) {
-		const options = { lean: false, populate: { path: 'submittedDataAccessRequests' } };
+	async getDatasets(query = {}, options = {} ) {
 		return this.datasetRepository.getDatasets(query, options);
 	}
 
