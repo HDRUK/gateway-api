@@ -30,17 +30,17 @@ export const updateTree = (tree, key, values) => {
     // 3. if found update filters
     if (node.key === key) {
         // 4. test phenotypes **** THIS NEEDS WORK AND FURTHER DEV ****
-        if(key === 'phenotypes') {
-          values = [...values].map(item => {
-            return {
-              id: uuidv4(),
-              label: item.label.name,
-              value: item.label.name,
-              checked: false
-            } 
-          }).sort((a, b) => a.label.localeCompare(b.label))
-          values = uniqBy(values, 'label');
-        }
+        // if(key === 'phenotypes') {
+        //   values = [...values].map(item => {
+        //     return {
+        //       id: uuidv4(),
+        //       label: item.label.name,
+        //       value: item.label.name,
+        //       checked: false
+        //     } 
+        //   }).sort((a, b) => a.label.localeCompare(b.label))
+        //   values = uniqBy(values, 'label');
+        // }
         // 5. set filter values
         node.filters = values;
     }

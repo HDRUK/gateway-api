@@ -10,7 +10,7 @@ export const datasetFilters = [
 		isSearchable: false,
 		selectedCount: 0,
 		filters: [],
-		highlighted: [],
+		highlighted: ['Alliance > Barts Health'],
 	},
 	{
 		id: 2,
@@ -60,7 +60,7 @@ export const datasetFilters = [
 				isSearchable: false,
 				selectedCount: 0,
 				filters: [],
-				highlighted: [],
+				highlighted: ['England'],
 			},
 			{
 				id: 6,

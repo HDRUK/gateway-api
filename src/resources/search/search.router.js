@@ -179,7 +179,7 @@ router.get('/', async (req, res) => {
 	// }
 	return res.json({
 		success: true,
-		[`${entityType}Results`]: [...results.data],
+		[`${entityType}Results`]: results,
 		summary: summary,
 	});
 });
