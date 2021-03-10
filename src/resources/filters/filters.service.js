@@ -19,7 +19,8 @@ export default class FiltersService {
 		// 1. Build filters from type using entire Db collection
 		const filters = await this.buildFilters(type, { activeflag: 'active' });
 		// 2. Save updated filter values to filter cache
-		await this.saveFilters(filters, type);
+		//await this.saveFilters(filters, type);
+		await this.filtersRepository.updateFilterSet(filters, type);
 	}
 
 	async buildFilters(type, query = {}, useCache = false) {
@@ -30,8 +31,10 @@ export default class FiltersService {
 			return filters;
 		}
 		let filters = {},
+			sortedFilters = {},
 			entities = [],
 			fields = '';
+			
 		// 2. Query Db for required entity if array of entities has not been passed
 		switch (type) {
 			case 'dataset':
@@ -68,7 +71,18 @@ export default class FiltersService {
 				}
 			}
 		});
-		return filters;
+		// 8. Iterate through each filter
+		Object.keys(filters).forEach(filterKey => {
+			// 9. Set filter values to title case and remove white space
+			filters[filterKey] = filters[filterKey].map(value => helper.toTitleCase(value.toString().trim()));
+			// 10. Distinct filter values
+			const distinctFilter = uniq(filters[filterKey]);
+			// 11. Sort filter values and update final object
+			sortedFilters[filterKey] = distinctFilter.sort(function (a, b) {
+				return a.toString().toLowerCase().localeCompare(b.toString().toLowerCase());
+			});
+		});
+		return sortedFilters;
 	}
 
 	getFilterValues(entity, type) {
@@ -105,23 +119,5 @@ export default class FiltersService {
 		}
 		// 4. Return filter values
 		return filterValues;
-	}
-
-	async saveFilters(filters, type) {
-		// 1. Establish object for saving to MongoDb once populated
-		const sortedFilters = {};
-		// 2. Iterate through each filter
-		Object.keys(filters).forEach(filterKey => {
-			// 3. Set filter values to title case and remove white space
-			filters[filterKey] = filters[filterKey].map(value => helper.toTitleCase(value.toString().trim()));
-			// 4. Distinct filter values
-			const distinctFilter = uniq(filters[filterKey]);
-			// 5. Sort filter values and update final object for saving
-			sortedFilters[filterKey] = distinctFilter.sort(function (a, b) {
-				return a.toString().toLowerCase().localeCompare(b.toString().toLowerCase());
-			});
-		});
-		// 6. Save filters to MongoDb
-		await this.filtersRepository.updateFilterSet(sortedFilters, type);
 	}
 }
