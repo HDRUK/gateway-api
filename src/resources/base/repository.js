@@ -8,8 +8,13 @@ export default class Repository {
 		//Build query
 		let queryObj = { ...query };
 
+		// Population from query
+		if(query.populate) {
+			populate = query.populate.split(',').join(' '); 
+		}
+
 		// Filtering
-		const excludedFields = ['page', 'sort', 'limit', 'fields', 'count', 'search', 'expanded'];
+		const excludedFields = ['page', 'sort', 'limit', 'fields', 'count', 'search', 'expanded', 'populate'];
 		excludedFields.forEach(el => delete queryObj[el]);
 
 		// Keyword search

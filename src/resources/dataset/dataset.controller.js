@@ -50,7 +50,7 @@ export default class DatasetController extends Controller {
             // Return the datasets
 			return res.status(200).json({
 				success: true,
-				data: datasets
+				datasets
 			});
 		} catch (err) {
             // Return error response if something goes wrong

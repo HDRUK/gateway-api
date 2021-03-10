@@ -38,14 +38,12 @@ module.exports = {
 				'datasetfields.publisher': req.params.id,
 			})
 				.populate('publisher')
-				.select(
-					'datasetid name description datasetfields.abstract _id datasetfields.publisher datasetfields.contactPoint publisher'
-				);
+				.select('datasetid name description datasetfields.abstract _id datasetfields.publisher datasetfields.contactPoint publisher');
 			if (!datasets) {
 				return res.status(404).json({ success: false });
 			}
 			// 2. Map datasets to flatten datasetfields nested object
-			datasets = datasets.map((dataset) => {
+			datasets = datasets.map(dataset => {
 				let {
 					_id,
 					datasetid: datasetId,
@@ -81,31 +79,23 @@ module.exports = {
 		try {
 			// 1. Deconstruct the request
 			let { _id } = req.user;
+
 			// 2. Lookup publisher team
-			const publisher = await PublisherModel.findOne({
-				name: req.params.id,
-			}).populate('team', 'members');
+			const publisher = await PublisherModel.findOne({ name: req.params.id }).populate('team', 'members').lean();
 			if (!publisher) {
 				return res.status(404).json({ success: false });
 			}
 			// 3. Check the requesting user is a member of the custodian team
 			let found = false;
-			if (_.has(publisher.toObject(), 'team.members')) {
-				let { members } = publisher.team.toObject();
-				found = members.some((el) => el.memberid.toString() === _id.toString());
+			if (_.has(publisher, 'team.members')) {
+				let { members } = publisher.team;
+				found = members.some(el => el.memberid.toString() === _id.toString());
 			}
 
-			if (!found)
-				return res
-					.status(401)
-					.json({ status: 'failure', message: 'Unauthorised' });
+			if (!found) return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
 
 			//Check if current use is a manager
-			let isManager = teamController.checkTeamPermissions(
-				constants.roleTypes.MANAGER,
-				publisher.team.toObject(),
-				_id
-			);
+			let isManager = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, publisher.team, _id);
 
 			let applicationStatus = ['inProgress'];
 			//If the current user is not a manager then push 'Submitted' into the applicationStatus array
@@ -121,14 +111,12 @@ module.exports = {
 			let applications = await DataRequestModel.find({
 				$and: [
 					{
-						$or: [
-							{ dataSetId: { $in: datasetIds } },
-							{ datasetIds: { $elemMatch: { $in: datasetIds } } },
-						],
+						$or: [{ dataSetId: { $in: datasetIds } }, { datasetIds: { $elemMatch: { $in: datasetIds } } }],
 					},
 					{ applicationStatus: { $nin: applicationStatus } },
 				],
 			})
+				.select('-jsonSchema -questionAnswers -files')
 				.sort({ updatedAt: -1 })
 				.populate([
 					{
@@ -144,15 +132,16 @@ module.exports = {
 							},
 						},
 					},
-					{ 
-						path: 'workflow.steps.reviewers', 
-						select: 'firstname lastname' 
-					}
-				]);
+					{
+						path: 'workflow.steps.reviewers',
+						select: 'firstname lastname',
+					},
+				])
+				.lean();
 
 			if (!isManager) {
-				applications = applications.filter((app) => {
-					let { workflow = {} } = app.toObject();
+				applications = applications.filter(app => {
+					let { workflow = {} } = app;
 					if (_.isEmpty(workflow)) {
 						return app;
 					}
@@ -167,9 +156,7 @@ module.exports = {
 					});
 
 					let elapsedSteps = [...steps].slice(0, activeStepIndex + 1);
-					let found = elapsedSteps.some((step) =>
-						step.reviewers.some((reviewer) => reviewer._id.equals(_id))
-					);
+					let found = elapsedSteps.some(step => step.reviewers.some(reviewer => reviewer._id.equals(_id)));
 
 					if (found) {
 						return app;
@@ -179,22 +166,14 @@ module.exports = {
 
 			// 6. Append projectName and applicants
 			let modifiedApplications = [...applications]
-				.map((app) => {
-					return datarequestController.createApplicationDTO(
-						app.toObject(),
-						constants.userTypes.CUSTODIAN,
-						_id.toString()
-					);
+				.map(app => {
+					return datarequestController.createApplicationDTO(app, constants.userTypes.CUSTODIAN, _id.toString());
 				})
 				.sort((a, b) => b.updatedAt - a.updatedAt);
 
-			let avgDecisionTime = datarequestController.calculateAvgDecisionTime(
-				applications
-			);
+			let avgDecisionTime = datarequestController.calculateAvgDecisionTime(applications);
 			// 7. Return all applications
-			return res
-				.status(200)
-				.json({ success: true, data: modifiedApplications, avgDecisionTime, canViewSubmitted: isManager });
+			return res.status(200).json({ success: true, data: modifiedApplications, avgDecisionTime, canViewSubmitted: isManager });
 		} catch (err) {
 			console.error(err.message);
 			return res.status(500).json({
@@ -235,39 +214,27 @@ module.exports = {
 			}
 			// 2. Check the requesting user is a member of the team
 			let { _id: userId } = req.user;
-			let authorised = teamController.checkTeamPermissions(
-				constants.roleTypes.MANAGER,
-				workflows[0].publisher.team.toObject(),
-				userId
-			);
+			let authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, workflows[0].publisher.team.toObject(), userId);
 			// 3. If not return unauthorised
 			if (!authorised) {
 				return res.status(401).json({ success: false });
 			}
 			// 4. Build workflows
-			workflows = workflows.map((workflow) => {
-				let {
-					active,
-					_id,
-					id,
-					workflowName,
-					version,
-					steps,
-					applications = [],
-				} = workflow.toObject();
+			workflows = workflows.map(workflow => {
+				let { active, _id, id, workflowName, version, steps, applications = [] } = workflow.toObject();
 
 				let formattedSteps = [...steps].reduce((arr, item) => {
 					let step = {
 						...item,
-						displaySections: [...item.sections].map(section => constants.darPanelMapper[section])
-					}
+						displaySections: [...item.sections].map(section => constants.darPanelMapper[section]),
+					};
 					arr.push(step);
 					return arr;
 				}, []);
 
-				applications = applications.map((app) => {
+				applications = applications.map(app => {
 					let { aboutApplication = {}, _id } = app;
-					if(typeof aboutApplication === 'string') {
+					if (typeof aboutApplication === 'string') {
 						aboutApplication = JSON.parse(aboutApplication) || {};
 					}
 					let { projectName = 'No project name' } = aboutApplication;

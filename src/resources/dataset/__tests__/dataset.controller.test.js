@@ -100,7 +100,7 @@ describe('DatasetController', function () {
 
 			expect(serviceStub.calledOnce).toBe(true);
 			expect(status.calledWith(200)).toBe(true);
-			expect(json.calledWith({ success: true, data: stubValue })).toBe(true);
+			expect(json.calledWith({ success: true, datasets: stubValue })).toBe(true);
 		});
 
 		it('should return a server error if an unexpected exception occurs', async function () {

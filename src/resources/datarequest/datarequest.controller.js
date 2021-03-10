@@ -27,18 +27,22 @@ module.exports = {
 	//GET api/v1/data-access-request
 	getAccessRequestsByUser: async (req, res) => {
 		try {
-			// 1. Deconstruct the
+			// 1. Deconstruct the parameters passed
 			let { id: userId } = req.user;
+			let { query = {} } = req;
 
 			// 2. Find all data access request applications created with multi dataset version
-			let applications = await DataRequestModel.find({ $or: [{ userId: parseInt(userId) }, { authorIds: userId }] }).populate(
-				'datasets mainApplicant'
-			);
+			let applications = await DataRequestModel.find({
+				$and: [{ ...query }, { $or: [{ userId: parseInt(userId) }, { authorIds: userId }] }],
+			})
+				.select("-jsonSchema -questionAnswers -files")
+				.populate('datasets mainApplicant')
+				.lean();
 
 			// 3. Append project name and applicants
 			let modifiedApplications = [...applications]
 				.map(app => {
-					return module.exports.createApplicationDTO(app.toObject(), constants.userTypes.APPLICANT);
+					return module.exports.createApplicationDTO(app, constants.userTypes.APPLICANT);
 				})
 				.sort((a, b) => b.updatedAt - a.updatedAt);
 
@@ -1477,9 +1481,7 @@ module.exports = {
 
 	//POST api/v1/data-access-request/:id/email
 	mailDataAccessRequestInfoById: async (req, res) => {
-
-		try{
-
+		try {
 			// 1. Get the required request params
 			const {
 				params: { id },
@@ -1492,8 +1494,7 @@ module.exports = {
 				},
 				{
 					path: 'mainApplicant',
-				}
-				
+				},
 			]);
 
 			if (!accessRecord) {
@@ -1502,7 +1503,7 @@ module.exports = {
 
 			// 3. Ensure single datasets are mapped correctly into array
 			if (_.isEmpty(accessRecord.datasets)) {
-					accessRecord.datasets = [accessRecord.dataset];
+				accessRecord.datasets = [accessRecord.dataset];
 			}
 
 			// 4. If application is not in progress, actions cannot be performed
@@ -1512,19 +1513,18 @@ module.exports = {
 					message: 'This application is no longer in pre-submission status and therefore this action cannot be performed',
 				});
 			}
-				
+
 			// 5. Get the requesting users permission levels
 			let { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(accessRecord.toObject(), req.user.id, req.user._id);
 			// 6. Return unauthorised message if the requesting user is not an applicant
 			if (!authorised || userType !== constants.userTypes.APPLICANT) {
 				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
 			}
-			
+
 			// 7. Send notification to the authorised user
 			module.exports.createNotifications(constants.notificationTypes.INPROGRESS, {}, accessRecord, req.user);
 
 			return res.status(200).json({ status: 'success' });
-
 		} catch (err) {
 			console.error(err.message);
 			return res.status(500).json({
@@ -1831,7 +1831,7 @@ module.exports = {
 					'data access request',
 					accessRecord._id
 				);
-				
+
 				options = {
 					userType: '',
 					userEmail: appEmail,
@@ -1841,16 +1841,15 @@ module.exports = {
 					userType: 'applicant',
 					submissionType: constants.submissionTypes.INPROGRESS,
 				};
-			
-			
+
 				// Build email template
 				({ html, jsonContent } = await emailGenerator.generateEmail(
-						aboutApplication,
-						questions,
-						pages,
-						questionPanels,
-						questionAnswers,
-						options
+					aboutApplication,
+					questions,
+					pages,
+					questionPanels,
+					questionAnswers,
+					options
 				));
 				await emailGenerator.sendEmail(
 					[user],
@@ -1860,8 +1859,8 @@ module.exports = {
 					false,
 					attachments
 				);
-				break;	
-				case constants.notificationTypes.STATUSCHANGE:
+				break;
+			case constants.notificationTypes.STATUSCHANGE:
 				// 1. Create notifications
 				// Custodian manager and current step reviewer notifications
 				if (_.has(accessRecord.datasets[0].toObject(), 'publisher.team.users')) {

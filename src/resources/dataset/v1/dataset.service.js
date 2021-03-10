@@ -1,4 +1,5 @@
 import { Data } from '../../tool/data.model';
+import { PublisherModel } from '../../publisher/publisher.model';
 import { MetricsData } from '../../stats/metrics.model';
 import axios from 'axios';
 import * as Sentry from '@sentry/node';
@@ -224,8 +225,14 @@ export async function loadDatasets(override) {
 
 	if (datasetsMDCCount === 'Update failed') return;
 
-	//Compare counts from HDR and MDC, if greater drop of 10%+ then stop process and email support queue
+	// Compare counts from HDR and MDC, if greater drop of 10%+ then stop process and email support queue
 	var datasetsHDRCount = await Data.countDocuments({ type: 'dataset', activeflag: 'active' });
+
+	// Get active custodians on HDR Gateway
+	const publishers = await PublisherModel.find()
+		.select('name')
+		.lean();
+	const onboardedCustodians = publishers.map(publisher => publisher.name);
 
 	if ((datasetsMDCCount / datasetsHDRCount) * 100 < 90 && !override) {
 		Sentry.addBreadcrumb({
@@ -422,6 +429,9 @@ export async function loadDatasets(override) {
 
 								let datasetv2Object = populateV2datasetObject(datasetV2.data.items);
 
+								// Detect if dataset uses 5 Safes form for access
+								const is5Safes = onboardedCustodians.includes(datasetMDC.publisher);
+
 								if (datasetHDR) {
 									//Edit
 									if (!datasetHDR.pid) {
@@ -463,6 +473,7 @@ export async function loadDatasets(override) {
 											name: datasetMDC.title,
 											description: datasetMDC.description,
 											source: 'HDRUK MDC',
+											is5Safes: is5Safes,
 											activeflag: 'active',
 											license: datasetMDC.license,
 											tags: {
@@ -545,6 +556,7 @@ export async function loadDatasets(override) {
 									data.type = 'dataset';
 									data.activeflag = 'active';
 									data.source = 'HDRUK MDC';
+									data.is5Safes = is5Safes;
 
 									data.name = datasetMDC.title;
 									data.description = datasetMDC.description;
