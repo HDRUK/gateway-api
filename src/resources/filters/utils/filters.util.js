@@ -1,9 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
-import { uniqBy } from 'lodash';
 
 export const findNodeInTree = (tree, key) => {
-  // 1. find if key matches
-  let found = tree.find(node => node.key === key);
+  // 1. find if key matches //datasetFeatures
+  let found = tree.find(node => node.alias === key || node.key === key);
     // 2. if not found do while
 		if (!found) {
 			let i = 0;

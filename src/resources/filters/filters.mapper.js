@@ -16,6 +16,7 @@ export const datasetFilters = [
 		id: 2,
 		label: 'Keywords',
 		key: 'features',
+		alias: 'datasetFeatures',
 		dataPath: 'tags.features',
 		type: 'contains',
 		tooltip: null,

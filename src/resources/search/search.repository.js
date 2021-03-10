@@ -304,10 +304,6 @@ export function getObjectCount(type, searchAll, searchQuery) {
 }
 
 export function getObjectFilters(searchQueryStart, req, type) {
-	// if type = dataset
-	// we map over the searchQuery
-	// use our key as && then set or as value
-
 	let searchQuery = JSON.parse(JSON.stringify(searchQueryStart));
 
 	let {
