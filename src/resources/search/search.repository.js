@@ -135,8 +135,11 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 
 	// Get paged results based on query params
 	const searchResults = await collection.aggregate(queryObject).skip(parseInt(startIndex)).limit(parseInt(maxResults));
-	// Build filter tree from available values
-	const filters = await filtersService.buildFilters(type, queryObject[0][`$match`]);
+	//Extract final match query from aggregation query to build filters and determine if cached filters can be used
+	const matchQuery = queryObject[0][`$match`];
+	const useCachedFilters = matchQuery[`$and`] && matchQuery[`$and`].length === 2;
+	// Build filters
+	const filters = await filtersService.buildFilters(type, matchQuery, useCachedFilters);
 	// Return data and valid filters
 	return { data: searchResults, filters };
 }
@@ -369,8 +372,8 @@ export function getObjectFilters(searchQueryStart, req, type) {
 								},
 							});
 							break;
-						case 'notEmpty':
-							searchQuery['$and'].push({ [`${dataPath}`]: { $exists: true }, $where: `this.${dataPath}.length>0` });
+						case 'boolean':
+							searchQuery['$and'].push({ [`${dataPath}`]: true });
 							break;
 						default:
 							break;

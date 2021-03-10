@@ -21,9 +21,9 @@ export default class FiltersService {
 		await this.saveFilters(filters, type);
 	}
 
-	async buildFilters(type, query = {}) {
-		// 1. Attempt to use cached filters
-		if(query[`$and`].length === 2) {
+	async buildFilters(type, query = { }, useCache = false) {
+		// 1. Use cached filters if instructed
+		if(useCache) {
 			return await this.filtersRepository.getFilters(type);
 		}
 		let filters = {},
@@ -33,7 +33,8 @@ export default class FiltersService {
 		switch (type) {
 			case 'dataset':
 				// Get minimal payload to build filters
-				fields = `tags.features,
+				fields = `hasTechnicalDetails,
+							tags.features,
 							datasetfields.datautility,datasetfields.publisher,datasetfields.phenotypes,
 							datasetv2.coverage,datasetv2.provenance.origin,datasetv2.provenance.temporal,datasetv2.accessibility.access,datasetv2.accessibility.formatAndStandards`;
 				entities = await this.datasetRepository.getDatasets({ ...query, fields }, { lean: true });

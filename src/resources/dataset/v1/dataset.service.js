@@ -431,6 +431,7 @@ export async function loadDatasets(override) {
 
 								// Detect if dataset uses 5 Safes form for access
 								const is5Safes = onboardedCustodians.includes(datasetMDC.publisher);
+								const hasTechnicalDetails = technicaldetails.length > 0;
 
 								if (datasetHDR) {
 									//Edit
@@ -473,7 +474,8 @@ export async function loadDatasets(override) {
 											name: datasetMDC.title,
 											description: datasetMDC.description,
 											source: 'HDRUK MDC',
-											is5Safes: is5Safes,
+											is5Safes,
+											hasTechnicalDetails,
 											activeflag: 'active',
 											license: datasetMDC.license,
 											tags: {
@@ -557,6 +559,7 @@ export async function loadDatasets(override) {
 									data.activeflag = 'active';
 									data.source = 'HDRUK MDC';
 									data.is5Safes = is5Safes;
+									data.hasTechnicalDetails = hasTechnicalDetails;
 
 									data.name = datasetMDC.title;
 									data.description = datasetMDC.description;
