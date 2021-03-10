@@ -24,8 +24,8 @@ export default class FiltersService {
 	}
 
 	async buildFilters(type, query = {}, useCache = false) {
-		// 1. Use cached filters if instructed
-		if (useCache) {
+		// 1. Use cached filters if instructed, need to remove type when all v2 filters come on
+		if (useCache && type === 'dataset') {
 			const options = { lean: true };
 			const { keys: filters } = await this.filtersRepository.getFilters(type, {}, options);
 			return filters;
