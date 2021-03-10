@@ -9,7 +9,8 @@ export default class FiltersService {
 
 	async getFilters(id, query = {}) {
 		// 1. Get filters from repository for the entity type and query provided
-		const filters = await this.filtersRepository.getFilters(id, query);
+		const options = { lean: false };
+		const filters = await this.filtersRepository.getFilters(id, query, options);
 		const mappedFilters = filters.mapDto();
 		return mappedFilters;
 	}
@@ -21,10 +22,12 @@ export default class FiltersService {
 		await this.saveFilters(filters, type);
 	}
 
-	async buildFilters(type, query = { }, useCache = false) {
+	async buildFilters(type, query = {}, useCache = false) {
 		// 1. Use cached filters if instructed
-		if(useCache) {
-			return await this.filtersRepository.getFilters(type);
+		if (useCache) {
+			const options = { lean: true };
+			const { keys: filters } = await this.filtersRepository.getFilters(type, {}, options);
+			return filters;
 		}
 		let filters = {},
 			entities = [],

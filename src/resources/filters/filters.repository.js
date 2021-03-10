@@ -7,9 +7,8 @@ export default class FiltersRepository extends Repository {
 		this.filters = Filters;
 	}
 
-	async getFilters(id, query = {}) {
+	async getFilters(id, query = {}, options) {
 		query = { ...query, id };
-		const options = { lean: false };
 		return this.findOne(query, options);
 	}
 
