@@ -495,6 +495,6 @@ export const datasetFilters = [
 		closed: true,
 		isSearchable: false,
 		selectedCount: 0,
-		filters: [],
+		filters: [{ id: 999, label: 'Contains Technical Metadata', value: 'Contains Technical Metadata', checked: false }],
 	},
 ];

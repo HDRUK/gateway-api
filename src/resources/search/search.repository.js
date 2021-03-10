@@ -370,7 +370,7 @@ export function getObjectFilters(searchQueryStart, req, type) {
 							});
 							break;
 						case 'notEmpty':
-							searchQuery['$and'].push({ [`${dataPath}`]: { $exists: true, $size: { $gt: 0 } } });
+							searchQuery['$and'].push({ [`${dataPath}`]: { $exists: true }, $where: `this.${dataPath}.length>0` });
 							break;
 						default:
 							break;
