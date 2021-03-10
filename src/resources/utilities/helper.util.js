@@ -88,6 +88,10 @@ const _toTitleCase = str => {
 	});
 };
 
+const _escapeRegexChars = str => {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 export default {
 	censorEmail: _censorEmail,
 	arraysEqual: _arraysEqual,
@@ -96,5 +100,6 @@ export default {
 	generateAlphaNumericString: _generateAlphaNumericString,
 	hidePrivateProfileDetails: _hidePrivateProfileDetails,
 	getEnvironment: _getEnvironment,
-	toTitleCase: _toTitleCase
+	toTitleCase: _toTitleCase,
+	escapeRegexChars: _escapeRegexChars,
 };
