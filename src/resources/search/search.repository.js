@@ -7,6 +7,7 @@ import { filtersService } from '../filters/dependency';
 import { datasetService } from '../dataset/dependency';
 import _ from 'lodash';
 import moment from 'moment';
+import helperUtil from '../utilities/helper.util';
 
 export async function getObjectResult(type, searchAll, searchQuery, startIndex, maxResults, sort) {
 	let collection = Data;
@@ -352,7 +353,7 @@ export function getObjectFilters(searchQueryStart, req, type) {
 							// use regex to match without case sensitivity
 							searchQuery['$and'].push({
 								$or: filterValues.map(value => {
-									return { [`${dataPath}`]: { $regex: value, $options: 'i' } };
+									return { [`${dataPath}`]: { $regex: helperUtil.escapeRegexChars(value), $options: 'i' } };
 								}),
 							});
 							break;
