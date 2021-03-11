@@ -30,6 +30,7 @@ export default class FiltersService {
 			const { keys: filters } = await this.filtersRepository.getFilters(type, {}, options);
 			return filters;
 		}
+		
 		let filters = {},
 			sortedFilters = {},
 			entities = [],
