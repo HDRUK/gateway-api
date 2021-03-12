@@ -59,6 +59,7 @@ router.get('/', async (req, res) => {
 		Courses: 'course',
 		Collections: 'collection',
 	};
+	
 	const entityType = typeMapper[`${tab}`];
 
 	if (!entityType) {
@@ -143,13 +144,13 @@ router.get('/', async (req, res) => {
 	]);
 
 	const summary = {
-		datasets: summaryCounts[0][0] !== undefined ? summaryCounts[0][0].count : 0,
-		tools: summaryCounts[1][0] !== undefined ? summaryCounts[1][0].count : 0,
-		projects: summaryCounts[2][0] !== undefined ? summaryCounts[2][0].count : 0,
-		papers: summaryCounts[3][0] !== undefined ? summaryCounts[3][0].count : 0,
-		persons: summaryCounts[4][0] !== undefined ? summaryCounts[4][0].count : 0,
-		courses: summaryCounts[5][0] !== undefined ? summaryCounts[5][0].count : 0,
-		collections: summaryCounts[6][0] !== undefined ? summaryCounts[6][0].count : 0,
+		datasetCount: summaryCounts[0][0] !== undefined ? summaryCounts[0][0].count : 0,
+		toolCount: summaryCounts[1][0] !== undefined ? summaryCounts[1][0].count : 0,
+		projectCount: summaryCounts[2][0] !== undefined ? summaryCounts[2][0].count : 0,
+		paperCount: summaryCounts[3][0] !== undefined ? summaryCounts[3][0].count : 0,
+		personCount: summaryCounts[4][0] !== undefined ? summaryCounts[4][0].count : 0,
+		courseCount: summaryCounts[5][0] !== undefined ? summaryCounts[5][0].count : 0,
+		collectionCount: summaryCounts[6][0] !== undefined ? summaryCounts[6][0].count : 0,
 	};
 
 	const recordSearchData = new RecordSearchData();
