@@ -10,9 +10,11 @@ export default class FiltersService {
 	async getFilters(id, query = {}) {
 		// 1. Get filters from repository for the entity type and query provided
 		const options = { lean: false };
-		const filters = await this.filtersRepository.getFilters(id, query, options);
-		const mappedFilters = filters.mapDto();
-		return mappedFilters;
+		let filters = await this.filtersRepository.getFilters(id, query, options);
+		if(filters) {
+			filters = filters.mapDto();
+		}
+		return filters;
 	}
 
 	async optimiseFilters(type) {
@@ -27,7 +29,7 @@ export default class FiltersService {
 		// 1. Use cached filters if instructed, need to remove type when all v2 filters come on
 		if (useCache && type === 'dataset') {
 			const options = { lean: true };
-			const { keys: filters } = await this.filtersRepository.getFilters(type, {}, options);
+			const { keys: filters = {} } = await this.filtersRepository.getFilters(type, {}, options) || {};
 			return filters;
 		}
 		

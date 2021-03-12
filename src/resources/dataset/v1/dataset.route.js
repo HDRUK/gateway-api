@@ -34,9 +34,10 @@ router.post('/', async (req, res) => {
 			throw new Error('cache error test');
 		}
 
-		loadDatasets(parsedBody.override || false).then(() => {
-			filtersService.optimiseFilters('dataset');
-		});
+		filtersService.optimiseFilters('dataset');
+		// loadDatasets(parsedBody.override || false).then(() => {
+		// 	filtersService.optimiseFilters('dataset');
+		// });
 
 		return res.status(200).json({ success: true, message: 'Caching started' });
 	} catch (err) {
