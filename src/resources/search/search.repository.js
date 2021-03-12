@@ -4,7 +4,6 @@ import { Collections } from '../collections/collections.model';
 import { findNodeInTree } from '../filters/utils/filters.util';
 import { datasetFilters } from '../filters/filters.mapper';
 import { filtersService } from '../filters/dependency';
-import { datasetService } from '../dataset/dependency';
 import _ from 'lodash';
 import moment from 'moment';
 import helperUtil from '../utilities/helper.util';
@@ -96,7 +95,9 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 					'datasetfields.abstract': 1,
 					'datasetfields.ageBand': 1,
 					'datasetfields.phenotypes': 1,
-					datasetv2: 1,
+					'datasetv2.summary.publisher.name': 1,
+					'datasetv2.summary.publisher.logo': 1,
+					'datasetv2.summary.publisher.memberOf': 1,
 
 					'persons.id': 1,
 					'persons.firstname': 1,
@@ -133,16 +134,10 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 		if (searchAll) queryObject.push({ $sort: { 'courseOptions.startDate': 1 } });
 		else queryObject.push({ $sort: { 'courseOptions.startDate': 1, score: { $meta: 'textScore' } } });
 	}
-
 	// Get paged results based on query params
 	const searchResults = await collection.aggregate(queryObject).skip(parseInt(startIndex)).limit(parseInt(maxResults));
-	//Extract final match query from aggregation query to build filters and determine if cached filters can be used
-	const matchQuery = queryObject[0][`$match`];
-	const useCachedFilters = matchQuery[`$and`] && matchQuery[`$and`].length === 2;
-	// Build filters
-	const filters = await filtersService.buildFilters(type, matchQuery, useCachedFilters);
-	// Return data and valid filters
-	return { data: searchResults, filters };
+	// Return data
+	return { data: searchResults };
 }
 
 export function getObjectCount(type, searchAll, searchQuery) {
