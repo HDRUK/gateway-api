@@ -303,16 +303,9 @@ export function getObjectFilters(searchQueryStart, req, type) {
 	let searchQuery = JSON.parse(JSON.stringify(searchQueryStart));
 
 	let {
-		license = '',
-		sampleavailability = '',
-		keywords = '',
-		publisher = '',
-		ageband = '',
-		geographiccover = '',
-		phenotypes = '',
-		programmingLanguage = '',
+		toolprogrammingLanguage = '',
 		toolcategories = '',
-		features = '',
+		toolfeatures = '',
 		tooltopics = '',
 		projectcategories = '',
 		projectfeatures = '',
@@ -378,9 +371,9 @@ export function getObjectFilters(searchQueryStart, req, type) {
 	}
 
 	if (type === 'tool') {
-		if (programmingLanguage.length > 0) {
+		if (toolprogrammingLanguage.length > 0) {
 			let filterTermArray = [];
-			programmingLanguage.split('::').forEach(filterTerm => {
+			toolprogrammingLanguage.split('::').forEach(filterTerm => {
 				filterTermArray.push({ 'programmingLanguage.programmingLanguage': filterTerm });
 			});
 			searchQuery['$and'].push({ $or: filterTermArray });
@@ -394,9 +387,9 @@ export function getObjectFilters(searchQueryStart, req, type) {
 			searchQuery['$and'].push({ $or: filterTermArray });
 		}
 
-		if (features.length > 0) {
+		if (toolfeatures.length > 0) {
 			let filterTermArray = [];
-			features.split('::').forEach(filterTerm => {
+			toolfeatures.split('::').forEach(filterTerm => {
 				filterTermArray.push({ 'tags.features': filterTerm });
 			});
 			searchQuery['$and'].push({ $or: filterTermArray });
