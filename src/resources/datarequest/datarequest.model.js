@@ -1,5 +1,6 @@
 import { model, Schema } from 'mongoose';
 import { WorkflowSchema } from '../workflow/workflow.model'; 
+import constants from '../utilities/constants.util';
 
 const DataRequestSchema = new Schema({
   version: Number,
@@ -46,6 +47,11 @@ const DataRequestSchema = new Schema({
   publisher: {
     type: String,
     default: ""
+  },
+  formType: {
+    type: String,
+    default: constants.FormTypes.Extended5Safe,
+    enum: Object.values(constants.FormTypes)
   },
   files: [{ 
     name: { type: String },
