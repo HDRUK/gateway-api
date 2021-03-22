@@ -334,7 +334,7 @@ const _hdrukEmail = 'enquiry@healthdatagateway.org';
 export default {
 	userTypes: _userTypes,
 	enquiryFormId: _enquiryFormId,
-	FormTypes: _formTypes,
+	formTypes: _formTypes,
 	userQuestionActions: _userQuestionActions,
 	navigationFlags: _navigationFlags,
 	amendmentStatuses: _amendmentStatuses,
