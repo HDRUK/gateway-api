@@ -82,6 +82,16 @@ const _getEnvironment = () => {
 	return environment;
 };
 
+const _toTitleCase = str => {
+	return str.replace(/\w\S*/g, function (txt) {
+		return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+	});
+};
+
+const _escapeRegexChars = str => {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 export default {
 	censorEmail: _censorEmail,
 	arraysEqual: _arraysEqual,
@@ -90,4 +100,6 @@ export default {
 	generateAlphaNumericString: _generateAlphaNumericString,
 	hidePrivateProfileDetails: _hidePrivateProfileDetails,
 	getEnvironment: _getEnvironment,
+	toTitleCase: _toTitleCase,
+	escapeRegexChars: _escapeRegexChars,
 };

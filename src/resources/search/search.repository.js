@@ -1,18 +1,22 @@
 import { Data } from '../tool/data.model';
 import { Course } from '../course/course.model';
 import { Collections } from '../collections/collections.model';
+import { findNodeInTree } from '../filters/utils/filters.util';
+import { datasetFilters } from '../filters/filters.mapper';
 import _ from 'lodash';
 import moment from 'moment';
+import helperUtil from '../utilities/helper.util';
 
-export function getObjectResult(type, searchAll, searchQuery, startIndex, maxResults, sort) {
+export async function getObjectResult(type, searchAll, searchQuery, startIndex, maxResults, sort) {
+
 	let collection = Data;
 	if (type === 'course') {
 		collection = Course;
 	} else if (type === 'collection') {
 		collection = Collections;
 	}
-
-	let newSearchQuery = JSON.parse(JSON.stringify(searchQuery));
+	// ie copy deep object
+	let newSearchQuery = _.cloneDeep(searchQuery);
 	if (type !== 'collection') {
 		newSearchQuery['$and'].push({ type: type });
 	} else {
@@ -90,7 +94,9 @@ export function getObjectResult(type, searchAll, searchQuery, startIndex, maxRes
 					'datasetfields.abstract': 1,
 					'datasetfields.ageBand': 1,
 					'datasetfields.phenotypes': 1,
-					datasetv2: 1,
+					'datasetv2.summary.publisher.name': 1,
+					'datasetv2.summary.publisher.logo': 1,
+					'datasetv2.summary.publisher.memberOf': 1,
 
 					'persons.id': 1,
 					'persons.firstname': 1,
@@ -127,14 +133,10 @@ export function getObjectResult(type, searchAll, searchQuery, startIndex, maxRes
 		if (searchAll) queryObject.push({ $sort: { 'courseOptions.startDate': 1 } });
 		else queryObject.push({ $sort: { 'courseOptions.startDate': 1, score: { $meta: 'textScore' } } });
 	}
-
-	var q = collection.aggregate(queryObject).skip(parseInt(startIndex)).limit(parseInt(maxResults));
-	return new Promise((resolve, reject) => {
-		q.exec((err, data) => {
-			if (typeof data === 'undefined') resolve([]);
-			else resolve(data);
-		});
-	});
+	// Get paged results based on query params
+	const searchResults = await collection.aggregate(queryObject).skip(parseInt(startIndex)).limit(parseInt(maxResults));
+	// Return data
+	return { data: searchResults };
 }
 
 export function getObjectCount(type, searchAll, searchQuery) {
@@ -297,19 +299,12 @@ export function getObjectCount(type, searchAll, searchQuery) {
 }
 
 export function getObjectFilters(searchQueryStart, req, type) {
-	var searchQuery = JSON.parse(JSON.stringify(searchQueryStart));
+	let searchQuery = JSON.parse(JSON.stringify(searchQueryStart));
 
 	let {
-		license = '',
-		sampleavailability = '',
-		keywords = '',
-		publisher = '',
-		ageband = '',
-		geographiccover = '',
-		phenotypes = '',
-		programmingLanguage = '',
+		toolprogrammingLanguage = '',
 		toolcategories = '',
-		features = '',
+		toolfeatures = '',
 		tooltopics = '',
 		projectcategories = '',
 		projectfeatures = '',
@@ -331,67 +326,53 @@ export function getObjectFilters(searchQueryStart, req, type) {
 	} = req.query;
 
 	if (type === 'dataset') {
-		if (license.length > 0) {
-			let filterTermArray = [];
-			license.split('::').forEach(filterTerm => {
-				filterTermArray.push({ license: filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
-
-		if (sampleavailability.length > 0) {
-			let filterTermArray = [];
-			sampleavailability.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'datasetfields.physicalSampleAvailability': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
-
-		if (keywords.length > 0) {
-			let filterTermArray = [];
-			keywords.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'tags.features': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
-
-		if (publisher.length > 0) {
-			let filterTermArray = [];
-			publisher.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'datasetfields.publisher': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
-
-		if (ageband.length > 0) {
-			let filterTermArray = [];
-			ageband.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'datasetfields.ageBand': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
-
-		if (geographiccover.length > 0) {
-			let filterTermArray = [];
-			geographiccover.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'datasetfields.geographicCoverage': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
-		}
-
-		if (phenotypes.length > 0) {
-			let filterTermArray = [];
-			phenotypes.split('::').forEach(filterTerm => {
-				filterTermArray.push({ 'datasetfields.phenotypes.name': filterTerm });
-			});
-			searchQuery['$and'].push({ $or: filterTermArray });
+		// iterate over query string keys
+		for (const key of Object.keys(req.query)) {
+			try {
+				const filterValues = req.query[key].split('::');
+				// check mapper for query type
+				const filterNode = findNodeInTree(datasetFilters, key);
+				if (filterNode) {
+					// switch on query type	and build up query object
+					const { type = '', dataPath = '', matchField = '' } = filterNode;
+					switch (type) {
+						case 'contains':
+							// use regex to match without case sensitivity
+							searchQuery['$and'].push({
+								$or: filterValues.map(value => {
+									return { [`${dataPath}`]: { $regex: helperUtil.escapeRegexChars(value), $options: 'i' } };
+								}),
+							});
+							break;
+						case 'elementMatch':
+							// use regex to match objects within an array without case sensitivity
+							searchQuery['$and'].push({
+								[`${dataPath}`]: {
+									$elemMatch: {
+										$or: filterValues.map(value => {
+											return { [`${matchField}`]: { $regex: value, $options: 'i' } };
+										}),
+									},
+								},
+							});
+							break;
+						case 'boolean':
+							searchQuery['$and'].push({ [`${dataPath}`]: true });
+							break;
+						default:
+							break;
+					}
+				}
+			} catch (err) {
+				console.error(err.message);
+			}
 		}
 	}
 
 	if (type === 'tool') {
-		if (programmingLanguage.length > 0) {
+		if (toolprogrammingLanguage.length > 0) {
 			let filterTermArray = [];
-			programmingLanguage.split('::').forEach(filterTerm => {
+			toolprogrammingLanguage.split('::').forEach(filterTerm => {
 				filterTermArray.push({ 'programmingLanguage.programmingLanguage': filterTerm });
 			});
 			searchQuery['$and'].push({ $or: filterTermArray });
@@ -405,9 +386,9 @@ export function getObjectFilters(searchQueryStart, req, type) {
 			searchQuery['$and'].push({ $or: filterTermArray });
 		}
 
-		if (features.length > 0) {
+		if (toolfeatures.length > 0) {
 			let filterTermArray = [];
-			features.split('::').forEach(filterTerm => {
+			toolfeatures.split('::').forEach(filterTerm => {
 				filterTermArray.push({ 'tags.features': filterTerm });
 			});
 			searchQuery['$and'].push({ $or: filterTermArray });

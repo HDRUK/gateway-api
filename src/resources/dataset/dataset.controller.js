@@ -18,7 +18,8 @@ export default class DatasetController extends Controller {
 				});
 			}
             // Find the dataset
-			let dataset = await this.datasetService.getDataset(id, req.query);
+			const options = { lean: false, populate: { path: 'submittedDataAccessRequests' } };
+			let dataset = await this.datasetService.getDataset(id, req.query, options);
             // Return if no dataset found
 			if (!dataset) {
 				return res.status(404).json({
@@ -44,7 +45,8 @@ export default class DatasetController extends Controller {
     async getDatasets(req, res) {
 		try {
             // Find the datasets
-            let datasets = await this.datasetService.getDatasets(req.query);
+			const options = { lean: false, populate: { path: 'submittedDataAccessRequests' } };
+            let datasets = await this.datasetService.getDatasets(req.query, options);
             // Return the datasets
 			return res.status(200).json({
 				success: true,

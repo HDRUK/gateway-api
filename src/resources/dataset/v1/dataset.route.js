@@ -1,10 +1,11 @@
 import express from 'express';
 import { Data } from '../../tool/data.model';
-import { loadDataset, loadDatasets } from './dataset.service';
+import { loadDataset } from './dataset.service';
 import { getAllTools } from '../../tool/data.repository';
 import _ from 'lodash';
 import escape from 'escape-html';
 import { Course } from '../../course/course.model';
+import { filtersService } from '../../filters/dependency';
 import * as Sentry from '@sentry/node';
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
@@ -33,7 +34,8 @@ router.post('/', async (req, res) => {
 			throw new Error('cache error test');
 		}
 
-		loadDatasets(parsedBody.override || false);
+		filtersService.optimiseFilters('dataset');
+
 		return res.status(200).json({ success: true, message: 'Caching started' });
 	} catch (err) {
 		Sentry.captureException(err);

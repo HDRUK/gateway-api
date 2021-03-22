@@ -1,5 +1,4 @@
 import { Data } from '../../tool/data.model';
-import { PublisherModel } from '../../publisher/publisher.model';
 import { MetricsData } from '../../stats/metrics.model';
 import axios from 'axios';
 import * as Sentry from '@sentry/node';
@@ -198,7 +197,7 @@ export async function loadDataset(datasetID) {
 }
 
 export async function loadDatasets(override) {
-	console.error('Starting run at ' + Date());
+	console.log('Starting run at ' + Date());
 	let metadataCatalogueLink = process.env.metadataURL || 'https://metadata-catalogue.org/hdruk';
 
 	let datasetsMDCCount = await new Promise(function (resolve, reject) {
@@ -431,6 +430,7 @@ export async function loadDatasets(override) {
 
 								// Detect if dataset uses 5 Safes form for access
 								const is5Safes = onboardedCustodians.includes(datasetMDC.publisher);
+								const hasTechnicalDetails = technicaldetails.length > 0;
 
 								if (datasetHDR) {
 									//Edit
@@ -464,7 +464,7 @@ export async function loadDatasets(override) {
 									let keywordArray = splitString(datasetMDC.keywords);
 									let physicalSampleAvailabilityArray = splitString(datasetMDC.physicalSampleAvailability);
 									let geographicCoverageArray = splitString(datasetMDC.geographicCoverage);
-
+									// Update dataset
 									await Data.findOneAndUpdate(
 										{ datasetid: datasetMDC.id },
 										{
@@ -473,7 +473,8 @@ export async function loadDatasets(override) {
 											name: datasetMDC.title,
 											description: datasetMDC.description,
 											source: 'HDRUK MDC',
-											is5Safes: is5Safes,
+											is5Safes,
+											hasTechnicalDetails,
 											activeflag: 'active',
 											license: datasetMDC.license,
 											tags: {
@@ -557,6 +558,7 @@ export async function loadDatasets(override) {
 									data.activeflag = 'active';
 									data.source = 'HDRUK MDC';
 									data.is5Safes = is5Safes;
+									data.hasTechnicalDetails = hasTechnicalDetails;
 
 									data.name = datasetMDC.title;
 									data.description = datasetMDC.description;
@@ -622,7 +624,6 @@ export async function loadDatasets(override) {
 	);
 
 	saveUptime();
-
 	console.log('Update Completed at ' + Date());
 	return;
 }

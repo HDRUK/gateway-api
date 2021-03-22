@@ -9,13 +9,13 @@ export default class DatasetService {
 		this.courseRepository = courseRepository;
 	}
 
-	async getDataset(id, query = {}) {
+	async getDataset(id, query = {}, options = {}) {
 		// Protect for no id passed
 		if(!id) return;
 
 		// Get dataset from Db by datasetid first
 		query = { ...query, datasetid: id };
-		let dataset = await this.datasetRepository.getDataset(query);
+		let dataset = await this.datasetRepository.getDataset(query, options);
 
 		// Return undefined if no dataset found
 		if (!dataset) return;
@@ -37,8 +37,8 @@ export default class DatasetService {
 		return dataset;
 	}
 
-	async getDatasets(query = {}) {
-		return this.datasetRepository.getDatasets(query);
+	async getDatasets(query = {}, options = {} ) {
+		return this.datasetRepository.getDatasets(query, options);
 	}
 
 	async getRelatedObjects(pid) {
