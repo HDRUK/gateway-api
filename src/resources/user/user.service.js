@@ -18,7 +18,7 @@ export async function createUser({ firstname, lastname, email, providerId, provi
 		if(user) {
 			const msg = {
 				to: email,
-				from: 'enquiry@healthdatagateway.org',
+				from: 'gateway@hdruk.ac.uk',
 				templateId: process.env.SENDGRID_INTRO_EMAIL
 			}
 			emailGeneratorUtil.sendIntroEmail(msg);
