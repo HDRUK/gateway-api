@@ -47,6 +47,20 @@ const _userQuestionActions = {
 					toolTip: 'Guidance',
 					order: 1,
 				},
+				{
+					key: 'messages',
+					icon: 'far fa-comment-alt',
+					color: '#475da7',
+					toolTip: 'Messages',
+					order: 2,
+				},
+				{
+					key: 'notes',
+					icon: 'far fa-edit',
+					color: '#475da7',
+					toolTip: 'Notes',
+					order: 3,
+				},
 			],
 			inReview: {
 				custodian: [
@@ -57,6 +71,20 @@ const _userQuestionActions = {
 						toolTip: 'Guidance',
 						order: 1,
 					},
+					{
+						key: 'messages',
+						icon: 'far fa-comment-alt',
+						color: '#475da7',
+						toolTip: 'Messages',
+						order: 2,
+					},
+					{
+						key: 'notes',
+						icon: 'far fa-edit',
+						color: '#475da7',
+						toolTip: 'Notes',
+						order: 3,
+					},
 				],
 				applicant: [
 					{
@@ -65,6 +93,20 @@ const _userQuestionActions = {
 						color: '#475da7',
 						toolTip: 'Guidance',
 						order: 1,
+					},
+					{
+						key: 'messages',
+						icon: 'far fa-comment-alt',
+						color: '#475da7',
+						toolTip: 'Messages',
+						order: 2,
+					},
+					{
+						key: 'notes',
+						icon: 'far fa-edit',
+						color: '#475da7',
+						toolTip: 'Notes',
+						order: 3,
 					},
 				],
 			},
@@ -76,6 +118,20 @@ const _userQuestionActions = {
 					toolTip: 'Guidance',
 					order: 1,
 				},
+				{
+					key: 'messages',
+					icon: 'far fa-comment-alt',
+					color: '#475da7',
+					toolTip: 'Messages',
+					order: 2,
+				},
+				{
+					key: 'notes',
+					icon: 'far fa-edit',
+					color: '#475da7',
+					toolTip: 'Notes',
+					order: 3,
+				},
 			],
 			['approved with conditions']: [
 				{
@@ -84,6 +140,20 @@ const _userQuestionActions = {
 					color: '#475da7',
 					toolTip: 'Guidance',
 					order: 1,
+				},
+				{
+					key: 'messages',
+					icon: 'far fa-comment-alt',
+					color: '#475da7',
+					toolTip: 'Messages',
+					order: 2,
+				},
+				{
+					key: 'notes',
+					icon: 'far fa-edit',
+					color: '#475da7',
+					toolTip: 'Notes',
+					order: 3,
 				},
 			],
 			rejected: [
@@ -94,6 +164,20 @@ const _userQuestionActions = {
 					toolTip: 'Guidance',
 					order: 1,
 				},
+				{
+					key: 'messages',
+					icon: 'far fa-comment-alt',
+					color: '#475da7',
+					toolTip: 'Messages',
+					order: 2,
+				},
+				{
+					key: 'notes',
+					icon: 'far fa-edit',
+					color: '#475da7',
+					toolTip: 'Notes',
+					order: 3,
+				},
 			],
 			withdrawn: [
 				{
@@ -102,6 +186,20 @@ const _userQuestionActions = {
 					color: '#475da7',
 					toolTip: 'Guidance',
 					order: 1,
+				},
+				{
+					key: 'messages',
+					icon: 'far fa-comment-alt',
+					color: '#475da7',
+					toolTip: 'Messages',
+					order: 2,
+				},
+				{
+					key: 'notes',
+					icon: 'far fa-edit',
+					color: '#475da7',
+					toolTip: 'Notes',
+					order: 3,
 				},
 			],
 		},
@@ -113,6 +211,20 @@ const _userQuestionActions = {
 					color: '#475da7',
 					toolTip: 'Guidance',
 					order: 1,
+				},
+				{
+					key: 'messages',
+					icon: 'far fa-comment-alt',
+					color: '#475da7',
+					toolTip: 'Messages',
+					order: 2,
+				},
+				{
+					key: 'notes',
+					icon: 'far fa-edit',
+					color: '#475da7',
+					toolTip: 'Notes',
+					order: 3,
 				},
 			],
 			inReview: {
@@ -131,6 +243,20 @@ const _userQuestionActions = {
 						toolTip: 'Request applicant updates answer',
 						order: 2,
 					},
+					{
+						key: 'messages',
+						icon: 'far fa-comment-alt',
+						color: '#475da7',
+						toolTip: 'Messages',
+						order: 3,
+					},
+					{
+						key: 'notes',
+						icon: 'far fa-edit',
+						color: '#475da7',
+						toolTip: 'Notes',
+						order: 4,
+					},
 				],
 				applicant: [
 					{
@@ -139,6 +265,20 @@ const _userQuestionActions = {
 						color: '#475da7',
 						toolTip: 'Guidance',
 						order: 1,
+					},
+					{
+						key: 'messages',
+						icon: 'far fa-comment-alt',
+						color: '#475da7',
+						toolTip: 'Messages',
+						order: 2,
+					},
+					{
+						key: 'notes',
+						icon: 'far fa-edit',
+						color: '#475da7',
+						toolTip: 'Notes',
+						order: 3,
 					},
 				],
 			},
@@ -150,6 +290,20 @@ const _userQuestionActions = {
 					toolTip: 'Guidance',
 					order: 1,
 				},
+				{
+					key: 'messages',
+					icon: 'far fa-comment-alt',
+					color: '#475da7',
+					toolTip: 'Messages',
+					order: 2,
+				},
+				{
+					key: 'notes',
+					icon: 'far fa-edit',
+					color: '#475da7',
+					toolTip: 'Notes',
+					order: 3,
+				},
 			],
 			['approved with conditions']: [
 				{
@@ -158,6 +312,20 @@ const _userQuestionActions = {
 					color: '#475da7',
 					toolTip: 'Guidance',
 					order: 1,
+				},
+				{
+					key: 'messages',
+					icon: 'far fa-comment-alt',
+					color: '#475da7',
+					toolTip: 'Messages',
+					order: 2,
+				},
+				{
+					key: 'notes',
+					icon: 'far fa-edit',
+					color: '#475da7',
+					toolTip: 'Notes',
+					order: 3,
 				},
 			],
 			rejected: [
@@ -168,6 +336,20 @@ const _userQuestionActions = {
 					toolTip: 'Guidance',
 					order: 1,
 				},
+				{
+					key: 'messages',
+					icon: 'far fa-comment-alt',
+					color: '#475da7',
+					toolTip: 'Messages',
+					order: 2,
+				},
+				{
+					key: 'notes',
+					icon: 'far fa-edit',
+					color: '#475da7',
+					toolTip: 'Notes',
+					order: 3,
+				},
 			],
 			withdrawn: [
 				{
@@ -176,6 +358,20 @@ const _userQuestionActions = {
 					color: '#475da7',
 					toolTip: 'Guidance',
 					order: 1,
+				},
+				{
+					key: 'messages',
+					icon: 'far fa-comment-alt',
+					color: '#475da7',
+					toolTip: 'Messages',
+					order: 2,
+				},
+				{
+					key: 'notes',
+					icon: 'far fa-edit',
+					color: '#475da7',
+					toolTip: 'Notes',
+					order: 3,
 				},
 			],
 		},
@@ -189,6 +385,20 @@ const _userQuestionActions = {
 				toolTip: 'Guidance',
 				order: 1,
 			},
+			{
+				key: 'messages',
+				icon: 'far fa-comment-alt',
+				color: '#475da7',
+				toolTip: 'Messages',
+				order: 2,
+			},
+			{
+				key: 'notes',
+				icon: 'far fa-edit',
+				color: '#475da7',
+				toolTip: 'Notes',
+				order: 3,
+			},
 		],
 		submitted: [
 			{
@@ -197,6 +407,20 @@ const _userQuestionActions = {
 				color: '#475da7',
 				toolTip: 'Guidance',
 				order: 1,
+			},
+			{
+				key: 'messages',
+				icon: 'far fa-comment-alt',
+				color: '#475da7',
+				toolTip: 'Messages',
+				order: 2,
+			},
+			{
+				key: 'notes',
+				icon: 'far fa-edit',
+				color: '#475da7',
+				toolTip: 'Notes',
+				order: 3,
 			},
 		],
 		inReview: [
@@ -207,6 +431,20 @@ const _userQuestionActions = {
 				toolTip: 'Guidance',
 				order: 1,
 			},
+			{
+				key: 'messages',
+				icon: 'far fa-comment-alt',
+				color: '#475da7',
+				toolTip: 'Messages',
+				order: 2,
+			},
+			{
+				key: 'notes',
+				icon: 'far fa-edit',
+				color: '#475da7',
+				toolTip: 'Notes',
+				order: 3,
+			},
 		],
 		approved: [
 			{
@@ -215,6 +453,20 @@ const _userQuestionActions = {
 				color: '#475da7',
 				toolTip: 'Guidance',
 				order: 1,
+			},
+			{
+				key: 'messages',
+				icon: 'far fa-comment-alt',
+				color: '#475da7',
+				toolTip: 'Messages',
+				order: 2,
+			},
+			{
+				key: 'notes',
+				icon: 'far fa-edit',
+				color: '#475da7',
+				toolTip: 'Notes',
+				order: 3,
 			},
 		],
 		['approved with conditions']: [
@@ -225,6 +477,20 @@ const _userQuestionActions = {
 				toolTip: 'Guidance',
 				order: 1,
 			},
+			{
+				key: 'messages',
+				icon: 'far fa-comment-alt',
+				color: '#475da7',
+				toolTip: 'Messages',
+				order: 2,
+			},
+			{
+				key: 'notes',
+				icon: 'far fa-edit',
+				color: '#475da7',
+				toolTip: 'Notes',
+				order: 3,
+			},
 		],
 		rejected: [
 			{
@@ -234,6 +500,20 @@ const _userQuestionActions = {
 				toolTip: 'Guidance',
 				order: 1,
 			},
+			{
+				key: 'messages',
+				icon: 'far fa-comment-alt',
+				color: '#475da7',
+				toolTip: 'Messages',
+				order: 2,
+			},
+			{
+				key: 'notes',
+				icon: 'far fa-edit',
+				color: '#475da7',
+				toolTip: 'Notes',
+				order: 3,
+			},
 		],
 		withdrawn: [
 			{
@@ -242,6 +522,20 @@ const _userQuestionActions = {
 				color: '#475da7',
 				toolTip: 'Guidance',
 				order: 1,
+			},
+			{
+				key: 'messages',
+				icon: 'far fa-comment-alt',
+				color: '#475da7',
+				toolTip: 'Messages',
+				order: 2,
+			},
+			{
+				key: 'notes',
+				icon: 'far fa-edit',
+				color: '#475da7',
+				toolTip: 'Notes',
+				order: 3,
 			},
 		],
 	},
@@ -401,8 +695,8 @@ const _mailchimpSubscriptionStatuses = {
 
 const _logTypes = {
 	SYSTEM: 'System',
-	USER: 'User'
-}
+	USER: 'User',
+};
 
 export default {
 	userTypes: _userTypes,
@@ -426,5 +720,5 @@ export default {
 	hdrukEmail: _hdrukEmail,
 	mailchimpSubscriptionStatuses: _mailchimpSubscriptionStatuses,
 	datatsetStatuses: _datatsetStatuses,
-	logTypes: _logTypes
+	logTypes: _logTypes,
 };
