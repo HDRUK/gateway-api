@@ -202,7 +202,7 @@ const editTool = async (req, res) => {
 		).then(tool => {
 			if (tool == null) {
 				reject(new Error(`No record found with id of ${id}.`));
-			} else if (type === 'tool') {
+			} else if (['tool', 'paper', 'project'].includes(type)) {
 				// Send email notification of update to all authors who have opted in to updates
 				sendEmailNotificationToAuthors(data, toolCreator);
 				storeNotificationsForAuthors(data, toolCreator);
