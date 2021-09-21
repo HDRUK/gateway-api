@@ -15,4 +15,8 @@ export default class CohortRepository extends Repository {
 		const options = { lean: true };
 		return this.find(query, options);
 	}
+
+	async addCohort(body) {
+		return this.create(body);
+	}
 }

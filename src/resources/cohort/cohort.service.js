@@ -14,4 +14,19 @@ export default class CohortService {
 	getCohorts(query = {}) {
 		return this.cohortRepository.getCohorts(query);
 	}
+
+	addCohort(body = {}) {
+		const document = {
+			type: 'cohort',
+			name: body.description,
+			activeflag: 'draft',
+			userId: body.user_id,
+			uploaders: [body.user_id],
+			request_id: body.request_id,
+			cohort: body.cohort,
+			items: body.items,
+			relatedObjects: body.relatedObjects,
+		};
+		return this.cohortRepository.addCohort(document);
+	}
 }

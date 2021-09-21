@@ -11,39 +11,39 @@ export default class CohortController extends Controller {
 
 	async getCohort(req, res) {
 		try {
-            // Extract id parameter from query string
+			// Extract id parameter from query string
 			const { id } = req.params;
-            // If no id provided, it is a bad request
+			// If no id provided, it is a bad request
 			if (!id) {
 				return res.status(400).json({
 					success: false,
 					message: 'You must provide a cohort identifier',
 				});
 			}
-            // Find the cohort
+			// Find the cohort
 			const options = { lean: true };
 			const cohort = await this.cohortService.getCohort(id, req.query, options);
-            // Return if no cohort found
+			// Return if no cohort found
 			if (!cohort) {
 				return res.status(404).json({
 					success: false,
 					message: 'A cohort could not be found with the provided id',
 				});
-            }
-            // Return the cohort
+			}
+			// Return the cohort
 			return res.status(200).json({
 				success: true,
-				...cohort
+				...cohort,
 			});
 		} catch (err) {
-            // Return error response if something goes wrong
-            console.error(err.message);
-            return res.status(500).json({
+			// Return error response if something goes wrong
+			console.error(err.message);
+			return res.status(500).json({
 				success: false,
 				message: 'A server error occurred, please try again',
 			});
-        }
-    }
+		}
+	}
 
 	async getCohorts(req, res) {
 		try {
@@ -55,6 +55,26 @@ export default class CohortController extends Controller {
 			return res.status(200).json({
 				success: true,
 				data: cohorts,
+			});
+		} catch (err) {
+			// Return error response if something goes wrong
+			logger.logError(err, logCategory);
+			return res.status(500).json({
+				success: false,
+				message: 'A server error occurred, please try again',
+			});
+		}
+	}
+
+	async addCohort(req, res) {
+		try {
+			await this.cohortService.addCohort(req.body).catch(err => {
+				logger.logError(err, logCategory);
+			});
+			// Return the cohorts
+			return res.status(201).json({
+				informationrequestid: '123',
+				redirect_url: 'https://web.latest.healthdatagateway.org/search?search=bcp&tab=Datasets',
 			});
 		} catch (err) {
 			// Return error response if something goes wrong

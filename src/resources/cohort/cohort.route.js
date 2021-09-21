@@ -21,4 +21,6 @@ router.get('/', logger.logRequestMiddleware({ logCategory, action: 'Viewed cohor
 	cohortController.getCohorts(req, res)
 );
 
+router.post('/', (req, res) => cohortController.addCohort(req, res));
+
 module.exports = router;
