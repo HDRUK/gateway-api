@@ -373,12 +373,13 @@ export default class StatsRepository extends Repository {
 
 	async getUnmetSearchesByMonth(entityType, month, year) {
 		const entitySearch = { ['returned.' + entityType]: { $lte: 0 } };
-
+		const terms = await this.getTopSearchesByMonth(month, year);
+		const duplicateTerms = await this.getDuplicateTerms(entityType, terms);
 		return RecordSearchData.aggregate([
 			{ $addFields: { month: { $month: '$createdAt' }, year: { $year: '$createdAt' } } },
 			{
 				$match: {
-					$and: [{ month }, { year }, entitySearch, { searched: { $ne: '' } }],
+					$and: [{ month }, { year }, entitySearch, { searched: { $nin: duplicateTerms } }],
 				},
 			},
 			{
@@ -397,6 +398,36 @@ export default class StatsRepository extends Repository {
 			{ $sort: { count: -1 } },
 			{ $limit: 10 },
 		]);
+	}
+
+	//this should be a temporary fix until we find the root cause of the issue
+	async getDuplicateTerms(entityType, terms) {
+		let type;
+		let duplicateTerms = [];
+
+		switch (entityType) {
+			case 'dataset':
+				type = 'datasets';
+				break;
+			case 'tool':
+				type = 'tools';
+				break;
+			case 'paper':
+				type = 'papers';
+				break;
+			case 'project':
+				type = 'projects';
+				break;
+			default:
+				type = '';
+		}
+
+		if (type) {
+			duplicateTerms = terms.map(value => value[type] > 0 && value._id).filter(Boolean);
+		}
+		duplicateTerms = [...duplicateTerms, ''];
+
+		return duplicateTerms;
 	}
 
 	async getRecentSearches() {
