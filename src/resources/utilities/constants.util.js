@@ -216,6 +216,7 @@ const _roleTypes = {
 	REVIEWER: 'reviewer',
 	METADATA_EDITOR: 'metadata_editor',
 	ADMIN_DATASET: 'admin_dataset',
+	ADMIN_DATA_USE: 'admin_data_use',
 };
 
 // </Team related enums>
@@ -283,6 +284,13 @@ const _systemGeneratedUser = {
 	LASTNAME: 'Generated',
 };
 
+const _dataUseRegisterStatus = {
+	ACTIVE: 'active',
+	INREVIEW: 'inReview',
+	REJECTED: 'rejected',
+	ARCHIVED: 'archived',
+};
+
 export default {
 	userTypes: _userTypes,
 	enquiryFormId: _enquiryFormId,
@@ -312,4 +320,5 @@ export default {
 	systemGeneratedUser: _systemGeneratedUser,
 	activityLogNotifications: _activityLogNotifications,
 	DARMessageTypes: _DARMessageTypes,
+	dataUseRegisterStatus: _dataUseRegisterStatus,
 };

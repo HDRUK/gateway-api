@@ -110,4 +110,8 @@ export default class DatasetService {
 		});
 		return dataset;
 	}
+
+	getDatasetsByPids(pids) {
+		return this.datasetRepository.getDatasetsByPids(pids);
+	}
 }

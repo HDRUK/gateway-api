@@ -1,6 +1,8 @@
+import helper from '../utilities/helper.util';
+
 const transform = require('transformobject').transform;
 
-class Entity {
+export default class Entity {
 
     equals (other) {
         if (other instanceof Entity === false) {
@@ -24,6 +26,8 @@ class Entity {
     transformTo(format, {strict} = {strict: false}) {
         return transform(this, format, { strict });
     }
-}
 
-module.exports = Entity;
+    generateId () {
+        return helper.generatedNumericId();
+    }
+}

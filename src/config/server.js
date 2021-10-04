@@ -253,6 +253,8 @@ app.use('/api/v1/global', require('../resources/global/global.route'));
 
 app.use('/api/v1/search-preferences', require('../resources/searchpreferences/searchpreferences.route'));
 
+app.use('/api/v2/data-use-registers', require('../resources/datauseregister/datauseregister.route'));
+
 initialiseAuthentication(app);
 
 // launch our backend into a port

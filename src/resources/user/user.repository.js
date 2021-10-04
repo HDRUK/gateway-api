@@ -25,6 +25,10 @@ export async function getUserByUserId(id) {
 	return await UserModel.findOne({ id }).exec();
 }
 
+export async function getUsersByIds(userIds) {
+	return await UserModel.find({ id: { $in: userIds } }, '_id').lean();
+}
+
 export async function getServiceAccountByClientCredentials(clientId, clientSecret) {
 	// 1. Locate service account by clientId, return undefined if no document located
 	const id = clientId.toString();
