@@ -1823,7 +1823,7 @@ paths:
       summary: Returns a list of dataset objects
       tags:
         - Datasets v2.0
-      description: Version 2.0 of the datasets API introduces a large number of parameterised query string options to aid requests in collecting the data that is most relevant for a given use case.  The query parameters defined below support a variety of comparison operators such as equals, contains, greater than, and less than.  Using dot notation, any field can be queried, please see some examples below.
+      description: Version 2.0 of the datasets API introduces a large number of parameterised query string options to aid requests in collecting the data that is most relevant for a given use case.  The query parameters defined below support a variety of comparison operators such as equals, contains, greater than, and less than.  Using dot notation, any field can be queried, please see some examples below.  Note - This response is limited to 100 records by default.  Please use the 'page' query parameter to access records beyond the first 100.  The 'limit' query parameter can therefore only be specified up to a maximum of 100.
       parameters:
         - name: search
           in: query
@@ -2201,7 +2201,7 @@ paths:
           schema:
             type: boolean
           example: true
-      description: Version 2.0 of the courses API introduces a large number of parameterised query string options to aid requests in collecting the data that is most relevant for a given use case. The query parameters defined below support a variety of comparison operators such as equals, contains, greater than, and less than. Using dot notation, any field can be queried, please see some examples below.
+      description: Version 2.0 of the courses API introduces a large number of parameterised query string options to aid requests in collecting the data that is most relevant for a given use case. The query parameters defined below support a variety of comparison operators such as equals, contains, greater than, and less than. Using dot notation, any field can be queried, please see some examples below.  Note - This response is limited to 100 records by default.  Please use the 'page' query parameter to access records beyond the first 100.  The 'limit' query parameter can therefore only be specified up to a maximum of 100.
       responses:
         '200':
           description: Successful response containing a list of projects matching query parameters
@@ -2489,7 +2489,7 @@ paths:
           schema:
             type: boolean
           example: true
-      description: Version 2.0 of the courses API introduces a large number of parameterised query string options to aid requests in collecting the data that is most relevant for a given use case. The query parameters defined below support a variety of comparison operators such as equals, contains, greater than, and less than. Using dot notation, any field can be queried, please see some examples below.
+      description: Version 2.0 of the courses API introduces a large number of parameterised query string options to aid requests in collecting the data that is most relevant for a given use case. The query parameters defined below support a variety of comparison operators such as equals, contains, greater than, and less than. Using dot notation, any field can be queried, please see some examples below.  Note - This response is limited to 100 records by default.  Please use the 'page' query parameter to access records beyond the first 100.  The 'limit' query parameter can therefore only be specified up to a maximum of 100.
       responses:
         '200':
           description: Successful response containing a list of papers matching query parameters
@@ -2771,7 +2771,7 @@ paths:
           schema:
             type: boolean
           example: true
-      description: Version 2.0 of the courses API introduces a large number of parameterised query string options to aid requests in collecting the data that is most relevant for a given use case. The query parameters defined below support a variety of comparison operators such as equals, contains, greater than, and less than. Using dot notation, any field can be queried, please see some examples below.
+      description: Version 2.0 of the courses API introduces a large number of parameterised query string options to aid requests in collecting the data that is most relevant for a given use case. The query parameters defined below support a variety of comparison operators such as equals, contains, greater than, and less than. Using dot notation, any field can be queried, please see some examples below.  Note - This response is limited to 100 records by default.  Please use the 'page' query parameter to access records beyond the first 100.  The 'limit' query parameter can therefore only be specified up to a maximum of 100.
       responses:
         '200':
           description: Successful response containing a list of tools matching query parameters
@@ -2836,7 +2836,7 @@ paths:
           schema:
             type: boolean
           example: true
-      description: Version 2.0 of the courses API introduces a large number of parameterised query string options to aid requests in collecting the data that is most relevant for a given use case. The query parameters defined below support a variety of comparison operators such as equals, contains, greater than, and less than. Using dot notation, any field can be queried, please see some examples below.
+      description: Version 2.0 of the courses API introduces a large number of parameterised query string options to aid requests in collecting the data that is most relevant for a given use case. The query parameters defined below support a variety of comparison operators such as equals, contains, greater than, and less than. Using dot notation, any field can be queried, please see some examples below.  Note - This response is limited to 100 records by default.  Please use the 'page' query parameter to access records beyond the first 100.  The 'limit' query parameter can therefore only be specified up to a maximum of 100.
       tags:
         - Courses v2.0
       responses:
@@ -2871,6 +2871,7 @@ components:
       flows:
         clientCredentials:
           tokenUrl: 'https://api.www.healthdatagateway.org/oauth/token'
+          scopes: {}
     cookieAuth:
       type: http
       scheme: jwt

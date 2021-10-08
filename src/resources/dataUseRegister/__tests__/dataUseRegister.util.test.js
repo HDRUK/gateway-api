@@ -2,7 +2,18 @@ import sinon from 'sinon';
 import { cloneDeep } from 'lodash';
 
 import dataUseRegisterUtil from '../dataUseRegister.util';
-import { datasets, relatedObjectDatasets, nonGatewayDatasetNames, gatewayDatasetNames, expectedGatewayDatasets, nonGatewayApplicantNames, gatewayApplicantNames, expectedGatewayApplicants } from '../__mocks__/dataUseRegisters';
+import {
+	datasets,
+	relatedObjectDatasets,
+	nonGatewayDatasetNames,
+	gatewayDatasetNames,
+	expectedGatewayDatasets,
+	nonGatewayApplicantNames,
+	gatewayApplicantNames,
+	expectedGatewayApplicants,
+	applications,
+	authors
+} from '../__mocks__/dataUseRegisters';
 import { uploader } from '../__mocks__/dataUseRegisterUsers';
 import * as userRepository from '../../user/user.repository';
 import { datasetService } from '../../dataset/dependency';
@@ -45,7 +56,7 @@ describe('DataUseRegisterUtil', function () {
 		it('returns the details of applicants that could be found on the Gateway when valid profile URLs are given', async function () {
 			// Arrange
 			const getUsersByIdsStub = sinon.stub(userRepository, 'getUsersByIds');
-			getUsersByIdsStub.returns([{_id:'89e57932-ac48-48ac-a6e5-29795bc38b94'}, {_id:'0cfe60cd-038d-4c03-9a95-894c52135922'}]);
+			getUsersByIdsStub.returns([{ _id: '89e57932-ac48-48ac-a6e5-29795bc38b94' }, { _id: '0cfe60cd-038d-4c03-9a95-894c52135922' }]);
 
 			// Act
 			const result = await dataUseRegisterUtil.getLinkedApplicants(gatewayApplicantNames);
@@ -56,14 +67,14 @@ describe('DataUseRegisterUtil', function () {
 		});
 	});
 
-	describe('buildRelatedObjects', function () {
+	describe('buildRelatedDatasets', function () {
 		it('filters out data uses that are found to already exist in the database', async function () {
 			// Arrange
 			const data = cloneDeep(datasets);
 			sinon.stub(Date, 'now').returns('2021-24-09T11:01:58.135Z');
 
 			// Act
-			const result = dataUseRegisterUtil.buildRelatedObjects(uploader, data);
+			const result = dataUseRegisterUtil.buildRelatedDatasets(uploader, data);
 
 			// Assert
 			expect(result.length).toBe(data.length);
@@ -72,6 +83,54 @@ describe('DataUseRegisterUtil', function () {
 
 		afterEach(function () {
 			sinon.restore();
+		});
+	});
+
+	describe('extractFormApplicants', function () {
+		it('identifies and combines gateway and non gateway applicants in the correct format', function () {
+			// Arrange
+			const questionAnswersStub = cloneDeep(applications[0].questionAnswers);
+			const authorsStub = cloneDeep(authors);
+
+			// Act
+			const result = dataUseRegisterUtil.extractFormApplicants(authorsStub, questionAnswersStub);
+
+			// Assert
+			expect(result.gatewayApplicants.length).toBe(2);
+			expect(result.gatewayApplicants).toEqual(expect.arrayContaining(['607db9c6e1f9d3704d570d93', '5fb628de6f3f9767bd2d9281']));
+
+			expect(result.nonGatewayApplicants.length).toBe(2);
+			expect(result.nonGatewayApplicants).toEqual(expect.arrayContaining(['Colin Devlin', 'Graham Patterson']));
+		});
+
+		it('removes duplicate applicants who are both authors of the application and named in the questions answers', function () {
+			// Arrange
+			const questionAnswersStub = cloneDeep(applications[0].questionAnswers);
+			const authorsStub = cloneDeep(authors);
+
+			// Act
+			const result = dataUseRegisterUtil.extractFormApplicants(authorsStub, questionAnswersStub);
+
+			// Assert
+			expect(result.gatewayApplicants.length).toBe(2);
+			expect(result.gatewayApplicants).toEqual(expect.arrayContaining(['607db9c6e1f9d3704d570d93', '5fb628de6f3f9767bd2d9281']));
+
+			expect(result.nonGatewayApplicants.length).toBe(2);
+			expect(result.nonGatewayApplicants).toEqual(expect.arrayContaining(['Colin Devlin', 'Graham Patterson']));
+		});
+	});
+
+	describe('extractFundersAndSponsors', function () {
+		it('identifies and combines funder and sponsor organisations named in the question answers ', function () {
+			// Arrange
+			const questionAnswersStub = cloneDeep(applications[0].questionAnswers);
+
+			// Act
+			const result = dataUseRegisterUtil.extractFundersAndSponsors(questionAnswersStub);
+
+			// Assert
+			expect(result.length).toBe(4);
+			expect(result).toEqual(expect.arrayContaining(['funder 1', 'funder 2', 'sponsor 1', 'sponsor 2']));
 		});
 	});
 

@@ -44,7 +44,7 @@ const buildDataUseRegisters = async (creatorUser, teamId, dataUses = []) => {
 		);
 
 		// Create related objects
-		const relatedObjects = buildRelatedObjects(creatorUser, linkedDatasets);
+		const relatedObjects = buildRelatedDatasets(creatorUser, linkedDatasets);
 
 		// Handle comma separated fields
 		const fundersAndSponsors =
@@ -93,10 +93,11 @@ const buildDataUseRegisters = async (creatorUser, teamId, dataUses = []) => {
 				...(obj.requestCategoryType && { requestCategoryType: obj.requestCategoryType.toString().trim() }),
 				...(obj.technicalSummary && { technicalSummary: obj.technicalSummary.toString().trim() }),
 				...(obj.dataSensitivityLevel && { dataSensitivityLevel: obj.dataSensitivityLevel.toString().trim() }),
-				...(obj.legalBasisForData && { legalBasisForData: obj.legalBasisForData.toString().trim() }),
+				...(obj.legalBasisForDataArticle6 && { legalBasisForDataArticle6: obj.legalBasisForDataArticle6.toString().trim() }),
+				...(obj.legalBasisForDataArticle9 && { legalBasisForDataArticle9: obj.legalBasisForDataArticle9.toString().trim() }),
 				...(obj.nationalDataOptOut && { nationalDataOptOut: obj.nationalDataOptOut.toString().trim() }),
 				...(obj.requestFrequency && { requestFrequency: obj.requestFrequency.toString().trim() }),
-				...(obj.dataProcessingDescription && { dataProcessingDescription: obj.dataProcessingDescription.toString().trim() }),
+				...(obj.datasetLinkageDescription && { datasetLinkageDescription: obj.datasetLinkageDescription.toString().trim() }),
 				...(obj.confidentialDataDescription && { confidentialDataDescription: obj.confidentialDataDescription.toString().trim() }),
 				...(obj.dataLocation && { dataLocation: obj.dataLocation.toString().trim() }),
 				...(obj.privacyEnhancements && { privacyEnhancements: obj.privacyEnhancements.toString().trim() }),
@@ -118,7 +119,7 @@ const buildDataUseRegisters = async (creatorUser, teamId, dataUses = []) => {
 				user: creatorUser._id,
 				updatedon: Date.now(),
 				lastActivity: Date.now(),
-				manualUpload: true
+				manualUpload: true,
 			})
 		);
 	}
@@ -187,7 +188,7 @@ const getLinkedApplicants = async (applicantNames = []) => {
 };
 
 /**
- * Build Related Objects
+ * Build Related Datasets
  *
  * @desc    Accepts an array of datasets and outputs an array of related objects which can be assigned to an entity to show the relationship to the datasets.
  * 			Related objects contain the 'objectId' (dataset version identifier), 'pid', 'objectType' (dataset), 'updated' date and 'user' that created the linkage.
@@ -195,23 +196,71 @@ const getLinkedApplicants = async (applicantNames = []) => {
  * @param 	{Array<Object>} 	datasets 	    An array of dataset objects containing the necessary properties to assemble a related object record reference
  * @returns {Array<Object>}						An array containing the assembled related objects relative to the datasets provided
  */
-const buildRelatedObjects = (creatorUser, datasets = []) => {
+const buildRelatedDatasets = (creatorUser, datasets = [], manualUpload = true) => {
 	const { firstname, lastname } = creatorUser;
 	return datasets.map(dataset => {
-		const { datasetId: objectId, pid } = dataset;
+		const { datasetid: objectId, pid } = dataset;
 		return {
 			objectId,
 			pid,
 			objectType: 'dataset',
 			user: `${firstname} ${lastname}`,
 			updated: Date.now(),
+			isLocked: true,
+			reason: manualUpload
+				? 'This dataset was added automatically during the manual upload of this data use register'
+				: 'This dataset was added automatically from an approved data access request',
 		};
 	});
+};
+
+/**
+ * Extract Form Applicants
+ *
+ * @desc    Accepts an array of authors and object containing answers from a Data Access Request application and extracts the names of non Gateway applicants as provided in the form,
+ * and extracts registered Gateway applicants, combining them before de-duplicating where match is found.
+ * @param 	{Array<Object>} 			authors 	An array of user documents representing contributors and the main applicant to a Data Access Request application
+ * @param 	{Object} 	applicationQuestionAnswers 	    An object of key pairs containing the question identifiers and answers to the questions taken from a Data Access Request application
+ * @returns {Object}						An object containing two arrays, the first being representative of registered Gateway users in the form of their identifying _id 
+ * and the second array being the names of applicants who were extracted from the question answers object passed in but did not match any of the registered users provided in authors
+ */
+const extractFormApplicants = (authors = [], applicationQuestionAnswers = {}) => {
+	const gatewayApplicants = authors.map(el => el._id);
+	const gatewayApplicantsNames = authors.map(el => `${el.firstname.trim()} ${el.lastname.trim()}`);
+
+	const nonGatewayApplicants = Object.keys(applicationQuestionAnswers)
+		.filter(
+			key =>
+				(key.includes('safepeopleprimaryapplicantfullname') || key.includes('safepeopleotherindividualsfullname')) &&
+				!gatewayApplicantsNames.includes(applicationQuestionAnswers[key].trim())
+		)
+		.map(key => applicationQuestionAnswers[key]);
+
+	return { gatewayApplicants, nonGatewayApplicants };
+};
+
+/**
+ * Extract Funders And Sponsors
+ *
+ * @desc    Accepts an object containing answers from a Data Access Request application and extracts funders and sponsors names from the specific sections where these questions are asked.
+ * @param 	{Object} 	applicationQuestionAnswers 	    An object of key pairs containing the question identifiers and answers to the questions taken from a Data Access Request application
+ * @returns {Array<String>}						An array containing the organisation names provided as funders and sponsors
+ */
+const extractFundersAndSponsors = (applicationQuestionAnswers = {}) => {
+	return Object.keys(applicationQuestionAnswers)
+		.filter(
+			key =>
+				key.includes('safeprojectfunderinformationprojecthasfundername') ||
+				key.includes('safeprojectsponsorinformationprojecthassponsororganisationname')
+		)
+		.map(key => applicationQuestionAnswers[key]);
 };
 
 export default {
 	buildDataUseRegisters,
 	getLinkedDatasets,
 	getLinkedApplicants,
-	buildRelatedObjects
+	buildRelatedDatasets,
+	extractFormApplicants,
+	extractFundersAndSponsors,
 };

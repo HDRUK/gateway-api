@@ -12,7 +12,7 @@ const datasetLimiter = rateLimit({
 
 router.post('/update', datasetLimiter, async (req, res) => {
 	const { id, counter } = req.body;
-	Course.findOneAndUpdate({ id: { $eq: id } }, { counter: { $eq: counter } }, err => {
+	Course.findOneAndUpdate({ id: { $eq: id } }, { counter }, err => {
 		if (err) return res.json({ success: false, error: err });
 		return res.json({ success: true });
 	});

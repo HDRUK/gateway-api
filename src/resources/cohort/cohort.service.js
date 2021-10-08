@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { Data } from '../tool/data.model';
 
 export default class CohortService {
 	constructor(cohortRepository) {
@@ -32,19 +33,34 @@ export default class CohortService {
 		}
 
 		// 3. Extract PIDs from cohort object so we can build up related objects
-		let pids = body.cohort.input.collections.map(collection => {
-			return collection.external_id;
+		let datasetIdentifiersPromises = await body.cohort.input.collections.map(async collection => {
+			let dataset = await Data.findOne({ pid: collection.external_id, activeflag: 'active' }, { datasetid: 1 }).lean();
+			return { pid: collection.external_id, datasetId: dataset.datasetid };
 		});
+		let datasetIdentifiers = await Promise.all(datasetIdentifiersPromises);
 		let relatedObjects = [];
-		pids.forEach(pid => {
+		let datasetPids = [];
+		datasetIdentifiers.forEach(datasetIdentifier => {
+			datasetPids.push(datasetIdentifier.pid);
 			relatedObjects.push({
 				objectType: 'dataset',
-				pid,
+				pid: datasetIdentifier.pid,
+				objectId: datasetIdentifier.datasetId,
 				isLocked: true,
 			});
 		});
 
-		// 4. Build document object and save to DB
+		// 4. Extract filter criteria used in query
+		let filterCriteria = [];
+		body.cohort.input.cohorts.forEach(cohort => {
+			cohort.groups.forEach(group => {
+				group.rules.forEach(rule => {
+					filterCriteria.push(rule.value);
+				});
+			});
+		});
+
+		// 5. Build document object and save to DB
 		const document = {
 			id: uniqueId,
 			pid: uuid,
@@ -59,7 +75,11 @@ export default class CohortService {
 			cohort: body.cohort,
 			items: body.items,
 			rquestRelatedObjects: body.relatedObjects,
+			datasetPids,
+			filterCriteria,
 			relatedObjects,
+			description: '',
+			publicflag: true,
 		};
 		return this.cohortRepository.addCohort(document);
 	}

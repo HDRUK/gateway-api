@@ -8,6 +8,7 @@ import { logger } from '../utilities/logger';
 import DataRequestController from './datarequest.controller';
 import AmendmentController from './amendment/amendment.controller';
 import { dataRequestService, workflowService, amendmentService, topicService, messageService, activityLogService } from './dependency';
+import { dataUseRegisterService } from '../dataUseRegister/dependency';
 
 const fs = require('fs');
 const path = './tmp';
@@ -27,7 +28,8 @@ const dataRequestController = new DataRequestController(
 	amendmentService,
 	topicService,
 	messageService,
-	activityLogService
+	activityLogService,
+	dataUseRegisterService
 );
 const amendmentController = new AmendmentController(amendmentService, dataRequestService, activityLogService);
 const router = express.Router();

@@ -200,7 +200,7 @@ const _getSubmissionDetails = (
 	let body = `<table border="0" border-collapse="collapse" cellpadding="0" cellspacing="0" width="100%">
   <tr>
       <td style="font-size: 14px; color: #3c3c3b; padding: 10px 5px; width: 50%; text-align: left; vertical-align: top; border-bottom: 1px solid #d0d3d4;">Project</td>
-      <td style=" font-size: 14px; color: #3c3c3b; padding: 10px 5px; width: 50%; text-align: left; vertical-align: top; border-bottom: 1px solid #d0d3d4;">${projectName}</td>
+      <td style=" font-size: 14px; color: #3c3c3b; padding: 10px 5px; width: 50%; text-align: left; vertical-align: top; border-bottom: 1px solid #d0d3d4;">${projectName || 'No project name set'}</td>
     </tr>
     <tr>
       <td style="font-size: 14px; color: #3c3c3b; padding: 10px 5px; width: 50%; text-align: left; vertical-align: top; border-bottom: 1px solid #d0d3d4;">Related NCS project</td>
@@ -228,7 +228,7 @@ const _getSubmissionDetails = (
 	const amendBody = `<table border="0" border-collapse="collapse" cellpadding="0" cellspacing="0" width="100%">
   <tr>
       <td style="font-size: 14px; color: #3c3c3b; padding: 10px 5px; width: 50%; text-align: left; vertical-align: top; border-bottom: 1px solid #d0d3d4;">Project</td>
-      <td style=" font-size: 14px; color: #3c3c3b; padding: 10px 5px; width: 50%; text-align: left; vertical-align: top; border-bottom: 1px solid #d0d3d4;">${projectName}</td>
+      <td style=" font-size: 14px; color: #3c3c3b; padding: 10px 5px; width: 50%; text-align: left; vertical-align: top; border-bottom: 1px solid #d0d3d4;">${projectName || 'No project name set'}</td>
     </tr>
     <tr>
       <td style="font-size: 14px; color: #3c3c3b; padding: 10px 5px; width: 50%; text-align: left; vertical-align: top; border-bottom: 1px solid #d0d3d4;">Date of amendment submission</td>
@@ -331,7 +331,7 @@ const _buildEmail = (aboutApplication, fullQuestions, questionAnswers, options) 
 	} = options;
 	const dateSubmitted = moment().format('D MMM YYYY');
 	const year = moment().year();
-	const { projectName = 'No project name set', isNationalCoreStudies = false, nationalCoreStudiesProjectId = '' } = aboutApplication;
+	const { projectName, isNationalCoreStudies = false, nationalCoreStudiesProjectId = '' } = aboutApplication;
 	const linkNationalCoreStudies =
 		nationalCoreStudiesProjectId === '' ? '' : `${process.env.homeURL}/project/${nationalCoreStudiesProjectId}`;
 
@@ -348,7 +348,7 @@ const _buildEmail = (aboutApplication, fullQuestions, questionAnswers, options) 
 		datasetTitles,
 		initialDatasetTitles,
 		submissionType,
-		projectName,
+		projectName || 'No project name set',
 		isNationalCoreStudies,
 		dateSubmitted,
 		linkNationalCoreStudies
@@ -356,7 +356,7 @@ const _buildEmail = (aboutApplication, fullQuestions, questionAnswers, options) 
 
 	// Create json content payload for attaching to email
 	const jsonContent = {
-		applicationDetails: { projectName, linkNationalCoreStudies, datasetTitles, dateSubmitted, applicantName: userName },
+		applicationDetails: { projectName: projectName || 'No project name set', linkNationalCoreStudies, datasetTitles, dateSubmitted, applicantName: userName },
 		questions: { ...fullQuestions },
 		answers: { ...questionAnswers },
 	};
@@ -660,7 +660,9 @@ const _generateDARStatusChangedEmail = options => {
                   </tr>
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                     ${publisher} has ${applicationStatus} your data access request application.
+                    Your data access request for ${projectName || datasetTitles} has been approved with conditions by ${publisher}. 
+                    Summary information about your approved project will be included in the Gateway data use register. 
+                    You will be notified as soon as this becomes visible and searchable on the Gateway.
                     </th>
                   </tr>
                 </thead>

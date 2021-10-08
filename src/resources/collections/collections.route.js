@@ -135,16 +135,16 @@ router.put('/edit/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess
 	let collectionId = parseInt(id);
 
 	await Collections.findOneAndUpdate(
-		{ id: collectionId },
+		{ id: { $eq: collectionId } },
 		{
-			name: { $eq: inputSanitizer.removeNonBreakingSpaces(name) },
-			description: { $eq: inputSanitizer.removeNonBreakingSpaces(description) },
-			imageLink: { $eq: imageLink },
-			authors: { $eq: authors },
-			relatedObjects: { $eq: relatedObjects },
-			publicflag: { $eq: publicflag },
-			keywords: { $eq: keywords },
-			updatedon: { $eq: updatedon },
+			name: inputSanitizer.removeNonBreakingSpaces(name),
+			description: inputSanitizer.removeNonBreakingSpaces(description),
+			imageLink,
+			authors,
+			relatedObjects,
+			publicflag,
+			keywords,
+			updatedon,
 		},
 		err => {
 			if (err) {

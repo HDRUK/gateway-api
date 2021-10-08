@@ -49,7 +49,7 @@ class Account {
 		return claim;
 	}
 
-	async findByFederated(provider, claims) {
+	static async findByFederated(provider, claims) {
 		const id = `${provider}.${claims.sub}`;
 		if (!logins.get(id)) {
 			logins.set(id, new Account(id, claims));
@@ -57,7 +57,7 @@ class Account {
 		return logins.get(id);
 	}
 
-	async findByLogin(login) {
+	static async findByLogin(login) {
 		if (!logins.get(login)) {
 			logins.set(login, new Account(login));
 		}
@@ -65,7 +65,7 @@ class Account {
 		return logins.get(login);
 	}
 
-	async findAccount(ctx, id) {
+	static async findAccount(ctx, id) {
 		// eslint-disable-line no-unused-vars
 		// token is a reference to the token used for which a given account is being loaded,
 		//   it is undefined in scenarios where account claims are returned from authorization endpoint

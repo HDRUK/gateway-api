@@ -1,8 +1,17 @@
 import { Data } from '../tool/data.model';
 import { Course } from '../course/course.model';
 import { Collections } from '../collections/collections.model';
+import { DataUseRegister } from '../dataUseRegister/dataUseRegister.model';
 import { findNodeInTree } from '../filters/utils/filters.util';
-import { datasetFilters, toolFilters, projectFilters, paperFilters, collectionFilters, courseFilters } from '../filters/filters.mapper';
+import {
+	datasetFilters,
+	toolFilters,
+	projectFilters,
+	paperFilters,
+	collectionFilters,
+	courseFilters,
+	dataUseRegisterFilters,
+} from '../filters/filters.mapper';
 import _ from 'lodash';
 import moment from 'moment';
 import helperUtil from '../utilities/helper.util';
@@ -13,6 +22,8 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 		collection = Course;
 	} else if (type === 'collection') {
 		collection = Collections;
+	} else if (type === 'dataUseRegister') {
+		collection = DataUseRegister;
 	}
 	// ie copy deep object
 	let newSearchQuery = _.cloneDeep(searchQuery);
@@ -65,13 +76,12 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 			},
 		];
 	} else if (type === 'collection') {
-		
-		const searchTerm = newSearchQuery && newSearchQuery['$and'] && newSearchQuery['$and'].find(exp => !_.isNil(exp['$text'])) || {};
+		const searchTerm = (newSearchQuery && newSearchQuery['$and'] && newSearchQuery['$and'].find(exp => !_.isNil(exp['$text']))) || {};
 
-		if(searchTerm) {
+		if (searchTerm) {
 			newSearchQuery['$and'] = newSearchQuery['$and'].filter(exp => !exp['$text']);
 		}
-		
+
 		queryObject = [
 			{ $match: searchTerm },
 			{ $lookup: { from: 'tools', localField: 'authors', foreignField: 'id', as: 'persons' } },
@@ -116,6 +126,47 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 						},
 					},
 					relatedresources: { $cond: { if: { $isArray: '$relatedObjects' }, then: { $size: '$relatedObjects' }, else: 0 } },
+				},
+			},
+		];
+	} else if (type === 'dataUseRegister') {
+		const searchTerm = (newSearchQuery && newSearchQuery['$and'] && newSearchQuery['$and'].find(exp => !_.isNil(exp['$text']))) || {};
+
+		if (searchTerm) {
+			newSearchQuery['$and'] = newSearchQuery['$and'].filter(exp => !exp['$text']);
+		}
+
+		queryObject = [
+			{ $match: searchTerm },
+			{ $lookup: { from: 'tools', localField: 'authors', foreignField: 'id', as: 'persons' } },
+			{
+				$addFields: {
+					persons: {
+						$map: {
+							input: '$persons',
+							as: 'row',
+							in: {
+								id: '$$row.id',
+								firstname: '$$row.firstname',
+								lastname: '$$row.lastname',
+								fullName: { $concat: ['$$row.firstname', ' ', '$$row.lastname'] },
+							},
+						},
+					},
+				},
+			},
+			{ $match: newSearchQuery },
+			{
+				$project: {
+					_id: 0,
+					id: 1,
+					projectTitle: 1,
+					organisationName: 1,
+					keywords: 1,
+					datasetTitles: 1,
+					activeflag: 1,
+					counter: 1,
+					type: 1,
 				},
 			},
 		];
@@ -374,9 +425,13 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 	}
 
 	// Get paged results based on query params
-	const searchResults = await collection.aggregate(queryObject).skip(parseInt(startIndex)).limit(parseInt(maxResults)).catch(err => {
-		console.log(err);
-	});
+	const searchResults = await collection
+		.aggregate(queryObject)
+		.skip(parseInt(startIndex))
+		.limit(parseInt(maxResults))
+		.catch(err => {
+			console.log(err);
+		});
 	// Return data
 	return { data: searchResults };
 }
@@ -387,6 +442,8 @@ export function getObjectCount(type, searchAll, searchQuery) {
 		collection = Course;
 	} else if (type === 'collection') {
 		collection = Collections;
+	} else if (type === 'dataUseRegister') {
+		collection = DataUseRegister;
 	}
 	let newSearchQuery = JSON.parse(JSON.stringify(searchQuery));
 	if (type !== 'collection') {
@@ -451,12 +508,12 @@ export function getObjectCount(type, searchAll, searchQuery) {
 				.sort({ score: { $meta: 'textScore' } });
 		}
 	} else if (type === 'collection') {
-		const searchTerm = newSearchQuery && newSearchQuery['$and'] && newSearchQuery['$and'].find(exp => !_.isNil(exp['$text'])) || {};
+		const searchTerm = (newSearchQuery && newSearchQuery['$and'] && newSearchQuery['$and'].find(exp => !_.isNil(exp['$text']))) || {};
 
-		if(searchTerm) {
+		if (searchTerm) {
 			newSearchQuery['$and'] = newSearchQuery['$and'].filter(exp => !exp['$text']);
 		}
-		
+
 		if (searchAll) {
 			q = collection.aggregate([
 				{ $match: searchTerm },
@@ -723,6 +780,8 @@ export function getObjectFilters(searchQueryStart, req, type) {
 				filterNode = findNodeInTree(collectionFilters, key);
 			} else if (type === 'course') {
 				filterNode = findNodeInTree(courseFilters, key);
+			} else if (type === 'dataUseRegister') {
+				filterNode = findNodeInTree(dataUseRegisterFilters, key);
 			}
 
 			if (filterNode) {

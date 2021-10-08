@@ -1,6 +1,11 @@
 /* eslint-disable no-undef */
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
+import { to } from 'await-to-js';
+import Url from 'url';
+import { isEmpty } from 'lodash';
+import queryString from 'query-string';
+
 import { ROLES } from '../user/user.roles';
 import { UserModel } from '../user/user.model';
 import { Course } from '../course/course.model';
@@ -8,7 +13,11 @@ import { Collections } from '../collections/collections.model';
 import { Data } from '../tool/data.model';
 import { TeamModel } from '../team/team.model';
 import constants from '../utilities/constants.util';
-import { isEmpty } from 'lodash';
+import { discourseLogin } from './sso/sso.discourse.service';
+import { updateRedirectURL } from './../user/user.service';
+import { getObjectById } from './../tool/data.repository';
+
+const eventLogController = require('./../eventlog/eventlog.controller');
 
 const setup = () => {
 	passport.serializeUser((user, done) => done(null, user._id));
@@ -46,18 +55,20 @@ const camundaToken = () => {
 	);
 };
 
-const checkIsInRole = (...roles) => (req, res, next) => {
-	if (!req.user) {
-		return res.redirect('/login');
-	}
+const checkIsInRole =
+	(...roles) =>
+	(req, res, next) => {
+		if (!req.user) {
+			return res.redirect('/login');
+		}
 
-	const hasRole = roles.find(role => req.user.role === role);
-	if (!hasRole) {
-		return res.redirect('/login');
-	}
+		const hasRole = roles.find(role => req.user.role === role);
+		if (!hasRole) {
+			return res.redirect('/login');
+		}
 
-	return next();
-};
+		return next();
+	};
 
 const whatIsRole = req => {
 	if (!req.user) {
@@ -116,4 +127,90 @@ const getTeams = async () => {
 	return teams;
 };
 
-export { setup, signToken, camundaToken, checkIsInRole, whatIsRole, checkIsUser, checkAllowedToAccess, getTeams };
+const catchLoginErrorAndRedirect = (req, res, next) => {
+	if (req.auth.err || !req.auth.user) {
+		if (req.auth.err === 'loginError') {
+			return res.status(200).redirect(process.env.homeURL + '/loginerror');
+		}
+
+		let redirect = '/';
+		let returnPage = null;
+		if (req.param.returnpage) {
+			returnPage = Url.parse(req.param.returnpage);
+			redirect = returnPage.path;
+			delete req.param.returnpage;
+		}
+
+		let redirectUrl = process.env.homeURL + redirect;
+
+		return res.status(200).redirect(redirectUrl);
+	}
+	next();
+};
+
+const loginAndSignToken = (req, res, next) => {
+	req.login(req.auth.user, async err => {
+		if (err) {
+			return next(err);
+		}
+
+		let redirect = '/';
+		let returnPage = null;
+		let queryStringParsed = null;
+		if (req.param.returnpage) {
+			returnPage = Url.parse(req.param.returnpage);
+			redirect = returnPage.path;
+			queryStringParsed = queryString.parse(returnPage.query);
+		}
+
+		let [, profile] = await to(getObjectById(req.user.id));
+		if (!profile) {
+			await to(updateRedirectURL({ id: req.user.id, redirectURL: redirect }));
+			return res.redirect(process.env.homeURL + '/completeRegistration/' + req.user.id);
+		}
+
+		if (req.param.returnpage) {
+			delete req.param.returnpage;
+		}
+
+		let redirectUrl = process.env.homeURL + redirect;
+		if (queryStringParsed && queryStringParsed.sso && queryStringParsed.sig) {
+			try {
+				redirectUrl = discourseLogin(queryStringParsed.sso, queryStringParsed.sig, req.user);
+			} catch (err) {
+				console.error(err.message);
+				return res.status(500).send('Error authenticating the user.');
+			}
+		}
+
+		//Build event object for user login and log it to DB
+		let eventObj = {
+			userId: req.user.id,
+			event: `user_login_${req.user.provider}`,
+			timestamp: Date.now(),
+		};
+
+		await eventLogController.logEvent(eventObj);
+
+		return res
+			.status(200)
+			.cookie('jwt', signToken({ _id: req.user._id, id: req.user.id, timeStamp: Date.now() }), {
+				httpOnly: true,
+				secure: process.env.api_url ? true : false,
+			})
+			.redirect(redirectUrl);
+	});
+};
+
+export {
+	setup,
+	signToken,
+	camundaToken,
+	checkIsInRole,
+	whatIsRole,
+	checkIsUser,
+	checkAllowedToAccess,
+	getTeams,
+	catchLoginErrorAndRedirect,
+	loginAndSignToken,
+};

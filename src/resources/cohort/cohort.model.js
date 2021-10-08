@@ -8,6 +8,7 @@ const cohortSchema = new Schema(
 		pid: String,
 		type: String,
 		name: String,
+		description: String,
 		activeflag: String,
 		userId: Number,
 		uploaders: [],
@@ -16,6 +17,8 @@ const cohortSchema = new Schema(
 		changeLog: String,
 		updatedAt: Date,
 		lastRefresh: Date,
+		datasetPids: [],
+		filterCriteria: [],
 
 		// fields from RQuest
 		request_id: String,

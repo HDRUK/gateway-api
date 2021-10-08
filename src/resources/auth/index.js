@@ -11,6 +11,7 @@ const initialiseAuthentication = app => {
 		strategies.LinkedinStrategy,
 		strategies.GoogleStrategy,
 		strategies.AzureStrategy,
+		strategies.OrcidStrategy,
 		strategies.JWTStrategy
 	)(app);
 };

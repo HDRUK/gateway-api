@@ -6,6 +6,7 @@ import ProjectRepository from '../project/project.repository';
 import PaperRepository from '../paper/paper.repository';
 import CollectionsRepository from '../collections/v2/collection.repository';
 import CourseRepository from '../course/v2/course.repository';
+import DataUseRegisterRepository from '../dataUseRegister/dataUseRegister.repository';
 
 const datasetRepository = new DatasetRepository();
 const toolRepository = new ToolRepository();
@@ -13,6 +14,7 @@ const projectRepository = new ProjectRepository();
 const paperRepository = new PaperRepository();
 const collectionsRepository = new CollectionsRepository();
 const courseRepository = new CourseRepository();
+const dataUseRegisterRepository = new DataUseRegisterRepository();
 
 export const filtersRepository = new FiltersRepository();
 export const filtersService = new FiltersService(
@@ -22,5 +24,6 @@ export const filtersService = new FiltersService(
 	projectRepository,
 	paperRepository,
 	collectionsRepository,
-	courseRepository
+	courseRepository,
+	dataUseRegisterRepository
 );

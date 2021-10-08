@@ -260,8 +260,8 @@ module.exports = {
 						Data.findByIdAndUpdate(
 							{ _id: id },
 							{
-								structuralMetadata: { $eq: structuralMetadata },
-								percentageCompleted: { $eq: data.percentageCompleted },
+								structuralMetadata,
+								percentageCompleted,
 								'timestamps.updated': Date.now(),
 							},
 							{ new: true }
@@ -284,7 +284,7 @@ module.exports = {
 						let title = questionAnswers['properties/summary/title'];
 
 						if (title && title.length >= 2) {
-							Data.findByIdAndUpdate({ _id: id }, { name: { $eq: title }, 'timestamps.updated': Date.now() }, { new: true }).catch(err => {
+							Data.findByIdAndUpdate({ _id: id }, { name: title, 'timestamps.updated': Date.now() }, { new: true }).catch(err => {
 								console.error(err);
 								throw err;
 							});

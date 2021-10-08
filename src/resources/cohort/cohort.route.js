@@ -2,6 +2,7 @@ import express from 'express';
 import CohortController from './cohort.controller';
 import { cohortService } from './dependency';
 import { logger } from '../utilities/logger';
+import { resultLimit } from '../../config/middleware';
 
 const router = express.Router();
 const cohortController = new CohortController(cohortService);
@@ -17,7 +18,7 @@ router.get('/:id', logger.logRequestMiddleware({ logCategory, action: 'Viewed co
 // @route   GET /api/v1/cohorts
 // @desc    Returns a collection of cohorts based on supplied query parameters
 // @access  Public
-router.get('/', logger.logRequestMiddleware({ logCategory, action: 'Viewed cohorts data' }), (req, res) =>
+router.get('/', (req, res, next) => resultLimit(req, res, next, 100), logger.logRequestMiddleware({ logCategory, action: 'Viewed cohorts data' }), (req, res) =>
 	cohortController.getCohorts(req, res)
 );
 

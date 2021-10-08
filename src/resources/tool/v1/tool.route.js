@@ -269,8 +269,8 @@ router.post('/reply', passport.authenticate('jwt'), async (req, res) => {
 	Reviews.findOneAndUpdate(
 		{ reviewID: { $eq: reviewID } },
 		{
-			replierID: { $eq: replierID },
-			reply: { $eq: inputSanitizer.removeNonBreakingSpaces(reply) },
+			replierID,
+			reply: inputSanitizer.removeNonBreakingSpaces(reply),
 			replydate: Date.now(),
 		},
 		err => {
@@ -290,7 +290,7 @@ router.put('/review/approve', passport.authenticate('jwt'), utils.checkIsInRole(
 	Reviews.findOneAndUpdate(
 		{ reviewID: { $eq: id } },
 		{
-			activeflag: { $eq: activeflag },
+			activeflag,
 		},
 		err => {
 			if (err) return res.json({ success: false, error: err });

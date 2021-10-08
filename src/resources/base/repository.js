@@ -48,7 +48,7 @@ export default class Repository {
 
 		// Pagination
 		const page = query.page * 1 || 1;
-		const limit = query.limit * 1 || null;
+		const limit = query.limit * 1 || 500;
 		const skip = (page - 1) * limit;
 		results = results.skip(skip).limit(limit);
 

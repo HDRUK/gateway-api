@@ -55,11 +55,12 @@ const dataUseRegisterSchema = new Schema(
 		projectEndDate: Date, //Project End Date
 		latestApprovalDate: Date, //Latest Approval Date
 		dataSensitivityLevel: String, //Data Sensitivity Level
-		legalBasisForData: String, //Legal Basis For Provision Of Data
+		legalBasisForDataArticle6: String, //Legal Basis For Provision Of Data (changed to 'Legal basis for provision of data under Article 6')
+		legalBasisForDataArticle9: String, //Added 'Lawful conditions for provision of data under Article 9'
 		dutyOfConfidentiality: String, //Common Law Duty Of Confidentiality
 		nationalDataOptOut: String, //National Data Opt-Out Applied
 		requestFrequency: String, //Request Frequency
-		dataProcessingDescription: String, //Description Of How The Data Will Be Processed
+		datasetLinkageDescription: String, //Description Of How The Data Will Be Processed (changed to 'For linked datasets, specify how the linkage will take place')
 		confidentialDataDescription: String, //Description Of The Confidential Data Being Used
 		accessDate: Date, //Release/Access Date
 		dataLocation: String, //TRE Or Any Other Specified Location

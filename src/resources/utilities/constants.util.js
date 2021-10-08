@@ -249,8 +249,14 @@ const _logTypes = {
 	USER: 'User',
 };
 
-// Activity log related enums
+const _dataUseRegisterStatus = {
+	ACTIVE: 'active',
+	INREVIEW: 'inReview',
+	REJECTED: 'rejected',
+	ARCHIVED: 'archived',
+};
 
+// Activity log related enums
 const _activityLogEvents = {
 	APPLICATION_SUBMITTED: 'applicationSubmitted',
 	REVIEW_PROCESS_STARTED: 'reviewProcessStarted',
@@ -282,13 +288,6 @@ const _activityLogTypes = {
 const _systemGeneratedUser = {
 	FIRSTNAME: 'System',
 	LASTNAME: 'Generated',
-};
-
-const _dataUseRegisterStatus = {
-	ACTIVE: 'active',
-	INREVIEW: 'inReview',
-	REJECTED: 'rejected',
-	ARCHIVED: 'archived',
 };
 
 export default {

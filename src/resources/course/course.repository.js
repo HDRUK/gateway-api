@@ -6,6 +6,7 @@ import emailGenerator from '../utilities/emailGenerator.util';
 import helper from '../utilities/helper.util';
 import { utils } from '../auth';
 import { ROLES } from '../user/user.roles';
+import { filtersService } from '../filters/dependency';
 const hdrukEmail = `enquiry@healthdatagateway.org`;
 const urlValidator = require('../utilities/urlValidator');
 const inputSanitizer = require('../utilities/inputSanitizer');
@@ -103,24 +104,24 @@ const editCourse = async req => {
 		let updatedon = Date.now();
 
 		Course.findOneAndUpdate(
-			{ id: id },
+			{ id: { $eq: id } },
 			{
-				title: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.title) },
-				link: { $eq: urlValidator.validateURL(inputSanitizer.removeNonBreakingSpaces(req.body.link)) },
-				provider: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.provider) },
-				description: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.description) },
-				courseDelivery: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.courseDelivery) },
-				location: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.location) },
-				keywords: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.keywords) },
-				domains: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.domains) },
-				relatedObjects: { $eq: relatedObjects },
-				courseOptions: { $eq: courseOptions },
-				entries: { $eq: entries },
-				restrictions: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.restrictions) },
-				award: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.award) },
-				competencyFramework: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.competencyFramework) },
-				nationalPriority: { $eq: inputSanitizer.removeNonBreakingSpaces(req.body.nationalPriority) },
-				updatedon: { $eq: updatedon },
+				title: inputSanitizer.removeNonBreakingSpaces(req.body.title),
+				link: urlValidator.validateURL(inputSanitizer.removeNonBreakingSpaces(req.body.link)),
+				provider: inputSanitizer.removeNonBreakingSpaces(req.body.provider),
+				description: inputSanitizer.removeNonBreakingSpaces(req.body.description),
+				courseDelivery: inputSanitizer.removeNonBreakingSpaces(req.body.courseDelivery),
+				location: inputSanitizer.removeNonBreakingSpaces(req.body.location),
+				keywords: inputSanitizer.removeNonBreakingSpaces(req.body.keywords),
+				domains: inputSanitizer.removeNonBreakingSpaces(req.body.domains),
+				relatedObjects,
+				courseOptions,
+				entries,
+				restrictions: inputSanitizer.removeNonBreakingSpaces(req.body.restrictions),
+				award: inputSanitizer.removeNonBreakingSpaces(req.body.award),
+				competencyFramework: inputSanitizer.removeNonBreakingSpaces(req.body.competencyFramework),
+				nationalPriority: inputSanitizer.removeNonBreakingSpaces(req.body.nationalPriority),
+				updatedon,
 			},
 			err => {
 				if (err) {
