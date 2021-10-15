@@ -3,6 +3,7 @@ import { Data } from '../tool/data.model';
 import { Course } from '../course/course.model';
 import { Collections } from './collections.model';
 import { UserModel } from '../user/user.model';
+import { DataUseRegister } from '../dataUseRegister/dataUseRegister.model';
 import emailGenerator from '../utilities/emailGenerator.util';
 import _ from 'lodash';
 import helper from '../utilities/helper.util';
@@ -49,7 +50,7 @@ function getCollectionObject(objectId, objectType, pid, updated) {
 
 	return new Promise(async resolve => {
 		let data;
-		if (objectType !== 'dataset' && objectType !== 'course') {
+		if (objectType !== 'dataset' && objectType !== 'course' && objectType !== 'dataUseRegister') {
 			data = await Data.find(
 				{ id: parseInt(id) },
 				{
@@ -90,6 +91,27 @@ function getCollectionObject(objectId, objectType, pid, updated) {
 					relatedresources: { $cond: { if: { $isArray: '$relatedObjects' }, then: { $size: '$relatedObjects' }, else: 0 } },
 				}
 			).lean();
+		} else if (!isNaN(id) && objectType === 'dataUseRegister') {
+			data = await DataUseRegister.find(
+				{ id: parseInt(id) },
+				{
+					id: 1,
+					type: 1,
+					activeflag: 1,
+					projectTitle: 1,
+					organisationName: 1,
+					keywords: 1,
+					datasetTitles: 1,
+					publisher: 1,
+					counter: { $ifNull: ['$counter', 0] },
+					relatedresources: { $cond: { if: { $isArray: '$relatedObjects' }, then: { $size: '$relatedObjects' }, else: 0 } },
+				}
+			)
+				.populate({
+					path: 'publisherInfo',
+					select: { name: 1, _id: 0 },
+				})
+				.lean();
 		} else {
 			const datasetRelatedResources = {
 				$lookup: {
