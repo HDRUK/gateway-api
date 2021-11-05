@@ -7,7 +7,7 @@ jest.setTimeout(30000);
 
 describe('DataRequestService', function () {
 	describe('getDarContributors', function () {
-		it('should return DAR contributors sanitisied information', async function () {
+		it('should return DAR contributors final information with relevant values removed', async function () {
 			const dataRequestRepository = new DataRequestRepository();
 			const getDarContributorsStub = sinon.stub(dataRequestRepository, 'getDarContributors').returns(contributors);
 
