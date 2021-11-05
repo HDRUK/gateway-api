@@ -299,4 +299,14 @@ router.post(
 	(req, res) => dataRequestController.createAmendment(req, res)
 );
 
+// @route   GET api/v1/data-access-request/prepopulate-contributors/:id
+// @desc    GET Information to prepopulate fields for each contributor
+// @access  Private
+router.get(
+	'/prepopulate-contributors/:id',
+	passport.authenticate('jwt'),
+	logger.logRequestMiddleware({ logCategory, action: 'Get additional information for Data Access Request contributors' }),
+	(req, res) => dataRequestController.getContributorsPrepoulationInfo(req, res)
+);
+
 module.exports = router;

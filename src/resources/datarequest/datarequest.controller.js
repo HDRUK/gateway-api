@@ -322,6 +322,33 @@ export default class DataRequestController extends Controller {
 		}
 	}
 
+	//GET api/v1/data-access-request/prepopulate-contributors/:id
+	async getContributorsPrepoulationInfo(req, res) {
+		try {
+			let darId = req.params.id;
+			let userId = req.user.id;
+
+			//Get additional info to pre populate for user and collaborators (authors)
+			let contributors = await this.dataRequestService.getDarContributors(darId, userId);
+
+
+			// Return payload
+			return res.status(200).json({
+				success: true,
+				data: contributors.sort(function (a, b) {
+					return b.user ? 1 : -1;
+				}),
+			});
+		} catch (err) {
+			// Return error response if something goes wrong
+			logger.logError(err, logCategory);
+			return res.status(500).json({
+				success: false,
+				message: 'An error occurred populating additional information for contributors.',
+			});
+		}
+	}
+
 	//POST api/v1/data-access-request/:id
 	async submitAccessRequestById(req, res) {
 		try {

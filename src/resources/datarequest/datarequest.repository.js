@@ -4,6 +4,7 @@ import { DataRequestSchemaModel } from './schema/datarequest.schemas.model';
 import { TopicModel } from '../topic/topic.model';
 import { Data as ToolModel } from '../tool/data.model';
 import constants from '../utilities/constants.util';
+const { ObjectId } = require('mongodb');
 
 export default class DataRequestRepository extends Repository {
 	constructor() {
@@ -35,9 +36,10 @@ export default class DataRequestRepository extends Repository {
 					},
 				},
 				{
-					path: 'datasets dataset authors',
+					path: 'datasets dataset',
 					populate: { path: 'publisher', populate: { path: 'team' } },
 				},
+				{ path: 'authors', select: 'firstname lastname -id' },
 				{ path: 'workflow.steps.reviewers', select: 'firstname lastname' },
 				{ path: 'files.owner', select: 'firstname lastname' },
 			])
@@ -106,7 +108,7 @@ export default class DataRequestRepository extends Repository {
 		]);
 	}
 
- 	getApplicationToSubmitById(id) {
+	getApplicationToSubmitById(id) {
 		return DataRequestModel.findOne({ _id: id }).populate([
 			{
 				path: 'datasets dataset initialDatasets',
@@ -292,5 +294,24 @@ export default class DataRequestRepository extends Repository {
 
 			await version.save();
 		}
+	}
+
+	getDarContributors(darId) {
+		return DataRequestModel.find({ _id: ObjectId(darId) })
+			.select('userId authorIds -_id')
+			.lean();
+	}
+
+	getDarContributorsInfo(id, userId) {
+		let extraInfo = ToolModel.find(
+			{ id: id },
+			{ id: 1, firstname: 1, lastname: 1, orcid: 1, showOrcid: 1, organisation: 1, showOrganisation: 1 }
+		).lean();
+
+		if (userId === id) {
+			extraInfo = extraInfo.populate({ path: 'user', select: 'email -_id -id' });
+		}
+
+		return extraInfo;
 	}
 }

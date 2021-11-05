@@ -1,4 +1,4 @@
-import { isEmpty, has, isNil, orderBy } from 'lodash';
+import { isEmpty, has, isNil, orderBy, isNull, isUndefined } from 'lodash';
 import moment from 'moment';
 
 import helper from '../utilities/helper.util';
@@ -280,8 +280,12 @@ export default class DataRequestService {
 		let applicantNames = '';
 		// Return only main applicant if no applicants added
 		if (isEmpty(applicants)) {
-			const { firstname, lastname } = accessRecord.mainApplicant;
-			applicantNames = `${firstname} ${lastname}`;
+			if (isNull(accessRecord.mainApplicant)) {
+				applicantNames = '';
+			} else {
+				const { firstname, lastname } = accessRecord.mainApplicant;
+				applicantNames = `${firstname} ${lastname}`;
+			}
 		} else {
 			applicantNames = applicants.join(', ');
 		}
@@ -563,5 +567,24 @@ export default class DataRequestService {
 		});
 
 		return { authorised: true, userType: requestingUserType, accessRecords: requestedVersions };
+	}
+
+	async getDarContributors(darId, userId) {
+		let contributors = await this.dataRequestRepository.getDarContributors(darId);
+		let darContributors = [contributors[0].userId, ...contributors[0].authorIds];
+
+		let darContributorsInfo = [];
+		for (let contributor of darContributors) {
+			let additionalInformation = await this.dataRequestRepository.getDarContributorsInfo(contributor, userId);
+			darContributorsInfo.push(additionalInformation[0]);
+		}
+
+		darContributorsInfo.map(contibutorInfo => {
+			if (isUndefined(contibutorInfo.user)) {
+				contibutorInfo = helper.hidePrivateProfileDetails([contibutorInfo]);
+			}
+		});
+
+		return darContributorsInfo;
 	}
 }
