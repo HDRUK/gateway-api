@@ -303,15 +303,15 @@ export default class DataRequestRepository extends Repository {
 	}
 
 	getDarContributorsInfo(id, userId) {
-		let extraInfo = ToolModel.find(
+		let additionalInformation = ToolModel.find(
 			{ id: id },
 			{ id: 1, firstname: 1, lastname: 1, orcid: 1, showOrcid: 1, organisation: 1, showOrganisation: 1 }
 		).lean();
 
 		if (userId === id) {
-			extraInfo = extraInfo.populate({ path: 'user', select: 'email -_id -id' });
+			additionalInformation = additionalInformation.populate({ path: 'user', select: 'email -_id -id' });
 		}
 
-		return extraInfo;
+		return additionalInformation;
 	}
 }
