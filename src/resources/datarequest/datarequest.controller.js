@@ -323,7 +323,7 @@ export default class DataRequestController extends Controller {
 	}
 
 	//GET api/v1/data-access-request/prepopulate-contributors/:id
-	async getContributorsPrepoulationInfo(req, res) {
+	async getContributorsAdditionalInfo(req, res) {
 		try {
 			let darId = req.params.id;
 			let userId = req.user.id;
