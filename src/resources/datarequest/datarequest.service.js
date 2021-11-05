@@ -579,9 +579,9 @@ export default class DataRequestService {
 			darContributorsInfo.push(additionalInformation[0]);
 		}
 
-		darContributorsInfo.map(contibutorInfo => {
-			if (isUndefined(contibutorInfo.user)) {
-				contibutorInfo = helper.hidePrivateProfileDetails([contibutorInfo]);
+		darContributorsInfo.map(contributorInfo => {
+			if (isUndefined(contributorInfo.user)) { 
+				helper.hidePrivateProfileDetails([contributorInfo]);
 			}
 		});
 
