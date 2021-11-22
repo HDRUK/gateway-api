@@ -21,6 +21,7 @@ export default class NHSMailStrategy {
 		};
 	}
 
+	// Custom logic for verifying the user credentials
 	verifyCallback = async (accessToken, refreshToken, idToken) => {
 		if (!jwt.decode(idToken).nonce || jwt.decode(idToken).nonce !== nonceString) {
 			throw new Error('The nonce value is missing or the value in the returned ID token does not match that sent in the initial request');
@@ -59,6 +60,7 @@ export default class NHSMailStrategy {
 	};
 
 	initialise = (req, res, next) => {
+		// Initialise the request by redirecting to the appropriate sign in page
 		res.redirect(
 			`${this.strategyOptions.baseAuthUrl}/authorize?` +
 				queryString.stringify({
@@ -78,10 +80,12 @@ export default class NHSMailStrategy {
 
 	callback = async (req, res, next) => {
 		try {
+			// Confirm the state string
 			if (req.query.state !== stateString) {
 				throw new Error('The response state parameter does not match the state of the initial request');
 			}
 
+			// Make a request to the token endpoint using the authorisation code
 			const {
 				data: { access_token, refresh_token, id_token },
 			} = await axios.post(
@@ -104,6 +108,7 @@ export default class NHSMailStrategy {
 				})
 			);
 
+			// Perform a check on the credentials
 			const [err, user] = await verifyCallback(access_token, refresh_token, id_token);
 			req.auth = {
 				err: err,

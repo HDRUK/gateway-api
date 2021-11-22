@@ -16,9 +16,6 @@ const oidcStrategy = new OIDCStrategy();
 router.get('/orcid', captureReferer, orcidStrategy.initialise);
 router.get('/orcid/callback', orcidStrategy.callback, catchLoginErrorAndRedirect, authUtils.loginAndSignToken);
 
-router.get('/nhsmail', captureReferer, nhsmailStrategy.initialise);
-router.get('/nhsmail/callback', nhsmailStrategy.callback, catchLoginErrorAndRedirect, authUtils.loginAndSignToken);
-
 router.get('/azure', captureReferer, azureStrategy.initialise);
 router.get('/azure/callback', azureStrategy.callback, catchLoginErrorAndRedirect, authUtils.loginAndSignToken);
 
@@ -30,5 +27,9 @@ router.get('/linkedin/callback', linkedinStrategy.callback, catchLoginErrorAndRe
 
 router.get('/oidc', captureReferer, oidcStrategy.initialise);
 router.get('/oidc/callback', oidcStrategy.callback, catchLoginErrorAndRedirect, authUtils.loginAndSignToken);
+
+// IN PROGRESS
+//router.get('/nhsmail', captureReferer, nhsmailStrategy.initialise);
+//router.get('/nhsmail/callback', nhsmailStrategy.callback, catchLoginErrorAndRedirect, authUtils.loginAndSignToken);
 
 module.exports = router;
