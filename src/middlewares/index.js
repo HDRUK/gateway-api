@@ -7,6 +7,7 @@ import {
 	validateDeleteRequest,
 	authoriseDelete,
 } from './activitylog.middleware';
+import { captureReferer, catchLoginErrorAndRedirect } from './auth.middleware';
 
 export {
 	checkIDMiddleware,
@@ -16,4 +17,6 @@ export {
 	validateCreateRequest,
 	validateDeleteRequest,
 	authoriseDelete,
+	captureReferer,
+	catchLoginErrorAndRedirect,
 };
