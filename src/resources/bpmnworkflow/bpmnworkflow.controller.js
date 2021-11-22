@@ -1,7 +1,7 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import _ from 'lodash';
-import { utils } from '../auth';
+import { authUtils } from '../../utils';
 
 axiosRetry(axios, {
 	retries: 3,
@@ -13,7 +13,7 @@ axiosRetry(axios, {
 const bpmnBaseUrl = process.env.BPMNBASEURL;
 //Generate Bearer token for camunda endpoints
 const config = {
-	headers: { Authorization: `Bearer ${utils.camundaToken()}` },
+	headers: { Authorization: `Bearer ${authUtils.camundaToken()}` },
 };
 
 module.exports = {

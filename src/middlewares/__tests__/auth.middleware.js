@@ -1,6 +1,6 @@
-import { catchLoginErrorAndRedirect, loginAndSignToken } from '../utils';
+import { catchLoginErrorAndRedirect } from '../auth.middleware';
 
-describe('Utilities', () => {
+describe('Auuth middleware', () => {
 	describe('catchErrorAndRedirect middleware', () => {
 		it('should be a function', () => {
 			expect(typeof catchLoginErrorAndRedirect).toBe('function');
@@ -43,30 +43,6 @@ describe('Utilities', () => {
 			expect(next.mock.calls.length).toBe(0);
 			expect(res.status.mock.calls.length).toBe(1);
 			expect(res.redirect.mock.calls.length).toBe(1);
-		});
-	});
-
-	describe('loginAndSignToken middleware', () => {
-		it('should be a function', () => {
-			expect(typeof loginAndSignToken).toBe('function');
-		});
-
-		it('should call res.login once', () => {
-			let res = {};
-			res.status = jest.fn().mockReturnValue(res);
-			res.redirect = jest.fn().mockReturnValue(res);
-			let req = {
-				auth: {
-					user: 'someUser',
-				},
-			};
-			req.login = jest.fn().mockReturnValue(req);
-			const next = jest.fn();
-
-			loginAndSignToken(req, res, next);
-
-			// assert
-			expect(req.login.mock.calls.length).toBe(1);
 		});
 	});
 });

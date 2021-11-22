@@ -1,6 +1,6 @@
 import express from 'express';
 import { to } from 'await-to-js';
-import { login } from '../auth/strategies/jwt';
+import { JWTStrategy } from '../../services/strategies';
 import { updateUser } from '../user/user.service';
 import { createPerson } from '../person/person.service';
 import { getUserByUserId } from '../user/user.repository';
@@ -102,7 +102,8 @@ router.post('/', async (req, res) => {
 	// 4. Sync contact in Hubspot
 	hubspotConnector.syncContact({ ...user.toObject(), orcid, sector, organisation });
 
-	const [loginErr, token] = await to(login(req, user));
+	const jwtStrategy = new JWTStrategy();
+	const [loginErr, token] = await to(jwtStrategy.login(req, user));
 
 	if (loginErr) {
 		console.error(loginErr);

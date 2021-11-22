@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import { utils } from '../auth';
+import { authUtils } from '../../utils';
 import { ROLES } from '../user/user.roles';
 import { Data } from '../tool/data.model';
 import { Collections } from '../collections/collections.model';
@@ -19,7 +19,7 @@ const hdrukEmail = `enquiry@healthdatagateway.org`;
  * Return list of tools, this can be with filters or/and search criteria. This will also include pagination on results.
  * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
  */
-router.delete('/', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.delete('/', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	const { id } = req.body;
 	Data.findOneAndDelete({ id: { $eq: id } }, err => {
 		if (err) return res.send(err);
@@ -33,7 +33,7 @@ router.delete('/', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin
  * Return list of tools, this can be with filters or/and search criteria. This will also include pagination on results.
  * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
  */
-router.get('/admin', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin), async (req, res) => {
+router.get('/admin', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin), async (req, res) => {
 	var result;
 	//var startIndex = 0;
 	//var maxResults = 25;
@@ -68,7 +68,7 @@ router.get('/admin', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Adm
  * Return list of tools, this can be with filters or/and search criteria. This will also include pagination on results.
  * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
  */
-router.get('/', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.get('/', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	var result;
 	var startIndex = 0;
 	var maxResults = 25;
@@ -105,7 +105,7 @@ router.get('/', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, R
  *
  * Returns list of collections.
  */
-router.get('/collections', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.get('/collections', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	var result;
 	var startIndex = 0;
 	var maxResults = 25;
@@ -143,7 +143,7 @@ router.get('/collections', passport.authenticate('jwt'), utils.checkIsInRole(ROL
  * Return list of tools, this can be with filters or/and search criteria. This will also include pagination on results.
  * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
  */
-router.put('/status', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin), async (req, res) => {
+router.put('/status', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin), async (req, res) => {
 	const { id, activeflag } = req.body;
 	try {
 		await Data.findOneAndUpdate({ id: { $eq: id } }, { $set: { activeflag: activeflag } });

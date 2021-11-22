@@ -1,14 +1,12 @@
 import express from 'express';
 import passport from 'passport';
 import { isEmpty } from 'lodash';
-import constants from '../utilities/constants.util';
-import { getTeams } from './utils';
+
+import constants from '../resources/utilities/constants.util';
+import { authUtils } from '../utils';
 
 const router = express.Router();
 
-// @router   POST /api/auth/logout
-// @desc     logout user
-// @access   Private
 router.get('/logout', function (req, res) {
 	req.logout();
 	for (var prop in req.cookies) {
@@ -17,9 +15,6 @@ router.get('/logout', function (req, res) {
 	return res.json({ success: true });
 });
 
-// @router   GET /api/auth/status
-// @desc     Return the logged in status of the user and their role.
-// @access   Private
 router.get('/status', function (req, res, next) {
 	passport.authenticate('jwt', async function (err, user) {
 		if (err || !user) {
@@ -44,7 +39,7 @@ router.get('/status', function (req, res, next) {
 			const adminArray = teams.filter(team => team.type === constants.teamTypes.ADMIN);
 			if (!isEmpty(adminArray)) {
 				if (adminArray[0].roles.includes(constants.roleTypes.ADMIN_DATASET)) {
-					const allTeams = await getTeams();
+					const allTeams = await authUtils.getTeams();
 					allTeams.forEach(newTeam => {
 						const foundTeam = teams.find(team => team._id && team._id.toString() === newTeam._id.toString());
 						if (!isEmpty(foundTeam)) {

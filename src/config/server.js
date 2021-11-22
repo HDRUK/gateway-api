@@ -9,7 +9,7 @@ import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import { connectToDatabase } from './db';
-import { initialiseAuthentication } from '../resources/auth';
+import { authUtils } from '../utils';
 import * as Sentry from '@sentry/node';
 import * as Tracing from '@sentry/tracing';
 import helper from '../resources/utilities/helper.util';
@@ -183,9 +183,9 @@ app.use('/api/v1/openid', oidc.callback);
 app.use('/api', router);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(require('../../docs/index.docs')));
 
-app.use('/oauth', require('../resources/auth/oauth.route'));
-app.use('/api/v1/auth/sso/discourse', require('../resources/auth/sso/sso.discourse.router'));
-app.use('/api/v1/auth', require('../resources/auth/auth.route'));
+app.use('/oauth', require('../routes/oauth.route'));
+app.use('/api/v1/auth/sso/discourse', require('../services/discourse/sso.discourse.router'));
+app.use('/api/v1/auth', require('../routes/auth.route'));
 app.use('/api/v1/auth/register', require('../resources/user/user.register.route'));
 
 app.use('/api/v1/users', require('../resources/user/user.route'));
@@ -254,9 +254,9 @@ app.use('/api/v1/global', require('../resources/global/global.route'));
 
 app.use('/api/v1/search-preferences', require('../resources/searchpreferences/searchpreferences.route'));
 
-app.use('/auth', require('../routes/auth.routes'));
+app.use('/auth', require('../routes/auth.strategies.route'));
 
-initialiseAuthentication(app);
+authUtils.initialiseAuthentication();
 
 // launch our backend into a port
 app.listen(API_PORT, () => console.log(`LISTENING ON PORT ${API_PORT}`));

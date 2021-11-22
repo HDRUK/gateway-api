@@ -7,7 +7,7 @@ import emailGenerator from '../utilities/emailGenerator.util';
 import helper from '../utilities/helper.util';
 const asyncModule = require('async');
 import { filtersService } from '../filters/dependency';
-import { utils } from '../auth';
+import { authUtils } from '../../utils';
 import { ROLES } from '../user/user.roles';
 const hdrukEmail = `enquiry@healthdatagateway.org`;
 const urlValidator = require('../utilities/urlValidator');
@@ -380,7 +380,7 @@ const setStatus = async (req, res) => {
 			const userId = req.user.id;
 			let tool;
 
-			if (utils.whatIsRole(req) === ROLES.Admin) {
+			if (authUtils.whatIsRole(req) === ROLES.Admin) {
 				tool = await Data.findOneAndUpdate({ id: id }, { $set: { activeflag: activeflag } });
 				if (!tool) {
 					reject(new Error('Tool not found'));

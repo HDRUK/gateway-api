@@ -1,4 +1,4 @@
-import { signToken } from '../auth/utils';
+import { authUtils } from '../../utils';
 import { DataRequestModel } from '../datarequest/datarequest.model';
 import { Data } from '../tool/data.model';
 
@@ -79,7 +79,7 @@ const _buildGa4ghVisas = async user => {
 
 	passportDecoded.forEach(visa => {
 		const expires_in = 900;
-		const jwt = signToken(visa, expires_in);
+		const jwt = authUtils.signToken(visa, expires_in);
 		passportEncoded.push(jwt);
 	});
 

@@ -4,7 +4,7 @@ import { ROLES } from '../../user/user.roles';
 import { Reviews } from '../review.model';
 import { Data } from '../data.model';
 import passport from 'passport';
-import { utils } from '../../auth';
+import { authUtils } from '../../../utils';
 import { UserModel } from '../../user/user.model';
 import { MessagesModel } from '../../message/message.model';
 import { addTool, editTool, setStatus, getTools, getToolsAdmin, getAllTools } from '../data.repository';
@@ -34,7 +34,7 @@ router.post('/', passport.authenticate('jwt'), async (req, res) => {
 // @desc     Edit tools user
 // @access   Private
 // router.put('/{id}',
-router.put('/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('tool'), async (req, res) => {
+router.put('/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('tool'), async (req, res) => {
 	await editTool(req)
 		.then(response => {
 			return res.json({ success: true, response });
@@ -88,7 +88,7 @@ router.get('/', async (req, res) => {
 // @router   PATCH /api/v1/tool/{id}
 // @desc     Set tool status
 // @access   Private
-router.patch('/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('tool'), async (req, res) => {
+router.patch('/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('tool'), async (req, res) => {
 	await setStatus(req)
 		.then(response => {
 			return res.json({ success: true, response });
@@ -285,7 +285,7 @@ router.post('/reply', passport.authenticate('jwt'), async (req, res) => {
  *
  * Authenticate user to see if user can approve.
  */
-router.put('/review/approve', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin), async (req, res) => {
+router.put('/review/approve', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin), async (req, res) => {
 	const { id, activeflag } = req.body;
 	Reviews.findOneAndUpdate(
 		{ reviewID: { $eq: id } },
@@ -312,7 +312,7 @@ router.put('/review/approve', passport.authenticate('jwt'), utils.checkIsInRole(
  *
  * Authenticate user to see if user can reject.
  */
-router.delete('/review/reject', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin), async (req, res) => {
+router.delete('/review/reject', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin), async (req, res) => {
 	const { id } = req.body;
 	Reviews.findOneAndDelete({ reviewID: { $eq: id } }, err => {
 		if (err) return res.send(err);
@@ -325,7 +325,7 @@ router.delete('/review/reject', passport.authenticate('jwt'), utils.checkIsInRol
  *
  * When they delete, authenticate the user and remove the review data from the DB.
  */
-router.delete('/review/delete', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.delete('/review/delete', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	const { id } = req.body;
 	Data.findOneAndDelete({ id: { $eq: id } }, err => {
 		if (err) return res.send(err);
@@ -336,7 +336,7 @@ router.delete('/review/delete', passport.authenticate('jwt'), utils.checkIsInRol
 //Validation required if Delete is to be implemented
 // router.delete('/:id',
 //   passport.authenticate('jwt'),
-//   utils.checkIsInRole(ROLES.Admin, ROLES.Creator),
+//   authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator),
 //     async (req, res) => {
 //       await deleteTool(req, res)
 //         .then(response => {

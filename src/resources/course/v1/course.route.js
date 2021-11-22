@@ -3,7 +3,7 @@ import { ROLES } from '../../user/user.roles';
 import { Data } from '../../tool/data.model';
 import { Course } from '../course.model';
 import passport from 'passport';
-import { utils } from '../../auth';
+import { authUtils } from '../../../utils';
 import { addCourse, editCourse, setStatus, getCourseAdmin, getCourse, getAllCourses } from '../course.repository';
 import escape from 'escape-html';
 const router = express.Router();
@@ -24,7 +24,7 @@ router.post('/', passport.authenticate('jwt'), async (req, res) => {
 // @router   PUT /api/v1/course/{id}
 // @desc     Edit Course as user
 // @access   Private
-router.put('/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('course'), async (req, res) => {
+router.put('/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('course'), async (req, res) => {
 	await editCourse(req)
 		.then(response => {
 			return res.json({ success: true, response });
@@ -76,7 +76,7 @@ router.get('/', async (req, res) => {
 // @router   PATCH /api/v1/course/{id}
 // @desc     Set course status
 // @access   Private
-router.patch('/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('course'), async (req, res) => {
+router.patch('/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('course'), async (req, res) => {
 	await setStatus(req)
 		.then(response => {
 			return res.json({ success: true, response });
@@ -174,7 +174,7 @@ router.get('/edit/:id', async (req, res) => {
 //Validation required if Delete is to be implemented
 // router.delete('/:id',
 //   passport.authenticate('jwt'),
-//   utils.checkIsInRole(ROLES.Admin, ROLES.Creator),
+//   authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator),
 //     async (req, res) => {
 //       await deleteTool(req, res)
 //         .then(response => {

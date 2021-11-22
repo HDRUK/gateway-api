@@ -2,7 +2,7 @@ import express from 'express';
 import passport from 'passport';
 
 import { DataRequestSchemaModel } from './datarequest.schemas.model';
-import { utils } from '../../auth';
+import { authUtils } from '../../../utils';
 import { ROLES } from '../../user/user.roles';
 
 const router = express.Router();
@@ -10,7 +10,7 @@ const router = express.Router();
 // @router   POST api/v1/data-access-request/schema
 // @desc     Add a data request schema
 // @access   Private
-router.post('/', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.post('/', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	const { version, status, dataSetId, jsonSchema, publisher } = req.body;
 	const dataRequestSchema = new DataRequestSchemaModel();
 	dataRequestSchema.id = parseInt(Math.random().toString().replace('0.', ''));
@@ -31,7 +31,7 @@ router.post('/', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, 
 // @router   GET /api/v1/data-access-request/schema
 // @desc     Get a data request schema
 // @access   Private
-router.get('/', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.get('/', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	const { dataSetId } = req.body;
 	let dataRequestSchema = await DataRequestSchemaModel.findOne({ $and: [{ dataSetId: dataSetId }, { status: 'active' }] });
 	return res.json({ jsonSchema: dataRequestSchema.jsonSchema });

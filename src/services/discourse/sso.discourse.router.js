@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import { signToken } from '../utils';
+import { authUtils } from '../../utils';
 import { discourseLogin } from './sso.discourse.service';
 
 const router = express.Router();
@@ -28,7 +28,7 @@ router.get('/', function (req, res, next) {
 				.status(200)
 				.cookie(
 					'jwt',
-					signToken({
+					authUtils.signToken({
 						_id: req.user._id,
 						id: req.user.id,
 						timeStamp: Date.now(),

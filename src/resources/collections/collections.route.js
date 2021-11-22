@@ -2,7 +2,7 @@ import express from 'express';
 import passport from 'passport';
 import _ from 'lodash';
 
-import { utils } from '../auth';
+import { authUtils } from '../../utils';
 import CollectionsController from './collections.controller';
 import { collectionsService } from './dependency';
 
@@ -32,7 +32,7 @@ router.get('/entityid/:entityID', (req, res) => collectionsController.getCollect
 // @router   PUT /api/v1/collections/edit/{id}
 // @desc     Edit Collection
 // @access   Private
-router.put('/edit/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('collection'), (req, res) =>
+router.put('/edit/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('collection'), (req, res) =>
 	collectionsController.editCollection(req, res)
 );
 
@@ -44,14 +44,14 @@ router.post('/add', passport.authenticate('jwt'), (req, res) => collectionsContr
 // @router   PUT /api/v1/collections/status/{id}
 // @desc     Edit Collection
 // @access   Private
-router.put('/status/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('collection'), (req, res) =>
+router.put('/status/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('collection'), (req, res) =>
 	collectionsController.changeStatus(req, res)
 );
 
 // @router   DELETE /api/v1/collections/delete/{id}
 // @desc     Delete Collection
 // @access   Private
-router.delete('/delete/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('collection'), (req, res) =>
+router.delete('/delete/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('collection'), (req, res) =>
 	collectionsController.deleteCollection(req, res)
 );
 

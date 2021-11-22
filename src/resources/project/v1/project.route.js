@@ -6,7 +6,7 @@ import passport from 'passport';
 
 import { Data } from '../../tool/data.model';
 import { ROLES } from '../../user/user.roles';
-import { utils } from '../../auth';
+import { authUtils } from '../../../utils';
 import { addTool, editTool, setStatus, getTools, getToolsAdmin, getAllTools } from '../../tool/data.repository';
 
 const router = express.Router();
@@ -140,7 +140,7 @@ router.get('/:projectID', async (req, res) => {
 // @router   PATCH /api/v1/project/status/{id}
 // @desc     Set project status
 // @access   Private
-router.patch('/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('project'), async (req, res) => {
+router.patch('/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('project'), async (req, res) => {
 	await setStatus(req)
 		.then(response => {
 			return res.json({ success: true, response });
@@ -153,7 +153,7 @@ router.patch('/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('p
 // @router   PUT /api/v1/project/{id}
 // @desc     Edit project
 // @access   Private
-router.put('/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('project'), async (req, res) => {
+router.put('/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('project'), async (req, res) => {
 	await editTool(req)
 		.then(response => {
 			return res.json({ success: true, response });

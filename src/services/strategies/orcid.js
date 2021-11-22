@@ -47,11 +47,11 @@ export default class OrcidStrategy {
 		return done(createdError, createdUser);
 	};
 
-	orcid = (req, res, next) => {
+	initialise = (req, res, next) => {
 		passport.authenticate('orcid')(req, res, next);
 	};
 
-	orcidCallback = (req, res, next) => {
+	callback = (req, res, next) => {
 		passport.authenticate('orcid', (err, user) => {
 			req.auth = {
 				err: err,

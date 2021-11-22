@@ -3,7 +3,7 @@ import express from 'express';
 import { Data } from '../../tool/data.model';
 import { ROLES } from '../../user/user.roles';
 import passport from 'passport';
-import { utils } from '../../auth';
+import { authUtils } from '../../../utils';
 import { addTool, editTool, setStatus, getTools, getToolsAdmin, getAllTools, formatRetroDocumentLinks } from '../../tool/data.repository';
 import helper from '../../utilities/helper.util';
 import escape from 'escape-html';
@@ -92,7 +92,7 @@ router.get('/', async (req, res) => {
 // @router   PATCH /api/v1/paper/{id}
 // @desc     Change status of the Paper object.
 // @access   Private
-router.patch('/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('paper'), async (req, res) => {
+router.patch('/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('paper'), async (req, res) => {
 	await setStatus(req)
 		.then(response => {
 			return res.json({ success: true, response });
@@ -105,7 +105,7 @@ router.patch('/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('p
 // @router   PUT /api/v1/paper/{id}
 // @desc     Returns edited Paper object.
 // @access   Private
-router.put('/:id', passport.authenticate('jwt'), utils.checkAllowedToAccess('paper'), async (req, res) => {
+router.put('/:id', passport.authenticate('jwt'), authUtils.checkAllowedToAccess('paper'), async (req, res) => {
 	await editTool(req)
 		.then(response => {
 			return res.json({ success: true, response });

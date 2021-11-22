@@ -1,8 +1,8 @@
 import express from 'express';
 import _ from 'lodash';
 
-import { signToken } from './utils';
-import { getServiceAccountByClientCredentials } from '../user/user.repository';
+import { authUtils } from '../utils';
+import { getServiceAccountByClientCredentials } from '../resources/user/user.repository';
 
 const router = express.Router();
 
@@ -13,7 +13,7 @@ router.post('/token', async (req, res) => {
 	// 1. Deconstruct grant type
 	const { grant_type = '' } = req.body;
 	// 2. Allow different grant types to be processed
-	switch(grant_type) {
+	switch (grant_type) {
 		case 'client_credentials':
 			// Deconstruct request body to extract client ID, secret
 			const { client_id = '', client_secret = '' } = req.body;
@@ -33,10 +33,11 @@ router.post('/token', async (req, res) => {
 				});
 			}
 			// Construct JWT for service account
-			const token_type = 'jwt', expires_in = 900;
-			const jwt = signToken({ _id: serviceAccount._id, id: serviceAccount.id, timeStamp: Date.now() }, expires_in);
+			const token_type = 'jwt',
+				expires_in = 900;
+			const jwt = authUtils.signToken({ _id: serviceAccount._id, id: serviceAccount.id, timeStamp: Date.now() }, expires_in);
 			const access_token = `Bearer ${jwt}`;
-			
+
 			// Return payload
 			return res.status(200).json({
 				access_token,

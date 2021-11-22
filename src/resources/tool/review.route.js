@@ -2,7 +2,7 @@ import express from 'express';
 import { ROLES } from '../user/user.roles';
 import { Reviews } from './review.model';
 import passport from 'passport';
-import { utils } from '../auth';
+import { authUtils } from '../../utils';
 import helper from '../utilities/helper.util';
 
 const router = express.Router();
@@ -13,7 +13,7 @@ const router = express.Router();
  * Return list of tools, this can be with filters or/and search criteria. This will also include pagination on results.
  * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
  */
-router.get('/admin/pending', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin), async (req, res) => {
+router.get('/admin/pending', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin), async (req, res) => {
 	var r = Reviews.aggregate([
 		{ $lookup: { from: 'tools', localField: 'reviewerID', foreignField: 'id', as: 'person' } },
 		{ $lookup: { from: 'tools', localField: 'toolID', foreignField: 'id', as: 'tool' } },
@@ -34,7 +34,7 @@ router.get('/admin/pending', passport.authenticate('jwt'), utils.checkIsInRole(R
  * Return list of tools, this can be with filters or/and search criteria. This will also include pagination on results.
  * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
  */
-router.get('/pending', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Creator), async (req, res) => {
+router.get('/pending', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Creator), async (req, res) => {
 	var idString = '';
 
 	if (req.query.id) {

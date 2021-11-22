@@ -4,7 +4,7 @@ import { UserModel } from '../user/user.model';
 import { createDiscourseTopic } from '../discourse/discourse.service';
 import emailGenerator from '../utilities/emailGenerator.util';
 import helper from '../utilities/helper.util';
-import { utils } from '../auth';
+import { authUtils } from '../../utils';
 import { ROLES } from '../user/user.roles';
 import { filtersService } from '../filters/dependency';
 const hdrukEmail = `enquiry@healthdatagateway.org`;
@@ -292,7 +292,7 @@ const setStatus = async req => {
 			const userId = req.user.id;
 			let course;
 
-			if (utils.whatIsRole(req) === ROLES.Admin) {
+			if (authUtils.whatIsRole(req) === ROLES.Admin) {
 				course = await Course.findOneAndUpdate({ id: id }, { $set: { activeflag: activeflag } });
 				if (!course) {
 					reject(new Error('Course not found'));

@@ -1,6 +1,6 @@
 import express from 'express';
 import passport from 'passport';
-import { utils } from '../auth';
+import { authUtils } from '../../utils';
 import { ROLES } from '../user/user.roles';
 import { MessagesModel } from './message.model';
 
@@ -9,7 +9,7 @@ const messageController = require('../message/message.controller');
 // by default route has access to its own, allows access to parent param
 const router = express.Router({ mergeParams: true });
 
-router.get('/numberofunread/admin/:personID', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin), async (req, res) => {
+router.get('/numberofunread/admin/:personID', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin), async (req, res) => {
 	var idString = '';
 	let countUnreadMessages = 0;
 	if (req.params.personID) {
@@ -35,7 +35,7 @@ router.get('/numberofunread/admin/:personID', passport.authenticate('jwt'), util
 	});
 });
 
-router.get('/numberofunread/:personID', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Creator), async (req, res) => {
+router.get('/numberofunread/:personID', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Creator), async (req, res) => {
 	var idString = '';
 	let countUnreadMessages = 0;
 	if (req.params.personID) {
@@ -64,7 +64,7 @@ router.get('/numberofunread/:personID', passport.authenticate('jwt'), utils.chec
 	});
 });
 
-router.get('/:personID', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Creator), async (req, res) => {
+router.get('/:personID', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Creator), async (req, res) => {
 	var idString = '';
 
 	if (req.params.personID) {
@@ -87,7 +87,7 @@ router.get('/:personID', passport.authenticate('jwt'), utils.checkIsInRole(ROLES
  *
  * Return list of messages
  */
-router.get('/admin/:personID', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin), async (req, res) => {
+router.get('/admin/:personID', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin), async (req, res) => {
 	var idString = '';
 
 	if (req.params.personID) {
@@ -106,7 +106,7 @@ router.get('/admin/:personID', passport.authenticate('jwt'), utils.checkIsInRole
 	});
 });
 
-router.post('/markasread', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.post('/markasread', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	const messageIds = req.body;
 
 	MessagesModel.updateMany({ messageID: { $in: messageIds } }, { isRead: true }, err => {
@@ -118,17 +118,17 @@ router.post('/markasread', passport.authenticate('jwt'), utils.checkIsInRole(ROL
 // @route   POST api/messages
 // @desc    POST A message
 // @access  Private
-router.post('/', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), messageController.createMessage);
+router.post('/', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), messageController.createMessage);
 
 // @route   DELETE api/messages/:id
 // @desc    DELETE Delete a message
 // @access  Private
-router.delete('/:id', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), messageController.deleteMessage);
+router.delete('/:id', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), messageController.deleteMessage);
 
 // @route   PUT api/messages
 // @desc    PUT Update a message
 // @access  Private
-router.put('/', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), messageController.updateMessage);
+router.put('/', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), messageController.updateMessage);
 
 // @route   GET api/messages/unread/count
 // @desc    GET the number of unread messages for a user

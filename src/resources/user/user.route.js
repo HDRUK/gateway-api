@@ -1,7 +1,7 @@
 import express from 'express';
 import passport from 'passport';
 
-import { utils } from '../auth';
+import { authUtils } from '../../utils';
 import { UserModel } from './user.model';
 import { Data } from '../tool/data.model';
 import helper from '../utilities/helper.util';
@@ -15,7 +15,7 @@ const router = express.Router();
 // @router   GET /api/v1/users/:userID
 // @desc     find user by id
 // @access   Private
-router.get('/:userID', passport.authenticate('jwt'), utils.checkIsUser(), async (req, res) => {
+router.get('/:userID', passport.authenticate('jwt'), authUtils.checkIsUser(), async (req, res) => {
 	//req.params.id is how you get the id from the url
 	var q = UserModel.find({ id: req.params.userID });
 
@@ -90,7 +90,7 @@ router.get('/', passport.authenticate('jwt'), async (req, res) => {
 // @router   PATCH /api/v1/users/advancedSearch/terms/:id
 // @desc     Accept the advanced search T&Cs for a user
 // @access   Private
-router.patch('/advancedSearch/terms/:id', passport.authenticate('jwt'), utils.checkIsUser(), async (req, res) => {
+router.patch('/advancedSearch/terms/:id', passport.authenticate('jwt'), authUtils.checkIsUser(), async (req, res) => {
 	const { acceptedAdvancedSearchTerms } = req.body;
 	if (typeof acceptedAdvancedSearchTerms !== 'boolean') {
 		return res.status(400).json({ status: 'error', message: 'Invalid input supplied.' });
@@ -104,7 +104,7 @@ router.patch('/advancedSearch/terms/:id', passport.authenticate('jwt'), utils.ch
 // @router   PATCH /api/v1/users/advancedSearch/customRoles/:id
 // @desc     Allow admin to set custom advanced search roles for a user
 // @access   Private
-router.patch('/advancedSearch/customRoles/:id', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin), async (req, res) => {
+router.patch('/advancedSearch/customRoles/:id', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin), async (req, res) => {
 	const { advancedSearchRoles } = req.body;
 	if (typeof advancedSearchRoles !== 'object') {
 		return res.status(400).json({ status: 'error', message: 'Invalid role(s) supplied.' });
@@ -122,7 +122,7 @@ router.patch('/advancedSearch/customRoles/:id', passport.authenticate('jwt'), ut
 // @router   PATCH /api/v1/users/advancedSearch/roles/:id
 // @desc     Grant basic advanced search role for an Open Athens user
 // @access   Private
-router.patch('/advancedSearch/roles/:id', passport.authenticate('jwt'), utils.checkIsUser(), async (req, res) => {
+router.patch('/advancedSearch/roles/:id', passport.authenticate('jwt'), authUtils.checkIsUser(), async (req, res) => {
 	if (upperCase(req.user.provider) !== 'OIDC')
 		return res.status(403).json({ status: 'error', message: 'Only Open Athens users are permitted to use this route.' });
 
@@ -140,7 +140,7 @@ router.patch('/advancedSearch/roles/:id', passport.authenticate('jwt'), utils.ch
 // @router   POST /api/v1/users/serviceaccount
 // @desc     create service account
 // @access   Private
-// router.post('/serviceaccount', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin), async (req, res) => {
+// router.post('/serviceaccount', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin), async (req, res) => {
 // 	try {
 // 		// 1. Validate request body params
 // 		let { firstname = '', lastname = '', email = '', teamId = '' } = req.body;

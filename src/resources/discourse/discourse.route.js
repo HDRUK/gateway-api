@@ -10,7 +10,7 @@ import { Data } from '../tool/data.model';
 import { Collections } from '../collections/collections.model';
 import { ROLES } from '../user/user.roles';
 import passport from 'passport';
-import { utils } from '../auth';
+import { authUtils } from '../../utils';
 import _ from 'lodash';
 
 const inputSanitizer = require('../utilities/inputSanitizer');
@@ -49,7 +49,7 @@ router.get('/topic/:topicId', async (req, res) => {
  * @description This route retrieves all the data for a Discourse topic in the context of a specific user
  * @return This routes returns an object containing 'Topic' data - see Discourse docs
  */
-router.get('/user/topic/:topicId', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.get('/user/topic/:topicId', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	try {
 		// 1. Pull topic Id from endpoint route value
 		const topicId = parseInt(req.params.topicId);
@@ -77,7 +77,7 @@ router.get('/user/topic/:topicId', passport.authenticate('jwt'), utils.checkIsIn
  * @description This route creates a Discourse new topic if the tool exists and is active.
  * @return This routes returns an object { link: linkToDiscourseTopic, posts: Array of Discourse posts, (should be empty) }
  */
-router.put('/tool/:toolId', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.put('/tool/:toolId', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	try {
 		// 1. Pull tool Id from endpoint route value
 		const toolId = parseInt(req.params.toolId);
@@ -109,7 +109,7 @@ router.put('/tool/:toolId', passport.authenticate('jwt'), utils.checkIsInRole(RO
  * @description This route creates a Discourse new topic if the tool exists and is active.
  * @return This routes returns an object { link: linkToDiscourseTopic, posts: Array of Discourse posts (should have at least one) }
  */
-router.post('/user/posts', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.post('/user/posts', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	try {
 		let { toolId, collectionId, topicId, comment } = req.body;
 		comment = inputSanitizer.removeNonBreakingSpaces(comment);
@@ -177,7 +177,7 @@ router.post('/user/posts', passport.authenticate('jwt'), utils.checkIsInRole(ROL
  * @description This route updates a Discourse post
  * @return This routes returns a success message
  */
-router.put('/user/posts/:postId', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
+router.put('/user/posts/:postId', passport.authenticate('jwt'), authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
 	try {
 		// 1. Pull post Id from endpoint route value
 		const postId = parseInt(req.params.postId);
@@ -204,23 +204,28 @@ router.put('/user/posts/:postId', passport.authenticate('jwt'), utils.checkIsInR
  * @description This route deletes a specific post and must be either owned by the requesting user or the user is an Admin of Discourse
  * @return This routes returns a message indicating success or failure in delete
  */
-router.delete('/user/posts/:postId', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, ROLES.Creator), async (req, res) => {
-	try {
-		// 1. Pull post Id from endpoint route value
-		const postId = parseInt(req.params.postId);
-		// 2. Call Discourse to delete the post
-		deleteDiscoursePost(postId, req.user)
-			.then(() => {
-				// 3. Return success message
-				return res.json({ success: true });
-			})
-			.catch(err => {
-				return res.status(500).json({ success: false, error: err.message });
-			});
-	} catch (err) {
-		console.error(err.message);
-		return res.status(500).json({ success: false, error: 'Error deleting the topic, please try again later...' });
+router.delete(
+	'/user/posts/:postId',
+	passport.authenticate('jwt'),
+	authUtils.checkIsInRole(ROLES.Admin, ROLES.Creator),
+	async (req, res) => {
+		try {
+			// 1. Pull post Id from endpoint route value
+			const postId = parseInt(req.params.postId);
+			// 2. Call Discourse to delete the post
+			deleteDiscoursePost(postId, req.user)
+				.then(() => {
+					// 3. Return success message
+					return res.json({ success: true });
+				})
+				.catch(err => {
+					return res.status(500).json({ success: false, error: err.message });
+				});
+		} catch (err) {
+			console.error(err.message);
+			return res.status(500).json({ success: false, error: 'Error deleting the topic, please try again later...' });
+		}
 	}
-});
+);
 
 module.exports = router;

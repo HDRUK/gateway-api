@@ -1,3 +1,5 @@
+import Url from 'url';
+
 const captureReferer = (req, res, next) => {
 	if (req.headers.referer) {
 		req.param.returnpage = req.headers.referer;

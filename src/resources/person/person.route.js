@@ -1,6 +1,6 @@
 import express from 'express';
 import { Data } from '../tool/data.model';
-import { utils } from '../auth';
+import { authUtils } from '../../utils';
 import passport from 'passport';
 import { getAllTools } from '../tool/data.repository';
 import { UserModel } from '../user/user.model';
@@ -14,7 +14,7 @@ const logCategory = 'Person API';
 
 const router = express.Router();
 
-router.put('/', passport.authenticate('jwt'), utils.checkIsUser(), async (req, res) => {
+router.put('/', passport.authenticate('jwt'), authUtils.checkIsUser(), async (req, res) => {
 	try {
 		let {
 			id,
@@ -49,27 +49,27 @@ router.put('/', passport.authenticate('jwt'), utils.checkIsUser(), async (req, r
 		const userId = parseInt(id);
 
 		await Data.findOneAndUpdate(
-		{ id: userId },
-		{
-			firstname: firstname,
-			lastname: lastname,
-			type: type,
-			bio: bio,
-			showBio: showBio,
-			link: link,
-			showLink: showLink,
-			orcid: orcid,
-			showOrcid: showOrcid,
-			terms: terms,
-			sector: sector,
-			showSector: showSector,
-			organisation: organisation,
-			showOrganisation: showOrganisation,
-			tags: tags,
-			showDomain: showDomain,
-			profileComplete: profileComplete,
-		}
-	);
+			{ id: userId },
+			{
+				firstname: firstname,
+				lastname: lastname,
+				type: type,
+				bio: bio,
+				showBio: showBio,
+				link: link,
+				showLink: showLink,
+				orcid: orcid,
+				showOrcid: showOrcid,
+				terms: terms,
+				sector: sector,
+				showSector: showSector,
+				organisation: organisation,
+				showOrganisation: showOrganisation,
+				tags: tags,
+				showDomain: showDomain,
+				profileComplete: profileComplete,
+			}
+		);
 
 		const user = await UserModel.findOneAndUpdate({ id: userId }, { $set: { firstname, lastname, email, feedback, news } }, { new: true });
 
@@ -121,7 +121,7 @@ router.put('/', passport.authenticate('jwt'), utils.checkIsUser(), async (req, r
 // @router   PATCH /api/v1/person/profileComplete/:id
 // @desc     Set profileComplete to true
 // @access   Private
-router.patch('/profileComplete/:id', passport.authenticate('jwt'), utils.checkIsUser(), async (req, res) => {
+router.patch('/profileComplete/:id', passport.authenticate('jwt'), authUtils.checkIsUser(), async (req, res) => {
 	const id = req.params.id;
 	await Data.findOneAndUpdate({ id }, { profileComplete: true })
 		.then(response => {
