@@ -54,7 +54,7 @@ export default class WorkflowRepository extends Repository {
 
 	async assignWorkflowToApplication(accessRecord, workflowId) {
 		// Retrieve workflow using ID from database
-		const workflow = await WorkflowRepository.getWorkflowById(workflowId, { lean: false });
+		const workflow = await this.getWorkflowById(workflowId, { lean: false });
 		if (!workflow) {
 			throw new Error('Workflow could not be found');
 		}
