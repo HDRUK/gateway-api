@@ -108,30 +108,9 @@ module.exports = {
 				},
 				{
 					in: 'query',
-					name: 'datasetIndex',
-					required: false,
-					description: 'The index at which to start the results from for pagination purposed. Defaults to 0 if parameter is not given.',
-					schema: {
-						type: 'integer',
-						example: 0,
-					},
-				},
-				{
-					in: 'query',
-					name: 'maxResults',
-					required: false,
-					description:
-						'The maximum number of results (i.e., datasets) to return in the response. Defaults to 10 if the parameter is not given in the initial request.',
-					schema: {
-						type: 'integer',
-						example: 10,
-					},
-				},
-				{
-					in: 'query',
 					name: 'sortBy',
 					required: false,
-					description: `The parameter to sort the dataset results by. Links to the 'sortDirection' which controls whether the sort is ascending or descending. Note that sorting by popularity is only applicable when 'status=active.'. Defaults to 'latest' if no 'sortBy' parameter is given in the request.`,
+					description: `The parameter to sort the dataset results by. Links to the 'sortDirection' which controls whether the sort is ascending or descending. Note that sorting by popularity is only applicable when 'status=active'. Defaults to 'latest' if no 'sortBy' parameter is given in the request.`,
 					schema: {
 						type: 'string',
 						example: 'latest',
