@@ -29,7 +29,7 @@ describe('datasetOnboardingController', () => {
 	describe('getDatasetsByPublisher', () => {
 		it('should return a correctly formatted JSON response', async () => {
 			let serviceStub1 = sinon.stub(datasetonboardingService, 'getDatasetsByPublisherCounts').returns({ inReview: 100 });
-			let serviceStub2 = sinon.stub(datasetonboardingService, 'getDatasetsByPublisher').returns([[], 100, 10]);
+			let serviceStub2 = sinon.stub(datasetonboardingService, 'getDatasetsByPublisher').returns([[], 100]);
 
 			let req = mockedRequest();
 			let res = mockedResponse();
@@ -46,7 +46,6 @@ describe('datasetOnboardingController', () => {
 					results: {
 						status: 'inReview',
 						total: 100,
-						pageCount: 10,
 						listOfDatasets: [],
 					},
 				},
@@ -62,7 +61,7 @@ describe('datasetOnboardingController', () => {
 
 		it('should return status=all if no status param given in initial request', async () => {
 			let serviceStub1 = sinon.stub(datasetonboardingService, 'getDatasetsByPublisherCounts').returns({ inReview: 100 });
-			let serviceStub2 = sinon.stub(datasetonboardingService, 'getDatasetsByPublisher').returns([[], 100, 10]);
+			let serviceStub2 = sinon.stub(datasetonboardingService, 'getDatasetsByPublisher').returns([[], 100]);
 
 			let req = mockedRequest();
 			let res = mockedResponse();
@@ -78,7 +77,6 @@ describe('datasetOnboardingController', () => {
 					results: {
 						status: 'all',
 						total: 100,
-						pageCount: 10,
 						listOfDatasets: [],
 					},
 				},

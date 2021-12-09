@@ -40,30 +40,18 @@ describe('datasetOnboardingService', () => {
 		const statuses = Object.values(constants.datasetStatuses);
 
 		test.each(statuses)('should only return datasets matching the given status', async activeflag => {
-			const datasetIndex = 0;
-			const maxResults = 10;
 			const sortBy = 'latest';
 			const sortDirection = 'desc';
 			const status = activeflag;
 			const publisherID = 'TestPublisher';
 			const search = '';
 
-			const [versionedDatasets] = await datasetonboardingService.getDatasetsByPublisher(
-				status,
-				publisherID,
-				datasetIndex,
-				maxResults,
-				sortBy,
-				sortDirection,
-				search
-			);
+			const [versionedDatasets] = await datasetonboardingService.getDatasetsByPublisher(status, publisherID, sortBy, sortDirection, search);
 
 			expect([...new Set(versionedDatasets.map(dataset => dataset.activeflag))].length).toEqual(1);
 		});
 
 		it('should return all status types if no status is given', async () => {
-			const datasetIndex = 0;
-			const maxResults = 10;
 			const sortBy = 'latest';
 			const sortDirection = 'desc';
 			const status = null;
@@ -74,84 +62,33 @@ describe('datasetOnboardingService', () => {
 				.filter(dataset => dataset.datasetv2.summary.publisher.identifier === 'TestPublisher')
 				.map(dataset => dataset.activeflag);
 
-			const [versionedDatasets] = await datasetonboardingService.getDatasetsByPublisher(
-				status,
-				publisherID,
-				datasetIndex,
-				maxResults,
-				sortBy,
-				sortDirection,
-				search
-			);
+			const [versionedDatasets] = await datasetonboardingService.getDatasetsByPublisher(status, publisherID, sortBy, sortDirection, search);
 
 			expect([...new Set(versionedDatasets.map(dataset => dataset.activeflag))]).toEqual([...new Set(expectedResponse)]);
 		});
 
 		it('should return the correct count of filered results', async () => {
-			const datasetIndex = 0;
-			const maxResults = 10;
 			const sortBy = 'latest';
 			const sortDirection = 'desc';
 			const status = 'inReview';
 			const publisherID = 'admin';
 			const search = '';
 
-			const [_, count] = await datasetonboardingService.getDatasetsByPublisher(
-				status,
-				publisherID,
-				datasetIndex,
-				maxResults,
-				sortBy,
-				sortDirection,
-				search
-			);
+			const [_, count] = await datasetonboardingService.getDatasetsByPublisher(status, publisherID, sortBy, sortDirection, search);
 
 			expect(count).toEqual(2);
 		});
 
 		it('should return results matching an appropriate search term', async () => {
-			const datasetIndex = 0;
-			const maxResults = 10;
 			const sortBy = 'latest';
 			const sortDirection = 'desc';
 			const status = 'inReview';
 			const publisherID = 'admin';
 			const search = 'abstract3';
 
-			const [_, count] = await datasetonboardingService.getDatasetsByPublisher(
-				status,
-				publisherID,
-				datasetIndex,
-				maxResults,
-				sortBy,
-				sortDirection,
-				search
-			);
+			const [_, count] = await datasetonboardingService.getDatasetsByPublisher(status, publisherID, sortBy, sortDirection, search);
 
 			expect(count).toEqual(1);
-		});
-
-		it('should allow for pagintation', async () => {
-			const datasetIndex = 0;
-			const maxResults = 1;
-			const sortBy = 'latest';
-			const sortDirection = 'desc';
-			const status = 'inReview';
-			const publisherID = 'admin';
-			const search = '';
-
-			const [_, count, pageCount] = await datasetonboardingService.getDatasetsByPublisher(
-				status,
-				publisherID,
-				datasetIndex,
-				maxResults,
-				sortBy,
-				sortDirection,
-				search
-			);
-
-			expect(count).toEqual(2);
-			expect(pageCount).toEqual(1);
 		});
 	});
 

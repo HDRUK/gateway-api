@@ -110,8 +110,6 @@ describe('Testing the datasetonboarding middleware', () => {
 
 			req.query = {
 				search: '',
-				datasetIndex: 0,
-				maxResults: 10,
 				sortBy: 'latest',
 				sortDirection: 'asc',
 				status: 'inReview',
@@ -136,8 +134,6 @@ describe('Testing the datasetonboarding middleware', () => {
 
 				req.query = {
 					search: '',
-					datasetIndex: 0,
-					maxResults: 10,
 					sortBy: sortOption,
 					sortDirection: 'asc',
 					status: 'active',
@@ -162,8 +158,6 @@ describe('Testing the datasetonboarding middleware', () => {
 
 				req.query = {
 					search: '',
-					datasetIndex: 0,
-					maxResults: 10,
 					sortBy: 'latest',
 					sortDirection: 'asc',
 					status: status,
@@ -190,8 +184,6 @@ describe('Testing the datasetonboarding middleware', () => {
 
 			req.query = {
 				search: '',
-				datasetIndex: 0,
-				maxResults: 10,
 				sortBy: 'latest',
 				sortDirection: 'asc',
 				status: 'active',
@@ -215,8 +207,6 @@ describe('Testing the datasetonboarding middleware', () => {
 
 			req.query = {
 				search: '',
-				datasetIndex: 0,
-				maxResults: 10,
 				sortBy: 'unallowedSortOption',
 				sortDirection: 'asc',
 				status: 'inReview',
@@ -239,8 +229,6 @@ describe('Testing the datasetonboarding middleware', () => {
 
 			req.query = {
 				search: '',
-				datasetIndex: 0,
-				maxResults: 10,
 				sortBy: 'latest',
 				sortDirection: 'asc',
 				status: 'notARealStatus',
@@ -263,8 +251,6 @@ describe('Testing the datasetonboarding middleware', () => {
 
 			req.query = {
 				search: 'unallowed-/?@"{}()characters',
-				datasetIndex: 0,
-				maxResults: 10,
 				sortBy: 'latest',
 				sortDirection: 'asc',
 				status: 'inReview',
@@ -287,8 +273,6 @@ describe('Testing the datasetonboarding middleware', () => {
 
 			req.query = {
 				search: 'unallowed-/?@"{}()characters',
-				datasetIndex: 0,
-				maxResults: 10,
 				sortBy: 'latest',
 				sortDirection: 'unallowedSortDirection',
 				status: 'inReview',
@@ -316,8 +300,6 @@ describe('Testing the datasetonboarding middleware', () => {
 
 			req.query = {
 				search: '',
-				datasetIndex: 0,
-				maxResults: 10,
 				sortBy: 'popularity',
 				sortDirection: 'asc',
 				status: 'inReview',
