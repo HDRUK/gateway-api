@@ -7,6 +7,9 @@ import {
 	validateDeleteRequest,
 	authoriseDelete,
 } from './activitylog.middleware';
+import checkInputMiddleware from './checkInputMiddleware';
+import checkMinLengthMiddleware from './checkMinLengthMiddleware';
+import checkStringMiddleware from './checkStringMiddleware';
 
 export {
 	checkIDMiddleware,
@@ -16,4 +19,7 @@ export {
 	validateCreateRequest,
 	validateDeleteRequest,
 	authoriseDelete,
+	checkInputMiddleware,
+    checkMinLengthMiddleware,
+    checkStringMiddleware,
 };

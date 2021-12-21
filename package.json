@@ -8,6 +8,7 @@
 	"version": "0.1.1",
 	"private": true,
 	"dependencies": {
+		"@google-cloud/bigquery": "^5.9.3",
 		"@google-cloud/monitoring": "^2.1.0",
 		"@google-cloud/storage": "^5.3.0",
 		"@hubspot/api-client": "^4.1.0",
@@ -62,6 +63,7 @@
 		"prettier": "^2.2.1",
 		"query-string": "^6.12.1",
 		"randomstring": "^1.1.5",
+		"simple-gcp-logging": "git+https://github.com/HDRUK/simple-gcp-logging.git#main",
 		"sinon": "^9.2.4",
 		"snyk": "^1.334.0",
 		"swagger-ui-express": "^4.1.4",

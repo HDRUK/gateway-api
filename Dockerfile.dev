@@ -1,5 +1,7 @@
 FROM node:14
 
+ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/application_default_credentials.json"
+
 WORKDIR /var/www
 
 COPY package*.json ./
