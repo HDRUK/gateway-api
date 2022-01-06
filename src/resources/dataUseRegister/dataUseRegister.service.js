@@ -255,21 +255,37 @@ export default class DataUseRegisterService {
 			applicantId: applicantId ? applicantId.trim() : '',
 			accreditedResearcherStatus: isNil(accreditedResearcherStatus) ? 'Unknown' : accreditedResearcherStatus.toString().trim(),
 			...(projectTitle && { projectTitle: projectTitle.toString().trim() }),
-			...(organisationName && { organisationName: organisationName.toString().trim() }),
+			...(organisationName && {
+				organisationName: organisationName.toString().trim(),
+			}),
 			...(laySummary && { laySummary: laySummary.toString().trim() }),
-			...(publicBenefitStatement && { publicBenefitStatement: publicBenefitStatement.toString().trim() }),
+			...(publicBenefitStatement && {
+				publicBenefitStatement: publicBenefitStatement.toString().trim(),
+			}),
 			...(accessType && { accessType: accessType.toString().trim() }),
-			...(dutyOfConfidentiality && { dutyOfConfidentiality: dutyOfConfidentiality.toString().trim() }),
-			...(!isEmpty(datasetLinkageDescription) && { datasetLinkageDescription: datasetLinkageDescription.trim() }),
+			...(dutyOfConfidentiality && {
+				dutyOfConfidentiality: dutyOfConfidentiality.toString().trim(),
+			}),
+			...(!isEmpty(datasetLinkageDescription) && {
+				datasetLinkageDescription: datasetLinkageDescription.trim(),
+			}),
 			...(!isEmpty(requestFrequency) && { requestFrequency }),
-			...(legalBasisForDataArticle6 && { legalBasisForDataArticle6: legalBasisForDataArticle6.toString().trim() }),
-			...(legalBasisForDataArticle9 && { legalBasisForDataArticle9: legalBasisForDataArticle9.toString().trim() }),
-			...(privacyEnhancements && { privacyEnhancements: privacyEnhancements.toString().trim() }),
+			...(legalBasisForDataArticle6 && {
+				legalBasisForDataArticle6: legalBasisForDataArticle6.toString().trim(),
+			}),
+			...(legalBasisForDataArticle9 && {
+				legalBasisForDataArticle9: legalBasisForDataArticle9.toString().trim(),
+			}),
+			...(privacyEnhancements && {
+				privacyEnhancements: privacyEnhancements.toString().trim(),
+			}),
 			...(projectStartDate.isValid() && { projectStartDate }),
 			...(projectEndDate.isValid() && { projectEndDate }),
 			...(latestApprovalDate.isValid() && { latestApprovalDate }),
 			...(!isEmpty(datasetTitles) && { datasetTitles }),
-			...(!isEmpty(linkedDatasets) && { gatewayDatasets: linkedDatasets.map(dataset => dataset.pid) }),
+			...(!isEmpty(linkedDatasets) && {
+				gatewayDatasets: linkedDatasets.map(dataset => dataset.pid),
+			}),
 			...(!isEmpty(namedDatasets) && { nonGatewayDatasets: namedDatasets }),
 			keywords: isNil(keywords) || isEmpty(keywords) ? [] : keywords.split(' ').slice(0, 6),
 			fundersAndSponsors,
@@ -285,6 +301,8 @@ export default class DataUseRegisterService {
 		});
 
 		this.dataUseRegisterRepository.createDataUseRegister(dataUseRegister);
+
+		return dataUseRegister;
 	}
 
 	/**
@@ -374,39 +392,51 @@ export default class DataUseRegisterService {
 			nonGatewayOutputs,
 		} = dataUseRegisterPayload;
 
-		const gatewayDatasetPids = await dataUseRegisterUtil.getDatasetsByPids(gatewayDatasets);
-		const gatewayApplicantIDs = await dataUseRegisterUtil.getAppplicantByIds(gatewayApplicants);
-		const { gatewayToolIDs, gatewayPaperIDs } = await dataUseRegisterUtil.getSafeOutputsByIds(gatewayOutputs || []);
+		const gatewayDatasetPids = gatewayDatasets ? await dataUseRegisterUtil.getDatasetsByPids(gatewayDatasets) : [];
+		const gatewayApplicantIDs = gatewayApplicants ? await dataUseRegisterUtil.getAppplicantByIds(gatewayApplicants) : [];
+		const { gatewayToolIDs, gatewayPaperIDs } = gatewayOutputs ? await dataUseRegisterUtil.getSafeOutputsByIds(gatewayOutputs) : [];
 
 		let gatewayApplicantIDsList = [];
-		gatewayApplicantIDs.forEach(applicant => {
-			gatewayApplicantIDsList.push(applicant._id);
-		});
+		gatewayApplicantIDs &&
+			gatewayApplicantIDs.forEach(applicant => {
+				gatewayApplicantIDsList.push(applicant._id);
+			});
 		if (!isUndefined(gatewayApplicants) && !isEqual(gatewayApplicantIDsList, dataUseRegister.gatewayApplicants))
 			updateObj.gatewayApplicants = gatewayApplicantIDsList;
 
 		let gatewayOutputsToolIDsList = [],
 			gatewayOutputsToolIDsListRelatedResource = [];
-		gatewayToolIDs.forEach(tool => {
-			gatewayOutputsToolIDsList.push(tool.id);
-			gatewayOutputsToolIDsListRelatedResource.push({ id: tool.id.toString() });
-		});
+		gatewayToolIDs &&
+			gatewayToolIDs.forEach(tool => {
+				gatewayOutputsToolIDsList.push(tool.id);
+				gatewayOutputsToolIDsListRelatedResource.push({
+					id: tool.id.toString(),
+				});
+			});
 		if (!isUndefined(gatewayOutputs) && !isEqual(gatewayOutputsToolIDsList, dataUseRegister.gatewayOutputsTools))
 			updateObj.gatewayOutputsTools = gatewayOutputsToolIDsList;
 
 		let gatewayOutputsPaperIDsList = [],
 			gatewayOutputsPaperIDsListRelatedResource = [];
-		gatewayPaperIDs.forEach(paper => {
-			gatewayOutputsPaperIDsList.push(paper.id);
-			gatewayOutputsPaperIDsListRelatedResource.push({ id: paper.id.toString() });
-		});
+		gatewayPaperIDs &&
+			gatewayPaperIDs.forEach(paper => {
+				gatewayOutputsPaperIDsList.push(paper.id);
+				gatewayOutputsPaperIDsListRelatedResource.push({
+					id: paper.id.toString(),
+				});
+			});
 		if (!isUndefined(gatewayOutputs) && !isEqual(gatewayOutputsPaperIDsList, dataUseRegister.gatewayOutputsPapers))
 			updateObj.gatewayOutputsPapers = gatewayOutputsPaperIDsList;
 
 		let gatewayDatasetPidsListRelatedResource = [];
-		gatewayDatasetPids.forEach(dataset => {
-			gatewayDatasetPidsListRelatedResource.push({ id: dataset.datasetid, pid: dataset.pid });
-		});
+
+		gatewayDatasetPids &&
+			gatewayDatasetPids.forEach(dataset => {
+				gatewayDatasetPidsListRelatedResource.push({
+					id: dataset.datasetid,
+					pid: dataset.pid,
+				});
+			});
 
 		let automaticRelatedResources = [
 			...dataUseRegisterUtil.buildRelatedObjects(user, 'dataset', gatewayDatasetPidsListRelatedResource, false, true),
@@ -425,29 +455,19 @@ export default class DataUseRegisterService {
 			}
 		});
 
-		let newManualRelatedResources = [];
-		relatedObjects.forEach(manualResource => {
-			if (!dataUseRegister.relatedObjects.find(resource => resource.objectId === manualResource.objectId)) {
-				if (!manualResource.isLocked) newManualRelatedResources.push(manualResource);
-			}
-		});
-
 		let relatedResourcesWithRemovedOldAutomaticEntries = [];
-		dataUseRegister.relatedObjects.forEach(resource => {
-			if (resource.isLocked && automaticRelatedResources.find(automaticResource => automaticResource.objectId === resource.objectId)) {
-				relatedResourcesWithRemovedOldAutomaticEntries.push(resource);
-			} else if (!resource.isLocked) {
-				relatedResourcesWithRemovedOldAutomaticEntries.push(resource);
-			}
-		});
+		!isUndefined(relatedObjects) &&
+			relatedObjects.forEach(resource => {
+				if (resource.isLocked && automaticRelatedResources.find(automaticResource => automaticResource.objectId === resource.objectId)) {
+					relatedResourcesWithRemovedOldAutomaticEntries.push(resource);
+				} else if (!resource.isLocked) {
+					relatedResourcesWithRemovedOldAutomaticEntries.push(resource);
+				}
+			});
 
 		//relatedObjects
 
-		updateObj.relatedObjects = [
-			...relatedResourcesWithRemovedOldAutomaticEntries,
-			...newAutomaticRelatedResources,
-			...newManualRelatedResources,
-		];
+		updateObj.relatedObjects = [...relatedResourcesWithRemovedOldAutomaticEntries, ...newAutomaticRelatedResources];
 
 		const fundersAndSponsorsList =
 			fundersAndSponsors &&

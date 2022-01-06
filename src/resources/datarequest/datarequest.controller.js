@@ -14,12 +14,21 @@ import inputSanitizer from '../utilities/inputSanitizer';
 import Controller from '../base/controller';
 import { logger } from '../utilities/logger';
 import { UserModel } from '../user/user.model';
+import { dataUseRegisterController } from '../dataUseRegister/dependency';
 
 const logCategory = 'Data Access Request';
 const bpmController = require('../bpmnworkflow/bpmnworkflow.controller');
 
 export default class DataRequestController extends Controller {
-	constructor(dataRequestService, workflowService, amendmentService, topicService, messageService, activityLogService, dataUseRegisterService) {
+	constructor(
+		dataRequestService,
+		workflowService,
+		amendmentService,
+		topicService,
+		messageService,
+		activityLogService,
+		dataUseRegisterService
+	) {
 		super(dataRequestService);
 		this.dataRequestService = dataRequestService;
 		this.workflowService = workflowService;
@@ -27,7 +36,7 @@ export default class DataRequestController extends Controller {
 		this.activityLogService = activityLogService;
 		this.topicService = topicService;
 		this.messageService = messageService;
-		this.dataUseRegisterService = dataUseRegisterService
+		this.dataUseRegisterService = dataUseRegisterService;
 	}
 
 	// ###### APPLICATION CRUD OPERATIONS #######
@@ -668,14 +677,23 @@ export default class DataRequestController extends Controller {
 					this.dataRequestService.updateVersionStatus(accessRecord, accessRecord.applicationStatus);
 
 					if (accessRecord.applicationStatus === constants.applicationStatuses.APPROVED) {
-						await this.dataUseRegisterService.createDataUseRegister(requestingUser, accessRecord);
+						const dataUseRegister = await this.dataUseRegisterService.createDataUseRegister(requestingUser, accessRecord);
+						await dataUseRegisterController.createNotifications(
+							constants.dataUseRegisterNotifications.DATAUSEAPPROVED,
+							{},
+							dataUseRegister
+						);
 						await this.activityLogService.logActivity(constants.activityLogEvents.data_access_request.APPLICATION_APPROVED, {
 							accessRequest: accessRecord,
 							user: req.user,
 						});
-					}
-					else if (accessRecord.applicationStatus === constants.applicationStatuses.APPROVEDWITHCONDITIONS) {
-						await this.dataUseRegisterService.createDataUseRegister(requestingUser, accessRecord);
+					} else if (accessRecord.applicationStatus === constants.applicationStatuses.APPROVEDWITHCONDITIONS) {
+						const dataUseRegister = await this.dataUseRegisterService.createDataUseRegister(requestingUser, accessRecord);
+						await dataUseRegisterController.createNotifications(
+							constants.dataUseRegisterNotifications.DATAUSEAPPROVED,
+							{},
+							dataUseRegister
+						);
 						await this.activityLogService.logActivity(
 							constants.activityLogEvents.data_access_request.APPLICATION_APPROVED_WITH_CONDITIONS,
 							{
@@ -1990,7 +2008,9 @@ export default class DataRequestController extends Controller {
 				let statusChangeUserIds = [...custodianManagers, ...stepReviewers].map(user => user.id);
 				await notificationBuilder.triggerNotificationMessage(
 					statusChangeUserIds,
-					`${appFirstName} ${appLastName}'s Data Access Request for ${projectName || datasetTitles} was ${context.applicationStatus} by ${firstname} ${lastname}`,
+					`${appFirstName} ${appLastName}'s Data Access Request for ${projectName || datasetTitles} was ${
+						context.applicationStatus
+					} by ${firstname} ${lastname}`,
 					'data access request',
 					accessRecord._id
 				);
@@ -2007,7 +2027,9 @@ export default class DataRequestController extends Controller {
 				if (!_.isEmpty(authors)) {
 					await notificationBuilder.triggerNotificationMessage(
 						authors.map(author => author.id),
-						`A Data Access Request you are contributing to for ${projectName || datasetTitles} was ${context.applicationStatus} by ${publisher}`,
+						`A Data Access Request you are contributing to for ${projectName || datasetTitles} was ${
+							context.applicationStatus
+						} by ${publisher}`,
 						'data access request',
 						accessRecord._id
 					);
@@ -2050,7 +2072,9 @@ export default class DataRequestController extends Controller {
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
 						custodianUserIds,
-						`A Data Access Request has been submitted to ${publisher} for ${projectName || datasetTitles} by ${appFirstName} ${appLastName}`,
+						`A Data Access Request has been submitted to ${publisher} for ${
+							projectName || datasetTitles
+						} by ${appFirstName} ${appLastName}`,
 						'data access request received',
 						accessRecord._id,
 						accessRecord.datasets[0].publisher._id.toString()
@@ -2070,7 +2094,9 @@ export default class DataRequestController extends Controller {
 				if (!_.isEmpty(authors)) {
 					await notificationBuilder.triggerNotificationMessage(
 						accessRecord.authors.map(author => author.id),
-						`A Data Access Request you are contributing to for ${projectName || datasetTitles} was successfully submitted to ${publisher} by ${firstname} ${lastname}`,
+						`A Data Access Request you are contributing to for ${
+							projectName || datasetTitles
+						} was successfully submitted to ${publisher} by ${firstname} ${lastname}`,
 						'data access request',
 						accessRecord._id
 					);
@@ -2135,7 +2161,9 @@ export default class DataRequestController extends Controller {
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
 						custodianUserIds,
-						`A Data Access Request has been resubmitted with updates to ${publisher} for ${projectName || datasetTitles} by ${appFirstName} ${appLastName}`,
+						`A Data Access Request has been resubmitted with updates to ${publisher} for ${
+							projectName || datasetTitles
+						} by ${appFirstName} ${appLastName}`,
 						'data access request',
 						accessRecord._id
 					);
@@ -2154,7 +2182,9 @@ export default class DataRequestController extends Controller {
 				if (!_.isEmpty(authors)) {
 					await notificationBuilder.triggerNotificationMessage(
 						accessRecord.authors.map(author => author.id),
-						`A Data Access Request you are contributing to for ${projectName || datasetTitles} was successfully resubmitted with updates to ${publisher} by ${firstname} ${lastname}`,
+						`A Data Access Request you are contributing to for ${
+							projectName || datasetTitles
+						} was successfully resubmitted with updates to ${publisher} by ${firstname} ${lastname}`,
 						'data access request',
 						accessRecord._id
 					);
@@ -2497,7 +2527,9 @@ export default class DataRequestController extends Controller {
 				if (!_.isEmpty(authors)) {
 					await notificationBuilder.triggerNotificationMessage(
 						authors.map(author => author.id),
-						`A Data Access Request you contributed to for ${projectName || datasetTitles} has been duplicated into a new form by ${firstname} ${lastname}`,
+						`A Data Access Request you contributed to for ${
+							projectName || datasetTitles
+						} has been duplicated into a new form by ${firstname} ${lastname}`,
 						'data access request unlinked',
 						newApplicationId
 					);
@@ -2539,7 +2571,9 @@ export default class DataRequestController extends Controller {
 				if (!_.isEmpty(authors)) {
 					await notificationBuilder.triggerNotificationMessage(
 						authors.map(author => author.id),
-						`A draft Data Access Request you contributed to for ${projectName || datasetTitles} has been deleted by ${firstname} ${lastname}`,
+						`A draft Data Access Request you contributed to for ${
+							projectName || datasetTitles
+						} has been deleted by ${firstname} ${lastname}`,
 						'data access request unlinked',
 						accessRecord._id
 					);
@@ -2690,7 +2724,9 @@ export default class DataRequestController extends Controller {
 				} else if (userType === constants.userTypes.CUSTODIAN) {
 					await notificationBuilder.triggerNotificationMessage(
 						[accessRecord.userId, ...accessRecord.authors.map(author => author.id)],
-						`There is a new message for the application ${projectName || datasetTitles} from ${user.firstname} ${user.lastname} from ${accessRecord.publisherObj.name}`,
+						`There is a new message for the application ${projectName || datasetTitles} from ${user.firstname} ${user.lastname} from ${
+							accessRecord.publisherObj.name
+						}`,
 						'data access message sent',
 						accessRecord._id
 					);
