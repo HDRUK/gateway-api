@@ -1,8 +1,7 @@
 import express from 'express';
 import { getObjectFilters, getFilter } from './search.repository';
 import { filtersService } from '../filters/dependency';
-import { isEqual, lowerCase, isEmpty } from 'lodash';
-import searchUtil from './util/search.util';
+import { isEqual, isEmpty } from 'lodash';
 
 const router = express.Router();
 
@@ -23,74 +22,15 @@ const typeMapper = {
 router.get('/', async (req, res) => {
 	let searchString = req.query.search || ''; //If blank then return all
 	let tab = req.query.tab || ''; //If blank then return all
-	if (tab === '') {
-		let searchQuery = { $and: [{ activeflag: 'active' }] };
-		if (searchString.length > 0) searchQuery['$and'].push({ $text: { $search: searchString } });
 
-		await Promise.all([
-			getFilter(searchString, 'tool', 'tags.topic', true, getObjectFilters(searchQuery, req, 'tool')),
-			getFilter(searchString, 'tool', 'tags.features', true, getObjectFilters(searchQuery, req, 'tool')),
-			getFilter(searchString, 'tool', 'programmingLanguage.programmingLanguage', true, getObjectFilters(searchQuery, req, 'tool')),
-			getFilter(searchString, 'tool', 'categories.category', false, getObjectFilters(searchQuery, req, 'tool')),
+	const type = !isEmpty(tab) && typeof tab === 'string' ? typeMapper[`${tab}`] : '';
 
-			getFilter(searchString, 'project', 'tags.topics', true, getObjectFilters(searchQuery, req, 'project')),
-			getFilter(searchString, 'project', 'tags.features', true, getObjectFilters(searchQuery, req, 'project')),
-			getFilter(searchString, 'project', 'categories.category', false, getObjectFilters(searchQuery, req, 'project')),
-
-			getFilter(searchString, 'paper', 'tags.topics', true, getObjectFilters(searchQuery, req, 'project')),
-			getFilter(searchString, 'paper', 'tags.features', true, getObjectFilters(searchQuery, req, 'project')),
-		]).then(values => {
-			return res.json({
-				success: true,
-				allFilters: {
-					toolTopicFilter: values[0][0],
-					toolFeatureFilter: values[1][0],
-					toolLanguageFilter: values[2][0],
-					toolCategoryFilter: values[3][0],
-
-					projectTopicFilter: values[4][0],
-					projectFeatureFilter: values[5][0],
-					projectCategoryFilter: values[6][0],
-
-					paperTopicFilter: values[7][0],
-					paperFeatureFilter: values[8][0],
-				},
-				filterOptions: {
-					toolTopicsFilterOptions: values[0][1],
-					featuresFilterOptions: values[1][1],
-					programmingLanguageFilterOptions: values[2][1],
-					toolCategoriesFilterOptions: values[3][1],
-
-					projectTopicsFilterOptions: values[4][1],
-					projectFeaturesFilterOptions: values[5][1],
-					projectCategoriesFilterOptions: values[6][1],
-
-					paperTopicsFilterOptions: values[7][1],
-					paperFeaturesFilterOptions: values[8][1],
-				},
-			});
-		});
-	} else {
-		const type = !isEmpty(tab) && typeof tab === 'string' ? lowerCase(tab.substring(0, tab.length - 1)) : '';
-		let defaultQuery = { $and: [{ activeflag: 'active' }] };
-		if (type === 'collection') {
-			defaultQuery['$and'].push({ publicflag: true });
-		} else if (type === 'course') {
-			defaultQuery['$and'].push({
-				$or: [{ 'courseOptions.startDate': { $gte: new Date(Date.now()) } }, { 'courseOptions.flexibleDates': true }],
-			});
-		}
-
-		if (searchString.length > 0) defaultQuery['$and'].push({ $text: { $search: searchString } });
-		const filterQuery = getObjectFilters(defaultQuery, req, type);
-		const useCachedFilters = isEqual(defaultQuery, filterQuery) && searchString.length === 0;
-
-		const filters = await filtersService.buildFilters(type, filterQuery, useCachedFilters);
-		const spatialV2 = searchUtil.arrayToTree(filters['spatial']);
-		filters['spatialv2'] = spatialV2;
-		return res.json({
-			success: true,
-			filters,
+	let defaultQuery = { $and: [{ activeflag: 'active' }] };
+	if (type === 'collection') {
+		defaultQuery['$and'].push({ publicflag: true });
+	} else if (type === 'course') {
+		defaultQuery['$and'].push({
+			$or: [{ 'courseOptions.startDate': { $gte: new Date(Date.now()) } }, { 'courseOptions.flexibleDates': true }],
 		});
 	}
 
