@@ -219,7 +219,7 @@ export default class DataUseRegisterService {
 				safeprojectprojectdetailsresearchprojectsummarykeywords: keywords,
 				['safeproject-projectdetails-startdate']: startDate,
 				['safeproject-projectdetails-enddate']: endDate,
-				safedatastorageandprocessingaccessmethod: safeDataAccessOptions,
+				safedatastorageandprocessingaccessmethod: safeDataAccessOptions = [],
 				safedataconfidentialityavenuelegalbasisconfidentialinformation: dutyOfConfidentiality,
 				safedataotherdatasetslinkadditionaldatasetslinkagedetails: datasetLinkageDetails = '',
 				safedataotherdatasetsrisksmitigations: datasetLinkageRiskMitigation = '',
