@@ -153,6 +153,7 @@ export default class FiltersService {
 				entities = await this.DataUseRegisterRepository.getDataUseRegistersFilters({ ...query, fields }, { aggregate: true });
 				break;
 		}
+		let countRecord = 0;
 		// 3. Loop over each entity
 		entities.forEach(entity => {
 			// 4. Get the filter values provided by each entity
@@ -177,7 +178,9 @@ export default class FiltersService {
 					filters[key] = [...filters[key], ...values];
 				}
 			}
+			count++;
 		});
+		console.log(count);
 		// 8. Iterate through each filter
 		Object.keys(filters).forEach(filterKey => {
 			// 9. Set filter values to title case (all except publisher) / upper case (publisher) and remove white space
