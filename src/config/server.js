@@ -53,20 +53,13 @@ configuration.findAccount = Account.findAccount;
 const oidc = new Provider(process.env.api_url || 'http://localhost:3001', configuration);
 oidc.proxy = true;
 
-var domains = [/\.healthdatagateway\.org$/, process.env.homeURL];
-
-var rx = /^((http|https)+:\/\/[a-z]+)\.([^/]*)/;
-var arr = rx.exec(process.env.homeURL);
-
-if (Array.isArray(arr) && arr.length > 0) {
-	domains.push('https://' + arr[2]);
-}
-
 app.use(
-	cors({
-		origin: domains,
-		credentials: true,
-	})
+	cors(
+			{
+				credentials: true, 
+				origin: true
+			}
+	)
 );
 
 // apply rate limiter of 100 requests per minute
