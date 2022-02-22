@@ -396,9 +396,8 @@ module.exports = {
 		};
 		let updatedDataset = null;
 		let dataset = null;
-		let constantActivityLog = null;
+		let activityLogStatus = null;
 		const _httpClient = new HttpClient();
-		await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
 
 		switch(applicationStatus) {
 			case 'approved':
@@ -413,6 +412,7 @@ module.exports = {
 				dataset.questionAnswers = JSON.parse(dataset.questionAnswers);
 				const publisherData = await PublisherModel.find({ _id: dataset.datasetv2.summary.publisher.identifier }).lean();
 
+				await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
 				const responseLogin = await _httpClient.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, { withCredentials: true, timeout: 5000 });
 				const [cookie] = responseLogin.headers["set-cookie"];
 				_httpClient.setHttpClientCookies(cookie);
@@ -518,7 +518,7 @@ module.exports = {
 				//emails / notifications
 				await datasetonboardingUtil.createNotifications(constants.notificationTypes.DATASETAPPROVED, updatedDataset);
 
-				constantActivityLog = constants.activityLogEvents.dataset.DATASET_VERSION_APPROVED;
+				activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_APPROVED;
 
 				await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
 
@@ -543,7 +543,7 @@ module.exports = {
 				//emails / notifications
 				await datasetonboardingUtil.createNotifications(constants.notificationTypes.DATASETREJECTED, updatedDataset);
 
-				constantActivityLog = constants.activityLogEvents.dataset.DATASET_VERSION_REJECTED;
+				activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_REJECTED;
 			
 			  break;
 			case 'archive':
@@ -565,7 +565,7 @@ module.exports = {
 					{ activeflag: constants.datatsetStatuses.ARCHIVE, 'timestamps.updated': Date.now(), 'timestamps.archived': Date.now() }
 				);
 
-				constantActivityLog = constants.activityLogEvents.dataset.DATASET_VERSION_ARCHIVED;
+				activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_ARCHIVED;
 			
 				break;
 			case 'unarchive':
@@ -590,7 +590,7 @@ module.exports = {
 				}
 				updatedDataset = await Data.findOneAndUpdate({ _id: id }, { activeflag: flagIs }); //active or draft
 
-				constantActivityLog = constants.activityLogEvents.dataset.DATASET_VERSION_UNARCHIVED;
+				activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_UNARCHIVED;
 
 				break;
 			default:
@@ -600,7 +600,7 @@ module.exports = {
 				});
 		}
 
-		await activityLogService.logActivity(constantActivityLog, {
+		await activityLogService.logActivity(activityLogStatus, {
 			type: constants.activityLogTypes.DATASET,
 			updatedDataset,
 			user: req.user,
