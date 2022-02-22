@@ -6,7 +6,7 @@ class HttpClient {
     }
 
     setHttpClientCookies(cookies) {
-        axios.defaults.headers.Cookie = cookies;
+        return axios.defaults.headers.Cookie = cookies;
     }
 
     async post(url, body, options) {
