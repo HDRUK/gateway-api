@@ -13,6 +13,7 @@ import datasetonboardingUtil from './utils/datasetonboarding.util';
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty, isNil, escapeRegExp } from 'lodash';
 import { activityLogService } from '../activitylog/dependency';
+const HttpClient = require('../../services/httpClient/httpClient');
 
 const readEnv = process.env.ENV || 'prod';
 
@@ -369,199 +370,169 @@ module.exports = {
 
 	//PUT api/v1/dataset-onboarding/:id
 	changeDatasetVersionStatus: async (req, res) => {
-		try {
-			// 1. Id is the _id object in MongoDb not the generated id or dataset Id
-			// 2. Get the userId
-			const id = req.params.id || null;
-			let { firstname, lastname } = req.user;
-			let { applicationStatus, applicationStatusDesc = '' } = req.body;
+		const id = req.params.id || null;
+		if (!id) {
+			return res.status(404).json({
+				status: 'error',
+				message: 'Dataset _id could not be found.'
+			});
+		}
 
-			if (!id) return res.status(404).json({ status: 'error', message: 'Dataset _id could not be found.' });
+		let { firstname, lastname } = req.user;
+		let { applicationStatus, applicationStatusDesc = '' } = req.body;
 
-			// 3. Check user type and authentication to submit application
-			let { authorised, userType } = await datasetonboardingUtil.getUserPermissionsForDataset(id, req.user);
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-			}
+		let { authorised, userType } = await datasetonboardingUtil.getUserPermissionsForDataset(id, req.user);
+		if (!authorised) {
+			return res.status(401).json({
+				status: 'failure',
+				message: 'Unauthorised'
+			});
+		}
 
-			if (applicationStatus === 'approved') {
+		let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
+		const loginDetails = {
+			username: process.env.MDC_Config_HDRUK_username || '',
+			password: process.env.MDC_Config_HDRUK_password || '',
+		};
+		let updatedDataset = null;
+		let dataset = null;
+		const _httpClient = new HttpClient();
+		await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
+		
+		switch(applicationStatus) {
+			case 'approved':
 				if (userType !== constants.userTypes.ADMIN) {
 					return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
 				}
 
-				let dataset = await Data.findOne({ _id: id });
+				dataset = await Data.findOne({ _id: id });
 
 				if (!dataset) return res.status(404).json({ status: 'error', message: 'Dataset could not be found.' });
 
 				dataset.questionAnswers = JSON.parse(dataset.questionAnswers);
 				const publisherData = await PublisherModel.find({ _id: dataset.datasetv2.summary.publisher.identifier }).lean();
 
-				//1. create new version on MDC with version number and take datasetid and store
-				let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
-				const loginDetails = {
-					username: process.env.MDC_Config_HDRUK_username || '',
-					password: process.env.MDC_Config_HDRUK_password || '',
+				const responseLogin = await _httpClient.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, { withCredentials: true, timeout: 5000 });
+				const [cookie] = responseLogin.headers["set-cookie"];
+				_httpClient.setHttpClientCookies(cookie);
+				
+				let jsonData = JSON.stringify(await datasetonboardingUtil.buildJSONFile(dataset));
+				fs.writeFileSync(__dirname + `/datasetfiles/${dataset._id}.json`, jsonData);
+				
+				var data = new FormData();
+				data.append('folderId', publisherData[0].mdcFolderId);
+				data.append('importFile', fs.createReadStream(__dirname + `/datasetfiles/${dataset._id}.json`));
+				data.append('finalised', 'false');
+				data.append('importAsNewDocumentationVersion', 'true');
+
+				const responseImport = await _httpClient.post(
+					metadataCatalogueLink + '/api/dataModels/import/ox.softeng.metadatacatalogue.core.spi.json/JsonImporterService/1.1', 
+					data, 
+					{
+						withCredentials: true,
+						timeout: 60000,
+						headers: {
+							...data.getHeaders(),
+						},
+					});
+				
+				let newDatasetVersionId = responseImport.data.items[0].id;
+				fs.unlinkSync(__dirname + `/datasetfiles/${dataset._id}.json`);
+
+				const updatedDatasetDetails = {
+					documentationVersion: dataset.datasetVersion,
 				};
 
-				await axios
-					.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, {
-						withCredentials: true,
-						timeout: 5000,
-					})
-					.then(async session => {
-						axios.defaults.headers.Cookie = session.headers['set-cookie'][0]; // get cookie from request
+				await _httpClient.put(metadataCatalogueLink + `/api/dataModels/${newDatasetVersionId}`, updatedDatasetDetails, { withCredentials: true, timeout: 20000 });
 
-						let jsonData = JSON.stringify(await datasetonboardingUtil.buildJSONFile(dataset));
-						fs.writeFileSync(__dirname + `/datasetfiles/${dataset._id}.json`, jsonData);
+				await _httpClient.put(metadataCatalogueLink + `/api/dataModels/${newDatasetVersionId}/finalise`, null, { withCredentials: true, timeout: 20000 });
 
-						var data = new FormData();
-						data.append('folderId', publisherData[0].mdcFolderId);
-						data.append('importFile', fs.createReadStream(__dirname + `/datasetfiles/${dataset._id}.json`));
-						data.append('finalised', 'false');
-						data.append('importAsNewDocumentationVersion', 'true');
+				// Adding to DB
+				let datasetv2Object = await datasetonboardingUtil.buildv2Object(dataset, newDatasetVersionId);
 
-						await axios
-							.post(
-								metadataCatalogueLink + '/api/dataModels/import/ox.softeng.metadatacatalogue.core.spi.json/JsonImporterService/1.1',
-								data,
-								{
-									withCredentials: true,
-									timeout: 60000,
-									headers: {
-										...data.getHeaders(),
-									},
-								}
-							)
-							.then(async newDatasetVersion => {
-								let newDatasetVersionId = newDatasetVersion.data.items[0].id;
-								fs.unlinkSync(__dirname + `/datasetfiles/${dataset._id}.json`);
+				let previousDataset = await Data.findOneAndUpdate({ pid: dataset.pid, activeflag: 'active' }, { activeflag: 'archive' });
+				let previousCounter = 0;
+				let previousDiscourseTopicId = 0;
+				if (previousDataset) previousCounter = previousDataset.counter || 0;
+				if (previousDataset) previousDiscourseTopicId = previousDataset.discourseTopicId || 0;
 
-								const updatedDatasetDetails = {
-									documentationVersion: dataset.datasetVersion,
-								};
+				//get technicaldetails and metadataQuality
+				let technicalDetails = await datasetonboardingUtil.buildTechnicalDetails(dataset.structuralMetadata);
+				let metadataQuality = await datasetonboardingUtil.buildMetadataQuality(dataset, datasetv2Object, dataset.pid);
 
-								await axios
-									.put(metadataCatalogueLink + `/api/dataModels/${newDatasetVersionId}`, updatedDatasetDetails, {
-										withCredentials: true,
-										timeout: 20000,
-									})
-									.catch(err => {
-										console.error('Error when trying to update the version number on the MDC - ' + err.message);
-									});
+				// call filterCommercialUsage to determine commericalUse field only pass in v2 a
+				let commercialUse = filtersService.computeCommericalUse({}, datasetv2Object);
 
-								await axios
-									.put(metadataCatalogueLink + `/api/dataModels/${newDatasetVersionId}/finalise`, {
-										withCredentials: true,
-										timeout: 20000,
-									})
-									.catch(err => {
-										console.error('Error when trying to finalise the dataset on the MDC - ' + err.message);
-									});
+				updatedDataset = await Data.findOneAndUpdate(
+					{ _id: id },
+					{
+						datasetid: newDatasetVersionId,
+						datasetVersion: dataset.datasetVersion,
+						name: dataset.questionAnswers['properties/summary/title'] || '',
+						description: dataset.questionAnswers['properties/documentation/abstract'] || '',
+						activeflag: 'active',
+						tags: {
+							features: dataset.questionAnswers['properties/summary/keywords'] || [],
+						},
+						commercialUse,
+						hasTechnicalDetails: !isEmpty(technicalDetails) ? true : false,
+						'timestamps.updated': Date.now(),
+						'timestamps.published': Date.now(),
+						counter: previousCounter,
+						datasetfields: {
+							publisher: `${publisherData[0].publisherDetails.memberOf} > ${publisherData[0].publisherDetails.name}`,
+							geographicCoverage: dataset.questionAnswers['properties/coverage/spatial'] || [],
+							physicalSampleAvailability: dataset.questionAnswers['properties/coverage/physicalSampleAvailability'] || [],
+							abstract: dataset.questionAnswers['properties/summary/abstract'] || '',
+							releaseDate: dataset.questionAnswers['properties/provenance/temporal/distributionReleaseDate'] || '',
+							accessRequestDuration: dataset.questionAnswers['properties/accessibility/access/deliveryLeadTime'] || '',
+							datasetStartDate: dataset.questionAnswers['properties/provenance/temporal/startDate'] || '',
+							datasetEndDate: dataset.questionAnswers['properties/provenance/temporal/endDate'] || '',
+							ageBand: dataset.questionAnswers['properties/coverage/typicalAgeRange'] || '',
+							contactPoint: dataset.questionAnswers['properties/summary/contactPoint'] || '',
+							periodicity: dataset.questionAnswers['properties/provenance/temporal/accrualPeriodicity'] || '',
+							metadataquality: metadataQuality,
+							technicaldetails: technicalDetails,
+							phenotypes: [],
+						},
+						datasetv2: datasetv2Object,
+						applicationStatusDesc: applicationStatusDesc,
+						discourseTopicId: previousDiscourseTopicId,
+					},
+					{ new: true }
+				);
 
-								// Adding to DB
-								let datasetv2Object = await datasetonboardingUtil.buildv2Object(dataset, newDatasetVersionId);
+				filtersService.optimiseFilters('dataset');
 
-								let previousDataset = await Data.findOneAndUpdate({ pid: dataset.pid, activeflag: 'active' }, { activeflag: 'archive' });
-								let previousCounter = 0;
-								let previousDiscourseTopicId = 0;
-								if (previousDataset) previousCounter = previousDataset.counter || 0;
-								if (previousDataset) previousDiscourseTopicId = previousDataset.discourseTopicId || 0;
+				let datasetv2DifferenceObject = datasetonboardingUtil.datasetv2ObjectComparison(datasetv2Object, dataset.datasetv2);
 
-								//get technicaldetails and metadataQuality
-								let technicalDetails = await datasetonboardingUtil.buildTechnicalDetails(dataset.structuralMetadata);
-								let metadataQuality = await datasetonboardingUtil.buildMetadataQuality(dataset, datasetv2Object, dataset.pid);
-
-								// call filterCommercialUsage to determine commericalUse field only pass in v2 a
-								let commercialUse = filtersService.computeCommericalUse({}, datasetv2Object);
-
-								let updatedDataset = await Data.findOneAndUpdate(
-									{ _id: id },
-									{
-										datasetid: newDatasetVersionId,
-										datasetVersion: dataset.datasetVersion,
-										name: dataset.questionAnswers['properties/summary/title'] || '',
-										description: dataset.questionAnswers['properties/documentation/abstract'] || '',
-										activeflag: 'active',
-										tags: {
-											features: dataset.questionAnswers['properties/summary/keywords'] || [],
-										},
-										commercialUse,
-										hasTechnicalDetails: !isEmpty(technicalDetails) ? true : false,
-										'timestamps.updated': Date.now(),
-										'timestamps.published': Date.now(),
-										counter: previousCounter,
-										datasetfields: {
-											publisher: `${publisherData[0].publisherDetails.memberOf} > ${publisherData[0].publisherDetails.name}`,
-											geographicCoverage: dataset.questionAnswers['properties/coverage/spatial'] || [],
-											physicalSampleAvailability: dataset.questionAnswers['properties/coverage/physicalSampleAvailability'] || [],
-											abstract: dataset.questionAnswers['properties/summary/abstract'] || '',
-											releaseDate: dataset.questionAnswers['properties/provenance/temporal/distributionReleaseDate'] || '',
-											accessRequestDuration: dataset.questionAnswers['properties/accessibility/access/deliveryLeadTime'] || '',
-											//conformsTo: dataset.questionAnswers['properties/accessibility/formatAndStandards/conformsTo'] || '',
-											//accessRights: dataset.questionAnswers['properties/accessibility/access/accessRights'] || '',
-											//jurisdiction: dataset.questionAnswers['properties/accessibility/access/jurisdiction'] || '',
-											datasetStartDate: dataset.questionAnswers['properties/provenance/temporal/startDate'] || '',
-											datasetEndDate: dataset.questionAnswers['properties/provenance/temporal/endDate'] || '',
-											//statisticalPopulation: datasetMDC.statisticalPopulation,
-											ageBand: dataset.questionAnswers['properties/coverage/typicalAgeRange'] || '',
-											contactPoint: dataset.questionAnswers['properties/summary/contactPoint'] || '',
-											periodicity: dataset.questionAnswers['properties/provenance/temporal/accrualPeriodicity'] || '',
-
-											metadataquality: metadataQuality,
-											//datautility: dataUtility ? dataUtility : {},
-											//metadataschema: metadataSchema && metadataSchema.data ? metadataSchema.data : {},
-											technicaldetails: technicalDetails,
-											//versionLinks: versionLinks && versionLinks.data && versionLinks.data.items ? versionLinks.data.items : [],
-											phenotypes: [],
-										},
-										datasetv2: datasetv2Object,
-										applicationStatusDesc: applicationStatusDesc,
-										discourseTopicId: previousDiscourseTopicId,
-									},
-									{ new: true }
-								);
-
-								filtersService.optimiseFilters('dataset');
-
-								let datasetv2DifferenceObject = datasetonboardingUtil.datasetv2ObjectComparison(datasetv2Object, dataset.datasetv2);
-
-								if (!_.isEmpty(datasetv2DifferenceObject)) {
-									await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_UPDATES_SUBMITTED, {
-										type: constants.activityLogTypes.DATASET,
-										updatedDataset,
-										user: req.user,
-										differences: datasetv2DifferenceObject,
-									});
-								}
-
-								//emails / notifications
-								await datasetonboardingUtil.createNotifications(constants.notificationTypes.DATASETAPPROVED, updatedDataset);
-
-								await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_VERSION_APPROVED, {
-									type: constants.activityLogTypes.DATASET,
-									updatedDataset,
-									user: req.user,
-								});
-							})
-							.catch(err => {
-								console.error('Error when trying to create new dataset on the MDC - ' + err.message);
-							});
-					})
-					.catch(err => {
-						console.error('Error when trying to login to MDC - ' + err.message);
+				if (!_.isEmpty(datasetv2DifferenceObject)) {
+					await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_UPDATES_SUBMITTED, {
+						type: constants.activityLogTypes.DATASET,
+						updatedDataset,
+						user: req.user,
+						differences: datasetv2DifferenceObject,
 					});
+				}
 
-				await axios.post(metadataCatalogueLink + `/api/authentication/logout`, { withCredentials: true, timeout: 5000 }).catch(err => {
-					console.error('Error when trying to logout of the MDC - ' + err.message);
+				//emails / notifications
+				await datasetonboardingUtil.createNotifications(constants.notificationTypes.DATASETAPPROVED, updatedDataset);
+
+				await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_VERSION_APPROVED, {
+					type: constants.activityLogTypes.DATASET,
+					updatedDataset,
+					user: req.user,
 				});
 
-				return res.status(200).json({ status: 'success' });
-			} else if (applicationStatus === 'rejected') {
+				await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
+
+				break;
+			case 'rejected':
 				if (userType !== constants.userTypes.ADMIN) {
 					return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
 				}
 
-				let updatedDataset = await Data.findOneAndUpdate(
+				updatedDataset = await Data.findOneAndUpdate(
 					{ _id: id },
 					{
 						activeflag: constants.datatsetStatuses.REJECTED,
@@ -581,46 +552,23 @@ module.exports = {
 					updatedDataset,
 					user: req.user,
 				});
-
-				return res.status(200).json({ status: 'success' });
-			} else if (applicationStatus === 'archive') {
-				let dataset = await Data.findOne({ _id: id }).lean();
+			
+			  break;
+			case 'archive':
+				dataset = await Data.findOne({ _id: id }).lean();
 
 				if (dataset.timestamps.submitted) {
-					//soft delete from MDC
-					let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
+					await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
 
-					await axios.post(metadataCatalogueLink + `/api/authentication/logout`, { withCredentials: true, timeout: 5000 }).catch(err => {
-						console.error('Error when trying to logout of the MDC - ' + err.message);
-					});
-					const loginDetails = {
-						username: process.env.MDC_Config_HDRUK_username || '',
-						password: process.env.MDC_Config_HDRUK_password || '',
-					};
+					const responseLogin = await _httpClient.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, { withCredentials: true, timeout: 5000 });
+					const [cookie] = responseLogin.headers["set-cookie"];
+					_httpClient.setHttpClientCookies(cookie);
 
-					await axios
-						.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, {
-							withCredentials: true,
-							timeout: 5000,
-						})
-						.then(async session => {
-							axios.defaults.headers.Cookie = session.headers['set-cookie'][0]; // get cookie from request
+					await _httpClient.delete(metadataCatalogueLink + `/api/dataModels/${dataset.datasetid}`, loginDetails, { withCredentials: true, timeout: 5000 });
 
-							await axios
-								.delete(metadataCatalogueLink + `/api/dataModels/${dataset.datasetid}`, { withCredentials: true, timeout: 5000 })
-								.catch(err => {
-									console.error('Error when trying to delete(archive) a dataset - ' + err.message);
-								});
-						})
-						.catch(err => {
-							console.error('Error when trying to login to MDC - ' + err.message);
-						});
-
-					await axios.post(metadataCatalogueLink + `/api/authentication/logout`, { withCredentials: true, timeout: 5000 }).catch(err => {
-						console.error('Error when trying to logout of the MDC - ' + err.message);
-					});
+					await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
 				}
-				let updatedDataset = await Data.findOneAndUpdate(
+				updatedDataset = await Data.findOneAndUpdate(
 					{ _id: id },
 					{ activeflag: constants.datatsetStatuses.ARCHIVE, 'timestamps.updated': Date.now(), 'timestamps.archived': Date.now() }
 				);
@@ -632,51 +580,30 @@ module.exports = {
 				});
 
 				return res.status(200).json({ status: 'success' });
-			} else if (applicationStatus === 'unarchive') {
-				let dataset = await Data.findOne({ _id: id }).lean();
+			
+
+				break;
+			case 'unarchive':
+				dataset = await Data.findOne({ _id: id }).lean();
 				let flagIs = 'draft';
 				if (dataset.timestamps.submitted) {
-					let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
+					await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
 
-					await axios.post(metadataCatalogueLink + `/api/authentication/logout`, { withCredentials: true, timeout: 5000 }).catch(err => {
-						console.error('Error when trying to logout of the MDC - ' + err.message);
-					});
-					const loginDetails = {
-						username: process.env.MDC_Config_HDRUK_username || '',
-						password: process.env.MDC_Config_HDRUK_password || '',
+					const responseLogin = await _httpClient.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, { withCredentials: true, timeout: 5000 });
+					const [cookie] = responseLogin.headers["set-cookie"];
+					_httpClient.setHttpClientCookies(cookie);
+
+					const updatedDatasetDetails = {
+						deleted: 'false',
 					};
 
-					await axios
-						.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, {
-							withCredentials: true,
-							timeout: 5000,
-						})
-						.then(async session => {
-							axios.defaults.headers.Cookie = session.headers['set-cookie'][0]; // get cookie from request
+					await _httpClient.put(metadataCatalogueLink + metadataCatalogueLink + `/api/dataModels/${dataset.datasetid}`, updatedDatasetDetails, { withCredentials: true, timeout: 5000 });
 
-							const updatedDatasetDetails = {
-								deleted: 'false',
-							};
-							await axios
-								.put(metadataCatalogueLink + `/api/dataModels/${dataset.datasetid}`, updatedDatasetDetails, {
-									withCredentials: true,
-									timeout: 5000,
-								})
-								.catch(err => {
-									console.error('Error when trying to update the version number on the MDC - ' + err.message);
-								});
-						})
-						.catch(err => {
-							console.error('Error when trying to login to MDC - ' + err.message);
-						});
-
-					await axios.post(metadataCatalogueLink + `/api/authentication/logout`, { withCredentials: true, timeout: 5000 }).catch(err => {
-						console.error('Error when trying to logout of the MDC - ' + err.message);
-					});
+					await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
 
 					flagIs = 'active';
 				}
-				const updatedDataset = await Data.findOneAndUpdate({ _id: id }, { activeflag: flagIs }); //active or draft
+				updatedDataset = await Data.findOneAndUpdate({ _id: id }, { activeflag: flagIs }); //active or draft
 
 				await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_VERSION_UNARCHIVED, {
 					type: constants.activityLogTypes.DATASET,
@@ -684,15 +611,16 @@ module.exports = {
 					user: req.user,
 				});
 
-				return res.status(200).json({ status: 'success' });
-			}
-		} catch (err) {
-			console.error(err.message);
-			res.status(500).json({
-				status: 'error',
-				message: 'An error occurred updating the dataset status',
-			});
+				break;
+			default:
+				res.status(500).json({
+					status: 'error',
+					message: 'An error occurred - application status is not set correctly',
+				});
 		}
+
+		return res.status(200).json({ status: 'success' });
+
 	},
 
 	//GET api/v1/dataset-onboarding/checkUniqueTitle
