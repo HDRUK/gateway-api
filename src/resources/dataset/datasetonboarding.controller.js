@@ -396,9 +396,10 @@ module.exports = {
 		};
 		let updatedDataset = null;
 		let dataset = null;
+		let constantActivityLog = null;
 		const _httpClient = new HttpClient();
 		await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
-		
+
 		switch(applicationStatus) {
 			case 'approved':
 				if (userType !== constants.userTypes.ADMIN) {
@@ -444,7 +445,6 @@ module.exports = {
 				};
 
 				await _httpClient.put(metadataCatalogueLink + `/api/dataModels/${newDatasetVersionId}`, updatedDatasetDetails, { withCredentials: true, timeout: 20000 });
-
 				await _httpClient.put(metadataCatalogueLink + `/api/dataModels/${newDatasetVersionId}/finalise`, null, { withCredentials: true, timeout: 20000 });
 
 				// Adding to DB
@@ -518,11 +518,7 @@ module.exports = {
 				//emails / notifications
 				await datasetonboardingUtil.createNotifications(constants.notificationTypes.DATASETAPPROVED, updatedDataset);
 
-				await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_VERSION_APPROVED, {
-					type: constants.activityLogTypes.DATASET,
-					updatedDataset,
-					user: req.user,
-				});
+				constantActivityLog = constants.activityLogEvents.dataset.DATASET_VERSION_APPROVED;
 
 				await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
 
@@ -547,11 +543,7 @@ module.exports = {
 				//emails / notifications
 				await datasetonboardingUtil.createNotifications(constants.notificationTypes.DATASETREJECTED, updatedDataset);
 
-				await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_VERSION_REJECTED, {
-					type: constants.activityLogTypes.DATASET,
-					updatedDataset,
-					user: req.user,
-				});
+				constantActivityLog = constants.activityLogEvents.dataset.DATASET_VERSION_REJECTED;
 			
 			  break;
 			case 'archive':
@@ -573,15 +565,8 @@ module.exports = {
 					{ activeflag: constants.datatsetStatuses.ARCHIVE, 'timestamps.updated': Date.now(), 'timestamps.archived': Date.now() }
 				);
 
-				await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_VERSION_ARCHIVED, {
-					type: constants.activityLogTypes.DATASET,
-					updatedDataset,
-					user: req.user,
-				});
-
-				return res.status(200).json({ status: 'success' });
+				constantActivityLog = constants.activityLogEvents.dataset.DATASET_VERSION_ARCHIVED;
 			
-
 				break;
 			case 'unarchive':
 				dataset = await Data.findOne({ _id: id }).lean();
@@ -605,11 +590,7 @@ module.exports = {
 				}
 				updatedDataset = await Data.findOneAndUpdate({ _id: id }, { activeflag: flagIs }); //active or draft
 
-				await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_VERSION_UNARCHIVED, {
-					type: constants.activityLogTypes.DATASET,
-					updatedDataset,
-					user: req.user,
-				});
+				constantActivityLog = constants.activityLogEvents.dataset.DATASET_VERSION_UNARCHIVED;
 
 				break;
 			default:
@@ -618,6 +599,12 @@ module.exports = {
 					message: 'An error occurred - application status is not set correctly',
 				});
 		}
+
+		await activityLogService.logActivity(constantActivityLog, {
+			type: constants.activityLogTypes.DATASET,
+			updatedDataset,
+			user: req.user,
+		});
 
 		return res.status(200).json({ status: 'success' });
 
