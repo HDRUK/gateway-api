@@ -13,7 +13,7 @@ class HttpClient {
         const headers = {
             ...(options && options.headers),
             Accept: 'application/json',
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json;charset=UTF-8',
         };
 
         try {
@@ -33,7 +33,7 @@ class HttpClient {
         const headers = {
             ...(options && options.headers),
             Accept: 'application/json',
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json;charset=UTF-8',
         };
 
         try {
@@ -53,7 +53,7 @@ class HttpClient {
         const headers = {
             ...(options && options.headers),
             Accept: 'application/json',
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json;charset=UTF-8',
         };
 
         try {
