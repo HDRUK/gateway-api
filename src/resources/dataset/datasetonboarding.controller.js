@@ -389,224 +389,232 @@ module.exports = {
 			});
 		}
 
-		let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
-		const loginDetails = {
-			username: process.env.MDC_Config_HDRUK_username || '',
-			password: process.env.MDC_Config_HDRUK_password || '',
-		};
-		let updatedDataset = null;
-		let dataset = null;
-		let activityLogStatus = null;
-		const _httpClient = new HttpClient();
+		try {
+			let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
+			const loginDetails = {
+				username: process.env.MDC_Config_HDRUK_username || '',
+				password: process.env.MDC_Config_HDRUK_password || '',
+			};
+			let updatedDataset = null;
+			let dataset = null;
+			let activityLogStatus = null;
 
-		switch(applicationStatus) {
-			case 'approved':
-				if (userType !== constants.userTypes.ADMIN) {
-					return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-				}
-
-				dataset = await Data.findOne({ _id: id });
-
-				if (!dataset) return res.status(404).json({ status: 'error', message: 'Dataset could not be found.' });
-
-				dataset.questionAnswers = JSON.parse(dataset.questionAnswers);
-				const publisherData = await PublisherModel.find({ _id: dataset.datasetv2.summary.publisher.identifier }).lean();
-
-				await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
-				const responseLogin = await _httpClient.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, { withCredentials: true, timeout: 5000 });
-				const [cookie] = responseLogin.headers["set-cookie"];
-				_httpClient.setHttpClientCookies(cookie);
-				
-				let jsonData = JSON.stringify(await datasetonboardingUtil.buildJSONFile(dataset));
-				fs.writeFileSync(__dirname + `/datasetfiles/${dataset._id}.json`, jsonData);
-				
-				var data = new FormData();
-				data.append('folderId', publisherData[0].mdcFolderId);
-				data.append('importFile', fs.createReadStream(__dirname + `/datasetfiles/${dataset._id}.json`));
-				data.append('finalised', 'false');
-				data.append('importAsNewDocumentationVersion', 'true');
-
-				const responseImport = await _httpClient.post(
-					metadataCatalogueLink + '/api/dataModels/import/ox.softeng.metadatacatalogue.core.spi.json/JsonImporterService/1.1', 
-					data, 
-					{
-						withCredentials: true,
-						timeout: 60000,
-						headers: {
-							...data.getHeaders(),
-						},
-					});
-				
-				let newDatasetVersionId = responseImport.data.items[0].id;
-				fs.unlinkSync(__dirname + `/datasetfiles/${dataset._id}.json`);
-
-				const updatedDatasetDetails = {
-					documentationVersion: dataset.datasetVersion,
-				};
-
-				await _httpClient.put(metadataCatalogueLink + `/api/dataModels/${newDatasetVersionId}`, updatedDatasetDetails, { withCredentials: true, timeout: 20000 });
-				await _httpClient.put(metadataCatalogueLink + `/api/dataModels/${newDatasetVersionId}/finalise`, null, { withCredentials: true, timeout: 20000 });
-
-				// Adding to DB
-				let datasetv2Object = await datasetonboardingUtil.buildv2Object(dataset, newDatasetVersionId);
-
-				let previousDataset = await Data.findOneAndUpdate({ pid: dataset.pid, activeflag: 'active' }, { activeflag: 'archive' });
-				let previousCounter = 0;
-				let previousDiscourseTopicId = 0;
-				if (previousDataset) previousCounter = previousDataset.counter || 0;
-				if (previousDataset) previousDiscourseTopicId = previousDataset.discourseTopicId || 0;
-
-				//get technicaldetails and metadataQuality
-				let technicalDetails = await datasetonboardingUtil.buildTechnicalDetails(dataset.structuralMetadata);
-				let metadataQuality = await datasetonboardingUtil.buildMetadataQuality(dataset, datasetv2Object, dataset.pid);
-
-				// call filterCommercialUsage to determine commericalUse field only pass in v2 a
-				let commercialUse = filtersService.computeCommericalUse({}, datasetv2Object);
-
-				updatedDataset = await Data.findOneAndUpdate(
-					{ _id: id },
-					{
-						datasetid: newDatasetVersionId,
-						datasetVersion: dataset.datasetVersion,
-						name: dataset.questionAnswers['properties/summary/title'] || '',
-						description: dataset.questionAnswers['properties/documentation/abstract'] || '',
-						activeflag: 'active',
-						tags: {
-							features: dataset.questionAnswers['properties/summary/keywords'] || [],
-						},
-						commercialUse,
-						hasTechnicalDetails: !isEmpty(technicalDetails) ? true : false,
-						'timestamps.updated': Date.now(),
-						'timestamps.published': Date.now(),
-						counter: previousCounter,
-						datasetfields: {
-							publisher: `${publisherData[0].publisherDetails.memberOf} > ${publisherData[0].publisherDetails.name}`,
-							geographicCoverage: dataset.questionAnswers['properties/coverage/spatial'] || [],
-							physicalSampleAvailability: dataset.questionAnswers['properties/coverage/physicalSampleAvailability'] || [],
-							abstract: dataset.questionAnswers['properties/summary/abstract'] || '',
-							releaseDate: dataset.questionAnswers['properties/provenance/temporal/distributionReleaseDate'] || '',
-							accessRequestDuration: dataset.questionAnswers['properties/accessibility/access/deliveryLeadTime'] || '',
-							datasetStartDate: dataset.questionAnswers['properties/provenance/temporal/startDate'] || '',
-							datasetEndDate: dataset.questionAnswers['properties/provenance/temporal/endDate'] || '',
-							ageBand: dataset.questionAnswers['properties/coverage/typicalAgeRange'] || '',
-							contactPoint: dataset.questionAnswers['properties/summary/contactPoint'] || '',
-							periodicity: dataset.questionAnswers['properties/provenance/temporal/accrualPeriodicity'] || '',
-							metadataquality: metadataQuality,
-							technicaldetails: technicalDetails,
-							phenotypes: [],
-						},
-						datasetv2: datasetv2Object,
-						applicationStatusDesc: applicationStatusDesc,
-						discourseTopicId: previousDiscourseTopicId,
-					},
-					{ new: true }
-				);
-
-				filtersService.optimiseFilters('dataset');
-
-				let datasetv2DifferenceObject = datasetonboardingUtil.datasetv2ObjectComparison(datasetv2Object, dataset.datasetv2);
-
-				if (!_.isEmpty(datasetv2DifferenceObject)) {
-					await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_UPDATES_SUBMITTED, {
-						type: constants.activityLogTypes.DATASET,
-						updatedDataset,
-						user: req.user,
-						differences: datasetv2DifferenceObject,
-					});
-				}
-
-				//emails / notifications
-				await datasetonboardingUtil.createNotifications(constants.notificationTypes.DATASETAPPROVED, updatedDataset);
-
-				activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_APPROVED;
-
-				await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
-
-				break;
-			case 'rejected':
-				if (userType !== constants.userTypes.ADMIN) {
-					return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-				}
-
-				updatedDataset = await Data.findOneAndUpdate(
-					{ _id: id },
-					{
-						activeflag: constants.datatsetStatuses.REJECTED,
-						applicationStatusDesc: applicationStatusDesc,
-						applicationStatusAuthor: `${firstname} ${lastname}`,
-						'timestamps.rejected': Date.now(),
-						'timestamps.updated': Date.now(),
-					},
-					{ new: true }
-				);
-
-				//emails / notifications
-				await datasetonboardingUtil.createNotifications(constants.notificationTypes.DATASETREJECTED, updatedDataset);
-
-				activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_REJECTED;
-			
-			  break;
-			case 'archive':
-				dataset = await Data.findOne({ _id: id }).lean();
-
-				if (dataset.timestamps.submitted) {
+			const _httpClient = new HttpClient();
+				switch(applicationStatus) {
+				case 'approved':
+					if (userType !== constants.userTypes.ADMIN) {
+						return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+					}
+	
+					dataset = await Data.findOne({ _id: id });
+	
+					if (!dataset) return res.status(404).json({ status: 'error', message: 'Dataset could not be found.' });
+	
+					dataset.questionAnswers = JSON.parse(dataset.questionAnswers);
+					const publisherData = await PublisherModel.find({ _id: dataset.datasetv2.summary.publisher.identifier }).lean();
+	
 					await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
-
 					const responseLogin = await _httpClient.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, { withCredentials: true, timeout: 5000 });
 					const [cookie] = responseLogin.headers["set-cookie"];
 					_httpClient.setHttpClientCookies(cookie);
-
-					await _httpClient.delete(metadataCatalogueLink + `/api/dataModels/${dataset.datasetid}`, loginDetails, { withCredentials: true, timeout: 5000 });
-
-					await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
-				}
-				updatedDataset = await Data.findOneAndUpdate(
-					{ _id: id },
-					{ activeflag: constants.datatsetStatuses.ARCHIVE, 'timestamps.updated': Date.now(), 'timestamps.archived': Date.now() }
-				);
-
-				activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_ARCHIVED;
-			
-				break;
-			case 'unarchive':
-				dataset = await Data.findOne({ _id: id }).lean();
-				let flagIs = 'draft';
-				if (dataset.timestamps.submitted) {
-					await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
-
-					const responseLogin = await _httpClient.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, { withCredentials: true, timeout: 5000 });
-					const [cookie] = responseLogin.headers["set-cookie"];
-					_httpClient.setHttpClientCookies(cookie);
-
+					
+					let jsonData = JSON.stringify(await datasetonboardingUtil.buildJSONFile(dataset));
+					fs.writeFileSync(__dirname + `/datasetfiles/${dataset._id}.json`, jsonData);
+					
+					var data = new FormData();
+					data.append('folderId', publisherData[0].mdcFolderId);
+					data.append('importFile', fs.createReadStream(__dirname + `/datasetfiles/${dataset._id}.json`));
+					data.append('finalised', 'false');
+					data.append('importAsNewDocumentationVersion', 'true');
+	
+					const responseImport = await _httpClient.post(
+						metadataCatalogueLink + '/api/dataModels/import/ox.softeng.metadatacatalogue.core.spi.json/JsonImporterService/1.1', 
+						data, 
+						{
+							withCredentials: true,
+							timeout: 60000,
+							headers: {
+								...data.getHeaders(),
+							},
+						});
+					
+					let newDatasetVersionId = responseImport.data.items[0].id;
+					fs.unlinkSync(__dirname + `/datasetfiles/${dataset._id}.json`);
+	
 					const updatedDatasetDetails = {
-						deleted: 'false',
+						documentationVersion: dataset.datasetVersion,
 					};
-
-					await _httpClient.put(metadataCatalogueLink + metadataCatalogueLink + `/api/dataModels/${dataset.datasetid}`, updatedDatasetDetails, { withCredentials: true, timeout: 5000 });
-
+	
+					await _httpClient.put(metadataCatalogueLink + `/api/dataModels/${newDatasetVersionId}`, updatedDatasetDetails, { withCredentials: true, timeout: 20000 });
+					await _httpClient.put(metadataCatalogueLink + `/api/dataModels/${newDatasetVersionId}/finalise`, null, { withCredentials: true, timeout: 20000 });
+	
+					// Adding to DB
+					let datasetv2Object = await datasetonboardingUtil.buildv2Object(dataset, newDatasetVersionId);
+	
+					let previousDataset = await Data.findOneAndUpdate({ pid: dataset.pid, activeflag: 'active' }, { activeflag: 'archive' });
+					let previousCounter = 0;
+					let previousDiscourseTopicId = 0;
+					if (previousDataset) previousCounter = previousDataset.counter || 0;
+					if (previousDataset) previousDiscourseTopicId = previousDataset.discourseTopicId || 0;
+	
+					//get technicaldetails and metadataQuality
+					let technicalDetails = await datasetonboardingUtil.buildTechnicalDetails(dataset.structuralMetadata);
+					let metadataQuality = await datasetonboardingUtil.buildMetadataQuality(dataset, datasetv2Object, dataset.pid);
+	
+					// call filterCommercialUsage to determine commericalUse field only pass in v2 a
+					let commercialUse = filtersService.computeCommericalUse({}, datasetv2Object);
+	
+					updatedDataset = await Data.findOneAndUpdate(
+						{ _id: id },
+						{
+							datasetid: newDatasetVersionId,
+							datasetVersion: dataset.datasetVersion,
+							name: dataset.questionAnswers['properties/summary/title'] || '',
+							description: dataset.questionAnswers['properties/documentation/abstract'] || '',
+							activeflag: 'active',
+							tags: {
+								features: dataset.questionAnswers['properties/summary/keywords'] || [],
+							},
+							commercialUse,
+							hasTechnicalDetails: !isEmpty(technicalDetails) ? true : false,
+							'timestamps.updated': Date.now(),
+							'timestamps.published': Date.now(),
+							counter: previousCounter,
+							datasetfields: {
+								publisher: `${publisherData[0].publisherDetails.memberOf} > ${publisherData[0].publisherDetails.name}`,
+								geographicCoverage: dataset.questionAnswers['properties/coverage/spatial'] || [],
+								physicalSampleAvailability: dataset.questionAnswers['properties/coverage/physicalSampleAvailability'] || [],
+								abstract: dataset.questionAnswers['properties/summary/abstract'] || '',
+								releaseDate: dataset.questionAnswers['properties/provenance/temporal/distributionReleaseDate'] || '',
+								accessRequestDuration: dataset.questionAnswers['properties/accessibility/access/deliveryLeadTime'] || '',
+								datasetStartDate: dataset.questionAnswers['properties/provenance/temporal/startDate'] || '',
+								datasetEndDate: dataset.questionAnswers['properties/provenance/temporal/endDate'] || '',
+								ageBand: dataset.questionAnswers['properties/coverage/typicalAgeRange'] || '',
+								contactPoint: dataset.questionAnswers['properties/summary/contactPoint'] || '',
+								periodicity: dataset.questionAnswers['properties/provenance/temporal/accrualPeriodicity'] || '',
+								metadataquality: metadataQuality,
+								technicaldetails: technicalDetails,
+								phenotypes: [],
+							},
+							datasetv2: datasetv2Object,
+							applicationStatusDesc: applicationStatusDesc,
+							discourseTopicId: previousDiscourseTopicId,
+						},
+						{ new: true }
+					);
+	
+					filtersService.optimiseFilters('dataset');
+	
+					let datasetv2DifferenceObject = datasetonboardingUtil.datasetv2ObjectComparison(datasetv2Object, dataset.datasetv2);
+	
+					if (!_.isEmpty(datasetv2DifferenceObject)) {
+						await activityLogService.logActivity(constants.activityLogEvents.dataset.DATASET_UPDATES_SUBMITTED, {
+							type: constants.activityLogTypes.DATASET,
+							updatedDataset,
+							user: req.user,
+							differences: datasetv2DifferenceObject,
+						});
+					}
+	
+					//emails / notifications
+					await datasetonboardingUtil.createNotifications(constants.notificationTypes.DATASETAPPROVED, updatedDataset);
+	
+					activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_APPROVED;
+	
 					await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
-
-					flagIs = 'active';
-				}
-				updatedDataset = await Data.findOneAndUpdate({ _id: id }, { activeflag: flagIs }); //active or draft
-
-				activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_UNARCHIVED;
-
-				break;
-			default:
-				res.status(500).json({
-					status: 'error',
-					message: 'An error occurred - application status is not set correctly',
-				});
+	
+					break;
+				case 'rejected':
+					if (userType !== constants.userTypes.ADMIN) {
+						return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+					}
+	
+					updatedDataset = await Data.findOneAndUpdate(
+						{ _id: id },
+						{
+							activeflag: constants.datatsetStatuses.REJECTED,
+							applicationStatusDesc: applicationStatusDesc,
+							applicationStatusAuthor: `${firstname} ${lastname}`,
+							'timestamps.rejected': Date.now(),
+							'timestamps.updated': Date.now(),
+						},
+						{ new: true }
+					);
+	
+					//emails / notifications
+					await datasetonboardingUtil.createNotifications(constants.notificationTypes.DATASETREJECTED, updatedDataset);
+	
+					activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_REJECTED;
+				
+				  break;
+				case 'archive':
+					dataset = await Data.findOne({ _id: id }).lean();
+	
+					if (dataset.timestamps.submitted) {
+						await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
+	
+						const responseLogin = await _httpClient.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, { withCredentials: true, timeout: 5000 });
+						const [cookie] = responseLogin.headers["set-cookie"];
+						_httpClient.setHttpClientCookies(cookie);
+	
+						await _httpClient.delete(metadataCatalogueLink + `/api/dataModels/${dataset.datasetid}`, loginDetails, { withCredentials: true, timeout: 5000 });
+	
+						await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
+					}
+					updatedDataset = await Data.findOneAndUpdate(
+						{ _id: id },
+						{ activeflag: constants.datatsetStatuses.ARCHIVE, 'timestamps.updated': Date.now(), 'timestamps.archived': Date.now() }
+					);
+	
+					activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_ARCHIVED;
+				
+					break;
+				case 'unarchive':
+					dataset = await Data.findOne({ _id: id }).lean();
+					let flagIs = 'draft';
+					if (dataset.timestamps.submitted) {
+						await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
+	
+						const responseLogin = await _httpClient.post(metadataCatalogueLink + '/api/authentication/login', loginDetails, { withCredentials: true, timeout: 5000 });
+						const [cookie] = responseLogin.headers["set-cookie"];
+						_httpClient.setHttpClientCookies(cookie);
+	
+						const updatedDatasetDetails = {
+							deleted: 'false',
+						};
+	
+						await _httpClient.put(metadataCatalogueLink + metadataCatalogueLink + `/api/dataModels/${dataset.datasetid}`, updatedDatasetDetails, { withCredentials: true, timeout: 5000 });
+	
+						await _httpClient.post(metadataCatalogueLink + `/api/authentication/logout`, null, { withCredentials: true, timeout: 5000 });
+	
+						flagIs = 'active';
+					}
+					updatedDataset = await Data.findOneAndUpdate({ _id: id }, { activeflag: flagIs }); //active or draft
+	
+					activityLogStatus = constants.activityLogEvents.dataset.DATASET_VERSION_UNARCHIVED;
+	
+					break;
+				default:
+					res.status(500).json({
+						status: 'error',
+						message: 'An error occurred - application status is not set correctly',
+					});
+			}
+	
+			await activityLogService.logActivity(activityLogStatus, {
+				type: constants.activityLogTypes.DATASET,
+				updatedDataset,
+				user: req.user,
+			});
+	
+			return res.status(200).json({ status: 'success' });
+	
+		} catch (err) {
+			res.status(500).json({
+				status: 'error',
+				message: 'An error occurred updating the dataset status',
+			});
 		}
-
-		await activityLogService.logActivity(activityLogStatus, {
-			type: constants.activityLogTypes.DATASET,
-			updatedDataset,
-			user: req.user,
-		});
-
-		return res.status(200).json({ status: 'success' });
 
 	},
 
