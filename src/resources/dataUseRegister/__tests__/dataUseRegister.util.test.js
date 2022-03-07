@@ -24,7 +24,7 @@ const sandbox = sinon.createSandbox();
 
 describe('DataUseRegisterUtil', function () {
 	beforeAll(function () {
-		process.env.homeURL = 'http://localhost:3000';
+		process.env.GATEWAY_WEB_URL = 'http://localhost:3000';
 	});
 
 	describe('getLinkedDatasets', function () {
@@ -150,6 +150,6 @@ describe('DataUseRegisterUtil', function () {
 	});
 
 	afterAll(function () {
-		delete process.env.homeURL;
+		delete process.env.GATEWAY_WEB_URL;
 	});
 });

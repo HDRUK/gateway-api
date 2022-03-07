@@ -407,7 +407,7 @@ async function storeNotificationMessages(review) {
 	const tool = await Data.findOne({ id: review.toolID });
 	//Get reviewer name
 	const reviewer = await UserModel.findOne({ id: review.reviewerID });
-	const toolLink = process.env.homeURL + '/tool/' + review.toolID + '/' + tool.name;
+	const toolLink = process.env.GATEWAY_WEB_URL + '/tool/' + review.toolID + '/' + tool.name;
 	//admins
 	let message = new MessagesModel();
 	message.messageID = parseInt(Math.random().toString().replace('0.', ''));
@@ -440,7 +440,7 @@ async function sendEmailNotifications(review, activeflag) {
 	// 1. Retrieve tool for authors and reviewer user plus generate URL for linking tool
 	const tool = await Data.findOne({ id: review.toolID });
 	const reviewer = await UserModel.findOne({ id: review.reviewerID });
-	const toolLink = process.env.homeURL + '/tool/' + tool.id;
+	const toolLink = process.env.GATEWAY_WEB_URL + '/tool/' + tool.id;
 
 	// 2. Query Db for all admins or authors of the tool who have opted in to email updates
 	var q = UserModel.aggregate([

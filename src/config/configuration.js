@@ -19,35 +19,33 @@ interactions2.add(selectAccount, 0);
 export const clients = [
 	{
 		//Metadata works
-		client_id: process.env.MDWClientID || '',
-		client_secret: process.env.MDWClientSecret || '',
+		client_id: process.env.MDW_CLIENT_ID || '',
+		client_secret: process.env.MDW_CLIENT_SECRET || '',
 		grant_types: ['authorization_code'],
 		response_types: ['code'],
-		//grant_types: ['authorization_code', 'implicit'],
-		//response_types: ['code id_token'],
-		redirect_uris: process.env.MDWRedirectURI.split(',') || [''],
+		redirect_uris: process.env.MDW_REDIRECT_URL.split(',') || [''],
 		id_token_signed_response_alg: 'HS256',
-		post_logout_redirect_uris: ['https://hdruk-auth.metadata.works/auth/logout'],
+		post_logout_redirect_uris: process.env.MDW_REDIRECT_LOGOUT_URL.split(',') || [''],
 	},
 	{
 		//BC Platforms
-		client_id: process.env.BCPClientID || '',
-		client_secret: process.env.BCPClientSecret || '',
+		client_id: process.env.BCP_CLIENT_ID || '',
+		client_secret: process.env.BCP_CLIENT_SECRET || '',
 		grant_types: ['authorization_code', 'implicit'],
 		response_types: ['code id_token'],
-		redirect_uris: process.env.BCPRedirectURI.split(',') || [''],
+		redirect_uris: process.env.BCP_REDIRECT_URL.split(',') || [''],
 		id_token_signed_response_alg: 'HS256',
-		post_logout_redirect_uris: ['https://web.uatbeta.healthdatagateway.org/search?search=&logout=true'],
+		post_logout_redirect_uris: process.env.BCP_REDIRECT_LOGOUT_URL.split(',') || [''],
 	},
 	{
 		//GA4GH passports
-		client_id: process.env.GA4GHClientID,
-		client_secret: process.env.GA4GHClientSecret,
+		client_id: process.env.GA4GH_CLIENT_ID,
+		client_secret: process.env.GA4GH_CLIENT_SECRET,
 		grant_types: ['authorization_code', 'implicit'],
 		response_types: ['code id_token'],
-		redirect_uris: process.env.GA4GHRedirectURI.split(',') || [''],
+		redirect_uris: process.env.GA4GH_REDIRECT_URL.split(',') || [''],
 		id_token_signed_response_alg: 'HS256',
-		post_logout_redirect_uris: ['https://web.uatbeta.healthdatagateway.org/search?search=&logout=true'],
+		post_logout_redirect_uris: process.env.GA4GH_REDIRECT_LOGOUT_URL.split(',') || [''],
 	},
 ];
 
@@ -117,5 +115,5 @@ async function logoutSource(ctx, form) {
 async function postLogoutSuccessSource(ctx) {
 	// @param ctx - koa request context
 	ctx.res.clearCookie('jwt');
-	ctx.res.status(200).redirect(process.env.homeURL + '/search?search=');
+	ctx.res.status(200).redirect(process.env.GATEWAY_WEB_URL + '/search?search=');
 }

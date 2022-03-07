@@ -17,7 +17,7 @@ const datasetLimiter = rateLimit({
 	message: 'Too many calls have been made to this api from this IP, please try again after an hour',
 });
 
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 
 router.post('/', async (req, res) => {
 	try {

@@ -178,7 +178,7 @@ module.exports = router;
 
 async function createMessage(authorId, toolId, toolName, toolType, activeflag) {
 	let message = new MessagesModel();
-	const toolLink = process.env.homeURL + '/tool/' + toolId;
+	const toolLink = process.env.GATEWAY_WEB_URL + '/tool/' + toolId;
 
 	if (activeflag === 'active') {
 		message.messageType = 'approved';
@@ -199,7 +199,7 @@ async function sendEmailNotifications(tool, activeflag) {
 	let subject;
 	let html;
 	// 1. Generate URL for linking tool in email
-	const toolLink = process.env.homeURL + '/tool/' + tool.id + '/' + tool.name;
+	const toolLink = process.env.GATEWAY_WEB_URL + '/tool/' + tool.id + '/' + tool.name;
 
 	// 2. Build HTML for email
 	if (activeflag === 'active') {

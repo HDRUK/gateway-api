@@ -19,6 +19,7 @@ export default class BigQueryService {
     async query() {
         const options = {
             query: this._query,
+            location: process.env.BIG_QUERY_LOCATION || 'US',
         };
 
         // Run the query as a job

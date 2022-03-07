@@ -13,8 +13,10 @@ export const datasetSearchStub = [
 		name: 'test1 v1',
 		datasetv2: { summary: { publisher: { identifier: 'TestPublisher' }, abstract: 'abstract1', keywords: ['test'] } },
 		activeflag: 'rejected',
-		percentageCompleted: {
-			summary: 80,
+		datasetfields: {
+			metadataquality: {
+				weighted_quality_score: 80,
+			},
 		},
 		type: 'dataset',
 	},
@@ -30,8 +32,10 @@ export const datasetSearchStub = [
 		name: 'A test1 v2',
 		datasetv2: { summary: { publisher: { identifier: 'TestPublisher' }, abstract: 'abstract2' } },
 		activeflag: 'inReview',
-		percentageCompleted: {
-			summary: 60,
+		datasetfields: {
+			metadataquality: {
+				weighted_quality_score: 60,
+			},
 		},
 		type: 'dataset',
 		counter: 5,
@@ -48,8 +52,10 @@ export const datasetSearchStub = [
 		name: 'B test2 v1',
 		datasetv2: { summary: { publisher: { identifier: 'TestPublisher' }, abstract: 'abstract3' } },
 		activeflag: 'inReview',
-		percentageCompleted: {
-			summary: 80,
+		datasetfields: {
+			metadataquality: {
+				weighted_quality_score: 80,
+			},
 		},
 		type: 'dataset',
 		counter: 10,
@@ -66,8 +72,10 @@ export const datasetSearchStub = [
 		name: 'test3 v1',
 		datasetv2: { summary: { publisher: { identifier: 'TestPublisher' }, abstract: 'abstract4' } },
 		activeflag: 'draft',
-		percentageCompleted: {
-			summary: 80,
+		datasetfields: {
+			metadataquality: {
+				weighted_quality_score: 80,
+			},
 		},
 		type: 'dataset',
 	},
@@ -83,8 +91,10 @@ export const datasetSearchStub = [
 		name: 'test4 v1',
 		datasetv2: { summary: { publisher: { identifier: 'TestPublisher' }, abstract: 'abstract5' } },
 		activeflag: 'active',
-		percentageCompleted: {
-			summary: 80,
+		datasetfields: {
+			metadataquality: {
+				weighted_quality_score: 80,
+			},
 		},
 		type: 'dataset',
 	},
@@ -100,8 +110,10 @@ export const datasetSearchStub = [
 		name: 'test5 v1',
 		datasetv2: { summary: { publisher: { identifier: 'TestPublisher' }, abstract: 'abstract6' } },
 		activeflag: 'rejected',
-		percentageCompleted: {
-			summary: 80,
+		datasetfields: {
+			metadataquality: {
+				weighted_quality_score: 80,
+			},
 		},
 		type: 'dataset',
 	},
@@ -117,8 +129,10 @@ export const datasetSearchStub = [
 		name: 'test6 v1',
 		datasetv2: { summary: { publisher: { identifier: 'TestPublisher' }, abstract: 'abstract7' } },
 		activeflag: 'archive',
-		percentageCompleted: {
-			summary: 80,
+		datasetfields: {
+			metadataquality: {
+				weighted_quality_score: 80,
+			},
 		},
 		type: 'dataset',
 	},
@@ -136,8 +150,10 @@ export const datasetSearchStub = [
 		name: 'test2 v1',
 		datasetv2: { summary: { publisher: { identifier: 'AnotherTestPublisher' }, abstract: 'test' } },
 		activeflag: 'inReview',
-		percentageCompleted: {
-			summary: 70,
+		datasetfields: {
+			metadataquality: {
+				weighted_quality_score: 70,
+			},
 		},
 		type: 'dataset',
 		counter: 1,

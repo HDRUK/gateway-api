@@ -162,7 +162,7 @@ describe('datasetOnboardingService', () => {
 				}
 
 				if (sortOption === 'metadata') {
-					let arr = versionedDatasets.map(dataset => dataset.percentageCompleted.summary);
+					let arr = versionedDatasets.map(dataset => dataset.metadataQualityScore);
 					expect(arr[0]).toBeLessThan(arr[1]);
 				}
 
@@ -216,7 +216,7 @@ describe('datasetOnboardingService', () => {
 				}
 
 				if (sortOption === 'metadata') {
-					let arr = versionedDatasets.map(dataset => dataset.percentageCompleted.summary);
+					let arr = versionedDatasets.map(dataset => dataset.metadataQualityScore);
 					expect(arr[1]).toBeLessThan(arr[0]);
 				}
 

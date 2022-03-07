@@ -176,11 +176,11 @@ resource "google_cloud_run_service" "api" {
                 value = var.metadata_password
             }
             env {
-                name = "googleClientID"
+                name = "GOOGLE_OAUTH_ID"
                 value = var.google_client_id
             }
             env {
-                name = "googleClientSecret"
+                name = "GOOGLE_OAUTH_SECRET"
                 value = var.google_client_secret
             }
             env {

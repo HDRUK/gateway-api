@@ -15,7 +15,7 @@ const _getTemplate = async templateName => {
 			destination: __dirname + '/template.docx',
 		};
     // get file from google bucket
-		resolve(storage.bucket('hdruk-gateway_www-outbound-dar-templates').file(templateName).download(options));
+		resolve(storage.bucket(process.env.GOOGLE_WORD_OUTBOUND_STORAGE_BUCKET).file(templateName).download(options));
 	});
 };
 

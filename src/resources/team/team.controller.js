@@ -615,10 +615,10 @@ const addTeam = async (req, res) => {
 
 	try {
 		// 3. log into MDC
-		let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
+		let metadataCatalogueLink = process.env.MDC_BASE_URL || '';
 		const loginDetails = {
-			username: process.env.MDC_Config_HDRUK_username || '',
-			password: process.env.MDC_Config_HDRUK_password || '',
+			username: process.env.MDC_USERNAME || '',
+			password: process.env.MDC_PASSWORD || '',
 		};
 
 		await axios
@@ -798,10 +798,10 @@ const editTeam = async (req, res) => {
 			).lean();
 
 			// 6. log into MDC
-			let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
+			let metadataCatalogueLink = process.env.MDC_BASE_URL || '';
 			const loginDetails = {
-				username: process.env.MDC_Config_HDRUK_username || '',
-				password: process.env.MDC_Config_HDRUK_password || '',
+				username: process.env.MDC_USERNAME || '',
+				password: process.env.MDC_PASSWORD || '',
 			};
 
 			await axios

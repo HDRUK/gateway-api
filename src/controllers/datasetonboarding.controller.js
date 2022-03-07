@@ -13,7 +13,7 @@ import datasetonboardingUtil from '../utils/datasetonboarding.util';
 import { PublisherModel } from '../resources/publisher/publisher.model';
 import { activityLogService } from '../resources/activitylog/dependency';
 
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 
 export default class DatasetOnboardingController {
 	constructor(datasetonboardingService) {
@@ -245,10 +245,10 @@ export default class DatasetOnboardingController {
 				const publisherData = await PublisherModel.find({ _id: dataset.datasetv2.summary.publisher.identifier }).lean();
 
 				//1. create new version on MDC with version number and take datasetid and store
-				let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
+				let metadataCatalogueLink = process.env.MDC_BASE_URL || '';
 				const loginDetails = {
-					username: process.env.MDC_Config_HDRUK_username || '',
-					password: process.env.MDC_Config_HDRUK_password || '',
+					username: process.env.MDC_USERNAME || '',
+					password: process.env.MDC_PASSWORD || '',
 				};
 
 				await axios
@@ -436,14 +436,14 @@ export default class DatasetOnboardingController {
 
 				if (dataset.timestamps.submitted) {
 					//soft delete from MDC
-					let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
+					let metadataCatalogueLink = process.env.MDC_BASE_URL || '';
 
 					await axios.post(metadataCatalogueLink + `/api/authentication/logout`, { withCredentials: true, timeout: 5000 }).catch(err => {
 						console.error('Error when trying to logout of the MDC - ' + err.message);
 					});
 					const loginDetails = {
-						username: process.env.MDC_Config_HDRUK_username || '',
-						password: process.env.MDC_Config_HDRUK_password || '',
+						username: process.env.MDC_USERNAME || '',
+						password: process.env.MDC_PASSWORD || '',
 					};
 
 					await axios
@@ -484,14 +484,14 @@ export default class DatasetOnboardingController {
 				let dataset = await Data.findOne({ _id: id }).lean();
 				let flagIs = 'draft';
 				if (dataset.timestamps.submitted) {
-					let metadataCatalogueLink = process.env.MDC_Config_HDRUK_metadataUrl || 'https://modelcatalogue.cs.ox.ac.uk/hdruk-preprod';
+					let metadataCatalogueLink = process.env.MDC_BASE_URL || '';
 
 					await axios.post(metadataCatalogueLink + `/api/authentication/logout`, { withCredentials: true, timeout: 5000 }).catch(err => {
 						console.error('Error when trying to logout of the MDC - ' + err.message);
 					});
 					const loginDetails = {
-						username: process.env.MDC_Config_HDRUK_username || '',
-						password: process.env.MDC_Config_HDRUK_password || '',
+						username: process.env.MDC_USERNAME || '',
+						password: process.env.MDC_PASSWORD || '',
 					};
 
 					await axios

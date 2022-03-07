@@ -95,6 +95,14 @@ export default class DatasetOnboardingService {
 					'datasetv2.summary.publisher.identifier': { $arrayElemAt: ['$versions.datasetv2.summary.publisher.identifier', 0] },
 					counter: { $arrayElemAt: ['$versions.counter', 0] },
 					percentageCompleted: { $arrayElemAt: ['$versions.percentageCompleted', 0] },
+					metadataQualityScore: {
+						$convert: {
+							input: { $arrayElemAt: ['$versions.datasetfields.metadataquality.weighted_quality_score', 0] },
+							to: 'double',
+							onError: 0,
+							onNull: 0,
+						},
+					},
 					listOfVersions: {
 						$map: {
 							input: '$versions',

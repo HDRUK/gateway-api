@@ -312,7 +312,7 @@ const _systemGeneratedUser = {
 const _datasetSortOptions = {
 	latest: 'timestamps.updated',
 	alphabetic: 'name',
-	metadata: 'percentageCompleted.summary',
+	metadata: 'metadataQualityScore',
 	recentlyadded: 'timestamps.published',
 	popularity: 'counter',
 	relevance: 'weights',

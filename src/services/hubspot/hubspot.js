@@ -10,7 +10,7 @@ import { logger } from '../../resources/utilities/logger';
 // Default service params
 const apiKey = process.env.HUBSPOT_API_KEY;
 const logCategory = 'Hubspot Integration';
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 let hubspotClient;
 if (apiKey) hubspotClient = new Client({ apiKey, numberOfApiCallRetries: NumberOfRetries.Three });
 
