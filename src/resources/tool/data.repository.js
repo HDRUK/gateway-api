@@ -89,7 +89,7 @@ const addTool = async (req, res) => {
 		if (!newMessageObj) reject(new Error(`Can't persist message to DB.`));
 
 		// 1. Generate URL for linking tool from email
-		const toolLink = process.env.homeURL + '/' + data.type + '/' + data.id;
+		const toolLink = process.env.GATEWAY_WEB_URL + '/' + data.type + '/' + data.id;
 
 		// 2. Query Db for all admins who have opted in to email updates
 		var q = UserModel.aggregate([
@@ -419,7 +419,7 @@ const setStatus = async (req, res) => {
 
 async function createMessage(authorId, toolId, toolName, toolType, activeflag, rejectionReason) {
 	let message = new MessagesModel();
-	const toolLink = process.env.homeURL + '/' + toolType + '/' + toolId;
+	const toolLink = process.env.GATEWAY_WEB_URL + '/' + toolType + '/' + toolId;
 
 	if (activeflag === 'active') {
 		message.messageType = 'approved';
@@ -444,7 +444,7 @@ async function createMessage(authorId, toolId, toolName, toolType, activeflag, r
 
 async function sendEmailNotifications(tool, activeflag, rejectionReason) {
 	// 1. Generate tool URL for linking user from email
-	const toolLink = process.env.homeURL + '/' + tool.type + '/' + tool.id;
+	const toolLink = process.env.GATEWAY_WEB_URL + '/' + tool.type + '/' + tool.id;
 	let resourceType = tool.type.charAt(0).toUpperCase() + tool.type.slice(1);
 
 	// 2. Build email subject
@@ -494,7 +494,7 @@ async function sendEmailNotifications(tool, activeflag, rejectionReason) {
 
 async function sendEmailNotificationToAuthors(tool, toolOwner) {
 	// 1. Generate tool URL for linking user from email
-	const toolLink = process.env.homeURL + `/${tool.type}/` + tool.id;
+	const toolLink = process.env.GATEWAY_WEB_URL + `/${tool.type}/` + tool.id;
 
 	// 2. Find all authors of the tool who have opted in to email updates
 	var q = UserModel.aggregate([

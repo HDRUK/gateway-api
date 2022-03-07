@@ -35,7 +35,7 @@ router.get('/', function (req, res, next) {
 					}),
 					{
 						httpOnly: true,
-						secure: process.env.api_url ? true : false,
+						secure: process.env.NODE_ENV !== 'local',
 					}
 				)
 				.json({ redirectUrl: redirectUrl });

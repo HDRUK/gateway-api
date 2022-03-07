@@ -11,8 +11,8 @@ const GoogleStrategy = passportGoogle.OAuth2Strategy;
 
 const strategy = app => {
 	const strategyOptions = {
-		clientID: process.env.googleClientID,
-		clientSecret: process.env.googleClientSecret,
+		clientID: process.env.GOOGLE_OAUTH_ID,
+		clientSecret: process.env.GOOGLE_OAUTH_SECRET,
 		callbackURL: `/auth/google/callback`,
 		proxy: true,
 	};
@@ -54,7 +54,7 @@ const strategy = app => {
 			next();
 		},
 		passport.authenticate('google', {
-			scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email'],
+			scope: process.env.GOOGLE_OAUTH_SCOPE_URL.split(',') || ['']
 		})
 	);
 

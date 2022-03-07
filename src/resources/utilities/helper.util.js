@@ -53,35 +53,6 @@ const _hidePrivateProfileDetails = persons => {
 	});
 };
 
-const _getEnvironment = () => {
-	let environment = '';
-
-	switch (process.env.api_url) {
-		case 'https://api.latest.healthdatagateway.org':
-			environment = 'latest';
-			break;
-		case 'https://api.uatbeta.healthdatagateway.org':
-			environment = 'uatbeta';
-			break;
-		case 'https://api.uat.healthdatagateway.org':
-			environment = 'uat';
-			break;
-		case 'https://api.uat2.healthdatagateway.org':
-			environment = 'uat2';
-			break;
-		case 'https://api.preprod.healthdatagateway.org':
-			environment = 'preprod';
-			break;
-		case 'https://api.www.healthdatagateway.org':
-			environment = 'prod';
-			break;
-		default:
-			environment = 'local';
-	}
-
-	return environment;
-};
-
 const _toTitleCase = str => {
 	return str.replace(/\w\S*/g, function (txt) {
 		return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
@@ -99,7 +70,6 @@ export default {
 	generatedNumericId: _generatedNumericId,
 	generateAlphaNumericString: _generateAlphaNumericString,
 	hidePrivateProfileDetails: _hidePrivateProfileDetails,
-	getEnvironment: _getEnvironment,
 	toTitleCase: _toTitleCase,
 	escapeRegexChars: _escapeRegexChars,
 };

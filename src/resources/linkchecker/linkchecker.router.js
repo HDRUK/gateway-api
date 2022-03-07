@@ -8,7 +8,7 @@ import _ from 'lodash';
 const sgMail = require('@sendgrid/mail');
 
 const hdrukEmail = `enquiry@healthdatagateway.org`;
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 
 const axios = require('axios');
 const router = express.Router();
@@ -92,7 +92,7 @@ router.post('/', async (req, res) => {
 	const sendEmailToUsers = async (users, errors, item) => {
 		let footer;
 		sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-		let resourceLink = process.env.homeURL + '/' + item.type + '/' + item.id;
+		let resourceLink = process.env.GATEWAY_WEB_URL + '/' + item.type + '/' + item.id;
 
 		for (let user of users) {
 			footer = emailGenerator.generateEmailFooter(user, 'true');

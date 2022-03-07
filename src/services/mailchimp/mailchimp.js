@@ -13,7 +13,7 @@ let mailchimp;
 if (apiKey) mailchimp = new Mailchimp(apiKey);
 const tags = ['Gateway User'];
 const defaultSubscriptionStatus = constants.mailchimpSubscriptionStatuses.SUBSCRIBED;
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 
 /**
  * Create MailChimp Subscription Subscriber

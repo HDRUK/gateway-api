@@ -349,7 +349,7 @@ export default class CollectionsService {
 
 	async sendEmailNotifications(collections, activeflag, collectionCreator, isEdit) {
 		// Generate URL for linking collection in email
-		const collectionLink = process.env.homeURL + '/collection/' + collections.id;
+		const collectionLink = process.env.GATEWAY_WEB_URL + '/collection/' + collections.id;
 
 		// Query Db for all admins or authors of the collection
 		var q = UserModel.aggregate([

@@ -327,7 +327,7 @@ const setStatus = async req => {
 
 async function createMessage(authorId, toolId, toolName, toolType, activeflag, rejectionReason) {
 	let message = new MessagesModel();
-	const toolLink = process.env.homeURL + '/' + toolType + '/' + toolId;
+	const toolLink = process.env.GATEWAY_WEB_URL + '/' + toolType + '/' + toolId;
 
 	if (activeflag === 'active') {
 		message.messageType = 'approved';
@@ -360,7 +360,7 @@ async function sendEmailNotifications(tool, activeflag, rejectionReason) {
 	let subject;
 	let adminCanUnsubscribe = true;
 	// 1. Generate tool URL for linking user from email
-	const toolLink = process.env.homeURL + '/' + tool.type + '/' + tool.id;
+	const toolLink = process.env.GATEWAY_WEB_URL + '/' + tool.type + '/' + tool.id;
 	let resourceType = tool.type.charAt(0).toUpperCase() + tool.type.slice(1);
 
 	// 2. Build email subject

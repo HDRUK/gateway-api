@@ -2,7 +2,7 @@ import express from 'express';
 import * as Sentry from '@sentry/node';
 import hubspotConnector from './hubspot';
 const router = express.Router();
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 
 // @router   POST /api/v1/hubspot/sync
 // @desc     Performs a two-way sync of contact details including communication opt in preferences between HubSpot and the Gateway database

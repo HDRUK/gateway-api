@@ -142,7 +142,7 @@ module.exports = {
 					firstname,
 					lastname,
 					messageDescription,
-					openMessagesLink: process.env.homeURL + '/search?search=&tab=Datasets&openUserMessages=true',
+					openMessagesLink: process.env.GATEWAY_WEB_URL + '/search?search=&tab=Datasets&openUserMessages=true',
 				};
 				// Create email body content
 				let html = emailGenerator.generateMessageNotification(options);

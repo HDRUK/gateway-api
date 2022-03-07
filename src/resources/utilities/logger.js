@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
 import constants from './constants.util';
 
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 
 const logRequestMiddleware = options => {
 	return (req, res, next) => {

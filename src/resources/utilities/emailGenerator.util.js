@@ -8,7 +8,7 @@ import wordTemplateBuilder from '../utilities/wordTemplateBuilder.util';
 
 const fs = require('fs');
 const sgMail = require('@sendgrid/mail');
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 let parent, qsId;
 let questionList = [];
 let excludedQuestionSetIds = ['addRepeatableSection', 'removeRepeatableSection'];
@@ -332,7 +332,7 @@ const _buildEmail = (aboutApplication, fullQuestions, questionAnswers, options) 
 	const year = moment().year();
 	const { projectName, isNationalCoreStudies = false, nationalCoreStudiesProjectId = '' } = aboutApplication;
 	const linkNationalCoreStudies =
-		nationalCoreStudiesProjectId === '' ? '' : `${process.env.homeURL}/project/${nationalCoreStudiesProjectId}`;
+		nationalCoreStudiesProjectId === '' ? '' : `${process.env.GATEWAY_WEB_URL}/project/${nationalCoreStudiesProjectId}`;
 
 	let parent;
 	let questionTree = { ...fullQuestions };
@@ -626,26 +626,26 @@ const _displayConditionalStatusDesc = (applicationStatus, applicationStatusDesc)
 const _displayDARLink = accessId => {
 	if (!accessId) return '';
 
-	let darLink = `${process.env.homeURL}/data-access-request/${accessId}`;
+	let darLink = `${process.env.GATEWAY_WEB_URL}/data-access-request/${accessId}`;
 	return `<a style="color: #475da7;" href="${darLink}">View application</a>`;
 };
 
 const _displayActivityLogLink = (accessId, publisher) => {
 	if (!accessId) return '';
 
-	const activityLogLink = `${process.env.homeURL}/account?tab=dataaccessrequests&team=${publisher}&id=${accessId}`;
+	const activityLogLink = `${process.env.GATEWAY_WEB_URL}/account?tab=dataaccessrequests&team=${publisher}&id=${accessId}`;
 	return `<a style="color: #475da7;" href="${activityLogLink}">View activity log</a>`;
 };
 
 const _displayDataUseRegisterLink = dataUseId => {
 	if (!dataUseId) return '';
 
-	const dataUseLink = `${process.env.homeURL}/datause/${dataUseId}`;
+	const dataUseLink = `${process.env.GATEWAY_WEB_URL}/datause/${dataUseId}`;
 	return `<a style="color: #475da7;" href="${dataUseLink}">View data use</a>`;
 };
 
 const _displayDataUseRegisterDashboardLink = () => {
-	const dataUseLink = `${process.env.homeURL}/account?tab=datause&team=admin`;
+	const dataUseLink = `${process.env.GATEWAY_WEB_URL}/account?tab=datause&team=admin`;
 	return `<a style="color: #475da7;" href="${dataUseLink}">View all data uses for review </a>`;
 };
 
@@ -1730,7 +1730,7 @@ const _generateRemovedFromTeam = options => {
 };
 
 const _displayViewEmailNotifications = publisherId => {
-	let link = `${process.env.homeURL}/account?tab=teamManagement&innertab=notifications&team=${publisherId}`;
+	let link = `${process.env.GATEWAY_WEB_URL}/account?tab=teamManagement&innertab=notifications&team=${publisherId}`;
 	return `<table border="0" border-collapse="collapse" cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td style=" font-size: 14px; color: #3c3c3b; padding: 45px 5px 10px 5px; text-align: left; vertical-align: top;">
@@ -2024,7 +2024,7 @@ const _generateMetadataOnboardingSumbitted = options => {
                   </tr>
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&team=admin">View datasets pending approval</a>
+                    <a style="color: #475da7;" href="${process.env.GATEWAY_WEB_URL}/account?tab=datasets&team=admin">View datasets pending approval</a>
                   </th>
                   </tr>
                 </thead>
@@ -2073,7 +2073,7 @@ const _generateMetadataOnboardingApproved = options => {
                   ${commentHTML}
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&team=${publisherId}">View dataset dashboard</a>
+                    <a style="color: #475da7;" href="${process.env.GATEWAY_WEB_URL}/account?tab=datasets&team=${publisherId}">View dataset dashboard</a>
                   </th>
                   </tr>
                 </thead>
@@ -2122,7 +2122,7 @@ const _generateMetadataOnboardingRejected = options => {
                   ${commentHTML}
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&team=${publisherId}">View dataset dashboard</a>
+                    <a style="color: #475da7;" href="${process.env.GATEWAY_WEB_URL}/account?tab=datasets&team=${publisherId}">View dataset dashboard</a>
                   </th>
                   </tr>
                 </thead>
@@ -2190,7 +2190,7 @@ const _generateMetadataOnboardingDuplicated = options => {
                   </tr>
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&team=${publisher.identifier}">View dataset dashboard</a>
+                    <a style="color: #475da7;" href="${process.env.GATEWAY_WEB_URL}/account?tab=datasets&team=${publisher.identifier}">View dataset dashboard</a>
                   </th>
                   </tr>
                 </thead>
@@ -2252,7 +2252,7 @@ const _generateEntityNotification = options => {
 		authorBody = `${resourceName} ${resourceType} has been edited, the updated version can now be viewed on the gateway.`;
 	}
 
-	let dashboardLink = process.env.homeURL + '/account?tab=' + resourceType + 's';
+	let dashboardLink = process.env.GATEWAY_WEB_URL + '/account?tab=' + resourceType + 's';
 
 	let body = `<div>
 						<div style="border: 1px solid #d0d3d4; border-radius: 15px; width: 700px; margin: 0 auto;">
@@ -2556,7 +2556,7 @@ const _generateEmailFooter = (recipient, allowUnsubscribe) => {
 	let unsubscribeHTML = '';
 
 	if (allowUnsubscribe) {
-		const baseURL = process.env.homeURL;
+		const baseURL = process.env.GATEWAY_WEB_URL;
 		const unsubscribeRoute = '/account/unsubscribe/';
 		let userObjectId = recipient._id;
 		let unsubscribeLink = baseURL + unsubscribeRoute + userObjectId;

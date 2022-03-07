@@ -2,7 +2,7 @@ import express from 'express';
 import * as Sentry from '@sentry/node';
 import mailchimpConnector from './mailchimp';
 const router = express.Router();
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 
 // @router   GET /api/v1/mailchimp/:subscriptionId/sync
 // @desc     Performs a two-way sync of opt in preferences between MailChimp and the Gateway database

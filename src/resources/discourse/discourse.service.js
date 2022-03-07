@@ -65,25 +65,25 @@ export async function createDiscourseTopic(tool) {
 	// 2. Depending on tool type passed, generate initial post content based on tool description and original content link
 	var rawIs, categoryIs;
 	if (tool.type === 'tool') {
-		rawIs = `${tool.description} <br><br> Original content: ${process.env.homeURL}/tool/${tool.id}`;
+		rawIs = `${tool.description} <br><br> Original content: ${process.env.GATEWAY_WEB_URL}/tool/${tool.id}`;
 		categoryIs = process.env.DISCOURSE_CATEGORY_TOOLS_ID;
 	} else if (tool.type === 'project') {
-		rawIs = `${tool.description} <br><br> Original content: ${process.env.homeURL}/project/${tool.id}`;
+		rawIs = `${tool.description} <br><br> Original content: ${process.env.GATEWAY_WEB_URL}/project/${tool.id}`;
 		categoryIs = process.env.DISCOURSE_CATEGORY_PROJECTS_ID;
 	} else if (tool.type === 'dataset') {
 		let {
 			datasetfields: { abstract },
 		} = tool;
-		rawIs = `${tool.description || abstract} <br><br> Original content: ${process.env.homeURL}/dataset/${tool.pid}`;
+		rawIs = `${tool.description || abstract} <br><br> Original content: ${process.env.GATEWAY_WEB_URL}/dataset/${tool.pid}`;
 		categoryIs = process.env.DISCOURSE_CATEGORY_DATASETS_ID;
 	} else if (tool.type === 'paper') {
-		rawIs = `${tool.description} <br><br> Original content: ${process.env.homeURL}/paper/${tool.id}`;
+		rawIs = `${tool.description} <br><br> Original content: ${process.env.GATEWAY_WEB_URL}/paper/${tool.id}`;
 		categoryIs = process.env.DISCOURSE_CATEGORY_PAPERS_ID;
 	} else if (tool.type === 'course') {
-		rawIs = `${tool.description} <br><br> Original content: ${process.env.homeURL}/course/${tool.id}`;
+		rawIs = `${tool.description} <br><br> Original content: ${process.env.GATEWAY_WEB_URL}/course/${tool.id}`;
 		categoryIs = process.env.DISCOURSE_CATEGORY_COURSES_ID;
 	} else if (tool.type === 'collection') {
-		rawIs = `${tool.description} <br><br> Original content: ${process.env.homeURL}/collection/${tool.id}`;
+		rawIs = `${tool.description} <br><br> Original content: ${process.env.GATEWAY_WEB_URL}/collection/${tool.id}`;
 		categoryIs = process.env.DISCOURSE_CATEGORY_COLLECTIONS_ID;
 	}
 	// 3. Assemble payload for creating a topic in Discourse

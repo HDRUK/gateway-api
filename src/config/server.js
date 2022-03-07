@@ -12,17 +12,16 @@ import { connectToDatabase } from './db';
 import { initialiseAuthentication } from '../resources/auth';
 import * as Sentry from '@sentry/node';
 import * as Tracing from '@sentry/tracing';
-import helper from '../resources/utilities/helper.util';
 
 require('dotenv').config();
 
 var app = express();
 
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 if (readEnv === 'test' || readEnv === 'prod') {
 	Sentry.init({
-		dsn: 'https://b6ea46f0fbe048c9974718d2c72e261b@o444579.ingest.sentry.io/5653683',
-		environment: helper.getEnvironment(),
+		dsn: process.env.SENTRY_DNS,
+		environment: process.env.NODE_ENV,
 		integrations: [
 			// enable HTTP calls tracing
 			new Sentry.Integrations.Http({ tracing: true }),
@@ -50,13 +49,13 @@ const session = require('express-session');
 app.disable('x-powered-by');
 
 configuration.findAccount = Account.findAccount;
-const oidc = new Provider(process.env.api_url || 'http://localhost:3001', configuration);
+const oidc = new Provider(process.env.APP_URL, configuration);
 oidc.proxy = true;
 
-var domains = [/\.healthdatagateway\.org$/, process.env.homeURL];
+var domains = [/\.healthdatagateway\.org$/, process.env.GATEWAY_WEB_URL];
 
 var rx = /^((http|https)+:\/\/[a-z]+)\.([^/]*)/;
-var arr = rx.exec(process.env.homeURL);
+var arr = rx.exec(process.env.GATEWAY_WEB_URL);
 
 if (Array.isArray(arr) && arr.length > 0) {
 	domains.push('https://' + arr[2]);
@@ -96,7 +95,7 @@ app.use(
 		saveUninitialized: true,
 		name: 'sessionId',
 		/* cookie: {
-            secure: process.env.api_url ? true : false,
+            secure: process.env.NODE_ENV !== 'local',
             httpOnly: true
         } */
 	})
@@ -111,12 +110,12 @@ function setNoCache(req, res, next) {
 app.get('/api/v1/openid/endsession', setNoCache, (req, res, next) => {
 	passport.authenticate('jwt', async function (err, user, info) {
 		if (err || !user) {
-			return res.status(200).redirect(process.env.homeURL + '/search?search=');
+			return res.status(200).redirect(process.env.GATEWAY_WEB_URL + '/search?search=');
 		}
 		req.logout();
 		res.clearCookie('jwt');
 
-		return res.status(200).redirect(process.env.homeURL + '/search?search=');
+		return res.status(200).redirect(process.env.GATEWAY_WEB_URL + '/search?search=');
 	})(req, res, next);
 });
 
@@ -124,8 +123,7 @@ app.get('/api/v1/openid/interaction/:uid', setNoCache, (req, res, next) => {
 	passport.authenticate('jwt', async function (err, user, info) {
 		if (err || !user) {
 			//login in user - go to login screen
-			var apiURL = process.env.api_url || 'http://localhost:3001';
-			return res.status(200).redirect(process.env.homeURL + '/search?search=&showLogin=true&loginReferrer=' + apiURL + req.url);
+			return res.status(200).redirect(process.env.GATEWAY_WEB_URL + '/search?search=&showLogin=true&loginReferrer=' + process.env.APP_URL + req.url);
 		} else {
 			try {
 				const { prompt, session } = await oidc.interactionDetails(req, res);

@@ -130,7 +130,7 @@ const getTeams = async () => {
 const catchLoginErrorAndRedirect = (req, res, next) => {
 	if (req.auth.err || !req.auth.user) {
 		if (req.auth.err === 'loginError') {
-			return res.status(200).redirect(process.env.homeURL + '/loginerror');
+			return res.status(200).redirect(process.env.GATEWAY_WEB_URL + '/loginerror');
 		}
 
 		let redirect = '/';
@@ -141,7 +141,7 @@ const catchLoginErrorAndRedirect = (req, res, next) => {
 			delete req.param.returnpage;
 		}
 
-		let redirectUrl = process.env.homeURL + redirect;
+		let redirectUrl = process.env.GATEWAY_WEB_URL + redirect;
 
 		return res.status(200).redirect(redirectUrl);
 	}
@@ -166,14 +166,14 @@ const loginAndSignToken = (req, res, next) => {
 		let [, profile] = await to(getObjectById(req.user.id));
 		if (!profile) {
 			await to(updateRedirectURL({ id: req.user.id, redirectURL: redirect }));
-			return res.redirect(process.env.homeURL + '/completeRegistration/' + req.user.id);
+			return res.redirect(process.env.GATEWAY_WEB_URL + '/completeRegistration/' + req.user.id);
 		}
 
 		if (req.param.returnpage) {
 			delete req.param.returnpage;
 		}
 
-		let redirectUrl = process.env.homeURL + redirect;
+		let redirectUrl = process.env.GATEWAY_WEB_URL + redirect;
 		if (queryStringParsed && queryStringParsed.sso && queryStringParsed.sig) {
 			try {
 				redirectUrl = discourseLogin(queryStringParsed.sso, queryStringParsed.sig, req.user);
@@ -196,7 +196,7 @@ const loginAndSignToken = (req, res, next) => {
 			.status(200)
 			.cookie('jwt', signToken({ _id: req.user._id, id: req.user.id, timeStamp: Date.now() }), {
 				httpOnly: true,
-				secure: process.env.api_url ? true : false,
+				secure: process.env.NODE_ENV !== 'local',
 			})
 			.redirect(redirectUrl);
 	});

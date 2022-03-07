@@ -76,7 +76,7 @@ export default class CohortController extends Controller {
 			// Return the cohorts
 			return res.status(201).json({
 				informationrequestid: req.body.query_id,
-				redirect_url: `${process.env.homeURL}/cohort/add/${id}`,
+				redirect_url: `${process.env.GATEWAY_WEB_URL}/cohort/add/${id}`,
 			});
 		} catch (err) {
 			// Return error response if something goes wrong

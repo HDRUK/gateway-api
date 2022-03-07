@@ -16,7 +16,7 @@ let metadataQualityList = [],
 	datasetsMDCIDs = [],
 	counter = 0;
 
-const readEnv = process.env.ENV || 'prod';
+const readEnv = process.env.NODE_ENV || 'prod';
 
 export async function updateExternalDatasetServices(services) {
 	for (let service of services) {

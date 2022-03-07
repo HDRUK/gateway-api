@@ -34,11 +34,11 @@ password=
 cluster=
 database=
 
-homeURL=http://localhost:3000
+GATEWAY_WEB_URL=http://localhost:3000
 
 # Auth parameters
-googleClientID=
-googleClientSecret=
+GOOGLE_OAUTH_ID=
+GOOGLE_OAUTH_SECRET=
 JWTSecret=
 AUTH_PROVIDER_URI=
 openidClientID=
@@ -109,7 +109,7 @@ database_name="latest"
 database_cluster="cluster-XXXX.gcp.mongodb.net"
 database_username="latest"
 
-google_client_id="googleclientidhere"
+google_client_id="GOOGLE_OAUTH_ID_here"
 google_client_secret="googlesecrethere"
 jwt_secret="jwtscrethere"
 home_url="https://uat.mydomain.here"
