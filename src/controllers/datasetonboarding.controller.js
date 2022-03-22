@@ -158,7 +158,7 @@ export default class DatasetOnboardingController {
 					if (isEmpty(structuralMetadata)) {
 						return res.status(404).json({ status: 'error', message: 'Update failed' });
 					} else {
-						await this.datasetonboardingService.updateStructuralMetadata(structuralMetadata, id);
+						await this.datasetonboardingService.updateStructuralMetadata(structuralMetadata, data.percentageCompleted, id);
 						return res.status(200).json();
 					}
 				}
