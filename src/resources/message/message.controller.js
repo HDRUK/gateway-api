@@ -30,7 +30,7 @@ module.exports = {
 						path: 'publisher',
 						populate: {
 							path: 'team',
-							select: 'members',
+							select: 'members notifications',
 							populate: {
 								path: 'users',
 							},
