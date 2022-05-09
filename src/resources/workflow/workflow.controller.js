@@ -168,7 +168,7 @@ export default class WorkflowController extends Controller {
 
 	async updateWorkflow(req, res) {
 		try {
-			const { _id: userId } = req.user;
+			const { _id: userId, firstname, lastname } = req.user;
 			const { id: workflowId } = req.params;
 			// 1. Look up workflow
 			let workflow = await WorkflowModel.findOne({
@@ -202,7 +202,7 @@ export default class WorkflowController extends Controller {
 				});
 			}
 			// 5. Edit workflow
-			const { workflowName = '', steps = [] } = req.body;
+			const { workflowName = '', publisher = '', steps = [] } = req.body;
 			let isDirty = false;
 			// Check if workflow name updated
 			if (!_.isEmpty(workflowName)) {
@@ -214,20 +214,44 @@ export default class WorkflowController extends Controller {
 				isDirty = true;
 			} // Perform save if changes have been made
 			if (isDirty) {
-				workflow.save(async err => {
+				workflow = await workflow.save().catch(err => {
 					if (err) {
-						console.error(err.message);
 						return res.status(400).json({
 							success: false,
 							message: err.message,
 						});
-					} else {
-						// 7. Return workflow payload
-						return res.status(204).json({
-							success: true,
-							workflow,
-						});
 					}
+				});
+
+				const publisherObj = await PublisherModel.findOne({
+					_id: publisher,
+				}).populate({
+					path: 'team members',
+					populate: {
+						path: 'users',
+						select: '_id id email firstname lastname',
+					},
+				});
+				if (!publisherObj) {
+					return res.status(400).json({
+						success: false,
+						message: 'You must supply a valid publisher to create the workflow against',
+					});
+				}
+				const detailedWorkflow = await WorkflowModel.findById(workflow._id).populate({
+					path: 'steps.reviewers',
+					select: 'firstname lastname email -_id',
+				}).lean();
+				let context = {
+					publisherObj: publisherObj.team.toObject(),
+					actioner: `${firstname} ${lastname}`,
+					workflow: detailedWorkflow,
+				};
+				this.workflowService.createNotifications(context, constants.notificationTypes.WORKFLOWUPDATED);
+				
+				return res.status(204).json({
+					success: true,
+					workflow,
 				});
 			} else {
 				return res.status(200).json({
@@ -245,7 +269,7 @@ export default class WorkflowController extends Controller {
 
 	async deleteWorkflow(req, res) {
 		try {
-			const { _id: userId } = req.user;
+			const { _id: userId, firstname, lastname } = req.user;
 			const { id: workflowId } = req.params;
 			// 1. Look up workflow
 			const workflow = await WorkflowModel.findOne({
@@ -258,6 +282,8 @@ export default class WorkflowController extends Controller {
 					select: 'members -_id',
 				},
 			});
+			const { workflowName = '', publisher = {}, steps = [] } = workflow;
+
 			if (!workflow) {
 				return res.status(404).json({ success: false });
 			}
@@ -278,6 +304,11 @@ export default class WorkflowController extends Controller {
 					message: 'A workflow which is attached to applications currently in review cannot be deleted',
 				});
 			}
+			const detailedWorkflow = await WorkflowModel.findById(workflowId).populate({
+				path: 'steps.reviewers',
+				select: 'firstname lastname email -_id',
+			}).lean();
+
 			// 5. Delete workflow
 			WorkflowModel.deleteOne({ _id: workflowId }, function (err) {
 				if (err) {
@@ -286,12 +317,32 @@ export default class WorkflowController extends Controller {
 						success: false,
 						message: 'An error occurred deleting the workflow',
 					});
-				} else {
-					// 7. Return workflow payload
-					return res.status(204).json({
-						success: true,
-					});
 				}
+			});
+			const publisherObj = await PublisherModel.findOne({
+				_id: publisher._id,
+			}).populate({
+				path: 'team members',
+				populate: {
+					path: 'users',
+					select: '_id id email firstname lastname',
+				},
+			});
+			if (!publisherObj) {
+				return res.status(400).json({
+					success: false,
+					message: 'You must supply a valid publisher to create the workflow against',
+				});
+			}
+			let context = {
+				publisherObj: publisherObj.team.toObject(),
+				actioner: `${firstname} ${lastname}`,
+				workflow: detailedWorkflow,
+			};
+			this.workflowService.createNotifications(context, constants.notificationTypes.WORKFLOWDELETED);
+
+			return res.status(204).json({
+				success: true,
 			});
 		} catch (err) {
 			console.error(err.message);

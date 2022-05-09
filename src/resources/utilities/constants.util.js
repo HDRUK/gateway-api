@@ -152,6 +152,8 @@ const _notificationTypes = {
 	MEMBERROLECHANGED: 'MemberRoleChanged',
 	WORKFLOWASSIGNED: 'WorkflowAssigned',
 	WORKFLOWCREATED: 'WorkflowCreated',
+	WORKFLOWUPDATED: 'WorkflowUpdated',
+	WORKFLOWDELETED: 'WorkflowDeleted',
 	INPROGRESS: 'InProgress',
 	APPLICATIONCLONED: 'ApplicationCloned',
 	APPLICATIONDELETED: 'ApplicationDeleted',
