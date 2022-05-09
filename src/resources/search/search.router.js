@@ -3,8 +3,6 @@ import express from 'express';
 import { RecordSearchData } from '../search/record.search.model';
 import { getObjectResult, getObjectCount, getObjectFilters, getMyObjectsCount } from './search.repository';
 
-import { filtersService } from '../filters/dependency';
-
 const router = express.Router();
 /**
  * {get} /api/search Search tools
@@ -13,7 +11,6 @@ const router = express.Router();
  * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
  */
 router.get('/', async (req, res) => {
-	filtersService.optimiseFilters('dataset');
 	let authorID = parseInt(req.query.userID);
 	let searchString = req.query.search || ''; //If blank then return all
 	//If searchString is applied, format any hyphenated words to enclose them as a phrase
