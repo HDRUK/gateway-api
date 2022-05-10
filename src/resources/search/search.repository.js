@@ -893,7 +893,7 @@ export function getObjectFilters(searchQueryStart, req, type) {
 					case 'contains':
 						// use regex to match without case sensitivity
 						searchQuery['$and'].push({
-							$or: filterValues.map(value => {
+							$and: filterValues.map(value => {
 								return dataPath === 'datasetfields.publisher'
 									? { [`${dataPath}`]: { $regex: helperUtil.escapeRegexChars(value), $options: 'i' } }
 									: { [`${dataPath}`]: { $regex: '^' + value + '$', $options: 'im' } };
