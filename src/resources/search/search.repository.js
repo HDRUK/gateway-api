@@ -890,13 +890,19 @@ export function getObjectFilters(searchQueryStart, req, type) {
 				// switch on query type	and build up query object
 				const { type = '', dataPath = '', matchField = '' } = filterNode;
 				switch (type) {
-					case 'contains':
-						// use regex to match without case sensitivity
+					case 'partialMatch':
+						// use regex to partially match without case sensitivity
 						searchQuery['$and'].push({
 							$and: filterValues.map(value => {
-								return dataPath === 'datasetfields.publisher'
-									? { [`${dataPath}`]: { $regex: helperUtil.escapeRegexChars(value), $options: 'i' } }
-									: { [`${dataPath}`]: { $regex: '^' + value + '$', $options: 'im' } };
+								return { [`${dataPath}`]: { $regex: helperUtil.escapeRegexChars(value), $options: 'i' } };
+							}),
+						});
+						break;
+					case 'contains':
+						// use regex to fully match without case sensitivity
+						searchQuery['$and'].push({
+							$and: filterValues.map(value => {
+								return { [`${dataPath}`]: { $regex: '^' + value + '$', $options: 'im' } };
 							}),
 						});
 						break;
