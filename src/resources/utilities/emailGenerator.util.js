@@ -1,3 +1,4 @@
+require('dotenv').config();
 import _, { isNil, isEmpty, capitalize, groupBy, forEach, isEqual } from 'lodash';
 import moment from 'moment';
 import { UserModel } from '../user/user.model';
@@ -7,12 +8,26 @@ import * as Sentry from '@sentry/node';
 import wordTemplateBuilder from '../utilities/wordTemplateBuilder.util';
 
 const fs = require('fs');
-const sgMail = require('@sendgrid/mail');
-const readEnv = process.env.ENV || 'prod';
+const nodemailer = require('nodemailer');
+const readEnv = process.env.ENV || 'production';
+
 let parent, qsId;
 let questionList = [];
 let excludedQuestionSetIds = ['addRepeatableSection', 'removeRepeatableSection'];
 let autoCompleteLookups = { fullname: ['email'] };
+let transporterOptions = {
+  host: process.env.MAIL_HOST,
+  port: process.env.MAIL_PORT,
+  auth: {
+    user: process.env.MAIL_USERNAME,
+    pass: process.env.MAIL_PASSWORD,
+  },
+  pool: true,
+  maxConnections: 1,
+  rateDelta: 20000,
+  rateLimit: 5,
+};
+let transporter = nodemailer.createTransport(transporterOptions);
 
 const _getStepReviewers = (reviewers = []) => {
 	if (!isEmpty(reviewers)) return [...reviewers].map(reviewer => `${reviewer.firstname} ${reviewer.lastname}`).join(', ');
@@ -2247,6 +2262,42 @@ const _generateMessageNotification = options => {
 	return body;
 };
 
+const _generateMessageCreatorNotification = options => {
+  let { firstMessage, firstname, lastname, messageDescription, openMessagesLink } = options;
+
+  let body = `<div>
+            <div style="border: 1px solid #d0d3d4; border-radius: 15px; width: 700px; margin: 0 auto;">
+              <table
+              align="center"
+              border="0"
+              cellpadding="0"
+              cellspacing="40"
+              width="700"
+              word-break="break-all"
+              style="font-family: Arial, sans-serif">
+                <thead>
+                  <tr>
+                    <th style="border: 0; color: #29235c; font-size: 22px; text-align: left;">
+                    Data Access Enquiry submitted
+                    </th>
+                  </tr>
+                </thead>
+                <tbody style="overflow-y: auto; overflow-x: hidden;">
+                  <tr>
+                    <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
+                      <p>Dear ${firstname} ${lastname},</p>
+                      <p>Thank you for submitting an enquiry about ${firstMessage.datasetsRequested[0].name}.</p>
+                      <p>Your enquiry has been sent to ${firstMessage.datasetsRequested[0].publisher} who will reply in due course. If you have not received a response after 10 working days, or if you have any queries or concerns about the Gateway, please email enquiries@hdruk.ac.uk and a member of the HDR UK team will get in touch with you.</p>
+                      <p>${messageDescription.replace(/\n/g, '<br />')}</p>
+                    </th>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>`;
+  return body;
+};
+
 const _generateEntityNotification = options => {
 	let { resourceType, resourceName, resourceLink, subject, rejectionReason, activeflag, type, resourceAuthor } = options;
 	let authorBody;
@@ -2496,10 +2547,6 @@ ${_displayDataUseRegisterDashboardLink()}
 	return body;
 };
 
-const _getRecipients = (recipients, environment, genericEmail) => {
-	return environment === 'production' ? [...new Map(recipients.map(item => [item['email'], item])).values()] : [{ email: genericEmail }];
-};
-
 /**
  * [_sendEmail]
  *
@@ -2507,16 +2554,11 @@ const _getRecipients = (recipients, environment, genericEmail) => {
  * @param   {Object}  context
  */
 const _sendEmail = async (to, from, subject, html, allowUnsubscribe = true, attachments = []) => {
-	// 1. Apply SendGrid API key from environment variable
-	sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-	// 2. Ensure any duplicates recieve only a single email
-	const recipients = _getRecipients(to, process.env.NODE_ENV, process.env.GENERIC_EMAIL);
-
+  const recipients = [...new Map(to.map(item => [item['email'], item])).values()];
 	// 3. Build each email object for SendGrid extracting email addresses from user object with unique unsubscribe link (to)
 	for (let recipient of recipients) {
 		let body = _generateEmailHeader + html + _generateEmailFooter(recipient, allowUnsubscribe);
-		let msg = {
+		let message = {
 			to: recipient.email,
 			from: from,
 			subject: subject,
@@ -2524,19 +2566,45 @@ const _sendEmail = async (to, from, subject, html, allowUnsubscribe = true, atta
 			attachments,
 		};
 
-		// 4. Send email using SendGrid
-		await sgMail.send(msg, false, err => {
-			if (err && process.env.NODE_ENV === 'production') {
-				Sentry.addBreadcrumb({
-					category: 'SendGrid',
-					message: 'Sending email failed',
-					level: Sentry.Severity.Warning,
-				});
-				Sentry.captureException(err);
-			}
-		});
+    // 4. Send email
+    try {
+      await transporter.sendMail(message, (error, info) => {
+        if (error) {
+          return console.log(error);
+        }
+        console.log('Email sent: ' + info.response);
+      });
+    } catch (error) {
+      console.error(error.response.body);
+      Sentry.addBreadcrumb({
+        category: 'SendGrid',
+        message: 'Sending email failed',
+        level: Sentry.Severity.Warning,
+      });
+      Sentry.captureException(error);
+    }
+
 	}
 };
+
+const _sendEmailSmtp = async (message) => {
+  try {
+    await transporter.sendMail(message, (error, info) => {
+      if (error) {
+        return console.log(error);
+      }
+      console.log('Email sent: ' + info.response);
+    });
+  } catch (error) {
+    console.error(error.response.body);
+    Sentry.addBreadcrumb({
+      category: 'SendGrid',
+      message: 'Sending email failed',
+      level: Sentry.Severity.Warning,
+    });
+    Sentry.captureException(error);
+  }
+}
 
 /**
  * [_sendIntroEmail]
@@ -2545,19 +2613,7 @@ const _sendEmail = async (to, from, subject, html, allowUnsubscribe = true, atta
  * @param   {Object}  message to from, templateId
  */
 const _sendIntroEmail = msg => {
-	// 1. Apply SendGrid API key from environment variable
-	sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-	// 2. Send email using SendGrid
-	sgMail.send(msg, false, err => {
-		if (err && process.env.NODE_ENV === 'production') {
-			Sentry.addBreadcrumb({
-				category: 'SendGrid',
-				message: 'Sending email failed - Intro',
-				level: Sentry.Severity.Warning,
-			});
-			Sentry.captureException(err);
-		}
-	});
+  _sendEmailSmtp(msg);
 };
 
 const _generateEmailHeader = `
@@ -2680,6 +2736,7 @@ export default {
 	//generateMetadataOnboardingUnArchived: _generateMetadataOnboardingUnArchived,
 	//Messages
 	generateMessageNotification: _generateMessageNotification,
+  generateMessageCreatorNotification: _generateMessageCreatorNotification,
 	generateEntityNotification: _generateEntityNotification,
 	//ActivityLog
 	generateActivityLogManualEventCreated: _generateActivityLogManualEventCreated,
@@ -2688,5 +2745,4 @@ export default {
 	generateDataUseRegisterApproved: _generateDataUseRegisterApproved,
 	generateDataUseRegisterRejected: _generateDataUseRegisterRejected,
 	generateDataUseRegisterPending: _generateDataUseRegisterPending,
-	getRecipients: _getRecipients,
 };
