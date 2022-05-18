@@ -893,7 +893,7 @@ export function getObjectFilters(searchQueryStart, req, type) {
 					case 'partialMatch':
 						// use regex to partially match without case sensitivity
 						searchQuery['$and'].push({
-							$and: filterValues.map(value => {
+							$or: filterValues.map(value => {
 								return { [`${dataPath}`]: { $regex: helperUtil.escapeRegexChars(value), $options: 'i' } };
 							}),
 						});
@@ -901,7 +901,7 @@ export function getObjectFilters(searchQueryStart, req, type) {
 					case 'contains':
 						// use regex to fully match without case sensitivity
 						searchQuery['$and'].push({
-							$and: filterValues.map(value => {
+							$or: filterValues.map(value => {
 								return { [`${dataPath}`]: { $regex: '^' + value + '$', $options: 'im' } };
 							}),
 						});
