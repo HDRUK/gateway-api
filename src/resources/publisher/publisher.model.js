@@ -44,6 +44,12 @@ const PublisherSchema = new Schema(
 			questionBank: {
 				enabled: { type: Boolean, default: false },
 			},
+			dataUse: {
+				widget: {
+					accepted: { type: Boolean, default: false },
+					acceptedByUserId: String,
+				},
+			},
 		},
 		mdcFolderId: String,
 		rorOrgId: String,

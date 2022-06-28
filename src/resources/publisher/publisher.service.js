@@ -1,4 +1,5 @@
 import { isEmpty, findIndex } from 'lodash';
+import { PublisherModel } from './publisher.model';
 
 export default class PublisherService {
 	constructor(publisherRepository) {
@@ -95,10 +96,9 @@ export default class PublisherService {
 		return filteredApplications;
 	}
 
-
 	async update(document, body = {}) {
 		return this.publisherRepository.update(document, body);
-  }
+	}
 
 	async updateDataRequestModalContent(publisherId, requestingUserId, content) {
 		await this.publisherRepository.updatePublisher(
@@ -109,6 +109,16 @@ export default class PublisherService {
 				dataRequestModalContent: { header: '', body: content, footer: '' },
 			}
 		);
+	}
 
+	async updateDataUseWidget(publisherId, content) {
+		await this.publisherRepository.updateByQuery(
+			{ _id: publisherId },
+			{
+				'publisherDetails.dataUse': {
+					widget: content,
+				},
+			}
+		);
 	}
 }

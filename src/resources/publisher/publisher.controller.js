@@ -173,4 +173,17 @@ export default class PublisherController extends Controller {
 			});
 		}
 	}
+
+	async updateDataUseWidget(req, res) {
+		try {
+			await this.publisherService.updateDataUseWidget(req.params.id, req.body).then(() => {
+				return res.status(200).json({ success: true });
+			});
+		} catch (err) {
+			return res.status(500).json({
+				success: false,
+				message: 'An error occurred updating data use widget settings',
+			});
+		}
+	}
 }
