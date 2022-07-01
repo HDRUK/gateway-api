@@ -48,6 +48,7 @@ const PublisherSchema = new Schema(
 				widget: {
 					accepted: { type: Boolean, default: false },
 					acceptedByUserId: String,
+					acceptedDate: Date,
 				},
 			},
 		},

@@ -116,7 +116,10 @@ export default class PublisherService {
 			{ _id: publisherId },
 			{
 				'publisherDetails.dataUse': {
-					widget: content,
+					widget: {
+						...content,
+						acceptedDate: Date.now(),
+					},
 				},
 			}
 		);
