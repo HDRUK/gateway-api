@@ -47,7 +47,7 @@
 		"keygrip": "^1.1.0",
 		"lodash": "^4.17.19",
 		"mailchimp-api-v3": "^1.15.0",
-		"migrate-mongoose": "^4.0.0",
+		"migrate-mongo": "^9.0.0",
 		"moment": "^2.29.3",
 		"mongoose": "^5.12.7",
 		"morgan": "^1.10.0",
@@ -87,6 +87,7 @@
 		"supertest": "^4.0.2"
 	},
 	"scripts": {
+		"start-with-migrate": "./node_modules/.bin/migrate up && node index.js",
 		"start": "node index.js",
 		"server": "nodemon --ignore 'src/**/*.json' index.js",
 		"debug": "nodemon --inspect=0.0.0.0:3001 index.js",
