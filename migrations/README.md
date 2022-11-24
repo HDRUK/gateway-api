@@ -60,3 +60,9 @@ During this process, please ensure you are using a personal database.
 
 Commit the code to the relevant git branch and raise a pull request.  The migration script
 will run automatically as the code moves through each environment.
+
+#### Note
+
+You can avoid running migrations manually, you can use `npm run start-with-migrate` to launch the api
+locally, with any pending migrations to be run - Ensure the targetted database is correct to avoid any
+unwanted migrations elsewhere.
