@@ -8,27 +8,22 @@ class ReviewController {
         const userRole = req.params.role;
         const idString = parseInt(req.query.id) || '';
 
-        let pipeline, statement, response;
+        let responseDB;
         let responseApi = {};
 
         responseApi.success = true;
 
-        pipeline = this.reviewDynamicPipeline(userRole, 'active', idString);
-        statement = Reviews.aggregate(pipeline);
-        response = await statement.exec();
+        responseDB = await this.statementExecution(userRole, 'active', idString);
 
         if (userRole === 'admin') {
-            response.map(item => {
+            responseDB.map(item => {
                 item.person = helper.hidePrivateProfileDetails(item.person);
             });
         }
-        responseApi.data = response;
+        responseApi.data = responseDB;
 
         if (userRole === 'creator') {
-            pipeline = this.reviewDynamicPipeline('active', 'active', idString);
-            statement = Reviews.aggregate(pipeline);
-            response = await statement.exec();
-            responseApi.allReviews = response;
+            responseApi.allReviews = await this.statementExecution('active', 'active', idString);
         }
 
         return res.status(200).json(responseApi);
@@ -55,6 +50,17 @@ class ReviewController {
                 });
                 return res.json({ success: true, data: data });
             });
+        } catch (err) {
+            process.stdout.write(`ReviewController.handleReviewsByReviewId : ${err.message}`);
+            throw new Error(`An error occurred : ${err.message}`);
+        }
+    }
+
+    async statementExecution(role, flag, idString) {
+        try {
+            const pipeline = this.reviewDynamicPipeline(role, flag, idString);
+            const statement = Reviews.aggregate(pipeline);
+            return await statement.exec();
         } catch (err) {
             process.stdout.write(`ReviewController.handleReviewsByReviewId : ${err.message}`);
             throw new Error(`An error occurred : ${err.message}`);
