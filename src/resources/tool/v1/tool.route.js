@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import express from 'express';
 import { ROLES } from '../../user/user.roles';
-import { Reviews } from '../review.model';
+import { Reviews } from '../../review/review.model';
 import { Data } from '../data.model';
 import { Course } from '../../course/course.model';
 import { DataUseRegister } from '../../dataUseRegister/dataUseRegister.model';
