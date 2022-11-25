@@ -13,7 +13,7 @@ class ReviewController {
 
         responseApi.success = true;
 
-        responseDB = await this.statementExecution(userRole, 'active', idString);
+        responseDB = await this.statementExecutionDB(userRole, 'active', idString);
 
         if (userRole === 'admin') {
             responseDB.map(item => {
@@ -23,7 +23,7 @@ class ReviewController {
         responseApi.data = responseDB;
 
         if (userRole === 'creator') {
-            responseApi.allReviews = await this.statementExecution('active', 'active', idString);
+            responseApi.allReviews = await this.statementExecutionDB('active', 'active', idString);
         }
 
         return res.status(200).json(responseApi);
@@ -56,7 +56,7 @@ class ReviewController {
         }
     }
 
-    async statementExecution(role, flag, idString) {
+    async statementExecutionDB(role, flag, idString) {
         try {
             const pipeline = this.reviewDynamicPipeline(role, flag, idString);
             const statement = Reviews.aggregate(pipeline);
