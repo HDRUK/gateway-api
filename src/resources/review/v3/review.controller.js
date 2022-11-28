@@ -3,7 +3,7 @@ import { Reviews } from '../review.model';
 class ReviewController {
     constructor() {}
 
-    async handleReviews(req, res) {
+    async getReviews(req, res) {
         const idString = parseInt(req.params.reviewId) || '';
 
         const data = await this.statementExecutionDB(idString);
