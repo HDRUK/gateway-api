@@ -5,14 +5,9 @@ const ReviewController = require('./review.controller');
 
 const router = express.Router();
 
-// @router   GET /api/v1/reviews/:role/pending
-// @desc     find reviews in pending based on users.role = Creator / Admin
+// @router   GET /api/v1/reviews/:reviewId?
+// @desc     get all reviews or find reviews by reviewId
 // @access   Private
-router.get('/:role(creator|admin)/pending', passport.authenticate('jwt'), (req, res) => ReviewController.handleReviewsUsersPending(req, res));
-
-// @router   GET /api/v1/reviews
-// @desc     find reviews by reviewID
-// @access   Public
-router.get('/', async (req, res) => ReviewController.handleReviewsByReviewId(req, res));
+router.get('/:reviewId?', passport.authenticate('jwt'), (req, res) => ReviewController.handleReviews(req, res));
 
 module.exports = router;
