@@ -77,7 +77,7 @@ export default class WorkflowController extends Controller {
 				},
 			});
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`WORKFLOW - getWorkflowById : ${err.message}\n`);
 			return res.status(500).json({
 				success: false,
 				message: 'An error occurred searching for the specified workflow',
@@ -158,7 +158,7 @@ export default class WorkflowController extends Controller {
 				workflow: detailedWorkflow,
 			});
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`WORKFLOW - createWorkflow : ${err.message}\n`);
 			return res.status(500).json({
 				success: false,
 				message: 'An error occurred creating the workflow',
@@ -259,7 +259,7 @@ export default class WorkflowController extends Controller {
 				});
 			}
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`WORKFLOW - updateWorkflow : ${err.message}\n`);
 			return res.status(500).json({
 				success: false,
 				message: 'An error occurred editing the workflow',
@@ -312,7 +312,7 @@ export default class WorkflowController extends Controller {
 			// 5. Delete workflow
 			WorkflowModel.deleteOne({ _id: workflowId }, function (err) {
 				if (err) {
-					console.error(err.message);
+					process.stdout.write(`WORKFLOW - deleteOne : ${err.message}\n`);
 					return res.status(400).json({
 						success: false,
 						message: 'An error occurred deleting the workflow',
@@ -345,7 +345,7 @@ export default class WorkflowController extends Controller {
 				success: true,
 			});
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`WORKFLOW - deleteWorkflow : ${err.message}\n`);
 			return res.status(500).json({
 				success: false,
 				message: 'An error occurred deleting the workflow',

@@ -1378,7 +1378,7 @@ export default class DataRequestController extends Controller {
 			// 8. Return successful response
 			return res.status(200).json({ status: 'success' });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`DATA REQUEST - updateAccessRequestDeleteFile : ${err.message}\n`);
 			res.status(500).json({ status: 'error', message: err.message });
 		}
 	}

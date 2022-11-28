@@ -493,14 +493,14 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 	const searchResults =
 		type === 'dataUseRegister'
 			? await collection.aggregate(queryObject).catch(err => {
-					console.log(err);
+				process.stdout.write(`${err.message}\n`);
 			  })
 			: await collection
 					.aggregate(queryObject)
 					.skip(parseInt(startIndex))
 					.limit(parseInt(maxResults))
 					.catch(err => {
-						console.log(err);
+						process.stdout.write(`${err.message}\n`);
 					});
 
 	return { data: searchResults };
@@ -939,7 +939,7 @@ export function getObjectFilters(searchQueryStart, queryParams, type) {
 				}
 			}
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`SEARCH - GET OBJECT FILTERS : ${err.message}\n`);
 		}
 	}
 	return searchQuery;

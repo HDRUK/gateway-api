@@ -26,7 +26,7 @@ async function up() {
 				},
 			});
 		} catch (err) {
-			console.error(err);
+			process.stdout.write(`Migration error - shared applications versioning: ${err.message}\n`);
 		}
 	});
 

@@ -4,12 +4,10 @@ import moment from 'moment';
 import { UserModel } from '../user/user.model';
 import helper from '../utilities/helper.util';
 import constants from '../utilities/constants.util';
-import * as Sentry from '@sentry/node';
 import wordTemplateBuilder from '../utilities/wordTemplateBuilder.util';
 
 const fs = require('fs');
 const nodemailer = require('nodemailer');
-const readEnv = process.env.ENV || 'production';
 
 let parent, qsId;
 let questionList = [];
@@ -2574,18 +2572,12 @@ const _sendEmail = async (to, from, subject, html, allowUnsubscribe = true, atta
 		try {
 			await transporter.sendMail(message, (error, info) => {
 				if (error) {
-					return console.log(error);
+					return process.stdout.write(`sendMail : ${error.message}`);
 				}
-				console.log('Email sent: ' + info.response);
+				process.stdout.write(`Email sent: ${info.response}`);
 			});
 		} catch (error) {
-			console.error(error.response.body);
-			Sentry.addBreadcrumb({
-				category: 'SendGrid',
-				message: 'Sending email failed',
-				level: Sentry.Severity.Warning,
-			});
-			Sentry.captureException(error);
+      process.stdout.write(`EMAIL GENERATOR - _sendEmail : ${error.message}\n`);
 		}
 	}
 };
@@ -2594,18 +2586,12 @@ const _sendEmailSmtp = async message => {
 	try {
 		await transporter.sendMail(message, (error, info) => {
 			if (error) {
-				return console.log(error);
+				return process.stdout.write(`${error.message}\n`);;
 			}
-			console.log('Email sent: ' + info.response);
+			process.stdout.write(`Email sent: ${info.response}`);
 		});
 	} catch (error) {
-		console.error(error.response.body);
-		Sentry.addBreadcrumb({
-			category: 'SendGrid',
-			message: 'Sending email failed',
-			level: Sentry.Severity.Warning,
-		});
-		Sentry.captureException(error);
+    process.stdout.write(`EMAIL GENERATOR - _sendEmailSmtp : ${error.message}\n`);
 	}
 };
 

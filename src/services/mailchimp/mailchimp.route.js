@@ -1,8 +1,6 @@
 import express from 'express';
-import * as Sentry from '@sentry/node';
 import mailchimpConnector from './mailchimp';
 const router = express.Router();
-const readEnv = process.env.ENV || 'prod';
 
 // @router   GET /api/v1/mailchimp/:subscriptionId/sync
 // @desc     Performs a two-way sync of opt in preferences between MailChimp and the Gateway database
@@ -32,10 +30,7 @@ router.post('/sync', async (req, res) => {
 		// Return response indicating job has started (do not await async import)
 		return res.status(200).json({ success: true, message: 'Sync started' });
 	} catch (err) {
-		if (readEnv === 'test' || readEnv === 'prod') {
-			Sentry.captureException(err);
-		}
-		console.error(err.message);
+		process.stdout.write(`MAILCHIP - sync : ${err.message}\n`);
 		return res.status(500).json({ success: false, message: 'Sync failed' });
 	}
 });

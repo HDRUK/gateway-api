@@ -101,7 +101,7 @@ export default class DataUseRegisterController extends Controller {
 			});
 		} catch (err) {
 			// Return error response if something goes wrong
-			console.error(err.message);
+			process.stdout.write(`DATA USE REGISTER - getDataUseRegister : ${err.message}`);
 			return res.status(500).json({
 				success: false,
 				message: 'A server error occurred, please try again',

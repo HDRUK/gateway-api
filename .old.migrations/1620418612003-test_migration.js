@@ -6,7 +6,7 @@
 async function up() {
 	// Write migration here
 	//await UserModel.findOneAndUpdate({ email: 'robin.kavanagh@paconsulting.com' }, { firstname: 'robin2' });
-  console.log('Sample migration ran successfully');
+	process.stdout.write(`Sample migration ran successfully\n`);
 }
 
 /**

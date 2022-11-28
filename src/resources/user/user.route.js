@@ -141,7 +141,7 @@ router.patch('/advancedSearch/roles/:id', passport.authenticate('jwt'), utils.ch
 // 			serviceAccount
 // 		});
 // 	} catch (err) {
-// 		console.error(err.message);
+//		process.stdout.write(`USER - create service account: ${err.message}\n`);
 // 		return res.status(500).json(err);
 // 	}
 // });
