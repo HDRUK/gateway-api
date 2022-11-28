@@ -33,6 +33,7 @@ export default class CollectionsService {
 					} else {
 						for (let object of res[0].relatedObjects) {
 							let relatedObject = await this.getCollectionObject(object.objectId, object.objectType, object.pid, object.updated);
+
 							if (!_.isUndefined(relatedObject)) {
 								relatedObjects.push(relatedObject);
 							} else {
@@ -112,7 +113,18 @@ export default class CollectionsService {
 					}
 				)
 					.populate([
-						{ path: 'gatewayDatasetsInfo', select: { name: 1 } },
+						{ 
+							path: 'gatewayDatasetsInfo', 
+							match: {
+								activeflag: {
+									$eq: 'active'
+								}
+							},
+							select: { 
+								name: 1, 
+								activeflag: 1 
+							}
+						},
 						{
 							path: 'publisherInfo',
 							select: { name: 1, _id: 0 },

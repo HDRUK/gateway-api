@@ -76,7 +76,6 @@ export default class CollectionsController extends Controller {
 
 	async getCollectionRelatedResources(req, res) {
 		let collectionID = parseInt(req.params.collectionID);
-
 		try {
 			const data = await this.collectionsService.getCollectionObjects(collectionID);
 			return res.json({ success: true, data: data });
