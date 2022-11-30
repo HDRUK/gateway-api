@@ -8,7 +8,7 @@ export const sendEmailNotifications = async (review, activeflag) => {
     const toolLink = process.env.homeURL + '/tool/' + tool.id;
     const hdrukEmail = process.env.HDRUK_ENQUIRY_EMAIL || `enquiry@healthdatagateway.org`;
 
-	var q = UserModel.aggregate([
+	const q = UserModel.aggregate([
 		{ $match: { $or: [{ role: 'Admin' }, { id: { $in: tool.authors } }] } },
 		{
 			$lookup: {
