@@ -32,20 +32,20 @@ export const sendEmailNotifications = async (review, activeflag) => {
     ]);
 
     statement.exec((err, emailRecipients) => {
-		if (err) {
-			return new Error({ success: false, error: err });
-		}
+        if (err) {
+            return new Error({ success: false, error: err });
+        }
 
-		let subject;
-		if (activeflag === 'active') {
-			subject = `A review has been added to the ${tool.type} ${tool.name}`;
-		} else if (activeflag === 'rejected') {
-			subject = `A review on the ${tool.type} ${tool.name} has been rejected`;
-		} else if (activeflag === 'archive') {
-			subject = `A review on the ${tool.type} ${tool.name} has been archived`;
-		}
+        let subject;
+        if (activeflag === 'active') {
+            subject = `A review has been added to the ${tool.type} ${tool.name}`;
+        } else if (activeflag === 'rejected') {
+            subject = `A review on the ${tool.type} ${tool.name} has been rejected`;
+        } else if (activeflag === 'archive') {
+            subject = `A review on the ${tool.type} ${tool.name} has been archived`;
+        }
 
-		let html = `<div>
+        let html = `<div>
                         <div style="border: 1px solid #d0d3d4; border-radius: 15px; width: 700px; margin: 0 auto;">
                             <table
                             align="center"
