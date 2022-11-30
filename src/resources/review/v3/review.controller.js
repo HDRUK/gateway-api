@@ -30,7 +30,7 @@ class ReviewController {
 
         await storeNotificationMessages(review);
         // Send email notififcation of approval to authors and admins who have opted in
-		await sendEmailNotifications(review, activeflag);
+        await sendEmailNotifications(review, activeflag);
 
         return res.status(200).json({
             'success': true
