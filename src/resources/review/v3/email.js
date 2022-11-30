@@ -3,9 +3,9 @@ import { UserModel } from '../../user/user.model';
 import emailGenerator from '../../utilities/emailGenerator.util';
 
 export const sendEmailNotifications = async (review, activeflag) => {
-	const tool = await Data.findOne({ id: review.toolID });
-	const reviewer = await UserModel.findOne({ id: review.reviewerID });
-	const toolLink = process.env.homeURL + '/tool/' + tool.id;
+    const tool = await Data.findOne({ id: review.toolID });
+    const reviewer = await UserModel.findOne({ id: review.reviewerID });
+    const toolLink = process.env.homeURL + '/tool/' + tool.id;
     const hdrukEmail = process.env.HDRUK_ENQUIRY_EMAIL || `enquiry@healthdatagateway.org`;
 
 	var q = UserModel.aggregate([
