@@ -8,30 +8,30 @@ export const sendEmailNotifications = async (review, activeflag) => {
     const toolLink = process.env.homeURL + '/tool/' + tool.id;
     const hdrukEmail = process.env.HDRUK_ENQUIRY_EMAIL || `enquiry@healthdatagateway.org`;
 
-    const q = UserModel.aggregate([
-		{ $match: { $or: [{ role: 'Admin' }, { id: { $in: tool.authors } }] } },
-		{
-			$lookup: {
-				from: 'tools',
-				localField: 'id',
-				foreignField: 'id',
-				as: 'tool',
-			},
-		},
-		{ $match: { 'tool.emailNotifications': true } },
-		{
-			$project: {
-				_id: 1,
-				firstname: 1,
-				lastname: 1,
-				email: 1,
-				role: 1,
-				'tool.emailNotifications': 1,
-			},
-		},
-	]);
+    const statement = UserModel.aggregate([
+        { $match: { $or: [{ role: 'Admin' }, { id: { $in: tool.authors } }] } },
+        {
+            $lookup: {
+                from: 'tools',
+                localField: 'id',
+                foreignField: 'id',
+                as: 'tool',
+            },
+        },
+        { $match: { 'tool.emailNotifications': true } },
+        {
+            $project: {
+                _id: 1,
+                firstname: 1,
+                lastname: 1,
+                email: 1,
+                role: 1,
+                'tool.emailNotifications': 1,
+            },
+        },
+    ]);
 
-	q.exec((err, emailRecipients) => {
+    statement.exec((err, emailRecipients) => {
 		if (err) {
 			return new Error({ success: false, error: err });
 		}
