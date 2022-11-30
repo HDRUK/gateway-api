@@ -86,7 +86,7 @@ export const sendEmailNotifications = async (review, activeflag) => {
                                 </tbody>
                             </table>
                         </div>
-					</div>`;
+                    </div>`;
 
 		emailGenerator.sendEmail(emailRecipients, `${hdrukEmail}`, subject, html, false);
 	});
