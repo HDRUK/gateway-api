@@ -88,6 +88,6 @@ export const sendEmailNotifications = async (review, activeflag) => {
                         </div>
                     </div>`;
 
-		emailGenerator.sendEmail(emailRecipients, `${hdrukEmail}`, subject, html, false);
+        emailGenerator.sendEmail(emailRecipients, `${hdrukEmail}`, subject, html, false);
 	});
 }
