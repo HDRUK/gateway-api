@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import mongoose from 'mongoose';
 
 import constants from '../../utilities/constants.util';
 import emailGenerator from '../../utilities/emailGenerator.util';
