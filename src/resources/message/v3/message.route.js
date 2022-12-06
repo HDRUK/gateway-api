@@ -23,7 +23,7 @@ router.get('/unread/count', passport.authenticate('jwt'), (req, res) => MessageC
 // @access  Private
 router.post('/', passport.authenticate('jwt'), (req, res) => MessageController.createMessage(req, res));
 
-// @route   PUT api/messages
+// @route   PUT api/v3/messages
 // @desc    PUT Update a message; user need to be Admin or Creator
 // @access  Private
 router.put('/', passport.authenticate('jwt'), (req, res) => MessageController.updateMessage(req, res));
