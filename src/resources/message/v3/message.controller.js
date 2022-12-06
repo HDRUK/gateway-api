@@ -153,22 +153,21 @@ class MessageController
     }
 
     async getMessagesByPersonId(req, res) {
-        const personId = parseInt(req.params.personId) || '';
-        const userRole = req.user.role.toLowerCase();
+		const personId = parseInt(req.params.personId) || '';
+		const userRole = req.user.role.toLowerCase();
 
-        if (!this.checkUserRole(userRole)) {
-            process.stdout.write(`MESSAGE - getMessagesByPersonId : the user role is not Admin or Creator`);
-            res.status(500).json(`An error occurred - user does not have the right roles`);
-        }
+		if (!this.checkUserRole(userRole)) {
+			process.stdout.write(`MESSAGE - getMessagesByPersonId : the user role is not Admin or Creator`);
+			res.status(500).json(`An error occurred - user does not have the right roles`);
+		}
 
-        const pipeline = this.messagesAggregatePipelineByPersonId(userRole, personId);
-        const messages = await this.getDataMessages(pipeline);
+		const pipeline = this.messagesAggregatePipelineByPersonId(userRole, personId);
+		const messages = await this.getDataMessages(pipeline);
 
-        return res.status(200).json({ success: true, data: messages });
+		return res.status(200).json({ success: true, data: messages });
     }
 
-
-    async getUnreadMessageCount(req, res){
+	async getUnreadMessageCount(req, res){
 		try {
 			const { _id: userId } = req.user;
 			let unreadMessageCount = 0;
@@ -198,16 +197,16 @@ class MessageController
 			const { id } = req.params;
 			const { _id: userId } = req.user;
 
-            const userRole = req.user.role.toLowerCase();
+			const userRole = req.user.role.toLowerCase();
 
-            if (!this.checkUserRole(userRole)) {
-                process.stdout.write(`MESSAGE - createMessage : the user role is not Admin or Creator`);
-                res.status(500).json(`An error occurred - user does not have the right roles`);
-            }
+			if (!this.checkUserRole(userRole)) {
+				process.stdout.write(`MESSAGE - createMessage : the user role is not Admin or Creator`);
+				res.status(500).json(`An error occurred - user does not have the right roles`);
+			}
 
 			if (!id) { 
-                return res.status(404).json({ success: false, message: 'Message Id not found.' });
-            }
+				return res.status(404).json({ success: false, message: 'Message Id not found.' });
+			}
 
 			const message = await MessagesModel.findOne({ _id: id });
 
