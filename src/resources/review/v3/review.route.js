@@ -15,6 +15,6 @@ router.get('/:reviewId?', passport.authenticate('jwt'), (req, res) => ReviewCont
 // @bodyParam   {string} activeflag can be: active/approve (approve will be converted in active), reject, archive
 // @desc        update active flag by reviewId
 // @access      Private
-router.patch('/:reviewId', passport.authenticate('jwt'), (req, res) => ReviewController.updateReviews(req, res));
+router.patch('/:reviewId', passport.authenticate('jwt'), (req, res) => ReviewController.updateStateReviews(req, res));
 
 module.exports = router;
