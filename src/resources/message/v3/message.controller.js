@@ -238,12 +238,12 @@ class MessageController
 			let { _id: userId } = req.user;
 			let { messageId, isRead, messageDescription = '', messageType = '' } = req.body;
 
-            const userRole = req.user.role.toLowerCase();
+			const userRole = req.user.role.toLowerCase();
 
-            if (!this.checkUserRole(userRole)) {
-                process.stdout.write(`MESSAGE - createMessage : the user role is not Admin or Creator`);
-                res.status(500).json(`An error occurred - user does not have the right roles`);
-            }
+			if (!this.checkUserRole(userRole)) {
+				process.stdout.write(`MESSAGE - createMessage : the user role is not Admin or Creator`);
+				res.status(500).json(`An error occurred - user does not have the right roles`);
+			}
 
 			if (!messageId) return res.status(404).json({ success: false, message: 'Message Id not found.' });
 
