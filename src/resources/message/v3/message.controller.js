@@ -211,7 +211,7 @@ class MessageController
             const message = await MessagesModel.findOne({ _id: id });
 
             if (!message) {
-                return res.status(404).json({ success: false, message: 'Message not found for ${id}' });
+                return res.status(404).json({ success: false, message: `Message not found for ${id}` });
             }
 
             if (message.createdBy.toString() !== userId.toString()) {
