@@ -167,6 +167,7 @@ class MessageController
         return res.status(200).json({ success: true, data: messages });
     }
 
+	
     async getUnreadMessageCount(req, res){
         try {
 			const { _id: userId } = req.user;
