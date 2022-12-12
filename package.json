@@ -67,7 +67,7 @@
 		"randomstring": "^1.1.5",
 		"redis": "4.0.0",
 		"simple-gcp-logging": "git+https://github.com/HDRUK/simple-gcp-logging.git#main",
-		"sinon": "^9.2.4",
+		"sinon": "^15.0.0",
 		"snyk": "^1.334.0",
 		"swagger-ui-express": "^4.1.4",
 		"test": "^0.6.0",
