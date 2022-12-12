@@ -18,7 +18,7 @@ var app = express();
 const Account = require('./account');
 const configuration = require('./configuration');
 
-const API_PORT = process.env.PORT || 8080;
+const API_PORT = process.env.PORT || 3001;
 const session = require('express-session');
 app.disable('x-powered-by');
 
