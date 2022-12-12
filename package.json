@@ -84,7 +84,7 @@
 		"mongodb-memory-server": "6.9.2",
 		"nodemon": "^2.0.3",
 		"plop": "^2.7.4",
-		"supertest": "^4.0.2"
+		"supertest": "^6.3.3"
 	},
 	"scripts": {
 		"start-with-migrate": "./node_modules/.bin/migrate up && node index.js",
