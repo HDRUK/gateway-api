@@ -9,7 +9,7 @@
 	"private": true,
 	"dependencies": {
 		"@google-cloud/bigquery": "^5.9.3",
-		"@google-cloud/monitoring": "^2.1.0",
+		"@google-cloud/monitoring": "^3.0.3",
 		"@google-cloud/pubsub": "^2.19.4",
 		"@google-cloud/storage": "^5.3.0",
 		"@hubspot/api-client": "^4.1.0",
@@ -83,8 +83,8 @@
 		"jest": "^26.6.3",
 		"mongodb-memory-server": "6.9.2",
 		"nodemon": "^2.0.3",
-		"plop": "^3.1.1",
-		"supertest": "^4.0.2"
+		"plop": "^2.7.4",
+		"supertest": "^6.3.3"
 	},
 	"scripts": {
 		"start-with-migrate": "./node_modules/.bin/migrate up && node index.js",
