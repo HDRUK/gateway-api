@@ -151,4 +151,5 @@ terraform plan -var-file=vars.tfvars -out=tf_apply
 terraform apply tf_apply && rm tf_apply
 ```
 
+
 [Link to terraform file](deployment/GCP/api.tf)
