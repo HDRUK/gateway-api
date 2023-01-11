@@ -1,18 +1,15 @@
 import express from 'express';
-import { ROLES } from '../user/user.roles';
-import { Reviews } from './review.model';
+import { ROLES } from '../../user/user.roles';
+import { Reviews } from '../review.model';
 import passport from 'passport';
-import { utils } from '../auth';
-import helper from '../utilities/helper.util';
+import { utils } from '../../auth';
+import helper from '../../utilities/helper.util';
 
 const router = express.Router();
 
-/**
- * {get} /accountsearch Search tools
- *
- * Return list of tools, this can be with filters or/and search criteria. This will also include pagination on results.
- * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
- */
+// @router   GET /api/v1/reviews/admin/pending
+// @desc     get reviews in pending for user.role = Admin
+// @access   Public
 router.get('/admin/pending', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin), async (req, res) => {
 	var r = Reviews.aggregate([
 		{ $lookup: { from: 'tools', localField: 'reviewerID', foreignField: 'id', as: 'person' } },
@@ -28,12 +25,9 @@ router.get('/admin/pending', passport.authenticate('jwt'), utils.checkIsInRole(R
 	});
 });
 
-/**
- * {get} /accountsearch Search tools
- *
- * Return list of tools, this can be with filters or/and search criteria. This will also include pagination on results.
- * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
- */
+// @router   GET /api/v1/reviews/pending
+// @desc     get reviews in pending for user.role = Creator by reviewerID
+// @access   Public
 router.get('/pending', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Creator), async (req, res) => {
 	var idString = '';
 
@@ -59,12 +53,9 @@ router.get('/pending', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.C
 	});
 });
 
-/**
- * {get} /accountsearch Search tools
- *
- * Return list of tools, this can be with filters or/and search criteria. This will also include pagination on results.
- * The free word search criteria can be improved on with node modules that specialize with searching i.e. js-search
- */
+// @router   GET /api/v1/reviews
+// @desc     find reviews by reviewID
+// @access   Public
 router.get('/', async (req, res) => {
 	var reviewIDString = '';
 
