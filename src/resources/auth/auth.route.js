@@ -46,6 +46,9 @@ router.get('/status', function (req, res, next) {
 				if (adminArray[0].roles.includes(constants.roleTypes.ADMIN_DATASET)) {
 					const allTeams = await getTeams();
 					allTeams.forEach(newTeam => {
+						if (!newTeam.publisher) {
+							return;
+						}
 						const foundTeam = teams.find(team => team._id && team._id.toString() === newTeam._id.toString());
 						if (!isEmpty(foundTeam)) {
 							const foundRole = foundTeam.roles.find(role => role === constants.roleTypes.METADATA_EDITOR);
@@ -67,6 +70,9 @@ router.get('/status', function (req, res, next) {
 				if (adminArray[0].roles.includes(constants.roleTypes.ADMIN_DATA_USE)) {
 					const allTeams = await getTeams();
 					allTeams.forEach(newTeam => {
+						if (!newTeam.publisher) {
+							return;
+						}
 						const foundTeam = teams.find(team => team._id && team._id.toString() === newTeam._id.toString());
 						if (!isEmpty(foundTeam)) {
 							const foundRole = foundTeam.roles.find(role => role === constants.roleTypes.REVIEWER);
@@ -90,6 +96,12 @@ router.get('/status', function (req, res, next) {
 			//Remove admin team and then sort teams alphabetically
 			const teamArray = teams
 				.filter(team => team.type !== constants.teamTypes.ADMIN)
+				.map(team => {
+					return {
+						...team,
+						name: team.name || 'team name mock',
+					};
+				})
 				.sort(function (a, b) {
 					return a.name.toUpperCase() < b.name.toUpperCase() ? -1 : a.name.toUpperCase() > b.name.toUpperCase() ? 1 : 0;
 				});

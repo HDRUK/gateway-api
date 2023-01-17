@@ -76,14 +76,8 @@ const formatTeamUsers = team => {
 	let { users = [] } = team;
 	users = users.map(user => {
 		if (user.id) {
-			let {
-				firstname,
-				lastname,
-				id,
-				_id,
-				email,
-				additionalInfo: { organisation, bio, showOrganisation, showBio },
-			} = user;
+			let { firstname, lastname, id, _id, email, additionalInfo } = user;
+			const { organisation, bio, showOrganisation, showBio } = additionalInfo === null ? {} : additionalInfo;
 			let userMember = team.members.find(el => el.memberid.toString() === user._id.toString());
 			let { roles = [] } = userMember;
 			return {
@@ -588,9 +582,9 @@ const getTeamsList = async (req, res) => {
 			.populate('users', { firstname: 1, lastname: 1 })
 			.sort({ updatedAt: -1 })
 			.lean();
-
+		const filtered = teams.filter(team => team.publisher !== null);
 		// 4. Return team
-		return res.status(200).json({ success: true, teams });
+		return res.status(200).json({ success: true, teams: filtered });
 	} catch (err) {
 		process.stdout.write(`TEAM - getTeamsList : ${err.message}\n`);
 		return res.status(500).json(err.message);
@@ -725,7 +719,6 @@ const addTeam = async (req, res) => {
 		await createNotifications(constants.notificationTypes.TEAMADDED, { recipients }, name, req.user, publisherId);
 
 		return res.status(200).json(newPublisher);
-
 	} catch (err) {
 		process.stdout.write(`TEAM - addTeam : ${err.message}\n`);
 		return res.status(500).json({
