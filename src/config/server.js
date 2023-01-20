@@ -14,6 +14,8 @@ import * as Sentry from '@sentry/node';
 import * as Tracing from '@sentry/tracing';
 import helper from '../resources/utilities/helper.util';
 
+import { errorHandler } from '../middlewares';
+
 require('dotenv').config();
 
 var app = express();
@@ -191,7 +193,10 @@ app.use('/api/v1/auth/register', require('../resources/user/user.register.route'
 app.use('/api/v1/users', require('../resources/user/user.route'));
 app.use('/api/v1/topics', require('../resources/topic/topic.route'));
 app.use('/api/v1/publishers', require('../resources/publisher/publisher.route'));
+
 app.use('/api/v1/teams', require('../resources/team/team.route'));
+app.use('/api/v3/teams', require('../resources/team/v3/team.route'));
+
 app.use('/api/v1/workflows', require('../resources/workflow/workflow.route'));
 app.use('/api/v1/messages', require('../resources/message/message.route'));
 app.use('/api/v1/reviews', require('../resources/tool/review.route'));
@@ -258,6 +263,7 @@ app.use('/api/v2/questionbank', require('../resources/questionbank/questionbank.
 app.use('/api/v2/data-use-registers', require('../resources/dataUseRegister/dataUseRegister.route'));
 app.use('/api/v1/locations', require('../resources/spatialfilter/SpatialRouter'));
 
+app.use(errorHandler);
 initialiseAuthentication(app);
 
 // launch our backend into a port

@@ -1,4 +1,4 @@
-FROM node:14
+FROM node:16
 
 ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/application_default_credentials.json"
 
@@ -12,4 +12,4 @@ COPY . .
 
 EXPOSE 3001
 
-CMD ["npm", "run", "server"] 
+CMD ["npm", "run", "server"]
