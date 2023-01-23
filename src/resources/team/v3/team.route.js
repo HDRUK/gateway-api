@@ -15,7 +15,5 @@ router.get('/:teamid/members', passport.authenticate('jwt'), (req, res) => TeamC
 // @access  Private
 router.delete('/:teamid/members/:memberid', passport.authenticate('jwt'), (req, res) => TeamController.deleteTeamMember(req, res));
 
-// test
-// memberid: 628f9e65b089fa694655d168
 
 module.exports = router;
