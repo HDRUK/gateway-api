@@ -22,7 +22,8 @@ const TeamSchema = new Schema(
 						'custodian.metadata.manager',
 						'custodian.dar.manager'
 					], 
-					required: true },
+					required: true 
+				},
 				dateCreated: Date,
 				dateUpdated: Date,
 				notifications: [

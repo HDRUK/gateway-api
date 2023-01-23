@@ -203,6 +203,6 @@ export default {
     checkTeamV3Permissions,
     checkIfAdmin,
     formatTeamMembers,
-	createTeamNotifications,
-	getTeamName,
+    createTeamNotifications,
+    getTeamName,
 }
