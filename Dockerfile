@@ -16,4 +16,4 @@ RUN npm install --production
 COPY . .
 
 EXPOSE 3001
-CMD [ "node","--max-old-space-size=3072", "index.js" ]
+CMD [ "node", "index.js" ]
