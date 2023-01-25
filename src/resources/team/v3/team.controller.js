@@ -77,7 +77,7 @@ class TeamController extends TeamService {
 
         let { members } = team;
 
-        let checkIfExistMember = members.find(item => item.memberid.toString() === memberid.toString());
+        let checkIfExistMember = members.find(item => item.memberid.toString() === memberId.toString());
         if (checkIfExistMember) {
             throw new HttpExceptions(`Member already exists`, 409);
         }
