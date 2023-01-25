@@ -16,4 +16,10 @@ router.get('/:teamid/members', passport.authenticate('jwt'), (req, res) => TeamC
 router.delete('/:teamid/members/:memberid', passport.authenticate('jwt'), (req, res) => TeamController.deleteTeamMember(req, res));
 
 
+// @route   POST api/v3/teams/:teamid/members
+// @desc    POST add new team member
+// @access  Private
+router.post('/:teamid/members', passport.authenticate('jwt'), (req, res) => TeamController.addTeamMember(req, res));
+
+
 module.exports = router;

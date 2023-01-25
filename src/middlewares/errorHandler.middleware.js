@@ -6,17 +6,23 @@ const errorHandler = (error, req, res, next) => {
 	const loggingService = new LoggingService();
 	const loggingEnabled = parseInt(process.env.LOGGING_LOG_ENABLED) || 0;
 
-	const errorMessage = {
+	const errorResponseMessage = {
+		type: 'error',
+		message: error.message,
+	};
+	const errorFullMessage = {
 		type: 'error',
 		message: error.message,
 		stack: error.stack.split("\n"),
 	};
 
+	process.stdout.write(JSON.stringify(errorFullMessage));
+	
 	if (loggingEnabled) {
-		loggingService.sendDataInLogging(errorMessage, 'ERROR');
+		loggingService.sendDataInLogging(errorFullMessage, 'ERROR');
 	}
 
-	res.status(errorStatusCode).json(errorMessage);
+	res.status(errorStatusCode).json(errorResponseMessage);
 
 	return;
 }

@@ -61,7 +61,6 @@ const checkIfAdmin = (user, adminRoles) => {
  */
 const formatTeamMembers = team => {
 	let { users = [] } = team;
-	// console.log(users);
 	users = users.map(user => {
 		if (user.id) {
 			let {
@@ -199,10 +198,31 @@ const getTeamName = team => {
 	}
 };
 
+const checkUserAuthorization = (currUserId, permission, team, users) => {
+	let authorised = checkTeamV3Permissions(permission, team, currUserId);
+	if (!authorised) {
+		authorised = checkIfAdmin(users, [constants.roleTypes.ADMIN_DATASET]);
+	}
+	if (!authorised) {
+		throw new Error(`Not enough permissions. User is not authorized to perform this action.`);
+	}
+
+	return true;
+};
+
+const checkIfLastManager = (members, deleteUserId) => {
+	let managerCount = members.filter(mem => mem.roles.includes('manager') && mem.memberid.toString() !== deleteUserId).length;
+	if (managerCount === 0) {
+		throw new Error(`You cannot delete the last manager in the team.`);
+	}
+}
+
 export default {
     checkTeamV3Permissions,
     checkIfAdmin,
     formatTeamMembers,
     createTeamNotifications,
     getTeamName,
+	checkUserAuthorization,
+	checkIfLastManager,
 }
