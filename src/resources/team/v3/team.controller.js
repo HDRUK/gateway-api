@@ -69,7 +69,7 @@ class TeamController extends TeamService {
         const teamId = req.params.teamid;
         const userObj = req.user;
         const currentUserId = req.user._id;
-        const { memberid, roles = [] } = req.body;
+        const { memberId, roles = [] } = req.body;
 
         const team = await this.getTeamByTeamId(teamId);
 
@@ -84,7 +84,7 @@ class TeamController extends TeamService {
 
         let newMembers = {
             roles: roles,
-            memberid: memberid,
+            memberid: memberId,
             notifications: []
         };
 
@@ -93,12 +93,10 @@ class TeamController extends TeamService {
 			if (err) {
 				throw new Error(err.message);
 			} else {
-				let newUsers = await UserModel.find({ _id: memberid });
+				let newUsers = await UserModel.find({ _id: memberId });
 				teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERADDED, { newUsers }, team, req.user);
-				// 11. Get updated team users including bio data
 				const updatedTeam = await this.getMembersByTeamId(teamId);
 				let users = teamV3Util.formatTeamMembers(updatedTeam);
-				// 12. Return successful response payload
 				return res.status(201).json({
 					success: true,
 					members: users,
