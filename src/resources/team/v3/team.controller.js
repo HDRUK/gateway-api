@@ -96,7 +96,7 @@ class TeamController extends TeamService {
 				let newUsers = await UserModel.find({ _id: memberid });
 				teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERADDED, { newUsers }, team, req.user);
 				// 11. Get updated team users including bio data
-				const updatedTeam = await this.getMembersByTeamIdmaybe(teamId);
+				const updatedTeam = await this.getMembersByTeamId(teamId);
 				let users = teamV3Util.formatTeamMembers(updatedTeam);
 				// 12. Return successful response payload
 				return res.status(201).json({
