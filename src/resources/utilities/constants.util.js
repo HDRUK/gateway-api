@@ -350,32 +350,32 @@ const _searchDataTypes = {
 const _roleMemberTeam = {
 	CUST_TEAM_ADMIN: 'custodian.team.admin',
 	CUST_MD_MANAGER: 'custodian.metadata.manager',
-	CUST_MD_EDITOR: 'custodian.metadata.editor',
+	CUST_MD_EDITOR: 'metadata_editor',
 	CUST_DAR_MANAGER: 'custodian.dar.manager',
-	CUST_DAR_REVIEWER: 'custodian.dar.reviewer',
+	CUST_DAR_REVIEWER: 'reviewer',
 };
 
 const _rolesAcceptedByRoles = {
 	'custodian.team.admin': [
 		'custodian.team.admin',
 		'custodian.metadata.manager',
-		'custodian.metadata.editor',
+		'metadata_editor',
 		'custodian.dar.manager',
-		'custodian.dar.reviewer',
+		'reviewer',
 	],
 	'custodian.metadata.manager': [
 		'custodian.metadata.manager',
-		'custodian.metadata.editor',
+		'metadata_editor',
 	],
-	'custodian.metadata.editor': [
-		'custodian.metadata.editor',
+	'metadata_editor': [
+		'metadata_editor',
 	],
 	'custodian.dar.manager': [
 		'custodian.dar.manager',
-		'custodian.dar.reviewer',
+		'reviewer',
 	],
-	'custodian.dar.reviewer': [
-		'custodian.dar.reviewer',
+	'reviewer': [
+		'reviewer',
 	],
 };
 
