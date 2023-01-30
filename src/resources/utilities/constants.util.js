@@ -351,16 +351,8 @@ const _roleMemberTeam = {
 	CUST_TEAM_ADMIN: 'custodian.team.admin',
 	CUST_MD_MANAGER: 'custodian.metadata.manager',
 	CUST_MD_EDITOR: 'custodian.metadata.editor',
-	CUST_DEVELOPER: 'custodian.developer',
 	CUST_DAR_MANAGER: 'custodian.dar.manager',
 	CUST_DAR_REVIEWER: 'custodian.dar.reviewer',
-	CUST_DUR_MANAGER: 'custodian.dur.manager',
-	HDRUK_ADMIN: 'hdruk.admin',
-	HDRUK_ONBOARDING_ADMIN: 'hdruk.onboarding.admin',
-	HDRUK_METADATA_ADMIN: 'hdruk.metadata.admin',
-	HDRUK_DAR_ADMIN: 'hdruk.dar.admin',
-	HDRUK_DUR_ADMIN: 'hdruk.dur.admin',
-	HDRUK_ENTITY_ADMIN: 'hdruk.entity.admin',
 };
 
 const _rolesAcceptedByRoles = {
@@ -368,10 +360,8 @@ const _rolesAcceptedByRoles = {
 		'custodian.team.admin',
 		'custodian.metadata.manager',
 		'custodian.metadata.editor',
-		'custodian.developer',
 		'custodian.dar.manager',
 		'custodian.dar.reviewer',
-		'custodian.dur.manager',
 	],
 	'custodian.metadata.manager': [
 		'custodian.metadata.manager',
@@ -380,36 +370,12 @@ const _rolesAcceptedByRoles = {
 	'custodian.metadata.editor': [
 		'custodian.metadata.editor',
 	],
-	'custodian.developer': [
-		'custodian.developer',
-	],
 	'custodian.dar.manager': [
 		'custodian.dar.manager',
 		'custodian.dar.reviewer',
 	],
 	'custodian.dar.reviewer': [
 		'custodian.dar.reviewer',
-	],
-	'custodian.dur.manager': [
-		'custodian.dur.manager',
-	],
-	'hdruk.admin': [
-		'hdruk.admin',
-	],
-	'hdruk.onboarding.admin': [
-		'hdruk.onboarding.admin',
-	],
-	'hdruk.metadata.admin': [
-		'hdruk.metadata.admin',
-	],
-	'hdruk.dar.admin': [
-		'hdruk.dar.admin',
-	],
-	'hdruk.dur.admin': [
-		'hdruk.dur.admin',
-	],
-	'hdruk.entity.admin': [
-		'hdruk.entity.admin',
 	],
 };
 
