@@ -5,7 +5,6 @@ import teamV3Util from '../../utilities/team.v3.util';
 import constants from '../../utilities/constants.util';
 import HttpExceptions from '../../../exceptions/HttpExceptions';
 import { UserModel } from '../../user/user.model';
-import { TeamModel } from '../team.model';
 
 class TeamController extends TeamService {
     constructor() {
@@ -51,7 +50,7 @@ class TeamController extends TeamService {
         try {
             team.save(function (err, result) {
                 if (err) {
-                    throw new Error(err.message);
+                    throw new HttpExceptions(err.message);
                 } else {
                     let removedUser = users.find(user => user._id.toString() === deleteUserId.toString());
                     teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERREMOVED, { removedUser }, team, userObj);
@@ -91,7 +90,7 @@ class TeamController extends TeamService {
         team.members = team.members.concat(newMembers);
 		team.save(async err => {
 			if (err) {
-				throw new Error(err.message);
+				throw new HttpExceptions(err.message);
 			} else {
 				let newUsers = await UserModel.find({ _id: memberId });
 				teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERADDED, { newUsers }, team, req.user);
@@ -103,6 +102,51 @@ class TeamController extends TeamService {
 				});
 			}
 		});
+    }
+
+    async updateTeamMember(req, res) {
+        const teamId = req.params.teamid;
+        const updateUserId = req.params.memberid;
+        const userObj = req.user;
+        const userTeams = userObj.teams || [];
+        const currentUserId = req.user._id;
+        const { roles = [] } = req.body;
+
+        const team = await this.getTeamByTeamId(teamId);
+
+        let { members } = team;
+
+        let checkIfExistMember = members.find(item => item.memberid.toString() === updateUserId.toString());
+        if (!checkIfExistMember) {
+            throw new HttpExceptions(`The member does not exist in the team`, 409);
+        }
+
+        const approverUserRoles = teamV3Util.getAllRolesForApproverUser(userTeams, teamId, currentUserId);
+        const approvedRoles = teamV3Util.listOfRolesAllowed(approverUserRoles, constants.rolesAcceptedByRoles);
+        teamV3Util.checkAllowNewRoles(roles, approvedRoles);
+
+        team.members.map(member => {
+            if (member.memberid.toString() === updateUserId.toString()) {
+                member.roles = roles;
+            }
+        });
+
+        try {
+            team.save(async err => {
+                if (err) {
+                    throw new HttpExceptions(err.message);
+                } else {
+                    let updatedTeam = await this.getMembersByTeamId(teamId);
+                    let users = teamV3Util.formatTeamMembers(updatedTeam);
+                    return res.json({
+                        success: true,
+                        members: users,
+                    });
+                }
+            });    
+        } catch (e) {
+            throw new HttpExceptions(e.message);
+        }
     }
 }
 
