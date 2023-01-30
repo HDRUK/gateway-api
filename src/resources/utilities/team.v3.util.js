@@ -257,7 +257,7 @@ const listOfRolesAllowed = (userRoles, rolesAcceptedByRoles) => {
 const checkAllowNewRoles = (userUpdateRoles, allowedRoles) => {
 	userUpdateRoles.forEach(uRole => {
 		if (!allowedRoles.includes(uRole)) {
-			throw new HttpExceptions(`Adding the \'${uRole}\' role is not allowed`, 422);
+			throw new HttpExceptions(`Adding the \'${uRole}\' role is not allowed`, 403);
 		}
 	});
 
