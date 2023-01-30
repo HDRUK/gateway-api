@@ -3,6 +3,7 @@ import constants from './constants.util';
 // import emailGenerator from '../../utilities/emailGenerator.util';
 import emailGenerator from './emailGenerator.util';
 import notificationBuilder from './notificationBuilder';
+import HttpExceptions from '../../exceptions/HttpExceptions';
 
 /**
  * Check a users permission levels for a team
@@ -217,6 +218,52 @@ const checkIfLastManager = (members, deleteUserId) => {
 	}
 }
 
+const getAllRolesForApproverUser = (team, teamId, userId) => {
+	let arrayRoles = [];
+
+	team.map(publisher => {
+		if (publisher && publisher.type === constants.teamTypes.ADMIN) {
+			publisher.members.map(member => {
+				if (member.memberid.toString() === userId.toString()) {
+					arrayRoles = [...arrayRoles, ...member.roles];
+				}
+			});
+		}
+
+		if (publisher && publisher.type === 'publisher' && publisher.publisher._id.toString() === teamId.toString()) {
+			publisher.members.map(member => {
+				if (member.memberid.toString() === userId.toString()) {
+					arrayRoles = [...arrayRoles, ...member.roles];
+				}
+			});
+		}
+	});
+
+	return [...new Set(arrayRoles)];
+}
+
+const listOfRolesAllowed = (userRoles, rolesAcceptedByRoles) => {
+	let allowedRoles = [];
+
+	userRoles.map(uRole => {
+		if (rolesAcceptedByRoles[uRole]) {
+			rolesAcceptedByRoles[uRole].forEach(element => allowedRoles.push(element));
+		}
+	});
+
+	return [... new Set(allowedRoles)];
+}
+
+const checkAllowNewRoles = (userUpdateRoles, allowedRoles) => {
+	userUpdateRoles.forEach(uRole => {
+		if (!allowedRoles.includes(uRole)) {
+			throw new HttpExceptions(`Adding the \'${uRole}\' role is not allowed`, 422);
+		}
+	});
+
+	return true;
+};
+
 export default {
     checkTeamV3Permissions,
     checkIfAdmin,
@@ -225,4 +272,7 @@ export default {
     getTeamName,
 	checkUserAuthorization,
 	checkIfLastManager,
+	getAllRolesForApproverUser,
+	listOfRolesAllowed,
+	checkAllowNewRoles,
 }
