@@ -211,6 +211,16 @@ const checkUserAuthorization = (currUserId, permission, team, users) => {
 	return true;
 };
 
+const checkingUserAuthorization = (arrayRolesAllow, arrayCurrentUserRoles) => {
+	const allow = arrayCurrentUserRoles.filter(element => arrayRolesAllow.includes(element)).length;
+
+	if (!allow) {
+		throw new HttpExceptions(`Not enough permissions. User is not authorized to perform this action.`);
+	}
+
+	return true;
+};
+
 const checkIfLastManager = (members, deleteUserId) => {
 	let managerCount = members.filter(mem => mem.roles.includes('manager') && mem.memberid.toString() !== deleteUserId).length;
 	if (managerCount === 0) {
@@ -271,6 +281,7 @@ export default {
     createTeamNotifications,
     getTeamName,
 	checkUserAuthorization,
+	checkingUserAuthorization,
 	checkIfLastManager,
 	getAllRolesForApproverUser,
 	listOfRolesAllowed,
