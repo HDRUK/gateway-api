@@ -5,10 +5,15 @@ import teamV3Util from '../../utilities/team.v3.util';
 import constants from '../../utilities/constants.util';
 import HttpExceptions from '../../../exceptions/HttpExceptions';
 import { UserModel } from '../../user/user.model';
+import { LoggingService } from '../../../services';
 
 class TeamController extends TeamService {
+    _logger;
+
     constructor() {
         super();
+
+        this._logger = new LoggingService();
     }
 
     async getTeamMembers(req, res) {
@@ -21,6 +26,15 @@ class TeamController extends TeamService {
 		teamV3Util.checkUserAuthorization(currentUserId, '', team, users);
 
         let members = teamV3Util.formatTeamMembers(team);
+
+        this.sendLogInGoogle({
+            action: 'getTeamMembers',
+            input: {
+                teamId,
+                currentUserId,
+            },
+            output: members,
+        });
 
         res.status(200).json({
             members,
@@ -57,6 +71,17 @@ class TeamController extends TeamService {
                 } else {
                     let removedUser = users.find(user => user._id.toString() === deleteUserId.toString());
                     teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERREMOVED, { removedUser }, team, userObj);
+
+                    this.sendLogInGoogle({
+                        action: 'deleteTeamMember',
+                        input: {
+                            teamId,
+                            memberid: deleteUserId,
+                            currentUserId,
+                        },
+                        output: 'success'
+                    });
+
                     return res.status(204).json({
                         success: true,
                     });
@@ -102,6 +127,17 @@ class TeamController extends TeamService {
 				teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERADDED, { newUsers }, team, req.user);
 				const updatedTeam = await this.getMembersByTeamId(teamId);
 				let users = teamV3Util.formatTeamMembers(updatedTeam);
+
+                this.sendLogInGoogle({
+                    action: 'addTeamMember',
+                    input: {
+                        teamId,
+                        currentUserId,
+                        body: req.body,
+                    },
+                    output: users,
+                });
+
 				return res.status(201).json({
 					success: true,
 					members: users,
@@ -144,6 +180,18 @@ class TeamController extends TeamService {
                 } else {
                     let updatedTeam = await this.getMembersByTeamId(teamId);
                     let users = teamV3Util.formatTeamMembers(updatedTeam);
+
+                    this.sendLogInGoogle({
+                        action: 'updateTeamMember',
+                        input: {
+                            teamId,
+                            memberid: updateUserId,
+                            currentUserId,
+                            body: req.body,
+                        },
+                        output: users,
+                    });
+
                     return res.json({
                         success: true,
                         members: users,
@@ -152,6 +200,13 @@ class TeamController extends TeamService {
             });    
         } catch (e) {
             throw new HttpExceptions(e.message);
+        }
+    }
+
+    sendLogInGoogle(message) {
+        const loggingEnabled = parseInt(process.env.LOGGING_LOG_ENABLED) || 0;
+        if (loggingEnabled) {
+            this._logger.sendDataInLogging(JSON.stringify(message), 'INFO');
         }
     }
 }
