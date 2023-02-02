@@ -213,7 +213,7 @@ const checkUserAuthorization = (currUserId, permission, team, users) => {
 
 const checkingUserAuthorization = (arrayRolesAllow, arrayCurrentUserRoles) => {
 	const allow = arrayCurrentUserRoles.filter(element => arrayRolesAllow.includes(element)).length;
-
+	
 	if (!allow) {
 		throw new HttpExceptions(`Not enough permissions. User is not authorized to perform this action.`);
 	}
