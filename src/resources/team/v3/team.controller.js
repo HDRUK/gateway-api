@@ -46,11 +46,6 @@ class TeamController extends TeamService {
         const deleteUserId = req.params.memberid;
         const userObj = req.user;
         const currentUserId = req.user._id;
-        const userTeams = userObj.teams || [];
-        const arrayOfAllowedRoles= ['custodian.team.admin'];
-
-        const currentUserRoles = teamV3Util.getAllRolesForApproverUser(userTeams, teamId, currentUserId);
-        teamV3Util.checkingUserAuthorization(arrayOfAllowedRoles, currentUserRoles);
 
         const team = await this.getTeamByTeamId(teamId);
 
@@ -94,14 +89,8 @@ class TeamController extends TeamService {
 
     async addTeamMember(req, res) {
         const teamId = req.params.teamid;
-        const userObj = req.user;
         const currentUserId = req.user._id;
         const { memberId, roles = [] } = req.body;
-        const userTeams = userObj.teams || [];
-        const arrayOfAllowedRoles = ['custodian.team.admin'];
-
-        const currentUserRoles = teamV3Util.getAllRolesForApproverUser(userTeams, teamId, currentUserId);
-        teamV3Util.checkingUserAuthorization(arrayOfAllowedRoles, currentUserRoles);
 
         const team = await this.getTeamByTeamId(teamId);
 
