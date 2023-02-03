@@ -1,6 +1,6 @@
 import { has, isEmpty, isNil } from 'lodash';
 import constants from '../../utilities/constants.util';
-import teamController from '../../team/team.controller';
+import teamV3Util from '../../utilities/team.v3.util';
 import moment from 'moment';
 import { DataRequestSchemaModel } from '../schema/datarequest.schemas.model';
 import dynamicForm from '../../utilities/dynamicForms/dynamicForm.util';
@@ -33,36 +33,45 @@ const injectQuestionActions = (jsonSchema, userType, applicationStatus, role = '
 };
 
 const getUserPermissionsForApplication = (application, userId, _id) => {
-	try {
-		let authorised = false,
-			isTeamMember = false,
-			userType = '';
-		// Return default unauthorised with no user type if incorrect params passed
-		if (!application || !userId || !_id) {
-			return { authorised, userType };
-		}
-		// Check if the user is a custodian team member and assign permissions if so
-		if (has(application, 'datasets') && has(application.datasets[0], 'publisher.team')) {
-			isTeamMember = teamController.checkTeamPermissions('', application.datasets[0].publisher.team, _id);
-		} else if (has(application, 'publisherObj.team')) {
-			isTeamMember = teamController.checkTeamPermissions('', application.publisherObj.team, _id);
-		}
-		if (isTeamMember && (application.applicationStatus !== constants.applicationStatuses.INPROGRESS || application.isShared)) {
-			userType = constants.userTypes.CUSTODIAN;
+
+	let authorised = false,
+		userType = '';
+	
+	if (!application || !userId || !_id) {
+		throw new HttpExceptions(`User not authorized to perform this action`,403);
+	}
+
+	if (has(application, 'datasets') && has(application.datasets[0], 'publisher.team')) {
+		teamV3Util.checkUserRolesByTeam(
+			[constants.roleMemberTeam.CUST_DAR_MANAGER], 
+			application.datasets[0].publisher.team, 
+			_id
+		);
+	} else if (has(application, 'publisherObj.team')) {
+		teamV3Util.checkUserRolesByTeam(
+			[constants.roleMemberTeam.CUST_DAR_MANAGER], 
+			application.publisherObj.team, 
+			_id
+		);
+	}
+
+	if ((application.applicationStatus !== constants.applicationStatuses.INPROGRESS || application.isShared)) {
+		userType = constants.userTypes.CUSTODIAN;
+		authorised = true;
+	}
+
+	if (application.applicationStatus === constants.applicationStatuses.INPROGRESS || isEmpty(userType)) {
+		if (application.userId === userId || (application.authorIds && application.authorIds.includes(userId))) {
+			userType = constants.userTypes.APPLICANT;
 			authorised = true;
 		}
-		// If user is not authenticated as a custodian, check if they are an author or the main applicant
-		if (application.applicationStatus === constants.applicationStatuses.INPROGRESS || isEmpty(userType)) {
-			if (application.userId === userId || (application.authorIds && application.authorIds.includes(userId))) {
-				userType = constants.userTypes.APPLICANT;
-				authorised = true;
-			}
-		}
-		return { authorised, userType };
-	} catch (err) {
-		console.error(err.message);
-		return { authorised: false, userType: '' };
 	}
+
+	if (authorised) {
+		return userType;
+	}
+	
+	throw new HttpExceptions(`User not authorized to perform this action`, 403);
 };
 
 const extractApplicantNames = questionAnswers => {
