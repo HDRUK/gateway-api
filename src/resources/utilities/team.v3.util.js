@@ -274,6 +274,30 @@ const checkAllowNewRoles = (userUpdateRoles, allowedRoles) => {
 	return true;
 };
 
+const checkUserRolesByTeam = (arrayCheckRoles, team, userId) => {
+	if (has(team, 'members')) {
+		let { members } = team;
+
+		let userMember = members.find(el => el.memberid.toString() === userId.toString());
+
+		if (userMember) {
+			let { roles = [] } = userMember;
+
+			if (!arrayCheckRoles.length) {
+				return true;
+			}
+
+			const check = roles.filter(element => arrayCheckRoles.includes(element)).length;
+			if (check) {
+				return true;
+			}
+			
+		}
+	}
+
+	throw new HttpExceptions(`User not authorized to perform this action`,403);
+}
+
 export default {
     checkTeamV3Permissions,
     checkIfAdmin,
@@ -286,4 +310,5 @@ export default {
 	getAllRolesForApproverUser,
 	listOfRolesAllowed,
 	checkAllowNewRoles,
+	checkUserRolesByTeam,
 }
