@@ -4,10 +4,11 @@ import Mongoose from 'mongoose';
 import { PublisherModel } from '../publisher/publisher.model';
 import { DataRequestModel } from '../datarequest/datarequest.model';
 import { WorkflowModel } from './workflow.model';
-import teamController from '../team/team.controller';
+import teamV3Util from '../utilities/team.v3.util';
 import helper from '../utilities/helper.util';
 import constants from '../utilities/constants.util';
 import Controller from '../base/controller';
+import HttpExceptions from '../../exceptions/HttpExceptions';
 
 export default class WorkflowController extends Controller {
 	constructor(workflowService) {
@@ -41,15 +42,12 @@ export default class WorkflowController extends Controller {
 				},
 			]);
 			if (!workflow) {
-				return res.status(404).json({ success: false });
+				throw new HttpExceptions(`Workflow not found`, 404);
 			}
 			// 2. Check the requesting user is a manager of the custodian team
 			let { _id: userId } = req.user;
-			let authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, workflow.publisher.team.toObject(), userId);
-			// 3. If not return unauthorised
-			if (!authorised) {
-				return res.status(401).json({ success: false });
-			}
+			teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], workflow.publisher.team.toObject(), userId);
+
 			// 4. Build workflow response
 			let { active, _id, id, workflowName, version, steps, applications = [] } = workflow.toObject();
 			applications = applications.map(app => {
@@ -78,10 +76,7 @@ export default class WorkflowController extends Controller {
 			});
 		} catch (err) {
 			console.error(err.message);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred searching for the specified workflow',
-			});
+			throw new HttpExceptions(`An error occurred searching for the specified workflow`, 500);
 		}
 	}
 
@@ -91,10 +86,7 @@ export default class WorkflowController extends Controller {
 			// 1. Look at the payload for the publisher passed
 			const { workflowName = '', publisher = '', steps = [] } = req.body;
 			if (_.isEmpty(workflowName.trim()) || _.isEmpty(publisher.trim()) || _.isEmpty(steps)) {
-				return res.status(400).json({
-					success: false,
-					message: 'You must supply a workflow name, publisher, and at least one step definition to create a workflow',
-				});
+				throw new HttpExceptions(`You must supply a workflow name, publisher, and at least one step definition to create a workflow`, 400);
 			}
 			// 2. Look up publisher and team
 			const publisherObj = await PublisherModel.findOne({ //lgtm [js/sql-injection]
@@ -108,18 +100,10 @@ export default class WorkflowController extends Controller {
 			});
 
 			if (!publisherObj) {
-				return res.status(400).json({
-					success: false,
-					message: 'You must supply a valid publisher to create the workflow against',
-				});
+				throw new HttpExceptions(`You must supply a valid publisher to create the workflow against`, 400);
 			}
-			// 3. Check the requesting user is a manager of the custodian team
-			let authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, publisherObj.team.toObject(), userId);
+			teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], publisherObj.team.toObject(), userId);
 
-			// 4. Refuse access if not authorised
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-			}
 			// 5. Create new workflow model
 			const id = helper.generatedNumericId();
 			// 6. set workflow obj for saving
@@ -133,10 +117,7 @@ export default class WorkflowController extends Controller {
 			// 7. save new workflow to db
 			workflow = await workflow.save().catch(err => {
 				if (err) {
-					return res.status(400).json({
-						success: false,
-						message: err.message,
-					});
+					throw new HttpExceptions(`ERROR SAVE WORKFLOW: ${err.message}`, 400);
 				}
 			});
 			// 8. populate the workflow with the needed fields for our new notification and email
@@ -159,10 +140,7 @@ export default class WorkflowController extends Controller {
 			});
 		} catch (err) {
 			console.error(err.message);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred creating the workflow',
-			});
+			throw new HttpExceptions(`An error occurred creating the workflow`, 500);
 		}
 	}
 
@@ -182,24 +160,17 @@ export default class WorkflowController extends Controller {
 				},
 			});
 			if (!workflow) {
-				return res.status(404).json({ success: false });
+				throw new HttpExceptions(`Workflow not Found`, 404);
 			}
-			// 2. Check the requesting user is a manager of the custodian team
-			let authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, workflow.publisher.team.toObject(), userId);
-			// 3. Refuse access if not authorised
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-			}
+			teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], workflow.publisher.team.toObject(), userId);
+
 			// 4. Ensure there are no in-review DARs with this workflow
 			const applications = await DataRequestModel.countDocuments({
 				workflowId,
 				applicationStatus: 'inReview',
 			});
 			if (applications > 0) {
-				return res.status(400).json({
-					success: false,
-					message: 'A workflow which is attached to applications currently in review cannot be edited',
-				});
+				throw new HttpExceptions(`A workflow which is attached to applications currently in review cannot be edited`, 400);
 			}
 			// 5. Edit workflow
 			const { workflowName = '', publisher = '', steps = [] } = req.body;
@@ -216,10 +187,7 @@ export default class WorkflowController extends Controller {
 			if (isDirty) {
 				workflow = await workflow.save().catch(err => {
 					if (err) {
-						return res.status(400).json({
-							success: false,
-							message: err.message,
-						});
+						throw new HttpExceptions(`ERROR SAVE WORKFLOW: ${err.message}`, 400);
 					}
 				});
 
@@ -233,10 +201,7 @@ export default class WorkflowController extends Controller {
 					},
 				});
 				if (!publisherObj) {
-					return res.status(400).json({
-						success: false,
-						message: 'You must supply a valid publisher to create the workflow against',
-					});
+					throw new HttpExceptions(`You must supply a valid publisher to create the workflow against`, 400);
 				}
 				const detailedWorkflow = await WorkflowModel.findById(workflow._id).populate({
 					path: 'steps.reviewers',
@@ -260,10 +225,7 @@ export default class WorkflowController extends Controller {
 			}
 		} catch (err) {
 			console.error(err.message);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred editing the workflow',
-			});
+			throw new HttpExceptions(`An error occurred editing the workflow`, 500);
 		}
 	}
 
@@ -285,24 +247,17 @@ export default class WorkflowController extends Controller {
 			const { workflowName = '', publisher = {}, steps = [] } = workflow;
 
 			if (!workflow) {
-				return res.status(404).json({ success: false });
+				throw new HttpExceptions(`Workflow not Found`, 404);
 			}
-			// 2. Check the requesting user is a manager of the custodian team
-			let authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, workflow.publisher.team.toObject(), userId);
-			// 3. Refuse access if not authorised
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-			}
+			teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], workflow.publisher.team.toObject(), userId);
+
 			// 4. Ensure there are no in-review DARs with this workflow
 			const applications = await DataRequestModel.countDocuments({
 				workflowId,
 				applicationStatus: 'inReview',
 			});
 			if (applications > 0) {
-				return res.status(400).json({
-					success: false,
-					message: 'A workflow which is attached to applications currently in review cannot be deleted',
-				});
+				throw new HttpExceptions(`A workflow which is attached to applications currently in review cannot be deleted`, 400);
 			}
 			const detailedWorkflow = await WorkflowModel.findById(workflowId).populate({
 				path: 'steps.reviewers',
@@ -313,10 +268,7 @@ export default class WorkflowController extends Controller {
 			WorkflowModel.deleteOne({ _id: workflowId }, function (err) {
 				if (err) {
 					console.error(err.message);
-					return res.status(400).json({
-						success: false,
-						message: 'An error occurred deleting the workflow',
-					});
+					throw new HttpExceptions(`An error occurred deleting the workflow`, 400);
 				}
 			});
 			const publisherObj = await PublisherModel.findOne({
@@ -329,10 +281,7 @@ export default class WorkflowController extends Controller {
 				},
 			});
 			if (!publisherObj) {
-				return res.status(400).json({
-					success: false,
-					message: 'You must supply a valid publisher to create the workflow against',
-				});
+				throw new HttpExceptions(`You must supply a valid publisher to create the workflow against`, 400);
 			}
 			let context = {
 				publisherObj: publisherObj.team.toObject(),
@@ -346,10 +295,7 @@ export default class WorkflowController extends Controller {
 			});
 		} catch (err) {
 			console.error(err.message);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred deleting the workflow',
-			});
+			throw new HttpExceptions(`An error occurred deleting the workflow`, 500);
 		}
 	}
 }
