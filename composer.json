@@ -21,7 +21,8 @@
         "nunomaduro/collision": "^6.1",
         "phpstan/phpstan": "^1.9",
         "phpunit/phpunit": "^9.5.10",
-        "spatie/laravel-ignition": "^1.0"
+        "spatie/laravel-ignition": "^1.0",
+        "squizlabs/php_codesniffer": "*"
     },
     "autoload": {
         "psr-4": {
@@ -54,6 +55,12 @@
         ],
         "behat": [
             "vendor/bin/behat"
+        ],
+        "generate-api-docs": [
+            "@php artisan l5-swagger:generate"
+        ],
+        "phpcs": [
+            "vendor/bin/phpcs --standard=PSR1 app"
         ]
     },
     "extra": {
