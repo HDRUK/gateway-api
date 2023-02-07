@@ -30,7 +30,7 @@ jobs:
       run: "composer run phpcs"
 
     - name: Run application
-      run: "php -S localhost:8000 -t public"
+      run: "php artisan serve --port=9000 &"
 
     - name: Run behat testing
       run: "composer run behat"
