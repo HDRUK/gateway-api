@@ -206,7 +206,7 @@ const checkUserAuthorization = (currUserId, permission, team, users) => {
 		authorised = checkIfAdmin(users, [constants.roleTypes.ADMIN_DATASET]);
 	}
 	if (!authorised) {
-		throw new Error(`Not enough permissions. User is not authorized to perform this action.`);
+		throw new HttpExceptions(`Not enough permissions. User is not authorized to perform this action.`);
 	}
 
 	return true;
