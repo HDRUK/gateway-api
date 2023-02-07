@@ -1,5 +1,6 @@
 import Controller from '../base/controller';
 import { logger } from '../utilities/logger';
+import HttpExceptions from '../../exceptions/HttpExceptions';
 
 const logCategory = 'questionbank';
 
@@ -22,10 +23,7 @@ export default class QuestionbankController extends Controller {
 		} catch (err) {
 			// Return error response if something goes wrong
 			console.error(err.message);
-			return res.status(500).json({
-				success: false,
-				message: 'A server error occurred, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again`, 500);
 		}
 	}
 
@@ -43,10 +41,7 @@ export default class QuestionbankController extends Controller {
 		} catch (err) {
 			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'A server error occurred, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again`, 500);
 		}
 	}
 
@@ -59,10 +54,7 @@ export default class QuestionbankController extends Controller {
 			return res.status(200).json({ success: true, result: newRequestSchema });
 		} catch (err) {
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'A server error occurred, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again`, 500);
 		}
 	}
 
@@ -76,10 +68,7 @@ export default class QuestionbankController extends Controller {
 			return res.status(200).json({ success: true });
 		} catch (err) {
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'Error removing the schema updates, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again`, 500);
 		}
 	}
 }
