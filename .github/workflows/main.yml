@@ -1,0 +1,41 @@
+name: gateway-api-2-build-pipeline
+run-name: ${{ github.actor }} triggered build pipeline
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  docker:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Start containers
+      uses: docker-compose -f "docker-compose.yml" up -d --build
+
+    - name: Composer install
+      run: "composer install"
+
+    - name: Run static analysis
+      run: "composer run phpstan"
+
+    - name: Run code sniffer
+      run: "composer run phpcs"
+
+    - name: Run application
+      run: "php -S localhost:8000 -t public"
+
+    - name: Run behat testing
+      run: "composer run behat"
+
+    - name: Stop containers
+      if: always()
+      run: docker-compose -f "docker-compose.yml" down
+    
