@@ -23,13 +23,7 @@ class TeamController extends TeamService {
 
         const team = await this.getMembersByTeamId(teamId);
 
-        const isAuthorized = teamV3Util.checkUserAuthorization(currentUserId, '', team, users);
-        if (!isAuthorized) {
-            return res.status(403).json({
-				success: false,
-				message: `Not enough permissions. User is not authorized to perform this action.`,
-			});
-        }
+        teamV3Util.checkUserAuthorization(currentUserId, '', team, users);
 
         let members = teamV3Util.formatTeamMembers(team);
 
