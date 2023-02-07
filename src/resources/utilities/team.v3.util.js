@@ -77,6 +77,7 @@ const formatTeamMembers = team => {
 			return {
 				firstname,
 				lastname,
+				id,
 				userId: _id.toString(),
 				email,
 				roles,

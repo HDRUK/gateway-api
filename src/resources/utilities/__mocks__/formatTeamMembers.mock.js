@@ -364,6 +364,7 @@ const mockResponse = [
     {
       firstname: 'Varsha',
       lastname: 'Khodiyar',
+      id: 3201332329402178,
       userId: '6167edbd5306ac30d5b1da14',
       email: 'varsha.khodiyar@hdruk.ac.uk',
       roles: ["manager","custodian.team.admin","custodian.metadata.manager","custodian.dar.manager"],
@@ -373,6 +374,7 @@ const mockResponse = [
     {
       firstname: 'Louis',
       lastname: 'Grandjean',
+      id: 4539054910544198,
       userId: '61a519eb06447b0e9b6ae3fd',
       email: 'Louis.grandjean@gosh.nhs.uk',
       roles: ["manager","custodian.team.admin","custodian.metadata.manager","custodian.dar.manager"],
@@ -382,6 +384,7 @@ const mockResponse = [
     {
       firstname: 'Priti',
       lastname: 'Pampatwar',
+      id: 1214329286003002,
       userId: '61825367cefce1bfe5c9ba7c',
       email: 'priti.pampatwar@hdruk.ac.uk',
       roles: ["manager","metadata_editor","custodian.team.admin","custodian.metadata.manager","custodian.dar.manager"],
@@ -391,6 +394,7 @@ const mockResponse = [
     {
       firstname: 'Hdr',
       lastname: 'GatewayAdmin',
+      id: 5992307808590300,
       userId: '623483baff441ae7fec9fd43',
       email: 'hdrgatea@gmail.com',
       roles: ["manager","custodian.team.admin","custodian.metadata.manager","custodian.dar.manager"],
@@ -400,6 +404,7 @@ const mockResponse = [
     {
       firstname: 'Yemi',
       lastname: 'Aiyeola',
+      id: 9829759310154118,
       userId: '62d945d9fb5b536d1520c618',
       email: 'yemiayat@gmail.com',
       roles: ["manager","custodian.team.admin","custodian.metadata.manager","custodian.dar.manager"],
@@ -409,6 +414,7 @@ const mockResponse = [
     {
       firstname: 'Clara',
       lastname: 'Fennessy',
+      id: 45222846999444660,
       userId: '5ec2a116b293e07eb48afe14',
       email: 'clara.fennessy@hdruk.ac.uk',
       roles: ["manager","custodian.team.admin","custodian.metadata.manager","custodian.dar.manager"],
@@ -418,6 +424,7 @@ const mockResponse = [
     {
       firstname: 'Vijayalakshmi',
       lastname: 'Shanmugam',
+      id: 6644721675822300,
       userId: '62384f08e5c7245adf17f0fd',
       email: 'vijisrisan@gmail.com',
       roles: ["manager","custodian.team.admin","custodian.metadata.manager","custodian.dar.manager"],
@@ -427,6 +434,7 @@ const mockResponse = [
     {
       firstname: 'Gateway',
       lastname: 'Custodian',
+      id: 37447512737860000,
       userId: '62028ae4d62405c442fd383f',
       email: 'custodianhdr01@gmail.com',
       roles: ["manager","custodian.team.admin","custodian.metadata.manager","custodian.dar.manager"],
