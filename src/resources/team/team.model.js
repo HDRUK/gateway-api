@@ -22,7 +22,8 @@ const TeamSchema = new Schema(
 						'custodian.metadata.manager',
 						'custodian.dar.manager',
 						'admin_dataset',
-						'admin_data_use'
+						'admin_data_use',
+						'editor'
 					], 
 					required: true 
 				},
