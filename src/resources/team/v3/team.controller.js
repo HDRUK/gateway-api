@@ -23,8 +23,6 @@ class TeamController extends TeamService {
 
         const team = await this.getMembersByTeamId(teamId);
 
-        teamV3Util.checkUserAuthorization(currentUserId, '', team, users);
-
         let members = teamV3Util.formatTeamMembers(team);
 
         this.sendLogInGoogle({
@@ -51,12 +49,19 @@ class TeamController extends TeamService {
 
         let { members = [], users = [] } = team;
 
-        teamV3Util.checkIfLastManager(members, deleteUserId);
-
         let updatedMembers = [...members].filter(mem => mem.memberid.toString() !== deleteUserId.toString());
         if (members.length === updatedMembers.length) {
             throw new Error(`The user requested for deletion is not a member of this team.`);
         }
+
+        teamV3Util.checkIfExistAdminRole(
+            updatedMembers, 
+            [
+                constants.roleMemberTeam.CUST_TEAM_ADMIN, 
+                constants.roleMemberTeam.CUST_DAR_MANAGER, 
+                constants.roleMemberTeam.CUST_MD_MANAGER
+            ]
+        );
 
         team.members = updatedMembers;
         try {

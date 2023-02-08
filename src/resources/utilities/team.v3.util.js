@@ -214,7 +214,7 @@ const checkUserAuthorization = (currUserId, permission, team, users) => {
 
 const checkingUserAuthorization = (arrayRolesAllow, arrayCurrentUserRoles) => {
 	const allow = arrayCurrentUserRoles.filter(element => arrayRolesAllow.includes(element)).length;
-	
+
 	if (!allow) {
 		throw new HttpExceptions(`Not enough permissions. User is not authorized to perform this action.`);
 	}
@@ -225,8 +225,26 @@ const checkingUserAuthorization = (arrayRolesAllow, arrayCurrentUserRoles) => {
 const checkIfLastManager = (members, deleteUserId) => {
 	let managerCount = members.filter(mem => mem.roles.includes('manager') && mem.memberid.toString() !== deleteUserId).length;
 	if (managerCount === 0) {
-		throw new Error(`You cannot delete the last manager in the team.`);
+		throw new HttpExceptions(`You cannot delete the last manager in the team.`);
 	}
+}
+
+const checkIfExistAdminRole = (members, roles) => {
+	let checkingMemberRoles;
+	let checkingMembers = members.map(member => {
+		checkingMemberRoles = member.roles.filter(role => roles.includes(role)).length;
+		if (checkingMemberRoles) {
+			return member.memberid;
+		}
+	});
+
+	const filteredArray = _.compact(checkingMembers).length;
+
+	if (!filteredArray) {
+		throw new HttpExceptions(`The user requested for deletion is not a member of this team.`);
+	}
+
+	return true;
 }
 
 const getAllRolesForApproverUser = (team, teamId, userId) => {
@@ -308,6 +326,7 @@ export default {
 	checkUserAuthorization,
 	checkingUserAuthorization,
 	checkIfLastManager,
+	checkIfExistAdminRole,
 	getAllRolesForApproverUser,
 	listOfRolesAllowed,
 	checkAllowNewRoles,

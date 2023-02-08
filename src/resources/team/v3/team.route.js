@@ -12,6 +12,13 @@ const router = express.Router();
 router.get(
     '/:teamid/members', 
     passport.authenticate('jwt'), 
+    checkAccessToTeamMiddleware([
+        constants.roleMemberTeam.CUST_TEAM_ADMIN, 
+        constants.roleMemberTeam.CUST_DAR_MANAGER,
+        constants.roleMemberTeam.CUST_MD_MANAGER,
+        'editor', 
+        constants.roleMemberTeam.CUST_DAR_REVIEWER
+    ]), 
     (req, res) => TeamController.getTeamMembers(req, res)
 );
 
@@ -21,7 +28,9 @@ router.get(
 router.delete(
     '/:teamid/members/:memberid', 
     passport.authenticate('jwt'), 
-    checkAccessToTeamMiddleware([constants.roleMemberTeam.CUST_TEAM_ADMIN]), 
+    checkAccessToTeamMiddleware([
+        constants.roleMemberTeam.CUST_TEAM_ADMIN
+    ]), 
     (req, res) => TeamController.deleteTeamMember(req, res),
 );
 
@@ -31,7 +40,11 @@ router.delete(
 router.post(
     '/:teamid/members', 
     passport.authenticate('jwt'), 
-    checkAccessToTeamMiddleware([constants.roleMemberTeam.CUST_TEAM_ADMIN]), 
+    checkAccessToTeamMiddleware([
+        constants.roleMemberTeam.CUST_TEAM_ADMIN, 
+        constants.roleMemberTeam.CUST_DAR_MANAGER,
+        constants.roleMemberTeam.CUST_MD_MANAGER
+    ]), 
     (req, res) => TeamController.addTeamMember(req, res),
 );
 
@@ -41,6 +54,11 @@ router.post(
 router.patch(
     '/:teamid/members/:memberid', 
     passport.authenticate('jwt'), 
+    checkAccessToTeamMiddleware([
+        constants.roleMemberTeam.CUST_TEAM_ADMIN, 
+        constants.roleMemberTeam.CUST_DAR_MANAGER,
+        constants.roleMemberTeam.CUST_MD_MANAGER
+    ]), 
     (req, res) => TeamController.updateTeamMember(req, res),
 );
 
