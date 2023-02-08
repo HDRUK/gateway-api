@@ -11,7 +11,6 @@ const checkAccessToTeamMiddleware = (arrayAllowedPermissions) => (req, res, next
     }
 
     const currentUserRoles = teamV3Util.getAllRolesForApproverUser(userTeams, teamId, currentUserId);
-console.log(`currentUserRoles : ${JSON.stringify(currentUserRoles)}`);
     teamV3Util.checkingUserAuthorization(arrayAllowedPermissions, currentUserRoles);
 
     next();
