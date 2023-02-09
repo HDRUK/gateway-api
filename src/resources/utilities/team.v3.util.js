@@ -213,6 +213,10 @@ const checkUserAuthorization = (currUserId, permission, team, users) => {
 };
 
 const checkingUserAuthorization = (arrayRolesAllow, arrayCurrentUserRoles) => {
+	let arrayRolesAllowLength = arrayRolesAllow.length;
+	if (!arrayRolesAllowLength) {
+		return true;
+	}
 	const allow = arrayCurrentUserRoles.filter(element => arrayRolesAllow.includes(element)).length;
 
 	if (!allow) {
