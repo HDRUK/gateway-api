@@ -12,13 +12,7 @@ const router = express.Router();
 router.get(
     '/:teamid/members', 
     passport.authenticate('jwt'), 
-    checkAccessToTeamMiddleware([
-        constants.roleMemberTeam.CUST_TEAM_ADMIN, 
-        constants.roleMemberTeam.CUST_DAR_MANAGER,
-        constants.roleMemberTeam.CUST_MD_MANAGER,
-        'editor', 
-        constants.roleMemberTeam.CUST_DAR_REVIEWER
-    ]), 
+    checkAccessToTeamMiddleware([]), 
     (req, res) => TeamController.getTeamMembers(req, res)
 );
 
