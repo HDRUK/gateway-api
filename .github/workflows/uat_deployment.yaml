@@ -30,7 +30,7 @@ jobs:      # Deployment please don't modify anything here as the infrastructure 
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: release
+          ref: GAT-1887-UAT
 
       - name: Google Auth
         id: auth
