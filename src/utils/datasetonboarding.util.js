@@ -50,7 +50,7 @@ const getUserPermissionsForDataset = async (id, user, publisherId) => {
 		if (!isEmpty(teams.filter(team => team.type === constants.teamTypes.ADMIN))) {
 			isMetadataAdmin = teams
 				.filter(team => team.type === constants.teamTypes.ADMIN)
-				.find(team => team.roles.includes(constants.roleTypes.ADMIN_DATASET));
+				.find(team => team.roles.includes(constants.roleMemberTeam.CUST_MD_MANAGER));
 		}
 
 		if (!isEmpty(isMetadataAdmin)) {
@@ -70,8 +70,8 @@ const getUserPermissionsForDataset = async (id, user, publisherId) => {
 		if (!isEmpty(publisherTeam)) {
 			if (publisherTeam.roles.find(role => role.includes(constants.roleTypes.METADATA_EDITOR))) {
 				return { authorised: true, userType: constants.roleTypes.METADATA_EDITOR };
-			} else if (publisherTeam.roles.find(role => role.includes(constants.roleTypes.MANAGER))) {
-				return { authorised: true, userType: constants.roleTypes.MANAGER };
+			} else if (publisherTeam.roles.find(role => role.includes(constants.roleMemberTeam.CUST_MD_MANAGER))) {
+				return { authorised: true, userType: constants.roleMemberTeam.CUST_MD_MANAGER };
 			}
 		}
 
