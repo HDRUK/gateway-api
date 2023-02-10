@@ -43,7 +43,7 @@ jobs:      # Deployment please don't modify anything here as the infrastructure 
       - name: Read VERSION file
         id: getversion
         # run: echo "::set-output name=version::$(cat Chart.yaml)"
-        run: echo "version=$(cat Chart.yaml) >> $GITHUB_OUTPUT"
+        run: echo "version=$(cat Chart.yaml)" >> $GITHUB_OUTPUT
 
       # - name: Get SHA
       #   id: getsha
