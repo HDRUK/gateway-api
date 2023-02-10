@@ -27,7 +27,7 @@ jobs:
 
       - name: Read VERSION file
         id: getversion
-        run: echo "version=$(cat Chart.yaml) >> $GITHUB_OUTPUT"
+        run: echo "::set-output name=version::$(cat Chart.yaml)"
       # Used for production
       # - uses: "marvinpinto/action-automatic-releases@latest"
       #   with:
@@ -121,7 +121,7 @@ jobs:
 
       - name: Read VERSION file
         id: getversion
-        run: echo "version=$(cat Chart.yaml) >> $GITHUB_OUTPUT"
+        run: echo "::set-output name=version::$(cat Chart.yaml)"
           
       - name: Deploy to Cloud Run
         uses: actions-hub/gcloud@master
