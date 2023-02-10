@@ -6,9 +6,6 @@ on:
       - closed
     branches:
       - 'release'
-  push:
-    branches:
-      - 'GAT-1887-UAT'
 
 
 env:
@@ -30,7 +27,7 @@ jobs:      # Deployment please don't modify anything here as the infrastructure 
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: GAT-1887-UAT
+          ref: release
 
       - name: Google Auth
         id: auth
