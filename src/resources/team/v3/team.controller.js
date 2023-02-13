@@ -62,6 +62,16 @@ class TeamController extends TeamService {
                 constants.roleMemberTeam.CUST_MD_MANAGER
             ]
         );
+            
+        this.sendLogInGoogle({
+            action: 'deleteTeamMember',
+            input: {
+                teamId,
+                memberid: deleteUserId,
+                currentUserId,
+            },
+            output: 'success'
+        });
 
         team.members = updatedMembers;
         try {
@@ -71,22 +81,13 @@ class TeamController extends TeamService {
                 } else {
                     let removedUser = users.find(user => user._id.toString() === deleteUserId.toString());
                     teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERREMOVED, { removedUser }, team, userObj);
-
-                    this.sendLogInGoogle({
-                        action: 'deleteTeamMember',
-                        input: {
-                            teamId,
-                            memberid: deleteUserId,
-                            currentUserId,
-                        },
-                        output: 'success'
-                    });
-
+        
                     return res.status(204).json({
                         success: true,
-                    });
+                    });        
                 }
-            });    
+            });   
+
         } catch (e) {
             throw new HttpExceptions(e.message);
         }
@@ -112,6 +113,16 @@ class TeamController extends TeamService {
             notifications: []
         };
 
+        this.sendLogInGoogle({
+            action: 'addTeamMember',
+            input: {
+                teamId,
+                currentUserId,
+                body: req.body,
+            },
+            output: users,
+        });
+
         team.members = team.members.concat(newMembers);
         team.save(async err => {
             if (err) {
@@ -121,16 +132,6 @@ class TeamController extends TeamService {
                 teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERADDED, { newUsers }, team, req.user);
                 const updatedTeam = await this.getMembersByTeamId(teamId);
                 let users = teamV3Util.formatTeamMembers(updatedTeam);
-
-                this.sendLogInGoogle({
-                    action: 'addTeamMember',
-                    input: {
-                        teamId,
-                        currentUserId,
-                        body: req.body,
-                    },
-                    output: users,
-                });
 
                 return res.status(201).json({
                     success: true,
