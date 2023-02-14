@@ -236,8 +236,6 @@ app.use('/api/v2/questionbank', require('../resources/questionbank/questionbank.
 app.use('/api/v2/data-use-registers', require('../resources/dataUseRegister/dataUseRegister.route'));
 app.use('/api/v1/locations', require('../resources/spatialfilter/SpatialRouter'));
 
-app.use('/api/v1/metadata', require('../resources/metadata/metadata.route'));
-
 initialiseAuthentication(app);
 
 // launch our backend into a port

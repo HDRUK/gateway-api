@@ -25,7 +25,7 @@ router.get('/status', function (req, res, next) {
 		if (err || !user) {
 			return res.json({
 				success: true,
-				data: [{ role: 'Reader', id: null, name: null, loggedIn: false, tempProp: true }],
+				data: [{ role: 'Reader', id: null, name: null, loggedIn: false }],
 			});
 		} else {
 			// 1. Reformat teams array for frontend
