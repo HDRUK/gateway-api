@@ -2,8 +2,10 @@ name: Build and Deploy to Cloud Run
 
 on:
   push:
+    branches:
+      - 'dev'
     paths:
-    - 'Chart.yaml'
+      - 'Chart.yaml'
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}' # TODO: update Google Cloud project id.
