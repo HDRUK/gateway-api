@@ -5,6 +5,7 @@ import teamV3Util from '../../utilities/team.v3.util';
 import constants from '../../utilities/constants.util';
 import HttpExceptions from '../../../exceptions/HttpExceptions';
 import { UserModel } from '../../user/user.model';
+import { TeamModel } from '../team.model';
 import { LoggingService } from '../../../services';
 
 class TeamController extends TeamService {
@@ -196,6 +197,69 @@ class TeamController extends TeamService {
         } catch (e) {
             throw new HttpExceptions(e.message);
         } 
+    }
+
+    async getTeamNotifications(req, res) {
+        const teamId = req.params.teamid;
+        try {
+            const team = await this.getTeamByTeamIdSimple(teamId);
+            if (!team) {
+                throw new HttpExceptions(e.message, 404);
+            }
+
+            const {
+                user: { _id },
+            } = req;
+    
+            let { members } = team;
+            let authorised = false;
+
+            if (members) {
+                authorised = members.some(el => el.memberid.toString() === _id.toString());
+            }
+
+            if (!authorised) {
+                throw new HttpExceptions(`You must provide valid authentication credentials to access this resource.`, 401);
+            }
+    
+            let member = [...members].find(el => el.memberid.toString() === _id.toString());
+
+            const teamNotifications = teamV3Util.formatTeamNotifications(team);
+
+            let notifications = {
+                memberNotifications: member.notifications ? member.notifications : [],
+                teamNotifications,
+            };
+
+            return res.status(200).json(notifications);
+        } catch (err) {
+            process.stdout.write(err.message);
+            throw new HttpExceptions(`An error occurred retrieving team notifications : ${err.message}`, 500);
+        }
+    }
+
+    async updateNotificationMessages(req, res) {
+        const teamId = req.params.teamid;
+        try {
+            const {
+                user: { _id },
+            } = req;
+            await TeamModel.update(
+                { _id: teamId },
+                { $set: { 'members.$[m].notifications.$[].message': '' } },
+                { arrayFilters: [{ 'm.memberid': _id }], multi: true }
+            )
+                .then(resp => {
+                    return res.status(201).json();
+                })
+                .catch(err => {
+                    process.stdout.write(err.message);
+                    throw new HttpExceptions(`An error occurred updating notification messages : ${err.message}`, 500);
+                });
+        } catch (err) {
+            process.stdout.write(err.message);
+            throw new HttpExceptions(`An error occurred updating notification messages : ${err.message}`, 500);
+        }
     }
 
     sendLogInGoogle(message) {

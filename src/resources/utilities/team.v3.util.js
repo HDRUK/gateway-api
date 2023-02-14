@@ -321,6 +321,32 @@ const checkUserRolesByTeam = (arrayCheckRoles, team, userId) => {
 	throw new HttpExceptions(`User not authorized to perform this action`,403);
 }
 
+const formatTeamNotifications = (team) => {
+	let { notifications = [] } = team;
+	if (!isEmpty(notifications)) {
+
+		return [...notifications].reduce((arr, notification) => {
+			let teamNotificationEmails = [];
+			let { notificationType = '', optIn = false, subscribedEmails = [] } = notification;
+
+			if (!isEmpty(subscribedEmails)) teamNotificationEmails = [...subscribedEmails].map(email => ({ value: email, error: '' }));
+			else teamNotificationEmails = [{ value: '', error: '' }];
+
+			let formattedNotification = {
+				notificationType,
+				optIn,
+				subscribedEmails: teamNotificationEmails,
+			};
+
+			arr = [...arr, formattedNotification];
+
+			return arr;
+		}, []);
+	} else {
+		return [];
+	}
+};
+
 export default {
     checkTeamV3Permissions,
     checkIfAdmin,
@@ -335,4 +361,5 @@ export default {
 	listOfRolesAllowed,
 	checkAllowNewRoles,
 	checkUserRolesByTeam,
+	formatTeamNotifications,
 }
