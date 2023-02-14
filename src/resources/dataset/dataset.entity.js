@@ -50,7 +50,7 @@ export default class DatasetClass extends Entity {
 		transformedObject.dataset['@schema'] = {
 			type: `Dataset`,
 			version: `2.0.0`,
-			url: `https://raw.githubusercontent.com/HDRUK/schemata/master/schema/dataset/2.1.0/dataset.schema.json`,
+			url: `https://raw.githubusercontent.com/HDRUK/schemata/master/schema/dataset/latest/dataset.schema.json`,
 		}
 
 		// Return v2 object

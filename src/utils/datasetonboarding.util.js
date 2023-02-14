@@ -758,7 +758,7 @@ const buildMetadataQuality = async (dataset, v2Object, pid) => {
 	let rawdata = fs.readFileSync(__dirname + '/schema.json');
 	schema = JSON.parse(rawdata);
 
-	const ajv = new Ajv({ strict: false, allErrors: false });
+	const ajv = new Ajv({ strict: false, allErrors: true });
 	addFormats(ajv);
 	const validate = ajv.compile(schema);
 	validate(cleanV2Object);
