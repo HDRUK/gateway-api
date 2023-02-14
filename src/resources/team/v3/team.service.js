@@ -26,7 +26,7 @@ export default class TeamService {
 
     async getPermsByUserIdFromTeamPublisher(teamId, userId) {
         try {
-            const team = await TeamModel.findOne({ _id: teamId });    
+            const team = await TeamModel.findOne({ _id: teamId, type: 'publisher' });    
     
             if (!team) {
                 return [];
