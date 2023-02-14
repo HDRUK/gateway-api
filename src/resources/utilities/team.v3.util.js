@@ -4,6 +4,7 @@ import constants from './constants.util';
 import emailGenerator from './emailGenerator.util';
 import notificationBuilder from './notificationBuilder';
 import HttpExceptions from '../../exceptions/HttpExceptions';
+import { TeamModel } from '../team/team.model';
 
 /**
  * Check a users permission levels for a team
@@ -206,7 +207,7 @@ const checkUserAuthorization = (currUserId, permission, team, users) => {
 		authorised = checkIfAdmin(users, [constants.roleTypes.ADMIN_DATASET]);
 	}
 	if (!authorised) {
-		throw new HttpExceptions(`Not enough permissions. User is not authorized to perform this action.`);
+		throw new HttpExceptions(`Not enough permissions. User is not authorized to perform this action.`, 403);
 	}
 
 	return true;
@@ -220,7 +221,7 @@ const checkingUserAuthorization = (arrayRolesAllow, arrayCurrentUserRoles) => {
 	const allow = arrayCurrentUserRoles.filter(element => arrayRolesAllow.includes(element)).length;
 
 	if (!allow) {
-		throw new HttpExceptions(`Not enough permissions. User is not authorized to perform this action.`);
+		throw new HttpExceptions(`Not enough permissions. User is not authorized to perform this action.`, 403);
 	}
 
 	return true;
@@ -321,6 +322,16 @@ const checkUserRolesByTeam = (arrayCheckRoles, team, userId) => {
 	throw new HttpExceptions(`User not authorized to perform this action`,403);
 }
 
+const getUserByUserIdFromTeamId = async (teamId, userId) => {
+	const team = await TeamModel.findOne({ _id: teamId }).populate({
+		path: 'users',
+		populate: {
+			path: 'additionalInfo',
+			select: 'organisation bio showOrganisation showBio news',
+		},
+	});
+};
+
 export default {
     checkTeamV3Permissions,
     checkIfAdmin,
@@ -335,4 +346,5 @@ export default {
 	listOfRolesAllowed,
 	checkAllowNewRoles,
 	checkUserRolesByTeam,
+	getUserByUserIdFromTeamId,
 }
