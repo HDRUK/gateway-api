@@ -10,8 +10,7 @@ const checkAccessToTeamMiddleware = (arrayAllowedPermissions) => (req, res, next
         throw new HttpExceptions('One or more required parameters missing', 400);
     }
 
-    const currentUserRoles = teamV3Util.getAllRolesForApproverUser(userTeams, teamId, currentUserId);
-    teamV3Util.checkingUserAuthorization(arrayAllowedPermissions, currentUserRoles);
+    req.allowPerms = arrayAllowedPermissions;
 
     next();
 }

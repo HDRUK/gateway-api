@@ -24,6 +24,40 @@ export default class TeamService {
         }
     }
 
+    async getPermsByUserIdFromTeamPublisher(teamId, userId) {
+        try {
+            const team = await TeamModel.findOne({ _id: teamId, type: 'publisher' });    
+    
+            if (!team) {
+                return [];
+            }
+
+            let userRoles = team.members.find(member => member.memberid.toString() === userId.toString());
+
+            return userRoles ? userRoles.roles : [];
+        } catch (e) {
+            process.stdout.write(`TeamController.getTeamMembers : ${e.message}\n`);
+            throw new Error(e.message);
+        }
+    }
+
+    async getPermsByUserIdFromTeamAdmin(userId) {
+        try {
+            const team = await TeamModel.findOne({ type: 'admin' });    
+    
+            if (!team) {
+                return [];
+            }
+
+            let userRoles = team.members.find(member => member.memberid.toString() === userId.toString());
+
+            return userRoles ? userRoles.roles : [];
+        } catch (e) {
+            process.stdout.write(`TeamController.getTeamMembers : ${e.message}\n`);
+            throw new Error(e.message);
+        }
+    }
+
     async getTeamByTeamId(teamId) {
         try {
             const team = await TeamModel

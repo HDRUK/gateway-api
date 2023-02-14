@@ -18,8 +18,10 @@ class TeamController extends TeamService {
 
     async getTeamMembers(req, res) {
         const teamId = req.params.teamid;
-        const users = req.user;
         const currentUserId = req.user._id;
+        const allowPerms = req.allowPerms || [];
+
+        await this.checkUserAuth(teamId, currentUserId, allowPerms);
 
         const team = await this.getMembersByTeamId(teamId);
 
@@ -44,6 +46,9 @@ class TeamController extends TeamService {
         const deleteUserId = req.params.memberid;
         const userObj = req.user;
         const currentUserId = req.user._id;
+        const allowPerms = req.allowPerms || [];
+
+        await this.checkUserAuth(teamId, currentUserId, allowPerms);
 
         const team = await this.getTeamByTeamId(teamId);
 
@@ -97,6 +102,9 @@ class TeamController extends TeamService {
         const teamId = req.params.teamid;
         const currentUserId = req.user._id;
         const { memberId, roles = [] } = req.body;
+        const allowPerms = req.allowPerms || [];
+
+        await this.checkUserAuth(teamId, currentUserId, allowPerms);
 
         const team = await this.getTeamByTeamId(teamId);
 
@@ -144,10 +152,11 @@ class TeamController extends TeamService {
     async updateTeamMember(req, res) {
         const teamId = req.params.teamid;
         const updateUserId = req.params.memberid;
-        const userObj = req.user;
-        const userTeams = userObj.teams || [];
         const currentUserId = req.user._id;
         const { roles = [] } = req.body;
+        const allowPerms = req.allowPerms || [];
+
+        const currUserRoles = await this.checkUserAuth(teamId, currentUserId, allowPerms);
 
         const team = await this.getTeamByTeamId(teamId);
 
@@ -158,8 +167,7 @@ class TeamController extends TeamService {
             throw new HttpExceptions(`The member does not exist in the team`, 409);
         }
 
-        const approverUserRoles = teamV3Util.getAllRolesForApproverUser(userTeams, teamId, currentUserId);
-        const approvedRoles = teamV3Util.listOfRolesAllowed(approverUserRoles, constants.rolesAcceptedByRoles);
+        const approvedRoles = teamV3Util.listOfRolesAllowed(currUserRoles, constants.rolesAcceptedByRoles);
         teamV3Util.checkAllowNewRoles(roles, approvedRoles);
 
         team.members.map(member => {
@@ -196,6 +204,16 @@ class TeamController extends TeamService {
         } catch (e) {
             throw new HttpExceptions(e.message);
         } 
+    }
+
+    async checkUserAuth(teamId, userId, allowPerms) {
+        const currUserRolesFromTeamPublisher = await this.getPermsByUserIdFromTeamPublisher(teamId, userId);
+        const currUserRolesFromTeamAdmin = await this.getPermsByUserIdFromTeamAdmin(userId);
+        const currUserRolesExists = [...currUserRolesFromTeamPublisher, ...currUserRolesFromTeamAdmin];
+        const currUserRolesUnique = [...new Set(currUserRolesExists)];
+        teamV3Util.checkingUserAuthorization(allowPerms, currUserRolesUnique);
+
+        return currUserRolesUnique;
     }
 
     sendLogInGoogle(message) {
