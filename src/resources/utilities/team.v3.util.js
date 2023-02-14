@@ -322,16 +322,6 @@ const checkUserRolesByTeam = (arrayCheckRoles, team, userId) => {
 	throw new HttpExceptions(`User not authorized to perform this action`,403);
 }
 
-const getUserByUserIdFromTeamId = async (teamId, userId) => {
-	const team = await TeamModel.findOne({ _id: teamId }).populate({
-		path: 'users',
-		populate: {
-			path: 'additionalInfo',
-			select: 'organisation bio showOrganisation showBio news',
-		},
-	});
-};
-
 export default {
     checkTeamV3Permissions,
     checkIfAdmin,
@@ -346,5 +336,4 @@ export default {
 	listOfRolesAllowed,
 	checkAllowNewRoles,
 	checkUserRolesByTeam,
-	getUserByUserIdFromTeamId,
 }
