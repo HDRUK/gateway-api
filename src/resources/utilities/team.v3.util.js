@@ -322,6 +322,81 @@ const checkUserRolesByTeam = (arrayCheckRoles, team, userId) => {
 	throw new HttpExceptions(`User not authorized to perform this action`,403);
 }
 
+const formatTeamNotifications = (team) => {
+	let { notifications = [] } = team;
+	if (!isEmpty(notifications)) {
+
+		return [...notifications].reduce((arr, notification) => {
+			let teamNotificationEmails = [];
+			let { notificationType = '', optIn = false, subscribedEmails = [] } = notification;
+
+			if (!isEmpty(subscribedEmails)) teamNotificationEmails = [...subscribedEmails].map(email => ({ value: email, error: '' }));
+			else teamNotificationEmails = [{ value: '', error: '' }];
+
+			let formattedNotification = {
+				notificationType,
+				optIn,
+				subscribedEmails: teamNotificationEmails,
+			};
+
+			arr = [...arr, formattedNotification];
+
+			return arr;
+		}, []);
+	} else {
+		return [];
+	}
+};
+
+const findMissingOptIns = (memberNotifications, teamNotifications) => {
+	return [...memberNotifications].reduce((neededOptIns, memberNotification) => {
+		let { notificationType: memberNotificationType, optIn: memberOptIn } = memberNotification;
+		// find the matching notification type within the teams notification
+		let teamNotification =
+			[...teamNotifications].find(teamNotification => teamNotification.notificationType === memberNotificationType) || {};
+		// if the team has the same notification type test
+		if (!isEmpty(teamNotification)) {
+			let { notificationType, optIn: teamOptIn, subscribedEmails } = teamNotification;
+			// if both are turned off build and return new error
+			if ((!teamOptIn && !memberOptIn) || (!memberOptIn && subscribedEmails.length <= 0)) {
+				neededOptIns = {
+					...neededOptIns,
+					[`${notificationType}`]: `Notifications must be enabled for ${constants.teamNotificationTypesHuman[notificationType]}`,
+				};
+			}
+		}
+		return neededOptIns;
+	}, {});
+};
+
+const filterMembersByNoticationTypes = (members, notificationTypes) => {
+	return filter(members, member => {
+		return some(member.notifications, notification => {
+			return includes(notificationTypes, notification.notificationType);
+		});
+	});
+};
+
+const getMemberDetails = (memberIds = [], users = []) => {
+	if (!isEmpty(memberIds) && !isEmpty(users)) {
+		return [...users].reduce(
+			(arr, user) => {
+				let { email, id, _id } = user;
+				if (memberIds.includes(_id.toString())) {
+					arr['memberEmails'].push({ email });
+					arr['userIds'].push({ id });
+				}
+				return {
+					memberEmails: arr['memberEmails'],
+					userIds: arr['userIds'],
+				};
+			},
+			{ memberEmails: [], userIds: [] }
+		);
+	}
+	return [];
+};
+
 export default {
     checkTeamV3Permissions,
     checkIfAdmin,
@@ -336,4 +411,8 @@ export default {
 	listOfRolesAllowed,
 	checkAllowNewRoles,
 	checkUserRolesByTeam,
+	formatTeamNotifications,
+	findMissingOptIns,
+	filterMembersByNoticationTypes,
+	getMemberDetails,
 }
