@@ -1,11 +1,15 @@
 // import { getDBTeamMembers } from './team.database';
 
+import _, { isEmpty, has, difference, includes, isNull } from 'lodash';
 import TeamService from './team.service';
 import teamV3Util from '../../utilities/team.v3.util';
 import constants from '../../utilities/constants.util';
 import HttpExceptions from '../../../exceptions/HttpExceptions';
 import { UserModel } from '../../user/user.model';
+import { TeamModel } from '../team.model';
 import { LoggingService } from '../../../services';
+import emailGenerator from '../../utilities/emailGenerator.util';
+import notificationBuilder from '../../utilities/notificationBuilder';
 
 class TeamController extends TeamService {
     _logger;
@@ -204,6 +208,236 @@ class TeamController extends TeamService {
         } catch (e) {
             throw new HttpExceptions(e.message);
         } 
+    }
+
+    async getTeamNotifications(req, res) {
+        const teamId = req.params.teamid;
+        const currentUserId = req.user._id;
+        const allowPerms = req.allowPerms || [];
+
+        try {
+            await this.checkUserAuth(teamId, currentUserId, allowPerms);
+
+            const team = await this.getTeamByTeamIdSimple(teamId);
+            if (!team) {
+                throw new HttpExceptions(e.message, 404);
+            }
+
+            const {
+                user: { _id },
+            } = req;
+
+            let { members } = team;
+            let authorised = false;
+
+            if (members) {
+                authorised = members.some(el => el.memberid.toString() === _id.toString());
+            }
+
+            if (!authorised) {
+                throw new HttpExceptions(`You must provide valid authentication credentials to access this resource.`, 401);
+            }
+
+            let member = [...members].find(el => el.memberid.toString() === _id.toString());
+
+            const teamNotifications = teamV3Util.formatTeamNotifications(team);
+
+            let notifications = {
+                memberNotifications: member.notifications ? member.notifications : [],
+                teamNotifications,
+            };
+
+            return res.status(200).json(notifications);
+        } catch (err) {
+            process.stdout.write(err.message);
+            throw new HttpExceptions(`An error occurred retrieving team notifications : ${err.message}`, 500);
+        }
+    }
+
+    async updateNotifications(req, res) {
+        const teamId = req.params.teamid;
+        const currentUserId = req.user._id;
+        const allowPerms = req.allowPerms || [];
+        try {
+            await this.checkUserAuth(teamId, currentUserId, allowPerms);
+
+            const team = await this.getTeamByTeamId(teamId);
+
+            const {
+                user: { _id },
+                body: data,
+            } = req;
+    
+            let { members, users, notifications } = team;
+            let authorised = false;
+    
+            if (members) {
+                authorised = [...members].some(el => el.memberid.toString() === _id.toString());
+            }
+
+            if (!authorised) return res.status(401).json({ success: false });
+
+            let member = [...members].find(el => el.memberid.toString() === _id.toString());
+    
+            let isManager = true;
+    
+            let { memberNotifications = [], teamNotifications = [] } = data;
+    
+            let missingOptIns = {};
+    
+            if (!isEmpty(memberNotifications) && !isEmpty(teamNotifications)) {
+                missingOptIns = teamV3Util.findMissingOptIns(memberNotifications, teamNotifications);
+            }
+    
+            if (!isEmpty(missingOptIns)) return res.status(400).json({ success: false, message: missingOptIns });
+    
+            if (isManager) {
+                const optedOutTeamNotifications = Object.values([...teamNotifications]).filter(notification => !notification.optIn) || [];
+                if (!isEmpty(optedOutTeamNotifications)) {
+                    optedOutTeamNotifications.forEach(teamNotification => {
+                        let { notificationType } = teamNotification;
+                        members.forEach(member => {
+                            let { notifications = [] } = member;
+                            if (!isEmpty(notifications)) {
+                                let notificationIndex = notifications.findIndex(n => n.notificationType.toUpperCase() === notificationType.toUpperCase());
+                                if (!notifications[notificationIndex].optIn) {
+                                    notifications[notificationIndex].optIn = true;
+                                    notifications[notificationIndex].message = constants.teamNotificationMessages[notificationType.toUpperCase()];
+                                }
+                            }
+                            member.notifications = notifications;
+                        });
+                    });
+                }
+    
+                if (!isEmpty(notifications)) {
+                    let manager = [...users].find(user => user._id.toString() === member.memberid.toString());
+    
+                    [...notifications].forEach(dbNotification => {
+                        let { notificationType } = dbNotification;
+                        const notificationPayload =
+                            [...teamNotifications].find(n => n.notificationType.toUpperCase() === notificationType.toUpperCase()) || {};
+                        if (!isEmpty(notificationPayload)) {
+                            let { subscribedEmails: dbSubscribedEmails, optIn: dbOptIn } = dbNotification;
+                            let { subscribedEmails: payLoadSubscribedEmails, optIn: payLoadOptIn } = notificationPayload;
+                            const removedEmails = difference([...dbSubscribedEmails], [...payLoadSubscribedEmails]) || [];
+                            const addedEmails = difference([...payLoadSubscribedEmails], [...dbSubscribedEmails]) || [];
+                            const subscribedMembersByType = teamV3Util.filterMembersByNoticationTypes([...members], [notificationType]);
+                            if (!isEmpty(subscribedMembersByType)) {
+                                const memberIds = [...subscribedMembersByType].map(m => m.memberid.toString());
+                                const { memberEmails, userIds } = teamV3Util.getMemberDetails([...memberIds], [...users]);
+                                let html = '';
+                                let options = {
+                                    managerName: `${manager.firstname} ${manager.lastname}`,
+                                    notificationRemoved: false,
+                                    disabled: false,
+                                    header: '',
+                                    emailAddresses: [],
+                                };
+                                if (!isEmpty(removedEmails) || (dbOptIn && !payLoadOptIn)) {
+                                    options = {
+                                        ...options,
+                                        notificationRemoved: true,
+                                        disabled: !payLoadOptIn ? true : false,
+                                        header: `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
+                                            dbOptIn && !payLoadOptIn ? 'disabled all' : 'removed a'
+                                        } generic team email address(es)`,
+                                        emailAddresses: dbOptIn && !payLoadOptIn ? payLoadSubscribedEmails : removedEmails,
+                                        publisherId: team.publisher._id.toString(),
+                                    };
+                                    html = emailGenerator.generateTeamNotificationEmail(options);
+                                    emailGenerator.sendEmail(
+                                        memberEmails,
+                                        constants.hdrukEmail,
+                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
+                                            dbOptIn && !payLoadOptIn ? 'disabled all' : 'removed a'
+                                        } generic team email address(es)`,
+                                        html,
+                                        true
+                                    );
+    
+                                    notificationBuilder.triggerNotificationMessage(
+                                        [...userIds],
+                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
+                                            dbOptIn && !payLoadOptIn ? 'disabled all' : 'removed a'
+                                        } generic team email address(es)`,
+                                        'team',
+                                        team.publisher ? team.publisher.name : 'Undefined'
+                                    );
+                                }
+
+                                if (!isEmpty(addedEmails) || (!dbOptIn && payLoadOptIn)) {
+                                    options = {
+                                        ...options,
+                                        notificationRemoved: false,
+                                        header: `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
+                                            !dbOptIn && payLoadOptIn ? 'enabled all' : 'added a'
+                                        } generic team email address(es)`,
+                                        emailAddresses: payLoadSubscribedEmails,
+                                        publisherId: team.publisher._id.toString(),
+                                    };
+                                    html = emailGenerator.generateTeamNotificationEmail(options);
+                                    emailGenerator.sendEmail(
+                                        memberEmails,
+                                        constants.hdrukEmail,
+                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
+                                            !dbOptIn && payLoadOptIn ? 'enabled all' : 'added a'
+                                        } generic team email address(es)`,
+                                        html,
+                                        true
+                                    );
+    
+                                    notificationBuilder.triggerNotificationMessage(
+                                        [...userIds],
+                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
+                                            !dbOptIn && payLoadOptIn ? 'enabled all' : 'added a'
+                                        } generic team email address(es)`,
+                                        'team',
+                                        team.publisher ? team.publisher.name : 'Undefined'
+                                    );
+                                }
+                            }
+                        }
+                    });
+                }
+                team.notifications = teamNotifications;
+            }
+            member.notifications = memberNotifications;
+            await team.save();
+            return res.status(201).json(team);
+        } catch (err) {
+            process.stdout.write(err.message);
+            throw new HttpExceptions(`An error occurred updating notification messages : ${err.message}`, 500);
+        }
+    }
+
+    async updateNotificationMessages(req, res) {
+        const teamId = req.params.teamid;
+        const currentUserId = req.user._id;
+        const allowPerms = req.allowPerms || [];
+
+        try {
+            await this.checkUserAuth(teamId, currentUserId, allowPerms);
+
+            const {
+                user: { _id },
+            } = req;
+            await TeamModel.update(
+                { _id: teamId },
+                { $set: { 'members.$[m].notifications.$[].message': '' } },
+                { arrayFilters: [{ 'm.memberid': _id }], multi: true }
+            )
+                .then(resp => {
+                    return res.status(201).json();
+                })
+                .catch(err => {
+                    process.stdout.write(err.message);
+                    throw new HttpExceptions(`An error occurred updating notification messages : ${err.message}`, 500);
+                });
+        } catch (err) {
+            process.stdout.write(err.message);
+            throw new HttpExceptions(`An error occurred updating notification messages : ${err.message}`, 500);
+        }
     }
 
     async checkUserAuth(teamId, userId, allowPerms) {
