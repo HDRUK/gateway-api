@@ -4,6 +4,7 @@ import teamController from '../team/team.controller';
 import Controller from '../base/controller';
 import { logger } from '../utilities/logger';
 import teamV3Util from '../utilities/team.v3.util';
+import HttpExceptions from '../../exceptions/HttpExceptions';
 
 const logCategory = 'Publisher';
 
