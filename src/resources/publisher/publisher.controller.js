@@ -69,10 +69,8 @@ export default class PublisherController extends Controller {
 				throw new HttpExceptions(`Not Found`, 404);
 			}
 	
-			teamV3Util.checkUserRolesByTeam([], publisher.team, requestingUserId);
-
 			//Check if current user is a manager
-			const isManager = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], publisher.team, requestingUserId);
+			const isManager = teamV3Util.checkUserRolesByTeam([], publisher.team, requestingUserId);
 
 			// 4. Find all applications for current team member view
 			const applications = await this.publisherService.getPublisherDataAccessRequests(id, requestingUserId, isManager).catch(err => {
