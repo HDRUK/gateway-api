@@ -37,7 +37,14 @@ jobs:      # Deployment please don't modify anything here as the infrastructure 
       - name: Read VERSION file
         id: getversion
         run: echo "version=$(cat Chart.yaml)" >> $GITHUB_OUTPUT
-          
+
+      - name: Create the release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: 'GAT Live Release - '${{ steps.getversion.outputs.version }}
+          prerelease: false  
+                    
       - name: Deploy to Cloud Run
         uses: actions-hub/gcloud@master
         id: deploy
