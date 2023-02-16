@@ -68,9 +68,7 @@ const getUserPermissionsForDataset = async (id, user, publisherId) => {
 		}
 
 		if (!isEmpty(publisherTeam)) {
-			if (publisherTeam.roles.find(role => role.includes(constants.roleTypes.METADATA_EDITOR))) {
-				return { authorised: true, userType: constants.roleTypes.METADATA_EDITOR };
-			} else if (publisherTeam.roles.find(role => role.includes(constants.roleMemberTeam.CUST_MD_MANAGER))) {
+			if (publisherTeam.roles.find(role => role.includes(constants.roleMemberTeam.CUST_MD_MANAGER))) {
 				return { authorised: true, userType: constants.roleMemberTeam.CUST_MD_MANAGER };
 			}
 		}
