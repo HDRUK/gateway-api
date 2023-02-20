@@ -360,6 +360,7 @@ const _rolesAcceptedByRoles = {
 		'custodian.team.admin',
 		'custodian.metadata.manager',
 		'metadata_editor',
+		'custodian.dar.manager',
 		'manager',
 		'reviewer',
 	],
