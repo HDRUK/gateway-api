@@ -370,8 +370,8 @@ const _rolesAcceptedByRoles = {
 	'metadata_editor': [
 		'metadata_editor',
 	],
-	'manager': [
-		'manager',
+	'custodian.dar.manager': [
+		'custodian.dar.manager',
 		'reviewer',
 	],
 	'reviewer': [
