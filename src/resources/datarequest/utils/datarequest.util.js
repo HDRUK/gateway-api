@@ -35,31 +35,33 @@ const injectQuestionActions = (jsonSchema, userType, applicationStatus, role = '
 const getUserPermissionsForApplication = (application, userId, _id) => {
 
 	let authorised = false,
-		userType = '';
+		userType = '',
+		isTeamMember = false;
 	
 	if (!application || !userId || !_id) {
 		throw new HttpExceptions(`User not authorized to perform this action`,403);
 	}
 
 	if (has(application, 'datasets') && has(application.datasets[0], 'publisher.team')) {
-		teamV3Util.checkUserRolesByTeam(
+		isTeamMember = teamV3Util.checkUserRolesByTeam(
 			[constants.roleMemberTeam.CUST_DAR_MANAGER], 
 			application.datasets[0].publisher.team, 
 			_id
 		);
 	} else if (has(application, 'publisherObj.team')) {
-		teamV3Util.checkUserRolesByTeam(
+		isTeamMember = teamV3Util.checkUserRolesByTeam(
 			[constants.roleMemberTeam.CUST_DAR_MANAGER], 
 			application.publisherObj.team, 
 			_id
 		);
 	}
 
-	if ((application.applicationStatus !== constants.applicationStatuses.INPROGRESS || application.isShared)) {
+	if (isTeamMember && (application.applicationStatus !== constants.applicationStatuses.INPROGRESS || application.isShared)) {
 		userType = constants.userTypes.CUSTODIAN;
 		authorised = true;
 	}
 
+	// If user is not authenticated as a custodian, check if they are an author or the main applicant
 	if (application.applicationStatus === constants.applicationStatuses.INPROGRESS || isEmpty(userType)) {
 		if (application.userId === userId || (application.authorIds && application.authorIds.includes(userId))) {
 			userType = constants.userTypes.APPLICANT;
@@ -70,7 +72,7 @@ const getUserPermissionsForApplication = (application, userId, _id) => {
 	if (authorised) {
 		return userType;
 	}
-	
+
 	throw new HttpExceptions(`User not authorized to perform this action`, 403);
 };
 
