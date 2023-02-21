@@ -62,7 +62,7 @@ jobs:
         with:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
-          channel: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL'
+          channel: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
           message: Building {{ env.GITHUB_REF_NAME }} branch
         if: always()
       # END - Docker auth and build
@@ -146,7 +146,7 @@ jobs:
         with:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
-          channel: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL'
+          channel: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
           message: Deploying {{ env.GITHUB_REF_NAME }} branch
         if: always()
       # If required, use the Cloud Run url output in later steps
