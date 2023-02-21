@@ -10,6 +10,8 @@ on:
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}' # TODO: update Google Cloud project id.
   GAR_LOCATION: '${{ secrets.GAR_LOCATION }}' # TODO: update Artifact Registry location
+  SLACK_WEBHOOK_URL: '${{ secrets.SLACK_WEBHOOK_URL}}'
+  SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
 
 jobs:
   build:
@@ -62,7 +64,7 @@ jobs:
         with:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
-          channel: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
+          channel: ${{ env.SLACK_CHANNEL }}
           message: Building {{ env.GITHUB_REF_NAME }} branch
         if: always()
       # END - Docker auth and build
@@ -146,7 +148,7 @@ jobs:
         with:
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
-          channel: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
+          channel: ${{ env.SLACK_CHANNEL }}
           message: Deploying {{ env.GITHUB_REF_NAME }} branch
         if: always()
       # If required, use the Cloud Run url output in later steps
