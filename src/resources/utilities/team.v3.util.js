@@ -319,7 +319,7 @@ const checkUserRolesByTeam = (arrayCheckRoles, team, userId) => {
 		}
 	}
 
-	throw new HttpExceptions(`User not authorized to perform this action`,403);
+	return false;
 }
 
 const formatTeamNotifications = (team) => {

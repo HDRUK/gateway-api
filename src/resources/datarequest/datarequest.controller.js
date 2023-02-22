@@ -596,7 +596,10 @@ export default class DataRequestController extends Controller {
 				// Only a custodian manager can set the final status of an application
 				const { team = {} } = accessRecord.publisherObj.toObject();
 				if (!_.isEmpty(team)) {
-					teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team, requestingUserObjectId);
+					let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team, requestingUserObjectId);
+					if (!authorised) {
+						throw new HttpExceptions(`User not authorized to perform this action`,403);
+					}
 				}
 
 				// Extract params from body
@@ -1300,7 +1303,10 @@ export default class DataRequestController extends Controller {
 			// 3. Check permissions of user is manager of associated team
 			if (_.has(accessRecord.toObject(), 'publisherObj.team')) {
 				let { team } = accessRecord.publisherObj;
-				teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team.toObject(), requestingUserObjectId);
+				let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team.toObject(), requestingUserObjectId);
+				if (!authorised) {
+					throw new HttpExceptions(`User not authorized to perform this action`,403);
+				}
 			}
 
 			// 5. Check publisher allows workflows
@@ -1375,7 +1381,10 @@ export default class DataRequestController extends Controller {
 			// 3. Check permissions of user is manager of associated team
 			if (_.has(accessRecord.toObject(), 'publisherObj.team')) {
 				const { team } = accessRecord.publisherObj;
-				teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team.toObject(), requestingUserObjectId);
+				let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team.toObject(), requestingUserObjectId);
+				if (!authorised) {
+					throw new HttpExceptions(`User not authorized to perform this action`,403);
+				}
 			}
 
 			// 5. Check application is in review state
@@ -1484,7 +1493,10 @@ export default class DataRequestController extends Controller {
 			// 3. Check permissions of user is reviewer of associated team
 			if (_.has(accessRecord.toObject(), 'publisherObj.team')) {
 				const { team } = accessRecord.publisherObj;
-				teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_REVIEWER], team.toObject(), requestingUserObjectId);
+				let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_REVIEWER], team.toObject(), requestingUserObjectId);
+				if (!authorised) {
+					throw new HttpExceptions(`User not authorized to perform this action`,403);
+				}
 			}
 
 			// 5. Check application is in-review
@@ -1623,7 +1635,10 @@ export default class DataRequestController extends Controller {
 			// 3. Check permissions of user is reviewer of associated team
 			if (_.has(accessRecord.toObject(), 'publisherObj.team')) {
 				const { team } = accessRecord.publisherObj;
-				teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team.toObject(), requestingUserObjectId);
+				let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team.toObject(), requestingUserObjectId);
+				if (!authorised) {
+					throw new HttpExceptions(`User not authorized to perform this action`,403);
+				}
 			}
 
 			// 5. Check application is in submitted state

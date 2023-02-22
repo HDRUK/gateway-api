@@ -32,7 +32,7 @@ describe('checkUserRolesByTeam test', () => {
         try {
             teamV3Util.checkUserRolesByTeam(mockArrayCheckRolesManagerRole, mockTeam, mockUserId);
         } catch (error) {
-            expect(error).toBeInstanceOf(HttpExceptions);
+            expect(response).toBe(false);
         }
     });
 });

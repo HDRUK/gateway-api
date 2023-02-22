@@ -46,7 +46,10 @@ export default class WorkflowController extends Controller {
 			}
 			// 2. Check the requesting user is a manager of the custodian team
 			let { _id: userId } = req.user;
-			teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], workflow.publisher.team.toObject(), userId);
+			let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], workflow.publisher.team.toObject(), userId);
+			if (!authorised) {
+				throw new HttpExceptions(`User not authorized to perform this action`,403);
+			}
 
 			// 4. Build workflow response
 			let { active, _id, id, workflowName, version, steps, applications = [] } = workflow.toObject();
@@ -102,7 +105,10 @@ export default class WorkflowController extends Controller {
 			if (!publisherObj) {
 				throw new HttpExceptions(`You must supply a valid publisher to create the workflow against`, 400);
 			}
-			teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], publisherObj.team.toObject(), userId);
+			let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], publisherObj.team.toObject(), userId);
+			if (!authorised) {
+				throw new HttpExceptions(`User not authorized to perform this action`,403);
+			}
 
 			// 5. Create new workflow model
 			const id = helper.generatedNumericId();
@@ -162,7 +168,10 @@ export default class WorkflowController extends Controller {
 			if (!workflow) {
 				throw new HttpExceptions(`Workflow not Found`, 404);
 			}
-			teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], workflow.publisher.team.toObject(), userId);
+			let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], workflow.publisher.team.toObject(), userId);
+			if (!authorised) {
+				throw new HttpExceptions(`User not authorized to perform this action`,403);
+			}
 
 			// 4. Ensure there are no in-review DARs with this workflow
 			const applications = await DataRequestModel.countDocuments({
@@ -249,7 +258,10 @@ export default class WorkflowController extends Controller {
 			if (!workflow) {
 				throw new HttpExceptions(`Workflow not Found`, 404);
 			}
-			teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], workflow.publisher.team.toObject(), userId);
+			let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], workflow.publisher.team.toObject(), userId);
+			if (!authorised) {
+				throw new HttpExceptions(`User not authorized to perform this action`,403);
+			}
 
 			// 4. Ensure there are no in-review DARs with this workflow
 			const applications = await DataRequestModel.countDocuments({
