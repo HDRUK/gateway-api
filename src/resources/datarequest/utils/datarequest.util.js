@@ -43,17 +43,23 @@ const getUserPermissionsForApplication = (application, userId, _id) => {
 	}
 
 	if (has(application, 'datasets') && has(application.datasets[0], 'publisher.team')) {
-		isTeamMember = teamV3Util.checkUserRolesByTeam(
+		let authorised = isTeamMember = teamV3Util.checkUserRolesByTeam(
 			[constants.roleMemberTeam.CUST_DAR_MANAGER], 
 			application.datasets[0].publisher.team, 
 			_id
 		);
+		if (!authorised) {
+			throw new HttpExceptions(`User not authorized to perform this action`,403);
+		}
 	} else if (has(application, 'publisherObj.team')) {
-		isTeamMember = teamV3Util.checkUserRolesByTeam(
+		let authorised = isTeamMember = teamV3Util.checkUserRolesByTeam(
 			[constants.roleMemberTeam.CUST_DAR_MANAGER], 
 			application.publisherObj.team, 
 			_id
 		);
+		if (!authorised) {
+			throw new HttpExceptions(`User not authorized to perform this action`,403);
+		}
 	}
 
 	if (isTeamMember && (application.applicationStatus !== constants.applicationStatuses.INPROGRESS || application.isShared)) {

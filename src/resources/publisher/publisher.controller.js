@@ -127,7 +127,10 @@ export default class PublisherController extends Controller {
 				publisher: { team },
 			} = workflows[0];
 
-			teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team, requestingUserId);
+			let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team, requestingUserId);
+			if (!authorised) {
+				throw new HttpExceptions(`User not authorized to perform this action`,403);
+			}
 
 			return res.status(200).json({ success: true, workflows });
 		} catch (err) {
