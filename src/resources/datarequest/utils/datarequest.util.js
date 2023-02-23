@@ -42,15 +42,16 @@ const getUserPermissionsForApplication = (application, userId, _id) => {
 		throw new HttpExceptions(`User not authorized to perform this action`,403);
 	}
 
+	// constants.roleMemberTeam.CUST_DAR_MANAGER 
 	if (has(application, 'datasets') && has(application.datasets[0], 'publisher.team')) {
 		isTeamMember = isTeamMember = teamV3Util.checkUserRolesByTeam(
-			[constants.roleMemberTeam.CUST_DAR_MANAGER], 
+			[], 
 			application.datasets[0].publisher.team, 
 			_id
 		);
 	} else if (has(application, 'publisherObj.team')) {
 		isTeamMember = isTeamMember = teamV3Util.checkUserRolesByTeam(
-			[constants.roleMemberTeam.CUST_DAR_MANAGER], 
+			[], 
 			application.publisherObj.team, 
 			_id
 		);
