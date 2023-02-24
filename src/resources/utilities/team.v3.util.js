@@ -312,7 +312,11 @@ const checkUserRolesByTeam = (arrayCheckRoles, team, userId) => {
 			}
 
 			const check = roles.filter(element => arrayCheckRoles.includes(element)).length;
-			if (check || arrayCheckRoles.length === 0 || roles.includes(constants.roleMemberTeam.CUST_DAR_MANAGER)) {
+			if (check) {
+				return true;
+			}
+
+			if (roles.includes(constants.roleMemberTeam.CUST_DAR_MANAGER)) {
 				return true;
 			}
 			
