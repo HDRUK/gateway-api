@@ -11,6 +11,8 @@ on:
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}' # TODO: update Google Cloud project id.
   GAR_LOCATION: '${{ secrets.GAR_LOCATION }}' # TODO: update Artifact Registry location
+  SLACK_WEBHOOK_URL: '${{ secrets.SLACK_WEBHOOK_URL}}'
+  SLACK_CHANNEL: '${{ secrets.GITHUBACTIONS_SLACK_CHANNEL }}'
 
 jobs:      # Deployment please don't modify anything here as the infrastructure is controlled by terraform any changes here please agree with chris and reuben.
   # catchsha:
@@ -61,3 +63,13 @@ jobs:      # Deployment please don't modify anything here as the infrastructure 
           # args: run services update '${{ env.SERVICE_NAME }}' --image='${{ env.GAR_LOCATION }}'-docker.pkg.dev/'${{ env.DEV_PROJECT_ID }}'/'${{ env.GAR_NAME }}'/${{ steps.getversion.outputs.version }}:{{ steps.catchsha.outputs.GITHUB_SHA}} --region='${{ env.SERVICE_REGION }}' --project='${{ env.PROJECT_ID }}' 
       # Functionality not supported by Github Actions one to ccheck back agin in the future
           args: run services update '${{ env.SERVICE_NAME }}' --image='${{ env.GAR_LOCATION }}'-docker.pkg.dev/'${{ env.DEV_PROJECT_ID }}'/'${{ env.GAR_NAME }}'/${{ steps.getversion.outputs.version }}:latest --region='${{ env.SERVICE_REGION }}' --project='${{ env.PROJECT_ID }}' 
+          
+      - name: Deploy Notification
+        id: deploynotificationsent
+        uses: act10ns/slack@v1
+        with:
+          status: ${{ job.status }}
+          steps: ${{ toJson(steps) }}
+          channel: ${{ env.SLACK_CHANNEL }}
+          message: Deploying {{ env.GITHUB_REF_NAME }} branch
+        if: always()
