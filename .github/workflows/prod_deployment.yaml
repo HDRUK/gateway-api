@@ -44,7 +44,7 @@ jobs:      # Deployment please don't modify anything here as the infrastructure 
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: v4.0.0
+          automatic_release_tag: '${{ steps.getversion.outputs.version }}'
           prerelease: false  
                     
       - name: Deploy to Cloud Run
