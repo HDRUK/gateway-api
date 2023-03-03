@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - 'dev'
-    paths:
-      - 'Chart.yaml'
+#    paths:
+#      - 'Chart.yaml'
 
 env:
   PROJECT_ID: '${{ secrets.PROJECT_ID }}' # TODO: update Google Cloud project id.
