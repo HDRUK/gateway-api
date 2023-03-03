@@ -157,8 +157,16 @@ class TeamController extends TeamService {
         const teamId = req.params.teamid;
         const updateUserId = req.params.memberid;
         const currentUserId = req.user._id;
-        const { roles = [] } = req.body;
+        const role = req.body;
         const allowPerms = req.allowPerms || [];
+        let tempRole = ''; 
+
+        if (Object.keys(role).length === 0) {
+            throw new HttpExceptions(`No Roles`, 400);
+        }
+
+        let tempKeyRole = Object.keys(role)[0] || '';
+        let tempValueRole = Object.values(role)[0] || '';
 
         const currUserRoles = await this.checkUserAuth(teamId, currentUserId, allowPerms);
 
@@ -172,13 +180,27 @@ class TeamController extends TeamService {
         }
 
         const approvedRoles = teamV3Util.listOfRolesAllowed(currUserRoles, constants.rolesAcceptedByRoles);
-        teamV3Util.checkAllowNewRoles(roles, approvedRoles);
-
+        teamV3Util.checkAllowNewRoles([tempKeyRole], approvedRoles);
         team.members.map(member => {
             if (member.memberid.toString() === updateUserId.toString()) {
-                member.roles = roles;
+                tempRole = member.roles;
+                if (tempValueRole) {
+                    tempRole.push(tempKeyRole);
+                } else {
+                    tempRole = tempRole.filter(item => item !== tempKeyRole);
+                }
+                member.roles = [...new Set(tempRole)];
             }
         });
+
+        teamV3Util.checkIfExistAdminRole(
+            team.members,
+            [
+                constants.roleMemberTeam.CUST_TEAM_ADMIN,
+                constants.roleMemberTeam.CUST_DAR_MANAGER,
+                constants.roleMemberTeam.CUST_MD_MANAGER
+            ]
+        );
 
         try {
             team.save(async err => {

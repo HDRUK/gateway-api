@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:18.14.2
 
 ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/application_default_credentials.json"
 
