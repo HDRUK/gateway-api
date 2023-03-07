@@ -25,11 +25,21 @@ class LoginLinkedinController extends Controller
         $this->jwt = $jwt;
     }
 
+    /**
+     * redirect to google authorization page
+     * 
+     * @return mixed
+     */
     public function linkedin()
     {
         return Socialite::driver(Config::get('constants.provider.linkedin'))->stateless()->redirect();
     }
 
+    /**
+     * redirect to front end page with token
+     * 
+     * @return mixed
+     */
     public function linkedinRedirect()
     {
         try {
@@ -85,8 +95,12 @@ class LoginLinkedinController extends Controller
 
     /**
      * update user in database
+     * 
+     * @param User $user
+     * @param array $data
+     * @return User
      */
-    private function updateUser($user, $data)
+    private function updateUser(User $user, array $data): User
     {
         $user->providerid = $data['providerid'];
         $user->name = $data['name'];
@@ -102,17 +116,20 @@ class LoginLinkedinController extends Controller
 
     /**
      * save user in database
+     * 
+     * @param array $value
+     * @return User
      */
-    private function saveUser($data)
+    private function saveUser(array $value): User
     {
         $user = new User();
-        $user->providerid = $data['providerid'];
-        $user->name = $data['name'];
-        $user->firstname = $data['firstname'];
-        $user->lastname = $data['lastname'];
-        $user->email = $data['email'];
-        $user->provider = $data['provider'];
-        $user->password = $data['password'];
+        $user->providerid = $value['providerid'];
+        $user->name = $value['name'];
+        $user->firstname = $value['firstname'];
+        $user->lastname = $value['lastname'];
+        $user->email = $value['email'];
+        $user->provider = $value['provider'];
+        $user->password = $value['password'];
         $user->save();
 
         return $user;
@@ -120,8 +137,11 @@ class LoginLinkedinController extends Controller
 
     /**
      * create JWT token
+     * 
+     * @param User $user
+     * @return string
      */
-    private function createJwt($user)
+    private function createJwt($user): string
     {
         $currentTime = Carbon::now();
 
