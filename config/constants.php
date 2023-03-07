@@ -5,5 +5,6 @@ return [
         'service' => 'service',
         'internal' => 'internal',
         'google' => 'google',
+        'linkedin' => 'linkedin',
     ],
 ];
