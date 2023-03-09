@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Exception;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -66,9 +67,7 @@ class SocialLoginController extends Controller
                 break;
             
             default:
-                throw new Exception("Error Processing Request", 1);
-            
-                break;
+                throw new Exception("Error Processing Request Login");
         }
 
         $user = User::where([
