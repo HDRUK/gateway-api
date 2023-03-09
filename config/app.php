@@ -196,6 +196,8 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+
+        // \SocialiteProviders\Manager\ServiceProvider::class,
     ],
 
     /*
