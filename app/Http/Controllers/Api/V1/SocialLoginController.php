@@ -38,7 +38,7 @@ class SocialLoginController extends Controller
      */
     public function login(Request $request, $provider): mixed
     {
-        return Socialite::driver($provider)->stateless()->redirect();
+        return Socialite::driver($provider)->redirect();
     }
 
     /**
@@ -50,7 +50,7 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        $socialUser = Socialite::driver($provider)->stateless()->user();
+        $socialUser = Socialite::driver($provider)->user();
 
         $socialUserDetails = [];
         switch ($provider) {
