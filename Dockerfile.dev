@@ -2,6 +2,10 @@ FROM php:8.2.3-fpm
 
 ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/application_default_credentials.json"
 
+WORKDIR /var/www
+
+COPY composer.lock composer.json /var/www/
+
 RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
@@ -24,22 +28,24 @@ RUN apt-get update && apt-get install -y \
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin --filename=composer
 
-COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
+# COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
 # COPY ./init/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
-# COPY ./init/php.development.ini /usr/local/etc/php/php.ini
+COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 
 # RUN echo "pm.status_path = /status" >> /usr/local/etc/php/php.ini
 # RUN echo "ping.path = /ping" >> /usr/local/etc/php/php.ini
 
-WORKDIR /app
+COPY . /var/www
 
-COPY . .
-
-RUN composer install \
-    && chmod -R 777 storage bootstrap/cache \
+RUN chmod -R 777 storage bootstrap/cache \
     && php artisan optimize:clear \
     && php artisan optimize
+
+# RUN composer install \
+#     && chmod -R 777 storage bootstrap/cache \
+#     && php artisan optimize:clear \
+#     && php artisan optimize
 # php artisan key:generate
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*

@@ -6,5 +6,6 @@ return [
         'internal' => 'internal',
         'google' => 'google',
         'linkedin' => 'linkedin',
+        'azure' => 'azure',
     ],
 ];
