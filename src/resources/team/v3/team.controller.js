@@ -132,7 +132,7 @@ class TeamController extends TeamService {
                 currentUserId,
                 body: req.body,
             },
-            output: users,
+            output: newMembers,
         });
 
         team.members = team.members.concat(newMembers);
