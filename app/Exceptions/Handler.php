@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use Config;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\Request;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -43,6 +45,30 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
+        $this->renderable(function (Throwable $e, Request $request) {
+            if ($request->wantsJson()) {
+                $response = [
+                    'message' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                ];
+
+                if (Config::get('app.debug')) {
+                    $response['details'] = [
+                        'exception' => get_class($e),
+                        'trace' => $e->getTrace(),
+                    ];
+                }
+
+                $statusCode = 500;
+                if ($e->getCode()) {
+                    $statusCode = $e->getCode();
+                }
+
+                return response()->json($response, $statusCode);
+
+            }
+        });
+
         $this->reportable(function (Throwable $e) {
             //
         });

@@ -50,41 +50,43 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        $socialUser = Socialite::driver($provider)->user();
+        try {
+            $socialUser = Socialite::driver($provider)->user();
 
-        $socialUserDetails = [];
-        switch ($provider) {
-            case 'google':
-                $socialUserDetails = $this->googleResponse($socialUser, $provider);
-                break;
+            $socialUserDetails = [];
+            switch ($provider) {
+                case 'google':
+                    $socialUserDetails = $this->googleResponse($socialUser, $provider);
+                    break;
 
-            case 'linkedin':
-                $socialUserDetails = $this->linkedinResponse($socialUser, $provider);
-                break;
+                case 'linkedin':
+                    $socialUserDetails = $this->linkedinResponse($socialUser, $provider);
+                    break;
 
-            case 'azure':
-                $socialUserDetails = $this->azureResponse($socialUser, $provider);
-                break;
-            
-            default:
-                throw new Exception("Error Processing Request Login");
+                case 'azure':
+                    $socialUserDetails = $this->azureResponse($socialUser, $provider);
+                    break;
+            }
+
+            $user = User::where([
+                'email' => $socialUser->getEmail(),
+                'provider' => $provider,
+            ])->first();
+
+            if (!$user) {
+                $user = $this->saveUser($socialUserDetails);
+            } else {
+                $user = $this->updateUser($user, $socialUserDetails);
+            }
+
+            $jwt = $this->createJwt($user);
+
+            $cookie = Cookie::make('token', $jwt);
+            return redirect(env('GATEWAY_URL'), 302)->withCookie($cookie);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        $user = User::where([
-            'email' => $socialUser->getEmail(),
-            'provider' => $provider,
-        ])->first();
-
-        if (!$user) {
-            $user = $this->saveUser($socialUserDetails);
-        } else {
-            $user = $this->updateUser($user, $socialUserDetails);
-        }
-
-        $jwt = $this->createJwt($user);
-
-        $cookie = Cookie::make('token', $jwt);
-        return redirect(env('GATEWAY_URL'), 302)->withCookie($cookie);
     }
 
     /**
