@@ -2,16 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
 use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use App\Http\Requests\AuthRequest;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\JwtController;
-use Config;
 
 class AuthController extends Controller
 {

@@ -69,6 +69,7 @@ Content-Type: application/json
 
 ```php
 POST /api/v1/auth HTTP/1.1
+Accept: application/json
 Content-Type: application/json
 
 {
@@ -84,8 +85,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOlwvX
 Cookie: sessionId=s%3AHfJi8k9SMiyRHI5YXO_hkBeeyIG7AoW6.jMV%2BFjZKCOGPCW8IqZc%2F%2B8nvYULQ7Wq%2BbmusGfhKzcE
 ```
 
-### Login - google auth
+### Login - google / linkedin / azure auth
 
 ```php
-GET [host]/api/v1/auth/google
+GET [host]/api/v1/auth/{provider}
+```
+where provider can take values like:
+
+```php
+google or linkedin or azure
 ```
