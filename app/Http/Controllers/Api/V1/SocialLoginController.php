@@ -69,7 +69,7 @@ class SocialLoginController extends Controller
             }
 
             $user = User::where([
-                'email' => $socialUser->getEmail(),
+                'email' => $socialUserDetails['email'],
                 'provider' => $provider,
             ])->first();
 
