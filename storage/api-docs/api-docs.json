@@ -1,0 +1,21 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "HDRUK Gateway API",
+        "version": "2.0.0"
+    },
+    "paths": {
+        "/status": {
+            "get": {
+                "summary": "Returns the API availability status",
+                "description": "Used to ping the API. To test for availability",
+                "operationId": "35ed67e35317de19734bbfc5bc73e0ce",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        }
+    }
+}

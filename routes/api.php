@@ -17,3 +17,13 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+// stop all all other routes
+Route::any('{path}', function() {
+    $response = [
+        'message' => 'Resource not found',
+    ];
+
+    return response()->json($response)
+        ->setStatusCode(404);
+});
