@@ -138,12 +138,13 @@ class SocialLoginController extends Controller
      */
     private function azureResponse(object $data, string $provider): array
     {
+        $emailAddress = $data['mail'] ? $data['mail'] : $data->getEmail();
         return [
             'providerid' => $data->getId(),
             'name' => $data->getName(),
             'firstname' => $data->offsetGet('givenName'),
             'lastname' => $data->offsetGet('surname'),
-            'email' => $data->getEmail(),
+            'email' => $emailAddress,
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
