@@ -4,7 +4,8 @@ import constants from '../../utilities/constants.util';
 import datarequestUtil from '../utils/datarequest.util';
 import teamController from '../../team/team.controller';
 import Controller from '../../base/controller';
-import { logger } from '../../utilities/logger';
+import HttpExceptions from '../../../exceptions/HttpExceptions';
+import teamV3Util from '../../utilities/team.v3.util';
 
 const logCategory = 'Data Access Request';
 
@@ -25,6 +26,7 @@ export default class AmendmentController extends Controller {
 			const requestingUserId = parseInt(req.user.id);
 			const requestingUserObjectId = req.user._id;
 			let { questionId, questionSetId, mode, reason, answer } = req.body;
+
 			if (_.isEmpty(questionId) || _.isEmpty(questionSetId)) {
 				return res.status(400).json({
 					success: false,
@@ -35,7 +37,7 @@ export default class AmendmentController extends Controller {
 			// 2. Retrieve DAR from database
 			const accessRecord = await this.dataRequestService.getApplicationWithTeamById(id);
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 3. If application is not in review or submitted, amendments cannot be made
@@ -43,18 +45,16 @@ export default class AmendmentController extends Controller {
 				accessRecord.applicationStatus !== constants.applicationStatuses.SUBMITTED &&
 				accessRecord.applicationStatus !== constants.applicationStatuses.INREVIEW
 			) {
-				return res.status(400).json({
-					success: false,
-					message: 'This application is not within a reviewable state and amendments cannot be made or requested at this time.',
-				});
+				throw new HttpExceptions(`This application is not within a reviewable state and amendments cannot be made or requested at this time.`, 400);
 			}
 
 			// 4. Get the requesting users permission levels
-			let { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			let userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord.toObject(),
 				requestingUserId,
 				requestingUserObjectId
 			);
+			let authorised = true;
 
 			// 5. Get the current iteration amendment party
 			let validParty = false;
@@ -92,22 +92,18 @@ export default class AmendmentController extends Controller {
 
 			// 7. Return unauthorised message if the user did not have sufficient access for action requested
 			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+				throw new HttpExceptions(`Unauthorised`, 401);
 			}
 
 			// 8. Return bad request if the opposite party is editing the application
 			if (!validParty) {
-				return res.status(400).json({
-					status: 'failure',
-					message: 'You cannot make or request amendments to this application as the opposite party are currently responsible for it.',
-				});
+				throw new HttpExceptions(`You cannot make or request amendments to this application as the opposite party are currently responsible for it.`, 400);
 			}
 
 			// 9. Save changes to database
 			await accessRecord.save(async err => {
 				if (err) {
-					console.error(err.message);
-					return res.status(500).json({ status: 'error', message: err.message });
+					throw new HttpExceptions(err.message, 500);
 				} else {
 					// 10. Update json schema and question answers with modifications since original submission and retain previous version requested updates
 					let accessRecordObj = accessRecord.toObject();
@@ -181,12 +177,8 @@ export default class AmendmentController extends Controller {
 				}
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
-			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred updating the application amendment',
-			});
+			process.stdout.write(err.message);
+			throw new HttpExceptions(`An error occurred updating the application amendment : ${err.message}`, 500);
 		}
 	}
 
@@ -202,17 +194,17 @@ export default class AmendmentController extends Controller {
 			let accessRecord = await this.dataRequestService.getApplicationForUpdateRequest(id);
 
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 3. Check permissions of user is manager of associated team
 			let authorised = false;
 			if (_.has(accessRecord.toObject(), 'publisherObj.team')) {
 				const { team } = accessRecord.publisherObj;
-				authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, team.toObject(), requestingUserObjectId);
+				authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team.toObject(), requestingUserObjectId);
 			}
 			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+				throw new HttpExceptions(`Unauthorised`, 401);
 			}
 
 			// 4. Ensure single datasets are mapped correctly into array (backward compatibility for single dataset applications)
@@ -223,19 +215,13 @@ export default class AmendmentController extends Controller {
 			// 5. Get the current iteration amendment party and return bad request if the opposite party is editing the application
 			const activeParty = this.amendmentService.getAmendmentIterationParty(accessRecord);
 			if (activeParty !== constants.userTypes.CUSTODIAN) {
-				return res.status(400).json({
-					status: 'failure',
-					message: 'You cannot make or request amendments to this application as the applicant(s) are amending the current version.',
-				});
+				throw new HttpExceptions(`You cannot make or request amendments to this application as the applicant(s) are amending the current version.`, 400);
 			}
 
 			// 6. Check some amendments exist to be submitted to the applicant(s)
 			const { unansweredAmendments } = this.amendmentService.countAmendments(accessRecord, constants.userTypes.CUSTODIAN);
 			if (unansweredAmendments === 0) {
-				return res.status(400).json({
-					status: 'failure',
-					message: 'You cannot submit requested amendments as none have been requested in the current version',
-				});
+				throw new HttpExceptions(`You cannot submit requested amendments as none have been requested in the current version`, 400);
 			}
 
 			// 7. Find current amendment iteration index
@@ -247,8 +233,7 @@ export default class AmendmentController extends Controller {
 			// 9. Save changes to database
 			await accessRecord.save(async err => {
 				if (err) {
-					console.error(err.message);
-					return res.status(500).json({ status: 'error', message: err.message });
+					throw new HttpExceptions(err.message, 500);
 				} else {
 					// 10. Send update request notifications
 					let fullAccessRecord = await this.dataRequestService.getApplicationById(id);
@@ -263,12 +248,7 @@ export default class AmendmentController extends Controller {
 				}
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
-			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred attempting to submit the requested updates',
-			});
+			throw new HttpExceptions(`An error occurred attempting to submit the requested updates : ${err.message}`, 500);
 		}
 	}
 }
