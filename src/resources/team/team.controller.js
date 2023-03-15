@@ -746,7 +746,7 @@ async function getManagerInfo(managerId, teamManagerIds, recipients) {
 	).exec();
 
 	teamManagerIds.push({
-		roles: ['manager'],
+		roles: [constants.roleMemberTeam.CUST_TEAM_ADMIN],
 		memberid: ObjectId(managerInfo._id.toString()),
 	});
 
