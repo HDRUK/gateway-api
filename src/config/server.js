@@ -4,7 +4,7 @@ import express from 'express';
 import Provider from 'oidc-provider';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
-import logger from 'morgan';
+import morgan from 'morgan';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
@@ -86,7 +86,7 @@ connectToDatabase();
 app.use(bodyParser.json({ limit: '10mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: false }));
 
-app.use(logger('dev'));
+app.use(morgan('tiny'));
 app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
