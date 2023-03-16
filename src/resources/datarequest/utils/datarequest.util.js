@@ -12,7 +12,7 @@ const injectQuestionActions = (jsonSchema, userType, applicationStatus, role = '
 		userType === constants.userTypes.CUSTODIAN &&
 		applicationStatus === constants.applicationStatuses.INREVIEW &&
 		activeParty === constants.userTypes.CUSTODIAN &&
-		role === constants.roleTypes.MANAGER &&
+		role === constants.roleMemberTeam.CUST_DAR_MANAGER &&
 		isLatestMinorVersion
 	)
 		return {

@@ -143,7 +143,7 @@ export default class DataRequestController extends Controller {
 
 			// 9. Get role type for requesting user, applicable for only Custodian users i.e. Manager/Reviewer role
 			const userRole =
-				userType === constants.userTypes.APPLICANT ? '' : isManager ? constants.roleTypes.MANAGER : constants.roleTypes.REVIEWER;
+				userType === constants.userTypes.APPLICANT ? '' : isManager ? constants.roleMemberTeam.CUST_DAR_MANAGER : constants.roleMemberTeam.CUST_DAR_REVIEWER;
 
 			// 10. Handle amendment type application loading for Custodian showing any changes in the major version
 			if (applicationType === constants.submissionTypes.AMENDED && userType === constants.userTypes.CUSTODIAN) {
