@@ -143,7 +143,7 @@ export default class WorkflowService {
 	getReviewManagers(team, requestingUserId) {
 		const { members = [], users = [] } = team;
 		const managers = members.filter(mem => {
-			return mem.roles.includes('manager');
+			return mem.roles.includes(constants.roleMemberTeam.CUST_DAR_MANAGER);
 		});
 		return users
 			.filter(user => managers.some(manager => manager.memberid.toString() === user._id.toString()))
