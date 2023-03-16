@@ -82,7 +82,7 @@ const formatTeamUsers = team => {
 				id,
 				_id,
 				email,
-				additionalInfo: { organisation, bio, showOrganisation = true, showBio = true },
+				additionalInfo: { organisation = '', bio = '', showOrganisation = true, showBio = true },
 			} = user;
 			let userMember = team.members.find(el => el.memberid.toString() === user._id.toString());
 			let { roles = [] } = userMember;
