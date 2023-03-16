@@ -153,7 +153,7 @@ export default class AmendmentController extends Controller {
 					}
 
 					// 12. Append question actions depending on user type and application status
-					let userRole = activeParty === constants.userTypes.CUSTODIAN ? constants.roleTypes.MANAGER : '';
+					let userRole = activeParty === constants.userTypes.CUSTODIAN ? constants.roleMemberTeam.CUST_DAR_MANAGER : '';
 					accessRecordObj.jsonSchema = datarequestUtil.injectQuestionActions(
 						accessRecordObj.jsonSchema,
 						userType,
