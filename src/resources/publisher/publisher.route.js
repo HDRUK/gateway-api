@@ -59,7 +59,7 @@ router.get(
 // @route   PATCH /api/publishers/:id/dataUseWidget
 // @desc	Update data use widget settings (terms and conditions)
 // @access  Public
-router.patch('/:id/dataUseWidget', passport.authenticate('jwt'), utils.userIsTeamManager(), (req, res) =>
+router.patch('/:id/dataUseWidget', passport.authenticate('jwt'), (req, res) =>
 	publisherController.updateDataUseWidget(req, res)
 );
 router.patch('/dataRequestModalContent/:id', passport.authenticate('jwt'), utils.userIsTeamManager(), (req, res) =>
