@@ -14,6 +14,7 @@ import { filtersService } from '../filters/dependency';
 import { DataUseRegister } from '../dataUseRegister/dataUseRegister.model';
 import { isEmpty, isUndefined } from 'lodash';
 import { UserModel } from '../user/user.model';
+import HttpExceptions from '../../exceptions/HttpExceptions';
 
 const logCategory = 'dataUseRegister';
 
@@ -33,10 +34,7 @@ export default class DataUseRegisterController extends Controller {
 
 			// If no id provided, it is a bad request
 			if (!id) {
-				return res.status(400).json({
-					success: false,
-					message: 'You must provide a dataUseRegister identifier',
-				});
+				throw new HttpExceptions(`You must provide a dataUseRegister identifier`, 400);
 			}
 
 			// Find the dataUseRegister
@@ -53,10 +51,7 @@ export default class DataUseRegisterController extends Controller {
 
 			// Return if no dataUseRegister found
 			if (!dataUseRegister) {
-				return res.status(404).json({
-					success: false,
-					message: 'A dataUseRegister could not be found with the provided id',
-				});
+				throw new HttpExceptions(`A dataUseRegister could not be found with the provided id`, 404);
 			}
 
 			// Reverse look up
@@ -100,12 +95,7 @@ export default class DataUseRegisterController extends Controller {
 				...dataUseRegister,
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
-			console.error(err.message);
-			return res.status(500).json({
-				success: false,
-				message: 'A server error occurred, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again :: ${err.message}`, 500);
 		}
 	}
 
@@ -149,12 +139,7 @@ export default class DataUseRegisterController extends Controller {
 				});
 			}
 		} catch (err) {
-			// Return error response if something goes wrong
-			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'A server error occurred, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again :: ${err.message}`, 500);
 		}
 	}
 
@@ -210,12 +195,7 @@ export default class DataUseRegisterController extends Controller {
 				success: true,
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
-			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'A server error occurred, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again :: ${JSON.stringify(err.message)}`, 500);
 		}
 	}
 
@@ -231,12 +211,7 @@ export default class DataUseRegisterController extends Controller {
 				result,
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
-			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'A server error occurred, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again :: ${JSON.stringify(err.message)}`, 500);
 		}
 	}
 
@@ -248,12 +223,7 @@ export default class DataUseRegisterController extends Controller {
 
 			return res.status(200).json({ success: true, result });
 		} catch (err) {
-			// Return error response if something goes wrong
-			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'A server error occurred, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again :: ${err.message}`, 500);
 		}
 	}
 
@@ -354,12 +324,7 @@ export default class DataUseRegisterController extends Controller {
 
 			return res.status(200).json({ success: true, result });
 		} catch (err) {
-			//Return error response if something goes wrong
-			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'A server error occurred, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again :: ${err.message}`, 500);
 		}
 	}
 
@@ -456,12 +421,7 @@ export default class DataUseRegisterController extends Controller {
 			this.dataUseRegisterService.updateDataUseRegister(id, { counter });
 			return res.status(200).json({ success: true });
 		} catch (err) {
-			// Return error response if something goes wrong
-			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'A server error occurred, please try again',
-			});
+			throw new HttpExceptions(`A server error occurred, please try again :: ${err.message}`, 500);
 		}
 	}
 }
