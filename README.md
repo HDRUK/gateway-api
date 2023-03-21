@@ -25,8 +25,19 @@ With Docker-desktop and Helm installed, you'll need an instance of mysql. Using 
 Copy `.env.example` to `.env` and fill in the required parameters. Namely the database connectivity credentials and host address
  - When port-forwarding mysql port to your localhost (as above), you can connect to mysql locally with either `127.0.0.1` or `localhost`. Generally speaking your mysql instance will be available on `mysql.default.svc.cluster.local`
 
+Create a new (gitignore'd) `tiltconf.json` following the same format as below:
+
+```
+{
+    "gatewayWeb2Root": "/Users/lokisinclair/Development/HDRUK/gateway-web-2",
+    "name": "gateway-api"
+}
+```
+- gatewayWeb2Root - should be the path to you gateway web cloned repo
+- name - should be `gateway-api`. This is used by Tilt/Helm and K8s to name your final built and deployed image
+
 ## Building
-From the root of the cloned directory run `docker-compose up` with the optional `-d` argument to run in detached mode. This will run both the API and the Laravel queue monitor.
+From the root of the cloned gateway-api directory run `tilt up`. This will run both the API.
 
 ## Migrations
 When needing to update your database schema, you can use the following artisan functions:
@@ -49,7 +60,19 @@ or
 .vendor/bin/phpstan analyse
 ```
 
-## Temporar endpoints
+## Temporary endpoints
+To test the validity of your build and deployment you can call the following API to determine if everything is running as
+expected
+
+`http://localhost:8000/api/status`
+
+If everything went to plan, you'll see a response of
+
+```json
+{
+    "message": "OK"
+}
+```
 
 ### Register User - simple registration
 
