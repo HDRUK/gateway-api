@@ -10,7 +10,15 @@ include(cfg.get('gatewayWeb2Root') + '/Tiltfile')
 
 docker_build(
     ref='hdruk/' + cfg.get('name'),
-    context='.'
+    context='.',
+    live_update=[
+        sync('./app', '/var/www'),
+        sync('./database', '/var/www'),
+        sync('./config', '/var/www'),
+        sync('./public', '/var/www'),
+        sync('./tests', '/var/www'),
+        run('composer install', trigger='./composer.lock')
+    ]
 )
 
 k8s_yaml('chart/' + cfg.get('name') + '/' + cfg.get('name') + '.yaml')
