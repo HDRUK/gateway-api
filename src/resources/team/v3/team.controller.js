@@ -10,6 +10,7 @@ import { TeamModel } from '../team.model';
 import { LoggingService } from '../../../services';
 import emailGenerator from '../../utilities/emailGenerator.util';
 import notificationBuilder from '../../utilities/notificationBuilder';
+import emailTeam from './util/emailTeam';
 
 class TeamController extends TeamService {
     _logger;
@@ -202,6 +203,8 @@ class TeamController extends TeamService {
             ]
         );
 
+        let teamClone = team;
+
         try {
             team.save(async err => {
                 if (err) {
@@ -209,6 +212,8 @@ class TeamController extends TeamService {
                 } else {
                     let updatedTeam = await this.getMembersByTeamId(teamId);
                     let users = teamV3Util.formatTeamMembers(updatedTeam);
+
+                    await this.updateTeamMemberMessage(teamId, updateUserId, currentUserId, tempKeyRole, tempValueRole, teamClone);
 
                     this.sendLogInGoogle({
                         action: 'updateTeamMember',
@@ -225,11 +230,25 @@ class TeamController extends TeamService {
                         success: true,
                         members: users,
                     });
+
                 }
-            });    
+            });
+
         } catch (e) {
             throw new HttpExceptions(e.message);
         } 
+    }
+
+    async updateTeamMemberMessage(teamId, userId, currentUserId, permission, permissionStatus, team) {
+        const userDetails = await UserModel.findOne({ _id: userId });
+        const userName = `${userDetails.firstname.toUpperCase()} ${userDetails.lastname.toUpperCase()}`;
+        const currentUserDetails = await UserModel.findOne({ _id: currentUserId });
+        const currentUserName = `${currentUserDetails.firstname.toUpperCase()} ${currentUserDetails.lastname.toUpperCase()}`;
+        const publisherName = team.publisher.name.toUpperCase();
+        const subjectEmail = emailTeam.subjectEmail(publisherName, currentUserName, permission, permissionStatus);
+        const bodyEmail = emailTeam.bodyEmail(publisherName, currentUserName, userName, permission, permissionStatus, teamId, team);
+
+        await emailGenerator.sendEmailOne(userDetails.email, constants.hdrukEmail, subjectEmail, bodyEmail);
     }
 
     async getTeamNotifications(req, res) {
