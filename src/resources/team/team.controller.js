@@ -1,4 +1,4 @@
-import { isEmpty, has, difference, includes, isNull, filter, some } from 'lodash';
+import _, { isEmpty, has, difference, includes, isNull, filter, some } from 'lodash';
 import { TeamModel } from './team.model';
 import { UserModel } from '../user/user.model';
 import { PublisherModel } from '../publisher/publisher.model';
@@ -33,7 +33,7 @@ const getTeamById = async (req, res) => {
 		// 4. Return team
 		return res.status(200).json({ success: true, team });
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TEAM - getTeamById : ${err.message}\n`);
 		return res.status(500).json(err.message);
 	}
 };
@@ -67,7 +67,7 @@ const getTeamMembers = async (req, res) => {
 		// 6. Return team members
 		return res.status(200).json({ success: true, members: users });
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TEAM - getTeamMembers : ${err.message}\n`);
 		return res.status(500).json(err.message);
 	}
 };
@@ -146,7 +146,7 @@ const addTeamMembers = async (req, res) => {
 		// 9. Save members handling error callback if validation fails
 		team.save(async err => {
 			if (err) {
-				console.error(err.message);
+				process.stdout.write(`TEAM - addTeamMembers : ${err.message}\n`);
 				return res.status(400).json({
 					success: false,
 					message: err.message,
@@ -173,7 +173,7 @@ const addTeamMembers = async (req, res) => {
 			}
 		});
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TEAM - addTeamMembers : ${err.message}\n`);
 		return res.status(400).json({
 			success: false,
 			message: 'You must supply a valid team identifier',
@@ -226,7 +226,7 @@ const getTeamNotifications = async (req, res) => {
 		// 8. return 200 success
 		return res.status(200).json(notifications);
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TEAM - getTeamNotifications : ${err.message}\n`);
 		return res.status(500).json({
 			success: false,
 			message: 'An error occurred retrieving team notifications',
@@ -435,7 +435,7 @@ const updateNotifications = async (req, res) => {
 		// 13. return 201 with new team
 		return res.status(201).json(team);
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TEAM - updateNotifications : ${err.message}\n`);
 		return res.status(500).json({
 			success: false,
 			message: 'An error occurred updating team notifications',
@@ -463,11 +463,11 @@ const updateNotificationMessages = async (req, res) => {
 				return res.status(201).json();
 			})
 			.catch(err => {
-				console.log(err);
+				process.stdout.write(`TEAM - updateNotificationMessages : ${err.message}\n`);
 				res.status(500).json({ success: false, message: err.message });
 			});
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TEAM - updateNotificationMessages : ${err.message}\n`);
 		return res.status(500).json({
 			success: false,
 			message: 'An error occurred updating notification messages',
@@ -529,7 +529,7 @@ const deleteTeamMember = async (req, res) => {
 		team.members = updatedMembers;
 		team.save(function (err) {
 			if (err) {
-				console.error(err.message);
+				process.stdout.write(`TEAM - deleteTeamMember : ${err.message}\n`);
 				return res.status(400).json({
 					success: false,
 					message: err.message,
@@ -545,7 +545,7 @@ const deleteTeamMember = async (req, res) => {
 			}
 		});
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TEAM - deleteTeamMember : ${err.message}\n`);
 		res.status(500).json({ status: 'error', message: err.message });
 	}
 };
@@ -578,7 +578,13 @@ const getTeamsList = async (req, res) => {
 				membersCount: { $size: '$members' },
 			}
 		)
-			.populate('publisher', { name: 1, 'publisherDetails.name': 1, 'publisherDetails.memberOf': 1 })
+			.populate('publisher', {
+				name: 1,
+				'publisherDetails.name': 1,
+				'publisherDetails.memberOf': 1,
+				'publisherDetails.questionBank.enabled': 1,
+				'publisherDetails.dataUse.widget.enabled': 1,
+			})
 			.populate('users', { firstname: 1, lastname: 1 })
 			.sort({ updatedAt: -1 })
 			.lean();
@@ -586,7 +592,7 @@ const getTeamsList = async (req, res) => {
 		// 4. Return team
 		return res.status(200).json({ success: true, teams });
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TEAM - getTeamsList : ${err.message}\n`);
 		return res.status(500).json(err.message);
 	}
 };
@@ -659,23 +665,23 @@ const addTeam = async (req, res) => {
 								timeout: 60000,
 							})
 							.then(async res => {
-								console.log(`public flag res: ${res}`);
+								process.stdout.write(`TEAM - public flag res: ${res}`);
 							})
 							.catch(err => {
-								console.error('Error when making folder public on the MDC - ' + err.message);
+								process.stdout.write(`TEAM - Error when making folder public on the MDC : ${err.message}\n`);
 							});
 					})
 					.catch(err => {
-						console.error('Error when trying to create new folder on the MDC - ' + err.message);
+						process.stdout.write(`TEAM - Error when trying to create new folder on the MDC : ${err.message}\n`);
 					});
 			})
 			.catch(err => {
-				console.error('Error when trying to login to MDC - ' + err.message);
+				process.stdout.write(`TEAM - Error when trying to login to MDC : ${err.message}\n`);
 			});
 
 		// 7. Log out of MDC
 		await axios.post(metadataCatalogueLink + `/api/authentication/logout`, { withCredentials: true, timeout: 5000 }).catch(err => {
-			console.error('Error when trying to logout of the MDC - ' + err.message);
+			process.stdout.write(`TEAM - Error when trying to logout of the MDC : ${err.message}\n`);
 		});
 
 		// 8. If a MDC folder with the name already exists return unsuccessful
@@ -688,6 +694,7 @@ const addTeam = async (req, res) => {
 
 		publisher.name = `${inputSanitizer.removeNonBreakingSpaces(memberOf)} > ${inputSanitizer.removeNonBreakingSpaces(name)}`;
 		publisher.publisherDetails = {
+			...publisher.publisherDetails,
 			name: inputSanitizer.removeNonBreakingSpaces(name),
 			memberOf: inputSanitizer.removeNonBreakingSpaces(memberOf),
 			contactPoint: inputSanitizer.removeNonBreakingSpaces(contactPoint),
@@ -717,9 +724,10 @@ const addTeam = async (req, res) => {
 		// 11. Send email and notification to managers
 		await createNotifications(constants.notificationTypes.TEAMADDED, { recipients }, name, req.user, publisherId);
 
-		return res.status(200).json({ success: true });
+		return res.status(200).json(newPublisher);
+
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TEAM - addTeam : ${err.message}\n`);
 		return res.status(500).json({
 			success: false,
 			message: 'Error',
@@ -769,6 +777,7 @@ const editTeam = async (req, res) => {
 
 		const id = req.params.id;
 		const { name, memberOf, contactPoint } = req.body;
+
 		const existingTeamDetails = await PublisherModel.findOne({ _id: ObjectId(id) }).lean();
 
 		//3. Update Team
@@ -776,11 +785,9 @@ const editTeam = async (req, res) => {
 			{ _id: ObjectId(id) },
 			{
 				name: `${memberOf} > ${name}`,
-				publisherDetails: {
-					name,
-					memberOf,
-					contactPoint,
-				},
+				'publisherDetails.name': name,
+				'publisherDetails.memberOf': memberOf,
+				'publisherDetails.contactPoint': contactPoint,
 			},
 			err => {
 				if (err) {
@@ -839,7 +846,7 @@ const editTeam = async (req, res) => {
 											}
 										)
 										.catch(err => {
-											console.error('Error when trying to update metdata on the MDC - ' + err.message);
+											process.stdout.write(`TEAM - Error when trying to update metdata on the MDC : ${err.message}\n`);
 										});
 								}
 
@@ -855,7 +862,7 @@ const editTeam = async (req, res) => {
 											}
 										)
 										.catch(err => {
-											console.error('Error when trying to update metdata on the MDC - ' + err.message);
+											process.stdout.write(`TEAM - Error when trying to update metdata on the MDC : ${err.message}\n`);
 										});
 								}
 
@@ -871,22 +878,22 @@ const editTeam = async (req, res) => {
 											}
 										)
 										.catch(err => {
-											console.error('Error when trying to update metdata on the MDC - ' + err.message);
+											process.stdout.write(`TEAM - Error when trying to update metdata on the MDC : ${err.message}\n`);
 										});
 								}
 							})
 							.catch(err => {
-								console.error('Error when trying to get the metdata from the MDC - ' + err.message);
+								process.stdout.write(`TEAM - Error when trying to get the metdata from the MDC : ${err.message}\n`);
 							});
 					}
 				})
 				.catch(err => {
-					console.error('Error when trying to login to MDC - ' + err.message);
+					process.stdout.write(`TEAM - Error when trying to login to MDC : ${err.message}\n`);
 				});
 
 			// 12. Log out of MDC
 			await axios.post(metadataCatalogueLink + `/api/authentication/logout`, { withCredentials: true, timeout: 5000 }).catch(err => {
-				console.error('Error when trying to logout of the MDC - ' + err.message);
+				process.stdout.write(`TEAM - Error when trying to logout of the MDC : ${err.message}\n`);
 			});
 
 			//13. Update datasets if name or member change
@@ -912,7 +919,7 @@ const editTeam = async (req, res) => {
 
 		return res.status(200).json({ success: true });
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TEAM - editTeam : ${err.message}\n`);
 		return res.status(500).json(err.message);
 	}
 };
@@ -965,11 +972,26 @@ const checkIfAdmin = (user, adminRoles) => {
 };
 
 const getTeamMembersByRole = (team, role) => {
-	// Destructure members array and populated users array (populate 'users' must be included in the original Mongo query)
 	let { members = [], users = [] } = team;
-	// Get all userIds for role within team
-	let userIds = members.filter(mem => mem.roles.includes(role) || role === 'All').map(mem => mem.memberid.toString());
-	// return all user records for role
+
+	let userIds = members
+		.filter(mem => {
+			if (mem.roles.includes(role) || (role === 'All' && _.has(mem, 'roles'))) {
+				if (!_.has(mem, 'notifications')) {
+					return true;
+				}
+
+				if (_.has(mem, 'notifications') && mem.notifications.length === 0) {
+					return true;
+				}
+
+				if (_.has(mem, 'notifications') && mem.notifications.length && mem.notifications[0].optIn) {
+					return true;
+				}
+			}
+		})
+		.map(mem => mem.memberid.toString());
+
 	return users.filter(user => userIds.includes(user._id.toString()));
 };
 
@@ -1047,8 +1069,12 @@ const filterMembersByNoticationTypes = (members, notificationTypes) => {
  */
 const filterMembersByNoticationTypesOptIn = (members, notificationTypes) => {
 	return filter(members, member => {
+		if (!('notifications' in member) || _.isEmpty(member.notifications)) {
+			return true;
+		}
+
 		return some(member.notifications, notification => {
-			return includes(notificationTypes, notification.notificationType) && notification.optIn;
+			return includes(notificationTypes, notification.notificationType) && notification.optIn === true;
 		});
 	});
 };

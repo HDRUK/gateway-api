@@ -1,18 +1,31 @@
+require('dotenv').config();
 import _, { isNil, isEmpty, capitalize, groupBy, forEach, isEqual } from 'lodash';
 import moment from 'moment';
 import { UserModel } from '../user/user.model';
 import helper from '../utilities/helper.util';
 import constants from '../utilities/constants.util';
-import * as Sentry from '@sentry/node';
 import wordTemplateBuilder from '../utilities/wordTemplateBuilder.util';
 
 const fs = require('fs');
-const sgMail = require('@sendgrid/mail');
-const readEnv = process.env.ENV || 'prod';
+const nodemailer = require('nodemailer');
+
 let parent, qsId;
 let questionList = [];
 let excludedQuestionSetIds = ['addRepeatableSection', 'removeRepeatableSection'];
 let autoCompleteLookups = { fullname: ['email'] };
+let transporterOptions = {
+	host: process.env.MAIL_HOST,
+	port: process.env.MAIL_PORT,
+	auth: {
+		user: process.env.MAIL_USERNAME,
+		pass: process.env.MAIL_PASSWORD,
+	},
+	pool: true,
+	maxConnections: 1,
+	rateDelta: 20000,
+	rateLimit: 5,
+};
+let transporter = nodemailer.createTransport(transporterOptions);
 
 const _getStepReviewers = (reviewers = []) => {
 	if (!isEmpty(reviewers)) return [...reviewers].map(reviewer => `${reviewer.firstname} ${reviewer.lastname}`).join(', ');
@@ -668,9 +681,8 @@ const _generateDARStatusChangedEmail = options => {
                   </tr>
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                    Your data access request for ${projectName || datasetTitles} has been approved with conditions by ${publisher}. 
-                    Summary information about your approved project will be included in the Gateway data use register. 
-                    You will be notified as soon as this becomes visible and searchable on the Gateway.
+                    Your data access request for ${projectName || datasetTitles} has been ${applicationStatus} by ${publisher}. 
+                    See below for more details or contact the data custodian.
                     </th>
                   </tr>
                 </thead>
@@ -1217,8 +1229,9 @@ const _generateNewReviewPhaseEmail = options => {
 	return body;
 };
 
-const _generateWorkflowCreated = options => {
-	let { workflowName, steps, createdAt, actioner } = options;
+const _generateWorkflowActionEmail = options => {
+	let { workflowName, steps, actioner, action } = options;
+	const currentDate = new Date().toISOString();
 
 	let table = `<div style="border: 1px solid #d0d3d4; border-radius: 15px; width: 700px; margin: 0 auto;">
                 <table
@@ -1231,12 +1244,14 @@ const _generateWorkflowCreated = options => {
                 <thead>
                   <tr>
                     <th style="border: 0; color: #29235c; font-size: 22px; text-align: left;">
-                      A new Workflow has been created.
+                      A ${action == 'created' ? 'new' : ''} Workflow has been ${action}.
                     </th>
                   </tr>
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                      ${actioner} has created ${workflowName} on ${moment(createdAt).format('D MMM YYYY')}
+                      A data access request ${workflowName} workflow has been ${action} by ${actioner} on ${moment(currentDate).format(
+		'D MMM YYYY'
+	)}
                     </th>
                   </tr>
                 </thead>
@@ -2083,9 +2098,10 @@ const _generateMetadataOnboardingApproved = options => {
 };
 
 const _generateMetadataOnboardingRejected = options => {
-	let { name, publisherId, comment } = options;
+	let { name, publisherId, comment, isFederated } = options;
 
 	let commentHTML = '';
+	let federatedMessageHTML = '';
 
 	if (!_.isEmpty(comment)) {
 		commentHTML = `<tr>
@@ -2098,6 +2114,14 @@ const _generateMetadataOnboardingRejected = options => {
                       "${comment}"
                     </th>
                   </tr>`;
+	}
+
+	if (!_.isUndefined(isFederated) && isFederated) {
+		federatedMessageHTML = `<tr>
+                              <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
+                                <b>It is important that you update these changes in your metadata catalogue. Do not apply these changes directly to the Gateway as this ability has been disabled for federated datasets.</b>
+                              </th>
+                            </tr>`;
 	}
 
 	let body = `<div style="border: 1px solid #d0d3d4; border-radius: 15px; width: 700px; margin: 0 auto;">
@@ -2118,6 +2142,7 @@ const _generateMetadataOnboardingRejected = options => {
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
                       Thank you for submitting ${name}, which has been reviewed by the team at HDR UK. The dataset version cannot be approved for release on the Gateway at this time. Please look at the comment from the reviewer below and make any necessary changes on a new version of the dataset before resubmitting.
                     </th>
+                  ${federatedMessageHTML}
                   </tr>
                   ${commentHTML}
                   <tr>
@@ -2234,6 +2259,44 @@ const _generateMessageNotification = options => {
 							</table>
 						</div>
 					</div>`;
+	return body;
+};
+
+const _generateMessageCreatorNotification = options => {
+	let { firstMessage, firstname, lastname, messageDescription, openMessagesLink } = options;
+
+	let body = `<div>
+            <div style="border: 1px solid #d0d3d4; border-radius: 15px; width: 700px; margin: 0 auto;">
+              <table
+              align="center"
+              border="0"
+              cellpadding="0"
+              cellspacing="40"
+              width="700"
+              word-break="break-all"
+              style="font-family: Arial, sans-serif">
+                <thead>
+                  <tr>
+                    <th style="border: 0; color: #29235c; font-size: 22px; text-align: left;">
+                    Data Access Enquiry submitted
+                    </th>
+                  </tr>
+                </thead>
+                <tbody style="overflow-y: auto; overflow-x: hidden;">
+                  <tr>
+                    <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
+                      <p>Dear ${firstname} ${lastname},</p>
+                      <p>Thank you for submitting an enquiry about ${firstMessage.datasetsRequested[0].name}.</p>
+                      <p>Your enquiry has been sent to ${
+												firstMessage.datasetsRequested[0].publisher
+											} who will reply in due course. If you have not received a response after 10 working days, or if you have any queries or concerns about the Gateway, please email enquiries@hdruk.ac.uk and a member of the HDR UK team will get in touch with you.</p>
+                      <p>${messageDescription.replace(/\n/g, '<br />')}</p>
+                    </th>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>`;
 	return body;
 };
 
@@ -2493,16 +2556,11 @@ ${_displayDataUseRegisterDashboardLink()}
  * @param   {Object}  context
  */
 const _sendEmail = async (to, from, subject, html, allowUnsubscribe = true, attachments = []) => {
-	// 1. Apply SendGrid API key from environment variable
-	sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
-	// 2. Ensure any duplicates recieve only a single email
 	const recipients = [...new Map(to.map(item => [item['email'], item])).values()];
-
 	// 3. Build each email object for SendGrid extracting email addresses from user object with unique unsubscribe link (to)
 	for (let recipient of recipients) {
 		let body = _generateEmailHeader + html + _generateEmailFooter(recipient, allowUnsubscribe);
-		let msg = {
+		let message = {
 			to: recipient.email,
 			from: from,
 			subject: subject,
@@ -2510,17 +2568,30 @@ const _sendEmail = async (to, from, subject, html, allowUnsubscribe = true, atta
 			attachments,
 		};
 
-		// 4. Send email using SendGrid
-		await sgMail.send(msg, false, err => {
-			if (err && (readEnv === 'test' || readEnv === 'prod')) {
-				Sentry.addBreadcrumb({
-					category: 'SendGrid',
-					message: 'Sending email failed',
-					level: Sentry.Severity.Warning,
-				});
-				Sentry.captureException(err);
+		// 4. Send email
+		try {
+			await transporter.sendMail(message, (error, info) => {
+				if (error) {
+					return process.stdout.write(`sendMail : ${error.message}`);
+				}
+				process.stdout.write(`Email sent: ${info.response}`);
+			});
+		} catch (error) {
+      process.stdout.write(`EMAIL GENERATOR - _sendEmail : ${error.message}\n`);
+		}
+	}
+};
+
+const _sendEmailSmtp = async message => {
+	try {
+		await transporter.sendMail(message, (error, info) => {
+			if (error) {
+				return process.stdout.write(`${error.message}\n`);;
 			}
+			process.stdout.write(`Email sent: ${info.response}`);
 		});
+	} catch (error) {
+    process.stdout.write(`EMAIL GENERATOR - _sendEmailSmtp : ${error.message}\n`);
 	}
 };
 
@@ -2531,19 +2602,7 @@ const _sendEmail = async (to, from, subject, html, allowUnsubscribe = true, atta
  * @param   {Object}  message to from, templateId
  */
 const _sendIntroEmail = msg => {
-	// 1. Apply SendGrid API key from environment variable
-	sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-	// 2. Send email using SendGrid
-	sgMail.send(msg, false, err => {
-		if (err && (readEnv === 'test' || readEnv === 'prod')) {
-			Sentry.addBreadcrumb({
-				category: 'SendGrid',
-				message: 'Sending email failed - Intro',
-				level: Sentry.Severity.Warning,
-			});
-			Sentry.captureException(err);
-		}
-	});
+	_sendEmailSmtp(msg);
 };
 
 const _generateEmailHeader = `
@@ -2595,12 +2654,12 @@ const _generateEmailFooter = (recipient, allowUnsubscribe) => {
           </div>`;
 };
 
-const _generateAttachment = (filename, content, type) => {
+const _generateAttachment = (filename, content, contentType) => {
 	return {
 		content,
 		filename,
-		type,
-		disposition: 'attachment',
+		contentType,
+		encoding: 'base64',
 	};
 };
 
@@ -2611,15 +2670,19 @@ const _generateWordAttachment = async (templateName, questionAnswers) => {
 	return wordAttachment;
 };
 
-const _generateWordContent = async (filename) => {
-  let pathToAttachment = `${__dirname}/populatedtemplate.docx`;
-  let content = await fs.readFileSync(pathToAttachment).toString('base64');
-  return content
-}
+const _generateWordContent = async filename => {
+	let pathToAttachment = `${__dirname}/populatedtemplate.docx`;
+	let content = await fs.readFileSync(pathToAttachment).toString('base64');
+	return content;
+};
 
 const _deleteWordAttachmentTempFiles = async () => {
-  if(fs.existsSync(`${__dirname}/template.docx`)){fs.unlinkSync(__dirname + '/template.docx')}
-  if(fs.existsSync(`${__dirname}/populatedtemplate.docx`)){fs.unlinkSync(__dirname + '/populatedtemplate.docx')}
+	if (fs.existsSync(`${__dirname}/template.docx`)) {
+		fs.unlinkSync(__dirname + '/template.docx');
+	}
+	if (fs.existsSync(`${__dirname}/populatedtemplate.docx`)) {
+		fs.unlinkSync(__dirname + '/populatedtemplate.docx');
+	}
 };
 
 export default {
@@ -2648,10 +2711,10 @@ export default {
 	generateNewDARMessage: _generateNewDARMessage,
 	deleteWordAttachmentTempFiles: _deleteWordAttachmentTempFiles,
 	generateWordAttachment: _generateWordAttachment,
-  generateWordContent: _generateWordContent,
+	generateWordContent: _generateWordContent,
 	//Workflows
 	generateWorkflowAssigned: _generateWorkflowAssigned,
-	generateWorkflowCreated: _generateWorkflowCreated,
+	generateWorkflowActionEmail: _generateWorkflowActionEmail,
 	//Metadata Onboarding
 	generateMetadataOnboardingSumbitted: _generateMetadataOnboardingSumbitted,
 	generateMetadataOnboardingApproved: _generateMetadataOnboardingApproved,
@@ -2662,6 +2725,7 @@ export default {
 	//generateMetadataOnboardingUnArchived: _generateMetadataOnboardingUnArchived,
 	//Messages
 	generateMessageNotification: _generateMessageNotification,
+	generateMessageCreatorNotification: _generateMessageCreatorNotification,
 	generateEntityNotification: _generateEntityNotification,
 	//ActivityLog
 	generateActivityLogManualEventCreated: _generateActivityLogManualEventCreated,

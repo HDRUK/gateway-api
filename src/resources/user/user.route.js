@@ -3,12 +3,14 @@ import passport from 'passport';
 
 import { utils } from '../auth';
 import { UserModel } from './user.model';
-import { Data } from '../tool/data.model';
-import helper from '../utilities/helper.util';
 import { ROLES } from './user.roles';
-import { setCohortDiscoveryAccess } from './user.service';
+import { setCohortDiscoveryAccess, getUsers } from './user.service';
 import { upperCase } from 'lodash';
-//import { createServiceAccount } from './user.repository';
+
+import {
+    checkInputMiddleware,
+    checkMinLengthMiddleware,
+} from '../../middlewares/index';
 
 const router = express.Router();
 
@@ -29,62 +31,37 @@ router.get('/:userID', passport.authenticate('jwt'), utils.checkIsUser(), async 
 // @desc     get all
 // @access   Private
 router.get('/', passport.authenticate('jwt'), async (req, res) => {
-	var q = Data.aggregate([
-		// Find all tools with type of person
-		{ $match: { type: 'person' } },
-		// Perform lookup to users
-		{
-			$lookup: {
-				from: 'users',
-				localField: 'id',
-				foreignField: 'id',
-				as: 'user',
-			},
-		},
-		// select fields to use
-		{
-			$project: {
-				_id: '$user._id',
-				id: 1,
-				firstname: 1,
-				lastname: 1,
-				orcid: {
-					$cond: [
-						{
-							$eq: [true, '$showOrcid'],
-						},
-						'$orcid',
-						'$$REMOVE',
-					],
-				},
-				bio: {
-					$cond: [
-						{
-							$eq: [true, '$showBio'],
-						},
-						'$bio',
-						'$$REMOVE',
-					],
-				},
-				email: '$user.email',
-			},
-		},
-	]);
-
-	q.exec((err, data) => {
-		if (err) {
+	let reqUserId = req.user.id;
+	await getUsers(reqUserId)
+		.then(response => {
+			return res.json({ success: true, data: response });
+		})
+		.catch(err => {
 			return new Error({ success: false, error: err });
-		}
-
-		const users = [];
-		data.map(dat => {
-			let { _id, id, firstname, lastname, orcid = '', bio = '', email = '' } = dat;
-			if (email.length !== 0) email = helper.censorEmail(email[0]);
-			users.push({ _id, id, orcid, name: `${firstname} ${lastname}`, bio, email });
 		});
+});
 
-		return res.json({ success: true, data: users });
-	});
+// @router   GET /api/v1/users/search/:filter
+// @desc     get all filtered by text
+// @access   Private
+router.get('/search/:filter', passport.authenticate('jwt'), [checkInputMiddleware, checkMinLengthMiddleware], async (req, res) => {
+	let filterString = req.params.filter;
+	let reqUserId = req.user.id;
+	await getUsers(reqUserId, filterString)
+		.then(response => {
+
+			const usersFiltered = [];
+			response.map((item) => {
+				if (item.name.toLowerCase().includes(filterString.toLowerCase())) {
+					usersFiltered.push(item);
+				}
+			});
+			
+			return res.json({ success: true, data: usersFiltered });
+		})
+		.catch(err => {
+			return new Error({ success: false, error: err });
+		});
 });
 
 // @router   PATCH /api/v1/users/advancedSearch/terms/:id
@@ -164,7 +141,7 @@ router.patch('/advancedSearch/roles/:id', passport.authenticate('jwt'), utils.ch
 // 			serviceAccount
 // 		});
 // 	} catch (err) {
-// 		console.error(err.message);
+//		process.stdout.write(`USER - create service account: ${err.message}\n`);
 // 		return res.status(500).json(err);
 // 	}
 // });

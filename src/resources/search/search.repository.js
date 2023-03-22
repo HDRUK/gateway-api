@@ -17,6 +17,7 @@ import moment from 'moment';
 import helperUtil from '../utilities/helper.util';
 
 export async function getObjectResult(type, searchAll, searchQuery, startIndex, maxResults, sort, authorID, form) {
+
 	let collection = Data;
 	if (type === 'course') {
 		collection = Course;
@@ -279,6 +280,33 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 				},
 			},
 			{
+				$lookup: {
+					from: 'datauseregisters',
+					let: {
+						pid: '$pid',
+					},
+					pipeline: [
+						{ $unwind: '$relatedObjects' },
+						{
+							$match: {
+								$expr: {
+									$and: [
+										{
+											$eq: ['$relatedObjects.pid', '$$pid'],
+										},
+										{
+											$eq: ['$activeflag', 'active'],
+										},
+									],
+								},
+							},
+						},
+						{ $group: { _id: null, count: { $sum: 1 } } },
+					],
+					as: 'relatedResourcesDataUseRegister',
+				},
+			},
+			{
 				$project: {
 					_id: 0,
 					id: 1,
@@ -310,9 +338,11 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 					'datasetfields.abstract': 1,
 					'datasetfields.ageBand': 1,
 					'datasetfields.phenotypes': 1,
+					'datasetv2.accessibility.access.deliveryLeadTime': 1,
 					'datasetv2.summary.publisher.name': 1,
 					'datasetv2.summary.publisher.logo': 1,
 					'datasetv2.summary.publisher.memberOf': 1,
+					'datasetv2.provenance.temporal.accrualPeriodicity': 1,
 
 					'persons.id': 1,
 					'persons.firstname': 1,
@@ -320,7 +350,19 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 
 					activeflag: 1,
 					counter: 1,
-					'datasetfields.metadataquality.weighted_quality_score': 1,
+
+					'datasetfields.metadataquality.weighted_quality_score': {
+						$convert: {
+							input: '$datasetfields.metadataquality.weighted_quality_score',
+							to: 'double',
+							onError: 0,
+							onNull: 0,
+						},
+					},
+
+					'datasetfields.metadataquality.weighted_quality_rating': 1,
+					'datasetfields.metadataquality.weighted_error_percent': 1,
+					'datasetfields.metadataquality.weighted_completeness_percent': 1,
 
 					latestUpdate: '$timestamps.updated',
 					relatedresources: {
@@ -339,11 +381,19 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 									else: { $first: '$relatedResourcesCourses.count' },
 								},
 							},
+							{
+								$cond: {
+									if: { $eq: [{ $size: '$relatedResourcesDataUseRegister' }, 0] },
+									then: 0,
+									else: { $first: '$relatedResourcesDataUseRegister.count' },
+								},
+							},
 						],
 					},
 				},
 			},
 		];
+
 	} else {
 		queryObject = [
 			{ $match: newSearchQuery },
@@ -479,14 +529,14 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 	const searchResults =
 		type === 'dataUseRegister'
 			? await collection.aggregate(queryObject).catch(err => {
-					console.log(err);
+				process.stdout.write(`${err.message}\n`);
 			  })
 			: await collection
 					.aggregate(queryObject)
 					.skip(parseInt(startIndex))
 					.limit(parseInt(maxResults))
 					.catch(err => {
-						console.log(err);
+						process.stdout.write(`${err.message}\n`);
 					});
 
 	return { data: searchResults };
@@ -860,13 +910,13 @@ export function getMyObjectsCount(type, searchAll, searchQuery, authorID) {
 	});
 }
 
-export function getObjectFilters(searchQueryStart, req, type) {
+export function getObjectFilters(searchQueryStart, queryParams, type) {
 	let searchQuery = JSON.parse(JSON.stringify(searchQueryStart));
 
 	// iterate over query string keys
-	for (const key of Object.keys(req.query)) {
+	for (const key of Object.keys(queryParams)) {
 		try {
-			const filterValues = req.query[key].split('::');
+			const filterValues = queryParams[key].split('::');
 			// check mapper for query type
 			// let filterNode = findNodeInTree(`${type}Filters`, key);
 			let filterNode;
@@ -925,7 +975,7 @@ export function getObjectFilters(searchQueryStart, req, type) {
 				}
 			}
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`SEARCH - GET OBJECT FILTERS : ${err.message}\n`);
 		}
 	}
 	return searchQuery;

@@ -152,6 +152,8 @@ const _notificationTypes = {
 	MEMBERROLECHANGED: 'MemberRoleChanged',
 	WORKFLOWASSIGNED: 'WorkflowAssigned',
 	WORKFLOWCREATED: 'WorkflowCreated',
+	WORKFLOWUPDATED: 'WorkflowUpdated',
+	WORKFLOWDELETED: 'WorkflowDeleted',
 	INPROGRESS: 'InProgress',
 	APPLICATIONCLONED: 'ApplicationCloned',
 	APPLICATIONDELETED: 'ApplicationDeleted',
@@ -332,6 +334,17 @@ const _datasetSortDirections = {
 	desc: -1,
 };
 
+const _searchDataTypes = {
+	Datasets: 'dataset',
+	Tools: 'tool',
+	Projects: 'project',
+	Papers: 'paper',
+	People: 'person',
+	Courses: 'course',
+	Collections: 'collection',
+	Datauses: 'dataUseRegister',
+};
+
 export default {
 	userTypes: _userTypes,
 	enquiryFormId: _enquiryFormId,
@@ -366,4 +379,5 @@ export default {
 	datasetSortDirections: _datasetSortDirections,
 	dataUseRegisterStatus: _dataUseRegisterStatus,
 	dataUseRegisterNotifications: _dataUseRegisterNotifications,
+	searchDataTypes: _searchDataTypes,
 };

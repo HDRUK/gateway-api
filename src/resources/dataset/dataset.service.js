@@ -111,6 +111,10 @@ export default class DatasetService {
 		return dataset;
 	}
 
+	async updateMany(query, data) {
+		return this.datasetRepository.updateMany(query, data);
+	}
+
 	getDatasetsByPids(pids) {
 		return this.datasetRepository.getDatasetsByPids(pids);
 	}

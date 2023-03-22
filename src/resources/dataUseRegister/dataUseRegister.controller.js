@@ -101,7 +101,7 @@ export default class DataUseRegisterController extends Controller {
 			});
 		} catch (err) {
 			// Return error response if something goes wrong
-			console.error(err.message);
+			process.stdout.write(`DATA USE REGISTER - getDataUseRegister : ${err.message}`);
 			return res.status(500).json({
 				success: false,
 				message: 'A server error occurred, please try again',
@@ -267,9 +267,7 @@ export default class DataUseRegisterController extends Controller {
 			}
 			let searchQuery = { $and: [{ activeflag: 'active' }] };
 
-			if (searchString.length > 0) searchQuery['$and'].push({ $text: { $search: searchString } });
-
-			searchQuery = getObjectFilters(searchQuery, req, 'dataUseRegister');
+			searchQuery = getObjectFilters(searchQuery, req.query, 'dataUseRegister');
 
 			const aggregateQuery = [
 				{
@@ -280,22 +278,25 @@ export default class DataUseRegisterController extends Controller {
 						as: 'publisherDetails',
 					},
 				},
-				{
-					$lookup: {
-						from: 'tools',
-						localField: 'gatewayOutputsTools',
-						foreignField: 'id',
-						as: 'gatewayOutputsToolsInfo',
-					},
-				},
-				{
-					$lookup: {
-						from: 'tools',
-						localField: 'gatewayOutputsPapers',
-						foreignField: 'id',
-						as: 'gatewayOutputsPapersInfo',
-					},
-				},
+				// Removed for now, see comments on:
+				// https://hdruk.atlassian.net/browse/GAT-1932
+				//
+				// {
+				// 	$lookup: {
+				// 		from: 'tools',
+				// 		localField: 'gatewayOutputsTools',
+				// 		foreignField: 'id',
+				// 		as: 'gatewayOutputsToolsInfo',
+				// 	},
+				// },
+				// {
+				// 	$lookup: {
+				// 		from: 'tools',
+				// 		localField: 'gatewayOutputsPapers',
+				// 		foreignField: 'id',
+				// 		as: 'gatewayOutputsPapersInfo',
+				// 	},
+				// },
 				{
 					$lookup: {
 						from: 'users',
@@ -348,9 +349,32 @@ export default class DataUseRegisterController extends Controller {
 				{ $match: searchQuery },
 			];
 
-			const result = await DataUseRegister.aggregate(aggregateQuery);
+			if (searchString.length > 0) {
+				aggregateQuery.unshift({ $match: { $text: { $search: searchString } } });
+			}
 
-			return res.status(200).json({ success: true, result });
+			const results = await DataUseRegister.aggregate(aggregateQuery);
+			let newPayload = [];
+
+			// Due to the excessive size of laySummary and publicBenefitStatement
+			// we have to truncate the content to avoid running out of memory
+			//
+			// TODO - Needs refactoring on the whole
+			results.forEach(result => {
+				if (result.laySummary) {
+					result.laySummary = result.laySummary.substring(0, 200);
+					result.laySummary += '...';
+				}
+
+				if (result.publicBenefitStatement) {
+					result.publicBenefitStatement = result.publicBenefitStatement.substring(0, 200)
+					result.publicBenefitStatement += '...';
+				}
+
+				newPayload.push(result);
+			});			
+
+			return res.status(200).json({ success: true, newPayload });
 		} catch (err) {
 			//Return error response if something goes wrong
 			logger.logError(err, logCategory);
@@ -369,13 +393,20 @@ export default class DataUseRegisterController extends Controller {
 
 		switch (type) {
 			case constants.dataUseRegisterNotifications.DATAUSEAPPROVED: {
+				let teamEmailNotification = [];
 				const adminTeam = await TeamModel.findOne({ type: 'admin' })
 					.populate({
 						path: 'users',
 					})
 					.lean();
+				const team = await TeamModel.findById(dataUseRegister.publisher.toString());
+				if (team.notifications.length > 0 && team.notifications[0].optIn) {
+					team.notifications[0].subscribedEmails.map(teamEmail => {
+						teamEmailNotification.push({ email: teamEmail });
+					});
+				}
 				const dataUseTeamMembers = teamController.getTeamMembersByRole(adminTeam, constants.roleTypes.ADMIN_DATA_USE);
-				const emailRecipients = [...dataUseTeamMembers, uploader];
+				const emailRecipients = [...dataUseTeamMembers, uploader, ...teamEmailNotification];
 
 				const options = {
 					id,

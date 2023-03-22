@@ -9,33 +9,38 @@ import { Data as ToolModel } from '../tool/data.model';
 import constants from '../utilities/constants.util';
 import { dataRequestService } from '../datarequest/dependency';
 import { activityLogService } from '../activitylog/dependency';
+import { publishMessageWithRetryToPubSub } from '../../services/google/PubSubWithRetryService';
+import { PublisherModel } from '../publisher/publisher.model';
 
 const topicController = require('../topic/topic.controller');
+const { ObjectId } = require('mongodb');
 
 module.exports = {
 	// POST /api/v1/messages
 	createMessage: async (req, res) => {
 		try {
-			const { _id: createdBy, firstname, lastname } = req.user;
+			const { _id: createdBy, firstname, lastname, isServiceAccount = false } = req.user;
 			let { messageType = 'message', topic = '', messageDescription, relatedObjectIds, firstMessage } = req.body;
 			let topicObj = {};
 			let team, publisher, userType;
+			let tools = {};
 			// 1. If the message type is 'message' and topic id is empty
 			if (messageType === 'message') {
 				// 2. Find the related object(s) in MongoDb and include team data to update topic recipients in case teams have changed
-				const tools = await ToolModel.find()
+				tools = await ToolModel.find()
 					.where('_id')
 					.in(relatedObjectIds)
 					.populate({
 						path: 'publisher',
 						populate: {
 							path: 'team',
-							select: 'members',
+							select: 'members notifications',
 							populate: {
 								path: 'users',
 							},
 						},
 					});
+
 				// 3. Return undefined if no object(s) exists
 				if (_.isEmpty(tools)) return undefined;
 
@@ -43,13 +48,13 @@ module.exports = {
 				({ publisher = '' } = tools[0]);
 
 				if (_.isEmpty(publisher)) {
-					console.error(`No publisher associated to this dataset`);
+					process.stdout.write(`No publisher associated to this dataset\n`);
 					return res.status(500).json({ success: false, message: 'No publisher associated to this dataset' });
 				}
 				// 5. get team
 				({ team = [] } = publisher);
 				if (_.isEmpty(team)) {
-					console.error(`No team associated to publisher, cannot message`);
+					process.stdout.write(`No team associated to publisher, cannot message\n`);
 					return res.status(500).json({ success: false, message: 'No team associated to publisher, cannot message' });
 				}
 				// 6. Set user type (if found in team, they are custodian)
@@ -87,6 +92,7 @@ module.exports = {
 					}
 				}
 			}
+
 			// 13. Create new message
 			const message = await MessagesModel.create({
 				messageID: parseInt(Math.random().toString().replace('0.', '')),
@@ -99,12 +105,13 @@ module.exports = {
 				readBy: [new mongoose.Types.ObjectId(createdBy)],
 				...(userType && { userType }),
 			});
+
 			// 14. Return 500 error if message was not successfully created
 			if (!message) return res.status(500).json({ success: false, message: 'Could not save message to database.' });
 
 			// 15. Prepare to send email if a new message has been created
 			if (messageType === 'message') {
-				let optIn, subscribedEmails;
+				let optIn, subscribedEmails, messageCreatorRecipient;
 				// 16. Find recipients who have opted in to email updates and exclude the requesting user
 				let messageRecipients = await UserModel.find({ _id: { $in: topicObj.recipients } });
 
@@ -125,10 +132,22 @@ module.exports = {
 						);
 						if (!_.isEmpty(subscribedMembersByType)) {
 							// build cleaner array of memberIds from subscribedMembersByType
-							const memberIds = [...subscribedMembersByType.map(m => m.memberid.toString()), topicObj.createdBy.toString()];
-							// returns array of objects [{email: 'email@email.com '}] for members in subscribed emails users is list of full user object
-							const { memberEmails } = teamController.getMemberDetails([...memberIds], [...messageRecipients]);
-							messageRecipients = [...teamNotificationEmails, ...memberEmails];
+							if (topicObj.topicMessages !== undefined) {
+								const memberIds = [...subscribedMembersByType.map(m => m.memberid.toString()), ...topicObj.createdBy._id.toString()];
+								// returns array of objects [{email: 'email@email.com '}] for members in subscribed emails users is list of full user object
+								const { memberEmails } = teamController.getMemberDetails([...memberIds], [...messageRecipients]);
+								messageRecipients = [...teamNotificationEmails, ...memberEmails];
+							} else {
+								const memberIds = [...subscribedMembersByType.map(m => m.memberid.toString())].filter(
+									ele => ele !== topicObj.createdBy.toString()
+								);
+								const creatorObjectId = topicObj.createdBy.toString();
+								// returns array of objects [{email: 'email@email.com '}] for members in subscribed emails users is list of full user object
+								const { memberEmails } = teamController.getMemberDetails([...memberIds], [...messageRecipients]);
+								const creatorEmail = await UserModel.findById(creatorObjectId);
+								messageCreatorRecipient = [{ email: creatorEmail.email }];
+								messageRecipients = [...teamNotificationEmails, ...memberEmails];
+							}
 						} else {
 							// only if not membersByType but has a team email setup
 							messageRecipients = [...messageRecipients, ...teamNotificationEmails];
@@ -155,6 +174,44 @@ module.exports = {
 					html,
 					false
 				);
+
+				if (messageCreatorRecipient) {
+					let htmlCreator = emailGenerator.generateMessageCreatorNotification(options);
+
+					emailGenerator.sendEmail(
+						messageCreatorRecipient,
+						constants.hdrukEmail,
+						`You have received a new message on the HDR UK Innovation Gateway`,
+						htmlCreator,
+						false
+					);
+				}
+
+				// publish the message to GCP PubSub
+				const cacheEnabled = parseInt(process.env.CACHE_ENABLED) || 0;
+
+				if (cacheEnabled && !isServiceAccount) {
+					let publisherDetails = await PublisherModel.findOne({ _id: ObjectId(tools[0].publisher._id) }).lean();
+
+					if (publisherDetails['dar-integration'] && publisherDetails['dar-integration']['enabled']) {
+						const pubSubMessage = {
+							id: '',
+							type: 'enquiry',
+							publisherInfo: {
+								id: publisherDetails._id,
+								name: publisherDetails.name,
+							},
+							details: {
+								topicId: topicObj._id,
+								messageId: message.messageID,
+								createdDate: message.createdDate,
+								questionBank: req.body.firstMessage,
+							},
+							darIntegration: publisherDetails['dar-integration'],
+						};
+						await publishMessageWithRetryToPubSub(process.env.PUBSUB_TOPIC_ENQUIRY, JSON.stringify(pubSubMessage));
+					}
+				}
 			}
 			// 19. Return successful response with message data
 			const messageObj = message.toObject();
@@ -172,7 +229,7 @@ module.exports = {
 
 			return res.status(201).json({ success: true, messageObj });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`MESSAGE - createMessage : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},
@@ -204,7 +261,7 @@ module.exports = {
 			// 8. Return successful response
 			return res.status(204).json({ success: true });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`MESSAGE - deleteMessage : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},
@@ -239,7 +296,7 @@ module.exports = {
 			// 6. Return success no content
 			return res.status(204).json({ success: true });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`MESSAGE - updateMessage : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},
@@ -265,7 +322,7 @@ module.exports = {
 			// 3. Return the number of unread messages
 			return res.status(200).json({ success: true, count: unreadMessageCount });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`MESSAGE - getUnreadMessageCount : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},

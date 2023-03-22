@@ -62,4 +62,8 @@ export default class PublisherRepository extends Repository {
 			])
 			.lean();
 	}
+
+	async updatePublisher(query, options) {
+		return this.updateByQuery(query, options);
+	}
 }

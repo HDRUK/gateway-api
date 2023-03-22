@@ -5,7 +5,7 @@ export default class PublisherService {
 		this.publisherRepository = publisherRepository;
 	}
 
-	getPublisher(id, options = {}) {
+	async getPublisher(id, options = {}) {
 		return this.publisherRepository.getPublisher(id, options);
 	}
 
@@ -93,5 +93,45 @@ export default class PublisherService {
 		});
 
 		return filteredApplications;
+	}
+
+	async updateDataUseWidget(publisherId, content) {
+		const publisher = await this.publisherRepository.getPublisher(publisherId);
+		const data = { ...publisher.publisherDetails.dataUse.widget, ...content };
+		await this.publisherRepository.updateByQuery(
+			{ _id: publisherId },
+			{
+				'publisherDetails.dataUse': {
+					widget: {
+						...data,
+						acceptedDate: Date.now(),
+					},
+				},
+			}
+		);
+	}
+
+	async update(document, body = {}) {
+		return this.publisherRepository.update(document, body);
+	}
+
+	async updateDataRequestModalContent(publisherId, requestingUserId, content) {
+		await this.publisherRepository.updatePublisher(
+			{ _id: publisherId },
+			{
+				dataRequestModalContentUpdatedOn: Date.now(),
+				dataRequestModalContentUpdatedBy: requestingUserId,
+				dataRequestModalContent: { header: '', body: content, footer: '' },
+			}
+		);
+	}
+
+	async updateQuestionBank(publisherId, data) {
+		await this.publisherRepository.updatePublisher(
+			{ _id: publisherId },
+			{
+				'publisherDetails.questionBank': data,
+			}
+		);
 	}
 }

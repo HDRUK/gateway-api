@@ -6,12 +6,12 @@ module.exports = {
 	buildRecipients: async (team, createdBy) => {
 		// 1. Cause error if no members found
 		if (_.isNull(team)) {
-			console.error('A topic cannot be created without a receiving team');
+			process.stdout.write(`A topic cannot be created without a receiving team\n`);
 			return [];
 		}
 		let { members } = team;
 		if (_.isNull(members || members.length === 0)) {
-			console.error('A topic cannot be created with only the creating user');
+			process.stdout.write(`A topic cannot be created with only the creating user\n`);
 			return [];
 		}
 		let recipients = members.filter(mem => mem.roles.includes('manager') || mem.roles.includes('reviewer')).map(m => m.memberid);
@@ -29,7 +29,7 @@ module.exports = {
 			const { createdBy, relatedObjectIds } = context;
 			// 1. Topic cannot be created without related object i.e. data/project/tool/paper
 			if (_.isEmpty(relatedObjectIds)) {
-				console.error('No related object Id passed to build topic');
+				process.stdout.write(`No related object Id passed to build topic\n`);
 				return undefined;
 			}
 			// 2. Find the related object(s) in MongoDb and include team data
@@ -39,7 +39,7 @@ module.exports = {
 				.populate({ path: 'publisher', populate: { path: 'team' } });
 			// 3. Return undefined if no object exists
 			if (_.isEmpty(tools)) {
-				console.error(`Failed to find related tool(s) with objectId(s): ${relatedObjectIds.join(', ')}`);
+				process.stdout.write(`Failed to find related tool(s) with objectId(s): ${relatedObjectIds.join(', ')}\n`);
 				return undefined;
 			}
 			// 4. Iterate through each tool
@@ -68,17 +68,17 @@ module.exports = {
 			// 7. Get recipients for topic/message using the first tool (same team exists as each publisher is the same)
 			let { publisher = '' } = tools[0];
 			if (_.isEmpty(publisher)) {
-				console.error(`No publisher associated to this dataset`);
+				process.stdout.write(`No publisher associated to this dataset\n`);
 				return undefined;
 			}
 			let { team = [] } = publisher;
 			if (_.isEmpty(team)) {
-				console.error(`No team associated to publisher, cannot message`);
+				process.stdout.write(`No team associated to publisher, cannot message\n`);
 				return undefined;
 			}
 			const recipients = await module.exports.buildRecipients(team, createdBy);
 			if (_.isEmpty(recipients)) {
-				console.error('A topic cannot be created without recipients');
+				process.stdout.write(`A topic cannot be created without recipients\n`);
 				return undefined;
 			}
 			// Future extension could be to iterate through tools at this point to generate a topic for each publisher
@@ -98,7 +98,7 @@ module.exports = {
 			// 9. Return created object
 			return topic;
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`TOPIC - buildTopic : ${err.message}\n`);
 			return undefined;
 		}
 	},
@@ -123,7 +123,7 @@ module.exports = {
 
 			return topic;
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`TOPIC - findTopic : ${err.message}\n`);
 			return undefined;
 		}
 	},
@@ -137,7 +137,7 @@ module.exports = {
 
 			return res.status(201).json({ success: true, topic });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`TOPIC - createTopic : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},
@@ -149,7 +149,7 @@ module.exports = {
 			TopicModel.findByIdAndUpdate(id, { isDeleted: true, status: 'closed', expiryDate: Date.now() }, { new: true });
 			return res.status(204).json({ success: true });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`TOPIC - deleteTopic : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},
@@ -186,7 +186,7 @@ module.exports = {
 			);
 			return res.status(200).json({ success: true, topics });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`TOPIC - getTopics : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},
@@ -211,7 +211,7 @@ module.exports = {
 			// 5. Return original topic so unread messages are displayed correctly
 			return res.status(200).json({ success: true, topic: dispatchTopic });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`TOPIC - getTopicById : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},

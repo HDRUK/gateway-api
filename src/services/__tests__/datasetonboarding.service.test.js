@@ -283,4 +283,53 @@ describe('datasetOnboardingService', () => {
 			expect(duplicatedDataset.datasetVersion).toEqual('1.0.0');
 		});
 	});
+
+	describe('updateStructuralMetadata', () => {
+		it('structuralMetadata should be empty for a dataset and percentageCompleted to be zero', async () => {
+			const dataset = datasetSearchStub[3];
+			expect(dataset.structuralMetadata).toEqual([]);
+			expect(dataset.percentageCompleted.structural).toEqual(0);
+		});
+		it('structuralMetadata should not be empty for a dataset and percentageCompleted to be 100 ', async () => {
+			const dataset = datasetSearchStub[3];
+			const structuralMetadata = [
+				{
+					tableName: 'PDR28DrugAdmin',
+					tableDescription: 'Drug Admin details for each spell',
+					columnName: 'drug_administration_id',
+					columnDescription: 'Unique identifier for the drug administration event',
+					dataType: 'varchar',
+					sensitive: false,
+				},
+				{
+					tableName: 'PDR28DrugAdmin',
+					tableDescription: 'Drug Admin details for each spell',
+					columnName: 'patient_pseudo_id',
+					columnDescription: 'Hashed patient identification',
+					dataType: 'varchar',
+					sensitive: false,
+				},
+			];
+			const percentageCompleted = {
+				summary: 20,
+				documentation: 100,
+				coverage: 0,
+				origin: 0,
+				temporal: 0,
+				usage: 0,
+				access: 0,
+				formatAndStandards: 0,
+				enrichmentAndLinkage: 0,
+				observations: 0,
+				provenance: 0,
+				accessibility: 0,
+				structural: 100,
+			};
+
+			await datasetonboardingService.updateStructuralMetadata(structuralMetadata, percentageCompleted, dataset._id);
+			const updatedDataset = await Data.findOne({ _id: dataset._id });
+			expect(updatedDataset.structuralMetadata.length).toEqual(2);
+			expect(updatedDataset.percentageCompleted.structural).toEqual(100);
+		});
+	});
 });

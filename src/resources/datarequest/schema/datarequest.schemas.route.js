@@ -1,11 +1,56 @@
 import express from 'express';
 import passport from 'passport';
+import { isNull, isUndefined, isEmpty } from 'lodash';
 
 import { DataRequestSchemaModel } from './datarequest.schemas.model';
+import DatarequestschemaController from './datarequest.schema.controller';
+import { datarequestschemaService } from './dependency';
 import { utils } from '../../auth';
 import { ROLES } from '../../user/user.roles';
+import constants from '../../utilities/constants.util';
+
+const datarequestschemaController = new DatarequestschemaController(datarequestschemaService);
 
 const router = express.Router();
+
+function isUserMemberOfTeam(user, publisherName) {
+	let { teams } = user;
+	return teams.filter(team => !isNull(team.publisher)).some(team => team.publisher.name === publisherName);
+}
+
+const validateUpdate = (req, res, next) => {
+	const { id } = req.params;
+
+	if (isUndefined(id)) return res.status(400).json({ success: false, message: 'You must provide a valid data request Id' });
+
+	next();
+};
+
+const authorizeUpdate = async (req, res, next) => {
+	const requestingUser = req.user;
+	const { id } = req.params;
+
+	const datarequestschema = await datarequestschemaService.getDatarequestschemaById(id);
+
+	if (isEmpty(datarequestschema)) {
+		return res.status(404).json({
+			success: false,
+			message: 'The requested data request schema could not be found',
+		});
+	}
+
+	const authorised = isUserMemberOfTeam(requestingUser, datarequestschema.publisher);
+	const isAdminUser = requestingUser.teams.map(team => team.type).includes(constants.teamTypes.ADMIN);
+
+	if (!authorised && !isAdminUser) {
+		return res.status(401).json({
+			success: false,
+			message: 'You are not authorised to perform this action',
+		});
+	}
+
+	next();
+};
 
 // @router   POST api/v1/data-access-request/schema
 // @desc     Add a data request schema
@@ -37,6 +82,13 @@ router.get('/', passport.authenticate('jwt'), utils.checkIsInRole(ROLES.Admin, R
 	return res.json({ jsonSchema: dataRequestSchema.jsonSchema });
 });
 
+// @router   PATCH /api/v1/data-access-request/schema
+// @desc     patch a data request schema
+// @access   Private
+router.patch('/:id', passport.authenticate('jwt'), validateUpdate, authorizeUpdate, (req, res) =>
+	datarequestschemaController.updateDatarequestschema(req, res)
+);
+
 module.exports = router;
 
 async function archiveOtherVersions(id, dataSetId, status) {
@@ -53,6 +105,6 @@ async function archiveOtherVersions(id, dataSetId, status) {
 			);
 		}
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DATA REQUEST - archiveOtherVersions : ${err.message}\n`);
 	}
 }

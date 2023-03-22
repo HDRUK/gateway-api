@@ -10,37 +10,10 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import { connectToDatabase } from './db';
 import { initialiseAuthentication } from '../resources/auth';
-import * as Sentry from '@sentry/node';
-import * as Tracing from '@sentry/tracing';
-import helper from '../resources/utilities/helper.util';
 
 require('dotenv').config();
 
 var app = express();
-
-const readEnv = process.env.ENV || 'prod';
-if (readEnv === 'test' || readEnv === 'prod') {
-	Sentry.init({
-		dsn: 'https://b6ea46f0fbe048c9974718d2c72e261b@o444579.ingest.sentry.io/5653683',
-		environment: helper.getEnvironment(),
-		integrations: [
-			// enable HTTP calls tracing
-			new Sentry.Integrations.Http({ tracing: true }),
-			// enable Express.js middleware tracing
-			new Tracing.Integrations.Express({
-				// trace all requests to the default router
-				app,
-			}),
-		],
-		tracesSampleRate: 1.0,
-	});
-	// RequestHandler creates a separate execution context using domains, so that every
-	// transaction/span/breadcrumb is attached to its own Hub instance
-	app.use(Sentry.Handlers.requestHandler());
-	// TracingHandler creates a trace for every incoming request
-	app.use(Sentry.Handlers.tracingHandler());
-	app.use(Sentry.Handlers.errorHandler());
-}
 
 const Account = require('./account');
 const configuration = require('./configuration');
@@ -53,11 +26,14 @@ configuration.findAccount = Account.findAccount;
 const oidc = new Provider(process.env.api_url || 'http://localhost:3001', configuration);
 oidc.proxy = true;
 
-const domains = process.env.CORS_ALLOW_ORIGIN_URL
-				.toLowerCase()
-				.split(',')
-				.map(item=>item.trim())
-				.filter(item => item);
+var domains = [/\.healthdatagateway\.org$/, /\.hdruk\.dev$/, process.env.homeURL];
+
+var rx = /^((http|https)+:\/\/[a-z]+)\.([^/]*)/;
+var arr = rx.exec(process.env.homeURL);
+
+if (Array.isArray(arr) && arr.length > 0) {
+	domains.push('https://' + arr[2]);
+}
 
 app.use(
 	cors({
@@ -190,12 +166,17 @@ app.use('/api/v1/topics', require('../resources/topic/topic.route'));
 app.use('/api/v1/publishers', require('../resources/publisher/publisher.route'));
 app.use('/api/v1/teams', require('../resources/team/team.route'));
 app.use('/api/v1/workflows', require('../resources/workflow/workflow.route'));
+
 app.use('/api/v1/messages', require('../resources/message/message.route'));
-app.use('/api/v1/reviews', require('../resources/tool/review.route'));
+app.use('/api/v3/messages', require('../resources/message/v3/message.route'));
+
+app.use('/api/v1/reviews', require('../resources/review/v1/review.route'));
+app.use('/api/v3/reviews', require('../resources/review/v3/review.route'));
+
 app.use('/api/v1/relatedobject/', require('../resources/relatedobjects/relatedobjects.route'));
 
 app.use('/api/v1/accounts', require('../resources/account/account.route'));
-app.use('/api/v1/search/filter', require('../resources/search/filter.route'));
+app.use('/api/v1/search/filter', require('../resources/search/searchFilter.route'));
 app.use('/api/v1/search', require('../resources/search/search.router')); // tools projects people
 
 app.use('/api/v1/linkchecker', require('../resources/linkchecker/linkchecker.router'));
@@ -251,10 +232,13 @@ app.use('/api/v1/global', require('../resources/global/global.route'));
 
 app.use('/api/v1/search-preferences', require('../resources/searchpreferences/searchpreferences.route'));
 
+app.use('/api/v2/questionbank', require('../resources/questionbank/questionbank.route'));
 app.use('/api/v2/data-use-registers', require('../resources/dataUseRegister/dataUseRegister.route'));
 app.use('/api/v1/locations', require('../resources/spatialfilter/SpatialRouter'));
+
+app.use('/api/v1/metadata', require('../resources/metadata/metadata.route'));
 
 initialiseAuthentication(app);
 
 // launch our backend into a port
-app.listen(API_PORT, () => console.log(`LISTENING ON PORT ${API_PORT}`));
+app.listen(API_PORT, () => process.stdout.write(`LISTENING ON PORT ${API_PORT}\n`));

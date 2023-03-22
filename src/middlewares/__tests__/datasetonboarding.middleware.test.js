@@ -1,7 +1,6 @@
 import { authoriseUserForPublisher, validateSearchParameters } from '../datasetonboarding.middleware';
 import { UserModel } from '../../resources/user/user.model';
 import constants from '../../resources/utilities/constants.util';
-import { testing } from 'googleapis/build/src/apis/testing';
 
 describe('Testing the datasetonboarding middleware', () => {
 	const mockedRequest = () => {

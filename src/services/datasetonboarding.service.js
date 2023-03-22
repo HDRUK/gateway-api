@@ -363,7 +363,7 @@ export default class DatasetOnboardingService {
 		return data;
 	};
 
-	updateStructuralMetadata = async (structuralMetadata, id) => {
+	updateStructuralMetadata = async (structuralMetadata, percentageCompleted, id) => {
 		await Data.findByIdAndUpdate(
 			{ _id: id },
 			{

@@ -103,4 +103,18 @@ describe('Dataset onboarding utility', () => {
 			});
 		});
 	});
+	describe('returnAsDate', () => {
+		it('Should return a correctly formatted date for `2007-01-04`', () => {
+			expect(datasetonboardingUtil.returnAsDate('2007-01-04')).toStrictEqual(`04/01/2007`);
+		});
+		it('Should return a correctly formatted date for `2007/01/04`', () => {
+			expect(datasetonboardingUtil.returnAsDate('2007/01/04')).toStrictEqual(`04/01/2007`);
+		});
+		it('Should not return a correctly formatted date for `01-04-2007`', () => {
+			expect(datasetonboardingUtil.returnAsDate('04-01-2007')).not.toEqual(`04/01/2007`);
+		});
+		it('Should not return a correctly formatted date for `01/04/2007`', () => {
+			expect(datasetonboardingUtil.returnAsDate('04/01/2007')).not.toEqual(`04/01/2007`);
+		});
+	});
 });

@@ -48,7 +48,7 @@ module.exports = {
 			businessKey: businessKey.toString(),
 		};
 		await axios.post(`${bpmnBaseUrl}/engine-rest/process-definition/key/GatewayWorkflowSimple/start`, data, config).catch(err => {
-			console.error(err.message);
+			process.stdout.write(`BPMN - postCreateProcess : ${err.message}\n`);
 		});
 	},
 
@@ -80,7 +80,7 @@ module.exports = {
 			},
 		};
 		await axios.post(`${bpmnBaseUrl}/engine-rest/task/${taskId}/complete`, data, config).catch(err => {
-			console.error(err.message);
+			process.stdout.write(`BPMN - postUpdateProcess : ${err.message}\n`);
 		});
 	},
 
@@ -106,7 +106,7 @@ module.exports = {
 			businessKey: businessKey.toString(),
 		};
 		await axios.post(`${bpmnBaseUrl}/engine-rest/process-definition/key/GatewayReviewWorkflowComplex/start`, data, config).catch(err => {
-			console.error(err.message);
+			process.stdout.write(`BPMN - postStartPreReview : ${err.message}\n`);
 		});
 	},
 
@@ -134,7 +134,7 @@ module.exports = {
 			},
 		};
 		await axios.post(`${bpmnBaseUrl}/engine-rest/task/${taskId}/complete`, data, config).catch(err => {
-			console.error(err.message);
+			process.stdout.write(`BPMN - postStartManagerReview : ${err.message}\n`);
 		});
 	},
 
@@ -142,7 +142,7 @@ module.exports = {
 		// Manager has approved sectoin
 		let { businessKey } = bpmContext;
 		await axios.post(`${bpmnBaseUrl}/api/gateway/workflow/v1/manager/completed/${businessKey}`, bpmContext.config).catch(err => {
-			console.error(err.message);
+			process.stdout.write(`BPMN - postManagerApproval : ${err.message}\n`);
 		});
 	},
 
@@ -150,7 +150,7 @@ module.exports = {
 		//Start Step-Review process
 		let { businessKey } = bpmContext;
 		await axios.post(`${bpmnBaseUrl}/api/gateway/workflow/v1/complete/review/${businessKey}`, bpmContext, config).catch(err => {
-			console.error(err.message);
+			process.stdout.write(`BPMN - postStartStepReview : ${err.message}\n`);
 		});
 	},
 
@@ -158,7 +158,7 @@ module.exports = {
 		//Start Next-Step process
 		let { businessKey } = bpmContext;
 		await axios.post(`${bpmnBaseUrl}/api/gateway/workflow/v1/reviewer/complete/${businessKey}`, bpmContext, config).catch(err => {
-			console.error(err.message);
+			process.stdout.write(`BPMN - postCompleteReview : ${err.message}\n`);
 		});
 	},
 };

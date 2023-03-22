@@ -21,6 +21,10 @@ const PublisherSchema = new Schema(
 			body: String,
 			footer: String,
 		},
+		dataRequestModalContentUpdatedOn: Date,
+		dataRequestModalContentUpdatedBy: Number,
+		applicationFormUpdatedOn: Date,
+		applicationFormUpdatedBy: Number,
 		workflowEnabled: {
 			type: Boolean,
 			default: false,
@@ -37,6 +41,17 @@ const PublisherSchema = new Schema(
 			accessRequestCost: String,
 			dataUseLimitation: [String],
 			dataUseRequirements: [String],
+			dataUse: {
+				widget: {
+					enabled: { type: Boolean, default: false },
+					accepted: { type: Boolean, default: false },
+					acceptedByUserId: String,
+					acceptedDate: Date,
+				},
+			},
+			questionBank: {
+				enabled: { type: Boolean, default: false },
+			},
 		},
 		mdcFolderId: String,
 		rorOrgId: String,
@@ -44,6 +59,12 @@ const PublisherSchema = new Schema(
 		allowAccessRequestManagement: { type: Boolean, default: false },
 		uses5Safes: { type: Boolean, default: false },
 		wordTemplate: String,
+		federation: {
+			active: { type: Boolean },
+			auth: { type: Object, select: false },
+			endpoints: { type: Object, select: false },
+			notificationEmail: { type: Array, select: false },
+		},
 	},
 	{
 		toJSON: { virtuals: true },

@@ -39,7 +39,7 @@ router.get('/topic/:topicId', async (req, res) => {
 				return res.status(500).json({ success: false, error: error.message });
 			});
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - GET TOPIC: ${err.message}`);
 		return res.status(500).json({ success: false, error: 'Error retrieving the topic, please try again later...' });
 	}
 });
@@ -67,7 +67,7 @@ router.get('/user/topic/:topicId', passport.authenticate('jwt'), utils.checkIsIn
 				return res.status(500).json({ success: false, error: error.message });
 			});
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - GET TOPIC: ${err.message}`);
 		return res.status(500).json({ success: false, error: 'Error retrieving the topic, please try again later...' });
 	}
 });
@@ -99,7 +99,7 @@ router.put('/tool/:toolId', passport.authenticate('jwt'), utils.checkIsInRole(RO
 				return res.status(500).json({ success: false, error: error.message });
 			});
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - PUT TOPIC: ${err.message}`);
 		return res.status(500).json({ success: false, error: 'Error creating the topic, please try again later...' });
 	}
 });
@@ -167,7 +167,7 @@ router.post('/user/posts', passport.authenticate('jwt'), utils.checkIsInRole(ROL
 			return res.json({ success: true, topic });
 		}
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - POSTS: ${err.message}`);
 		return res.status(500).json({ success: false, error: 'Error creating the topic, please try again later...' });
 	}
 });
@@ -194,7 +194,7 @@ router.put('/user/posts/:postId', passport.authenticate('jwt'), utils.checkIsInR
 		// 5. Return the topic data
 		return res.json({ success: true, topic });
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - PUT POSTS: ${err.message}`);
 		return res.status(500).json({ success: false, error: 'Error editing the post, please try again later...' });
 	}
 });
@@ -218,7 +218,7 @@ router.delete('/user/posts/:postId', passport.authenticate('jwt'), utils.checkIs
 				return res.status(500).json({ success: false, error: err.message });
 			});
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - DELETE POSTS: ${err.message}`);
 		return res.status(500).json({ success: false, error: 'Error deleting the topic, please try again later...' });
 	}
 });

@@ -162,23 +162,28 @@ export default class WorkflowService {
 			// deconstruct context
 			let { publisherObj, workflow = {}, actioner = '' } = context;
 
+			custodianManagers = teamController.getTeamMembersByRole(publisherObj, 'All');
+			if (publisherObj.notifications[0].optIn) {
+				publisherObj.notifications[0].subscribedEmails.map(teamEmail => {
+					custodianManagers.push({ email: teamEmail });
+				});
+			}
+			managerUserIds = custodianManagers.map(user => user.id);
+			let { workflowName = 'Workflow Title', _id, steps, createdAt } = workflow;
+			const action = type.replace('Workflow', '').toLowerCase();
+			options = {
+				actioner,
+				workflowName,
+				_id,
+				steps,
+				createdAt,
+				action,
+			};
+
 			// switch over types
 			switch (type) {
 				case constants.notificationTypes.WORKFLOWCREATED:
 					// 1. Get managers for publisher
-					custodianManagers = teamController.getTeamMembersByRole(publisherObj, constants.roleTypes.MANAGER);
-					// 2. Get managerIds for notifications
-					managerUserIds = custodianManagers.map(user => user.id);
-					// 3. deconstruct workflow
-					let { workflowName = 'Workflow Title', _id, steps, createdAt } = workflow;
-					// 4. setup options
-					options = {
-						actioner,
-						workflowName,
-						_id,
-						steps,
-						createdAt,
-					};
 					// 4. Create notifications for the managers only
 					await notificationBuilder.triggerNotificationMessage(
 						managerUserIds,
@@ -187,9 +192,39 @@ export default class WorkflowService {
 						_id
 					);
 					// 5. Generate the email
-					html = await emailGenerator.generateWorkflowCreated(options);
+					html = await emailGenerator.generateWorkflowActionEmail(options);
 					// 6. Send email to custodian managers only within the team
 					await emailGenerator.sendEmail(custodianManagers, constants.hdrukEmail, `A Workflow has been created`, html, false);
+					break;
+
+				case constants.notificationTypes.WORKFLOWUPDATED:
+					// 1. Get managers for publisher
+					// 4. Create notifications for the managers only
+					await notificationBuilder.triggerNotificationMessage(
+						managerUserIds,
+						`A workflow of ${workflowName} has been updated`,
+						'workflow',
+						_id
+					);
+					// 5. Generate the email
+					html = await emailGenerator.generateWorkflowActionEmail(options);
+					// 6. Send email to custodian managers only within the team
+					await emailGenerator.sendEmail(custodianManagers, constants.hdrukEmail, `A Workflow has been updated`, html, false);
+					break;
+
+				case constants.notificationTypes.WORKFLOWDELETED:
+					// 1. Get managers for publisher
+					// 4. Create notifications for the managers only
+					await notificationBuilder.triggerNotificationMessage(
+						managerUserIds,
+						`A workflow of ${workflowName} has been deleted`,
+						'workflow',
+						_id
+					);
+					// 5. Generate the email
+					html = await emailGenerator.generateWorkflowActionEmail(options);
+					// 6. Send email to custodian managers only within the team
+					await emailGenerator.sendEmail(custodianManagers, constants.hdrukEmail, `A Workflow has been deleted`, html, false);
 					break;
 			}
 		}

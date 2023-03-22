@@ -1,7 +1,6 @@
 import { Data } from '../../tool/data.model';
 import { MetricsData } from '../../stats/metrics.model';
 import axios from 'axios';
-import * as Sentry from '@sentry/node';
 import { v4 as uuidv4 } from 'uuid';
 import { filtersService } from '../../filters/dependency';
 import { PublisherModel } from '../../publisher/publisher.model';
@@ -16,8 +15,6 @@ let metadataQualityList = [],
 	datasetsMDCIDs = [],
 	counter = 0;
 
-const readEnv = process.env.ENV || 'prod';
-
 export async function updateExternalDatasetServices(services) {
 	for (let service of services) {
 		if (service === 'phenotype') {
@@ -26,34 +23,18 @@ export async function updateExternalDatasetServices(services) {
 					timeout: 10000,
 				})
 				.catch(err => {
-					if (readEnv === 'test' || readEnv === 'prod') {
-						Sentry.addBreadcrumb({
-							category: 'Caching',
-							message: 'Unable to get metadata quality value ' + err.message,
-							level: Sentry.Severity.Error,
-						});
-						Sentry.captureException(err);
-					}
-					console.error('Unable to get metadata quality value ' + err.message);
+					process.stdout.write(`DATASET - Unable to get metadata quality value : ${err.message}`);
 				});
 
 			for (const pid in phenotypesList.data) {
 				await Data.updateMany({ pid: pid }, { $set: { 'datasetfields.phenotypes': phenotypesList.data[pid] } });
-				console.log(`PID is ${pid} and number of phenotypes is ${phenotypesList.data[pid].length}`);
+				process.stdout.write(`PID is ${pid} and number of phenotypes is ${phenotypesList.data[pid].length}`);
 			}
 		} else if (service === 'dataUtility') {
 			const dataUtilityList = await axios
 				.get('https://raw.githubusercontent.com/HDRUK/datasets/master/reports/data_utility.json', { timeout: 10000 })
 				.catch(err => {
-					if (readEnv === 'test' || readEnv === 'prod') {
-						Sentry.addBreadcrumb({
-							category: 'Caching',
-							message: 'Unable to get data utility ' + err.message,
-							level: Sentry.Severity.Error,
-						});
-						Sentry.captureException(err);
-					}
-					console.error('Unable to get data utility ' + err.message);
+					process.stdout.write(`DATASET - Unable to get data utility : ${err.message}`);
 				});
 
 			for (const dataUtility of dataUtilityList.data) {
@@ -70,7 +51,7 @@ export async function updateExternalDatasetServices(services) {
 					await dataset.save();
 				}
 				// log details
-				//  console.log(`DatasetID is ${dataUtility.id} and metadata richness is ${dataUtility.metadata_richness}`);
+				// process.stdout.write(`DatasetID is ${dataUtility.id} and metadata richness is ${dataUtility.metadata_richness}`);
 			}
 		}
 	}
@@ -92,7 +73,7 @@ export async function importCatalogues(cataloguesToImport, override = false, lim
 		}
 		const isValid = validateCatalogueParams(metadataCatalogues[catalogue]);
 		if (!isValid) {
-			console.error('Catalogue failed to run due to incorrect or incomplete parameters');
+			process.stdout.write(`Catalogue failed to run due to incorrect or incomplete parameters`);
 			continue;
 		}
 		const { metadataUrl, dataModelExportRoute, username, password, source, instanceType } = metadataCatalogues[catalogue];
@@ -181,7 +162,7 @@ function initialiseImporter() {
 
 async function importMetadataFromCatalogue(baseUri, dataModelExportRoute, source, { instanceType, credentials, override = false, limit }) {
 	const startCacheTime = Date.now();
-	console.log(
+	process.stdout.write(
 		`Starting metadata import for ${source} on ${instanceType} at ${Date()} with base URI ${baseUri}, override:${override}, limit:${
 			limit || 'all'
 		}`
@@ -199,21 +180,13 @@ async function importMetadataFromCatalogue(baseUri, dataModelExportRoute, source
 	await logoutCatalogue(baseUri);
 	await loginCatalogue(baseUri, credentials);
 	await loadDatasets(baseUri, dataModelExportRoute, datasetsMDCList.items, datasetsMDCList.count, source, limit).catch(err => {
-		if (readEnv === 'test' || readEnv === 'prod') {
-			Sentry.addBreadcrumb({
-				category: 'Caching',
-				message: `Unable to complete the metadata import for ${source} ${err.message}`,
-				level: Sentry.Severity.Error,
-			});
-			Sentry.captureException(err);
-		}
-		console.error(`Unable to complete the metadata import for ${source} ${err.message}`);
+		process.stdout.write(`DATASET - Unable to complete the metadata import for ${source} ${err.message}`);
 	});
 	await logoutCatalogue(baseUri);
 	await archiveMissingDatasets(source);
 
 	const totalCacheTime = ((Date.now() - startCacheTime) / 1000).toFixed(3);
-	console.log(`Run Completed for ${source} at ${Date()} - Run took ${totalCacheTime}s`);
+	process.stdout.write(`Run Completed for ${source} at ${Date()} - Run took ${totalCacheTime}s`);
 }
 
 async function loadDatasets(baseUri, dataModelExportRoute, datasetsToImport, datasetsToImportCount, source, limit) {
@@ -223,7 +196,7 @@ async function loadDatasets(baseUri, dataModelExportRoute, datasetsToImport, dat
 	}
 	for (const datasetMDC of datasetsToImport) {
 		counter++;
-		console.log(`Starting ${counter} of ${datasetsToImportCount} datasets (${datasetMDC.id})`);
+		process.stdout.write(`Starting ${counter} of ${datasetsToImportCount} datasets (${datasetMDC.id})`);
 
 		let datasetHDR = await Data.findOne({ datasetid: datasetMDC.id });
 		datasetsMDCIDs.push({ datasetid: datasetMDC.id });
@@ -240,46 +213,22 @@ async function loadDatasets(baseUri, dataModelExportRoute, datasetsToImport, dat
 				timeout: 60000,
 			})
 			.catch(err => {
-				if (readEnv === 'test' || readEnv === 'prod') {
-					Sentry.addBreadcrumb({
-						category: 'Caching',
-						message: 'Unable to get dataset JSON ' + err.message,
-						level: Sentry.Severity.Error,
-					});
-					Sentry.captureException(err);
-				}
-				console.error('Unable to get metadata JSON ' + err.message);
+				process.stdout.write(`DATASET - Unable to get metadata JSON : ${err.message}`);
 			});
 
 		const elapsedTime = ((Date.now() - startImportTime) / 1000).toFixed(3);
-		console.log(`Time taken to import JSON  ${elapsedTime} (${datasetMDC.id})`);
+		process.stdout.write(`Time taken to import JSON  ${elapsedTime} (${datasetMDC.id})`);
 
 		const metadataSchemaCall = axios //Paul - Remove and populate gateway side
 			.get(`${baseUri}/api/profiles/uk.ac.hdrukgateway/HdrUkProfilePluginService/schema.org/${datasetMDC.id}`, {
 				timeout: 10000,
 			})
 			.catch(err => {
-				if (readEnv === 'test' || readEnv === 'prod') {
-					Sentry.addBreadcrumb({
-						category: 'Caching',
-						message: 'Unable to get metadata schema ' + err.message,
-						level: Sentry.Severity.Error,
-					});
-					Sentry.captureException(err);
-				}
-				console.error('Unable to get metadata schema ' + err.message);
+				process.stdout.write(`DATASET - Unable to get metadata schema : ${err.message}`);
 			});
 
 		const versionLinksCall = axios.get(`${baseUri}/api/catalogueItems/${datasetMDC.id}/semanticLinks`, { timeout: 10000 }).catch(err => {
-			if (readEnv === 'test' || readEnv === 'prod') {
-				Sentry.addBreadcrumb({
-					category: 'Caching',
-					message: 'Unable to get version links ' + err.message,
-					level: Sentry.Severity.Error,
-				});
-				Sentry.captureException(err);
-			}
-			console.error('Unable to get version links ' + err.message);
+			process.stdout.write(`DATASET - Unable to get version links : ${err.message}`);
 		});
 
 		const [metadataSchema, versionLinks] = await axios.all([metadataSchemaCall, versionLinksCall]);
@@ -404,7 +353,7 @@ async function loadDatasets(baseUri, dataModelExportRoute, datasetsToImport, dat
 					datasetv2: datasetv2Object,
 				}
 			);
-			console.log(`Dataset Editted (${datasetMDC.id})`);
+			process.stdout.write(`Dataset Editted (${datasetMDC.id})`);
 		} else {
 			//Add
 			let uuid = uuidv4();
@@ -488,10 +437,10 @@ async function loadDatasets(baseUri, dataModelExportRoute, datasetsToImport, dat
 			data.datasetfields.phenotypes = phenotypes;
 			data.datasetv2 = datasetv2Object;
 			await data.save();
-			console.log(`Dataset Added (${datasetMDC.id})`);
+			process.stdout.write(`Dataset Added (${datasetMDC.id})`);
 		}
 
-		console.log(`Finished ${counter} of ${datasetsToImportCount} datasets (${datasetMDC.id})`);
+		process.stdout.write(`Finished ${counter} of ${datasetsToImportCount} datasets (${datasetMDC.id})`);
 	}
 }
 
@@ -505,15 +454,7 @@ async function getDataUtilityExport() {
 	return await axios
 		.get('https://raw.githubusercontent.com/HDRUK/datasets/master/reports/data_utility.json', { timeout: 10000 })
 		.catch(err => {
-			if (readEnv === 'test' || readEnv === 'prod') {
-				Sentry.addBreadcrumb({
-					category: 'Caching',
-					message: 'Unable to get data utility ' + err.message,
-					level: Sentry.Severity.Error,
-				});
-				Sentry.captureException(err);
-			}
-			console.error('Unable to get data utility ' + err.message);
+			process.stdout.write(`DATASET - Unable to get data utility : ${err.message}`);
 		});
 }
 
@@ -527,15 +468,7 @@ async function getPhenotypesExport() {
 	return await axios
 		.get('https://raw.githubusercontent.com/spiros/hdr-caliber-phenome-portal/master/_data/dataset2phenotypes.json', { timeout: 10000 })
 		.catch(err => {
-			if (readEnv === 'test' || readEnv === 'prod') {
-				Sentry.addBreadcrumb({
-					category: 'Caching',
-					message: 'Unable to get metadata quality value ' + err.message,
-					level: Sentry.Severity.Error,
-				});
-				Sentry.captureException(err);
-			}
-			console.error('Unable to get metadata quality value ' + err.message);
+			process.stdout.write(`DATASET - Unable to get metadata quality value : ${err.message}`);
 		});
 }
 
@@ -549,15 +482,7 @@ async function getMetadataQualityExport() {
 	return await axios
 		.get('https://raw.githubusercontent.com/HDRUK/datasets/master/reports/metadata_quality.json', { timeout: 10000 })
 		.catch(err => {
-			if (readEnv === 'test' || readEnv === 'prod') {
-				Sentry.addBreadcrumb({
-					category: 'Caching',
-					message: 'Unable to get metadata quality value ' + err.message,
-					level: Sentry.Severity.Error,
-				});
-				Sentry.captureException(err);
-			}
-			console.error('Unable to get metadata quality value ' + err.message);
+			process.stdout.write(`DATASET Unable to get metadata quality value ${err.message}`);
 		});
 }
 
@@ -569,14 +494,7 @@ async function getDataModels(baseUri) {
 				resolve(response.data);
 			})
 			.catch(err => {
-				if (readEnv === 'test' || readEnv === 'prod') {
-					Sentry.addBreadcrumb({
-						category: 'Caching',
-						message: 'The caching run has failed because it was unable to get a count from the MDC',
-						level: Sentry.Severity.Fatal,
-					});
-					Sentry.captureException(err);
-				}
+				process.stdout.write(`DATASET - The caching run has failed because it was unable to get a count from the MDC : ${err.message}\n`);
 				reject(err);
 			});
 	}).catch(() => {
@@ -589,16 +507,9 @@ async function checkDifferentialValid(incomingMetadataCount, source, override) {
 	const datasetsHDRCount = await Data.countDocuments({ type: 'dataset', activeflag: 'active', source });
 
 	if ((incomingMetadataCount / datasetsHDRCount) * 100 < 90 && !override) {
-		if (readEnv === 'test' || readEnv === 'prod') {
-			Sentry.addBreadcrumb({
-				category: 'Caching',
-				message: `The caching run has failed because the counts from the MDC (${incomingMetadataCount}) where ${
-					100 - (incomingMetadataCount / datasetsHDRCount) * 100
-				}% lower than the number stored in the DB (${datasetsHDRCount})`,
-				level: Sentry.Severity.Fatal,
-			});
-			Sentry.captureException();
-		}
+		process.stdout.write(`DATASET - checkDifferentialValid : The caching run has failed because the counts from the MDC (${incomingMetadataCount}) where ${
+			100 - (incomingMetadataCount / datasetsHDRCount) * 100
+		}% lower than the number stored in the DB (${datasetsHDRCount})\n`);
 		return false;
 	}
 	return true;
@@ -611,7 +522,7 @@ async function getDataAccessRequestCustodians() {
 
 async function logoutCatalogue(baseUri) {
 	await axios.post(`${baseUri}/api/authentication/logout`, { withCredentials: true, timeout: 10000 }).catch(err => {
-		console.error(`Error when trying to logout of the MDC - ${err.message}`);
+		process.stdout.write(`DATASET - Error when trying to logout of the MDC : ${err.message}`);
 	});
 }
 

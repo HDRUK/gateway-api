@@ -7,7 +7,7 @@ export const fileStatus = {
 	UPLOADED: 'UPLOADED',
 	ERROR: 'ERROR',
 	SCANNED: 'SCANNED',
-	QUARANTINED: 'QUARANTINED'
+	QUARANTINED: 'QUARANTINED',
 };
 
 export const processFile = (file, id, uniqueId) =>

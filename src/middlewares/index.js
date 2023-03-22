@@ -11,6 +11,7 @@ import {
 import checkInputMiddleware from './checkInputMiddleware';
 import checkMinLengthMiddleware from './checkMinLengthMiddleware';
 import checkStringMiddleware from './checkStringMiddleware';
+import { validateUpdateRequest, validateUploadRequest, authorizeUpdate, authorizeUpload } from './dataUseRegister.middleware';
 
 export {
 	checkIDMiddleware,
@@ -21,8 +22,12 @@ export {
 	validateDeleteRequest,
 	authoriseDelete,
 	checkInputMiddleware,
-  checkMinLengthMiddleware,
-  checkStringMiddleware,
+	checkMinLengthMiddleware,
+	checkStringMiddleware,
 	authoriseUserForPublisher,
 	validateSearchParameters,
+	validateUpdateRequest,
+	validateUploadRequest,
+	authorizeUpdate,
+	authorizeUpload,
 };

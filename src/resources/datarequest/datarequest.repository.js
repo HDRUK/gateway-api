@@ -167,6 +167,19 @@ export default class DataRequestRepository extends Repository {
 		}).sort({ createdAt: -1 });
 	}
 
+	getApplicationFormSchemas(publisher) {
+		return DataRequestSchemaModel.find({ publisher: publisher.name }).sort({ version: -1 });
+	}
+
+	createApplicationFormSchema(newSchema) {
+		const newSchemaModel = new DataRequestSchemaModel(newSchema);
+		return DataRequestSchemaModel.create(newSchemaModel);
+	}
+
+	updateApplicationFormSchemaById(id, data, options = {}) {
+		return DataRequestSchemaModel.findByIdAndUpdate(id, data, { ...options });
+	}
+
 	getDatasetsForApplicationByIds(datasetIds) {
 		return ToolModel.find({
 			datasetid: { $in: datasetIds },

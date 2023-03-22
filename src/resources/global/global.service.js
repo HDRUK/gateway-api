@@ -6,4 +6,11 @@ export default class GlobalService {
 	getGlobal(query = {}) {
 		return this.globalRepository.getGlobal(query);
 	}
+
+	getMasterSchema(query = {}) {
+		return this.globalRepository.getGlobal({
+			...query,
+			masterSchema: { $exists: true },
+		});
+	}
 }

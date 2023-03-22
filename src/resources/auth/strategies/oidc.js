@@ -69,6 +69,9 @@ const strategy = app => {
 	app.get(
 		'/auth/oidc/callback',
 		(req, res, next) => {
+			if (req.query.target_link_uri) {
+				req.param.returnpage = req.query.target_link_uri;
+			}
 			passport.authenticate('oidc', (err, user) => {
 				req.auth = {
 					err: err,
