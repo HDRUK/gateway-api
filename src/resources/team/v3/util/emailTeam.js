@@ -163,15 +163,6 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding:10px;">
-                            You can no longer:<br/>
-                            <ul>
-                                <li style="line-height:20px;height:auto;">Onboard and manage information about datasets uploaded by the ${publisherName} team.</li>
-                                <li style="line-height:20px;height:auto;">Add and remove other team members with editor permissions.</li>
-                            </ul>
-                        </td>
-                    </tr>
-                    <tr>
                         <td style="padding:10px;line-height:1.5em;">
                             For more information, please contact a Team Admin for your team:<br/>
                             ${teamAdmin}
