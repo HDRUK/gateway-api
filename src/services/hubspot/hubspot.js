@@ -10,7 +10,7 @@ import { logger } from '../../resources/utilities/logger';
 const apiKey = process.env.HUBSPOT_API_KEY;
 const logCategory = 'Hubspot Integration';
 let hubspotClient;
-if (apiKey) hubspotClient = new Client({ apiKey, numberOfApiCallRetries: NumberOfRetries.Three });
+if (apiKey) hubspotClient = new Client({ accessToken: apiKey, numberOfApiCallRetries: NumberOfRetries.Three });
 
 /**
  * Sync A Single Gateway User With Hubspot
