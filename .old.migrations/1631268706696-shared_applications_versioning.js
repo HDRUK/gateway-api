@@ -1,4 +1,5 @@
 import { DataRequestModel } from '../src/resources/datarequest/datarequest.model';
+// Something else
 
 async function up() {
 	// 1. Add default application type to all applications

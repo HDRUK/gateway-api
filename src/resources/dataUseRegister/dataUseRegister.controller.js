@@ -278,22 +278,25 @@ export default class DataUseRegisterController extends Controller {
 						as: 'publisherDetails',
 					},
 				},
-				{
-					$lookup: {
-						from: 'tools',
-						localField: 'gatewayOutputsTools',
-						foreignField: 'id',
-						as: 'gatewayOutputsToolsInfo',
-					},
-				},
-				{
-					$lookup: {
-						from: 'tools',
-						localField: 'gatewayOutputsPapers',
-						foreignField: 'id',
-						as: 'gatewayOutputsPapersInfo',
-					},
-				},
+				// Removed for now, see comments on:
+				// https://hdruk.atlassian.net/browse/GAT-1932
+				//
+				// {
+				// 	$lookup: {
+				// 		from: 'tools',
+				// 		localField: 'gatewayOutputsTools',
+				// 		foreignField: 'id',
+				// 		as: 'gatewayOutputsToolsInfo',
+				// 	},
+				// },
+				// {
+				// 	$lookup: {
+				// 		from: 'tools',
+				// 		localField: 'gatewayOutputsPapers',
+				// 		foreignField: 'id',
+				// 		as: 'gatewayOutputsPapersInfo',
+				// 	},
+				// },
 				{
 					$lookup: {
 						from: 'users',
@@ -350,9 +353,28 @@ export default class DataUseRegisterController extends Controller {
 				aggregateQuery.unshift({ $match: { $text: { $search: searchString } } });
 			}
 
-			const result = await DataUseRegister.aggregate(aggregateQuery);
+			const results = await DataUseRegister.aggregate(aggregateQuery);
+			let newPayload = [];
 
-			return res.status(200).json({ success: true, result });
+			// Due to the excessive size of laySummary and publicBenefitStatement
+			// we have to truncate the content to avoid running out of memory
+			//
+			// TODO - Needs refactoring on the whole
+			results.forEach(result => {
+				if (result.laySummary) {
+					result.laySummary = result.laySummary.substring(0, 200);
+					result.laySummary += '...';
+				}
+
+				if (result.publicBenefitStatement) {
+					result.publicBenefitStatement = result.publicBenefitStatement.substring(0, 200)
+					result.publicBenefitStatement += '...';
+				}
+
+				newPayload.push(result);
+			});			
+
+			return res.status(200).json({ success: true, newPayload });
 		} catch (err) {
 			//Return error response if something goes wrong
 			logger.logError(err, logCategory);
