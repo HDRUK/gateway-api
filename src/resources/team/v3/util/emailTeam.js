@@ -235,11 +235,6 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
                             ${teamAdmin}
                         </td>
                     </tr>
-                    <tr>
-                        <td style="padding:20px;text-align:center">
-                            <a href='${urlDatasetsTeam}' class='button'>View Datasets</a>
-                        </td>
-                    </tr>
                 `;
             }
             break;
@@ -292,11 +287,6 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
                         <td style="padding:10px;line-height:1.5em;">
                             For more information, please contact a Team Admin for your team:<br/>
                             ${teamAdmin}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding:20px;text-align:center">
-                            <a href='${urlDatasetsTeam}' class='button'>View Datasets</a>
                         </td>
                     </tr>
                 `;
@@ -360,11 +350,6 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
                             ${teamAdmin}
                         </td>
                     </tr>
-                    <tr>
-                        <td style="padding:20px;text-align:center">
-                            <a href='${urlDatasetsTeam}' class='button'>View Datasets</a>
-                        </td>
-                    </tr>
                 `;
             }
             break;
@@ -421,11 +406,6 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
                         <td style="padding:10px;line-height:1.5em;">
                             For more information, please contact a Team Admin for your team:<br/>
                             ${teamAdmin}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding:20px;text-align:center">
-                            <a href='${urlDatasetsTeam}' class='button'>View Datasets</a>
                         </td>
                     </tr>
                 `;
