@@ -33,8 +33,8 @@ Create a new (gitignore'd) `tiltconf.json` following the same format as below:
     "name": "gateway-api"
 }
 ```
-- gatewayWeb2Root - should be the path to you gateway web cloned repo
-- name - should be `gateway-api`. This is used by Tilt/Helm and K8s to name your final built and deployed image
+- gatewayWeb2Root - should be the path to you gateway web cloned repo.
+- name - should be `gateway-api`. This is used by Tilt/Helm and K8s to name your final built and deployed image.
 
 ## Building
 From the root of the cloned gateway-api directory run `tilt up`. This will run both the API.
