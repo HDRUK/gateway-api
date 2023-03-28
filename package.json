@@ -63,7 +63,7 @@
 		"passport-orcid": "0.0.4",
 		"pizzip": "^3.1.1",
 		"prettier": "^2.2.1",
-		"query-string": "^6.12.1",
+		"query-string": "^8.1.0",
 		"randomstring": "^1.1.5",
 		"redis": "4.0.0",
 		"simple-gcp-logging": "git+https://github.com/HDRUK/simple-gcp-logging.git#main",
