@@ -35,9 +35,16 @@ if (Array.isArray(arr) && arr.length > 0) {
 	domains.push('https://' + arr[2]);
 }
 
+// app.use(
+// 	cors({
+// 		origin: domains,
+// 		credentials: true,
+// 	})
+// );
+
 app.use(
 	cors({
-		origin: domains,
+		origin: true,
 		credentials: true,
 	})
 );
