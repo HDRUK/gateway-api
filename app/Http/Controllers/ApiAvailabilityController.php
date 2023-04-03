@@ -20,8 +20,8 @@ class ApiAvailabilityController extends Controller
      */
     public function index()
     {
-        return Response::json([
+        return response()->json([
             'status' => 'OK',
-        ]);
+        ], 200);
     }
 }

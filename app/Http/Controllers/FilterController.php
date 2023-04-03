@@ -38,7 +38,7 @@ class FilterController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = Filter::all()->where('enabled', 1);
+        $filters = Filter::where('enabled', 1)->get();
         return response()->json([
             'data' => $filters
         ]);
