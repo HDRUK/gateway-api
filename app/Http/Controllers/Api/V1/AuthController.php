@@ -27,8 +27,8 @@ class AuthController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/auth",
-     *    operationId="authentification",
-     *    tags={"Authentification"},
+     *    operationId="authentication",
+     *    tags={"Authentication"},
      *    summary="AuthController@checkAuthorization",
      *    description="Generate Jwt based on email and password",
      *    @OA\RequestBody(
