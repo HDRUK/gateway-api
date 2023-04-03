@@ -24,7 +24,59 @@ class AuthController extends Controller
         $this->jwt = $jwt;
     }
 
-    public function checkAuthorization(Request $request, Response $response) 
+    /**
+     * @OA\Post(
+     *    path="/api/v1/auth",
+     *    operationId="authentification",
+     *    tags={"Authentification"},
+     *    summary="AuthController@checkAuthorization",
+     *    description="Generate Jwt based on email and password",
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(
+     *                property="email",
+     *                type="string",
+     *                example="user1@mail.com",
+     *                description="Email"
+     *             ),
+     *             @OA\Property(
+     *                property="password",
+     *                type="string",
+     *                example="password123!",
+     *                description="Password"
+     *             ),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="access_token",
+     *             type="string",
+     *             example="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIiLCJzdWIiOiJkYW4gbml0YSIsImF1ZCI6IiIsImlhdCI6IjE2ODAxNzg2NjEiLCJuYmYiOiIxNjgwMTc4NjYxIiwiZXhwIjoiMTY4MDE3ODY2MSIsImp0aSI6IiIsInVzZXIiOnsiaWQiOiIxIiwibmFtZSI6ImRhbiBuaXRhIiwiZW1haWwiOiJuaXRhLmRhbkBnbWFpbC5jb20ifX0.6DdcPUUhv4t2zVO4nfvRg5vp_EGeiJsr5ZBseAlL9Vw"
+     *          ),
+     *          @OA\Property(
+     *             property="token_type",
+     *             type="string",
+     *             example="bearer",
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="401",
+     *       description="Missing Property",
+     *    ),
+     * )
+     * 
+     * @param Request $request
+     */
+    public function checkAuthorization(Request $request)
     {
         $input = $request->all();
 

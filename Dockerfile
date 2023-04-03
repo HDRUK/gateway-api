@@ -15,7 +15,6 @@ RUN apt-get update && apt-get install -y \
     libc-dev \
     zlib1g-dev \
     zip \
-    git \
     default-mysql-client \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql soap zip iconv bcmath \
@@ -50,7 +49,11 @@ RUN chmod -R 777 storage bootstrap/cache \
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+RUN php artisan l5-swagger:generate
+
 RUN php artisan route:cache && php artisan config:cache && php artisan event:cache
+
+# RUN apt-get update && apt-get install -y vim
 
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
 EXPOSE 8000
