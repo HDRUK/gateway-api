@@ -22,6 +22,13 @@ Route::get('/auth/{provider}/callback', [SocialLoginController::class, 'callback
 
 Route::group(['middleware' => 'jwt.verify'], function() {
     Route::get('/test', [TestController::class, 'test']);
+
+    // Filter routes
+    Route::get('/filters', [FilterController::class, 'index']);
+    Route::get('/filters/{id}', [FilterController::class, 'show']);
+    Route::post('/filters', [FilterController::class, 'create']);
+    Route::patch('/filters/{id}', [FilterController::class, 'update']);
+    Route::delete('/filters/{id}', [FilterController::class, 'destroy']);
 });
 
 // stop all all other routes
