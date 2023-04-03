@@ -4,7 +4,7 @@ ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/application_default_cr
 
 WORKDIR /var/www
 
-COPY composer.lock composer.json /var/www/
+COPY composer.* /var/www/
 
 RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
