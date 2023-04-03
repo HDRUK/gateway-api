@@ -32,11 +32,40 @@ class SocialLoginController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *    path="/api/v1/auth/{provider}",
+     *    operationId="login",
+     *    tags={"Authentication"},
+     *    summary="SocialLoginController@login",
+     *    description="Login with Google / Linkedin / Azure",
+     *    @OA\Parameter(
+     *       name="provider",
+     *       in="path",
+     *       description="google, linkedin, azure",
+     *       required=true,
+     *       example="google",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="provider",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=302,
+     *       description="redirect to main page",
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *    ),
+     * )
+     * 
      * redirect to google authorization page
      * 
+     * @param Request $request
+     * @param string $provider
      * @return mixed
      */
-    public function login(Request $request, $provider): mixed
+    public function login(Request $request, string $provider): mixed
     {
         return Socialite::driver($provider)->redirect();
     }
@@ -81,10 +110,17 @@ class SocialLoginController extends Controller
 
             $jwt = $this->createJwt($user);
 
-            $cookie = Cookie::make('token', $jwt);
-            return redirect(env('GATEWAY_URL'), 302)->withCookie($cookie);
+            // JWT_EXPIRATION
+            // $response = redirect(env('GATEWAY_URL'));
+            // $response->withCookie(cookie('token', $jwt, (int) env('JWT_EXPIRATION')));
+            // return $response;
 
+            $cookies = [
+                Cookie::make('token', $jwt),
+            ];
+            return redirect()->away(env('GATEWAY_URL'))->withCookies($cookies);
         } catch (Exception $e) {
+            dd($e->getMessage());
             throw new Exception($e->getMessage());
         }
     }
