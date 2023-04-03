@@ -12,12 +12,10 @@ docker_build(
     ref='hdruk/' + cfg.get('name'),
     context='.',
     live_update=[
-        sync('./app', '/var/www'),
-        sync('./database', '/var/www'),
-        sync('./config', '/var/www'),
-        sync('./public', '/var/www'),
-        sync('./tests', '/var/www'),
-        run('composer install', trigger='./composer.lock')
+        sync('.', '/var/www'),
+        run('composer install', trigger='./composer.lock'),
+        run('php artisan route:clear'),
+        run('php artisan cache:clear')
     ]
 )
 
