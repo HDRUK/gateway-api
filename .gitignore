@@ -16,7 +16,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-composer.lock
+# composer.lock
 .phpstorm.meta.php
 
 tiltconf.json
