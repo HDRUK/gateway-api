@@ -37,7 +37,8 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 
 COPY . /var/www
 
-RUN chmod -R 777 storage bootstrap/cache \
+RUN composer install \
+    && chmod -R 777 storage bootstrap/cache \
     && php artisan optimize:clear \
     && php artisan optimize
 

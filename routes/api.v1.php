@@ -23,6 +23,13 @@ Route::group(['middleware' => 'jwt.verify'], function() {
     Route::patch('/tags/{id}', [TagController::class, 'update'])->where('id', '[0-9]+');
     Route::delete('/tags/{id}', [TagController::class, 'destroy'])->where('id', '[0-9]+');
     Route::patch('/tags/{id}/restore', [TagController::class, 'restore'])->where('id', '[0-9]+');
+
+    // Filter routes
+    Route::get('/filters', [FilterController::class, 'index']);
+    Route::get('/filters/{id}', [FilterController::class, 'show']);
+    Route::post('/filters', [FilterController::class, 'create']);
+    Route::patch('/filters/{id}', [FilterController::class, 'update']);
+    Route::delete('/filters/{id}', [FilterController::class, 'destroy']);
 });
 
 // stop all all other routes
