@@ -45,32 +45,37 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->renderable(function (Throwable $e, Request $request) {
-            if ($request->wantsJson()) {
-                $response = [
-                    'message' => $e->getMessage(),
-                    'code' => $e->getCode(),
-                ];
-
-                if (Config::get('app.debug')) {
-                    $response['details'] = [
-                        'exception' => get_class($e),
-                        'trace' => $e->getTrace(),
-                    ];
-                }
-
-                $statusCode = 500;
-                if ($e->getCode()) {
-                    $statusCode = $e->getCode();
-                }
-
-                return response()->json($response, $statusCode);
-
-            }
-        });
-
         $this->reportable(function (Throwable $e) {
-            //
+            return false;
         });
+    }
+
+    /**
+     * @param Request $request
+     * @param Throwable $e
+     * @return JsonResponse|Response|\Symfony\Component\HttpFoundation\Response
+     * @throws Throwable
+     * @return mixed
+     */
+    public function render($request, Throwable $e): mixed
+    {
+        $response = [
+            'message' => $e->getMessage(),
+            'code' => $e->getCode(),
+        ];
+
+        if (Config::get('app.debug')) {
+            $response['details'] = [
+                'exception' => get_class($e),
+                'trace' => $e->getTrace(),
+            ];
+        }
+
+        $statusCode = 500;
+        if ($e->getCode()) {
+            $statusCode = $e->getCode();
+        }
+
+        return response()->json($response, $statusCode);
     }
 }

@@ -26,7 +26,7 @@ class RegisterController extends Controller
      * @OA\Post(
      *    path="/api/v1/register",
      *    operationId="register",
-     *    tags={"Register"},
+     *    tags={"Authentication"},
      *    summary="RegisterController@create",
      *    description="Register New User with username and password",
      *    @OA\RequestBody(
@@ -112,7 +112,7 @@ class RegisterController extends Controller
         $user->lastname = null;
         $user->email = $data['email'];
         $user->provider = Config::get('constants.provider.service');
-        $user->password = Hash::make($data['password']);
+        $user->password = bcrypt($data['password']);
         $user->save();
 
         return $user;

@@ -10,6 +10,16 @@ use Symfony\Component\HttpFoundation\Response;
 class JwtMiddleware
 {
     /**
+     * @OA\SecurityScheme(
+     *     type="http",
+     *     description="Login with email and password to get the authentication token",
+     *     name="Authorization",
+     *     in="header",
+     *     scheme="bearer",
+     *     bearerFormat="JWT",
+     *     securityScheme="bearerAuth",
+     * )
+     * 
      * Handle an incoming request.
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next

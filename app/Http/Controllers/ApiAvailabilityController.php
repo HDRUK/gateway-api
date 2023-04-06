@@ -17,11 +17,13 @@ class ApiAvailabilityController extends Controller
      *          description="Successful operation",
      *      )
      *  )
+     * 
+     * @return mixed
      */
-    public function index()
+    public function index(): mixed
     {
-        return Response::json([
+        return response()->json([
             'status' => 'OK',
-        ]);
+        ], 200);
     }
 }

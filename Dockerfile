@@ -47,7 +47,7 @@ RUN chmod -R 777 storage bootstrap/cache \
 #     && php artisan optimize
 # php artisan key:generate
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN php artisan l5-swagger:generate
 
