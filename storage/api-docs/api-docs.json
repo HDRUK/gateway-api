@@ -8,11 +8,11 @@
         "/api/v1/auth": {
             "post": {
                 "tags": [
-                    "Authentification"
+                    "Authentication"
                 ],
                 "summary": "AuthController@checkAuthorization",
                 "description": "Generate Jwt based on email and password",
-                "operationId": "authentification",
+                "operationId": "authentication",
                 "requestBody": {
                     "description": "Pass user credentials",
                     "required": true,
@@ -66,7 +66,7 @@
         "/api/v1/register": {
             "post": {
                 "tags": [
-                    "Register"
+                    "Authentication"
                 ],
                 "summary": "RegisterController@create",
                 "description": "Register New User with username and password",
@@ -156,6 +156,291 @@
                 }
             }
         },
+        "/api/v1/tags/{id?}": {
+            "get": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "TagController@show",
+                "description": "Get Tags or Get Tag by id",
+                "operationId": "fetch",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "tag id",
+                        "required": false,
+                        "schema": {
+                            "description": "tag id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/tags": {
+            "post": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "TagController@store",
+                "description": "Create a new tag",
+                "operationId": "create",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "features"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing Property"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "TagController@store",
+                "description": "Update tag",
+                "operationId": "update",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource was updated with success."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Please provide a valid information in the request body."
+                    },
+                    "422": {
+                        "description": "Resource not found."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/tags/{id}": {
+            "delete": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "TagController@destroy",
+                "description": "Delete Tag based in id",
+                "operationId": "Delete",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "tag id",
+                        "required": true,
+                        "schema": {
+                            "description": "tag id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/tags/{id}/restore": {
+            "patch": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "TagController@restore",
+                "description": "Restore Tag based in id",
+                "operationId": "restore",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "tag id",
+                        "required": true,
+                        "schema": {
+                            "description": "tag id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearer": []
+                    }
+                ]
+            }
+        },
         "/status": {
             "get": {
                 "summary": "Returns the API availability status",
@@ -166,6 +451,18 @@
                         "description": "Successful operation"
                     }
                 }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Login with email and password to get the authentication token",
+                "name": "Authorization",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
             }
         }
     }

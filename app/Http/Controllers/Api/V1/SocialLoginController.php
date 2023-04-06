@@ -120,7 +120,6 @@ class SocialLoginController extends Controller
             ];
             return redirect()->away(env('GATEWAY_URL'))->withCookies($cookies);
         } catch (Exception $e) {
-            dd($e->getMessage());
             throw new Exception($e->getMessage());
         }
     }
