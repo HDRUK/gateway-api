@@ -28,7 +28,7 @@ Route::group(['middleware' => 'jwt.verify'], function() {
     // Filter routes
     Route::get('/filters', [FilterController::class, 'index']);
     Route::get('/filters/{id}', [FilterController::class, 'show']);
-    Route::post('/filters', [FilterController::class, 'create']);
+    Route::post('/filters', [FilterController::class, 'store']);
     Route::patch('/filters/{id}', [FilterController::class, 'update']);
     Route::delete('/filters/{id}', [FilterController::class, 'destroy']);
 });

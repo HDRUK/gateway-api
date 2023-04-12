@@ -24,8 +24,9 @@ class DatabaseSeeder extends Seeder
         \App\Models\User::factory()->create([
             'firstname' => 'HDRUK',
             'lastname' => 'Super-User',
-            'email' => 'developers@hdruk',
-            'password' => Hash::make('S0mePass\/\/ord!'),
+            'email' => 'developers@hdruk.ac.uk',
+            'provider' => 'service',
+            'password' => Hash::make('Watch26Task?'),
         ]);
 
         // \App\Models\User::factory()->create([
