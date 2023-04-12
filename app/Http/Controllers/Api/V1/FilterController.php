@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Carbon\Carbon;
 
 use App\Models\Filter;
@@ -80,13 +81,14 @@ class FilterController extends Controller
         $filter = Filter::findOrFail($id);
         if ($filter) {
             return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $filter,
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
         return response()->json([
-            'message' => 'not found'
-        ], 404);
+            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**
@@ -133,14 +135,14 @@ class FilterController extends Controller
         $filter = Filter::create($request->post());
         if ($filter) {
             return response()->json([
-                'message' => 'success',
+                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $filter->id,
-            ], 200);
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
         }
 
         return response()->json([
-            'message' => 'error',
-        ], 500);
+            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
@@ -208,18 +210,18 @@ class FilterController extends Controller
 
         if ($filter->save()) {
             return response()->json([
-                'message' => 'success',
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $filter,
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } else {
             return response()->json([
-                'message' => 'error',
-            ], 500);
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
         }
 
         return response()->json([
-            'message' => 'not found',
-        ], 404);
+            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**
@@ -258,17 +260,17 @@ class FilterController extends Controller
             $filter->enabled = false;
             if ($filter->save()) {
                 return response()->json([
-                    'message' => 'success',
-                ], 200);
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
             return response()->json([
-                'message' => 'error',
-            ], 500);
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
         }
 
         return response()->json([
-            'message' => 'not found',
-        ], 404);
+            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 }

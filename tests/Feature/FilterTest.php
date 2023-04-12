@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 // use Illuminate\Foundation\Testing\RefreshDatabase;
+use Config;
 use Tests\TestCase;
 
 class FilterTest extends TestCase
@@ -17,7 +18,7 @@ class FilterTest extends TestCase
             'email' => 'developers@hdruk.ac.uk',
             'password' => 'Watch26Task?',
         ]);
-        $response->assertStatus(200);
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $content = $response->decodeResponseJson();  
         $this->accessToken = $content['access_token'];      
@@ -40,7 +41,7 @@ class FilterTest extends TestCase
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
 
-        $response->assertStatus(200)
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
                     0 => [
@@ -69,7 +70,7 @@ class FilterTest extends TestCase
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
         
-        $response->assertStatus(200)
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
                     'id',
@@ -106,14 +107,16 @@ class FilterTest extends TestCase
             ],
         );
 
-        $response->assertStatus(200)
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
                 'data',
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'], 'success');
+        $this->assertEquals($content['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
     }
 
     /**
@@ -139,14 +142,16 @@ class FilterTest extends TestCase
             ],
         );
 
-        $response->assertStatus(200)
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
                 'data',
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'], 'success');
+        $this->assertEquals($content['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
 
         // Finally, update the last entered filter to 
         // prove functionality
@@ -164,7 +169,7 @@ class FilterTest extends TestCase
             ],
         );
 
-        $response->assertStatus(200)
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'message',
                 'data',
@@ -182,17 +187,53 @@ class FilterTest extends TestCase
      */
     public function test_it_can_delete_a_filter()
     {
-        $response = $this->delete('api/v1/filters/1', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        // Start by creating a new filter record for updating
+        // within this test case
+        $response = $this->json(
+            'POST',
+            'api/v1/filters',
+            [
+                'type' => 'project',
+                'value' => 'Initial Value',
+                'keys' => 'purpose',
+                'enabled' => 0,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
 
-        $response->assertStatus(200)
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals($content['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+
+        // Finally, update the last entered filter to 
+        // prove functionality        
+        $response = $this->json(
+            'DELETE',
+            'api/v1/filters/' . $content['data'],
+            [],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'message',
             ]);
     
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'], 'success');
+        $this->assertEquals($content['message'],
+            Config::get('statuscodes.STATUS_OK.message')
+        );
     }
 }

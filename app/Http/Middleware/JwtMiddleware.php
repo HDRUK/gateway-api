@@ -42,7 +42,12 @@ class JwtMiddleware
             }
 
         } else {
-            throw new \Exception("No authorization");
+            return response()->json([
+                'unauthorized',
+            ], 401);
+            // LS - Removed, as this should consistently return an HTTP
+            // Status code, rather than throw an exception
+            // throw new \Exception("No authorization");
         }
 
         return $next($request);
