@@ -51,12 +51,12 @@ Gateway-api-2 follows the existing Laravel coding standards which can be found a
 ## PhpStan
 
 command
-```php
+```
 php -d memory_limit=4G vendor/bin/phpstan analyse
 ```
 or 
 
-```php
+```
 .vendor/bin/phpstan analyse
 ```
 
@@ -76,7 +76,7 @@ If everything went to plan, you'll see a response of
 
 ### Register User - simple registration
 
-```php
+```
 POST /api/v1/register HTTP/1.1
 Accept: application/json
 Content-Type: application/json
@@ -90,7 +90,7 @@ Content-Type: application/json
 
 ### Authorization - simple registration
 
-```php
+```
 POST /api/v1/auth HTTP/1.1
 Accept: application/json
 Content-Type: application/json
@@ -102,7 +102,7 @@ Content-Type: application/json
 ```
 
 ### Using Jwt - for testing purposes
-```php
+```
 GET /api/v1/test HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6MzAwNiIsInN1YiI6IiIsImF1ZCI6IkxhcmF2ZWwiLCJpYXQiOiIxNjc3ODUzMTI2IiwibmJmIjoiMTY3Nzg1MzEyNiIsImV4cCI6IjE2Nzg0NTc5MjYiLCJqdGkiOiI3RGdLZ2ZWdm9jRE5yVnp4WEpQUjNma0p1cGxOMFBzSVE0UEluampiQUVIUkRtRkx4d3BIYnZDYkxQUHRpc2lNIiwidXNlciI6eyJwcm92aWRlcmlkIjoiMTAwNzQyMTI4ODY0Mzk1MjQ5NzkxIiwibmFtZSI6IkRhbiBOaXRhIiwiZmlyc3RuYW1lIjoiRGFuIiwibGFzdG5hbWUiOiJOaXRhIiwiZW1haWwiOiJkYW4ubml0YS5oZHJ1a0BnbWFpbC5jb20iLCJwcm92aWRlciI6Imdvb2dsZSIsInVwZGF0ZWRfYXQiOiIyMDIzLTAzLTAzVDE0OjE4OjQ2LjAwMDAwMFoiLCJjcmVhdGVkX2F0IjoiMjAyMy0wMy0wM1QxNDoxODo0Ni4wMDAwMDBaIiwiaWQiOjF9fQ.2qPNxpVRxykJJ3XdKAIedE-xlEQPTc03QSrUHzEaufc
 Cookie: sessionId=s%3AHfJi8k9SMiyRHI5YXO_hkBeeyIG7AoW6.jMV%2BFjZKCOGPCW8IqZc%2F%2B8nvYULQ7Wq%2BbmusGfhKzcE
@@ -110,11 +110,27 @@ Cookie: sessionId=s%3AHfJi8k9SMiyRHI5YXO_hkBeeyIG7AoW6.jMV%2BFjZKCOGPCW8IqZc%2F%
 
 ### Login - google / linkedin / azure auth
 
-```php
+```
 GET [host]/api/v1/auth/{provider}
 ```
 where provider can take values like:
 
-```php
+```
 google or linkedin or azure
+```
+
+### Tests
+
+Commands:
+```
+vendor/bin/phpunit
+```
+or
+
+```
+vendor/bin/phpunit --testdox
+```
+or
+```
+php -d memory_limit=2048M ./vendor/bin/phpunit
 ```

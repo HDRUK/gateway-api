@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Hash;
 use Config;
+use Exception;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Controllers\JwtController;
 
@@ -106,16 +107,20 @@ class RegisterController extends Controller
      */
     private function saveUser($data)
     {
-        $user = new User();
-        $user->name = $data['name'];
-        $user->firstname = null;
-        $user->lastname = null;
-        $user->email = $data['email'];
-        $user->provider = Config::get('constants.provider.service');
-        $user->password = bcrypt($data['password']);
-        $user->save();
+        try {
+            $user = new User();
+            $user->name = $data['name'];
+            $user->firstname = null;
+            $user->lastname = null;
+            $user->email = $data['email'];
+            $user->provider = Config::get('constants.provider.service');
+            $user->password = Hash::make($data['password']);
+            $user->save();
 
-        return $user;
+            return $user;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**

@@ -25,9 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tags', function (Blueprint $table) {
-            $table->dropColumn('value');
-            $table->dropColumn('deleted_at');
-            $table->dropColumn('enabled');
+            $table->dropColumn(['value', 'deleted_at', 'enabled']);
             $table->char('description', 255)->nullable();
             $table->dropIndex('tags_type_unique');
         });

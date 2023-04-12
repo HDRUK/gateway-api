@@ -6,7 +6,7 @@ use App\Http\Enums\TagType;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class TagRequest extends FormRequest
+class TagUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,7 +25,6 @@ class TagRequest extends FormRequest
     {
         return [
             'type' => [
-                'required',
                 'string',
                 TagType::class,
                 Rule::unique('tags')->where(function ($query) {
@@ -33,7 +32,6 @@ class TagRequest extends FormRequest
                 }),
             ],
             'enabled' => [
-                'required',
                 'boolean',
             ],
         ];
