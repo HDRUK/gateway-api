@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\TestController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
 use App\Http\Controllers\Api\V1\FilterController;
+use App\Http\Controllers\Api\V1\DarIntegrationController;
 
 Route::post('/register', [RegisterController::class, 'create']);
 Route::post('/auth', [AuthController::class, 'checkAuthorization']);
@@ -31,6 +32,13 @@ Route::group(['middleware' => 'jwt.verify'], function() {
     Route::post('/filters', [FilterController::class, 'store']);
     Route::patch('/filters/{id}', [FilterController::class, 'update']);
     Route::delete('/filters/{id}', [FilterController::class, 'destroy']);
+
+    // DarIntegration routes
+    Route::get('/dar-integrations', [DarIntegrationController::class, 'index']);
+    Route::get('/dar-integrations/{id}', [DarIntegrationController::class, 'show']);
+    Route::post('/dar-integrations', [DarIntegrationController::class, 'store']);
+    Route::patch('/dar-integrations/{id}', [DarIntegrationController::class, 'update']);
+    Route::delete('/dar-integrations/{id}', [DarIntegrationController::class, 'destroy']);
 });
 
 // stop all all other routes
