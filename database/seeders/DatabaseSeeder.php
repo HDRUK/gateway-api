@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Support\Facades\Hash;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\UserSeeder;
 use Illuminate\Database\Seeder;
@@ -18,7 +19,15 @@ class DatabaseSeeder extends Seeder
     {
         \App\Models\Filter::factory(50)->create();
         
-        // \App\Models\User::factory(10)->create();
+        //\App\Models\User::factory(10)->create();
+
+        \App\Models\User::factory()->create([
+            'firstname' => 'HDRUK',
+            'lastname' => 'Super-User',
+            'email' => 'developers@hdruk.ac.uk',
+            'provider' => 'service',
+            'password' => Hash::make('Watch26Task?'),
+        ]);
 
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',

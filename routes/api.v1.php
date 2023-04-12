@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\TestController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
+use App\Http\Controllers\Api\V1\FilterController;
 
 Route::post('/register', [RegisterController::class, 'create']);
 Route::post('/auth', [AuthController::class, 'checkAuthorization']);
@@ -27,7 +28,7 @@ Route::group(['middleware' => 'jwt.verify'], function() {
     // Filter routes
     Route::get('/filters', [FilterController::class, 'index']);
     Route::get('/filters/{id}', [FilterController::class, 'show']);
-    Route::post('/filters', [FilterController::class, 'create']);
+    Route::post('/filters', [FilterController::class, 'store']);
     Route::patch('/filters/{id}', [FilterController::class, 'update']);
     Route::delete('/filters/{id}', [FilterController::class, 'destroy']);
 });
