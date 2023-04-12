@@ -186,8 +186,6 @@ class FilterTest extends TestCase
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
 
-        dd($response);
-
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'message',
