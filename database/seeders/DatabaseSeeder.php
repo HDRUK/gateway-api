@@ -19,8 +19,6 @@ class DatabaseSeeder extends Seeder
     {
         \App\Models\Filter::factory(50)->create();
         \App\Models\DarIntegration::factory(50)->create();
-        
-        //\App\Models\User::factory(10)->create();
 
         \App\Models\User::factory()->create([
             'firstname' => 'HDRUK',
@@ -30,10 +28,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('Watch26Task?'),
         ]);
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        \App\Models\Publisher::factory(50)->create();
 
         $this->call([
             TagSeeder::class,

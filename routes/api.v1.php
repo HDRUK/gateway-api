@@ -8,6 +8,13 @@ use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
 use App\Http\Controllers\Api\V1\FilterController;
 use App\Http\Controllers\Api\V1\DarIntegrationController;
+use App\Http\Controllers\Api\V1\PublisherController;
+
+Route::get('/test', function() {
+    return Response::json([
+        'message' => 'lorem ipsum dolor sit amet, consectetur adip',
+    ]);
+});
 
 Route::post('/register', [RegisterController::class, 'create']);
 Route::post('/auth', [AuthController::class, 'checkAuthorization']);
@@ -39,6 +46,13 @@ Route::group(['middleware' => 'jwt.verify'], function() {
     Route::post('/dar-integrations', [DarIntegrationController::class, 'store']);
     Route::patch('/dar-integrations/{id}', [DarIntegrationController::class, 'update']);
     Route::delete('/dar-integrations/{id}', [DarIntegrationController::class, 'destroy']);
+
+    // Publisher routes
+    Route::get('/publishers', [PublisherController::class, 'index']);
+    Route::get('/publishers/{id}', [PublisherController::class, 'show']);
+    Route::post('/publishers', [PublisherController::class, 'store']);
+    Route::patch('/publishers/{id}', [PublisherController::class, 'update']);
+    Route::delete('/publishers/{id}', [PublisherController::class, 'destroy']);
 });
 
 // stop all all other routes
