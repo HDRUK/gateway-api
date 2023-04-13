@@ -162,23 +162,12 @@ class DarIntegrationController extends Controller
      */
     public function store(DarIntegrationRequest $request)
     {
-        try {
-            $dar = DarIntegration::create($request->all());
+        $dar = DarIntegration::create($request->post());
+        if ($dar) {
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $dar->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
-
-        } catch (Throwable $e) {
-            throw new Exception($e->getMessage());
-        }
-
-        $dar = DarIntegration::create($request->post());
-        if ($dar) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $dar->id,
-            ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
         return response()->json([
