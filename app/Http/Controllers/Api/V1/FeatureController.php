@@ -10,14 +10,9 @@ use App\Http\Requests\FeatureRequest;
 
 class FeatureController extends Controller
 {
-    public function __construct()
-    {
-        //
-    }
-
     /**
      * @OA\Get(
-     *    path="/api/v1/features",
+     *    path="api/v1/features",
      *    operationId="fetch_all_features",
      *    tags={"Features"},
      *    summary="FeatureController@index",
@@ -35,15 +30,10 @@ class FeatureController extends Controller
      *                type="array",
      *                @OA\Items()
      *             )
-     *          ),
-     *       ),
-     *    ),
+     *          )
+     *       )
+     *    )
      * )
-     * 
-     * Get All Features
-     *
-     * @param Request $request
-     * @return mixed
      */
     public function index(Request $request): mixed
     {
@@ -57,7 +47,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v1/features/{id}",
+     *    path="api/v1/features/{id}",
      *    operationId="fetch_features",
      *    tags={"Features"},
      *    summary="FeatureController@show",
@@ -72,7 +62,7 @@ class FeatureController extends Controller
      *       @OA\Schema(
      *          type="integer",
      *          description="feature id",
-     *       ),
+     *       )
      *    ),
      *    @OA\Response(
      *       response="200",
@@ -91,30 +81,24 @@ class FeatureController extends Controller
      *                type="array",
      *                @OA\Items()
      *             )
-     *          ),
-     *       ),
+     *          )
+     *       )
      *    ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=404,
-     *          description="Not found response",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found"),
-     *          )
-     *      )
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=404,
+     *        description="Not found response",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="not found"),
+     *        )
+     *    )
      * )
-     * 
-     * Get Feature by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return mixed
      */
     public function show(Request $request, int $id): mixed
     {
@@ -137,7 +121,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Post(
-     *    path="/api/v1/features",
+     *    path="api/v1/features",
      *    operationId="create_features",
      *    tags={"Features"},
      *    summary="FeatureController@store",
@@ -153,9 +137,9 @@ class FeatureController extends Controller
      *                property="type",
      *                type="string",
      *                example="features",
-     *             ),
-     *          ),
-     *       ),
+     *             )
+     *          )
+     *       )
      *    ),
      *      @OA\Response(
      *          response=201,
@@ -180,11 +164,6 @@ class FeatureController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Create a new feature
-     *
-     * @param FeatureRequest $request
-     * @return mixed
      */
     public function store(FeatureRequest $request): mixed
     {
@@ -204,7 +183,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/features",
+     *    path="api/v1/features",
      *    operationId="update_features",
      *    tags={"Features"},
      *    summary="FeatureController@update",
@@ -220,9 +199,9 @@ class FeatureController extends Controller
      *                property="enabled",
      *                type="boolean",
      *                example=true,
-     *             ),
-     *          ),
-     *       ),
+     *             )
+     *          )
+     *       )
      *    ),
      *    @OA\Response(
      *       response="200",
@@ -241,8 +220,8 @@ class FeatureController extends Controller
      *                type="array",
      *                @OA\Items()
      *             )
-     *          ),
-     *       ),
+     *          )
+     *       )
      *    ),
      *      @OA\Response(
      *          response=401,
@@ -266,12 +245,6 @@ class FeatureController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Update tag
-     *
-     * @param FeatureRequest $request
-     * @param integer $id
-     * @return mixed
      */
     public function update(FeatureRequest $request, int $id): mixed
     {
@@ -297,7 +270,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Delete(
-     *    path="/api/v1/features/{id}",
+     *    path="api/v1/features/{id}",
      *    operationId="delete_features",
      *    tags={"Features"},
      *    summary="FeatureController@destroy",
@@ -312,21 +285,21 @@ class FeatureController extends Controller
      *       @OA\Schema(
      *          type="integer",
      *          description="feature id",
-     *       ),
+     *       )
      *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
-     *       ),
+     *       )
      *    ),
      *    @OA\Response(
      *       response=404,
      *       description="Error response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="Resource not found"),
-     *       ),
+     *       )
      *    ),
      *      @OA\Response(
      *          response=401,
@@ -343,11 +316,6 @@ class FeatureController extends Controller
      *          )
      *      )
      * )
-     * 
-     * delete feature by id
-     *
-     * @param integer $id
-     * @return mixed
      */
     public function destroy(int $id): mixed
     {

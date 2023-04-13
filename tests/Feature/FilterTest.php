@@ -5,14 +5,18 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class FilterTest extends TestCase
 {
+    use RefreshDatabase;
     private $accessToken = '';
 
     public function setUp() :void
     {
         parent::setUp();
+
+        $this->seed();
 
         $response = $this->postJson('api/v1/auth', [
             'email' => 'developers@hdruk.ac.uk',
@@ -22,12 +26,6 @@ class FilterTest extends TestCase
 
         $content = $response->decodeResponseJson();  
         $this->accessToken = $content['access_token'];      
-    }
-
-    public function tearDown() :void
-    {
-        parent::tearDown();
-        $this->accessToken = null;
     }
 
     /**
@@ -66,7 +64,29 @@ class FilterTest extends TestCase
      */
     public function test_the_application_can_list_a_single_filter()
     {
-        $response = $this->get('api/v1/filters/3', [
+        $response = $this->json(
+            'POST',
+            'api/v1/filters',
+            [
+                'type' => 'project',
+                'value' => 'Some value here',
+                'keys' => 'purpose',
+                'enabled' => 0,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+
+        $response = $this->get('api/v1/filters/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
         

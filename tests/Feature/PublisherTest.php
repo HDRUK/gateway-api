@@ -5,14 +5,19 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PublisherTest extends TestCase
 {
+    use RefreshDatabase;
+
     private $accessToken = '';
 
     public function setUp() :void
     {
         parent::setUp();
+
+        $this->seed();
 
         $response = $this->postJson('api/v1/auth', [
             'email' => 'developers@hdruk.ac.uk',
@@ -22,12 +27,6 @@ class PublisherTest extends TestCase
 
         $content = $response->decodeResponseJson();  
         $this->accessToken = $content['access_token'];      
-    }
-
-    public function tearDown() :void
-    {
-        parent::tearDown();
-        $this->accessToken = null;
     }
 
     /**
@@ -70,7 +69,35 @@ class PublisherTest extends TestCase
      */
     public function test_the_application_can_show_one_publisher()
     {
-        $response = $this->get('api/v1/publishers/1', [
+        $response = $this->json(
+            'POST', 
+            'api/v1/publishers', 
+            [  
+                'name' => 'A. Test Publisher', 
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'member_of' => 1001,
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+                
+        $response = $this->get('api/v1/publishers/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
 
