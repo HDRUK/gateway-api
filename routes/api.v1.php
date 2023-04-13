@@ -8,8 +8,7 @@ use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
 use App\Http\Controllers\Api\V1\FilterController;
 use App\Http\Controllers\Api\V1\DarIntegrationController;
-use App\Http\Controllers\FilterController;
-use App\Http\Controllers\PublisherController;
+use App\Http\Controllers\Api\V1\PublisherController;
 
 Route::get('/test', function() {
     return Response::json([
