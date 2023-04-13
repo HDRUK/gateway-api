@@ -8,4 +8,11 @@ return [
         'linkedin' => 'linkedin',
         'azure' => 'azure',
     ],
+    'test' => [
+        'user' => [
+            'name' => 'John Doe',
+            'email' => 'john.doe.1234567890@example.com',
+            'password' => 'passw@rdJ0hnD0e'
+        ],
+    ],
 ];

@@ -3,10 +3,12 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Support\Facades\Hash;
 use Database\Seeders\TagSeeder;
-use Database\Seeders\UserSeeder;
 use Illuminate\Database\Seeder;
+use Database\Seeders\UserSeeder;
+use Database\Seeders\FilterSeeder;
+use Database\Seeders\DarIntegrationSeeder;
+use Database\Seeders\PublisherSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,22 +19,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\Filter::factory(50)->create();
-        \App\Models\DarIntegration::factory(50)->create();
-
-        \App\Models\User::factory()->create([
-            'firstname' => 'HDRUK',
-            'lastname' => 'Super-User',
-            'email' => 'developers@hdruk.ac.uk',
-            'provider' => 'service',
-            'password' => Hash::make('Watch26Task?'),
-        ]);
-
-        \App\Models\Publisher::factory(50)->create();
-
         $this->call([
-            TagSeeder::class,
+            FilterSeeder::class,
             UserSeeder::class,
+            TagSeeder::class,
+            FeatureSeeder::class,
+            DarIntegrationSeeder::class,
+            PublisherSeeder::class,
         ]);
     }
 }

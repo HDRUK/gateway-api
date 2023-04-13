@@ -2,23 +2,22 @@
 
 namespace App\Models;
 
-use App\Http\Enums\TagType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Tag extends Model
+class Feature extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
 
     /**
-     * The table associated with the model.
+     * Table associated with this model
      * 
      * @var string
      */
-    protected $table = 'tags';
+    protected $table = 'features';
 
     /**
      * Indicates if the model should be timestamped
@@ -28,26 +27,22 @@ class Tag extends Model
     public $timestamps = true;
 
     /**
-     * Description for this tag
-     * 
-     * @var string
-     */
-    private $description = '';
-
-    /**
      * Enabled for this tag
      * 
      * @var bool
      */
     private $enabled = true;
 
-    protected $casts = [
-        'type' => TagType::class,
-    ];
+    /**
+     * Feature name
+     * 
+     * @var string
+     */
+    private $name = '';
+
 
     protected $fillable = [
-        'type',
-        'description',
+        'name',
         'enabled',
     ];
 }

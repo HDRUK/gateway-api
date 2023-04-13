@@ -5,14 +5,20 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
+use App\Models\DarIntegration;
+use Tests\Traits\Authorization;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DarIntegrationTest extends TestCase
 {
+    use RefreshDatabase;
     private $accessToken = '';
 
     public function setUp() :void
     {
         parent::setUp();
+
+        $this->seed();
 
         $response = $this->postJson('api/v1/auth', [
             'email' => 'developers@hdruk.ac.uk',
@@ -22,12 +28,6 @@ class DarIntegrationTest extends TestCase
 
         $content = $response->decodeResponseJson();  
         $this->accessToken = $content['access_token'];      
-    }
-
-    public function tearDown() :void
-    {
-        parent::tearDown();
-        $this->accessToken = null;
     }
 
     /**
@@ -71,7 +71,36 @@ class DarIntegrationTest extends TestCase
      */
     public function test_the_application_can_list_a_single_dar()
     {
-        $response = $this->get('api/v1/dar-integrations/1', [
+        $response = $this->json(
+            'POST',
+            'api/v1/dar-integrations',
+            [
+                'enabled' => 1,
+                'notification_email' => 'someone@somewhere.com',
+                'outbound_auth_type' => 'auth_type_123',
+                'outbound_auth_key' => 'auth_key_456',
+                'outbound_endpoints_base_url' => 'https://something.com/',
+                'outbound_endpoints_enquiry' => 'enquiry',
+                'outbound_endpoints_5safes' => '5safes',
+                'outbound_endpoints_5safes_files' => '5safes-files',
+                'inbound_service_account_id' => '1234567890',
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals($content['message'], 
+            Config::get('statuscodes.STATUS_CREATED.message'));
+        
+        $response = $this->get('api/v1/dar-integrations/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
         

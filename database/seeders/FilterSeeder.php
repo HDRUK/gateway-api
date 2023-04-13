@@ -2,17 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\Tag;
+use App\Models\Filter;
 use Illuminate\Database\Seeder;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class TagSeeder extends Seeder
+class FilterSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        Tag::factory(2)->create();
+        Filter::factory(50)->create();
     }
 }

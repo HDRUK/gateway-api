@@ -3,30 +3,20 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Exception;
-use App\Models\Tag;
+use App\Models\Feature;
 use Illuminate\Http\Request;
-use App\Http\Requests\TagRequest;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\TagUpdateRequest;
+use App\Http\Requests\FeatureRequest;
 
-class TagController extends Controller
+class FeatureController extends Controller
 {
     /**
-     * constructor method
-     */
-    public function __construct()
-    {
-        //
-    }
-
-
-    /**
      * @OA\Get(
-     *    path="/api/v1/tags",
-     *    operationId="fetch_all_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@index",
-     *    description="Get All Tags",
+     *    path="api/v1/features",
+     *    operationId="fetch_all_features",
+     *    tags={"Features"},
+     *    summary="FeatureController@index",
+     *    description="Get All Features",
      *    security={{"bearerAuth":{}}},
      *    @OA\Response(
      *       response="200",
@@ -40,44 +30,39 @@ class TagController extends Controller
      *                type="array",
      *                @OA\Items()
      *             )
-     *          ),
-     *       ),
-     *    ),
+     *          )
+     *       )
+     *    )
      * )
-     * 
-     * Get All Tags
-     *
-     * @return mixed
      */
-
-    public function index(): mixed
+    public function index(Request $request): mixed
     {
-        $tags = Tag::where('enabled', 1)->get();
+        $features = Feature::where('enabled', 1)->get();
 
         return response()->json([
             'message' => 'success',
-            'data' => $tags
+            'data' => $features
         ], 200);
     }
 
     /**
      * @OA\Get(
-     *    path="/api/v1/tags/{id}",
-     *    operationId="fetch_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@show",
-     *    description="Get tag by id",
+     *    path="api/v1/features/{id}",
+     *    operationId="fetch_features",
+     *    tags={"Features"},
+     *    summary="FeatureController@show",
+     *    description="Get Feature by id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
-     *       description="tag id",
+     *       description="feature id",
      *       required=true,
      *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="tag id",
-     *       ),
+     *          description="feature id",
+     *       )
      *    ),
      *    @OA\Response(
      *       response="200",
@@ -96,42 +81,36 @@ class TagController extends Controller
      *                type="array",
      *                @OA\Items()
      *             )
-     *          ),
-     *       ),
+     *          )
+     *       )
      *    ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=404,
-     *          description="Not found response",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found"),
-     *          )
-     *      )
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=404,
+     *        description="Not found response",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="not found"),
+     *        )
+     *    )
      * )
-     * 
-     * Get Tags by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return mixed
      */
     public function show(Request $request, int $id): mixed
     {
-        $tags = Tag::where([
-            'id' => $id,
+        $features = Feature::where([
+            'id' =>  $id,
             'enabled' => 1,
         ])->get();
 
-        if ($tags->count()) {
+        if ($features->count()) {
             return response()->json([
                 'message' => 'success',
-                'data' => $tags,
+                'data' => $features,
             ], 200);
         }
 
@@ -142,11 +121,11 @@ class TagController extends Controller
 
     /**
      * @OA\Post(
-     *    path="/api/v1/tags",
-     *    operationId="create_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@store",
-     *    description="Create a new tag",
+     *    path="api/v1/features",
+     *    operationId="create_features",
+     *    tags={"Features"},
+     *    summary="FeatureController@store",
+     *    description="Create a new feature",
      *    security={{"bearerAuth":{}}},
      *    @OA\RequestBody(
      *       required=true,
@@ -158,9 +137,9 @@ class TagController extends Controller
      *                property="type",
      *                type="string",
      *                example="features",
-     *             ),
-     *          ),
-     *       ),
+     *             )
+     *          )
+     *       )
      *    ),
      *      @OA\Response(
      *          response=201,
@@ -185,22 +164,17 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Create a new tag
-     *
-     * @param TagRequest $request
-     * @return mixed
      */
-    public function store(TagRequest $request): mixed
+    public function store(FeatureRequest $request): mixed
     {
         try {
             $input = $request->all();
 
-            $tag = Tag::create($input);
+            $feature = Feature::create($input);
 
             return response()->json([
                 'message' => 'created',
-                'data' => $tag->id,
+                'data' => $feature->id,
             ], 201);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -209,11 +183,11 @@ class TagController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/tags",
-     *    operationId="update_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@update",
-     *    description="Update tag",
+     *    path="api/v1/features",
+     *    operationId="update_features",
+     *    tags={"Features"},
+     *    summary="FeatureController@update",
+     *    description="Update feature",
      *    security={{"bearerAuth":{}}},
      *    @OA\RequestBody(
      *       required=true,
@@ -225,9 +199,9 @@ class TagController extends Controller
      *                property="enabled",
      *                type="boolean",
      *                example=true,
-     *             ),
-     *          ),
-     *       ),
+     *             )
+     *          )
+     *       )
      *    ),
      *    @OA\Response(
      *       response="200",
@@ -246,8 +220,8 @@ class TagController extends Controller
      *                type="array",
      *                @OA\Items()
      *             )
-     *          ),
-     *       ),
+     *          )
+     *       )
      *    ),
      *      @OA\Response(
      *          response=401,
@@ -271,14 +245,8 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Update tag
-     *
-     * @param TagUpdateRequest $request
-     * @param integer $id
-     * @return mixed
      */
-    public function update(TagUpdateRequest $request, int $id): mixed
+    public function update(FeatureRequest $request, int $id): mixed
     {
         try {
             $input = $request->all();
@@ -289,12 +257,12 @@ class TagController extends Controller
                 ], 400);
             }
 
-            $tag = Tag::where('id', $id)->update($input);
+            $features = Feature::where('id', $id)->update($input);
 
             return response()->json([
                 'message' => 'success',
-                'data' => $tag
-            ], 202);
+                'data' => $features
+            ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -302,36 +270,36 @@ class TagController extends Controller
 
     /**
      * @OA\Delete(
-     *    path="/api/v1/tags/{id}",
-     *    operationId="delete_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@destroy",
-     *    description="Delete tag by id",
+     *    path="api/v1/features/{id}",
+     *    operationId="delete_features",
+     *    tags={"Features"},
+     *    summary="FeatureController@destroy",
+     *    description="Delete Feature based in id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
-     *       description="tag id",
+     *       description="feature id",
      *       required=true,
      *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="tag id",
-     *       ),
+     *          description="feature id",
+     *       )
      *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
-     *       ),
+     *       )
      *    ),
      *    @OA\Response(
      *       response=404,
      *       description="Error response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="Resource not found"),
-     *       ),
+     *       )
      *    ),
      *      @OA\Response(
      *          response=401,
@@ -348,19 +316,14 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     * 
-     * delete tag by id
-     *
-     * @param string $id
-     * @return mixed
      */
-    public function destroy(string $id): mixed
+    public function destroy(int $id): mixed
     {
         try {
-            $tags = Tag::where('id', $id)->count();
+            $features = Feature::where('id', $id)->get();
 
-            if ($tags) {
-                Tag::where('id', $id)->delete();
+            if ($features) {
+                Feature::where('id', $id)->delete();
 
                 return response()->json([
                     'message' => 'success',
@@ -368,7 +331,7 @@ class TagController extends Controller
             }
 
             return response()->json([
-                'message' => 'not found.',
+                'message' => 'not found',
             ], 404);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

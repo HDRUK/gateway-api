@@ -2,17 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\Tag;
-use Illuminate\Database\Seeder;
+use App\Models\Feature;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
 
-class TagSeeder extends Seeder
+class FeatureSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        Tag::factory(2)->create();
+        Feature::factory(50)->create();
     }
 }

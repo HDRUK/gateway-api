@@ -2,17 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\DarIntegration;
+use App\Models\Publisher;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class DarIntegrationSeeder extends Seeder
+class PublisherSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        DarIntegration::factory(50)->create();
+        Publisher::factory(50)->create();
     }
 }
