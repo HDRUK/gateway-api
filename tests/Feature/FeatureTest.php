@@ -61,14 +61,14 @@ class FeatureTest extends TestCase
     }
 
     /**
-     * Get All Features with no success
+     * Get All Features and generate exception
      * 
      * @return void
      */
     public function test_get_all_features_and_generate_exception(): void
     {
         $response = $this->json('GET', self::TEST_URL_FEATURE, [], []);
-        $response->assertStatus(500);
+        $response->assertStatus(401);
     }
 
     /**
