@@ -83,9 +83,9 @@ class Publisher extends Model
     /**
      * Indicates the organisation the publisher is a member of
      * 
-     * @var string
+     * @var int
      */
-    private $member_of = '';
+    private $member_of = 0;
 
     /**
      * Represents the contact point for the publisher
