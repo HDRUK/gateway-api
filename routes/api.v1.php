@@ -27,26 +27,19 @@ Route::get('/auth/{provider}/callback', [SocialLoginController::class, 'callback
 Route::group(['middleware' => 'jwt.verify'], function() {
     Route::any('/test', [TestController::class, 'test']);
 
-    // tags
+    // tags routes
     Route::get('/tags', [TagController::class, 'index']);
     Route::get('/tags/{id}', [TagController::class, 'show'])->where('id', '[0-9]+');
     Route::post('/tags', [TagController::class, 'store']);
     Route::patch('/tags/{id}', [TagController::class, 'update'])->where('id', '[0-9]+');
     Route::delete('/tags/{id}', [TagController::class, 'destroy'])->where('id', '[0-9]+');
 
-    // features
+    // features routes
     Route::get('/features', [FeatureController::class, 'index']);
     Route::get('/features/{id}', [FeatureController::class, 'show'])->where('id', '[0-9]+');
     Route::post('/features', [FeatureController::class, 'store']);
     Route::patch('/features/{id}', [FeatureController::class, 'update'])->where('id', '[0-9]+');
     Route::delete('/features/{id}', [FeatureController::class, 'destroy'])->where('id', '[0-9]+');
-
-    // features
-    Route::get('/features/{id?}', [FeatureController::class, 'show'])->where('id', '[0-9]+');
-    // Route::post('/features', [FeatureController::class, 'store']);
-    // Route::patch('/features/{id}', [FeatureController::class, 'update'])->where('id', '[0-9]+');
-    Route::delete('/features/{id}', [FeatureController::class, 'destroy'])->where('id', '[0-9]+');
-    Route::patch('/features/{id}/restore', [FeatureController::class, 'restore'])->where('id', '[0-9]+');
 
     // Filter routes
     Route::get('/filters', [FilterController::class, 'index']);
@@ -70,14 +63,6 @@ Route::group(['middleware' => 'jwt.verify'], function() {
     Route::delete('/publishers/{id}', [PublisherController::class, 'destroy']);
 
 });
-
-
-// features
-// Route::get('/features/{id?}', [FeatureController::class, 'show'])->where('id', '[0-9]+');
-// Route::post('/features', [FeatureController::class, 'store']);
-// Route::patch('/features/{id}', [FeatureController::class, 'update'])->where('id', '[0-9]+');
-// Route::delete('/features/{id}', [FeatureController::class, 'destroy'])->where('id', '[0-9]+');
-// Route::patch('/features/{id}/restore', [FeatureController::class, 'restore'])->where('id', '[0-9]+');
 
 
 // stop all all other routes

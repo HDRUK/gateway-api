@@ -69,7 +69,7 @@ class TagTest extends TestCase
     public function test_get_all_tags_and_generate_exception(): void
     {
         $response = $this->json('GET', self::TEST_URL_TAG, [], []);
-        $response->assertStatus(500);
+        $response->assertStatus(401);
     }
 
     /**
