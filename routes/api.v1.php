@@ -28,6 +28,23 @@ Route::get('/auth/{provider}/callback', [SocialLoginController::class, 'callback
 Route::group(['middleware' => ['jwt.verify', 'sanitize.input']], function() {
     Route::any('/test', [TestController::class, 'test']);
 
+    // $controllers = [
+    //     'tags' => 'TagController',
+    //     'features' => 'FeatureController',
+    //     'filters' => 'FilterController',
+    //     'dar-integrations' => 'DarIntegrationController',
+    //     'publishers' => 'PublisherController',
+    //     'tools' => 'ToolController',
+    // ];
+
+    // foreach($controllers as $path => $controller) {
+    //     Route::get('/' . $path, ['uses' => $controller . '@index']);
+    //     Route::get('/' . $path . '/{id}', ['uses' => $controller . '@show'])->where('id', '[0-9]+');
+    //     Route::post('/' . $path, ['uses' => $controller . '@store']);
+    //     Route::patch('/' . $path . '/{id} ', ['uses' => $controller . '@update'])->where('id', '[0-9]+');
+    //     Route::delete('/' . $path . '/{id}', ['uses' => $controller . '@destroy'])->where('id', '[0-9]+');
+    // }
+
     // tags routes
     Route::get('/tags', [TagController::class, 'index']);
     Route::get('/tags/{id}', [TagController::class, 'show'])->where('id', '[0-9]+');

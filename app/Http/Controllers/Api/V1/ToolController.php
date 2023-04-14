@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Exception;
 use App\Models\Tool;
+use App\Models\ToolHasTag;
 use Illuminate\Http\Request;
 use App\Http\Requests\ToolRequest;
 use App\Http\Controllers\Controller;
-use App\Models\ToolHasTag;
 
 class ToolController extends Controller
 {
