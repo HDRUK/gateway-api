@@ -67,15 +67,9 @@ Route::group(['middleware' => ['jwt.verify', 'sanitize.input']], function() {
     Route::get('/tools', [ToolController::class, 'index']);
     Route::get('/tools/{id}', [ToolController::class, 'show'])->where('id', '[0-9]+');
     Route::post('/tools', [ToolController::class, 'store']);
-    // Route::patch('/tools/{id}', [ToolController::class, 'update'])->where('id', '[0-9]+');
-    // Route::delete('/tools/{id}', [ToolController::class, 'destroy'])->where('id', '[0-9]+');
+    Route::patch('/tools/{id}', [ToolController::class, 'update'])->where('id', '[0-9]+');
+    Route::delete('/tools/{id}', [ToolController::class, 'destroy'])->where('id', '[0-9]+');
 });
-
-// Route::get('/tools', [ToolController::class, 'index']);
-// Route::get('/tools/{id}', [ToolController::class, 'show'])->where('id', '[0-9]+');
-// Route::post('/tools', [ToolController::class, 'store']);
-Route::patch('/tools/{id}', [ToolController::class, 'update'])->where('id', '[0-9]+');
-Route::delete('/tools/{id}', [ToolController::class, 'destroy'])->where('id', '[0-9]+');
 
 // stop all all other routes
 Route::any('{path}', function() {
