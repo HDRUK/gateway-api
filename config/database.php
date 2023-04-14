@@ -93,6 +93,12 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'dsn' => sprintf(env('MONGO_DB_DSN'), env('MONGO_DB_USERNAME'), env('MONGO_DB_PASSWORD')),
+            'database' => env('MONGO_DB_DATABASE'),
+        ],
+
     ],
 
     /*

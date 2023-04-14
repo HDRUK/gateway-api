@@ -24,6 +24,8 @@ RUN apt-get update && apt-get install -y \
 # RUN pecl install xdebug && \
 #     docker-php-ext-enable xdebug
 
+RUN pecl install mongodb
+
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin --filename=composer
 
@@ -31,6 +33,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
 
 # COPY ./init/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 COPY ./init/php.development.ini /usr/local/etc/php/php.ini
+RUN echo "extension=mongodb.so" > /usr/local/etc/php/conf.d/mongo.ini
 
 # RUN echo "pm.status_path = /status" >> /usr/local/etc/php/php.ini
 # RUN echo "ping.path = /ping" >> /usr/local/etc/php/php.ini
