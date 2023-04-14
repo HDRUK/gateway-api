@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tag extends Model
 {
@@ -55,7 +56,7 @@ class Tag extends Model
     /**
      * The tools that belong to the tag.
      */
-    public function tool()
+    public function tool(): BelongsToMany
     {
         return $this->belongsToMany(Tool::class, 'tool_has_tags');
     }

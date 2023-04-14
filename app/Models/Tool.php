@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tool extends Model
 {
@@ -34,7 +36,7 @@ class Tool extends Model
     /**
      * Get the ids associated with the user.
      */
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -42,7 +44,7 @@ class Tool extends Model
     /**
      * The tags that belong to the tool.
      */
-    public function tag()
+    public function tag(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'tool_has_tags');
     }
