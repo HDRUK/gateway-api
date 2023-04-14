@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Tool;
 use App\Http\Enums\TagType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -50,4 +51,12 @@ class Tag extends Model
         'description',
         'enabled',
     ];
+
+    /**
+     * The tools that belong to the tag.
+     */
+    public function tool()
+    {
+        return $this->belongsToMany(Tool::class, 'tool_has_tags');
+    }
 }

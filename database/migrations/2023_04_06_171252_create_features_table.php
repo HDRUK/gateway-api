@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('features', function (Blueprint $table) {
             $table->id();
-            $table->char('name', 255)->default('');
+            $table->char('name', 255)->nullable();
             $table->boolean('enabled')->default(true);
             $table->timestamps();
             $table->softDeletes()->nullable(true);

@@ -63,7 +63,559 @@
                 }
             }
         },
-        "/api/v1/features": {
+        "api/v1/dar-integration": {
+            "get": {
+                "summary": "List of system Dar Integrations",
+                "description": "Returns a list of DAR integrations enabled on the system",
+                "operationId": "39e282311765e3bd2f5b6bfddfd8d28d",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "notification_email": {
+                                                        "type": "string",
+                                                        "example": "someone@somewhere.com"
+                                                    },
+                                                    "outbound_auth_type": {
+                                                        "type": "string",
+                                                        "example": ""
+                                                    },
+                                                    "outbound_auth_key": {
+                                                        "type": "string",
+                                                        "example": ""
+                                                    },
+                                                    "outbound_endpoints_base_url": {
+                                                        "type": "string",
+                                                        "example": ""
+                                                    },
+                                                    "outbound_endpoints_enquiry": {
+                                                        "type": "string",
+                                                        "example": ""
+                                                    },
+                                                    "outbound_endpoints_5safes": {
+                                                        "type": "string",
+                                                        "example": ""
+                                                    },
+                                                    "outbound_endpoints_5safes_files": {
+                                                        "type": "string",
+                                                        "example": ""
+                                                    },
+                                                    "inbound_service_account_id": {
+                                                        "type": "string",
+                                                        "example": ""
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/v1/dar-integration/{id}": {
+            "get": {
+                "summary": "Return a single system Dar Integration",
+                "description": "Returns a single DAR integration enabled on the system",
+                "operationId": "5f35b3a8eb03c6ca5e4ee977eb1ac5ca",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": "123"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2023-04-03 12:00:00"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2023-04-03 12:00:00"
+                                        },
+                                        "enabled": {
+                                            "type": "boolean",
+                                            "example": "1"
+                                        },
+                                        "notification_email": {
+                                            "type": "string",
+                                            "example": "someone@somewhere.com"
+                                        },
+                                        "outbound_auth_type": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "outbound_auth_key": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "outbound_endpoints_base_url": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "outbound_endpoints_enquiry": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "outbound_endpoints_5safes": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "outbound_endpoints_5safes_files": {
+                                            "type": "string",
+                                            "example": ""
+                                        },
+                                        "inbound_service_account_id": {
+                                            "type": "string",
+                                            "example": ""
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new system Dar Integration",
+                "description": "Creates a new DAR integration enabled on the system",
+                "operationId": "1d4cfea301802b70a61c70c15490443d",
+                "requestBody": {
+                    "description": "DarIntegration definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "enabled",
+                                    "notification_email",
+                                    "outbound_auth_type",
+                                    "outbound_auth_key",
+                                    "outbound_endpoints_base_url",
+                                    "outbound_endpoints_enquiry",
+                                    "outbound_endpoints_5safes",
+                                    "outbound_endpoints_5safes_files",
+                                    "inbound_service_account_id"
+                                ],
+                                "properties": {
+                                    "enabled": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "notification_email": {
+                                        "type": "string",
+                                        "example": "someone@somewhere.com"
+                                    },
+                                    "outbound_auth_type": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_auth_key": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_base_url": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_enquiry": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_5safes": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_5safes_files": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "inbound_service_account_id": {
+                                        "type": "string",
+                                        "example": ""
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Updates a system Dar Integration",
+                "description": "Updates a DAR integration enabled on the system",
+                "operationId": "0177557c2b1f3297e14204b40ab7e385",
+                "requestBody": {
+                    "description": "DarIntegration definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "enabled",
+                                    "notification_email",
+                                    "outbound_auth_type",
+                                    "outbound_auth_key",
+                                    "outbound_endpoints_base_url",
+                                    "outbound_endpoints_enquiry",
+                                    "outbound_endpoints_5safes",
+                                    "outbound_endpoints_5safes_files",
+                                    "inbound_service_account_id"
+                                ],
+                                "properties": {
+                                    "enabled": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "notification_email": {
+                                        "type": "string",
+                                        "example": "someone@somewhere.com"
+                                    },
+                                    "outbound_auth_type": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_auth_key": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_base_url": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_enquiry": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_5safes": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_5safes_files": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "inbound_service_account_id": {
+                                        "type": "string",
+                                        "example": ""
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "notification_email": {
+                                                    "type": "string",
+                                                    "example": "someone@somewhere.com"
+                                                },
+                                                "outbound_auth_type": {
+                                                    "type": "string",
+                                                    "example": ""
+                                                },
+                                                "outbound_auth_key": {
+                                                    "type": "string",
+                                                    "example": ""
+                                                },
+                                                "outbound_endpoints_base_url": {
+                                                    "type": "string",
+                                                    "example": ""
+                                                },
+                                                "outbound_endpoints_enquiry": {
+                                                    "type": "string",
+                                                    "example": ""
+                                                },
+                                                "outbound_endpoints_5safes": {
+                                                    "type": "string",
+                                                    "example": ""
+                                                },
+                                                "outbound_endpoints_5safes_files": {
+                                                    "type": "string",
+                                                    "example": ""
+                                                },
+                                                "inbound_service_account_id": {
+                                                    "type": "string",
+                                                    "example": ""
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "api/v1/dar-integrations/{id}": {
+            "delete": {
+                "summary": "Delete a system Dar Integration",
+                "description": "Delete a system Dar Integration",
+                "operationId": "e04cdbdf91cd43c8acd349418135c309",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "api/v1/features": {
             "get": {
                 "tags": [
                     "Features"
@@ -288,7 +840,7 @@
                 ]
             }
         },
-        "/api/v1/features/{id}": {
+        "api/v1/features/{id}": {
             "get": {
                 "tags": [
                     "Features"
@@ -853,6 +1405,551 @@
                 }
             }
         },
+        "api/v1/publishers": {
+            "get": {
+                "summary": "List of publishers",
+                "description": "Returns a list of publishers enabled on the system",
+                "operationId": "1fcdfcdb99d4b963807357bdb7006858",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "someName"
+                                                    },
+                                                    "allows_messaging": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "workflow_enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "access_requests_management": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "uses_5_safes": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "member_of": {
+                                                        "type": "string",
+                                                        "example": "someOrg"
+                                                    },
+                                                    "contact_point": {
+                                                        "type": "string",
+                                                        "example": "someone@mail.com"
+                                                    },
+                                                    "application_form_updated_by": {
+                                                        "type": "integer",
+                                                        "example": "555"
+                                                    },
+                                                    "application_form_updated_on": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create a new publisher",
+                "description": "Creates a new publisher",
+                "operationId": "e6fc91e602fe48826a545419b211ffda",
+                "requestBody": {
+                    "description": "Publisher details",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "enabled",
+                                    "allows_messaging",
+                                    "workflow_enabled",
+                                    "access_requests_management",
+                                    "uses_5_safes",
+                                    "member_of",
+                                    "contact_point",
+                                    "application_form_updated_by",
+                                    "application_form_updated_on"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "someName"
+                                    },
+                                    "allows_messaging": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "workflow_enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "access_requests_management": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "uses_5_safes": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "member_of": {
+                                        "type": "string",
+                                        "example": "someOrg"
+                                    },
+                                    "contact_point": {
+                                        "type": "string",
+                                        "example": "someone@mail.com"
+                                    },
+                                    "application_form_updated_by": {
+                                        "type": "integer",
+                                        "example": "555"
+                                    },
+                                    "application_form_updated_on": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/v1/publishers/{id}": {
+            "get": {
+                "summary": "Return a single publisher",
+                "description": "Return a single publisher",
+                "operationId": "547b3370b799616613e83552fd5a5bca",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "someName"
+                                                },
+                                                "allows_messaging": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "workflow_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "access_requests_management": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "uses_5_safes": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "member_of": {
+                                                    "type": "string",
+                                                    "example": "someOrg"
+                                                },
+                                                "contact_point": {
+                                                    "type": "string",
+                                                    "example": "someone@mail.com"
+                                                },
+                                                "application_form_updated_by": {
+                                                    "type": "integer",
+                                                    "example": "555"
+                                                },
+                                                "application_form_updated_on": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "summary": "Delete a publisher",
+                "description": "Delete a publisher",
+                "operationId": "36a51f630358536e6a0ebd380326bfeb",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "summary": "Update a publisher",
+                "description": "Update a publisher",
+                "operationId": "c9c97713ecb123b2829007781b954b66",
+                "requestBody": {
+                    "description": "Publisher definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "enabled",
+                                    "allows_messaging",
+                                    "workflow_enabled",
+                                    "access_requests_management",
+                                    "uses_5_safes",
+                                    "member_of",
+                                    "contact_point",
+                                    "application_form_updated_by",
+                                    "application_form_updated_on"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "someName"
+                                    },
+                                    "allows_messaging": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "workflow_enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "access_requests_management": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "uses_5_safes": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "member_of": {
+                                        "type": "string",
+                                        "example": "someOrg"
+                                    },
+                                    "contact_point": {
+                                        "type": "string",
+                                        "example": "someone@mail.com"
+                                    },
+                                    "application_form_updated_by": {
+                                        "type": "integer",
+                                        "example": "555"
+                                    },
+                                    "application_form_updated_on": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "someName"
+                                                },
+                                                "allows_messaging": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "workflow_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "access_requests_management": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "uses_5_safes": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "member_of": {
+                                                    "type": "string",
+                                                    "example": "someOrg"
+                                                },
+                                                "contact_point": {
+                                                    "type": "string",
+                                                    "example": "someone@mail.com"
+                                                },
+                                                "application_form_updated_by": {
+                                                    "type": "integer",
+                                                    "example": "555"
+                                                },
+                                                "application_form_updated_on": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/register": {
             "post": {
                 "tags": [
@@ -1271,6 +2368,500 @@
                         "required": true,
                         "schema": {
                             "description": "tag id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/tools": {
+            "get": {
+                "tags": [
+                    "Tools"
+                ],
+                "summary": "ToolController@index",
+                "description": "Get All Tools",
+                "operationId": "fetch_all_tools",
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tools"
+                ],
+                "summary": "ToolController@store",
+                "description": "Create a new tool",
+                "operationId": "create_tools",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Similique sapiente est vero eum."
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "example": "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel."
+                                    },
+                                    "license": {
+                                        "type": "string",
+                                        "example": "Inventore omnis aut laudantium vel alias."
+                                    },
+                                    "tech_stack": {
+                                        "type": "string",
+                                        "example": "Cumque molestias excepturi quam at."
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "format": "int64",
+                                            "example": 1
+                                        },
+                                        "collectionFormat": "multi"
+                                    },
+                                    "enabled": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/tools/{id}": {
+            "get": {
+                "tags": [
+                    "Tools"
+                ],
+                "summary": "ToolController@show",
+                "description": "Get tool by id",
+                "operationId": "fetch_tools",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "tool id",
+                        "required": true,
+                        "schema": {
+                            "description": "tool id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tools"
+                ],
+                "summary": "ToolController@update",
+                "description": "Update tool by id",
+                "operationId": "update_tools",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "tool id",
+                        "required": true,
+                        "schema": {
+                            "description": "tool id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Similique sapiente est vero eum."
+                                    },
+                                    "url": {
+                                        "type": "string",
+                                        "example": "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel."
+                                    },
+                                    "license": {
+                                        "type": "string",
+                                        "example": "Inventore omnis aut laudantium vel alias."
+                                    },
+                                    "tech_stack": {
+                                        "type": "string",
+                                        "example": "Cumque molestias excepturi quam at."
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "format": "int64",
+                                            "example": 1
+                                        },
+                                        "collectionFormat": "multi"
+                                    },
+                                    "enabled": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "ToolController@destroy",
+                "description": "Delete tool by id",
+                "operationId": "delete_tools",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "tool id",
+                        "required": true,
+                        "schema": {
+                            "description": "tool id",
                             "type": "integer"
                         },
                         "example": "1"

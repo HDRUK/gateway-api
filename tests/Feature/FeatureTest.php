@@ -41,7 +41,7 @@ class FeatureTest extends TestCase
      */
     public function test_get_all_features_with_success(): void
     {
-        $countTag = FeatureModel::all()->count();
+        $countTag = FeatureModel::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL_FEATURE, [], $this->header);
 
         $this->assertCount($countTag, $response['data']);
@@ -95,9 +95,14 @@ class FeatureTest extends TestCase
         $response->assertStatus(200);
     }
 
+    /**
+     * Create new Feature with success
+     * 
+     * @return void
+     */
     public function test_add_new_feature_with_success(): void
     {
-        $countFeatureBefore = FeatureModel::all()->count();
+        $countBefore = FeatureModel::all()->count();
 
         $jwt = $this->getAuthorisationJwt();
         $header = [
@@ -114,8 +119,8 @@ class FeatureTest extends TestCase
             $header
         );
 
-        $countFeatureAfter = FeatureModel::all()->count();
-        $countNewRow = $countFeatureAfter - $countFeatureBefore;
+        $countAfter = FeatureModel::all()->count();
+        $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);

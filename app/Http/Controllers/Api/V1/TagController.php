@@ -7,7 +7,6 @@ use App\Models\Tag;
 use Illuminate\Http\Request;
 use App\Http\Requests\TagRequest;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\TagUpdateRequest;
 
 class TagController extends Controller
 {
@@ -18,7 +17,6 @@ class TagController extends Controller
     {
         //
     }
-
 
     /**
      * @OA\Get(
@@ -274,11 +272,11 @@ class TagController extends Controller
      * 
      * Update tag
      *
-     * @param TagUpdateRequest $request
+     * @param TagRequest $request
      * @param integer $id
      * @return mixed
      */
-    public function update(TagUpdateRequest $request, int $id): mixed
+    public function update(TagRequest $request, int $id): mixed
     {
         try {
             $input = $request->all();
