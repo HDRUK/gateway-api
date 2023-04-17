@@ -197,11 +197,17 @@ class ToolController extends Controller
 
             $tool = Tool::create($arrayTool);
 
-            foreach ($arrayToolTag as $value) {
-                ToolHasTag::updateOrCreate([
-                    'tool_id' => (int) $tool->id,
-                    'tag_id' => (int) $value,
-                ]);
+            if ($tool) {
+                foreach ($arrayToolTag as $value) {
+                    ToolHasTag::updateOrCreate([
+                        'tool_id' => (int) $tool->id,
+                        'tag_id' => (int) $value,
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'bad request',
+                ], 400);
             }
 
             return response()->json([

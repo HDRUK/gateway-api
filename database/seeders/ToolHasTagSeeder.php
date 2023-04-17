@@ -33,26 +33,5 @@ class ToolHasTagSeeder extends Seeder
 
             $count++;
         }
-
-        // generate for each tool.id one record with random tag.id
-        // $tools = Tool::all();
-
-        // foreach ($tools as $tool) {
-        //     $toolId = $tool->id;
-        //     $tagId = Tag::all()->random()->id;
-
-        //     $toolHasTags = ToolHasTag::where([
-        //         'tool_id' => $toolId,
-        //         'tag_id' => $tagId,
-        //     ])->first();
-
-        //     if (!$toolHasTags) {
-        //         ToolHasTag::create([
-        //             'tool_id' => $toolId,
-        //             'tag_id' => $tagId,
-        //         ]);
-        //     }
-        // }
-
     }
 }

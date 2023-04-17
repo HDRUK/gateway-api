@@ -12,7 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tool_has_tags', function (Blueprint $table) {
-            $table->id();
             $table->bigInteger('tool_id')->unsigned();
             $table->bigInteger('tag_id')->unsigned();
             $table->foreign('tool_id')->references('id')->on('tools');
