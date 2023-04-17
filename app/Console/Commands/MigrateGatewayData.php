@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Config;
+use Exception;
 use MongoDB\Client;
 use Illuminate\Console\Command;
 
@@ -33,19 +35,29 @@ class MigrateGatewayData extends Command
         $verbose = $this->option('logs');
         $dryRun = $this->option('dryRun');
 
-        $srcModel = $this->argument('srcModel');
+        $srcModel = strtolower($this->argument('srcModel'));
         $destModel = $this->argument('destModel');
 
-        var_dump($verbose);
-        var_dump($dryRun);
+        try {
+            $client = new Client(
+                Config::get('database.connections.mongodb.dsn'),
+                [
+                    'serverSelectionTryOnce' => true,
+                    'ssl' => false,
+                    // 'replicaSet' => 'DevCluster-shard-0',
+                    'authSource' => 'admin',
+                    // 'readPreference' => 'secondaryPreferred',
+                ]
+            );
 
-        var_dump($srcModel);
-        var_dump($destModel);
+            $collection = ($client)
+                ->{Config::get('database.connections.mongodb.database')}
+                ->{$srcModel};
+            $document = $collection->findOne(['_id' => '5e544facbd427b6e9cd9059c']);
 
-        $client = new MongoDB\Client(
-            Config::get('database.mongodb.dsn')
-        );
-
-        var_dump($client);
+            var_dump($document);
+        } catch (Exception $e) {
+            printf($e->getMessage());
+        }
     }
 }

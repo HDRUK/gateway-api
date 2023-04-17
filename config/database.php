@@ -95,7 +95,8 @@ return [
 
         'mongodb' => [
             'driver' => 'mongodb',
-            'dsn' => sprintf(env('MONGO_DB_DSN'), env('MONGO_DB_USERNAME'), env('MONGO_DB_PASSWORD')),
+            'dsn' => env('MONGO_DB_DSN'), //sprintf(env('MONGO_DB_DSN'), env('MONGO_DB_USERNAME'),
+                //env('MONGO_DB_PASSWORD')),
             'database' => env('MONGO_DB_DATABASE'),
         ],
 
