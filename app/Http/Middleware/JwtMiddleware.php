@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use Config;
+
 use App\Http\Controllers\JwtController;
 use Closure;
 use Illuminate\Http\Request;
@@ -26,7 +28,23 @@ class JwtMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Cater for auth token coming in via cookie - as sent originally during
+        // the socialite oath flow
+        if ($request->cookie('token')) {
+            $authorization = $request->cookie('token');
+            $jwtController = new JwtController();
+            $jwtController->setJwt($authorization);
+            
+            if (!$jwtController->isValid()) {
+                return response()->json([
+                    Config::get('statuscodes.STATUS_UNAUTHORIZED.message'),
+                ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+            }
 
+            return $next($request);
+        }
+
+        // Otherwise fall back to bearer authorization header
         $autorization = $request->header('Authorization');
         $splitAutorization = explode(' ',$autorization);
 
@@ -43,8 +61,8 @@ class JwtMiddleware
 
         } else {
             return response()->json([
-                'unauthorized',
-            ], 401);
+                Config::get('statuscodes.STATUS_UNAUTHORIZED.message'),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
             // LS - Removed, as this should consistently return an HTTP
             // Status code, rather than throw an exception
             // throw new \Exception("No authorization");
