@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
-use App\Models\Tool;
-use App\Http\Enums\TagType;
+use App\Models\Tag;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Tag extends Model
+class Tool extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
 
@@ -20,7 +20,7 @@ class Tag extends Model
      * 
      * @var string
      */
-    protected $table = 'tags';
+    protected $table = 'tools';
 
     /**
      * Indicates if the model should be timestamped
@@ -29,35 +29,23 @@ class Tag extends Model
      */
     public $timestamps = true;
 
-    /**
-     * Description for this tag
-     * 
-     * @var string
-     */
-    private $description = '';
-
-    /**
-     * Enabled for this tag
-     * 
-     * @var bool
-     */
-    private $enabled = true;
-
-    protected $casts = [
-        'type' => TagType::class,
-    ];
-
     protected $fillable = [
-        'type',
-        'description',
-        'enabled',
+        'mongo_object_id', 'name', 'url', 'description', 'license', 'tech_stack', 'user_id', 'enabled',
     ];
 
     /**
-     * The tools that belong to the tag.
+     * Get the ids associated with the user.
      */
-    public function tool(): BelongsToMany
+    public function user(): BelongsTo
     {
-        return $this->belongsToMany(Tool::class, 'tool_has_tags');
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * The tags that belong to the tool.
+     */
+    public function tag(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'tool_has_tags');
     }
 }

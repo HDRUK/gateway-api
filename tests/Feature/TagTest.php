@@ -35,13 +35,13 @@ class TagTest extends TestCase
     }
 
     /**
-     * Get All Tag with success
+     * Get All Tags with success
      * 
      * @return void
      */
     public function test_get_all_tags_with_success(): void
     {
-        $countTag = Tag::all()->count();
+        $countTag = Tag::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL_TAG, [], $this->header);
 
         $this->assertCount($countTag, $response['data']);
