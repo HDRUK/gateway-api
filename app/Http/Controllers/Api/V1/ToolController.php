@@ -215,29 +215,6 @@ class ToolController extends Controller
     }
 
     /**
-     * Insert data into ToolHasTag
-     *
-     * @param array $tags
-     * @param integer $toolId
-     * @return mixed
-     */
-    private function insertToolHasTag(array $tags, int $toolId): mixed
-    {
-        try {
-            foreach ($tags as $value) {
-                ToolHasTag::updateOrCreate([
-                    'tool_id' => (int) $toolId,
-                    'tag_id' => (int) $value,
-                ]);
-            }
-
-            return true;
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        } 
-    }
-
-    /**
      * @OA\Post(
      *    path="/api/v1/tools/{id}",
      *    operationId="update_tools",
@@ -304,10 +281,10 @@ class ToolController extends Controller
      * Update tool
      *
      * @param ToolRequest $request
-     * @param string $id
+     * @param integer $id
      * @return mixed
      */
-    public function update(ToolRequest $request, string $id): mixed
+    public function update(ToolRequest $request, int $id): mixed
     {
         try {
             $input = $request->all();
@@ -335,16 +312,13 @@ class ToolController extends Controller
 
             Tool::withTrashed()->where('id', $id)->update($arrayTool);
 
-            foreach ($arrayToolTag as $value) {
-                ToolHasTag::updateOrCreate([
-                    'tool_id' => (int) $id,
-                    'tag_id' => (int) $value,
-                ]);
-            }
+            ToolHasTag::where('tool_id', $id)->delete();
+
+            $this->insertToolHasTag($arrayToolTag, (int) $id);
 
             return response()->json([
                 'message' => 'success',
-                'data' => Tool::with(['user', 'tag'])->withTrashed()->where('id', $id)->get()
+                'data' => Tool::with(['user', 'tag'])->withTrashed()->where('id', $id)->first()
             ], 202);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -403,10 +377,10 @@ class ToolController extends Controller
      * 
      * Delete tool by id
      * 
-     * @param string $id
+     * @param integer $id
      * @return mixed
      */
-    public function destroy(string $id): mixed
+    public function destroy(int $id): mixed
     {
         try {
             $tool = Tool::where([
@@ -424,6 +398,29 @@ class ToolController extends Controller
             return response()->json([
                 'message' => 'not found.',
             ], 404);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert data into ToolHasTag
+     *
+     * @param array $tags
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertToolHasTag(array $tags, int $toolId): mixed
+    {
+        try {
+            foreach ($tags as $value) {
+                ToolHasTag::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'tag_id' => (int) $value,
+                ]);
+            }
+
+            return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
+use Config;
 use Tests\TestCase;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
-use Illuminate\Http\Request;
 use App\Http\Requests\ToolRequest;
 use Tests\Traits\Authorization;
 use App\Http\Controllers\Api\V1\ToolController;
@@ -196,7 +196,8 @@ class ToolTest extends TestCase
      */
     public function test_update_tool_with_success(): void 
     {
-        $mockData = array(
+        // insert
+        $mockDataIns = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
@@ -204,37 +205,69 @@ class ToolTest extends TestCase
             "license" => "Inventore omnis aut laudantium vel alias.",
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "user_id" => 1,
-            "tag" => array(1, 2),
+            "tag" => array(1),
+            "enabled" => 1,
+        );
+        $responseIns = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $mockDataIns,
+            $this->header
+        );
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseIns->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+        $this->assertEquals(
+            $responseIns['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+        $toolIdInsert = $responseIns['data'];
+
+        $responseIns->assertStatus(201);
+
+        // update
+        $mockDataUpdate = array(
+            "name" => "Ea fuga ab aperiam nihil quis.",
+            "url" => "http://dach.com/odio-facilis-ex-culpa",
+            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
+            "license" => "Modi tenetur et et perferendis.",
+            "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "user_id" => 1,
+            "tag" => array(2),
             "enabled" => 1,
         );
 
-        $response = $this->json(
+        $responseUpdate = $this->json(
             'PATCH',
-            self::TEST_URL . '/1',
-            $mockData,
+            self::TEST_URL . '/' . $toolIdInsert,
+            $mockDataUpdate,
             $this->header
         );
-        $response->assertJsonStructure([
-            'data' => [
-                0 => [
-                    'id',
-                    'mongo_object_id',
-                    'name',
-                    'url',
-                    'description',
-                    'license',
-                    'tech_stack',
-                    'user_id',
-                    'enabled',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'user',
-                    'tag',
-                ]
-            ]
+        $responseUpdate->assertJsonStructure([
+            'message',
+            'data',
         ]);
-        $response->assertStatus(202);
+        $responseUpdate->assertStatus(202);
+        $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
+        $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
+        $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
+        $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
+        $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
+        $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
+        $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
+
+        $toolHasTags = ToolHasTag::where('tool_id', $toolIdInsert)->get();
+
+        $this->assertEquals(count($toolHasTags), 1);
+
+        $this->assertEquals($toolHasTags[0]['tag_id'], 2);
     }
 
     /**
