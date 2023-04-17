@@ -198,12 +198,7 @@ class ToolController extends Controller
             $tool = Tool::create($arrayTool);
 
             if ($tool) {
-                foreach ($arrayToolTag as $value) {
-                    ToolHasTag::updateOrCreate([
-                        'tool_id' => (int) $tool->id,
-                        'tag_id' => (int) $value,
-                    ]);
-                }
+                $this->insertToolHasTag($arrayToolTag, (int) $tool->id);
             } else {
                 return response()->json([
                     'message' => 'bad request',
@@ -217,6 +212,29 @@ class ToolController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * Insert data into ToolHasTag
+     *
+     * @param array $tags
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertToolHasTag(array $tags, int $toolId): mixed
+    {
+        try {
+            foreach ($tags as $value) {
+                ToolHasTag::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'tag_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        } 
     }
 
     /**

@@ -4,8 +4,13 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Tool;
+use App\Models\ToolHasTag;
+use Illuminate\Http\Request;
+use App\Http\Requests\ToolRequest;
 use Tests\Traits\Authorization;
+use App\Http\Controllers\Api\V1\ToolController;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use ReflectionClass;
 
 class ToolTest extends TestCase
 {
@@ -119,6 +124,7 @@ class ToolTest extends TestCase
     public function test_add_new_tool_with_success(): void
     {
         $countBefore = Tool::withTrashed()->count();
+        $countPivotBefore = ToolHasTag::all()->count();
         $mockData = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
@@ -139,10 +145,48 @@ class ToolTest extends TestCase
         );
 
         $countAfter = Tool::withTrashed()->count();
+        $countPivotAfter = ToolHasTag::all()->count();
         $countNewRow = $countAfter - $countBefore;
+        $countPivotNewRows = $countPivotAfter - $countPivotBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+        $this->assertEquals(
+            2,
+            $countPivotNewRows,
+            "actual value is equal to expected"
+        );
         $response->assertStatus(201);
+    }
+
+    /**
+     * Insert data into tool_has_tags table with success
+     * 
+     * @return void
+     */
+    public function test_insert_data_in_tool_has_tags(): void
+    {
+        ToolHasTag::truncate();
+
+        $mockData = array(1);
+        $mockToolId = 1;
+
+        $toolController = new ToolController();
+        $classReflection = new ReflectionClass($toolController);
+        $insertToolHasTag = $classReflection->getMethod('insertToolHasTag');
+
+        $insertToolHasTag->setAccessible(true);
+
+        $response = $insertToolHasTag->invokeArgs($toolController, [$mockData, $mockToolId]);
+
+        $countAfter = ToolHasTag::where('tool_id', $mockToolId)->count();
+
+        $this->assertEquals(
+            count($mockData),
+            $countAfter,
+            "actual value is equal to expected"
+        );
+
+        $this->assertTrue(true);
     }
 
     /**
@@ -170,7 +214,6 @@ class ToolTest extends TestCase
             $mockData,
             $this->header
         );
-
         $response->assertJsonStructure([
             'data' => [
                 0 => [
