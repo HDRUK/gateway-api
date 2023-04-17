@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Tags extends Model
+class ToolHasTag extends Model
 {
     use HasFactory;
 
@@ -14,26 +14,16 @@ class Tags extends Model
      * 
      * @var string
      */
-    protected $table = 'tags';
+    protected $table = 'tool_has_tags';
 
     /**
      * Indicates if the model should be timestamped
      * 
      * @var bool
      */
-    public $timestamps = true;
+    public $timestamps = false;
 
-    /**
-     * Description for this tag
-     * 
-     * @var string
-     */
-    private $description = '';
-
-    /**
-     * Type for this tag
-     * 
-     * @var string
-     */
-    private $type = '';
+    protected $fillable = [
+        'tool_id', 'tag_id',
+    ];
 }

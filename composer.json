@@ -25,6 +25,7 @@
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^7.0",
         "nunomaduro/larastan": "^2.0",
+        "pestphp/pest": "^2.4",
         "phpstan/phpstan": "^1.9",
         "phpunit/phpunit": "^10.0",
         "spatie/laravel-ignition": "^2.0",
@@ -58,7 +59,7 @@
             "@php artisan key:generate --ansi"
         ],
         "phpstan": [
-            "vendor/bin/phpstan analyse app tests"
+            "vendor/bin/phpstan analyse app"
         ],
         "behat": [
             "vendor/bin/behat"
@@ -68,6 +69,9 @@
         ],
         "phpcs": [
             "vendor/bin/phpcs --standard=PSR1 app"
+        ],
+        "pest": [
+            "vendor/bin/pest"
         ]
     },
     "extra": {

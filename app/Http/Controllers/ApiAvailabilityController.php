@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class ApiAvailabilityController extends Controller
 {
@@ -16,8 +17,10 @@ class ApiAvailabilityController extends Controller
      *          description="Successful operation",
      *      )
      *  )
+     * 
+     * @return mixed
      */
-    public function index()
+    public function index(): mixed
     {
         return response()->json([
             'status' => 'OK',
