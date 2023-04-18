@@ -4,20 +4,20 @@ namespace App\Http\Controllers\Api\V1;
 
 use Carbon\Carbon;
 
-use App\Models\Publisher;
+use App\Models\Team;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 
-class PublisherController extends Controller
+class TeamController extends Controller
 {
     /**
      * @OA\Get(
-     *      path="api/v1/publishers",
-     *      summary="List of publishers",
-     *      description="Returns a list of publishers enabled on the system",
+     *      path="api/v1/teams",
+     *      summary="List of teams",
+     *      description="Returns a list of teams enabled on the system",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -35,6 +35,7 @@ class PublisherController extends Controller
      *                      @OA\Property(property="workflow_enabled", type="boolean", example="1"),
      *                      @OA\Property(property="access_requests_management", type="boolean", example="1"),
      *                      @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *                      @OA\Property(property="is_admin", type="boolean", example="1"),
      *                      @OA\Property(property="member_of", type="string", example="someOrg"),
      *                      @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                      @OA\Property(property="application_form_updated_by", type="integer", example="555"),
@@ -47,17 +48,17 @@ class PublisherController extends Controller
      */
     public function index(Request $request)
     {
-        $publishers = Publisher::where('enabled', 1)->get();
+        $teams = Team::where('enabled', 1)->get();
         return response()->json([
-            'data' => $publishers
+            'data' => $teams
         ]);
     }
 
     /**
      * @OA\Get(
-     *      path="api/v1/publishers/{id}",
-     *      summary="Return a single publisher",
-     *      description="Return a single publisher",
+     *      path="api/v1/teams/{id}",
+     *      summary="Return a single team",
+     *      description="Return a single team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -74,6 +75,7 @@ class PublisherController extends Controller
      *                  @OA\Property(property="workflow_enabled", type="boolean", example="1"),
      *                  @OA\Property(property="access_requests_management", type="boolean", example="1"),
      *                  @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *                  @OA\Property(property="is_admin", type="boolean", example="1"),
      *                  @OA\Property(property="member_of", type="string", example="someOrg"),
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
@@ -92,10 +94,10 @@ class PublisherController extends Controller
      */
     public function show(Request $request, int $id)
     {
-        $publisher = Publisher::findOrFail($id);
-        if ($publisher) {
+        $team = Team::findOrFail($id);
+        if ($team) {
             return response()->json([
-                'data' => $publisher,
+                'data' => $team,
             ], 200);
         }
 
@@ -106,13 +108,13 @@ class PublisherController extends Controller
 
     /**
      * @OA\Post(
-     *      path="api/v1/publishers",
-     *      summary="Create a new publisher",
-     *      description="Creates a new publisher",
+     *      path="api/v1/teams",
+     *      summary="Create a new team",
+     *      description="Creates a new team",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
-     *          description="Publisher details",
+     *          description="Team details",
      *          @OA\JsonContent(
      *              required={
      *                  "name", 
@@ -121,6 +123,7 @@ class PublisherController extends Controller
      *                  "workflow_enabled",
      *                  "access_requests_management",
      *                  "uses_5_safes",
+     *                  "is_admin",
      *                  "member_of",
      *                  "contact_point",
      *                  "application_form_updated_by",
@@ -131,6 +134,7 @@ class PublisherController extends Controller
      *              @OA\Property(property="workflow_enabled", type="boolean", example="1"),
      *              @OA\Property(property="access_requests_management", type="boolean", example="1"),
      *              @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *              @OA\Property(property="is_admin", type="boolean", example="1"),
      *              @OA\Property(property="member_of", type="string", example="someOrg"),
      *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
@@ -163,17 +167,18 @@ class PublisherController extends Controller
             'workflow_enabled' => 'required',
             'access_requests_management' => 'required',
             'uses_5_safes' => 'required',
+            'is_admin' => 'required',
             'member_of' => 'required',
             'contact_point' => 'required',
             'application_form_updated_by' => 'required',
             'application_form_updated_on' => 'required',
         ]);
 
-        $publisher = Publisher::create($request->post());
-        if ($publisher) {
+        $team = Team::create($request->post());
+        if ($team) {
             return response()->json([
                 'message' => 'success',
-                'data' => $publisher->id,
+                'data' => $team->id,
             ], 200);
         }
         return response()->json([
@@ -183,13 +188,13 @@ class PublisherController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="api/v1/publishers/{id}",
-     *      summary="Update a publisher",
-     *      description="Update a publisher",
+     *      path="api/v1/teams/{id}",
+     *      summary="Update a team",
+     *      description="Update a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
-     *          description="Publisher definition",
+     *          description="Team definition",
      *          @OA\JsonContent(
      *              required={
      *                  "name", 
@@ -198,6 +203,7 @@ class PublisherController extends Controller
      *                  "workflow_enabled",
      *                  "access_requests_management",
      *                  "uses_5_safes",
+     *                  "is_admin",
      *                  "member_of",
      *                  "contact_point",
      *                  "application_form_updated_by",
@@ -208,6 +214,7 @@ class PublisherController extends Controller
      *              @OA\Property(property="workflow_enabled", type="boolean", example="1"),
      *              @OA\Property(property="access_requests_management", type="boolean", example="1"),
      *              @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *              @OA\Property(property="is_admin", type="boolean", example="1"),
      *              @OA\Property(property="member_of", type="string", example="someOrg"),
      *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
@@ -235,6 +242,7 @@ class PublisherController extends Controller
      *                  @OA\Property(property="workflow_enabled", type="boolean", example="1"),
      *                  @OA\Property(property="access_requests_management", type="boolean", example="1"),
      *                  @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *                  @OA\Property(property="is_admin", type="boolean", example="1"),
      *                  @OA\Property(property="member_of", type="string", example="someOrg"),
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
@@ -251,7 +259,7 @@ class PublisherController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $publisher)
+    public function update(Request $request, int $team)
     {
         $request->validate([
             'name' => 'required',
@@ -260,29 +268,31 @@ class PublisherController extends Controller
             'workflow_enabled' => 'required',
             'access_requests_management' => 'required',
             'uses_5_safes' => 'required',
+            'is_admin' => 'required',
             'member_of' => 'required',
             'contact_point' => 'required',
             'application_form_updated_by' => 'required',
             'application_form_updated_on' => 'required',
         ]);
 
-        $publisher = Publisher::findOrFail($publisher);
+        $team = Team::findOrFail($team);
         $body = $request->post();
-        $publisher->name = $body['name'];
-        $publisher->enabled = $body['enabled'];
-        $publisher->allows_messaging = $body['allows_messaging'];
-        $publisher->workflow_enabled = $body['workflow_enabled'];
-        $publisher->access_requests_management = $body['access_requests_management'];
-        $publisher->uses_5_safes = $body['uses_5_safes'];
-        $publisher->member_of = $body['member_of'];
-        $publisher->contact_point = $body['contact_point'];
-        $publisher->application_form_updated_by = $body['application_form_updated_by'];
-        $publisher->application_form_updated_on = $body['application_form_updated_on'];
+        $team->name = $body['name'];
+        $team->enabled = $body['enabled'];
+        $team->allows_messaging = $body['allows_messaging'];
+        $team->workflow_enabled = $body['workflow_enabled'];
+        $team->access_requests_management = $body['access_requests_management'];
+        $team->uses_5_safes = $body['uses_5_safes'];
+        $team->is_admin = $body['is_admin'];
+        $team->member_of = $body['member_of'];
+        $team->contact_point = $body['contact_point'];
+        $team->application_form_updated_by = $body['application_form_updated_by'];
+        $team->application_form_updated_on = $body['application_form_updated_on'];
 
-        if ($publisher->save()) {
+        if ($team->save()) {
             return response()->json([
                 'message' => 'success',
-                'data' => $publisher,
+                'data' => $team,
             ], 200);
         } else {
             return response()->json([
@@ -297,9 +307,9 @@ class PublisherController extends Controller
     
     /**
      * @OA\Delete(
-     *      path="api/v1/publishers/{id}",
-     *      summary="Delete a publisher",
-     *      description="Delete a publisher",
+     *      path="api/v1/teams/{id}",
+     *      summary="Delete a team",
+     *      description="Delete a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=404,
@@ -324,13 +334,13 @@ class PublisherController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $publisher)
+    public function destroy(Request $request, int $team)
     {
-        $publisher = Publisher::findOrFail($publisher);
-        if ($publisher) {
-            $publisher->deleted_at = Carbon::now();
-            $publisher->enabled = false;
-            if ($publisher->save()) {
+        $team = Team::findOrFail($team);
+        if ($team) {
+            $team->deleted_at = Carbon::now();
+            $team->enabled = false;
+            if ($team->save()) {
                 return response()->json([
                     'message' => 'success',
                 ], 200);

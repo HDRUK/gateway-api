@@ -7,7 +7,7 @@ use Config;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class PublisherTest extends TestCase
+class TeamTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -53,6 +53,7 @@ class PublisherTest extends TestCase
                         'allows_messaging',
                         'workflow_enabled',
                         'uses_5_safes',
+                        'is_admin',
                         'member_of',
                         'contact_point',
                         'application_form_updated_by',
@@ -73,12 +74,13 @@ class PublisherTest extends TestCase
             'POST', 
             'api/v1/publishers', 
             [  
-                'name' => 'A. Test Publisher', 
+                'name' => 'A. Test Team', 
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
+                'is_admin' => 1,
                 'member_of' => 1001,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
@@ -113,6 +115,7 @@ class PublisherTest extends TestCase
                 'allows_messaging',
                 'workflow_enabled',
                 'uses_5_safes',
+                'is_admin',
                 'member_of',
                 'contact_point',
                 'application_form_updated_by',
@@ -132,12 +135,13 @@ class PublisherTest extends TestCase
             'POST', 
             'api/v1/publishers', 
             [  
-                'name' => 'A. Test Publisher', 
+                'name' => 'A. Test Team', 
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
+                'is_admin' => 1,
                 'member_of' => 1001,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
@@ -168,12 +172,13 @@ class PublisherTest extends TestCase
             'POST', 
             'api/v1/publishers', 
             [  
-                'name' => 'Created Test Publisher', 
+                'name' => 'Created Test Team', 
                 'enabled' => 0,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
+                'is_admin' => 1,
                 'member_of' => 1001,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
@@ -197,12 +202,13 @@ class PublisherTest extends TestCase
             'PATCH', 
             'api/v1/publishers/' . $content['data'],
             [  
-                'name' => 'Updated Test Publisher', 
+                'name' => 'Updated Test Team', 
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 0,
+                'is_admin' => 1,
                 'member_of' => 1002,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
@@ -223,7 +229,7 @@ class PublisherTest extends TestCase
 
         $this->assertEquals($content['data']['enabled'], 1);
         $this->assertEquals($content['data']['member_of'], 1002);
-        $this->assertEquals($content['data']['name'], 'Updated Test Publisher');
+        $this->assertEquals($content['data']['name'], 'Updated Test Team');
     }
 
     /**
@@ -239,12 +245,13 @@ class PublisherTest extends TestCase
             'POST', 
             'api/v1/publishers', 
             [  
-                'name' => 'Deletable Test Publisher', 
+                'name' => 'Deletable Test Team', 
                 'enabled' => 0,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
+                'is_admin' => 1,
                 'member_of' => 1001,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',

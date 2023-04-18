@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\V1\ToolController;
 use App\Http\Controllers\Api\V1\FilterController;
 use App\Http\Controllers\Api\V1\FeatureController;
 use App\Http\Controllers\Api\V1\RegisterController;
-use App\Http\Controllers\Api\V1\PublisherController;
+use App\Http\Controllers\Api\V1\TeamController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
 use App\Http\Controllers\Api\V1\DarIntegrationController;
 
@@ -56,12 +56,12 @@ Route::group(['middleware' => ['jwt.verify', 'sanitize.input']], function() {
     Route::patch('/dar-integrations/{id}', [DarIntegrationController::class, 'update']);
     Route::delete('/dar-integrations/{id}', [DarIntegrationController::class, 'destroy']);
 
-    // Publisher routes
-    Route::get('/publishers', [PublisherController::class, 'index']);
-    Route::get('/publishers/{id}', [PublisherController::class, 'show']);
-    Route::post('/publishers', [PublisherController::class, 'store']);
-    Route::patch('/publishers/{id}', [PublisherController::class, 'update']);
-    Route::delete('/publishers/{id}', [PublisherController::class, 'destroy']);
+    // Team routes
+    Route::get('/publishers', [TeamController::class, 'index']);
+    Route::get('/publishers/{id}', [TeamController::class, 'show']);
+    Route::post('/publishers', [TeamController::class, 'store']);
+    Route::patch('/publishers/{id}', [TeamController::class, 'update']);
+    Route::delete('/publishers/{id}', [TeamController::class, 'destroy']);
 
     // Tools routes
     Route::get('/tools', [ToolController::class, 'index']);

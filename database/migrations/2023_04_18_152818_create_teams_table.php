@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('publishers', function (Blueprint $table) {
+        Schema::create('teams', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
             $table->softDeletes();
@@ -21,6 +21,7 @@ return new class extends Migration
             $table->boolean('workflow_enabled')->default(0);
             $table->boolean('access_requests_management')->default(0);
             $table->boolean('uses_5_safes')->default(0);
+            $table->boolean('is_admin')->default(0);
             $table->integer('member_of');
             $table->string('contact_point', 128);
             $table->string('application_form_updated_by', 128);
@@ -33,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('publishers');
+        Schema::dropIfExists('teams');
     }
 };

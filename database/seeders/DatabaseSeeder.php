@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 use Database\Seeders\ToolSeeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\FilterSeeder;
-use Database\Seeders\PublisherSeeder;
+use Database\Seeders\TeamSeeder;
 use Database\Seeders\DarIntegrationSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
             TagSeeder::class,
             FeatureSeeder::class,
             DarIntegrationSeeder::class,
-            PublisherSeeder::class,
+            TeamSeeder::class,
             ToolSeeder::class,
             ToolHasTagSeeder::class,
         ]);
