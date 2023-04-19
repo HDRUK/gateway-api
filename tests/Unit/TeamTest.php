@@ -12,7 +12,7 @@ class TeamTest extends TestCase
    *
    * @return void
    */
-   public function test_new_publisher_is_instance_of_publisher()
+   public function test_new_team_is_instance_of_team()
    {
       $this->assertInstanceOf(Team::class, new Team());
    }

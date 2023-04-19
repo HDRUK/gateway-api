@@ -30,13 +30,13 @@ class TeamTest extends TestCase
     }
 
     /**
-     * List all publishers.
+     * List all teams.
      *
      * @return void
      */
-    public function test_the_application_can_list_publishers()
+    public function test_the_application_can_list_teams()
     {
-        $response = $this->get('api/v1/publishers', [
+        $response = $this->get('api/v1/teams', [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
 
@@ -64,15 +64,15 @@ class TeamTest extends TestCase
     }
 
     /**
-     * List a particular publisher.
+     * List a particular team.
      *
      * @return void
      */
-    public function test_the_application_can_show_one_publisher()
+    public function test_the_application_can_show_one_team()
     {
         $response = $this->json(
             'POST', 
-            'api/v1/publishers', 
+            'api/v1/teams', 
             [  
                 'name' => 'A. Test Team', 
                 'enabled' => 1,
@@ -99,7 +99,7 @@ class TeamTest extends TestCase
 
         $content = $response->decodeResponseJson();
                 
-        $response = $this->get('api/v1/publishers/' . $content['data'], [
+        $response = $this->get('api/v1/teams/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
 
@@ -125,15 +125,15 @@ class TeamTest extends TestCase
     }
 
     /**
-     * Create a new publisher.
+     * Create a new team.
      *
      * @return void
      */
-    public function test_the_application_can_create_a_publisher()
+    public function test_the_application_can_create_a_team()
     {
         $response = $this->json(
             'POST', 
-            'api/v1/publishers', 
+            'api/v1/teams', 
             [  
                 'name' => 'A. Test Team', 
                 'enabled' => 1,
@@ -160,17 +160,17 @@ class TeamTest extends TestCase
     }
 
     /**
-     * Update an existing publisher.
+     * Update an existing team.
      *
      * @return void
      */
-    public function test_the_application_can_update_a_publisher()
+    public function test_the_application_can_update_a_team()
     {
-        // First create a publisher for us to update within this
+        // First create a team for us to update within this
         // test
         $response = $this->json(
             'POST', 
-            'api/v1/publishers', 
+            'api/v1/teams', 
             [  
                 'name' => 'Created Test Team', 
                 'enabled' => 0,
@@ -197,10 +197,10 @@ class TeamTest extends TestCase
 
         $content = $response->decodeResponseJson();
                 
-        // Finally, update this publisher with new details
+        // Finally, update this team with new details
         $response = $this->json(
             'PATCH', 
-            'api/v1/publishers/' . $content['data'],
+            'api/v1/teams/' . $content['data'],
             [  
                 'name' => 'Updated Test Team', 
                 'enabled' => 1,
@@ -233,17 +233,17 @@ class TeamTest extends TestCase
     }
 
     /**
-     * Delete a publisher.
+     * Delete a team.
      *
      * @return void
      */
-    public function test_the_application_can_delete_a_publisher()
+    public function test_the_application_can_delete_a_team()
     {
-        // First create a publisher for us to delete within this
+        // First create a team for us to delete within this
         // test
         $response = $this->json(
             'POST', 
-            'api/v1/publishers', 
+            'api/v1/teams', 
             [  
                 'name' => 'Deletable Test Team', 
                 'enabled' => 0,
@@ -270,10 +270,10 @@ class TeamTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        // Finally, delete the publisher we just created
+        // Finally, delete the team we just created
         $response = $this->json(
             'DELETE', 
-            'api/v1/publishers/' . $content['data'], 
+            'api/v1/teams/' . $content['data'], 
             [],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

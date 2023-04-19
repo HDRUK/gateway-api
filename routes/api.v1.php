@@ -57,11 +57,11 @@ Route::group(['middleware' => ['jwt.verify', 'sanitize.input']], function() {
     Route::delete('/dar-integrations/{id}', [DarIntegrationController::class, 'destroy']);
 
     // Team routes
-    Route::get('/publishers', [TeamController::class, 'index']);
-    Route::get('/publishers/{id}', [TeamController::class, 'show']);
-    Route::post('/publishers', [TeamController::class, 'store']);
-    Route::patch('/publishers/{id}', [TeamController::class, 'update']);
-    Route::delete('/publishers/{id}', [TeamController::class, 'destroy']);
+    Route::get('/teams', [TeamController::class, 'index']);
+    Route::get('/teams/{id}', [TeamController::class, 'show']);
+    Route::post('/teams', [TeamController::class, 'store']);
+    Route::patch('/teams/{id}', [TeamController::class, 'update']);
+    Route::delete('/teams/{id}', [TeamController::class, 'destroy']);
 
     // Tools routes
     Route::get('/tools', [ToolController::class, 'index']);
