@@ -23,9 +23,9 @@ const connectToDatabase = async () => {
 			bufferMaxEntries: 0,
 		});
 
-		console.log('MongoDB connected...');
+		process.stdout.write(`MongoDB connected...\n`);
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`connectToDatabase : ${err.message}\n`);
 
 		process.exit(1);
 	}

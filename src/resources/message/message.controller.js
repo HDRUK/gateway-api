@@ -48,13 +48,13 @@ module.exports = {
 				({ publisher = '' } = tools[0]);
 
 				if (_.isEmpty(publisher)) {
-					console.error(`No publisher associated to this dataset`);
+					process.stdout.write(`No publisher associated to this dataset\n`);
 					return res.status(500).json({ success: false, message: 'No publisher associated to this dataset' });
 				}
 				// 5. get team
 				({ team = [] } = publisher);
 				if (_.isEmpty(team)) {
-					console.error(`No team associated to publisher, cannot message`);
+					process.stdout.write(`No team associated to publisher, cannot message\n`);
 					return res.status(500).json({ success: false, message: 'No team associated to publisher, cannot message' });
 				}
 				// 6. Set user type (if found in team, they are custodian)
@@ -229,7 +229,7 @@ module.exports = {
 
 			return res.status(201).json({ success: true, messageObj });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`MESSAGE - createMessage : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},
@@ -261,7 +261,7 @@ module.exports = {
 			// 8. Return successful response
 			return res.status(204).json({ success: true });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`MESSAGE - deleteMessage : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},
@@ -296,7 +296,7 @@ module.exports = {
 			// 6. Return success no content
 			return res.status(204).json({ success: true });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`MESSAGE - updateMessage : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},
@@ -322,7 +322,7 @@ module.exports = {
 			// 3. Return the number of unread messages
 			return res.status(200).json({ success: true, count: unreadMessageCount });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`MESSAGE - getUnreadMessageCount : ${err.message}\n`);
 			return res.status(500).json(err.message);
 		}
 	},

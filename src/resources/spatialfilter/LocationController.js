@@ -11,7 +11,7 @@ class LocationController extends BaseController {
     async getData(req, res) {
         const { filter } = req.params;
         const table = `${process.env.BIG_QUERY_PROJECT_ID}.${process.env.BIG_QUERY_DATABASE}.${process.env.BIG_QUERY_TABLE}`;
-        console.log(table);
+        process.stdout.write(`LocationController - getData : ${table}\n`);
         const statement = `SELECT name, country, level_one, level_two, level_three
                             FROM \`${table}\`
                             WHERE lower(\`name\`) LIKE "%${filter.toLowerCase()}%"

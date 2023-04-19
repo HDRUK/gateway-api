@@ -71,7 +71,7 @@ router.post('/validate', passport.authenticate('jwt'), async (req, res) => {
 		// 5. Otherwise return valid
 		return res.status(200).json({ success: true });
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`PAPER - validate : ${err.message}\n`);
 		return res.status(500).json({ success: false, error: 'Paper link validation failed' });
 	}
 });

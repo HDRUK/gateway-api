@@ -15,9 +15,9 @@ export const publishMessageToPubSub = async (topicName, message) => {
 
     try {
         const messageId = pubSubClient.topic(topicName).publishMessage({data: dataBuffer});
-        console.log(`Message ${messageId} published.`);
+        process.stdout.write(`Message ${messageId} published.`);
     } catch (error) {
-        console.error(error);
+        process.stdout.write(`publishMessageToPubSub : ${error.message}`);
         throw new Error(`Received error while publishing a message to PubSub`);
     }
 };

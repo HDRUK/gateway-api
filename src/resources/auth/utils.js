@@ -129,7 +129,7 @@ const getTeams = async () => {
 
 const catchLoginErrorAndRedirect = (req, res, next) => {
 	if (req.auth.err || !req.auth.user) {
-		if (req.auth.err === 'loginError') {
+		if (req.auth.err === 'loginError' || req.auth.user === undefined) {
 			return res.status(200).redirect(process.env.homeURL + '/loginerror');
 		}
 
@@ -178,7 +178,7 @@ const loginAndSignToken = (req, res, next) => {
 			try {
 				redirectUrl = discourseLogin(queryStringParsed.sso, queryStringParsed.sig, req.user);
 			} catch (err) {
-				console.error(err.message);
+				process.stdout.write(`UTILS - loginAndSignToken : ${err.message}\n`);
 				return res.status(500).send('Error authenticating the user.');
 			}
 		}

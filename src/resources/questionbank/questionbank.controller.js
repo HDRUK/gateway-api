@@ -22,7 +22,7 @@ export default class QuestionbankController extends Controller {
 			});
 		} catch (err) {
 			// Return error response if something goes wrong
-			console.error(err.message);
+			process.stdout.write(`QUESTIONBANK - GET QUESTIONBANK : ${err.message}\n`);
 			throw new HttpExceptions(`A server error occurred, please try again`, 500);
 		}
 	}

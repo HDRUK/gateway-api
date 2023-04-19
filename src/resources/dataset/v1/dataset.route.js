@@ -7,7 +7,6 @@ import escape from 'escape-html';
 import { Course } from '../../course/course.model';
 import { DataUseRegister } from '../../dataUseRegister/dataUseRegister.model';
 import { filtersService } from '../../filters/dependency';
-import * as Sentry from '@sentry/node';
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
 
@@ -16,8 +15,6 @@ const datasetLimiter = rateLimit({
 	max: 10, // start blocking after 10 requests
 	message: 'Too many calls have been made to this api from this IP, please try again after an hour',
 });
-
-const readEnv = process.env.ENV || 'prod';
 
 router.post('/', async (req, res) => {
 	try {
@@ -46,10 +43,7 @@ router.post('/', async (req, res) => {
 		// Return response indicating job has started (do not await async import)
 		return res.status(200).json({ success: true, message: 'Caching started' });
 	} catch (err) {
-		if (readEnv === 'test' || readEnv === 'prod') {
-			Sentry.captureException(err);
-		}
-		console.error(err.message);
+		process.stdout.write(`DATASET - Caching failed : ${err.message}\n`);
 		return res.status(500).json({ success: false, message: 'Caching failed' });
 	}
 });
@@ -78,10 +72,7 @@ router.post('/updateServices', async (req, res) => {
 
 		return res.status(200).json({ success: true, message: 'Services Update started' });
 	} catch (err) {
-		if (readEnv === 'test' || readEnv === 'prod') {
-			Sentry.captureException(err);
-		}
-		console.error(err.message);
+		process.stdout.write(`DATASET - Services update failed : ${err.message}\n`);
 		return res.status(500).json({ success: false, message: 'Services update failed' });
 	}
 });
