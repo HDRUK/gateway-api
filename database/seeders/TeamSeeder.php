@@ -2,17 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\Publisher;
+use App\Models\Team;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class PublisherSeeder extends Seeder
+class TeamSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        Publisher::factory(50)->create();
+        Team::factory(50)->create();
     }
 }

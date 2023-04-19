@@ -5,9 +5,9 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Publisher>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Team>
  */
-class PublisherFactory extends Factory
+class TeamFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -23,6 +23,7 @@ class PublisherFactory extends Factory
             'workflow_enabled' => fake()->boolean(),
             'access_requests_management' => fake()->boolean(),
             'uses_5_safes' => fake()->boolean(),
+            'is_admin' => fake()->boolean(),
             'member_of' => fake()->randomNumber(4, false),
             'contact_point' => fake()->email(),
             'application_form_updated_by' => fake()->words(2, true),

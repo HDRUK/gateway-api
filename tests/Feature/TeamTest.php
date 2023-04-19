@@ -7,7 +7,7 @@ use Config;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class PublisherTest extends TestCase
+class TeamTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -30,13 +30,13 @@ class PublisherTest extends TestCase
     }
 
     /**
-     * List all publishers.
+     * List all teams.
      *
      * @return void
      */
-    public function test_the_application_can_list_publishers()
+    public function test_the_application_can_list_teams()
     {
-        $response = $this->get('api/v1/publishers', [
+        $response = $this->get('api/v1/teams', [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
 
@@ -53,6 +53,7 @@ class PublisherTest extends TestCase
                         'allows_messaging',
                         'workflow_enabled',
                         'uses_5_safes',
+                        'is_admin',
                         'member_of',
                         'contact_point',
                         'application_form_updated_by',
@@ -63,22 +64,23 @@ class PublisherTest extends TestCase
     }
 
     /**
-     * List a particular publisher.
+     * List a particular team.
      *
      * @return void
      */
-    public function test_the_application_can_show_one_publisher()
+    public function test_the_application_can_show_one_team()
     {
         $response = $this->json(
             'POST', 
-            'api/v1/publishers', 
+            'api/v1/teams', 
             [  
-                'name' => 'A. Test Publisher', 
+                'name' => 'A. Test Team', 
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
+                'is_admin' => 1,
                 'member_of' => 1001,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
@@ -97,7 +99,7 @@ class PublisherTest extends TestCase
 
         $content = $response->decodeResponseJson();
                 
-        $response = $this->get('api/v1/publishers/' . $content['data'], [
+        $response = $this->get('api/v1/teams/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
 
@@ -113,6 +115,7 @@ class PublisherTest extends TestCase
                 'allows_messaging',
                 'workflow_enabled',
                 'uses_5_safes',
+                'is_admin',
                 'member_of',
                 'contact_point',
                 'application_form_updated_by',
@@ -122,22 +125,23 @@ class PublisherTest extends TestCase
     }
 
     /**
-     * Create a new publisher.
+     * Create a new team.
      *
      * @return void
      */
-    public function test_the_application_can_create_a_publisher()
+    public function test_the_application_can_create_a_team()
     {
         $response = $this->json(
             'POST', 
-            'api/v1/publishers', 
+            'api/v1/teams', 
             [  
-                'name' => 'A. Test Publisher', 
+                'name' => 'A. Test Team', 
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
+                'is_admin' => 1,
                 'member_of' => 1001,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
@@ -156,24 +160,25 @@ class PublisherTest extends TestCase
     }
 
     /**
-     * Update an existing publisher.
+     * Update an existing team.
      *
      * @return void
      */
-    public function test_the_application_can_update_a_publisher()
+    public function test_the_application_can_update_a_team()
     {
-        // First create a publisher for us to update within this
+        // First create a team for us to update within this
         // test
         $response = $this->json(
             'POST', 
-            'api/v1/publishers', 
+            'api/v1/teams', 
             [  
-                'name' => 'Created Test Publisher', 
+                'name' => 'Created Test Team', 
                 'enabled' => 0,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
+                'is_admin' => 1,
                 'member_of' => 1001,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
@@ -192,17 +197,18 @@ class PublisherTest extends TestCase
 
         $content = $response->decodeResponseJson();
                 
-        // Finally, update this publisher with new details
+        // Finally, update this team with new details
         $response = $this->json(
             'PATCH', 
-            'api/v1/publishers/' . $content['data'],
+            'api/v1/teams/' . $content['data'],
             [  
-                'name' => 'Updated Test Publisher', 
+                'name' => 'Updated Test Team', 
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 0,
+                'is_admin' => 1,
                 'member_of' => 1002,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
@@ -223,28 +229,29 @@ class PublisherTest extends TestCase
 
         $this->assertEquals($content['data']['enabled'], 1);
         $this->assertEquals($content['data']['member_of'], 1002);
-        $this->assertEquals($content['data']['name'], 'Updated Test Publisher');
+        $this->assertEquals($content['data']['name'], 'Updated Test Team');
     }
 
     /**
-     * Delete a publisher.
+     * Delete a team.
      *
      * @return void
      */
-    public function test_the_application_can_delete_a_publisher()
+    public function test_the_application_can_delete_a_team()
     {
-        // First create a publisher for us to delete within this
+        // First create a team for us to delete within this
         // test
         $response = $this->json(
             'POST', 
-            'api/v1/publishers', 
+            'api/v1/teams', 
             [  
-                'name' => 'Deletable Test Publisher', 
+                'name' => 'Deletable Test Team', 
                 'enabled' => 0,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
+                'is_admin' => 1,
                 'member_of' => 1001,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
@@ -263,10 +270,10 @@ class PublisherTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        // Finally, delete the publisher we just created
+        // Finally, delete the team we just created
         $response = $this->json(
             'DELETE', 
-            'api/v1/publishers/' . $content['data'], 
+            'api/v1/teams/' . $content['data'], 
             [],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

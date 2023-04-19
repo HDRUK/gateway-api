@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Publisher extends Model
+class Team extends Model
 {
     use HasFactory;
 
@@ -18,6 +18,7 @@ class Publisher extends Model
         'workflow_enabled',
         'access_requests_management',
         'uses_5_safes',
+        'is_admin',
         'member_of',
         'contact_point',
         'application_form_updated_by',
@@ -29,7 +30,7 @@ class Publisher extends Model
      * 
      * @var string
      */
-    protected $table = 'publishers';
+    protected $table = 'teams';
 
     /**
      * Indicates if this model is timestamped
@@ -39,7 +40,7 @@ class Publisher extends Model
     public $timestamps = true;
 
     /**
-     * Indicates the name of the publisher
+     * Indicates the name of the team
      * 
      * @var string
      */
@@ -53,42 +54,49 @@ class Publisher extends Model
     private $enabled = false;
 
     /**
-     * Indicates whether the publisher allows messaging or not
+     * Indicates whether the team allows messaging or not
      * 
      * @var bool
      */
     private $allows_messaging = false;
 
     /**
-     * Indicates whether the publisher has workflows enabled
+     * Indicates whether the team has workflows enabled
      * 
      * @var bool
      */
     private $workflow_enabled = false;
 
     /**
-     * Indicates whether the publisher has acces requst management enabled
+     * Indicates whether the team has acces requst management enabled
      * 
      * @var bool
      */
     private $access_requests_management = false;
 
     /**
-     * Indicates whether the publisher uses 5 safes
+     * Indicates whether the team uses 5 safes
      * 
      * @var bool
      */
     private $uses_5_safes = false;
 
     /**
-     * Indicates the organisation the publisher is a member of
+     * Indicates whether the team is an admin
+     * 
+     * @var bool
+     */
+    private $is_admin = false;
+
+    /**
+     * Indicates the organisation the team is a member of
      * 
      * @var int
      */
     private $member_of = 0;
 
     /**
-     * Represents the contact point for the publisher
+     * Represents the contact point for the team
      * 
      * @var string
      */
