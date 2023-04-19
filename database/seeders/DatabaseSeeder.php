@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             // TeamUserPermissionSeeder::class,
             TeamHasUserSeeder::class,
             TeamUserHasPermissionSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }
