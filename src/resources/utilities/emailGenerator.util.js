@@ -2582,6 +2582,28 @@ const _sendEmail = async (to, from, subject, html, allowUnsubscribe = true, atta
 	}
 };
 
+const _sendEmailOne = async (to, from, subject, body, attachments = []) => {
+    let message = {
+      to: to,
+      from: from,
+      subject: subject,
+      html: body,
+      attachments,
+    };
+
+    // 4. Send email
+    try {
+      await transporter.sendMail(message, (error, info) => {
+        if (error) {
+          return console.log(error);
+        }
+        console.log('Email sent: ' + info.response);
+      });
+    } catch (error) {
+      console.error(error.response.body);
+    }
+};
+
 const _sendEmailSmtp = async message => {
 	try {
 		await transporter.sendMail(message, (error, info) => {
@@ -2688,6 +2710,7 @@ const _deleteWordAttachmentTempFiles = async () => {
 export default {
 	//General
 	sendEmail: _sendEmail,
+  sendEmailOne: _sendEmailOne,
 	sendIntroEmail: _sendIntroEmail,
 	generateEmailFooter: _generateEmailFooter,
 	generateAttachment: _generateAttachment,

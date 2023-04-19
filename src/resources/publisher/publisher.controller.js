@@ -3,6 +3,8 @@ import constants from '../utilities/constants.util';
 import teamController from '../team/team.controller';
 import Controller from '../base/controller';
 import { logger } from '../utilities/logger';
+import teamV3Util from '../utilities/team.v3.util';
+import HttpExceptions from '../../exceptions/HttpExceptions';
 
 const logCategory = 'Publisher';
 
@@ -17,7 +19,6 @@ export default class PublisherController extends Controller {
 
 	async getPublisher(req, res) {
 		try {
-			// 1. Get the publisher from the database
 			const { id } = req.params;
 			const publisher = await this.publisherService.getPublisher(id).catch(err => {
 				logger.logError(err, logCategory);
@@ -28,15 +29,11 @@ export default class PublisherController extends Controller {
 					publisher: { dataRequestModalContent: {}, allowsMessaging: false },
 				});
 			}
-			// 2. Return publisher
+
 			return res.status(200).json({ success: true, publisher });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred fetching the custodian details',
-			});
+			throw new HttpExceptions(`An error occurred fetching the custodian details`, 500);
 		}
 	}
 
@@ -47,43 +44,33 @@ export default class PublisherController extends Controller {
 
 	async getPublisherDatasets(req, res) {
 		try {
-			// 1. Get the datasets for the publisher from the database
 			const { id } = req.params;
 			let datasets = await this.publisherService.getPublisherDatasets(id).catch(err => {
 				logger.logError(err, logCategory);
 			});
-			// 2. Return publisher datasets
+
 			return res.status(200).json({ success: true, datasets });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred searching for custodian datasets',
-			});
+			throw new HttpExceptions(`An error occurred searching for custodian datasets`, 500);
 		}
 	}
 
 	async getPublisherDataAccessRequests(req, res) {
 		try {
-			// 1. Deconstruct the request
 			const { _id: requestingUserId } = req.user;
 			const { id } = req.params;
 
-			// 2. Lookup publisher team
 			const options = { lean: true, populate: [{ path: 'team' }, { path: 'members' }] };
 			const publisher = await this.publisherService.getPublisher(id, options).catch(err => {
 				logger.logError(err, logCategory);
 			});
 			if (!publisher) {
-				return res.status(404).json({ success: false });
+				throw new HttpExceptions(`Not Found`, 404);
 			}
-			// 3. Check the requesting user is a member of the custodian team
-			const isAuthenticated = teamController.checkTeamPermissions('', publisher.team, requestingUserId);
-			if (!isAuthenticated) return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-
+	
 			//Check if current user is a manager
-			const isManager = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, publisher.team, requestingUserId);
+			const isManager = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], publisher.team, requestingUserId);
 
 			// 4. Find all applications for current team member view
 			const applications = await this.publisherService.getPublisherDataAccessRequests(id, requestingUserId, isManager).catch(err => {
@@ -109,21 +96,16 @@ export default class PublisherController extends Controller {
 				.sort((a, b) => b.updatedAt - a.updatedAt);
 
 			const avgDecisionTime = this.dataRequestService.calculateAvgDecisionTime(applications);
-			// 6. Return all applications
+
 			return res.status(200).json({ success: true, data: modifiedApplications, avgDecisionTime, canViewSubmitted: isManager });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred searching for custodian applications',
-			});
+			throw new HttpExceptions(`An error occurred searching for custodian applications`, 500);
 		}
 	}
 
 	async getPublisherWorkflows(req, res) {
 		try {
-			// 1. Get the workflow from the database including the team members to check authorisation
 			const { id } = req.params;
 			let workflows = await this.workflowService.getWorkflowsByPublisher(id).catch(err => {
 				logger.logError(err, logCategory);
@@ -144,20 +126,16 @@ export default class PublisherController extends Controller {
 			const {
 				publisher: { team },
 			} = workflows[0];
-			const authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, team, requestingUserId);
-			// 4. If not return unauthorised
+
+			let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team, requestingUserId);
 			if (!authorised) {
-				return res.status(401).json({ success: false });
+				throw new HttpExceptions(`User not authorized to perform this action`,403);
 			}
-			// 5. Return payload
+
 			return res.status(200).json({ success: true, workflows });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred searching for custodian workflows',
-			});
+			throw new HttpExceptions(`An error occurred searching for custodian workflows`, 500);
 		}
 	}
 
@@ -167,10 +145,7 @@ export default class PublisherController extends Controller {
 				return res.status(200).json({ success: true });
 			});
 		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred updating data use widget settings',
-			});
+			throw new HttpExceptions(`An error occurred updating data use widget settings`, 500);
 		}
 	}
 
@@ -180,10 +155,7 @@ export default class PublisherController extends Controller {
 				return res.status(200).json({ success: true });
 			});
 		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred updating data request modal content',
-			});
+			throw new HttpExceptions(`An error occurred updating data request modal content`, 500);
 		}
 	}
 
@@ -193,10 +165,7 @@ export default class PublisherController extends Controller {
 				return res.status(200).json({ success: true });
 			});
 		} catch (err) {
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred updating the question bank settings',
-			});
+			throw new HttpExceptions(`An error occurred updating the question bank settings`, 500);
 		}
 	}
 }
