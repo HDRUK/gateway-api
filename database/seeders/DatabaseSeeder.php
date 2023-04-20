@@ -9,6 +9,9 @@ use Database\Seeders\UserSeeder;
 use Database\Seeders\FilterSeeder;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\DarIntegrationSeeder;
+use Database\Seeders\ActivityLogSeeder;
+use Database\Seeders\ActivityLogTypeSeeder;
+use Database\Seeders\ActivityLogUserTypeSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -28,6 +31,11 @@ class DatabaseSeeder extends Seeder
             TeamSeeder::class,
             ToolSeeder::class,
             ToolHasTagSeeder::class,
+            // This one we do in order to ensure data is linked for
+            // demonstration purposes
+            ActivityLogUserTypeSeeder::class,
+            ActivityLogTypeSeeder::class,
+            ActivityLogSeeder::class,
         ]);
     }
 }
