@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Notification extends Model
 {
@@ -59,4 +61,12 @@ class Notification extends Model
      * @var bool
      */
     private $enabled = false;
+
+    /**
+     * The teams that belong to the notification.
+     */
+    public function team(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_has_notifications');
+    }
 }
