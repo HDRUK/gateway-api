@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-api
+spec:
+  selector:
+    matchLabels:
+      app: gateway-api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: gateway-api
+    spec:
+      containers:
+        - name: gateway-api
+          image: hdruk/gateway-api
+          ports:
+            - containerPort: 8000
+              name: gateway-api

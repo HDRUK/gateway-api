@@ -36,11 +36,15 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 # RUN echo "ping.path = /ping" >> /usr/local/etc/php/php.ini
 
 COPY . /var/www
+COPY .env /var/www/.env
 
 RUN composer install \
     && chmod -R 777 storage bootstrap/cache \
     && php artisan optimize:clear \
-    && php artisan optimize
+    && php artisan optimize \
+    && php artisan config:clear \
+    && php artisan config:cache \
+    && composer dumpautoload
 
 # RUN composer install \
 #     && chmod -R 777 storage bootstrap/cache \
