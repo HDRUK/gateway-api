@@ -42,6 +42,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
+  name: gateway-api
   port: 8000
 
 ingress:
