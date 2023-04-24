@@ -13,7 +13,7 @@ class ActivityLogUserTypeController extends Controller
 {
     /**
      * @OA\Get(
-     *      path="api/v1/activity_log_user_types",
+     *      path="/api/v1/activity_log_user_types",
      *      summary="List of system activity log user types",
      *      description="Returns a list of activity log user types enabled on the system",
      *      @OA\Response(
@@ -43,7 +43,7 @@ class ActivityLogUserTypeController extends Controller
 
     /**
      * @OA\Get(
-     *      path="api/v1/activity_log_user_types/{id}",
+     *      path="/api/v1/activity_log_user_types/{id}",
      *      summary="Return a single system activity log user type",
      *      description="Return a single system activity log user type",
      *      @OA\Response(
@@ -85,7 +85,7 @@ class ActivityLogUserTypeController extends Controller
 
     /**
      * @OA\Post(
-     *      path="api/v1/activity_log_user_types",
+     *      path="/api/v1/activity_log_user_types",
      *      summary="Create a new system activity log user type",
      *      description="Creates a new system activity log user type",
      *      @OA\RequestBody(
@@ -134,7 +134,7 @@ class ActivityLogUserTypeController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="api/v1/activity_log_user_types/{id}",
+     *      path="/api/v1/activity_log_user_types/{id}",
      *      summary="Update a system activity log user type",
      *      description="Update a system activity log user type",
      *      @OA\RequestBody(
@@ -203,7 +203,7 @@ class ActivityLogUserTypeController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="api/v1/activity_log_user_types/{id}",
+     *      path="/api/v1/activity_log_user_types/{id}",
      *      summary="Delete a system activity log user type",
      *      description="Delete a system  activity log user type",
      *      @OA\Response(

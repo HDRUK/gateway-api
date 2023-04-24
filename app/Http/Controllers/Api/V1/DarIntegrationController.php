@@ -14,7 +14,7 @@ class DarIntegrationController extends Controller
 {
     /**
      * @OA\Get(
-     *      path="api/v1/dar-integration",
+     *      path="/api/v1/dar-integration",
      *      summary="List of system Dar Integrations",
      *      description="Returns a list of DAR integrations enabled on the system",
      *      security={{"bearerAuth":{}}},
@@ -61,7 +61,7 @@ class DarIntegrationController extends Controller
 
     /**
      * @OA\Get(
-     *      path="api/v1/dar-integration/{id}",
+     *      path="/api/v1/dar-integration/{id}",
      *      summary="Return a single system Dar Integration",
      *      description="Returns a single DAR integration enabled on the system",
      *      @OA\Response(
@@ -115,7 +115,7 @@ class DarIntegrationController extends Controller
 
     /**
      * @OA\Post(
-     *      path="api/v1/dar-integration/{id}",
+     *      path="/api/v1/dar-integration/{id}",
      *      summary="Create a new system Dar Integration",
      *      description="Creates a new DAR integration enabled on the system",
      *      @OA\RequestBody(
@@ -177,7 +177,7 @@ class DarIntegrationController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="api/v1/dar-integration/{id}",
+     *      path="/api/v1/dar-integration/{id}",
      *      summary="Updates a system Dar Integration",
      *      description="Updates a DAR integration enabled on the system",
      *      @OA\RequestBody(
@@ -262,7 +262,7 @@ class DarIntegrationController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="api/v1/dar-integrations/{id}",
+     *      path="/api/v1/dar-integrations/{id}",
      *      summary="Delete a system Dar Integration",
      *      description="Delete a system Dar Integration",
      *      @OA\Response(

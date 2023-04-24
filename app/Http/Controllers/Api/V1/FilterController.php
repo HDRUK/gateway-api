@@ -15,7 +15,7 @@ class FilterController extends Controller
 {
     /**
      * @OA\Get(
-     *      path="api/v1/filters",
+     *      path="/api/v1/filters",
      *      summary="List of system filters",
      *      description="Returns a list of filters enabled on the system",
      *      @OA\Response(
@@ -48,7 +48,7 @@ class FilterController extends Controller
 
     /**
      * @OA\Get(
-     *      path="api/v1/filters/{id}",
+     *      path="/api/v1/filters/{id}",
      *      summary="Return a single system filter",
      *      description="Return a single system filter",
      *      @OA\Response(
@@ -93,7 +93,7 @@ class FilterController extends Controller
 
     /**
      * @OA\Post(
-     *      path="api/v1/filters",
+     *      path="/api/v1/filters",
      *      summary="Create a new system filter",
      *      description="Creates a new system filter",
      *      @OA\RequestBody(
@@ -147,7 +147,7 @@ class FilterController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="api/v1/filters/{id}",
+     *      path="/api/v1/filters/{id}",
      *      summary="Update a system filter",
      *      description="Update a system filter",
      *      @OA\RequestBody(
@@ -226,7 +226,7 @@ class FilterController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="api/v1/filters/{id}",
+     *      path="/api/v1/filters/{id}",
      *      summary="Delete a system filter",
      *      description="Delete a system filter",
      *      @OA\Response(

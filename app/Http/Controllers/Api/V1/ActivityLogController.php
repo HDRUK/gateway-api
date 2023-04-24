@@ -13,7 +13,7 @@ class ActivityLogController extends Controller
 {
     /**
      * @OA\Get(
-     *      path="api/v1/activity_logs",
+     *      path="/api/v1/activity_logs",
      *      summary="List of system activity logs",
      *      description="Returns a list of activity logs stored on the system",
      *      @OA\Response(
@@ -50,7 +50,7 @@ class ActivityLogController extends Controller
 
     /**
      * @OA\Get(
-     *      path="api/v1/activity_logs/{id}",
+     *      path="/api/v1/activity_logs/{id}",
      *      summary="Return a single system activity log",
      *      description="Return a single system activity log",
      *      @OA\Response(
@@ -99,7 +99,7 @@ class ActivityLogController extends Controller
 
     /**
      * @OA\Post(
-     *      path="api/v1/activity_logs",
+     *      path="/api/v1/activity_logs",
      *      summary="Create a new system activity log",
      *      description="Creates a new system activity log",
      *      @OA\RequestBody(
@@ -162,7 +162,7 @@ class ActivityLogController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="api/v1/activity_logs/{id}",
+     *      path="/api/v1/activity_logs/{id}",
      *      summary="Update a system activity log",
      *      description="Update a system activity log",
      *      @OA\RequestBody(
@@ -261,7 +261,7 @@ class ActivityLogController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="api/v1/activity_logs/{id}",
+     *      path="/api/v1/activity_logs/{id}",
      *      summary="Delete a system activity log",
      *      description="Delete a system activity log",
      *      @OA\Response(

@@ -13,7 +13,7 @@ class ActivityLogTypeController extends Controller
 {
     /**
      * @OA\Get(
-     *      path="api/v1/activity_log_types",
+     *      path="/api/v1/activity_log_types",
      *      summary="List of system activity log types",
      *      description="Returns a list of activity log types enabled on the system",
      *      @OA\Response(
@@ -43,7 +43,7 @@ class ActivityLogTypeController extends Controller
 
     /**
      * @OA\Get(
-     *      path="api/v1/activity_log_types/{id}",
+     *      path="/api/v1/activity_log_types/{id}",
      *      summary="Return a single system activity log type",
      *      description="Return a single system activity log type",
      *      @OA\Response(
@@ -85,7 +85,7 @@ class ActivityLogTypeController extends Controller
 
     /**
      * @OA\Post(
-     *      path="api/v1/activity_log_types",
+     *      path="/api/v1/activity_log_types",
      *      summary="Create a new system activity log type",
      *      description="Creates a new system activity log type",
      *      @OA\RequestBody(
@@ -134,7 +134,7 @@ class ActivityLogTypeController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="api/v1/activity_log_types/{id}",
+     *      path="/api/v1/activity_log_types/{id}",
      *      summary="Update a system activity log type",
      *      description="Update a system activity log type",
      *      @OA\RequestBody(
@@ -202,7 +202,7 @@ class ActivityLogTypeController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="api/v1/activity_log_types/{id}",
+     *      path="/api/v1/activity_log_types/{id}",
      *      summary="Delete a system activity log type",
      *      description="Delete a system activity log type",
      *      @OA\Response(

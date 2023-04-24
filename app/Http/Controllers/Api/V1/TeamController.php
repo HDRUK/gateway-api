@@ -15,7 +15,7 @@ class TeamController extends Controller
 {
     /**
      * @OA\Get(
-     *      path="api/v1/teams",
+     *      path="/api/v1/teams",
      *      summary="List of teams",
      *      description="Returns a list of teams enabled on the system",
      *      security={{"bearerAuth":{}}},
@@ -56,7 +56,7 @@ class TeamController extends Controller
 
     /**
      * @OA\Get(
-     *      path="api/v1/teams/{id}",
+     *      path="/api/v1/teams/{id}",
      *      summary="Return a single team",
      *      description="Return a single team",
      *      security={{"bearerAuth":{}}},
@@ -108,7 +108,7 @@ class TeamController extends Controller
 
     /**
      * @OA\Post(
-     *      path="api/v1/teams",
+     *      path="/api/v1/teams",
      *      summary="Create a new team",
      *      description="Creates a new team",
      *      security={{"bearerAuth":{}}},
@@ -188,7 +188,7 @@ class TeamController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="api/v1/teams/{id}",
+     *      path="/api/v1/teams/{id}",
      *      summary="Update a team",
      *      description="Update a team",
      *      security={{"bearerAuth":{}}},
@@ -307,7 +307,7 @@ class TeamController extends Controller
     
     /**
      * @OA\Delete(
-     *      path="api/v1/teams/{id}",
+     *      path="/api/v1/teams/{id}",
      *      summary="Delete a team",
      *      description="Delete a team",
      *      security={{"bearerAuth":{}}},

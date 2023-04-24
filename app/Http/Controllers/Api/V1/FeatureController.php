@@ -12,7 +12,7 @@ class FeatureController extends Controller
 {
     /**
      * @OA\Get(
-     *    path="api/v1/features",
+     *    path="/api/v1/features",
      *    operationId="fetch_all_features",
      *    tags={"Features"},
      *    summary="FeatureController@index",
@@ -47,7 +47,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Get(
-     *    path="api/v1/features/{id}",
+     *    path="/api/v1/features/{id}",
      *    operationId="fetch_features",
      *    tags={"Features"},
      *    summary="FeatureController@show",
@@ -121,7 +121,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Post(
-     *    path="api/v1/features",
+     *    path="/api/v1/features",
      *    operationId="create_features",
      *    tags={"Features"},
      *    summary="FeatureController@store",
@@ -183,7 +183,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="api/v1/features",
+     *    path="/api/v1/features",
      *    operationId="update_features",
      *    tags={"Features"},
      *    summary="FeatureController@update",
@@ -270,7 +270,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Delete(
-     *    path="api/v1/features/{id}",
+     *    path="/api/v1/features/{id}",
      *    operationId="delete_features",
      *    tags={"Features"},
      *    summary="FeatureController@destroy",
