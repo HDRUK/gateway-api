@@ -12,7 +12,7 @@ class TagTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL_TAG = '/api/v1/tags';
+    const TEST_URL = '/api/v1/tags';
 
     protected $header = [];
 
@@ -42,7 +42,7 @@ class TagTest extends TestCase
     public function test_get_all_tags_with_success(): void
     {
         $countTag = Tag::where('enabled', 1)->count();
-        $response = $this->json('GET', self::TEST_URL_TAG, [], $this->header);
+        $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $this->assertCount($countTag, $response['data']);
         $response->assertJsonStructure([
@@ -68,7 +68,7 @@ class TagTest extends TestCase
      */
     public function test_get_all_tags_and_generate_exception(): void
     {
-        $response = $this->json('GET', self::TEST_URL_TAG, [], []);
+        $response = $this->json('GET', self::TEST_URL, [], []);
         $response->assertStatus(401);
     }
 
@@ -79,7 +79,7 @@ class TagTest extends TestCase
      */
     public function test_get_tag_by_id_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL_TAG . '/1', [], $this->header);
+        $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
 
         $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
@@ -107,7 +107,7 @@ class TagTest extends TestCase
     {
         $id = 1;
         $countTag = Tag::where('id', $id)->count();
-        $response = $this->json('DELETE', self::TEST_URL_TAG . '/' . $id, [], $this->header);
+        $response = $this->json('DELETE', self::TEST_URL . '/' . $id, [], $this->header);
 
         $countTagDeleted = Tag::onlyTrashed()->where('id', $id)->count();
 

@@ -12,7 +12,7 @@ class FeatureTest extends TestCase
     use RefreshDatabase;
     use Authorization;
 
-    const TEST_URL_FEATURE = '/api/v1/features';
+    const TEST_URL = '/api/v1/features';
 
     protected $header = [];
 
@@ -42,7 +42,7 @@ class FeatureTest extends TestCase
     public function test_get_all_features_with_success(): void
     {
         $countTag = FeatureModel::where('enabled', 1)->count();
-        $response = $this->json('GET', self::TEST_URL_FEATURE, [], $this->header);
+        $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $this->assertCount($countTag, $response['data']);
         $response->assertStatus(200);
@@ -67,7 +67,7 @@ class FeatureTest extends TestCase
      */
     public function test_get_all_features_and_generate_exception(): void
     {
-        $response = $this->json('GET', self::TEST_URL_FEATURE, [], []);
+        $response = $this->json('GET', self::TEST_URL, [], []);
         $response->assertStatus(401);
     }
 
@@ -78,7 +78,7 @@ class FeatureTest extends TestCase
      */
     public function test_get_feature_by_id_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL_FEATURE . '/1', [], $this->header);
+        $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
         $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
             'data' => [
@@ -104,19 +104,14 @@ class FeatureTest extends TestCase
     {
         $countBefore = FeatureModel::all()->count();
 
-        $jwt = $this->getAuthorisationJwt();
-        $header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
         $response = $this->json(
             'POST', 
-            self::TEST_URL_FEATURE . '/', 
+            self::TEST_URL . '/', 
             [
                 'name' => 'fake_for_test',
                 'enabled' => true,
-            ], 
-            $header
+            ],
+            $this->header
         );
 
         $countAfter = FeatureModel::all()->count();
@@ -135,12 +130,7 @@ class FeatureTest extends TestCase
     {
         $id = 1;
         $countFeature = FeatureModel::where('id', $id)->count();
-        $jwt = $this->getAuthorisationJwt();
-        $header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-        $response = $this->json('DELETE', self::TEST_URL_FEATURE . '/' . $id, [], $header);
+        $response = $this->json('DELETE', self::TEST_URL . '/' . $id, [], $this->header);
 
         $countFeaturegDeleted = FeatureModel::onlyTrashed()->where('id', $id)->count();
 

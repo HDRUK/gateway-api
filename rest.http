@@ -1,0 +1,72 @@
+### Info
+### Description: Rest Client in Visual Studio Code
+
+### Variables
+@baseUrl = http://localhost:8000
+@apiVersion = v1
+@uName = "John Doe"
+@uEmail = "john.doe.1234567890@example.com"
+@uPassword = "passw@rdJ0hnD0e"
+
+### Login
+#### create new user
+POST {{baseUrl}}/api/{{apiVersion}}/register HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": {{uName}},
+    "email": {{uEmail}},
+    "password": {{uPassword}}
+}
+
+### Access Token
+# @name loginUsernamePassword
+POST {{baseUrl}}/api/{{apiVersion}}/auth HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "email": {{uEmail}},
+    "password": {{uPassword}}
+}
+
+### Variables jwt token
+@accessToken = {{loginUsernamePassword.response.body.$.access_token}}
+
+### Permissions
+#### get all permissions
+GET {{baseUrl}}/api/{{apiVersion}}/permissions HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get permission by id
+GET {{baseUrl}}/api/{{apiVersion}}/permissions/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create new permission
+POST {{baseUrl}}/api/{{apiVersion}}/permissions HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "role" : "test"
+}
+
+#### update permission
+PATCH {{baseUrl}}/api/{{apiVersion}}/permissions/6 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "role" : "test2"
+}
+
+#### update permission
+DELETE {{baseUrl}}/api/{{apiVersion}}/permissions/6 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+

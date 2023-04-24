@@ -5,6 +5,1171 @@
         "version": "2.0.0"
     },
     "paths": {
+        "api/v1/activity_logs": {
+            "get": {
+                "summary": "List of system activity logs",
+                "description": "Returns a list of activity logs stored on the system",
+                "operationId": "eea133542d9f08c0e569b47dee01fb53",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "event_type": {
+                                                        "type": "string",
+                                                        "example": "passwordReset"
+                                                    },
+                                                    "user_type_id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "log_type_id": {
+                                                        "type": "integer",
+                                                        "example": "234"
+                                                    },
+                                                    "version": {
+                                                        "type": "string",
+                                                        "example": "1.0.0"
+                                                    },
+                                                    "html": {
+                                                        "type": "string",
+                                                        "example": "<b>example string</b>"
+                                                    },
+                                                    "plain_text": {
+                                                        "type": "string",
+                                                        "example": "example string"
+                                                    },
+                                                    "user_id_mongo": {
+                                                        "type": "string",
+                                                        "example": "2529385fsdfsgs69gs9629se"
+                                                    },
+                                                    "version_id_mongo": {
+                                                        "type": "string",
+                                                        "example": "2529385fsdfsgs69gs9629se"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new system activity log",
+                "description": "Creates a new system activity log",
+                "operationId": "965184f1305ec431250a0cb762d5da80",
+                "requestBody": {
+                    "description": "ActivityLog definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "event_type",
+                                    "user_type_id",
+                                    "log_type_id",
+                                    "version",
+                                    "html",
+                                    "plain_text"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": "123"
+                                    },
+                                    "created_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-03 12:00:00"
+                                    },
+                                    "updated_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-03 12:00:00"
+                                    },
+                                    "event_type": {
+                                        "type": "string",
+                                        "example": "passwordReset"
+                                    },
+                                    "user_type_id": {
+                                        "type": "integer",
+                                        "example": "123"
+                                    },
+                                    "log_type_id": {
+                                        "type": "integer",
+                                        "example": "234"
+                                    },
+                                    "version": {
+                                        "type": "string",
+                                        "example": "1.0.0"
+                                    },
+                                    "html": {
+                                        "type": "string",
+                                        "example": "<b>example string</b>"
+                                    },
+                                    "plain_text": {
+                                        "type": "string",
+                                        "example": "example string"
+                                    },
+                                    "user_id_mongo": {
+                                        "type": "string",
+                                        "example": "2529385fsdfsgs69gs9629se"
+                                    },
+                                    "version_id_mongo": {
+                                        "type": "string",
+                                        "example": "2529385fsdfsgs69gs9629se"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "api/v1/activity_logs/{id}": {
+            "get": {
+                "summary": "Return a single system activity log",
+                "description": "Return a single system activity log",
+                "operationId": "b8d6ef59f2647411ef6c50a5726bf782",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "event_type": {
+                                                    "type": "string",
+                                                    "example": "passwordReset"
+                                                },
+                                                "user_type_id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "log_type_id": {
+                                                    "type": "integer",
+                                                    "example": "234"
+                                                },
+                                                "version": {
+                                                    "type": "string",
+                                                    "example": "1.0.0"
+                                                },
+                                                "html": {
+                                                    "type": "string",
+                                                    "example": "<b>example string</b>"
+                                                },
+                                                "plain_text": {
+                                                    "type": "string",
+                                                    "example": "example string"
+                                                },
+                                                "user_id_mongo": {
+                                                    "type": "string",
+                                                    "example": "2529385fsdfsgs69gs9629se"
+                                                },
+                                                "version_id_mongo": {
+                                                    "type": "string",
+                                                    "example": "2529385fsdfsgs69gs9629se"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a system activity log",
+                "description": "Delete a system activity log",
+                "operationId": "43ee4239e59d4ace271e217cf8f9cf48",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Update a system activity log",
+                "description": "Update a system activity log",
+                "operationId": "c94ae3f33f4d1365d4861a76cdd00415",
+                "requestBody": {
+                    "description": "ActivityLog definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "event_type",
+                                    "user_type_id",
+                                    "log_type_id",
+                                    "version",
+                                    "html",
+                                    "plain_text"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": "123"
+                                    },
+                                    "created_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-03 12:00:00"
+                                    },
+                                    "updated_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-03 12:00:00"
+                                    },
+                                    "event_type": {
+                                        "type": "string",
+                                        "example": "passwordReset"
+                                    },
+                                    "user_type_id": {
+                                        "type": "integer",
+                                        "example": "123"
+                                    },
+                                    "log_type_id": {
+                                        "type": "integer",
+                                        "example": "234"
+                                    },
+                                    "version": {
+                                        "type": "string",
+                                        "example": "1.0.0"
+                                    },
+                                    "html": {
+                                        "type": "string",
+                                        "example": "<b>example string</b>"
+                                    },
+                                    "plain_text": {
+                                        "type": "string",
+                                        "example": "example string"
+                                    },
+                                    "user_id_mongo": {
+                                        "type": "string",
+                                        "example": "2529385fsdfsgs69gs9629se"
+                                    },
+                                    "version_id_mongo": {
+                                        "type": "string",
+                                        "example": "2529385fsdfsgs69gs9629se"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "event_type": {
+                                                    "type": "string",
+                                                    "example": "passwordReset"
+                                                },
+                                                "user_type_id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "log_type_id": {
+                                                    "type": "integer",
+                                                    "example": "234"
+                                                },
+                                                "version": {
+                                                    "type": "string",
+                                                    "example": "1.0.0"
+                                                },
+                                                "html": {
+                                                    "type": "string",
+                                                    "example": "<b>example string</b>"
+                                                },
+                                                "plain_text": {
+                                                    "type": "string",
+                                                    "example": "example string"
+                                                },
+                                                "user_id_mongo": {
+                                                    "type": "string",
+                                                    "example": "2529385fsdfsgs69gs9629se"
+                                                },
+                                                "version_id_mongo": {
+                                                    "type": "string",
+                                                    "example": "2529385fsdfsgs69gs9629se"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "api/v1/activity_log_types": {
+            "get": {
+                "summary": "List of system activity log types",
+                "description": "Returns a list of activity log types enabled on the system",
+                "operationId": "44dcf35bc93089ffbc3e05d0d6ec45c6",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Name"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new system activity log type",
+                "description": "Creates a new system activity log type",
+                "operationId": "f9cb95a8af1c6a32ecc4e3837354d9aa",
+                "requestBody": {
+                    "description": "ActivityLogType definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Name"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "api/v1/activity_log_types/{id}": {
+            "get": {
+                "summary": "Return a single system activity log type",
+                "description": "Return a single system activity log type",
+                "operationId": "95ba3a8e7bee8a670b9a3e200fe41ee2",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Name"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a system activity log type",
+                "description": "Delete a system activity log type",
+                "operationId": "f9a3b91585cd8d70c3b855eb1ecd98cb",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Update a system activity log type",
+                "description": "Update a system activity log type",
+                "operationId": "d8c7f0e8d6e5d972721f9365ce775e4f",
+                "requestBody": {
+                    "description": "ActivityLogType definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Name"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Name"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "api/v1/activity_log_user_types": {
+            "get": {
+                "summary": "List of system activity log user types",
+                "description": "Returns a list of activity log user types enabled on the system",
+                "operationId": "ffef2ba02b74346aea72b741c1cacb7a",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Name"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new system activity log user type",
+                "description": "Creates a new system activity log user type",
+                "operationId": "d8bbeeaff5438dda5600cc595a6b7f43",
+                "requestBody": {
+                    "description": "ActivityLogUserTypes definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Name"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "api/v1/activity_log_user_types/{id}": {
+            "get": {
+                "summary": "Return a single system activity log user type",
+                "description": "Return a single system activity log user type",
+                "operationId": "a861945d1117a9d2d02aa4a4ae3e72e7",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Name"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a system activity log user type",
+                "description": "Delete a system  activity log user type",
+                "operationId": "b3b5715176e4c7a59c7a6a1ce2491c75",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Update a system activity log user type",
+                "description": "Update a system activity log user type",
+                "operationId": "6df78c4b044eb3f5f6f1d34bcc4711bb",
+                "requestBody": {
+                    "description": "ActivityLogUserTypes definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Name"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Name"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth": {
             "post": {
                 "tags": [
@@ -1405,83 +2570,28 @@
                 }
             }
         },
-        "api/v1/publishers": {
+        "/api/v1/permissions": {
             "get": {
-                "summary": "List of publishers",
-                "description": "Returns a list of publishers enabled on the system",
-                "operationId": "1fcdfcdb99d4b963807357bdb7006858",
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "PermissionController@index",
+                "description": "Get All Permissions",
+                "operationId": "fetch_all_permissions",
                 "responses": {
                     "200": {
-                        "description": "Success",
+                        "description": "Success response",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer",
-                                                        "example": "123"
-                                                    },
-                                                    "created_at": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
-                                                    },
-                                                    "updated_at": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
-                                                    },
-                                                    "enabled": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "name": {
-                                                        "type": "string",
-                                                        "example": "someName"
-                                                    },
-                                                    "allows_messaging": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "workflow_enabled": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "access_requests_management": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "uses_5_safes": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "member_of": {
-                                                        "type": "string",
-                                                        "example": "someOrg"
-                                                    },
-                                                    "contact_point": {
-                                                        "type": "string",
-                                                        "example": "someone@mail.com"
-                                                    },
-                                                    "application_form_updated_by": {
-                                                        "type": "integer",
-                                                        "example": "555"
-                                                    },
-                                                    "application_form_updated_on": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11"
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
                                         }
                                     },
                                     "type": "object"
@@ -1497,64 +2607,22 @@
                 ]
             },
             "post": {
-                "summary": "Create a new publisher",
-                "description": "Creates a new publisher",
-                "operationId": "e6fc91e602fe48826a545419b211ffda",
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "PermissionController@store",
+                "description": "Create a new permission",
+                "operationId": "create_permissions",
                 "requestBody": {
-                    "description": "Publisher details",
+                    "description": "Pass user credentials",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "name",
-                                    "enabled",
-                                    "allows_messaging",
-                                    "workflow_enabled",
-                                    "access_requests_management",
-                                    "uses_5_safes",
-                                    "member_of",
-                                    "contact_point",
-                                    "application_form_updated_by",
-                                    "application_form_updated_on"
-                                ],
                                 "properties": {
-                                    "name": {
+                                    "type": {
                                         "type": "string",
-                                        "example": "someName"
-                                    },
-                                    "allows_messaging": {
-                                        "type": "boolean",
-                                        "example": "1"
-                                    },
-                                    "workflow_enabled": {
-                                        "type": "boolean",
-                                        "example": "1"
-                                    },
-                                    "access_requests_management": {
-                                        "type": "boolean",
-                                        "example": "1"
-                                    },
-                                    "uses_5_safes": {
-                                        "type": "boolean",
-                                        "example": "1"
-                                    },
-                                    "member_of": {
-                                        "type": "string",
-                                        "example": "someOrg"
-                                    },
-                                    "contact_point": {
-                                        "type": "string",
-                                        "example": "someone@mail.com"
-                                    },
-                                    "application_form_updated_by": {
-                                        "type": "integer",
-                                        "example": "555"
-                                    },
-                                    "application_form_updated_on": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11"
+                                        "example": "features"
                                     }
                                 },
                                 "type": "object"
@@ -1563,8 +2631,8 @@
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Success",
+                    "201": {
+                        "description": "Created",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1583,164 +2651,15 @@
                             }
                         }
                     },
-                    "500": {
-                        "description": "Error",
+                    "401": {
+                        "description": "Unauthorized",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "api/v1/publishers/{id}": {
-            "get": {
-                "summary": "Return a single publisher",
-                "description": "Return a single publisher",
-                "operationId": "547b3370b799616613e83552fd5a5bca",
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": "123"
-                                                },
-                                                "created_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2023-04-11 12:00:00"
-                                                },
-                                                "updated_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2023-04-11 12:00:00"
-                                                },
-                                                "enabled": {
-                                                    "type": "boolean",
-                                                    "example": "1"
-                                                },
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "someName"
-                                                },
-                                                "allows_messaging": {
-                                                    "type": "boolean",
-                                                    "example": "1"
-                                                },
-                                                "workflow_enabled": {
-                                                    "type": "boolean",
-                                                    "example": "1"
-                                                },
-                                                "access_requests_management": {
-                                                    "type": "boolean",
-                                                    "example": "1"
-                                                },
-                                                "uses_5_safes": {
-                                                    "type": "boolean",
-                                                    "example": "1"
-                                                },
-                                                "member_of": {
-                                                    "type": "string",
-                                                    "example": "someOrg"
-                                                },
-                                                "contact_point": {
-                                                    "type": "string",
-                                                    "example": "someone@mail.com"
-                                                },
-                                                "application_form_updated_by": {
-                                                    "type": "integer",
-                                                    "example": "555"
-                                                },
-                                                "application_form_updated_on": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2023-04-11"
-                                                }
-                                            },
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not found response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "summary": "Delete a publisher",
-                "description": "Delete a publisher",
-                "operationId": "36a51f630358536e6a0ebd380326bfeb",
-                "responses": {
-                    "404": {
-                        "description": "Not found response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
+                                            "example": "unauthorized"
                                         }
                                     },
                                     "type": "object"
@@ -1772,64 +2691,22 @@
                 ]
             },
             "patch": {
-                "summary": "Update a publisher",
-                "description": "Update a publisher",
-                "operationId": "c9c97713ecb123b2829007781b954b66",
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "PermissionController@update",
+                "description": "Update permission",
+                "operationId": "update_permissions",
                 "requestBody": {
-                    "description": "Publisher definition",
+                    "description": "Pass user credentials",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "name",
-                                    "enabled",
-                                    "allows_messaging",
-                                    "workflow_enabled",
-                                    "access_requests_management",
-                                    "uses_5_safes",
-                                    "member_of",
-                                    "contact_point",
-                                    "application_form_updated_by",
-                                    "application_form_updated_on"
-                                ],
                                 "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "someName"
-                                    },
-                                    "allows_messaging": {
+                                    "enabled": {
                                         "type": "boolean",
-                                        "example": "1"
-                                    },
-                                    "workflow_enabled": {
-                                        "type": "boolean",
-                                        "example": "1"
-                                    },
-                                    "access_requests_management": {
-                                        "type": "boolean",
-                                        "example": "1"
-                                    },
-                                    "uses_5_safes": {
-                                        "type": "boolean",
-                                        "example": "1"
-                                    },
-                                    "member_of": {
-                                        "type": "string",
-                                        "example": "someOrg"
-                                    },
-                                    "contact_point": {
-                                        "type": "string",
-                                        "example": "someone@mail.com"
-                                    },
-                                    "application_form_updated_by": {
-                                        "type": "integer",
-                                        "example": "555"
-                                    },
-                                    "application_form_updated_on": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11"
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -1838,6 +2715,148 @@
                     }
                 },
                 "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/permissions/{id}": {
+            "get": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "PermissionController@show",
+                "description": "Get permission by id",
+                "operationId": "fetch_permissions",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "permission id",
+                        "required": true,
+                        "schema": {
+                            "description": "permission id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
                     "404": {
                         "description": "Not found response",
                         "content": {
@@ -1853,72 +2872,76 @@
                                 }
                             }
                         }
-                    },
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "PermissionController@destroy",
+                "description": "Delete permission by id",
+                "operationId": "delete_permissions",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "permission id",
+                        "required": true,
+                        "schema": {
+                            "description": "permission id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
                     "200": {
-                        "description": "Success",
+                        "description": "Success response",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "integer",
-                                                    "example": "123"
-                                                },
-                                                "created_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2023-04-11 12:00:00"
-                                                },
-                                                "updated_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2023-04-11 12:00:00"
-                                                },
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "someName"
-                                                },
-                                                "allows_messaging": {
-                                                    "type": "boolean",
-                                                    "example": "1"
-                                                },
-                                                "workflow_enabled": {
-                                                    "type": "boolean",
-                                                    "example": "1"
-                                                },
-                                                "access_requests_management": {
-                                                    "type": "boolean",
-                                                    "example": "1"
-                                                },
-                                                "uses_5_safes": {
-                                                    "type": "boolean",
-                                                    "example": "1"
-                                                },
-                                                "member_of": {
-                                                    "type": "string",
-                                                    "example": "someOrg"
-                                                },
-                                                "contact_point": {
-                                                    "type": "string",
-                                                    "example": "someone@mail.com"
-                                                },
-                                                "application_form_updated_by": {
-                                                    "type": "integer",
-                                                    "example": "555"
-                                                },
-                                                "application_form_updated_on": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2023-04-11"
-                                                }
-                                            },
-                                            "type": "object"
+                                            "example": "Resource deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
                                         }
                                     },
                                     "type": "object"
@@ -2415,6 +3438,573 @@
                                         "message": {
                                             "type": "string",
                                             "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/v1/teams": {
+            "get": {
+                "summary": "List of teams",
+                "description": "Returns a list of teams enabled on the system",
+                "operationId": "ba31b72c6d2f675a15bec0d20f465a31",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "someName"
+                                                    },
+                                                    "allows_messaging": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "workflow_enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "access_requests_management": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "uses_5_safes": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "is_admin": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "member_of": {
+                                                        "type": "string",
+                                                        "example": "someOrg"
+                                                    },
+                                                    "contact_point": {
+                                                        "type": "string",
+                                                        "example": "someone@mail.com"
+                                                    },
+                                                    "application_form_updated_by": {
+                                                        "type": "integer",
+                                                        "example": "555"
+                                                    },
+                                                    "application_form_updated_on": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create a new team",
+                "description": "Creates a new team",
+                "operationId": "836959a982624b90fd56a113b0794ace",
+                "requestBody": {
+                    "description": "Team details",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "enabled",
+                                    "allows_messaging",
+                                    "workflow_enabled",
+                                    "access_requests_management",
+                                    "uses_5_safes",
+                                    "is_admin",
+                                    "member_of",
+                                    "contact_point",
+                                    "application_form_updated_by",
+                                    "application_form_updated_on"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "someName"
+                                    },
+                                    "allows_messaging": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "workflow_enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "access_requests_management": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "uses_5_safes": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "is_admin": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "member_of": {
+                                        "type": "string",
+                                        "example": "someOrg"
+                                    },
+                                    "contact_point": {
+                                        "type": "string",
+                                        "example": "someone@mail.com"
+                                    },
+                                    "application_form_updated_by": {
+                                        "type": "integer",
+                                        "example": "555"
+                                    },
+                                    "application_form_updated_on": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "api/v1/teams/{id}": {
+            "get": {
+                "summary": "Return a single team",
+                "description": "Return a single team",
+                "operationId": "d4db29b21b53eb1283183e76d19d4e12",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "someName"
+                                                },
+                                                "allows_messaging": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "workflow_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "access_requests_management": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "uses_5_safes": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "is_admin": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "member_of": {
+                                                    "type": "string",
+                                                    "example": "someOrg"
+                                                },
+                                                "contact_point": {
+                                                    "type": "string",
+                                                    "example": "someone@mail.com"
+                                                },
+                                                "application_form_updated_by": {
+                                                    "type": "integer",
+                                                    "example": "555"
+                                                },
+                                                "application_form_updated_on": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "summary": "Delete a team",
+                "description": "Delete a team",
+                "operationId": "12ee152229f986b159bd4d1d250088bc",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "summary": "Update a team",
+                "description": "Update a team",
+                "operationId": "48814c642a9f8b4eadfa08f847362e93",
+                "requestBody": {
+                    "description": "Team definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "enabled",
+                                    "allows_messaging",
+                                    "workflow_enabled",
+                                    "access_requests_management",
+                                    "uses_5_safes",
+                                    "is_admin",
+                                    "member_of",
+                                    "contact_point",
+                                    "application_form_updated_by",
+                                    "application_form_updated_on"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "someName"
+                                    },
+                                    "allows_messaging": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "workflow_enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "access_requests_management": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "uses_5_safes": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "is_admin": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "member_of": {
+                                        "type": "string",
+                                        "example": "someOrg"
+                                    },
+                                    "contact_point": {
+                                        "type": "string",
+                                        "example": "someone@mail.com"
+                                    },
+                                    "application_form_updated_by": {
+                                        "type": "integer",
+                                        "example": "555"
+                                    },
+                                    "application_form_updated_on": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "someName"
+                                                },
+                                                "allows_messaging": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "workflow_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "access_requests_management": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "uses_5_safes": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "is_admin": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "member_of": {
+                                                    "type": "string",
+                                                    "example": "someOrg"
+                                                },
+                                                "contact_point": {
+                                                    "type": "string",
+                                                    "example": "someone@mail.com"
+                                                },
+                                                "application_form_updated_by": {
+                                                    "type": "integer",
+                                                    "example": "555"
+                                                },
+                                                "application_form_updated_on": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
