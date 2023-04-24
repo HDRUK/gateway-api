@@ -36,7 +36,7 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 # RUN echo "ping.path = /ping" >> /usr/local/etc/php/php.ini
 
 COPY . /var/www
-COPY .env /var/www/.env
+# COPY .env /var/www/.env
 
 RUN composer install \
     && chmod -R 777 storage bootstrap/cache \
