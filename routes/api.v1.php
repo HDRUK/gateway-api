@@ -42,7 +42,20 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         Route::patch('/' . $path . '/{id}', ['as' => $path . '.patch.update', 'uses' => $controller . '@update'])->where('id', '[0-9]+');
         Route::delete('/' . $path . '/{id}', ['as' => $path . '.delete.destroy', 'uses' => $controller . '@destroy'])->where('id', '[0-9]+');
     }
+
+    $routesTest = [
+        'users' => 'App\Http\Controllers\Api\V1\UserController',
+    ];
+
+    foreach ($routesTest as $path => $controller) {
+        Route::get('/' . $path, ['as' => $path . '.get.index', 'uses' => $controller . '@index']);
+        Route::get('/' . $path . '/{id}', ['as' => $path . '.get.show', 'uses' => $controller . '@show'])->where('id', '[0-9]+');
+        // Route::post('/' . $path, ['as' => $path . '.post.store', 'uses' => $controller . '@store']);
+        // Route::patch('/' . $path . '/{id}', ['as' => $path . '.patch.update', 'uses' => $controller . '@update'])->where('id', '[0-9]+');
+        // Route::delete('/' . $path . '/{id}', ['as' => $path . '.delete.destroy', 'uses' => $controller . '@destroy'])->where('id', '[0-9]+');
+    }
 });
+
 
 
 // stop all all other routes
