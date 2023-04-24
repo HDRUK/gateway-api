@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Enums\TagType;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 use Illuminate\Foundation\Http\FormRequest;
 
 class TagRequest extends FormRequest
@@ -27,7 +28,7 @@ class TagRequest extends FormRequest
             'type' => [
                 'required',
                 'string',
-                TagType::class,
+                new Enum(TagType::class),
                 Rule::unique('tags')->where(function ($query) {
                     $query->where('type', trim($this->type));
                 }),
