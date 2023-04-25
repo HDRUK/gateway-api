@@ -16,6 +16,13 @@ class Datasets extends Model
      */
     protected $table = 'datasets';
 
+    protected $casts = [
+        'active' => 'boolean',
+        'comercialUse' => 'boolean',
+        'is5Safes' => 'boolean',
+        'isCohortDiscovery' => 'boolean',
+    ];
+
     /**
      * Indicates if this model is timestamped
      * 

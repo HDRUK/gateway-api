@@ -45,6 +45,7 @@ class Tag extends Model
 
     protected $casts = [
         'type' => TagType::class,
+        'enabled' => 'boolean',
     ];
 
     protected $fillable = [

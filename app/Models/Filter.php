@@ -25,6 +25,10 @@ class Filter extends Model
      */
     protected $table = 'filters';
 
+    protected $casts = [
+        'enabled' => 'boolean',
+    ];
+
     /**
      * Indicates if this model is timestamped
      * 

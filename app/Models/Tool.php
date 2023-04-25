@@ -33,6 +33,10 @@ class Tool extends Model
         'mongo_object_id', 'name', 'url', 'description', 'license', 'tech_stack', 'user_id', 'enabled',
     ];
 
+    protected $casts = [
+        'enabled' => 'boolean',
+    ];
+
     /**
      * Get the ids associated with the user.
      */

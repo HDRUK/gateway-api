@@ -27,6 +27,13 @@ class DarIntegration extends Model
     ];
 
     /**
+     * Specifically requests that Laravel casts the 
+     */
+    protected $casts = [
+        'enabled' => 'boolean',
+    ];
+
+    /**
      * Table associated with this model
      * 
      * @var string
