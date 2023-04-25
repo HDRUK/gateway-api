@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: gateway-api
-          image: hdruk/gateway-api
+          image: hdruk/gateway-api:latest
           ports:
             - containerPort: 8000
               name: gateway-api
