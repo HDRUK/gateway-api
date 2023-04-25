@@ -25,7 +25,7 @@ return [
     ],
     'keys' => [
         'phenotype',
-        'feature',
+        'features',
         'publisher',
         'damaQualityDimension',
         'researchEnvironment',
