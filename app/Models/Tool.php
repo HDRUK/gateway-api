@@ -34,6 +34,13 @@ class Tool extends Model
     ];
 
     /**
+     * Specifically requests that Laravel casts the tiny ints as boolean
+     */
+    protected $casts = [
+        'enabled' => 'boolean',
+    ];
+
+    /**
      * Get the ids associated with the user.
      */
     public function user(): BelongsTo

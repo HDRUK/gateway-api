@@ -17,6 +17,16 @@ class Datasets extends Model
     protected $table = 'datasets';
 
     /**
+     * Specifically requests that Laravel casts the tiny ints as boolean
+     */
+    protected $casts = [
+        'active' => 'boolean',
+        'comercialUse' => 'boolean',
+        'is5Safes' => 'boolean',
+        'isCohortDiscovery' => 'boolean',
+    ];
+
+    /**
      * Indicates if this model is timestamped
      * 
      * @var bool

@@ -26,6 +26,18 @@ class Team extends Model
     ];
 
     /**
+     * Specifically requests that Laravel casts the tiny ints as boolean
+     */
+    protected $casts = [
+        'enabled' => 'boolean',
+        'allows_messaging' => 'boolean',
+        'workflow_enabled' => 'boolean',
+        'access_requests_management' => 'boolean',
+        'uses_5_safes' => 'boolean',
+        'is_admin' => 'boolean',
+    ];
+
+    /**
      * Table associated with this model
      * 
      * @var string
