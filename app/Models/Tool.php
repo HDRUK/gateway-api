@@ -33,6 +33,9 @@ class Tool extends Model
         'mongo_object_id', 'name', 'url', 'description', 'license', 'tech_stack', 'user_id', 'enabled',
     ];
 
+    /**
+     * Specifically requests that Laravel casts the tiny ints as boolean
+     */
     protected $casts = [
         'enabled' => 'boolean',
     ];

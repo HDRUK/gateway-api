@@ -25,6 +25,9 @@ class Filter extends Model
      */
     protected $table = 'filters';
 
+    /**
+     * Specifically requests that Laravel casts the tiny ints as boolean
+     */
     protected $casts = [
         'enabled' => 'boolean',
     ];

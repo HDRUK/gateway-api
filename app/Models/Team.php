@@ -25,6 +25,9 @@ class Team extends Model
         'application_form_updated_on',
     ];
 
+    /**
+     * Specifically requests that Laravel casts the tiny ints as boolean
+     */
     protected $casts = [
         'enabled' => 'boolean',
         'allows_messaging' => 'boolean',

@@ -43,6 +43,9 @@ class Tag extends Model
      */
     private $enabled = true;
 
+    /**
+     * Specifically requests that Laravel casts the tiny ints as boolean
+     */
     protected $casts = [
         'type' => TagType::class,
         'enabled' => 'boolean',
