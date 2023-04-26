@@ -70,6 +70,24 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_show_one_team()
     {
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
         $response = $this->json(
             'POST', 
             'api/v1/teams', 
@@ -84,7 +102,8 @@ class TeamTest extends TestCase
                 'member_of' => 1001,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41'
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -102,12 +121,31 @@ class TeamTest extends TestCase
         $response = $this->get('api/v1/teams/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
+        $content = $response->decodeResponseJson();
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data'
-        ]);        
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))    
+            ->assertJsonStructure([
+                'message',
+                'data' => [
+                    'id',
+                    'created_at',
+                    'updated_at',
+                    'deleted_at',
+                    'name',
+                    'enabled',
+                    'allows_messaging',
+                    'workflow_enabled',
+                    'uses_5_safes',
+                    'is_admin',
+                    'member_of',
+                    'contact_point',
+                    'application_form_updated_by',
+                    'application_form_updated_on',
+                    'notifications',
+                ],
+            ]);
+
+        $this->assertEquals($content['data']['notifications'][0]['notification_type'], 'applicationSubmitted');
     }
 
     /**
@@ -117,6 +155,24 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_create_a_team()
     {
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
         $response = $this->json(
             'POST', 
             'api/v1/teams', 
@@ -132,6 +188,7 @@ class TeamTest extends TestCase
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -152,7 +209,24 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_update_a_team()
     {
-        // First create a team for us to update within this
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create a team for us to update within this
         // test
         $response = $this->json(
             'POST', 
@@ -169,6 +243,7 @@ class TeamTest extends TestCase
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -199,6 +274,7 @@ class TeamTest extends TestCase
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:45:41',
+                'notifications' => [$notificationID],
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -225,7 +301,24 @@ class TeamTest extends TestCase
      */
     public function test_the_application_can_delete_a_team()
     {
-        // First create a team for us to delete within this
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create a team for us to delete within this
         // test
         $response = $this->json(
             'POST', 
@@ -242,6 +335,8 @@ class TeamTest extends TestCase
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
