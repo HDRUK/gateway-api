@@ -1,6 +1,6 @@
 export default class HttpExceptions extends Error {
-    constructor(message) {
+    constructor(message, statusCode = 500) {
         super(message);
-        this.message = message;
+        this.status = statusCode;
     }
 }
