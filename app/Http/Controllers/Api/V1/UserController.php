@@ -10,6 +10,7 @@ use App\Http\Requests\UserRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserLiteRequest;
 use App\Http\Traits\UserTransformation;
+use Exception;
 
 class UserController extends Controller
 {
@@ -202,7 +203,6 @@ class UserController extends Controller
                 "firstmame" => $input['firstname'],
                 "lastname" => $input['lastname'],
                 "email" => $input['email'],
-                "password" => $input['password'],
                 "provider" =>  Config::get('constants.provider.service'),
                 "password" => Hash::make($input['password']),
             ];
@@ -313,7 +313,6 @@ class UserController extends Controller
                     "firstname" => $input['firstname'],
                     "lastname" => $input['lastname'],
                     "email" => $input['email'],
-                    "password" => $input['password'],
                     "provider" =>  Config::get('constants.provider.service'),
                     "password" => Hash::make($input['password']),
                 ];

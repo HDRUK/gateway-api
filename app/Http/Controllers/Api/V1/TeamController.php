@@ -8,7 +8,6 @@ use App\Models\Team;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\TeamTransformation;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 
 class TeamController extends Controller

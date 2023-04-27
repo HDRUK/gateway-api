@@ -29,16 +29,6 @@ class TeamHasUser extends Model
         'team_id',
     ];
 
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
-
-    // public function team()
-    // {
-    //     return $this->belongsTo(Team::class);
-    // }
-
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class, 'team_user_has_permissions');
