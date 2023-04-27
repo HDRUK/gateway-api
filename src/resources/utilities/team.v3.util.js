@@ -1,4 +1,4 @@
-import _, { isEmpty, has, isNull } from 'lodash';
+import _, { isEmpty, has, includes, isNull, filter, some } from 'lodash';
 import constants from './constants.util';
 // import emailGenerator from '../../utilities/emailGenerator.util';
 import emailGenerator from './emailGenerator.util';
@@ -18,7 +18,7 @@ const checkTeamV3Permissions = (role, team, userId) => {
 		let { members } = team;
 		let userMember = members.find(el => el.memberid.toString() === userId.toString());
 
-        if (userMember) {
+		if (userMember) {
 			let { roles = [] } = userMember;
 			if (roles.includes(role) || roles.includes(constants.roleTypes.MANAGER) || role === '') {
 				return true;
@@ -232,7 +232,7 @@ const checkIfLastManager = (members, deleteUserId) => {
 	if (managerCount === 0) {
 		throw new HttpExceptions(`You cannot delete the last manager in the team.`);
 	}
-}
+};
 
 const checkIfExistAdminRole = (members, roles) => {
 	let checkingMemberRoles;
@@ -250,7 +250,7 @@ const checkIfExistAdminRole = (members, roles) => {
 	}
 
 	return true;
-}
+};
 
 const getAllRolesForApproverUser = (team, teamId, userId) => {
 	let arrayRoles = [];
@@ -274,7 +274,7 @@ const getAllRolesForApproverUser = (team, teamId, userId) => {
 	});
 
 	return [...new Set(arrayRoles)];
-}
+};
 
 const listOfRolesAllowed = (userRoles, rolesAcceptedByRoles) => {
 	let allowedRoles = [];
@@ -285,8 +285,8 @@ const listOfRolesAllowed = (userRoles, rolesAcceptedByRoles) => {
 		}
 	});
 
-	return [... new Set(allowedRoles)];
-}
+	return [...new Set(allowedRoles)];
+};
 
 const checkAllowNewRoles = (userUpdateRoles, allowedRoles) => {
 	userUpdateRoles.forEach(uRole => {
@@ -319,17 +319,15 @@ const checkUserRolesByTeam = (arrayCheckRoles, team, userId) => {
 			if (roles.includes(constants.roleMemberTeam.CUST_DAR_MANAGER)) {
 				return true;
 			}
-			
 		}
 	}
 
 	return false;
-}
+};
 
-const formatTeamNotifications = (team) => {
+const formatTeamNotifications = team => {
 	let { notifications = [] } = team;
 	if (!isEmpty(notifications)) {
-
 		return [...notifications].reduce((arr, notification) => {
 			let teamNotificationEmails = [];
 			let { notificationType = '', optIn = false, subscribedEmails = [] } = notification;
@@ -402,11 +400,11 @@ const getMemberDetails = (memberIds = [], users = []) => {
 };
 
 export default {
-    checkTeamV3Permissions,
-    checkIfAdmin,
-    formatTeamMembers,
-    createTeamNotifications,
-    getTeamName,
+	checkTeamV3Permissions,
+	checkIfAdmin,
+	formatTeamMembers,
+	createTeamNotifications,
+	getTeamName,
 	checkUserAuthorization,
 	checkingUserAuthorization,
 	checkIfLastManager,
@@ -419,4 +417,4 @@ export default {
 	findMissingOptIns,
 	filterMembersByNoticationTypes,
 	getMemberDetails,
-}
+};
