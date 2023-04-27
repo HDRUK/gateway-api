@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Carbon\Carbon;
-
 use App\Models\Team;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\TeamTransformation;
-use Illuminate\Http\Request;
 
 
 class TeamController extends Controller

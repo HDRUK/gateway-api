@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Hash;
 use App\Models\User;
 use App\Models\Permission;
 use Illuminate\Database\Eloquent\Model;

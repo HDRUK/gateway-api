@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Exception;
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PermissionRequest;
-use App\Models\Permission;
 use App\Models\TeamUserHasPermission;
+use App\Http\Requests\PermissionRequest;
 
 class PermissionController extends Controller
 {

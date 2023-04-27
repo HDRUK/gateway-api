@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use Hash;
 use Config;
+use Exception;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserLiteRequest;
 use App\Http\Traits\UserTransformation;
-use Exception;
 
 class UserController extends Controller
 {
