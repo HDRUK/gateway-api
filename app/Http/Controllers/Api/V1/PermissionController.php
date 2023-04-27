@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PermissionRequest;
 use App\Models\Permission;
+use App\Models\TeamUserHasPermission;
 
 class PermissionController extends Controller
 {
@@ -246,6 +247,13 @@ class PermissionController extends Controller
      *       ),
      *    ),
      *    @OA\Response(
+     *        response=400,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="bad request"),
+     *        )
+     *    ),
+     *    @OA\Response(
      *        response=401,
      *        description="Unauthorized",
      *        @OA\JsonContent(
@@ -257,13 +265,6 @@ class PermissionController extends Controller
      *        description="Error",
      *        @OA\JsonContent(
      *            @OA\Property(property="message", type="string", example="error"),
-     *        )
-     *    ),
-     *    @OA\Response(
-     *        response=400,
-     *        description="Error",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string", example="bad request"),
      *        )
      *    )
      * )
@@ -323,26 +324,26 @@ class PermissionController extends Controller
      *       ),
      *    ),
      *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
      *       response=404,
      *       description="Error response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="Resource not found"),
      *       ),
      *    ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error"),
-     *          )
-     *      )
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
      * )
      * 
      * delete tag by id
@@ -356,6 +357,7 @@ class PermissionController extends Controller
             $tags = Permission::where('id', $id)->count();
 
             if ($tags) {
+                TeamUserHasPermission::where('permission_id', $id)->delete();
                 Permission::where('id', $id)->delete();
 
                 return response()->json([
