@@ -27,7 +27,7 @@ class PermissionRequest extends FormRequest
                 'required',
                 'string',
                 Rule::unique('permissions')->where(function ($query) {
-                    $query->where('role', trim($this->type));
+                    $query->where('role', trim($this->role));
                 }),
             ],
         ];

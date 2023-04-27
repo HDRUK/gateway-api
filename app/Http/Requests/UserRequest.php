@@ -32,7 +32,7 @@ class UserRequest extends FormRequest
             'email' => [
                 'required', 'string', 'email',
                 Rule::unique('users')->where(function ($query) {
-                    $query->where('email', trim($this->type));
+                    $query->where('email', trim($this->email));
                 }),
             ],
             'password' => [
