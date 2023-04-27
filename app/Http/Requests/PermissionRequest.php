@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class PermissionRequest extends FormRequest
@@ -26,9 +25,7 @@ class PermissionRequest extends FormRequest
             'role' => [
                 'required',
                 'string',
-                Rule::unique('permissions')->where(function ($query) {
-                    $query->where('role', trim($this->role));
-                }),
+                'unique:permissions,role',
             ],
         ];
     }

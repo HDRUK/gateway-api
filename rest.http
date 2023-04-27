@@ -90,8 +90,8 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "firstname": "john",
-    "lastname": "doe",
+    "firstname": "john2",
+    "lastname": "doe2",
     "email": "john.doe.test.123456789@test.com",
     "password": "Passw@rd1!"
 }

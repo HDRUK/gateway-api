@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
@@ -31,9 +30,7 @@ class UserRequest extends FormRequest
             ],
             'email' => [
                 'required', 'string', 'email',
-                Rule::unique('users')->where(function ($query) {
-                    $query->where('email', trim($this->email));
-                }),
+                'unique:users,email',
             ],
             'password' => [
                 'required', 'string',
