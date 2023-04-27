@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Controllers\JwtController;
+use App\Http\Requests\UserRequest;
 
 class RegisterController extends Controller
 {
@@ -37,10 +38,14 @@ class RegisterController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property(
-     *                property="name",
+     *                property="fistname",
      *                type="string",
-     *                example="John Doe",
-     *                example="Name",
+     *                example="John",
+     *             ),
+     *             @OA\Property(
+     *                property="lastname",
+     *                type="string",
+     *                example="Doe",
      *             ),
      *             @OA\Property(
      *                property="email",
@@ -79,14 +84,14 @@ class RegisterController extends Controller
      *    ),
      * )
      * 
-     * @param RegisterRequest $request
+     * @param UserRequest $request
      */
-    public function create(RegisterRequest $request)
+    public function create(UserRequest $request)
     {
         $input = $request->all();
 
         $user = User::where([
-            'provider' => 'internal',
+            'provider' => Config::get('constants.provider.service'),
             'email' => $input['email'],
         ])->first();
 
@@ -109,9 +114,9 @@ class RegisterController extends Controller
     {
         try {
             $user = new User();
-            $user->name = $data['name'];
-            $user->firstname = null;
-            $user->lastname = null;
+            $user->name = $data['firstname'] . " " . $data['lastname'];
+            $user->firstname = $data['firstname'];
+            $user->lastname = $data['lastname'];
             $user->email = $data['email'];
             $user->provider = Config::get('constants.provider.service');
             $user->password = Hash::make($data['password']);

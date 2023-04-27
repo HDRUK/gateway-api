@@ -28,7 +28,9 @@ class DatabaseSeeder extends Seeder
             ActivityLogTypeSeeder::class,
             ActivityLogSeeder::class,
             PermissionSeeder::class,
-            TeamUserPermissionSeeder::class,
+            // TeamUserPermissionSeeder::class,
+            TeamHasUserSeeder::class,
+            TeamUserHasPermissionSeeder::class,
         ]);
     }
 }

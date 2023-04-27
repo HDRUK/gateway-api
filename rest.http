@@ -4,18 +4,20 @@
 ### Variables
 @baseUrl = http://localhost:8000
 @apiVersion = v1
-@uName = "John Doe"
+@uFirstName = "John"
+@uLastName = "Doe"
 @uEmail = "john.doe.1234567890@example.com"
 @uPassword = "passw@rdJ0hnD0e"
 
 ### Login
-#### create new user
+#### create new auth
 POST {{baseUrl}}/api/{{apiVersion}}/register HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 
 {
-    "name": {{uName}},
+    "firstname": {{uFirstName}},
+    "lastname": {{uLastName}},
     "email": {{uEmail}},
     "password": {{uPassword}}
 }
@@ -55,7 +57,7 @@ Authorization: Bearer {{accessToken}}
     "role" : "test"
 }
 
-#### update permission
+#### update permission by id
 PATCH {{baseUrl}}/api/{{apiVersion}}/permissions/6 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -65,7 +67,7 @@ Authorization: Bearer {{accessToken}}
     "role" : "test2"
 }
 
-#### update permission
+#### delete permission by id
 DELETE {{baseUrl}}/api/{{apiVersion}}/permissions/6 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
@@ -79,5 +81,40 @@ Content-Type: application/json
 GET {{baseUrl}}/api/{{apiVersion}}/users/1 HTTP/1.1
 Content-Type: application/json
 
+#### create new user
+POST {{baseUrl}}/api/{{apiVersion}}/users HTTP/1.1
+Content-Type: application/json
+Accept: application/json
 
+{
+    "firstname": "john",
+    "lastname": "doe",
+    "email": "john.doe.test.123456789@test.com",
+    "password": "Passw@rd1!"
+}
+
+#### update user
+PATCH {{baseUrl}}/api/{{apiVersion}}/users/1 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "firstname": "john23",
+    "lastname": "doe2",
+    "email": "john.doe2.test.123456789@test.com",
+    "password": "Passw@rd1!"
+}
+
+#### delete user by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/users/12 HTTP/1.1
+Content-Type: application/json
+
+### TEAMS
+#### get all teams
+GET {{baseUrl}}/api/{{apiVersion}}/teams HTTP/1.1
+Content-Type: application/json
+
+#### get one team by id
+GET {{baseUrl}}/api/{{apiVersion}}/teams/1 HTTP/1.1
+Content-Type: application/json
 

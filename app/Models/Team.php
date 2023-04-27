@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
+use App\Models\Permission;
+use App\Models\TeamUserPermission;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Team extends Model
 {
@@ -115,4 +118,16 @@ class Team extends Model
      * @var string
      */
     private $application_form_updated_on = '';
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'team_has_users')
+            ->withPivot('user_id', 'id');
+    }
+
+    public function permissions()
+    {
+        return $this->hasManyThrough(Permission::class, TeamHasUser::class);
+    }
+
 }

@@ -5,25 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TeamUserPermission extends Model
+class TeamUserHasPermission extends Model
 {
     use HasFactory;
 
     /**
-     * Table associated with this model
+     * The table associated with the model.
      * 
      * @var string
      */
-    protected $table = 'team_user_permissions';
+    protected $table = 'team_user_has_permissions';
 
     /**
-     * Indicates if this model is timestamped
+     * Indicates if the model should be timestamped
      * 
      * @var bool
      */
     public $timestamps = false;
 
     protected $fillable = [
-        'team_id', 'user_id', 'permission_id',
+        'team_has_user_id',
+        'permission_id',
     ];
 }

@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\Team;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Permission extends Model
+class TeamHasUser extends Model
 {
     use HasFactory;
 
@@ -17,7 +15,7 @@ class Permission extends Model
      * 
      * @var string
      */
-    protected $table = 'permissions';
+    protected $table = 'team_has_users';
 
     /**
      * Indicates if the model should be timestamped
@@ -25,13 +23,24 @@ class Permission extends Model
      * @var bool
      */
     public $timestamps = false;
-
+    
     protected $fillable = [
-        'role',
+        'user_id',
+        'team_id',
     ];
 
-    public function teamHasUsers(): BelongsToMany
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
+
+    // public function team()
+    // {
+    //     return $this->belongsTo(Team::class);
+    // }
+
+    public function permissions(): BelongsToMany
     {
-        return $this->belongsToMany(TeamHasUser::class, 'team_user_has_permissions');
+        return $this->belongsToMany(Permission::class, 'team_user_has_permissions');
     }
 }

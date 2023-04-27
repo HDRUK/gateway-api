@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\TeamController;
 use App\Http\Controllers\Api\V1\TestController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
@@ -33,6 +34,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'activity_log_types' => 'ActivityLogTypeController',
         'activity_log_user_types' => 'ActivityLogUserTypeController',
         'permissions' => 'PermissionController',
+        'users' => 'UserController',
     ];
 
     foreach ($routes as $path => $controller) {
@@ -42,21 +44,22 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         Route::patch('/' . $path . '/{id}', ['as' => $path . '.patch.update', 'uses' => $controller . '@update'])->where('id', '[0-9]+');
         Route::delete('/' . $path . '/{id}', ['as' => $path . '.delete.destroy', 'uses' => $controller . '@destroy'])->where('id', '[0-9]+');
     }
-
-    $routesTest = [
-        'users' => 'App\Http\Controllers\Api\V1\UserController',
-    ];
-
-    foreach ($routesTest as $path => $controller) {
-        Route::get('/' . $path, ['as' => $path . '.get.index', 'uses' => $controller . '@index']);
-        Route::get('/' . $path . '/{id}', ['as' => $path . '.get.show', 'uses' => $controller . '@show'])->where('id', '[0-9]+');
-        // Route::post('/' . $path, ['as' => $path . '.post.store', 'uses' => $controller . '@store']);
-        // Route::patch('/' . $path . '/{id}', ['as' => $path . '.patch.update', 'uses' => $controller . '@update'])->where('id', '[0-9]+');
-        // Route::delete('/' . $path . '/{id}', ['as' => $path . '.delete.destroy', 'uses' => $controller . '@destroy'])->where('id', '[0-9]+');
-    }
 });
 
+// $routesTest = [
+//     'users' => 'App\Http\Controllers\Api\V1\UserController',
+// ];
 
+// foreach ($routesTest as $path => $controller) {
+//     Route::get('/' . $path, ['as' => $path . '.get.index', 'uses' => $controller . '@index']);
+//     Route::get('/' . $path . '/{id}', ['as' => $path . '.get.show', 'uses' => $controller . '@show'])->where('id', '[0-9]+');
+//     Route::post('/' . $path, ['as' => $path . '.post.store', 'uses' => $controller . '@store']);
+//     Route::patch('/' . $path . '/{id}', ['as' => $path . '.patch.update', 'uses' => $controller . '@update'])->where('id', '[0-9]+');
+//     Route::delete('/' . $path . '/{id}', ['as' => $path . '.delete.destroy', 'uses' => $controller . '@destroy'])->where('id', '[0-9]+');
+// }
+
+Route::get('/teams', [TeamController::class, 'index']);
+Route::get('/teams/{id}', [TeamController::class, 'show']);
 
 // stop all all other routes
 Route::any('{path}', function() {
