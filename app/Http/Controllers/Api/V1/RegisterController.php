@@ -38,7 +38,7 @@ class RegisterController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property(
-     *                property="fistname",
+     *                property="firstname",
      *                type="string",
      *                example="John",
      *             ),
