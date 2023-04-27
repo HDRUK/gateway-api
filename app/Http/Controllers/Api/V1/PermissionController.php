@@ -291,7 +291,7 @@ class PermissionController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => Permission::where('id', $id)->first(),
-            ], 202);
+            ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

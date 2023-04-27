@@ -117,6 +117,31 @@ class PermissionTest extends TestCase
     }
 
     /**
+     * Update Permission by Id with success
+     *
+     * @return void
+     */
+    public function test_update_permission_by_id_with_success(): void
+    {
+        $id = 2;
+        $name = 'fake_for_test';
+        $response = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $id,
+            [
+                'role' => $name,
+            ],
+            $this->header
+        );
+
+        $checkIfExist = Permission::where('role', $name)->count();
+
+        $this->assertTrue((bool) $checkIfExist, 'Response was successfully');
+
+        $response->assertStatus(200);
+    }
+
+    /**
      * Delete Permission by Id with success
      *
      * @return void
