@@ -3,20 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-<<<<<<< HEAD
-=======
-use Database\Seeders\ToolSeeder;
-use Database\Seeders\UserSeeder;
-use Database\Seeders\FilterSeeder;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\DarIntegrationSeeder;
-use Database\Seeders\ActivityLogSeeder;
-use Database\Seeders\ActivityLogTypeSeeder;
-use Database\Seeders\ActivityLogUserTypeSeeder;
-use Database\Seeders\NotificationSeeder;
-use Database\Seeders\ToolHasTagSeeder;
-use Database\Seeders\TeamHasNotificationSeeder;
->>>>>>> 19f31b9 (add model, migration, seed for teamHadNotifications table)
 
 class DatabaseSeeder extends Seeder
 {
@@ -47,6 +33,7 @@ class DatabaseSeeder extends Seeder
             TeamUserHasPermissionSeeder::class,
             NotificationSeeder::class,
             TeamHasNotificationSeeder::class,
+            UserHasNotificationSeeder::class,
         ]);
     }
 }

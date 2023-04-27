@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Team;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -68,5 +69,13 @@ class Notification extends Model
     public function team(): BelongsToMany
     {
         return $this->belongsToMany(Team::class, 'team_has_notifications');
+    }
+
+    /**
+     * The users that belong to the notification.
+     */
+    public function user(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_has_notifications');
     }
 }
