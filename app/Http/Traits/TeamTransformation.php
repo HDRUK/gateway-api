@@ -3,6 +3,8 @@
 namespace App\Http\Traits;
 
 use App\Models\TeamHasUser;
+use App\Models\TeamHasNotification;
+use App\Models\Notification;
 
 trait TeamTransformation
 {
@@ -63,9 +65,19 @@ trait TeamTransformation
             }
 
             $tmpTeam['users'] = $tmpUser;
+
+            $notifications = TeamHasNotification::where('team_id', $tmpTeam['id'])->get()->toArray();
+            $tmpNotification = [];
+            foreach ($notifications as $value) {
+                $notification = Notification::where('id', $value['notification_id'])->firstOrFail();
+                $tmpNotification[] = $notification;
+            }
+            $tmpTeam['notifications'] = $tmpNotification;
+
             $response[] = $tmpTeam;
             unset($tmpTeam);
             unset($tmpUser);
+            unset($tmpNotification);
         }
 
         return $response;

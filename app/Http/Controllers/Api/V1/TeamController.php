@@ -105,7 +105,7 @@ class TeamController extends Controller
         $team = Team::with('notifications')->where('id', $id)->firstOrFail();
 
         if ($team) {
-            $userTeam = Team::where('id', $id)->with('users')->get()->toArray();
+            $userTeam = Team::where('id', $id)->with(['users', 'notifications'])->get()->toArray();
             return response()->json([
                 'message' => 'success',
                 'data' => $this->getTeams($userTeam),

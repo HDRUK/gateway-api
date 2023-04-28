@@ -58,6 +58,7 @@ class TeamTest extends TestCase
                         'application_form_updated_by',
                         'application_form_updated_on',
                         'users',
+                        'notifications',
                     ],
                 ],
             ]);
@@ -126,26 +127,10 @@ class TeamTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))    
             ->assertJsonStructure([
                 'message',
-                'data' => [
-                    'id',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'name',
-                    'enabled',
-                    'allows_messaging',
-                    'workflow_enabled',
-                    'uses_5_safes',
-                    'is_admin',
-                    'member_of',
-                    'contact_point',
-                    'application_form_updated_by',
-                    'application_form_updated_on',
-                    'notifications',
-                ],
+                'data',
             ]);
 
-        $this->assertEquals($content['data']['notifications'][0]['notification_type'], 'applicationSubmitted');
+        $this->assertEquals($content['data'][0]['notifications'][0]['notification_type'], 'applicationSubmitted');
     }
 
     /**

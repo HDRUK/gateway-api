@@ -45,6 +45,7 @@ class UserTest extends TestCase
         $countBefore = User::all()->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
+        $content = $response->decodeResponseJson();
         $this->assertCount($countBefore, $response['data']);
         // var_dump($response);
         $response->assertJsonStructure([
@@ -61,7 +62,8 @@ class UserTest extends TestCase
                     'created_at',
                     'updated_at',
                     'deleted_at',
-                    'teams'
+                    'teams',
+                    'notifications',
                 ],
             ],
         ]);
@@ -102,7 +104,8 @@ class UserTest extends TestCase
                     'created_at',
                     'updated_at',
                     'deleted_at',
-                    'teams'
+                    'teams',
+                    'notifications',
                 ]
             ]
         ]);
