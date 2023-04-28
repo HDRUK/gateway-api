@@ -57,5 +57,13 @@ class User extends Authenticatable
         return $this->belongsToMany(Team::class, 'team_has_users')
             ->withPivot('team_id', 'id')
             ->orderBy('team_has_users.team_id');  
+    }    
+
+    /**
+     * The notifications that belong to the user.
+     */
+    public function notifications(): BelongsToMany
+    {
+        return $this->belongsToMany(Notification::class, 'user_has_notifications');
     }
 }

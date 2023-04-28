@@ -61,7 +61,8 @@ class UserTest extends TestCase
                     'created_at',
                     'updated_at',
                     'deleted_at',
-                    'teams'
+                    'teams',
+                    'notifications',
                 ],
             ],
         ]);
@@ -102,7 +103,8 @@ class UserTest extends TestCase
                     'created_at',
                     'updated_at',
                     'deleted_at',
-                    'teams'
+                    'teams',
+                    'notifications',
                 ]
             ]
         ]);

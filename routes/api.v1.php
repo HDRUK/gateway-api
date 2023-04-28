@@ -35,6 +35,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'activity_log_user_types' => 'ActivityLogUserTypeController',
         'permissions' => 'PermissionController',
         'users' => 'UserController',
+        'notifications' => 'NotificationController',
     ];
 
     foreach ($routes as $path => $controller) {

@@ -6,6 +6,7 @@ use Hash;
 use Config;
 use Exception;
 use App\Models\User;
+use App\Models\UserHasNotification;
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
 use App\Http\Controllers\Controller;
@@ -130,7 +131,7 @@ class UserController extends Controller
         ])->get();
 
         if ($users->count()) {
-            $userTeam = User::where('id', $id)->with('teams')->get()->toArray();
+            $userTeam = User::where('id', $id)->with(['teams', 'notifications'])->get()->toArray();
             return response()->json([
                 'message' => 'success',
                 'data' => $this->getUsers($userTeam),
@@ -392,6 +393,7 @@ class UserController extends Controller
             $users = User::where('id', $id)->get();
 
             if ($users) {
+                UserHasNotification::where('user_id', $id)->delete();
                 User::where('id', $id)->delete();
 
                 return response()->json([

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Models\Permission;
+use App\Models\Notification;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -143,4 +144,11 @@ class Team extends Model
         return $this->hasManyThrough(Permission::class, TeamHasUser::class);
     }
 
+    /**
+     * The notifications that belong to the team.
+     */
+    public function notifications(): BelongsToMany
+    {
+        return $this->belongsToMany(Notification::class, 'team_has_notifications');
+    }
 }

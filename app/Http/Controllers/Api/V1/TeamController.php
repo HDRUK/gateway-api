@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Exception;
 use Carbon\Carbon;
 use App\Models\Team;
-use Illuminate\Http\Request;
+use App\Models\TeamHasNotification;
 use App\Http\Controllers\Controller;
+
+use Illuminate\Http\Request;
 use App\Http\Traits\TeamTransformation;
 
 
@@ -84,6 +87,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
+     *                  @OA\Property(property="notifications", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *              )
      *          ),
      *      ),
@@ -98,9 +102,10 @@ class TeamController extends Controller
      */
     public function show(Request $request, int $id)
     {
-        $team = Team::findOrFail($id);
+        $team = Team::with('notifications')->where('id', $id)->firstOrFail();
+
         if ($team) {
-            $userTeam = Team::where('id', $id)->with('users')->get()->toArray();
+            $userTeam = Team::where('id', $id)->with(['users', 'notifications'])->get()->toArray();
             return response()->json([
                 'message' => 'success',
                 'data' => $this->getTeams($userTeam),
@@ -134,6 +139,7 @@ class TeamController extends Controller
      *                  "contact_point",
      *                  "application_form_updated_by",
      *                  "application_form_updated_on",
+     *                  "notifications",
      *              },
      *              @OA\Property(property="name", type="string", example="someName"),
      *              @OA\Property(property="allows_messaging", type="boolean", example="1"),
@@ -145,6 +151,7 @@ class TeamController extends Controller
      *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
+     *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *          ),
      *      ),
      *      @OA\Response(
@@ -178,18 +185,34 @@ class TeamController extends Controller
             'contact_point' => 'required',
             'application_form_updated_by' => 'required',
             'application_form_updated_on' => 'required',
+            'notifications' => 'required',
         ]);
 
-        $team = Team::create($request->post());
+        $input = $request->all();
+        $arrayTeam = array_filter($input, function ($key) {
+            return $key !== 'notifications';
+        }, ARRAY_FILTER_USE_KEY);
+        $arrayTeamNotification = $input['notifications'];
+
+        $team = Team::create($arrayTeam);
+
         if ($team) {
+            foreach ($arrayTeamNotification as $value) {
+                TeamHasNotification::updateOrCreate([
+                    'team_id' => (int) $team->id,
+                    'notification_id' => (int) $value,
+                ]);
+            }
+        } else {
             return response()->json([
-                'message' => 'success',
-                'data' => $team->id,
-            ], 200);
+                'message' => 'error',
+            ], 500);
         }
+
         return response()->json([
-            'message' => 'error',
-        ], 500);
+            'message' => 'success',
+            'data' => $team->id,
+        ], 200);
     }
 
     /**
@@ -214,6 +237,7 @@ class TeamController extends Controller
      *                  "contact_point",
      *                  "application_form_updated_by",
      *                  "application_form_updated_on",
+     *                  "notifications",
      *              },
      *              @OA\Property(property="name", type="string", example="someName"),
      *              @OA\Property(property="allows_messaging", type="boolean", example="1"),
@@ -225,6 +249,7 @@ class TeamController extends Controller
      *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
+     *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *          ),
      *      ),
      *      @OA\Response(
@@ -253,6 +278,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
+     *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *              )
      *          ),
      *      ),
@@ -279,6 +305,7 @@ class TeamController extends Controller
             'contact_point' => 'required',
             'application_form_updated_by' => 'required',
             'application_form_updated_on' => 'required',
+            'notifications' => 'required',
         ]);
 
         $team = Team::findOrFail($team);
@@ -294,6 +321,15 @@ class TeamController extends Controller
         $team->contact_point = $body['contact_point'];
         $team->application_form_updated_by = $body['application_form_updated_by'];
         $team->application_form_updated_on = $body['application_form_updated_on'];
+
+        $arrayTeamNotification = $body['notifications'];
+        TeamHasNotification::where('team_id', $team->id)->delete();
+        foreach ($arrayTeamNotification as $value) {
+            TeamHasNotification::updateOrCreate([
+                'team_id' => (int) $team->id,
+                'notification_id' => (int) $value,
+            ]);
+        }
 
         if ($team->save()) {
             return response()->json([
@@ -340,25 +376,24 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $team)
+    public function destroy(Request $request, int $team): mixed
     {
-        $team = Team::findOrFail($team);
-        if ($team) {
-            $team->deleted_at = Carbon::now();
-            $team->enabled = false;
-            if ($team->save()) {
+        try {
+            $team = Team::findOrFail($team);
+            if ($team) {
+                TeamHasNotification::where('team_id', $team->id)->delete();
+                $team->delete();
+                
                 return response()->json([
                     'message' => 'success',
                 ], 200);
             }
 
             return response()->json([
-                'message' => 'error',
-            ], 500);
+                'message' => 'not found',
+            ], 404);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
     }
 }
