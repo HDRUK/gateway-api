@@ -14,7 +14,7 @@ class NotificationController extends Controller
 {
     /**
      * @OA\Get(
-     *      path="api/v1/notifications",
+     *      path="/api/v1/notifications",
      *      summary="List of notifications",
      *      description="Returns a list of notifications enabled on the system",
      *      security={{"bearerAuth":{}}},
@@ -50,7 +50,7 @@ class NotificationController extends Controller
 
     /**
      * @OA\Get(
-     *      path="api/v1/notifications/{id}",
+     *      path="/api/v1/notifications/{id}",
      *      summary="Return a single notification",
      *      description="Return a single notification",
      *      security={{"bearerAuth":{}}},
@@ -96,7 +96,7 @@ class NotificationController extends Controller
 
     /**
      * @OA\Post(
-     *      path="api/v1/notifications",
+     *      path="/api/v1/notifications",
      *      summary="Create a new notification",
      *      description="Creates a new notification",
      *      security={{"bearerAuth":{}}},
@@ -151,7 +151,7 @@ class NotificationController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="api/v1/notifications/{id}",
+     *      path="/api/v1/notifications/{id}",
      *      summary="Update a notification",
      *      description="Update a notification",
      *      security={{"bearerAuth":{}}},
@@ -230,7 +230,7 @@ class NotificationController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="api/v1/notifications/{id}",
+     *      path="/api/v1/notifications/{id}",
      *      summary="Delete a notification",
      *      description="Delete a notification",
      *      security={{"bearerAuth":{}}},
