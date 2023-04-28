@@ -42,22 +42,22 @@ class TeamTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
+                'message',
                 'data' => [
                     0 => [
                         'id',
-                        'created_at',
-                        'updated_at',
-                        'deleted_at',
                         'name',
                         'enabled',
                         'allows_messaging',
                         'workflow_enabled',
+                        'access_requests_management',
                         'uses_5_safes',
                         'is_admin',
                         'member_of',
                         'contact_point',
                         'application_form_updated_by',
                         'application_form_updated_on',
+                        'users',
                     ],
                 ],
             ]);
@@ -84,7 +84,7 @@ class TeamTest extends TestCase
                 'member_of' => 1001,
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
-                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'application_form_updated_on' => '2023-04-06 15:44:41'
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -105,22 +105,8 @@ class TeamTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
-            'data' => [
-                'id',
-                'created_at',
-                'updated_at',
-                'deleted_at',
-                'name',
-                'enabled',
-                'allows_messaging',
-                'workflow_enabled',
-                'uses_5_safes',
-                'is_admin',
-                'member_of',
-                'contact_point',
-                'application_form_updated_by',
-                'application_form_updated_on',
-            ],
+            'message',
+            'data'
         ]);        
     }
 

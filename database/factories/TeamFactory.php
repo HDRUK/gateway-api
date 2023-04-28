@@ -17,7 +17,7 @@ class TeamFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'name' => fake()->company(),
             'enabled' => fake()->boolean(),
             'allows_messaging' => fake()->boolean(),
             'workflow_enabled' => fake()->boolean(),

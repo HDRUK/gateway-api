@@ -2,16 +2,7 @@
 
 namespace Database\Seeders;
 
-use Database\Seeders\TagSeeder;
 use Illuminate\Database\Seeder;
-use Database\Seeders\ToolSeeder;
-use Database\Seeders\UserSeeder;
-use Database\Seeders\FilterSeeder;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\DarIntegrationSeeder;
-use Database\Seeders\ActivityLogSeeder;
-use Database\Seeders\ActivityLogTypeSeeder;
-use Database\Seeders\ActivityLogUserTypeSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -36,6 +27,10 @@ class DatabaseSeeder extends Seeder
             ActivityLogUserTypeSeeder::class,
             ActivityLogTypeSeeder::class,
             ActivityLogSeeder::class,
+            PermissionSeeder::class,
+            // TeamUserPermissionSeeder::class,
+            TeamHasUserSeeder::class,
+            TeamUserHasPermissionSeeder::class,
         ]);
     }
 }

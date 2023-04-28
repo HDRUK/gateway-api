@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Controllers\JwtController;
+use App\Http\Requests\UserRequest;
 
 class RegisterController extends Controller
 {
@@ -37,10 +38,14 @@ class RegisterController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property(
-     *                property="name",
+     *                property="firstname",
      *                type="string",
-     *                example="John Doe",
-     *                example="Name",
+     *                example="John",
+     *             ),
+     *             @OA\Property(
+     *                property="lastname",
+     *                type="string",
+     *                example="Doe",
      *             ),
      *             @OA\Property(
      *                property="email",
@@ -79,45 +84,29 @@ class RegisterController extends Controller
      *    ),
      * )
      * 
-     * @param RegisterRequest $request
+     * @param UserRequest $request
      */
-    public function create(RegisterRequest $request)
-    {
-        $input = $request->all();
-
-        $user = User::where([
-            'provider' => 'internal',
-            'email' => $input['email'],
-        ])->first();
-
-        if (!$user) {
-            $user = $this->saveUser($input);
-        }
-
-        $jwt = $this->createJwt($user);
-
-        return response()->json([
-            "access_token" => $jwt,
-            "token_type" => "bearer"
-        ])->setStatusCode(200);
-    }
-
-    /**
-     * save user in database
-     */
-    private function saveUser($data)
+    public function create(UserRequest $request)
     {
         try {
-            $user = new User();
-            $user->name = $data['name'];
-            $user->firstname = null;
-            $user->lastname = null;
-            $user->email = $data['email'];
-            $user->provider = Config::get('constants.provider.service');
-            $user->password = Hash::make($data['password']);
-            $user->save();
+            $input = $request->all();
 
-            return $user;
+            $array = [
+                "name" => $input['firstname'] . " " . $input['lastname'],
+                "firstmame" => $input['firstname'],
+                "lastname" => $input['lastname'],
+                "email" => $input['email'],
+                "provider" =>  Config::get('constants.provider.service'),
+                "password" => Hash::make($input['password']),
+            ];
+            $user = User::create($array);
+
+            $jwt = $this->createJwt($user);
+
+            return response()->json([
+                "access_token" => $jwt,
+                "token_type" => "bearer"
+            ])->setStatusCode(200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\User;
+use App\Models\Permission;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Team extends Model
 {
@@ -127,4 +131,16 @@ class Team extends Model
      * @var string
      */
     private $application_form_updated_on = '';
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'team_has_users')
+            ->withPivot('user_id', 'id');
+    }
+
+    public function permissions(): HasManyThrough
+    {
+        return $this->hasManyThrough(Permission::class, TeamHasUser::class);
+    }
+
 }

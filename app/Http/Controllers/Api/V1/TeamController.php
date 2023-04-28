@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Carbon\Carbon;
-
 use App\Models\Team;
-use App\Http\Controllers\Controller;
-
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use App\Http\Controllers\Controller;
+use App\Http\Traits\TeamTransformation;
 
 
 class TeamController extends Controller
 {
+    use TeamTransformation;
+
     /**
      * @OA\Get(
      *      path="/api/v1/teams",
@@ -48,9 +48,13 @@ class TeamController extends Controller
      */
     public function index(Request $request)
     {
-        $teams = Team::where('enabled', 1)->get();
+        $teams = Team::where('enabled', 1)->with('users')->get()->toArray();
+
+        $response = $this->getTeams($teams);
+
         return response()->json([
-            'data' => $teams
+            'message' => 'success',
+            'data' => $response,
         ]);
     }
 
@@ -96,8 +100,10 @@ class TeamController extends Controller
     {
         $team = Team::findOrFail($id);
         if ($team) {
+            $userTeam = Team::where('id', $id)->with('users')->get()->toArray();
             return response()->json([
-                'data' => $team,
+                'message' => 'success',
+                'data' => $this->getTeams($userTeam),
             ], 200);
         }
 

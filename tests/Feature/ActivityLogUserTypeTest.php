@@ -170,7 +170,6 @@ class ActivityLogUserTypeTest extends TestCase
         );
 
         $content = $response->decodeResponseJson();
-        var_dump($content);
         
         $this->assertEquals($content['data']['name'], 'updated activity log user type');
     }

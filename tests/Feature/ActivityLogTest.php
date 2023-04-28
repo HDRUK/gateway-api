@@ -218,7 +218,6 @@ class ActivityLogTest extends TestCase
         );
 
         $content = $response->decodeResponseJson();
-        var_dump($content);
         
         $this->assertEquals($content['data']['event_type'], 'updated_test_case');
         $this->assertEquals($content['data']['user_type_id'], 2);

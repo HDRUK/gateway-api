@@ -1,0 +1,146 @@
+### Info
+### Description: Rest Client in Visual Studio Code
+
+### Variables
+@baseUrl = http://localhost:8000
+@apiVersion = v1
+@uFirstName = "John"
+@uLastName = "Doe"
+@uEmail = "john.doe.1234567890@example.com"
+@uPassword = "passw@rdJ0hnD0e"
+
+### Login
+#### create new auth
+POST {{baseUrl}}/api/{{apiVersion}}/register HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "firstname": {{uFirstName}},
+    "lastname": {{uLastName}},
+    "email": {{uEmail}},
+    "password": {{uPassword}}
+}
+
+### Access Token
+# @name loginUsernamePassword
+POST {{baseUrl}}/api/{{apiVersion}}/auth HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "email": {{uEmail}},
+    "password": {{uPassword}}
+}
+
+### Variables jwt token
+@accessToken = {{loginUsernamePassword.response.body.$.access_token}}
+
+### PERMISSIONS
+#### get all permissions
+GET {{baseUrl}}/api/{{apiVersion}}/permissions HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get permission by id
+GET {{baseUrl}}/api/{{apiVersion}}/permissions/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create new permission
+POST {{baseUrl}}/api/{{apiVersion}}/permissions HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "role" : "test"
+}
+
+#### update permission by id
+PATCH {{baseUrl}}/api/{{apiVersion}}/permissions/6 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "role" : "test2"
+}
+
+#### delete permission by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/permissions/6 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### USERS
+#### get all users
+GET {{baseUrl}}/api/{{apiVersion}}/users HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get user by id
+GET {{baseUrl}}/api/{{apiVersion}}/users/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create new user
+POST {{baseUrl}}/api/{{apiVersion}}/users HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "firstname": "john2",
+    "lastname": "doe2",
+    "email": "john.doe.test.123456789@test.com",
+    "password": "Passw@rd1!"
+}
+
+#### update user
+PATCH {{baseUrl}}/api/{{apiVersion}}/users/1 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "firstname": "john23",
+    "lastname": "doe2",
+    "email": "john.doe2.test.123456789@test.com",
+    "password": "Passw@rd1!"
+}
+
+#### delete user by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/users/12 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### TEAMS
+#### get all teams
+GET {{baseUrl}}/api/{{apiVersion}}/teams HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one team by id
+GET {{baseUrl}}/api/{{apiVersion}}/teams/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create a new team
+POST {{baseUrl}}/api/{{apiVersion}}/teams HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Test Team Ltd", 
+    "enabled": 1,
+    "allows_messaging": 1,
+    "workflow_enabled": 1,
+    "access_requests_management": 1,
+    "uses_5_safes": 1,
+    "is_admin": 1,
+    "member_of": 1001,
+    "contact_point": "dinos345@mail.com",
+    "application_form_updated_by": "Someone Somewhere",
+    "application_form_updated_on": "2023-04-06 15:44:41"
+}

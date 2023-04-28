@@ -145,3 +145,7 @@ or
 ```
 php -d memory_limit=2048M ./vendor/bin/phpunit
 ```
+or for one single file test
+```
+vendor/bin/phpunit --testdox --filter ActivityLogTest
+```

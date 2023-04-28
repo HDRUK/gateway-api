@@ -14,7 +14,8 @@
         "laravel/socialite": "^5.6",
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.2",
-        "socialiteproviders/microsoft-azure": "^5.1"
+        "socialiteproviders/microsoft-azure": "^5.1",
+        "staudenmeir/belongs-to-through": "^2.5"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.13",
