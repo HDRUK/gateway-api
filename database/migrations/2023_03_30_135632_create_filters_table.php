@@ -16,8 +16,10 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             $table->enum('type', \Config::get('filters.types'));
-            $table->string('value');
-            $table->enum('keys', \Config::get('filters.keys'));
+            $table->mediumText('value'); // Had to increase this as there are some
+            // widly large strings in these "filters" that require further 
+            // investigation as to whether or not we keep them
+            $table->string('keys');
             $table->boolean('enabled')->default(1);
         });
     }

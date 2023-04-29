@@ -134,6 +134,8 @@ class FilterController extends Controller
 
         $filter = Filter::create($request->post());
         if ($filter) {
+            var_dump($filter->id);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $filter->id,

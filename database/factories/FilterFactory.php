@@ -20,7 +20,7 @@ class FilterFactory extends Factory
         return [
             'type' => fake()->randomElement(Config::get('filters.types')),
             'value' => fake()->words(fake()->randomDigit(), true),
-            'keys' => fake()->randomElement(Config::get('filters.keys')),
+            'keys' => fake()->words(fake()->randomDigit(), true),
             'enabled' => fake()->boolean(),
         ];
     }
