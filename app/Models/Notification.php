@@ -54,7 +54,7 @@ class Notification extends Model
      * 
      * @var bool
      */
-    private $opt_in = '';
+    private $opt_in = false;
 
     /**
      * Indicates whether this model is enabled or disabled
