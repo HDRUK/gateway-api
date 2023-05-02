@@ -27,7 +27,7 @@ class DarIntegration extends Model
     ];
 
     /**
-     * Specifically requests that Laravel casts the 
+     * Specifically requests that Laravel casts the tiny ints as boolean
      */
     protected $casts = [
         'enabled' => 'boolean',
