@@ -126,7 +126,7 @@ class PermissionTest extends TestCase
         $id = 2;
         $name = 'fake_for_test';
         $response = $this->json(
-            'PATCH',
+            'PUT',
             self::TEST_URL . '/' . $id,
             [
                 'role' => $name,

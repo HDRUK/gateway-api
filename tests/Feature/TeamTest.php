@@ -245,7 +245,7 @@ class TeamTest extends TestCase
                 
         // Finally, update this team with new details
         $response = $this->json(
-            'PATCH', 
+            'PUT', 
             'api/v1/teams/' . $content['data'],
             [  
                 'name' => 'Updated Test Team', 

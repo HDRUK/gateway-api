@@ -199,7 +199,7 @@ class ActivityLogTest extends TestCase
         // Finally, update the last entered activity log to
         // prove functionality
         $response = $this->json(
-            'PATCH',
+            'PUT',
             'api/v1/activity_logs/' . $content['data'],
             [
                 'event_type' => 'updated_test_case',

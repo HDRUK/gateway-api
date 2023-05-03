@@ -176,7 +176,7 @@ class FilterTest extends TestCase
         // Finally, update the last entered filter to 
         // prove functionality
         $response = $this->json(
-            'PATCH',
+            'PUT',
             'api/v1/filters/' . $content['data'],
             [
                 'type' => 'project',

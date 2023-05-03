@@ -205,7 +205,7 @@ class PermissionController extends Controller
     }
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *    path="/api/v1/permissions",
      *    operationId="update_permissions",
      *    tags={"Permissions"},

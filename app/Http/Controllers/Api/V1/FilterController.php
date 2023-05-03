@@ -146,7 +146,7 @@ class FilterController extends Controller
     }
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *      path="/api/v1/filters/{id}",
      *      summary="Update a system filter",
      *      description="Update a system filter",

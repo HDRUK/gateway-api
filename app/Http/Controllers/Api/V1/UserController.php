@@ -219,7 +219,7 @@ class UserController extends Controller
     }
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *    path="/api/v1/users",
      *    operationId="update_users",
      *    tags={"Users"},

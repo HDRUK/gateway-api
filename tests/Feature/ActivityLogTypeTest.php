@@ -159,7 +159,7 @@ class ActivityLogTypeTest extends TestCase
         // Finally, update the last entered activity log type to
         // prove functionality
         $response = $this->json(
-            'PATCH',
+            'PUT',
             'api/v1/activity_log_types/' . $content['data'],
             [
                 'name' => 'updated activity log type'

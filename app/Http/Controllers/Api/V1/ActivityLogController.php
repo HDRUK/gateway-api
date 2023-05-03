@@ -161,7 +161,7 @@ class ActivityLogController extends Controller
     }
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *      path="/api/v1/activity_logs/{id}",
      *      summary="Update a system activity log",
      *      description="Update a system activity log",

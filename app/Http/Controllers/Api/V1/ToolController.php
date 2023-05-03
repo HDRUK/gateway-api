@@ -215,7 +215,7 @@ class ToolController extends Controller
     }
 
     /**
-     * @OA\Post(
+     * @OA\Put(
      *    path="/api/v1/tools/{id}",
      *    operationId="update_tools",
      *    tags={"Tools"},
