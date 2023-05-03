@@ -204,7 +204,7 @@ class DarIntegrationTest extends TestCase
         // Finally, update the last entered DAR to 
         // prove functionality
         $response = $this->json(
-            'PATCH',
+            'PUT',
             'api/v1/dar-integrations/' . $content['data'],
             [
                 'enabled' => 1,

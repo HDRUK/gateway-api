@@ -133,7 +133,7 @@ class ActivityLogUserTypeController extends Controller
     }
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *      path="/api/v1/activity_log_user_types/{id}",
      *      summary="Update a system activity log user type",
      *      description="Update a system activity log user type",

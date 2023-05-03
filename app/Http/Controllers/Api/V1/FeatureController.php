@@ -182,7 +182,7 @@ class FeatureController extends Controller
     }
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *    path="/api/v1/features",
      *    operationId="update_features",
      *    tags={"Features"},

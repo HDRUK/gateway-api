@@ -216,7 +216,7 @@ class TeamController extends Controller
     }
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *      path="/api/v1/teams/{id}",
      *      summary="Update a team",
      *      description="Update a team",

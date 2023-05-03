@@ -245,7 +245,7 @@ class ToolTest extends TestCase
         );
 
         $responseUpdate = $this->json(
-            'PATCH',
+            'PUT',
             self::TEST_URL . '/' . $toolIdInsert,
             $mockDataUpdate,
             $this->header
@@ -291,7 +291,7 @@ class ToolTest extends TestCase
         $id = 10000;
 
         $response = $this->json(
-            'PATCH',
+            'PUT',
             self::TEST_URL . '/' . $id,
             $mockData,
             $this->header

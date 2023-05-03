@@ -177,7 +177,7 @@ class NotificationTest extends TestCase
         // Finally, update the last entered notification to 
         // prove functionality
         $response = $this->json(
-            'PATCH',
+            'PUT',
             'api/v1/notifications/' . $content['data'],
             [
                 'notification_type' => 'applicationSubmitted',

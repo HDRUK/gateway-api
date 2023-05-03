@@ -205,7 +205,7 @@ class TagController extends Controller
     }
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *    path="/api/v1/tags",
      *    operationId="update_tags",
      *    tags={"Tags"},

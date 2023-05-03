@@ -5,11 +5,11 @@
         "version": "2.0.0"
     },
     "paths": {
-        "api/v1/activity_logs": {
+        "/api/v1/activity_logs": {
             "get": {
                 "summary": "List of system activity logs",
                 "description": "Returns a list of activity logs stored on the system",
-                "operationId": "eea133542d9f08c0e569b47dee01fb53",
+                "operationId": "f9b155e27b70cf68aa51d2920967090f",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -85,7 +85,7 @@
             "post": {
                 "summary": "Create a new system activity log",
                 "description": "Creates a new system activity log",
-                "operationId": "965184f1305ec431250a0cb762d5da80",
+                "operationId": "a42500258340544a1535bf6a35e9ad49",
                 "requestBody": {
                     "description": "ActivityLog definition",
                     "required": true,
@@ -193,11 +193,11 @@
                 }
             }
         },
-        "api/v1/activity_logs/{id}": {
+        "/api/v1/activity_logs/{id}": {
             "get": {
                 "summary": "Return a single system activity log",
                 "description": "Return a single system activity log",
-                "operationId": "b8d6ef59f2647411ef6c50a5726bf782",
+                "operationId": "05357e8eaa854776010c42e640b8c454",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -283,65 +283,10 @@
                     }
                 }
             },
-            "delete": {
-                "summary": "Delete a system activity log",
-                "description": "Delete a system activity log",
-                "operationId": "43ee4239e59d4ace271e217cf8f9cf48",
-                "responses": {
-                    "404": {
-                        "description": "Not found response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
+            "put": {
                 "summary": "Update a system activity log",
                 "description": "Update a system activity log",
-                "operationId": "c94ae3f33f4d1365d4861a76cdd00415",
+                "operationId": "0380caf96da8356c35731a4029d0062a",
                 "requestBody": {
                     "description": "ActivityLog definition",
                     "required": true,
@@ -510,13 +455,68 @@
                         }
                     }
                 }
+            },
+            "delete": {
+                "summary": "Delete a system activity log",
+                "description": "Delete a system activity log",
+                "operationId": "9f68d53b4e8bccc7ba38a1b7e3eaf910",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
-        "api/v1/activity_log_types": {
+        "/api/v1/activity_log_types": {
             "get": {
                 "summary": "List of system activity log types",
                 "description": "Returns a list of activity log types enabled on the system",
-                "operationId": "44dcf35bc93089ffbc3e05d0d6ec45c6",
+                "operationId": "0a27c4cb561f4c14714a6481f6ca74a8",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -564,7 +564,7 @@
             "post": {
                 "summary": "Create a new system activity log type",
                 "description": "Creates a new system activity log type",
-                "operationId": "f9cb95a8af1c6a32ecc4e3837354d9aa",
+                "operationId": "f1b99293bae2fd57d8eef56b6529a448",
                 "requestBody": {
                     "description": "ActivityLogType definition",
                     "required": true,
@@ -625,11 +625,11 @@
                 }
             }
         },
-        "api/v1/activity_log_types/{id}": {
+        "/api/v1/activity_log_types/{id}": {
             "get": {
                 "summary": "Return a single system activity log type",
                 "description": "Return a single system activity log type",
-                "operationId": "95ba3a8e7bee8a670b9a3e200fe41ee2",
+                "operationId": "9c58fce9782c18c44d9706c0d1b2dbd0",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -687,65 +687,10 @@
                     }
                 }
             },
-            "delete": {
-                "summary": "Delete a system activity log type",
-                "description": "Delete a system activity log type",
-                "operationId": "f9a3b91585cd8d70c3b855eb1ecd98cb",
-                "responses": {
-                    "404": {
-                        "description": "Not found response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
+            "put": {
                 "summary": "Update a system activity log type",
                 "description": "Update a system activity log type",
-                "operationId": "d8c7f0e8d6e5d972721f9365ce775e4f",
+                "operationId": "acd2b8014ea7f10ad6e7d4f25f95c314",
                 "requestBody": {
                     "description": "ActivityLogType definition",
                     "required": true,
@@ -839,13 +784,68 @@
                         }
                     }
                 }
+            },
+            "delete": {
+                "summary": "Delete a system activity log type",
+                "description": "Delete a system activity log type",
+                "operationId": "33323cda6916ad04d2f239dea405e80f",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
-        "api/v1/activity_log_user_types": {
+        "/api/v1/activity_log_user_types": {
             "get": {
                 "summary": "List of system activity log user types",
                 "description": "Returns a list of activity log user types enabled on the system",
-                "operationId": "ffef2ba02b74346aea72b741c1cacb7a",
+                "operationId": "59715acb51e3312794b73e4bf625e848",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -893,7 +893,7 @@
             "post": {
                 "summary": "Create a new system activity log user type",
                 "description": "Creates a new system activity log user type",
-                "operationId": "d8bbeeaff5438dda5600cc595a6b7f43",
+                "operationId": "d896e7a4a3d836a1486d40152834ffae",
                 "requestBody": {
                     "description": "ActivityLogUserTypes definition",
                     "required": true,
@@ -954,11 +954,11 @@
                 }
             }
         },
-        "api/v1/activity_log_user_types/{id}": {
+        "/api/v1/activity_log_user_types/{id}": {
             "get": {
                 "summary": "Return a single system activity log user type",
                 "description": "Return a single system activity log user type",
-                "operationId": "a861945d1117a9d2d02aa4a4ae3e72e7",
+                "operationId": "c324ebe5e0165712f4fa947cc00d8e51",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -1016,65 +1016,10 @@
                     }
                 }
             },
-            "delete": {
-                "summary": "Delete a system activity log user type",
-                "description": "Delete a system  activity log user type",
-                "operationId": "b3b5715176e4c7a59c7a6a1ce2491c75",
-                "responses": {
-                    "404": {
-                        "description": "Not found response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
+            "put": {
                 "summary": "Update a system activity log user type",
                 "description": "Update a system activity log user type",
-                "operationId": "6df78c4b044eb3f5f6f1d34bcc4711bb",
+                "operationId": "5d68c0399b48a969b390a16fb6573a12",
                 "requestBody": {
                     "description": "ActivityLogUserTypes definition",
                     "required": true,
@@ -1144,6 +1089,61 @@
                                                 }
                                             },
                                             "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a system activity log user type",
+                "description": "Delete a system  activity log user type",
+                "operationId": "a03897a374abe78232b056fea76b2f9f",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
                                         }
                                     },
                                     "type": "object"
@@ -1228,11 +1228,11 @@
                 }
             }
         },
-        "api/v1/dar-integration": {
+        "/api/v1/dar-integration": {
             "get": {
                 "summary": "List of system Dar Integrations",
                 "description": "Returns a list of DAR integrations enabled on the system",
-                "operationId": "39e282311765e3bd2f5b6bfddfd8d28d",
+                "operationId": "7ab50add4fe0a4b7cff7eab0f4b8df18",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -1331,11 +1331,11 @@
                 ]
             }
         },
-        "api/v1/dar-integration/{id}": {
+        "/api/v1/dar-integration/{id}": {
             "get": {
                 "summary": "Return a single system Dar Integration",
                 "description": "Returns a single DAR integration enabled on the system",
-                "operationId": "5f35b3a8eb03c6ca5e4ee977eb1ac5ca",
+                "operationId": "406144045c21a19659ee66f6d4a78235",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -1433,129 +1433,10 @@
                     }
                 }
             },
-            "post": {
-                "summary": "Create a new system Dar Integration",
-                "description": "Creates a new DAR integration enabled on the system",
-                "operationId": "1d4cfea301802b70a61c70c15490443d",
-                "requestBody": {
-                    "description": "DarIntegration definition",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "required": [
-                                    "enabled",
-                                    "notification_email",
-                                    "outbound_auth_type",
-                                    "outbound_auth_key",
-                                    "outbound_endpoints_base_url",
-                                    "outbound_endpoints_enquiry",
-                                    "outbound_endpoints_5safes",
-                                    "outbound_endpoints_5safes_files",
-                                    "inbound_service_account_id"
-                                ],
-                                "properties": {
-                                    "enabled": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
-                                    "notification_email": {
-                                        "type": "string",
-                                        "example": "someone@somewhere.com"
-                                    },
-                                    "outbound_auth_type": {
-                                        "type": "string",
-                                        "example": ""
-                                    },
-                                    "outbound_auth_key": {
-                                        "type": "string",
-                                        "example": ""
-                                    },
-                                    "outbound_endpoints_base_url": {
-                                        "type": "string",
-                                        "example": ""
-                                    },
-                                    "outbound_endpoints_enquiry": {
-                                        "type": "string",
-                                        "example": ""
-                                    },
-                                    "outbound_endpoints_5safes": {
-                                        "type": "string",
-                                        "example": ""
-                                    },
-                                    "outbound_endpoints_5safes_files": {
-                                        "type": "string",
-                                        "example": ""
-                                    },
-                                    "inbound_service_account_id": {
-                                        "type": "string",
-                                        "example": ""
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "integer",
-                                            "example": "100"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
+            "put": {
                 "summary": "Updates a system Dar Integration",
                 "description": "Updates a DAR integration enabled on the system",
-                "operationId": "0177557c2b1f3297e14204b40ab7e385",
+                "operationId": "09c033f0336380c3d8bb6801e96378bc",
                 "requestBody": {
                     "description": "DarIntegration definition",
                     "required": true,
@@ -1721,118 +1602,64 @@
                         }
                     }
                 }
-            }
-        },
-        "api/v1/dar-integrations/{id}": {
-            "delete": {
-                "summary": "Delete a system Dar Integration",
-                "description": "Delete a system Dar Integration",
-                "operationId": "e04cdbdf91cd43c8acd349418135c309",
-                "responses": {
-                    "404": {
-                        "description": "Not found response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "api/v1/features": {
-            "get": {
-                "tags": [
-                    "Features"
-                ],
-                "summary": "FeatureController@index",
-                "description": "Get All Features",
-                "operationId": "fetch_all_features",
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
             },
             "post": {
-                "tags": [
-                    "Features"
-                ],
-                "summary": "FeatureController@store",
-                "description": "Create a new feature",
-                "operationId": "create_features",
+                "summary": "Create a new system Dar Integration",
+                "description": "Creates a new DAR integration enabled on the system",
+                "operationId": "757fd0f4616caa763b0789d7ad7b3053",
                 "requestBody": {
-                    "description": "Pass user credentials",
+                    "description": "DarIntegration definition",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
+                                "required": [
+                                    "enabled",
+                                    "notification_email",
+                                    "outbound_auth_type",
+                                    "outbound_auth_key",
+                                    "outbound_endpoints_base_url",
+                                    "outbound_endpoints_enquiry",
+                                    "outbound_endpoints_5safes",
+                                    "outbound_endpoints_5safes_files",
+                                    "inbound_service_account_id"
+                                ],
                                 "properties": {
-                                    "type": {
+                                    "enabled": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "notification_email": {
                                         "type": "string",
-                                        "example": "features"
+                                        "example": "someone@somewhere.com"
+                                    },
+                                    "outbound_auth_type": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_auth_key": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_base_url": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_enquiry": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_5safes": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "outbound_endpoints_5safes_files": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "inbound_service_account_id": {
+                                        "type": "string",
+                                        "example": ""
                                     }
                                 },
                                 "type": "object"
@@ -1893,6 +1720,95 @@
                             }
                         }
                     }
+                }
+            }
+        },
+        "/api/v1/dar-integrations/{id}": {
+            "delete": {
+                "summary": "Delete a system Dar Integration",
+                "description": "Delete a system Dar Integration",
+                "operationId": "17fa1074b71d9cefd3e65f2757117b57",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/features": {
+            "get": {
+                "tags": [
+                    "Features"
+                ],
+                "summary": "FeatureController@index",
+                "description": "Get All Features",
+                "operationId": "fetch_all_features",
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
                 },
                 "security": [
                     {
@@ -1900,7 +1816,7 @@
                     }
                 ]
             },
-            "patch": {
+            "put": {
                 "tags": [
                     "Features"
                 ],
@@ -2003,9 +1919,93 @@
                         "bearerAuth": []
                     }
                 ]
+            },
+            "post": {
+                "tags": [
+                    "Features"
+                ],
+                "summary": "FeatureController@store",
+                "description": "Create a new feature",
+                "operationId": "create_features",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "features"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "api/v1/features/{id}": {
+        "/api/v1/features/{id}": {
             "get": {
                 "tags": [
                     "Features"
@@ -2183,11 +2183,11 @@
                 ]
             }
         },
-        "api/v1/filters": {
+        "/api/v1/filters": {
             "get": {
                 "summary": "List of system filters",
                 "description": "Returns a list of filters enabled on the system",
-                "operationId": "4f16d1aa5f60d87a633a616dbfbe153a",
+                "operationId": "f0dd6fc4e9602ee41203e9f2c14ba178",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -2247,7 +2247,7 @@
             "post": {
                 "summary": "Create a new system filter",
                 "description": "Creates a new system filter",
-                "operationId": "4d8b4730b856ca6c609c061eb76cf39e",
+                "operationId": "13aee5b7e9f5b784021846da1ec12250",
                 "requestBody": {
                     "description": "Filter definition",
                     "required": true,
@@ -2319,11 +2319,11 @@
                 }
             }
         },
-        "api/v1/filters/{id}": {
+        "/api/v1/filters/{id}": {
             "get": {
                 "summary": "Return a single system filter",
                 "description": "Return a single system filter",
-                "operationId": "6bccba0e519f15926ad34fec231cce3c",
+                "operationId": "94c81b101903f62b9d03e8c69a9617d7",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -2393,65 +2393,10 @@
                     }
                 }
             },
-            "delete": {
-                "summary": "Delete a system filter",
-                "description": "Delete a system filter",
-                "operationId": "d96c3b8a92771f8b1559e490cfac66d4",
-                "responses": {
-                    "404": {
-                        "description": "Not found response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "patch": {
+            "put": {
                 "summary": "Update a system filter",
                 "description": "Update a system filter",
-                "operationId": "aaa893017452b6c4cbd3e877b973cf8c",
+                "operationId": "52b5990ddd2ad98ed3964e11ebaa0f53",
                 "requestBody": {
                     "description": "Filter definition",
                     "required": true,
@@ -2568,6 +2513,469 @@
                         }
                     }
                 }
+            },
+            "delete": {
+                "summary": "Delete a system filter",
+                "description": "Delete a system filter",
+                "operationId": "d1b3a2333969df0032b161ac078dae96",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/notifications": {
+            "get": {
+                "summary": "List of notifications",
+                "description": "Returns a list of notifications enabled on the system",
+                "operationId": "cac3bdde44f0be0512f7d05c0a6064e4",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-19 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-19 12:00:00"
+                                                    },
+                                                    "notification_type": {
+                                                        "type": "string",
+                                                        "example": "someType"
+                                                    },
+                                                    "message": {
+                                                        "type": "string",
+                                                        "example": "some message"
+                                                    },
+                                                    "opt_in": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "summary": "Create a new notification",
+                "description": "Creates a new notification",
+                "operationId": "1fd84d2c66035574da4902f416cbd96a",
+                "requestBody": {
+                    "description": "Notification definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "notification_type",
+                                    "message",
+                                    "opt_in",
+                                    "enabled"
+                                ],
+                                "properties": {
+                                    "notification_type": {
+                                        "type": "string",
+                                        "example": "applicationSubmitted"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "your message here"
+                                    },
+                                    "opt_in": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/notifications/{id}": {
+            "get": {
+                "summary": "Return a single notification",
+                "description": "Return a single notification",
+                "operationId": "22581e4d73af25a9036c6610c7e8fc72",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-19 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-19 12:00:00"
+                                                },
+                                                "notification_type": {
+                                                    "type": "string",
+                                                    "example": "someType"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "some message"
+                                                },
+                                                "opt_in": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "summary": "Update a notification",
+                "description": "Update a notification",
+                "operationId": "b4f86f6c4f52e080b246d560038cdc9b",
+                "requestBody": {
+                    "description": "Notification definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "notification_type",
+                                    "message",
+                                    "opt_in",
+                                    "enabled"
+                                ],
+                                "properties": {
+                                    "notification_type": {
+                                        "type": "string",
+                                        "example": "applicationSubmitted"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "your message here"
+                                    },
+                                    "opt_in": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-19 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-19 12:00:00"
+                                                },
+                                                "notification_type": {
+                                                    "type": "string",
+                                                    "example": "applicationSubmitted"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "your message here"
+                                                },
+                                                "opt_in": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "summary": "Delete a notification",
+                "description": "Delete a notification",
+                "operationId": "3f8fe68ea04e79015d8aad5912cadbc1",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/permissions": {
@@ -2592,6 +3000,110 @@
                                                 "items": {}
                                             },
                                             "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "PermissionController@update",
+                "description": "Update permission",
+                "operationId": "update_permissions",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
                                         }
                                     },
                                     "type": "object"
@@ -2676,110 +3188,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "patch": {
-                "tags": [
-                    "Permissions"
-                ],
-                "summary": "PermissionController@update",
-                "description": "Update permission",
-                "operationId": "update_permissions",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "enabled": {
-                                        "type": "boolean",
-                                        "example": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "bad request"
                                         }
                                     },
                                     "type": "object"
@@ -2917,22 +3325,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "description": "Error response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Resource not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
                     "401": {
                         "description": "Unauthorized",
                         "content": {
@@ -2942,6 +3334,22 @@
                                         "message": {
                                             "type": "string",
                                             "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found"
                                         }
                                     },
                                     "type": "object"
@@ -2988,7 +3396,7 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "fistname": {
+                                    "firstname": {
                                         "type": "string",
                                         "example": "John"
                                     },
@@ -3106,91 +3514,7 @@
                     }
                 ]
             },
-            "post": {
-                "tags": [
-                    "Tags"
-                ],
-                "summary": "TagController@store",
-                "description": "Create a new tag",
-                "operationId": "create_tags",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "example": "features"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "integer",
-                                            "example": "100"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "patch": {
+            "put": {
                 "tags": [
                     "Tags"
                 ],
@@ -3280,6 +3604,90 @@
                                         "message": {
                                             "type": "string",
                                             "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "TagController@store",
+                "description": "Create a new tag",
+                "operationId": "create_tags",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "features"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
                                         }
                                     },
                                     "type": "object"
@@ -3473,11 +3881,11 @@
                 ]
             }
         },
-        "api/v1/teams": {
+        "/api/v1/teams": {
             "get": {
                 "summary": "List of teams",
                 "description": "Returns a list of teams enabled on the system",
-                "operationId": "ba31b72c6d2f675a15bec0d20f465a31",
+                "operationId": "f4c6fb002db8850c2c1a742012fb7fa5",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -3571,7 +3979,7 @@
             "post": {
                 "summary": "Create a new team",
                 "description": "Creates a new team",
-                "operationId": "836959a982624b90fd56a113b0794ace",
+                "operationId": "c8670c5229acb08c5a0551b8bd118189",
                 "requestBody": {
                     "description": "Team details",
                     "required": true,
@@ -3589,7 +3997,8 @@
                                     "member_of",
                                     "contact_point",
                                     "application_form_updated_by",
-                                    "application_form_updated_on"
+                                    "application_form_updated_on",
+                                    "notifications"
                                 ],
                                 "properties": {
                                     "name": {
@@ -3632,6 +4041,14 @@
                                         "type": "string",
                                         "format": "date-time",
                                         "example": "2023-04-11"
+                                    },
+                                    "notifications": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "example": "[111, 222]"
                                     }
                                 },
                                 "type": "object"
@@ -3684,11 +4101,11 @@
                 ]
             }
         },
-        "api/v1/teams/{id}": {
+        "/api/v1/teams/{id}": {
             "get": {
                 "summary": "Return a single team",
                 "description": "Return a single team",
-                "operationId": "d4db29b21b53eb1283183e76d19d4e12",
+                "operationId": "6ea35f97e59b3b4f042839afbb548dbb",
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -3759,6 +4176,14 @@
                                                     "type": "string",
                                                     "format": "date-time",
                                                     "example": "2023-04-11"
+                                                },
+                                                "notifications": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {}
+                                                    },
+                                                    "example": "[]"
                                                 }
                                             },
                                             "type": "object"
@@ -3792,70 +4217,10 @@
                     }
                 ]
             },
-            "delete": {
-                "summary": "Delete a team",
-                "description": "Delete a team",
-                "operationId": "12ee152229f986b159bd4d1d250088bc",
-                "responses": {
-                    "404": {
-                        "description": "Not found response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "patch": {
+            "put": {
                 "summary": "Update a team",
                 "description": "Update a team",
-                "operationId": "48814c642a9f8b4eadfa08f847362e93",
+                "operationId": "db86bc9cd9a6a0c9bcdd8851e76536f3",
                 "requestBody": {
                     "description": "Team definition",
                     "required": true,
@@ -3873,7 +4238,8 @@
                                     "member_of",
                                     "contact_point",
                                     "application_form_updated_by",
-                                    "application_form_updated_on"
+                                    "application_form_updated_on",
+                                    "notifications"
                                 ],
                                 "properties": {
                                     "name": {
@@ -3916,6 +4282,14 @@
                                         "type": "string",
                                         "format": "date-time",
                                         "example": "2023-04-11"
+                                    },
+                                    "notifications": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "example": "[111, 222]"
                                     }
                                 },
                                 "type": "object"
@@ -4006,9 +4380,77 @@
                                                     "type": "string",
                                                     "format": "date-time",
                                                     "example": "2023-04-11"
+                                                },
+                                                "notifications": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {}
+                                                    },
+                                                    "example": "[111, 222]"
                                                 }
                                             },
                                             "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "summary": "Delete a team",
+                "description": "Delete a team",
+                "operationId": "3f6a7fabcca6967050816f5781024699",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
                                         }
                                     },
                                     "type": "object"
@@ -4295,7 +4737,7 @@
                     }
                 ]
             },
-            "post": {
+            "put": {
                 "tags": [
                     "Tools"
                 ],
@@ -4570,91 +5012,7 @@
                     }
                 ]
             },
-            "post": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "UserController@store",
-                "description": "Create a new user",
-                "operationId": "create_users",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "example": "features"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "integer",
-                                            "example": "100"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "patch": {
+            "put": {
                 "tags": [
                     "Users"
                 ],
@@ -4744,6 +5102,90 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "UserController@store",
+                "description": "Create a new user",
+                "operationId": "create_users",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "features"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
                                         }
                                     },
                                     "type": "object"

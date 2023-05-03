@@ -150,7 +150,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *      path="/api/v1/notifications/{id}",
      *      summary="Update a notification",
      *      description="Update a notification",

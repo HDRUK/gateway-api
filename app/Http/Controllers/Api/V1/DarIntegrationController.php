@@ -176,7 +176,7 @@ class DarIntegrationController extends Controller
     }
 
     /**
-     * @OA\Patch(
+     * @OA\Put(
      *      path="/api/v1/dar-integration/{id}",
      *      summary="Updates a system Dar Integration",
      *      description="Updates a DAR integration enabled on the system",

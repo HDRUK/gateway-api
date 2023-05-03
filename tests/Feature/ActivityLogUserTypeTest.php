@@ -159,7 +159,7 @@ class ActivityLogUserTypeTest extends TestCase
         // Finally, update the last entered activity log user type to
         // prove functionality
         $response = $this->json(
-            'PATCH',
+            'PUT',
             'api/v1/activity_log_user_types/' . $content['data'],
             [
                 'name' => 'updated activity log user type'
