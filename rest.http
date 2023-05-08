@@ -149,6 +149,7 @@ Authorization: Bearer {{accessToken}}
 POST {{baseUrl}}/api/{{apiVersion}}/teams/1/users HTTP/1.1
 Content-Type: application/json
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 {
     "userId": 1,
@@ -162,6 +163,7 @@ Accept: application/json
 PUT {{baseUrl}}/api/{{apiVersion}}/teams/1/users/1 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 {
     "permissions" : {
@@ -175,3 +177,4 @@ Accept: application/json
 DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/2 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
+Authorization: Bearer {{accessToken}}
