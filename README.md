@@ -149,3 +149,9 @@ or for one single file test
 ```
 vendor/bin/phpunit --testdox --filter ActivityLogTest
 ```
+
+### Laravel Status Code
+
+```
+https://gist.github.com/jeffochoa/a162fc4381d69a2d862dafa61cda0798
+```

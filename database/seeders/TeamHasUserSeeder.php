@@ -15,7 +15,7 @@ class TeamHasUserSeeder extends Seeder
      */
     public function run(): void
     {
-        for ($count = 1; $count <= 200; $count++) {
+        for ($count = 1; $count <= 100; $count++) {
             $teamId = Team::all()->random()->id;
             $userId = User::all()->random()->id;
 
