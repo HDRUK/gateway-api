@@ -15,7 +15,7 @@ class TeamUserHasPermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        for ($count = 1; $count <= 200; $count++) {
+        for ($count = 1; $count <= 100; $count++) {
             $thuId = TeamHasUser::all()->random()->id;
             $permissionId = Permission::all()->random()->id;
 

@@ -325,7 +325,6 @@ class ToolController extends Controller
         }
     }
 
-
     /**
      * @OA\Delete(
      *    path="/api/v1/tools/{id}",

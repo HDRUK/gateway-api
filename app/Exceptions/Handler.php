@@ -3,9 +3,9 @@
 namespace App\Exceptions;
 
 use Config;
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\Request;
 use Throwable;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
 {
@@ -61,7 +61,6 @@ class Handler extends ExceptionHandler
     {
         $response = [
             'message' => $e->getMessage(),
-            'code' => $e->getCode(),
         ];
 
         if (Config::get('app.debug')) {
@@ -72,8 +71,9 @@ class Handler extends ExceptionHandler
         }
 
         $statusCode = 500;
+
         if ($e->getCode()) {
-            $statusCode = $e->getCode();
+            $statusCode = (int) $e->getCode();
         }
 
         return response()->json($response, $statusCode);
