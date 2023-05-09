@@ -2,9 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Permission;
 use App\Models\TeamHasUser;
-use App\Rules\PermissionRoleExists;
-use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateTeamUserRequest extends FormRequest
@@ -24,8 +23,6 @@ class UpdateTeamUserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $requestData = $this->all();
-
         return [
             'teamId' => [
                 'required',
@@ -50,7 +47,15 @@ class UpdateTeamUserRequest extends FormRequest
             ],
             'permissions.*' => [
                 'required',
-                new PermissionRoleExists(),
+                function ($attribute, $value, $fail) {
+                    $inputKey = explode('.', $attribute);
+                    $exists = Permission::where('role', $inputKey[1])
+                        ->first();
+
+                    if (!$exists) {
+                        $fail('One or more of the roles in the permissions field do not exist.');
+                    }
+                }
             ],
         ];
     }
