@@ -38,14 +38,13 @@ class EmailController extends Controller
     
         if ($template) {
             SendEmailJob::dispatch($toArray, $template, $body['replacements']);
-            dd('here');
             return response()->json([
-                'message' => 'OK',
-            ], 200);
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
         return response()->json([
-            'message' => 'NOT OK',
-        ], 404);
+            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 }
