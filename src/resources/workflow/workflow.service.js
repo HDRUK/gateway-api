@@ -171,7 +171,8 @@ export default class WorkflowService {
 				});
 			}
 			managerUserIds = custodianManagers.map(user => user.id);
-			let { workflowName = 'Workflow Title', _id, steps, createdAt } = workflow;
+			let { workflowName = 'Workflow Title', _id, steps, createdAt, publisher } = workflow;
+
 			const action = type.replace('Workflow', '').toLowerCase();
 			options = {
 				actioner,
@@ -191,7 +192,8 @@ export default class WorkflowService {
 						managerUserIds,
 						`A new workflow of ${workflowName} has been created`,
 						'workflow',
-						_id
+						_id,
+						publisher
 					);
 					// 5. Generate the email
 					html = await emailGenerator.generateWorkflowActionEmail(options);
@@ -206,7 +208,8 @@ export default class WorkflowService {
 						managerUserIds,
 						`A workflow of ${workflowName} has been updated`,
 						'workflow',
-						_id
+						_id,
+						publisher
 					);
 					// 5. Generate the email
 					html = await emailGenerator.generateWorkflowActionEmail(options);
@@ -221,7 +224,8 @@ export default class WorkflowService {
 						managerUserIds,
 						`A workflow of ${workflowName} has been deleted`,
 						'workflow',
-						_id
+						_id,
+						publisher
 					);
 					// 5. Generate the email
 					html = await emailGenerator.generateWorkflowActionEmail(options);
