@@ -38,6 +38,6 @@ class SendEmailJob implements ShouldQueue
     public function handle(): void
     {
         Mail::to($this->to)
-            ->send(new Email($this->to, $this->template, $this->replacements));
+            ->send(new Email($this->template, $this->replacements));
     }
 }

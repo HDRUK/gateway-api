@@ -42,7 +42,7 @@ class EmailServiceTest extends TestCase
             '[[subheading_text]]' => 'Sub Heading Something or other',
         ];
 
-        $email = new Email($to, $template, $replacements);
+        $email = new Email($template, $replacements);
         $html = $email->mjmlToHtml();
 
         foreach ($replacements as $k => $v) {

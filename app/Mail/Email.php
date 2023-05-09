@@ -19,16 +19,15 @@ class Email extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $to = [];
     private $template = null;
     private $replacements = [];
 
     /**
      * Create a new message instance.
      */
-    public function __construct(array $to, EmailTemplate $template, array $replacements)
+    public function __construct(EmailTemplate $template, array $replacements)
     {
-        $this->to = $to;
+
         $this->template = $template;
         $this->replacements = $replacements;
     }
