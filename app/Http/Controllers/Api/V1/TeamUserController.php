@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Exception;
 use App\Models\Permission;
 use App\Models\TeamHasUser;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
@@ -21,6 +20,73 @@ class TeamUserController extends Controller
         //
     }
 
+    /**
+     * @OA\Post(
+     *    path="/api/v1/teams/{teamId}/users",
+     *    operationId="create_team_user_perms",
+     *    tags={"TeamUserPermission"},
+     *    summary="TeamUserController@store",
+     *    description="Create a new team - user - permissions",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema( type="integer", description="team id" ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property( property="userId", type="integer", example="1" ),
+     *             @OA\Property( property="permissions", type="array",   
+     *                @OA\Items(
+     *                   type="string",
+     *                   example="create",
+     *                ),
+     *             ),
+     *          ),
+     *       ),
+     *    ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Created",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="integer", example="100")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="bad request",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="bad request"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     *
+     * @param AddTeamUserRequest $request
+     * @param integer $teamId
+     * @return JsonResponse
+     */
     public function store(AddTeamUserRequest $request, int $teamId): JsonResponse
     {
         try {
