@@ -62,7 +62,7 @@ class Email extends Mailable
         return [];
     }
 
-    private function mjmlToHtml(): string
+    public function mjmlToHtml(): string
     {
         $this->replaceBodyText();
 
