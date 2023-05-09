@@ -45,6 +45,8 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         Route::put('/' . $path . '/{id}', ['as' => $path . '.patch.update', 'uses' => $controller . '@update'])->where('id', '[0-9]+');
         Route::delete('/' . $path . '/{id}', ['as' => $path . '.delete.destroy', 'uses' => $controller . '@destroy'])->where('id', '[0-9]+');
     }
+
+    Route::post('/dispatch_email', 'EmailController@dispatchEmail');
 });
 
 // stop all all other routes

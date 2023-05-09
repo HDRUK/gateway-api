@@ -25,6 +25,18 @@ Route::get('/status', function (Request $request) {
         ->setStatusCode(200);
 });
 
+Route::get('/email', function (Request $reqest) {
+    Artisan::call('app:email_service', [
+        '--identifier' => 'example_template',
+        '--recipient' => 'laminatefish@gmail.com',
+        '--replace_map' => [
+            '[[header_text]]' => 'Something here 1',
+            '[[button_text]]' => 'Click me!',
+            '[[subheading_text]]' => 'Something here 2',
+        ],
+    ]);
+});
+
 // stop all all other routes
 Route::any('{path}', function() {
     $response = [
