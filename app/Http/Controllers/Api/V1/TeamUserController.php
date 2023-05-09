@@ -68,13 +68,12 @@ class TeamUserController extends Controller
                 throw new NotFoundException();
             }
 
-            TeamHasUser::where([
-                'team_id' => $teamId,
-                'user_id' => $userId,
-            ])->delete();
-
             TeamUserHasPermission::where([
                 "team_has_user_id" => $teamHasUsers->id,
+            ])->delete();
+
+            TeamHasUser::where([
+                'teamHasUsers' => $teamHasUsers->id,
             ])->delete();
 
             return response()->json([
