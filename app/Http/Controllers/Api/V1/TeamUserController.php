@@ -24,7 +24,7 @@ class TeamUserController extends Controller
      * @OA\Post(
      *    path="/api/v1/teams/{teamId}/users",
      *    operationId="create_team_user_perms",
-     *    tags={"TeamUserPermission"},
+     *    tags={"Team-User-Permission"},
      *    summary="TeamUserController@store",
      *    description="Create a new team - user - permissions",
      *    security={{"bearerAuth":{}}},
@@ -52,35 +52,35 @@ class TeamUserController extends Controller
      *          ),
      *       ),
      *    ),
-     *      @OA\Response(
-     *          response=201,
-     *          description="Created",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="integer", example="100")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=400,
-     *          description="bad request",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="bad request"),
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error"),
-     *          )
-     *      )
+     *    @OA\Response(
+     *        response=201,
+     *        description="Created",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="success"),
+     *            @OA\Property(property="data", type="integer", example="100")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=400,
+     *        description="bad request",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="bad request"),
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
      * )
      *
      * @param AddTeamUserRequest $request
@@ -101,13 +101,99 @@ class TeamUserController extends Controller
 
             return response()->json([
                 'message' => 'success',
-            ], 200);
+            ], 201);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
 
-    public function update(UpdateTeamUserRequest $request, int $teamId, int $userId)
+    /**
+     * @OA\Put(
+     *    path="/api/v1/teams/{teamId}/users/{userId}",
+     *    operationId="update_team_user_perms",
+     *    tags={"Team-User-Permission"},
+     *    summary="TeamUserController@update",
+     *    description="Update team - user - permissions",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="userId",
+     *       in="path",
+     *       description="user id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="user id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property( property="permissions", type="object",  
+     *                @OA\Property( 
+     *                   property="read",
+     *                   type="boolean",
+     *                   example=true,
+     *                ),
+     *                @OA\Property( 
+     *                   property="create",
+     *                   type="boolean",
+     *                   example=false,
+     *                ),
+     *             ),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=200,
+     *        description="Created",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="success"),
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=400,
+     *        description="bad request",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="bad request"),
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
+     * )
+     *
+     * @param UpdateTeamUserRequest $request
+     * @param integer $teamId
+     * @param integer $userId
+     * @return JsonResponse
+     */
+    public function update(UpdateTeamUserRequest $request, int $teamId, int $userId): JsonResponse
     {
         try {
             $input = $request->all();
@@ -122,7 +208,72 @@ class TeamUserController extends Controller
         }
     }
 
-    public function destroy(DeleteTeamUserRequest $request, int $teamId, int $userId)
+    /**
+     * @OA\Delete(
+     *    path="/api/v1/teams/{teamId}/users/{userId}",
+     *    operationId="delete_team_user_perms",
+     *    tags={"Team-User-Permission"},
+     *    summary="TeamUserController@destroy",
+     *    description="Delete team - user - permissions",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="userId",
+     *       in="path",
+     *       description="user id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="user id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Error response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource not found"),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
+     * )
+     * 
+     * @param DeleteTeamUserRequest $request
+     * @param integer $teamId
+     * @param integer $userId
+     * @return JsonResponse
+     */
+    public function destroy(DeleteTeamUserRequest $request, int $teamId, int $userId): JsonResponse
     {
         try {
             $teamHasUsers = TeamHasUser::where([
