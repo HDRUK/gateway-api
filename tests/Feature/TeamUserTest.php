@@ -8,14 +8,12 @@ use App\Models\TeamHasUser;
 use Tests\Traits\Authorization;
 use App\Models\TeamUserHasPermission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Config;
 
 class TeamUserTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
-
-    const TEAM_ID = 2;
-    const USER_ID = 5;
 
     protected $header = [];
 
@@ -35,7 +33,7 @@ class TeamUserTest extends TestCase
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
         ];
-    }
+   }
 
     /**
      * Create Team-User-Permissions with success
@@ -44,28 +42,31 @@ class TeamUserTest extends TestCase
      */
     public function test_create_team_user_permission_with_success(): void
     {
-        $url = 'api/v1/teams/' . self::TEAM_ID . '/users';
+        $teamId = $this->createTeam();
+        $userId = $this->createUser();
+
+        $url = 'api/v1/teams/' . $teamId . '/users';
         $arrayPermissions = ["create", "read"];
         $arrayPermissionsExpected = ["create", "read"];
         $payload = [
-            "userId" => self::USER_ID,
+            "userId" => $userId,
             "permissions" => $arrayPermissions,
         ];
-        $this->cleanTeamUserPermissions(self::TEAM_ID, self::USER_ID);
+        $this->cleanTeamUserPermissions($teamId, $userId);
 
         $response = $this->json('POST', $url, $payload, $this->header);
         $response->assertJsonStructure([
             'message'
         ]);
-        $response->assertStatus(200);
+        $response->assertStatus(201);
 
-        $getTeamHasUsers = $this->getTeamHasUsers(self::TEAM_ID, self::USER_ID);
+        $getTeamHasUsers = $this->getTeamHasUsers($teamId, $userId);
         $this->assertTrue((bool) (count($getTeamHasUsers) === 1), 'Team has one single user');
 
-        $getTeamUserHasPermissions = $this->getTeamUserHasPermissions(self::TEAM_ID, self::USER_ID);
+        $getTeamUserHasPermissions = $this->getTeamUserHasPermissions($teamId, $userId);
         $this->assertTrue((bool) (count($getTeamUserHasPermissions) === count($arrayPermissionsExpected)), 'The user in the team has ' . count($arrayPermissionsExpected) . ' permissions');
 
-        $getUserPermissions = $this->getUserPermissions(self::TEAM_ID, self::USER_ID);
+        $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissions, $getUserPermissions);
         $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
     }
@@ -77,7 +78,8 @@ class TeamUserTest extends TestCase
      */
     public function test_create_team_user_permission_and_generate_exception(): void
     {
-        $url = 'api/v1/teams/' . self::TEAM_ID . '/users';
+        $teamId = $this->createTeam();
+        $url = 'api/v1/teams/' . $teamId . '/users';
         $response = $this->json('POST', $url, [], []);
         $response->assertStatus(401);
     }
@@ -89,22 +91,25 @@ class TeamUserTest extends TestCase
      */
     public function test_update_team_user_permission_add_permission_with_success(): void
     {
-        $urlPost = 'api/v1/teams/' . self::TEAM_ID . '/users';
+        $teamId = $this->createTeam();
+        $userId = $this->createUser();
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
         $arrayPermissionsPost = ["create", "read"];
         $payloadPost = [
-            "userId" => self::USER_ID,
+            "userId" => $userId,
             "permissions" => $arrayPermissionsPost,
         ];
-        $this->cleanTeamUserPermissions(self::TEAM_ID, self::USER_ID);
+        $this->cleanTeamUserPermissions($teamId, $userId);
 
         $responsePost = $this->json('POST', $urlPost, $payloadPost, $this->header);
 
         $responsePost->assertJsonStructure([
             'message'
         ]);
-        $responsePost->assertStatus(200);
+        $responsePost->assertStatus(201);
 
-        $urlPut = 'api/v1/teams/' . self::TEAM_ID . '/users/' . self::USER_ID;
+        $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
         $arrayPermissionsExpected = ["create", "read", "update"];
         $arrayPermissionsPut = ["update" => true];
         $payloadPut = [
@@ -117,13 +122,13 @@ class TeamUserTest extends TestCase
         ]);
         $responsePost->assertStatus(200);
 
-        $getTeamHasUsers = $this->getTeamHasUsers(self::TEAM_ID, self::USER_ID);
+        $getTeamHasUsers = $this->getTeamHasUsers($teamId, $userId);
         $this->assertTrue((bool) (count($getTeamHasUsers) === 1), 'Team has one single user');
 
-        $getTeamUserHasPermissions = $this->getTeamUserHasPermissions(self::TEAM_ID, self::USER_ID);
+        $getTeamUserHasPermissions = $this->getTeamUserHasPermissions($teamId, $userId);
         $this->assertTrue((bool) (count($getTeamUserHasPermissions) === count($arrayPermissionsExpected)), 'The user in the team has ' . count($arrayPermissionsExpected) . ' permissions');
 
-        $getUserPermissions = $this->getUserPermissions(self::TEAM_ID, self::USER_ID);
+        $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissionsExpected, $getUserPermissions);
         $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
     }
@@ -135,22 +140,25 @@ class TeamUserTest extends TestCase
      */
     public function test_update_team_user_permission_remove_permission_with_success(): void
     {
-        $urlPost = 'api/v1/teams/' . self::TEAM_ID . '/users';
+        $teamId = $this->createTeam();
+        $userId = $this->createUser();
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
         $arrayPermissionsPost = ["create", "read"];
         $payloadPost = [
-            "userId" => self::USER_ID,
+            "userId" => $userId,
             "permissions" => $arrayPermissionsPost,
         ];
-        $this->cleanTeamUserPermissions(self::TEAM_ID, self::USER_ID);
+        $this->cleanTeamUserPermissions($teamId, $userId);
 
         $responsePost = $this->json('POST', $urlPost, $payloadPost, $this->header);
 
         $responsePost->assertJsonStructure([
             'message'
         ]);
-        $responsePost->assertStatus(200);
+        $responsePost->assertStatus(201);
 
-        $urlPut = 'api/v1/teams/' . self::TEAM_ID . '/users/' . self::USER_ID;
+        $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
         $arrayPermissionsExpected = ["create"];
         $arrayPermissionsPut = ["read" => false];
         $payloadPut = [
@@ -163,13 +171,13 @@ class TeamUserTest extends TestCase
         ]);
         $responsePost->assertStatus(200);
 
-        $getTeamHasUsers = $this->getTeamHasUsers(self::TEAM_ID, self::USER_ID);
+        $getTeamHasUsers = $this->getTeamHasUsers($teamId, $userId);
         $this->assertTrue((bool) (count($getTeamHasUsers) === 1), 'Team has one single user');
 
-        $getTeamUserHasPermissions = $this->getTeamUserHasPermissions(self::TEAM_ID, self::USER_ID);
+        $getTeamUserHasPermissions = $this->getTeamUserHasPermissions($teamId, $userId);
         $this->assertTrue((bool) (count($getTeamUserHasPermissions) === count($arrayPermissionsExpected)), 'The user in the team has ' . count($arrayPermissionsExpected) . ' permissions');
 
-        $getUserPermissions = $this->getUserPermissions(self::TEAM_ID, self::USER_ID);
+        $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissionsExpected, $getUserPermissions);
         $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
     }
@@ -181,22 +189,25 @@ class TeamUserTest extends TestCase
      */
     public function test_delete_team_user_permission_with_success(): void
     {
-        $urlPost = 'api/v1/teams/' . self::TEAM_ID . '/users';
+        $teamId = $this->createTeam();
+        $userId = $this->createUser();
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
         $arrayPermissions = ["create", "read"];
         $payload = [
-            "userId" => self::USER_ID,
+            "userId" => $userId,
             "permissions" => $arrayPermissions,
         ];
-        $this->cleanTeamUserPermissions(self::TEAM_ID, self::USER_ID);
+        $this->cleanTeamUserPermissions($teamId, $userId);
 
         $responsePost = $this->json('POST', $urlPost, $payload, $this->header);
 
         $responsePost->assertJsonStructure([
             'message'
         ]);
-        $responsePost->assertStatus(200);
+        $responsePost->assertStatus(201);
 
-        $urlDelete = 'api/v1/teams/' . self::TEAM_ID . '/users/' . self::USER_ID;
+        $urlDelete = 'api/v1/teams/' . $teamId . '/users/' . $userId;
         $responseDelete = $this->json('DELETE', $urlDelete, [], $this->header);
         $responseDelete->assertJsonStructure([
             'message'
@@ -204,6 +215,64 @@ class TeamUserTest extends TestCase
         $responseDelete->assertStatus(200);
     }
 
+    private function createTeam()
+    {
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        $responseNewTeam = $this->json(
+            'POST',
+            'api/v1/teams',
+            [
+                'name' => 'A. Test Team',
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => 1001,
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => now(),
+                'notifications' => [$notificationID],
+            ],
+            $this->header,
+        );
+
+        $responseNewTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        return $responseNewTeam['data'];
+    }
+
+    private function createUser()
+    {
+        $responseNewUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+            ],
+            $this->header,
+        );
+        $responseNewUser->assertStatus(201);
+        
+        return $responseNewUser['data'];
+    }
 
     private function cleanTeamUserPermissions($tId, $uId)
     {
