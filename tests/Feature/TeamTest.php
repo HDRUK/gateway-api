@@ -85,6 +85,7 @@ class TeamTest extends TestCase
                 'Authorization' => 'bearer ' . $this->accessToken,
             ],
         );
+
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
 

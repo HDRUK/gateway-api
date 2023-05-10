@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
+use Exception;
 use Carbon\Carbon;
 
 use App\Models\Filter;
+use App\Http\Requests\FilterRequest;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -123,26 +125,23 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function store(Request $request)
+    public function store(FilterRequest $request)
     {
-        $request->validate([
-            'type' => 'required',
-            'value' => 'required',
-            'keys' => 'required',
-            'enabled' => 'required',
-        ]);
+        try {
+            $filter = Filter::create($request->post());
+            if ($filter) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_CREATED.message'),
+                    'data' => $filter->id,
+                ], Config::get('statuscodes.STATUS_CREATED.code'));
+            }
 
-        $filter = Filter::create($request->post());
-        if ($filter) {
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $filter->id,
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
@@ -192,36 +191,33 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $filter)
+    public function update(FilterRequest $request, int $filter)
     {
-        $request->validate([
-            'type' => 'required',
-            'value' => 'required',
-            'keys' => 'required',
-            'enabled' => 'required',
-        ]);
+        try {
+            $filter = Filter::findOrFail($filter);
+            $body = $request->post();
+            $filter->type = $body['type'];
+            $filter->value = $body['value'];
+            $filter->keys = $body['keys'];
+            $filter->enabled = $body['enabled'];
 
-        $filter = Filter::findOrFail($filter);
-        $body = $request->post();
-        $filter->type = $body['type'];
-        $filter->value = $body['value'];
-        $filter->keys = $body['keys'];
-        $filter->enabled = $body['enabled'];
+            if ($filter->save()) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $filter,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            } else {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+                ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            }
 
-        if ($filter->save()) {
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $filter,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**

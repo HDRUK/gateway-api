@@ -6,6 +6,7 @@ use Exception;
 use Carbon\Carbon;
 use App\Models\Team;
 use App\Models\TeamHasNotification;
+use App\Http\Requests\TeamRequest;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
@@ -171,48 +172,37 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function store(Request $request)
+    public function store(TeamRequest $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'enabled' => 'required',
-            'allows_messaging' => 'required',
-            'workflow_enabled' => 'required',
-            'access_requests_management' => 'required',
-            'uses_5_safes' => 'required',
-            'is_admin' => 'required',
-            'member_of' => 'required',
-            'contact_point' => 'required',
-            'application_form_updated_by' => 'required',
-            'application_form_updated_on' => 'required',
-            'notifications' => 'required',
-        ]);
+        try {
+            $input = $request->all();
+            $arrayTeam = array_filter($input, function ($key) {
+                return $key !== 'notifications';
+            }, ARRAY_FILTER_USE_KEY);
+            $arrayTeamNotification = $input['notifications'];
 
-        $input = $request->all();
-        $arrayTeam = array_filter($input, function ($key) {
-            return $key !== 'notifications';
-        }, ARRAY_FILTER_USE_KEY);
-        $arrayTeamNotification = $input['notifications'];
+            $team = Team::create($arrayTeam);
 
-        $team = Team::create($arrayTeam);
-
-        if ($team) {
-            foreach ($arrayTeamNotification as $value) {
-                TeamHasNotification::updateOrCreate([
-                    'team_id' => (int) $team->id,
-                    'notification_id' => (int) $value,
-                ]);
+            if ($team) {
+                foreach ($arrayTeamNotification as $value) {
+                    TeamHasNotification::updateOrCreate([
+                        'team_id' => (int) $team->id,
+                        'notification_id' => (int) $value,
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'message' => 'error',
+                ], 500);
             }
-        } else {
-            return response()->json([
-                'message' => 'error',
-            ], 500);
-        }
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $team->id,
-        ], 200);
+            return response()->json([
+                'message' => 'success',
+                'data' => $team->id,
+            ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -291,60 +281,49 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $team)
+    public function update(TeamRequest $request, int $team)
     {
-        $request->validate([
-            'name' => 'required',
-            'enabled' => 'required',
-            'allows_messaging' => 'required',
-            'workflow_enabled' => 'required',
-            'access_requests_management' => 'required',
-            'uses_5_safes' => 'required',
-            'is_admin' => 'required',
-            'member_of' => 'required',
-            'contact_point' => 'required',
-            'application_form_updated_by' => 'required',
-            'application_form_updated_on' => 'required',
-            'notifications' => 'required',
-        ]);
+        try {
+            $team = Team::findOrFail($team);
+            $body = $request->post();
+            $team->name = $body['name'];
+            $team->enabled = $body['enabled'];
+            $team->allows_messaging = $body['allows_messaging'];
+            $team->workflow_enabled = $body['workflow_enabled'];
+            $team->access_requests_management = $body['access_requests_management'];
+            $team->uses_5_safes = $body['uses_5_safes'];
+            $team->is_admin = $body['is_admin'];
+            $team->member_of = $body['member_of'];
+            $team->contact_point = $body['contact_point'];
+            $team->application_form_updated_by = $body['application_form_updated_by'];
+            $team->application_form_updated_on = $body['application_form_updated_on'];
 
-        $team = Team::findOrFail($team);
-        $body = $request->post();
-        $team->name = $body['name'];
-        $team->enabled = $body['enabled'];
-        $team->allows_messaging = $body['allows_messaging'];
-        $team->workflow_enabled = $body['workflow_enabled'];
-        $team->access_requests_management = $body['access_requests_management'];
-        $team->uses_5_safes = $body['uses_5_safes'];
-        $team->is_admin = $body['is_admin'];
-        $team->member_of = $body['member_of'];
-        $team->contact_point = $body['contact_point'];
-        $team->application_form_updated_by = $body['application_form_updated_by'];
-        $team->application_form_updated_on = $body['application_form_updated_on'];
+            $arrayTeamNotification = $body['notifications'];
+            TeamHasNotification::where('team_id', $team->id)->delete();
+            foreach ($arrayTeamNotification as $value) {
+                TeamHasNotification::updateOrCreate([
+                    'team_id' => (int) $team->id,
+                    'notification_id' => (int) $value,
+                ]);
+            }
 
-        $arrayTeamNotification = $body['notifications'];
-        TeamHasNotification::where('team_id', $team->id)->delete();
-        foreach ($arrayTeamNotification as $value) {
-            TeamHasNotification::updateOrCreate([
-                'team_id' => (int) $team->id,
-                'notification_id' => (int) $value,
-            ]);
-        }
+            if ($team->save()) {
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $team,
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'error',
+                ], 500);
+            }
 
-        if ($team->save()) {
             return response()->json([
-                'message' => 'success',
-                'data' => $team,
-            ], 200);
-        } else {
-            return response()->json([
-                'message' => 'error',
-            ], 500);
+                'message' => 'not found',
+            ], 404);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
     }
     
     /**

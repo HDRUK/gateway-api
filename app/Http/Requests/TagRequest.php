@@ -48,8 +48,8 @@ class TagRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'type.required' => 'A type is required',
-            'type.string' => 'A type need to be string format',
+            'type.required' => 'the parameter ":attribute" is required',
+            'type.string' => 'the parameter ":attribute" must be a string',
         ];
     }
 }

@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Exception;
 use Throwable;
+
 use App\Models\DarIntegration;
+use App\Http\Requests\DarIntegrationRequest;
+
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\DarIntegrationRequest;
 
 class DarIntegrationController extends Controller
 {
@@ -162,17 +164,21 @@ class DarIntegrationController extends Controller
      */
     public function store(DarIntegrationRequest $request)
     {
-        $dar = DarIntegration::create($request->post());
-        if ($dar) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $dar->id,
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
-        }
+        try {
+            $dar = DarIntegration::create($request->post());
+            if ($dar) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_CREATED.message'),
+                    'data' => $dar->id,
+                ], Config::get('statuscodes.STATUS_CREATED.code'));
+            }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**

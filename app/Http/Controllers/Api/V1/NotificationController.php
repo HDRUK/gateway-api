@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
+use Exception;
+
 use Carbon\Carbon;
 
 use App\Models\Notification;
+
+use App\Http\Requests\NotificationRequest;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -127,26 +131,23 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function store(Request $request)
+    public function store(NotificationRequest $request)
     {
-        $request->validate([
-            'notification_type' => 'required',
-            'message' => 'required',
-            'opt_in' => 'required',
-            'enabled' => 'required',
-        ]);
+        try {
+            $notification = Notification::create($request->post());
+            if ($notification) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_CREATED.message'),
+                    'data' => $notification->id,
+                ], Config::get('statuscodes.STATUS_CREATED.code'));
+            }
 
-        $notification = Notification::create($request->post());
-        if ($notification) {
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $notification->id,
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
@@ -196,36 +197,33 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $notification)
+    public function update(NotificationRequest $request, int $notification)
     {
-        $request->validate([
-            'notification_type' => 'required',
-            'message' => 'required',
-            'opt_in' => 'required',
-            'enabled' => 'required',
-        ]);
+        try {
+            $notification = Notification::findOrFail($notification);
+            $body = $request->post();
+            $notification->notification_type = $body['notification_type'];
+            $notification->message = $body['message'];
+            $notification->opt_in = $body['opt_in'];
+            $notification->enabled = $body['enabled'];
 
-        $notification = Notification::findOrFail($notification);
-        $body = $request->post();
-        $notification->notification_type = $body['notification_type'];
-        $notification->message = $body['message'];
-        $notification->opt_in = $body['opt_in'];
-        $notification->enabled = $body['enabled'];
+            if ($notification->save()) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $notification,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            } else {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+                ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            }
 
-        if ($notification->save()) {
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $notification,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**

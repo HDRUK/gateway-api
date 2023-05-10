@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
+use Exception;
 
 use App\Mail\Email;
 
@@ -11,40 +12,40 @@ use App\Jobs\SendEmailJob;
 use App\Models\User;
 use App\Models\EmailTemplate;
 
+use App\Http\Requests\EmailServiceRequest;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class EmailController extends Controller
 {
-    public function dispatchEmail(Request $request)
+    public function dispatchEmail(EmailServiceRequest $request)
     {
-        $request->validate([
-            'to' => 'required|int',
-            'identifier' => 'required|string',
-            'replacements' => 'required',
-        ]);
+        try {
+            $body = $request->post();
 
-        $body = $request->post();
+            $template = EmailTemplate::where('identifier', '=', $body['identifier'])->first();
+            $user = User::where('id', '=', $body['to'])->first();
 
-        $template = EmailTemplate::where('identifier', '=', $body['identifier'])->first();
-        $user = User::where('id', '=', $body['to'])->first();
+            $toArray = [
+                'to' => [
+                    'email' => $user['email'],
+                    'name' => $user['name'],
+                ],
+            ];
+        
+            if ($template) {
+                SendEmailJob::dispatch($toArray, $template, $body['replacements']);
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
 
-        $toArray = [
-            'to' => [
-                'email' => $user['email'],
-                'name' => $user['name'],
-            ],
-        ];
-    
-        if ($template) {
-            SendEmailJob::dispatch($toArray, $template, $body['replacements']);
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-            ], Config::get('statuscodes.STATUS_OK.code'));
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 }

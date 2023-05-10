@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class PermissionRequest extends FormRequest
+class FilterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,16 +22,23 @@ class PermissionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role' => [
+            'type' => [
                 'required',
                 'string',
-                'unique:permissions,role',
+            ],
+            'value' => [
+                'required',
+                'string',
+            ],
+            'keys' => [
+                'required',
+                'string',
             ],
         ];
     }
 
     /**
-     * Provides informational messages based on invalid request
+     * Provides informational messages based on the invalid request
      * parameters.
      * 
      * @return array<string, string>
@@ -39,7 +46,10 @@ class PermissionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'role.required' => 'the parameter ":attribute" is required',
+            'enabled.required' => 'the parameter ":attribute" is required',
+            'type.required' => 'the parameter ":attribute" is required',
+            'value.required' => 'the parameter ":attribute" is required',
+            'keys.required' => 'the parameter ":attribute" is required',
         ];
     }
 }

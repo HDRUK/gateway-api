@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
+use Exception;
 
 use App\Models\ActivityLogType;
+
+use App\Http\Requests\ActivityLogTypeRequest;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -113,23 +116,23 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function store(Request $request)
+    public function store(ActivityLogTypeRequest $request)
     {
-        $request->validate([
-            'name' => 'required',
-        ]);
+        try {
+            $activityLogType = ActivityLogType::create($request->post());
+            if ($activityLogType) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_CREATED.message'),
+                    'data' => $activityLogType->id,
+                ], Config::get('statuscodes.STATUS_CREATED.code'));
+            }
 
-        $activityLogType = ActivityLogType::create($request->post());
-        if ($activityLogType) {
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $activityLogType->id,
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
@@ -174,30 +177,31 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $id)
+    public function update(ActivityLogTypeRequest $request, int $id)
     {
-        $request->validate([
-            'name' => 'required',
-        ]);
 
-        $activityLogType = ActivityLogType::findOrFail($id);
-        $body = $request->post();
-        $activityLogType->name = $body['name'];
+        try {
+            $activityLogType = ActivityLogType::findOrFail($id);
+            $body = $request->post();
+            $activityLogType->name = $body['name'];
 
-        if ($activityLogType->save()) {
+            if ($activityLogType->save()) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $activityLogType,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            } else {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+                ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            }
+
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $activityLogType,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**
