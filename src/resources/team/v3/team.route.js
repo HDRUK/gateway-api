@@ -62,9 +62,6 @@ router.patch(
 router.get(
     '/:teamid/notifications', 
     passport.authenticate('jwt'), 
-    checkAccessToTeamMiddleware([
-        constants.roleMemberTeam.CUST_TEAM_ADMIN
-    ]), 
     (req, res) => TeamController.getTeamNotifications(req, res),
 );
 
