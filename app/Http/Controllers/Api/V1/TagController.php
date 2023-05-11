@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Api\V1;
 use Exception;
 use App\Models\Tag;
 use Illuminate\Http\Request;
-use App\Http\Requests\TagRequest;
+use App\Http\Requests\CreateTagRequest;
+use App\Http\Requests\UpdateTagRequest;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\BadRequestException;
 
 class TagController extends Controller
 {
@@ -45,9 +49,9 @@ class TagController extends Controller
      * 
      * Get All Tags
      *
-     * @return mixed
+     * @return JsonResponse
      */
-    public function index(): mixed
+    public function index(): JsonResponse
     {
         $tags = Tag::where('enabled', 1)->get();
 
@@ -96,29 +100,29 @@ class TagController extends Controller
      *          ),
      *       ),
      *    ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=404,
-     *          description="Not found response",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found"),
-     *          )
-     *      )
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=404,
+     *        description="Not found response",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="not found"),
+     *        )
+     *    )
      * )
      * 
      * Get Tags by id
      *
      * @param Request $request
      * @param integer $id
-     * @return mixed
+     * @return JsonResponse
      */
-    public function show(Request $request, int $id): mixed
+    public function show(Request $request, int $id): JsonResponse
     {
         $tags = Tag::where([
             'id' => $id,
@@ -132,9 +136,7 @@ class TagController extends Controller
             ], 200);
         }
 
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
+        throw new NotFoundException();
     }
 
     /**
@@ -159,36 +161,36 @@ class TagController extends Controller
      *          ),
      *       ),
      *    ),
-     *      @OA\Response(
-     *          response=201,
-     *          description="Created",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="integer", example="100")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error"),
-     *          )
-     *      )
+     *    @OA\Response(
+     *        response=201,
+     *        description="Created",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="success"),
+     *            @OA\Property(property="data", type="integer", example="100")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
      * )
      * 
      * Create a new tag
      *
-     * @param TagRequest $request
-     * @return mixed
+     * @param CreateTagRequest $request
+     * @return JsonResponse
      */
-    public function store(TagRequest $request): mixed
+    public function store(CreateTagRequest $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -246,44 +248,42 @@ class TagController extends Controller
      *          ),
      *       ),
      *    ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error"),
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=400,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="bad request"),
-     *          )
-     *      )
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=400,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="bad request"),
+     *        )
+     *    )
      * )
      * 
      * Update tag
      *
-     * @param TagRequest $request
+     * @param UpdateTagRequest $request
      * @param integer $id
-     * @return mixed
+     * @return JsonResponse
      */
-    public function update(TagRequest $request, int $id): mixed
+    public function update(UpdateTagRequest $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
 
             if (!$input) {
-                return response()->json([
-                    'message' => 'bad request',
-                ], 400);
+                throw new BadRequestException();
             }
 
             $tag = Tag::where('id', $id)->update($input);
@@ -291,7 +291,7 @@ class TagController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => $tag
-            ], 202);
+            ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -330,28 +330,28 @@ class TagController extends Controller
      *          @OA\Property(property="message", type="string", example="Resource not found"),
      *       ),
      *    ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error"),
-     *          )
-     *      )
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
      * )
      * 
      * delete tag by id
      *
      * @param string $id
-     * @return mixed
+     * @return JsonResponse
      */
-    public function destroy(string $id): mixed
+    public function destroy(string $id): JsonResponse
     {
         try {
             $tags = Tag::where('id', $id)->count();
@@ -364,9 +364,7 @@ class TagController extends Controller
                 ], 200);
             }
 
-            return response()->json([
-                'message' => 'not found.',
-            ], 404);
+            throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

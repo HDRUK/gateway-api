@@ -193,3 +193,45 @@ DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/2 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+
+### TAGS
+#### get all tags
+GET {{baseUrl}}/api/{{apiVersion}}/tags HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one tag by id
+GET {{baseUrl}}/api/{{apiVersion}}/tags/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create a new tag
+POST {{baseUrl}}/api/{{apiVersion}}/tags HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "type": "Type Test",
+    "enabled": 1,
+    "description": "type for test"
+}
+
+#### update tag
+PUT {{baseUrl}}/api/{{apiVersion}}/tags/1 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "type": "Something",
+    "enabled": 1,
+    "description": "Something"
+}
+
+#### delete tag by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/tags/2 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}

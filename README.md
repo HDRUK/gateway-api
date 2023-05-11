@@ -68,7 +68,7 @@ php -d memory_limit=4G vendor/bin/phpstan analyse
 or 
 
 ```
-.vendor/bin/phpstan analyse
+vendor/bin/phpstan analyse
 ```
 
 ## Temporary endpoints
@@ -141,13 +141,23 @@ or
 ```
 vendor/bin/phpunit --testdox
 ```
+
 or
+
 ```
 php -d memory_limit=2048M ./vendor/bin/phpunit
 ```
-or for one single file test
+
+or for one single file test class
+
 ```
-vendor/bin/phpunit --testdox --filter ActivityLogTest
+vendor/bin/phpunit --testdox --filter TagTest
+```
+
+or for one single file test method
+
+```
+vendor/bin/phpunit --testdox --filter test_update_tag_with_success
 ```
 
 ### Laravel Status Code

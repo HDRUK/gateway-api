@@ -99,6 +99,103 @@ class TagTest extends TestCase
     }
 
     /**
+     * Create new Tag with success
+     *
+     * @return void
+     */
+    public function test_create_tag_with_success(): void
+    {
+        $countBefore = Tag::all()->count();
+
+        $array = [
+            'type' =>  'Type Test',
+            'enabled' => 1,
+            'description' => 'type for test'
+        ];
+        $response = $this->json('POST', self::TEST_URL, $array, $this->header);
+
+        $countAfter = Tag::all()->count();
+
+        $response->assertStatus(201);
+        $this->assertTrue((bool) ($countAfter - $countBefore), 'Response was successfully');
+        $response->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+    }
+
+    /**
+     * Create new Tag without success
+     *
+     * @return void
+     */
+    public function test_create_tag_without_success(): void
+    {
+        $countBefore = Tag::all()->count();
+
+        $array = [
+            'type' =>  'Type Test',
+            'enabled' => 1,
+            'description' => 'type for test'
+        ];
+        $response = $this->json('POST', self::TEST_URL, $array, $this->header);
+
+        $countAfter = Tag::all()->count();
+
+        $response->assertStatus(201);
+        $this->assertTrue((bool) ($countAfter - $countBefore), 'Response was successfully');
+        $response->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+
+        $responseRepeat = $this->json('POST', self::TEST_URL, $array, $this->header);
+        $responseRepeat->assertStatus(500);
+    }
+
+    /**
+     * Create new Tag without success
+     *
+     * @return void
+     */
+    public function test_update_tag_with_success(): void
+    {
+        $countBefore = Tag::all()->count();
+
+        $array = [
+            'type' =>  'Type Test',
+            'enabled' => 1,
+            'description' => 'type for test'
+        ];
+        $response = $this->json('POST', self::TEST_URL, $array, $this->header);
+
+        $countAfterPost = Tag::all()->count();
+
+        $response->assertStatus(201);
+        $this->assertTrue((bool) ($countAfterPost - $countBefore), 'Response was successfully');
+        $response->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+        $tagId = (int) $response['data'];
+
+        $arrayUpdate = [
+            'type' =>  'Type Test Update',
+            'enabled' => 1,
+            'description' => 'type for test'
+        ];
+        $responseUpdate = $this->json('PUT', self::TEST_URL . '/' . $tagId, $arrayUpdate, $this->header);
+        $countAfterUpdate = Tag::all()->count();
+
+        $responseUpdate->assertStatus(200);
+        $this->assertFalse((bool) ($countAfterUpdate - $countAfterPost), 'Response was successfully, No Id changed after update');
+        $responseUpdate->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+    }
+
+    /**
      * SoftDelete Tag by Id with success
      *
      * @return void
