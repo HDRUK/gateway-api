@@ -73,6 +73,7 @@ export default class PublisherController extends Controller {
 			const isManager = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER, constants.roleMemberTeam.CUST_DAR_REVIEWER], publisher.team, requestingUserId);
 
 			// 4. Find all applications for current team member view
+			// if I am custodian.dar.manager, reviewer
 			const applications = await this.publisherService.getPublisherDataAccessRequests(id, requestingUserId, isManager).catch(err => {
 				logger.logError(err, logCategory);
 			});
