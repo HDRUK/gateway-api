@@ -19,7 +19,7 @@ class ToolFactory extends Factory
     {
         return [
             'mongo_object_id' => fake()->regexify('[a-z0-9]{24}'),
-            'name' => fake()->text(45),
+            'name' => fake()->text(255),
             'url' => fake()->url(),
             'description' => fake()->text(255),
             'license' => fake()->text(45),

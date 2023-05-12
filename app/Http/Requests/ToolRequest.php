@@ -29,22 +29,22 @@ class ToolRequest extends FormRequest
                 'required', 'string',
             ],
             'url' => [
-                'required', 'url',
+                'nullable', 'string',
             ],
             'description' => [
                 'required', 'string',
             ],
             'license' => [
-                'required', 'string',
+                'nullable', 'string',
             ],
             'tech_stack' => [
-                'required', 'string',
+                'nullable', 'string',
             ],
             'user_id' => [
                 'required', 'integer'
             ],
             'tag' => [
-                'required', 'array', 
+                'nullable', 'array', 
             ],
             'tag.*' => [
                 'integer',
