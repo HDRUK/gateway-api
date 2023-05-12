@@ -307,7 +307,7 @@ router.post(
 router.get(
 	'/prepopulate-contributors/:id',
 	passport.authenticate('jwt'),
-	logger.logRequestMiddleware({ logCategory, action: 'Get additional information for Data Access Request contributors' }),
+	logger.logRequestMiddlewareExceptions({ logCategory, action: 'Get additional information for Data Access Request contributors' }),
 	(req, res) => dataRequestController.getContributorsAdditionalInfo(req, res)
 );
 
