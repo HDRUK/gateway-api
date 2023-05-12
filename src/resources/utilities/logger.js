@@ -1,9 +1,19 @@
 import constants from './constants.util';
+import HttpExceptions from '../../exceptions/HttpExceptions';
 
 const logRequestMiddleware = options => {
 	return (req, res, next) => {
 		const { logCategory, action } = options;
 		logger.logUserActivity(req.user, logCategory, constants.logTypes.USER, { action });
+		next();
+	};
+};
+
+const logRequestMiddlewareExceptions = options => {
+	return (req, res, next) => {
+		const { logCategory, action } = options;
+		logger.logUserActivity(req.user, logCategory, constants.logTypes.USER, { action });
+		throw new HttpExceptions(action);
 		next();
 	};
 };
@@ -30,6 +40,7 @@ const logError = (err, category) => {
 
 export const logger = {
 	logRequestMiddleware,
+	logRequestMiddlewareExceptions,
 	logSystemActivity,
 	logUserActivity,
 	logError,
