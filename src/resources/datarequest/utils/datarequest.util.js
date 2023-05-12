@@ -44,13 +44,13 @@ const getUserPermissionsForApplication = (application, userId, _id) => {
 
 	// constants.roleMemberTeam.CUST_DAR_MANAGER 
 	if (has(application, 'datasets') && has(application.datasets[0], 'publisher.team')) {
-		isTeamMember = isTeamMember = teamV3Util.checkUserRolesByTeam(
+		isTeamMember = teamV3Util.checkUserRolesByTeam(
 			[], 
 			application.datasets[0].publisher.team, 
 			_id
 		);
 	} else if (has(application, 'publisherObj.team')) {
-		isTeamMember = isTeamMember = teamV3Util.checkUserRolesByTeam(
+		isTeamMember = teamV3Util.checkUserRolesByTeam(
 			[], 
 			application.publisherObj.team, 
 			_id
