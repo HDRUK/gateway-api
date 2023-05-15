@@ -947,14 +947,14 @@ const createNotifications = async (type, context) => {
 			}
 
 			// 2. Create user notifications
-			notificationBuilder.triggerNotificationMessage(
-				teamMembersIds,
-				context.datasetVersion !== '1.0.0'
-					? `Your dataset version for "${context.name}" has been reviewed and rejected`
-					: `A dataset "${context.name}" has been reviewed and rejected`,
-				'dataset rejected',
-				context.datasetv2.summary.publisher.identifier
-			);
+			// notificationBuilder.triggerNotificationMessage(
+			// 	teamMembersIds,
+			// 	context.datasetVersion !== '1.0.0'
+			// 		? `Your dataset version for "${context.name}" has been reviewed and rejected`
+			// 		: `A dataset "${context.name}" has been reviewed and rejected`,
+			// 	'dataset rejected',
+			// 	context.datasetv2.summary.publisher.identifier
+			// );
 			// 3. Create email
 			options = {
 				name: context.name,
