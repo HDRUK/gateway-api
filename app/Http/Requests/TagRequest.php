@@ -29,8 +29,12 @@ class TagRequest extends FormRequest
                 'required',
                 'string',
                 new Enum(TagType::class),
+            ],
+            'description' => [
+                'required',
+                'string',
                 Rule::unique('tags')->where(function ($query) {
-                    $query->where('type', trim($this->type));
+                    $query->where('description', trim($this->type));
                 }),
             ],
             'enabled' => [
