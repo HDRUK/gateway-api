@@ -2147,7 +2147,7 @@ const _generateMetadataOnboardingRejected = options => {
                   ${commentHTML}
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&team=${publisherId}">View dataset dashboard</a>
+                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&teamType=team&teamId=${publisherId}">View dataset dashboard</a>
                   </th>
                   </tr>
                 </thead>
