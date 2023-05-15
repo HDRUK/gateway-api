@@ -932,16 +932,20 @@ const createNotifications = async (type, context) => {
 			const isFederated = !_.isUndefined(team.publisher.federation) && team.publisher.federation.active;
 
 			for (let member of team.members) {
-				teamMembers.push(member.memberid);
+				if ((Array.isArray(member.roles) && member.roles.some(role => ['manager', 'metadata_editor'].includes(role)))
+					|| (typeof member.roles === 'string' && ['manager', 'metadata_editor'].includes(member.roles))) {
+					teamMembers.push(member.memberid);
+				}
 			}
 
 			teamMembersDetails = await UserModel.find({ _id: { $in: teamMembers } })
 				.populate('additionalInfo')
 				.lean();
 
-			for (let member of team.members) {
-				if (member.roles.some(role => ['metadata_editor'].includes(role))) teamMembers.push(member.memberid);
+			for (let member of teamMembersDetails) {
+				teamMembersIds.push(member.id);
 			}
+
 			// 2. Create user notifications
 			notificationBuilder.triggerNotificationMessage(
 				teamMembersIds,

@@ -3,6 +3,7 @@ import { MessagesModel } from '../message/message.model';
 const triggerNotificationMessage = (messageRecipients, messageDescription, messageType, messageObjectID, publisherName = '') => {
 	messageRecipients.forEach(async recipient => {
 		let messageID = parseInt(Math.random().toString().replace('0.', ''));
+
 		let message = new MessagesModel({
 			messageType,
 			messageSent: Date.now(),
