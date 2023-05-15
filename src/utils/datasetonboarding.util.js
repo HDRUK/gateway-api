@@ -66,7 +66,7 @@ const getUserPermissionsForDataset = async (id, user, publisherId) => {
 		if (!isEmpty(teams.find(team => team._id.toString() === publisherId))) {
 			publisherTeam = teams.find(team => team._id.toString() === publisherId);
 		}
-
+		// console.log('publisherTeam : ' . JSON.stringify(publisherTeam));
 		if (!isEmpty(publisherTeam)) {
 			if (publisherTeam.roles.find(role => role.includes(constants.roleMemberTeam.CUST_MD_MANAGER))) {
 				return { authorised: true, userType: constants.roleMemberTeam.CUST_MD_MANAGER };
@@ -932,16 +932,22 @@ const createNotifications = async (type, context) => {
 			const isFederated = !_.isUndefined(team.publisher.federation) && team.publisher.federation.active;
 
 			for (let member of team.members) {
-				teamMembers.push(member.memberid);
+				if ((Array.isArray(member.roles) && member.roles.some(role => ['manager', 'metadata_editor'].includes(role)))
+					|| (typeof member.roles === 'string' && ['manager', 'metadata_editor'].includes(member.roles))) {
+					teamMembers.push(member.memberid);
+				}
 			}
 
 			teamMembersDetails = await UserModel.find({ _id: { $in: teamMembers } })
 				.populate('additionalInfo')
 				.lean();
 
-			for (let member of team.members) {
-				if (member.roles.some(role => ['metadata_editor'].includes(role))) teamMembers.push(member.memberid);
+			console.log('team.members : ' + JSON.stringify(team.members, 0, null) + '\n');
+
+			for (let member of teamMembersDetails) {
+				teamMembersIds.push(member.id);
 			}
+
 			// 2. Create user notifications
 			notificationBuilder.triggerNotificationMessage(
 				teamMembersIds,
