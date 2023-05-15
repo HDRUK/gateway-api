@@ -940,7 +940,7 @@ const createNotifications = async (type, context) => {
 				.lean();
 
 			for (let member of team.members) {
-				if (member.roles.some(role => ['manager', 'metadata_editor'].includes(role))) teamMembers.push(member.memberid);
+				if (member.roles.some(role => ['metadata_editor'].includes(role))) teamMembers.push(member.memberid);
 			}
 			// 2. Create user notifications
 			notificationBuilder.triggerNotificationMessage(
