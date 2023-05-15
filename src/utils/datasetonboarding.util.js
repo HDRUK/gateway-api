@@ -66,7 +66,7 @@ const getUserPermissionsForDataset = async (id, user, publisherId) => {
 		if (!isEmpty(teams.find(team => team._id.toString() === publisherId))) {
 			publisherTeam = teams.find(team => team._id.toString() === publisherId);
 		}
-		// console.log('publisherTeam : ' . JSON.stringify(publisherTeam));
+
 		if (!isEmpty(publisherTeam)) {
 			if (publisherTeam.roles.find(role => role.includes(constants.roleMemberTeam.CUST_MD_MANAGER))) {
 				return { authorised: true, userType: constants.roleMemberTeam.CUST_MD_MANAGER };
@@ -941,8 +941,6 @@ const createNotifications = async (type, context) => {
 			teamMembersDetails = await UserModel.find({ _id: { $in: teamMembers } })
 				.populate('additionalInfo')
 				.lean();
-
-			console.log('team.members : ' + JSON.stringify(team.members, 0, null) + '\n');
 
 			for (let member of teamMembersDetails) {
 				teamMembersIds.push(member.id);
