@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Config;
+
 use Illuminate\Foundation\Http\FormRequest;
 
 class ActivityLogRequest extends FormRequest
@@ -59,25 +61,25 @@ class ActivityLogRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'event_type.required' => 'the parameter ":attribute" is required',
-            'user_type_id.required' => 'the parameter ":attribute" is required',
-            'log_type_id.required' => 'the parameter ":attribute" is required',
-            'user_id.required' => 'the parameter "u:attributeer_id" is required',
-            'plain_text.required' => 'the parameter ":attribute" is required',
+            'event_type.required' => Config::get('strings.required'),
+            'user_type_id.required' => Config::get('strings.required'),
+            'log_type_id.required' => Config::get('strings.required'),
+            'user_id.required' => Config::get('strings.required'),
+            'plain_text.required' => Config::get('strings.required'),
 
-            'event_type.string' => 'the parameter ":attribute" must be a string',
-            'plain_text.string' => 'the parameter ":attribute" must be a string',
+            'event_type.string' => Config::get('strings.string'),
+            'plain_text.string' => Config::get('strings.string'),
 
-            'user_type_id.numeric' => 'the parameter ":attribute" must be an integer',
-            'log_type_id.numeric' => 'the parameter ":attribute" must be an integer',
-            'user_id.numeric' => 'the parameter ":attribute" must be an integer',
+            'user_type_id.numeric' => Config::get('strings.numeric'),
+            'log_type_id.numeric' => Config::get('strings.numeric'),
+            'user_id.numeric' => Config::get('strings.numeric'),
 
-            'event_type.max' => 'the parameter ":attribute" must not exceed :max characters',
-            'plain_text.max' => 'the parameter ":attribute" must not exceed :max characters',
+            'event_type.max' => Config::get('strings.max'),
+            'plain_text.max' => Config::get('strings.max'),
 
-            'user_type_id.exists' => 'the linked id of ":attribute" must first exist before being assigned',
-            'log_type_id.exists' => 'the linked id of ":attribute" must first exist before being assigned',
-            'user_id.exists'  => 'the linked id of ":attribute" must first exist before being assigned',
+            'user_type_id.exists' => Config::get('strings.exists'),
+            'log_type_id.exists' => Config::get('strings.exists'),
+            'user_id.exists'  => Config::get('strings.exists'),
         ];
     }
 }

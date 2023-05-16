@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Config;
+
 use Illuminate\Foundation\Http\FormRequest;
 
 class ActivityLogTypeRequest extends FormRequest
@@ -39,9 +41,9 @@ class ActivityLogTypeRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'the parameter ":attribute" is required',
-            'name.max' => 'the parameter ":attribute" must not exceed :max characters',
-            'name.string' => 'the parameter ":attribute" must be a string',
+            'name.required' => Config::get('strings.required'),
+            'name.max' => Config::get('strings.max'),
+            'name.string' => Config::get('strings.string'),
         ];
     }
 }

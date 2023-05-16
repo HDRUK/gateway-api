@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Config;
+
 use Illuminate\Foundation\Http\FormRequest;
 
 class PermissionRequest extends FormRequest
@@ -39,7 +41,7 @@ class PermissionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'role.required' => 'the parameter ":attribute" is required',
+            'role.required' => Config::get('strings.required'),
         ];
     }
 }

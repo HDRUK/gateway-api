@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Config;
+
 use Illuminate\Foundation\Http\FormRequest;
 
 class EmailServiceRequest extends FormRequest
@@ -47,13 +49,13 @@ class EmailServiceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'to.required' => 'the parameter ":attribute" is required',
-            'identifier.required' => 'the parameter ":attribute" is required',
-            'replacements.required' => 'the parameter ":attribute" is required',
+            'to.required' => Config::get('strings.required'),
+            'identifier.required' => Config::get('strings.required'),
+            'replacements.required' => Config::get('strings.required'),
 
-            'identifier.max' => 'the parameter ":attribute" must not exceed :max characters',
+            'identifier.max' => Config::get('strings.max'),
 
-            'to.numeric' => 'the parameter ":attribute" must be an integer',
+            'to.numeric' => Config::get('strings.numeric'),
         ];
     }
 }

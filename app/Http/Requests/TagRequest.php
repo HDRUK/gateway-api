@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use Config;
+
 use App\Http\Enums\TagType;
+
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Foundation\Http\FormRequest;
@@ -48,8 +51,8 @@ class TagRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'type.required' => 'the parameter ":attribute" is required',
-            'type.string' => 'the parameter ":attribute" must be a string',
+            'type.required' => Config::get('strings.required'),
+            'type.string' => Config::get('strings.string'),
         ];
     }
 }

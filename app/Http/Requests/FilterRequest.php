@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Config;
+
 use Illuminate\Foundation\Http\FormRequest;
 
 class FilterRequest extends FormRequest
@@ -46,10 +48,10 @@ class FilterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'enabled.required' => 'the parameter ":attribute" is required',
-            'type.required' => 'the parameter ":attribute" is required',
-            'value.required' => 'the parameter ":attribute" is required',
-            'keys.required' => 'the parameter ":attribute" is required',
+            'enabled.required' => Config::get('strings.required'),
+            'type.required' => Config::get('strings.required'),
+            'value.required' => Config::get('strings.required'),
+            'keys.required' => Config::get('strings.required'),
         ];
     }
 }

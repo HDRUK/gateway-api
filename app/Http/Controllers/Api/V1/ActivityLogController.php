@@ -94,9 +94,7 @@ class ActivityLogController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException('activity log not found');
     }
 
     /**

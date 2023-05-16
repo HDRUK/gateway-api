@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Config;
+
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -46,9 +47,9 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'username.required' => 'A username is required',
-            'username.email' => 'A username need to be email format',
-            'password.required' => 'A password is required',
+            'username.required' => Config::get('strings.required'),
+            'username.email' => Config::get('strings.email'),
+            'password.required' => Config::get('strings.required'),
         ];
     }
 }

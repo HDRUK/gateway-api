@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Config;
+
 use Illuminate\Foundation\Http\FormRequest;
 
 class TeamRequest extends FormRequest
@@ -82,36 +84,36 @@ class TeamRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'the parameter ":attribute" is required',
-            'enabled.required' => 'the parameter ":attribute" is required',
-            'allows_messaging.required' => 'the parameter ":attribute" is required',
-            'workflow_enabled.required' => 'the parameter ":attribute" is required',
-            'access_requests_management.required' => 'the parameter ":attribute" is required',
-            'uses_5_safes.required' => 'the parameter ":attribute" is required',
-            'is_admin.required' => 'the parameter ":attribute" is required',
-            'member_of.required' => 'the parameter ":attribute" is required',
-            'contact_point.required' => 'the parameter ":attribute" is required',
-            'application_form_updated_by.required' => 'the parameter ":attribute" is required',
-            'application_form_updated_on.required' => 'the parameter ":attribute" is required',
+            'name.required' => Config::get('strings.required'),
+            'enabled.required' => Config::get('strings.required'),
+            'allows_messaging.required' => Config::get('strings.required'),
+            'workflow_enabled.required' => Config::get('strings.required'),
+            'access_requests_management.required' => Config::get('strings.required'),
+            'uses_5_safes.required' => Config::get('strings.required'),
+            'is_admin.required' => Config::get('strings.required'),
+            'member_of.required' => Config::get('strings.required'),
+            'contact_point.required' => Config::get('strings.required'),
+            'application_form_updated_by.required' => Config::get('strings.required'),
+            'application_form_updated_on.required' => Config::get('strings.required'),
             
-            'name.string' => 'the parameter ":attribute" must be a string',
-            'contact_point.string' => 'the parameter ":attribute" must be a string',
-            'application_form_updated_by.string' => 'the parameter ":attribute" must be a string',
-            'application_form_updated_on.string' => 'the parameter ":attribute" must be a string',
+            'name.string' => Config::get('strings.string'),
+            'contact_point.string' => Config::get('strings.string'),
+            'application_form_updated_by.string' => Config::get('strings.string'),
+            'application_form_updated_on.string' => Config::get('strings.string'),
 
-            'name.max' => 'the parameter ":attribute" must not exceed :max characters',
-            'contact_point.max' => 'the parameter ":attribute" must not exceed :max characters',
-            'application_form_updated_by.max' => 'the parameter ":attribute" must not exceed :max characters',
-            'application_form_updated_on.max' => 'the parameter ":attribute" must not exceed :max characters',
+            'name.max' => Config::get('strings.max'),
+            'contact_point.max' => Config::get('strings.max'),
+            'application_form_updated_by.max' => Config::get('strings.max'),
+            'application_form_updated_on.max' => Config::get('strings.max'),
 
-            'enabled.boolean' => 'the parameter ":attribute" must be a boolean',
-            'allows_messaging.boolean' => 'the parameter ":attribute" must be a boolean',
-            'workflow_enabled.boolean' => 'the parameter ":attribute" must be a boolean',
-            'access_requests_management.boolean' => 'the parameter ":attribute" must be a boolean',
-            'uses_5_safes.boolean' => 'the parameter ":attribute" must be a boolean',
-            'is_admin.boolean' => 'the parameter ":attribute" must be a boolean',
+            'enabled.boolean' => Config::get('strings.boolean'),
+            'allows_messaging.boolean' => Config::get('strings.boolean'),
+            'workflow_enabled.boolean' => Config::get('strings.boolean'),
+            'access_requests_management.boolean' => Config::get('strings.boolean'),
+            'uses_5_safes.boolean' => Config::get('strings.boolean'),
+            'is_admin.boolean' => Config::get('strings.boolean'),
 
-            'member_of.integer' => 'the parameter ":attribute" must be a integer',
+            'member_of.numeric' => Config::get('strings.numeric'),
         ];
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use Config;
+
 use Illuminate\Foundation\Http\FormRequest;
 
 class NotificationRequest extends FormRequest
@@ -52,13 +54,13 @@ class NotificationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'notification_type.required' => 'the parameter ":attribute" is required',
-            'message.required' => 'the parameter ":attribute" is required',
-            'opt_in.required' => 'the parameter ":attribute" is required',
-            'enabled.required' => 'the parameter ":attribute" is required',
+            'notification_type.required' => Config::get('strings.required'),
+            'message.required' => Config::get('strings.required'),
+            'opt_in.required' => Config::get('strings.required'),
+            'enabled.required' => Config::get('strings.required'),
 
-            'notification_type.max' => 'the parameter ":attribute" must not exceed :max characters',
-            'message.max' => 'the parameter ":attribute" must not exceed :max characters',
+            'notification_type.max' => Config::get('strings.max'),
+            'message.max' => Config::get('strings.max'),
         ];
     }
 }
