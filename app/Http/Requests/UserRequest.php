@@ -37,6 +37,7 @@ class UserRequest extends FormRequest
             ],
             'sector_id' => [
                 'required', 'integer',
+                'exists:sectors,id',
             ],
             'organisation' => [
                 'string',
