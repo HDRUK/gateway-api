@@ -35,6 +35,30 @@ class UserRequest extends FormRequest
             'password' => [
                 'required', 'string',
             ],
+            'sector_id' => [
+                'required', 'integer',
+            ],
+            'organisation' => [
+                'string',
+            ],
+            'bio' => [
+                'string',
+            ],
+            'domain' => [
+                'string',
+            ],
+            'link' => [
+                'string',
+            ],
+            'orcid' => [
+                'integer',
+            ],
+            'contact_feedback' => [
+                'required', 'boolean',
+            ],
+            'contact_news' => [
+                'required', 'boolean',
+            ],
         ];
     }
 }

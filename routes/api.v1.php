@@ -36,6 +36,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'permissions' => 'PermissionController',
         'users' => 'UserController',
         'notifications' => 'NotificationController',
+        'sectors' => 'SectorController',
     ];
 
     foreach ($routes as $path => $controller) {

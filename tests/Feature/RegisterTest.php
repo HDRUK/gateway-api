@@ -33,6 +33,9 @@ class RegisterTest extends TestCase
             'lastname' => Config::get('constants.test.user.lastname'),
             'email' => Config::get('constants.test.user.email'),
             'password' => Config::get('constants.test.user.email'),
+            'sector_id' => 1,
+            'contact_feedback' => 1,
+            'contact_news' => 1,
         ];
     }
 

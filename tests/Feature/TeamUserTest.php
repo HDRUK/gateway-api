@@ -266,6 +266,9 @@ class TeamUserTest extends TestCase
                 'lastname' => 'Lastname',
                 'email' => 'firstname.lastname.123456789@test.com',
                 'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
             ],
             $this->header,
         );

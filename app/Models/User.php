@@ -6,7 +6,6 @@ use App\Models\Team;
 use App\Models\Tool;
 // use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -23,7 +22,20 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name', 'firstname', 'lastname', 'email', 'password', 'provider',
+        'name',
+        'firstname',
+        'lastname',
+        'email',
+        'password',
+        'provider',
+        'sector_id',
+        'organisation',
+        'bio',
+        'domain',
+        'link',
+        'orcid',
+        'contact_feedback',
+        'contact_news',
     ];
 
     /**
