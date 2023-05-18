@@ -9,7 +9,7 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Models\TeamUserHasPermission;
-use App\Http\Requests\AddTeamUserRequest;
+use App\Http\Requests\CreateTeamUserRequest;
 use App\Http\Requests\DeleteTeamUserRequest;
 use App\Http\Requests\UpdateTeamUserRequest;
 
@@ -83,11 +83,11 @@ class TeamUserController extends Controller
      *    )
      * )
      *
-     * @param AddTeamUserRequest $request
+     * @param CreateTeamUserRequest $request
      * @param integer $teamId
      * @return JsonResponse
      */
-    public function store(AddTeamUserRequest $request, int $teamId): JsonResponse
+    public function store(CreateTeamUserRequest $request, int $teamId): JsonResponse
     {
         try {
             $input = $request->all();

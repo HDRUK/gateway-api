@@ -193,3 +193,50 @@ DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/2 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+
+### Review
+#### get all reviews
+GET {{baseUrl}}/api/{{apiVersion}}/reviews HTTP/1.1
+Content-Type: application/json
+# Authorization: Bearer {{accessToken}}
+
+#### get review by id
+GET {{baseUrl}}/api/{{apiVersion}}/reviews/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### add new review
+POST {{baseUrl}}/api/{{apiVersion}}/reviews HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "tool_id": 1,
+    "user_id" : 1,
+    "rating" : 4,
+    "review_text": "Similique provident natus facere eveniet facere. Cumque corporis et cumque consequatur.",
+    "review_state": "active"
+}
+
+#### update review
+PUT {{baseUrl}}/api/{{apiVersion}}/reviews/11 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "tool_id": 1,
+    "user_id" : 1,
+    "rating" : 5,
+    "review_text": "Similique provident natus facere eveniet facere. Cumque corporis et cumque consequatur.",
+    "review_state": "active"
+}
+
+#### update review
+DELETE {{baseUrl}}/api/{{apiVersion}}/reviews/11 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+

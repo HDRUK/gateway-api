@@ -1,0 +1,345 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Review;
+use Tests\TestCase;
+use Tests\Traits\Authorization;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class ReviewTest extends TestCase
+{
+    use WithFaker;
+    use RefreshDatabase;
+    use Authorization;
+
+    const TEST_URL = '/api/v1/reviews';
+
+    protected $header = [];
+
+    /**
+     * Set up the database
+     *
+     * @return void
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed();
+        $this->authorisationUser();
+        $jwt = $this->getAuthorisationJwt();
+        $this->header = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
+    }
+
+    /**
+     * Get All Reviews with success
+     * 
+     * @return void
+     */
+    public function test_get_all_reviews_with_success(): void
+    {
+        // review
+        $countReview = Review::with(['tools', 'users'])->count();
+        $response = $this->json('GET', self::TEST_URL, [], $this->header);
+
+        $this->assertCount($countReview, $response['data']);
+        $response->assertJsonStructure([
+            'message',
+            'data' => [
+                0 => [
+                    'id',
+                    'tool_id',
+                    'user_id',
+                    'rating',
+                    'review_text',
+                    'review_state',
+                    'created_at',
+                    'updated_at',
+                    'created_at',
+                    'deleted_at',
+                    'tool',
+                    'user',
+                ]
+            ]
+        ]);
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Get All Reviews with no success
+     * 
+     * @return void
+     */
+    public function test_get_all_reviews_and_generate_exception(): void
+    {
+        $response = $this->json('GET', self::TEST_URL, [], []);
+        $response->assertStatus(401);
+    }
+
+    /**
+     * Get Review by Id with success
+     * 
+     * @return void
+     */
+    public function test_get_review_by_id_with_success(): void
+    {
+        $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
+
+        $this->assertCount(1, $response['data']);
+        $response->assertJsonStructure([
+            'message',
+            'data' => [
+                0 => [
+                    'id',
+                    'tool_id',
+                    'user_id',
+                    'rating',
+                    'review_text',
+                    'review_state',
+                    'created_at',
+                    'updated_at',
+                    'created_at',
+                    'deleted_at',
+                    'tool',
+                    'user',
+                ]
+            ]
+        ]);
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Create new Review with success
+     * 
+     * @return void
+     */
+    public function test_add_new_review_with_success(): void
+    {    
+        // tool
+        $responseTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                "mongo_object_id" => "5ece82082abda8b3a06f1941",
+                "name" => "Similique sapiente est vero eum.",
+                "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+                "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+                "license" => "Inventore omnis aut laudantium vel alias.",
+                "tech_stack" => "Cumque molestias excepturi quam at.",
+                "user_id" => 1,
+                "tag" => array(1, 2),
+                "enabled" => 1,
+            ],
+            $this->header
+        );
+        $responseTool->assertStatus(201);
+
+        // user
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'Just',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+            ],
+            $this->header
+        );
+        $responseUser->assertStatus(201);
+
+        // new review
+        $newReviewData =  [
+            "tool_id" => $responseTool['data'],
+            "user_id" => $responseUser['data'],
+            "rating" => 4,
+            "review_text" => htmlentities(implode(" ", $this->faker->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+            "review_state" => "active",
+        ];
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $newReviewData,
+            $this->header
+        );
+
+        $existsReview = Review::where($newReviewData)
+                        ->get()
+                        ->toArray();
+
+        $this->assertTrue((bool) count($existsReview), 'Response was successfully');
+        $response->assertStatus(201);
+    }
+
+    /**
+     * Update Review with success by id and generate an exception
+     *
+     * @return void
+     */
+    public function test_update_review_with_success(): void
+    {
+        // tool
+        $responseTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                "mongo_object_id" => "5ece82082abda8b3a06f1941",
+                "name" => "Similique sapiente est vero eum.",
+                "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+                "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+                "license" => "Inventore omnis aut laudantium vel alias.",
+                "tech_stack" => "Cumque molestias excepturi quam at.",
+                "user_id" => 1,
+                "tag" => array(1, 2),
+                "enabled" => 1,
+            ],
+            $this->header
+        );
+        $responseTool->assertStatus(201);
+
+        // user
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'Just',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+            ],
+            $this->header
+        );
+        $responseUser->assertStatus(201);
+
+        // new review
+        $newReviewData =  [
+            "tool_id" => $responseTool['data'],
+            "user_id" => $responseUser['data'],
+            "rating" => 4,
+            "review_text" => htmlentities(implode(" ", $this->faker->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+            "review_state" => "active",
+        ];
+        $responseNewReview = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $newReviewData,
+            $this->header
+        );
+
+        $existsReview = Review::where($newReviewData)
+            ->get()
+            ->toArray();
+
+        $this->assertTrue((bool) count($existsReview), 'Response was successfully');
+        $responseNewReview->assertStatus(201);
+
+        $newReviewId = (int) $responseNewReview['data'];
+
+        // update review by id
+        $updateReviewData =  [
+            "tool_id" => $responseTool['data'],
+            "user_id" => $responseUser['data'],
+            "rating" => 4,
+            "review_text" => htmlentities(implode(" ", $this->faker->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+            "review_state" => "active",
+        ];
+        $responseUpdateReview = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $newReviewId,
+            $updateReviewData,
+            $this->header
+        );
+
+        $existsUpdateReview = Review::where($updateReviewData)
+            ->get()
+            ->toArray();
+
+        $this->assertTrue((bool) count($existsUpdateReview), 'Response was successfully');
+        $responseUpdateReview->assertStatus(202);
+    }
+
+    /**
+     * SoftDelete Review by Id with success
+     *
+     * @return void
+     */
+    public function test_soft_delete_review_with_success(): void
+    {
+        $countBefore = Review::onlyTrashed()->count();
+
+        // tool
+        $responseTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                "mongo_object_id" => "5ece82082abda8b3a06f1941",
+                "name" => "Similique sapiente est vero eum.",
+                "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+                "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+                "license" => "Inventore omnis aut laudantium vel alias.",
+                "tech_stack" => "Cumque molestias excepturi quam at.",
+                "user_id" => 1,
+                "tag" => array(1, 2),
+                "enabled" => 1,
+            ],
+            $this->header
+        );
+        $responseTool->assertStatus(201);
+
+        // user
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'Just',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+            ],
+            $this->header
+        );
+        $responseUser->assertStatus(201);
+
+        // new review
+        $newReviewData =  [
+            "tool_id" => $responseTool['data'],
+            "user_id" => $responseUser['data'],
+            "rating" => 4,
+            "review_text" => htmlentities(implode(" ", $this->faker->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+            "review_state" => "active",
+        ];
+        $responseNewReview = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $newReviewData,
+            $this->header
+        );
+
+        $existsReview = Review::where($newReviewData)
+            ->get()
+            ->toArray();
+
+        $this->assertTrue((bool) count($existsReview), 'Response was successfully');
+        $responseNewReview->assertStatus(201);
+
+        $newReviewId = (int) $responseNewReview['data'];
+
+        // delete review
+        $responseDeleteReview = $this->json('DELETE', self::TEST_URL . '/' . $newReviewId, [], $this->header);
+        $countAfter = Review::onlyTrashed()->count();
+
+        $responseDeleteReview->assertStatus(200);
+
+        $this->assertEquals(
+            $countBefore + 1,
+            $countAfter,
+            "actual value is equals to expected"
+        );
+        $this->assertTrue((bool) ($countAfter - $countBefore), 'Response was successfully');
+    }
+}
