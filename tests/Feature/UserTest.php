@@ -63,6 +63,14 @@ class UserTest extends TestCase
                     'deleted_at',
                     'teams',
                     'notifications',
+                    'sector_id',
+                    'organisation',
+                    'bio',
+                    'domain',
+                    'link',
+                    'orcid',
+                    'contact_feedback',
+                    'contact_news',
                 ],
             ],
         ]);
@@ -105,6 +113,14 @@ class UserTest extends TestCase
                     'deleted_at',
                     'teams',
                     'notifications',
+                    'sector_id',
+                    'organisation',
+                    'bio',
+                    'domain',
+                    'link',
+                    'orcid',
+                    'contact_feedback',
+                    'contact_news',                    
                 ]
             ]
         ]);
@@ -128,6 +144,9 @@ class UserTest extends TestCase
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
                 'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
             ],
             $this->header
         );
