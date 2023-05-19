@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             TeamHasNotificationSeeder::class,
             UserHasNotificationSeeder::class,
             EmailTemplatesSeeder::class,
+            ReviewSeeder::class,
         ]);
     }
 }

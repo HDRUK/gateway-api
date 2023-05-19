@@ -271,7 +271,7 @@ class ToolTest extends TestCase
     }
 
     /**
-     * Update Tool with sucess by id and generate an exception
+     * Update Tool with success by id and generate an exception
      *
      * @return void
      */

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AddTeamUserRequest extends FormRequest
+class CreateReviewRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,36 +22,28 @@ class AddTeamUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'teamId' => [
-                'int', 
+            'tool_id' => [
+                'int',
                 'required',
-                'exists:teams,id',
+                'exists:tools,id',
             ],
-            'userId' => [
+            'user_id' => [
                 'int',
                 'required',
                 'exists:users,id',
             ],
-            'permissions' => [
+            'rating' => [
+                'int',
                 'required',
-                'array',
-                'exists:permissions,role',
             ],
-            'permissions.*' => [
-                'required',
+            'review_text' => [
                 'string',
-                'distinct',
+                'required',
+            ],
+            'review_state' => [
+                'string',
+                'required',
             ],
         ];
-    }
-
-    /**
-     * Add Route parameters to the FormRequest.
-     *
-     * @return void
-     */
-    protected function prepareForValidation()
-    {
-        $this->merge(['teamId' => $this->route('teamId')]);
     }
 }

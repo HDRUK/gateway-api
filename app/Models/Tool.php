@@ -55,4 +55,9 @@ class Tool extends Model
     {
         return $this->belongsToMany(Tag::class, 'tool_has_tags');
     }
+
+    public function review()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

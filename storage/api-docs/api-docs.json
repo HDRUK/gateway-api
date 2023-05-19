@@ -3447,6 +3447,724 @@
                 }
             }
         },
+        "/api/v1/reviews": {
+            "get": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "ReviewController@index",
+                "description": "Get All Reviews",
+                "operationId": "fetch_all_reviews",
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "tool_id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "rating": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "review_text": {
+                                                        "type": "string",
+                                                        "example": "Laudantium fugit veniam iste."
+                                                    },
+                                                    "review_state": {
+                                                        "type": "integer",
+                                                        "example": "active"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "tool": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "mongo_object_id": {
+                                                                "type": "string",
+                                                                "example": "ce37b00y7eiux03cca09pr0u"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Vel id iure aut qui quia rerum."
+                                                            },
+                                                            "url": {
+                                                                "type": "string",
+                                                                "example": "https://www.dickens.com/maiores-a-qui-laborum-reiciendis-necessitatibus-sed-non"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "Sit quisquam est recusandae."
+                                                            },
+                                                            "license": {
+                                                                "type": "string",
+                                                                "example": "Inventore dolor quis magnam qui."
+                                                            },
+                                                            "tech_stack": {
+                                                                "type": "string",
+                                                                "example": "Inventore dolor quis magnam qui."
+                                                            },
+                                                            "user_id": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "enabled": {
+                                                                "type": "boolean",
+                                                                "example": "false"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            },
+                                                            "deleted_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "user": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Rocio Mayer"
+                                                            },
+                                                            "firstname": {
+                                                                "type": "string",
+                                                                "example": "something or null"
+                                                            },
+                                                            "lastname": {
+                                                                "type": "string",
+                                                                "example": "something or null"
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "example": "stanton.sibyl@example.net"
+                                                            },
+                                                            "email_verified_at": {
+                                                                "type": "integer",
+                                                                "example": "2023-05-18T01:25:00.000000Z"
+                                                            },
+                                                            "providerid": {
+                                                                "type": "string",
+                                                                "example": "something or null"
+                                                            },
+                                                            "provider": {
+                                                                "type": "string",
+                                                                "example": "something or null"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            },
+                                                            "deleted_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "ReviewController@store",
+                "description": "Create a new review",
+                "operationId": "create_reviews",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "tool_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "rating": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "review_text": {
+                                        "type": "string",
+                                        "example": "Similique provident natus facere eveniet facere. Cumque corporis et cumque consequatur."
+                                    },
+                                    "review_state": {
+                                        "type": "string",
+                                        "example": "active"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/reviews/{id}": {
+            "get": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "ReviewController@show",
+                "description": "Get review by id",
+                "operationId": "fetch_reviews",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "review id",
+                        "required": true,
+                        "schema": {
+                            "description": "review id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "tool_id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "rating": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "review_text": {
+                                                        "type": "string",
+                                                        "example": "Laudantium fugit veniam iste."
+                                                    },
+                                                    "review_state": {
+                                                        "type": "integer",
+                                                        "example": "active"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "tool": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "mongo_object_id": {
+                                                                "type": "string",
+                                                                "example": "ce37b00y7eiux03cca09pr0u"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Vel id iure aut qui quia rerum."
+                                                            },
+                                                            "url": {
+                                                                "type": "string",
+                                                                "example": "https://www.dickens.com/maiores-a-qui-laborum-reiciendis-necessitatibus-sed-non"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "Sit quisquam est recusandae."
+                                                            },
+                                                            "license": {
+                                                                "type": "string",
+                                                                "example": "Inventore dolor quis magnam qui."
+                                                            },
+                                                            "tech_stack": {
+                                                                "type": "string",
+                                                                "example": "Inventore dolor quis magnam qui."
+                                                            },
+                                                            "user_id": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "enabled": {
+                                                                "type": "boolean",
+                                                                "example": "false"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            },
+                                                            "deleted_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    },
+                                                    "user": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Rocio Mayer"
+                                                            },
+                                                            "firstname": {
+                                                                "type": "string",
+                                                                "example": "something or null"
+                                                            },
+                                                            "lastname": {
+                                                                "type": "string",
+                                                                "example": "something or null"
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "example": "stanton.sibyl@example.net"
+                                                            },
+                                                            "email_verified_at": {
+                                                                "type": "integer",
+                                                                "example": "2023-05-18T01:25:00.000000Z"
+                                                            },
+                                                            "providerid": {
+                                                                "type": "string",
+                                                                "example": "something or null"
+                                                            },
+                                                            "provider": {
+                                                                "type": "string",
+                                                                "example": "something or null"
+                                                            },
+                                                            "created_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            },
+                                                            "updated_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            },
+                                                            "deleted_at": {
+                                                                "type": "string",
+                                                                "format": "date-time",
+                                                                "example": "2023-04-11 12:00:00"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Update a review",
+                "description": "Update a review",
+                "operationId": "64b4b952592ebe8e0b00204e76bd991c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "review id",
+                        "required": true,
+                        "schema": {
+                            "description": "review id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "tool_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "rating": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "review_text": {
+                                        "type": "string",
+                                        "example": "Similique provident natus facere eveniet facere. Cumque corporis et cumque consequatur."
+                                    },
+                                    "review_state": {
+                                        "type": "string",
+                                        "example": "active"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "tool_id": {
+                                                    "type": "integer",
+                                                    "example": "1"
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": "1"
+                                                },
+                                                "rating": {
+                                                    "type": "integer",
+                                                    "example": "5"
+                                                },
+                                                "review_text": {
+                                                    "type": "string",
+                                                    "example": "Similique provident natus facere eveniet facere."
+                                                },
+                                                "review_state": {
+                                                    "type": "string",
+                                                    "example": "active"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "deleted_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Reviews"
+                ],
+                "summary": "Delete a review",
+                "description": "Delete a review",
+                "operationId": "205dc23d44b18ca0b5c26a293cc69cf7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "review id",
+                        "required": true,
+                        "schema": {
+                            "description": "review id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/auth/{provider}": {
             "get": {
                 "tags": [
@@ -3883,6 +4601,9 @@
         },
         "/api/v1/teams": {
             "get": {
+                "tags": [
+                    "Teams"
+                ],
                 "summary": "List of teams",
                 "description": "Returns a list of teams enabled on the system",
                 "operationId": "f4c6fb002db8850c2c1a742012fb7fa5",
@@ -3977,6 +4698,9 @@
                 ]
             },
             "post": {
+                "tags": [
+                    "Teams"
+                ],
                 "summary": "Create a new team",
                 "description": "Creates a new team",
                 "operationId": "c8670c5229acb08c5a0551b8bd118189",
@@ -4103,6 +4827,9 @@
         },
         "/api/v1/teams/{id}": {
             "get": {
+                "tags": [
+                    "Teams"
+                ],
                 "summary": "Return a single team",
                 "description": "Return a single team",
                 "operationId": "6ea35f97e59b3b4f042839afbb548dbb",
@@ -4218,6 +4945,9 @@
                 ]
             },
             "put": {
+                "tags": [
+                    "Teams"
+                ],
                 "summary": "Update a team",
                 "description": "Update a team",
                 "operationId": "db86bc9cd9a6a0c9bcdd8851e76536f3",
@@ -4422,6 +5152,9 @@
                 ]
             },
             "delete": {
+                "tags": [
+                    "Teams"
+                ],
                 "summary": "Delete a team",
                 "description": "Delete a team",
                 "operationId": "3f6a7fabcca6967050816f5781024699",
@@ -5767,6 +6500,40 @@
         }
     },
     "components": {
+        "responses": {
+            "401": {
+                "description": "Unauthorized",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "unauthorized"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            },
+            "404": {
+                "description": "Not found response",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "example": "not found"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",

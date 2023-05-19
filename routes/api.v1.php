@@ -36,6 +36,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'permissions' => 'PermissionController',
         'users' => 'UserController',
         'notifications' => 'NotificationController',
+        'reviews' => 'ReviewController',
         'sectors' => 'SectorController',
     ];
 
@@ -54,7 +55,6 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     Route::post('/dispatch_email', 'EmailController@dispatchEmail');
 
 });
-
 
 // stop all all other routes
 Route::any('{path}', function() {
