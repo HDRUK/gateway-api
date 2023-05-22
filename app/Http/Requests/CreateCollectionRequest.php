@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateReviewRequest extends FormRequest
+class CreateCollectionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,43 +22,35 @@ class UpdateReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id' => [
-                'int',
-                'required',
-                'exists:reviews,id',
-            ],
-            'tool_id' => [
-                'int',
-                'required',
-                'exists:tools,id',
-            ],
-            'user_id' => [
-                'int',
-                'required',
-                'exists:users,id',
-            ],
-            'rating' => [
-                'int',
-                'required',
-            ],
-            'review_text' => [
+            'name' => [
                 'string',
                 'required',
             ],
-            'review_state' => [
+            'description' => [
                 'string',
+                'required',
+            ],
+            'image_link' => [
+                'string',
+                'required',
+                'url',
+            ],
+            'enabled' => [
+                'required',
+                'boolean',
+            ],
+            'keywords' => [
+                'string',
+                'required',
+            ],
+            'public' => [
+                'required',
+                'boolean',
+            ],
+            'counter' => [
+                'integer',
                 'required',
             ],
         ];
-    }
-
-    /**
-     * Add Route parameters to the FormRequest.
-     *
-     * @return void
-     */
-    protected function prepareForValidation()
-    {
-        $this->merge(['id' => $this->route('id')]);
     }
 }

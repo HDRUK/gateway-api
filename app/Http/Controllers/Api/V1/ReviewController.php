@@ -115,70 +115,70 @@ class ReviewController extends Controller
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
-     *        @OA\JsonContent(
-     *           @OA\Property(property="message", type="string", example="success"),
-     *           @OA\Property(
-     *               property="data", 
-     *               type="array",
-     *               @OA\Items(type="object", 
-     *                  @OA\Property(property="id", type="integer", example="1"),
-     *                  @OA\Property(property="tool_id", type="integer", example="1"),
-     *                  @OA\Property(property="user_id", type="integer", example="1"),
-     *                  @OA\Property(property="rating", type="integer", example="1"),
-     *                  @OA\Property(property="review_text", type="string", example="Laudantium fugit veniam iste."),
-     *                  @OA\Property(property="review_state", type="integer", example="active"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="tool", type="object", 
-     *                     @OA\Property(property="id", type="integer", example="1"),
-     *                     @OA\Property(property="mongo_object_id", type="string", example="ce37b00y7eiux03cca09pr0u"),
-     *                     @OA\Property(property="name", type="string", example="Vel id iure aut qui quia rerum."),
-     *                     @OA\Property(property="url", type="string", example="https://www.dickens.com/maiores-a-qui-laborum-reiciendis-necessitatibus-sed-non"),
-     *                     @OA\Property(property="description", type="string", example="Sit quisquam est recusandae."),
-     *                     @OA\Property(property="license", type="string", example="Inventore dolor quis magnam qui."),
-     *                     @OA\Property(property="tech_stack", type="string", example="Inventore dolor quis magnam qui."),
-     *                     @OA\Property(property="user_id", type="integer", example="1"),
-     *                     @OA\Property(property="enabled", type="boolean", example="false"),
-     *                     @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                     @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                     @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  ),
-     *                  @OA\Property(property="user", type="object", 
-     *                     @OA\Property(property="id", type="integer", example="1"),
-     *                     @OA\Property(property="name", type="string", example="Rocio Mayer"),
-     *                     @OA\Property(property="firstname", type="string", example="something or null"),
-     *                     @OA\Property(property="lastname", type="string", example="something or null"),
-     *                     @OA\Property(property="email", type="string", example="stanton.sibyl@example.net"),
-     *                     @OA\Property(property="email_verified_at", type="integer", example="2023-05-18T01:25:00.000000Z"),
-     *                     @OA\Property(property="providerid", type="string", example="something or null"),
-     *                     @OA\Property(property="provider", type="string", example="something or null"),
-     *                     @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                     @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                     @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  ),
-     *               ),
-     *            ),
-     *         ),
-     *      ),
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success"),
+     *             @OA\Property(
+     *                property="data", 
+     *                type="array",
+     *                @OA\Items(type="object", 
+     *                   @OA\Property(property="id", type="integer", example="1"),
+     *                   @OA\Property(property="tool_id", type="integer", example="1"),
+     *                   @OA\Property(property="user_id", type="integer", example="1"),
+     *                   @OA\Property(property="rating", type="integer", example="1"),
+     *                   @OA\Property(property="review_text", type="string", example="Laudantium fugit veniam iste."),
+     *                   @OA\Property(property="review_state", type="integer", example="active"),
+     *                   @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                   @OA\Property(property="tool", type="object", 
+     *                      @OA\Property(property="id", type="integer", example="1"),
+     *                      @OA\Property(property="mongo_object_id", type="string", example="ce37b00y7eiux03cca09pr0u"),
+     *                      @OA\Property(property="name", type="string", example="Vel id iure aut qui quia rerum."),
+     *                      @OA\Property(property="url", type="string", example="https://www.dickens.com/maiores-a-qui-laborum-reiciendis-necessitatibus-sed-non"),
+     *                      @OA\Property(property="description", type="string", example="Sit quisquam est recusandae."),
+     *                      @OA\Property(property="license", type="string", example="Inventore dolor quis magnam qui."),
+     *                      @OA\Property(property="tech_stack", type="string", example="Inventore dolor quis magnam qui."),
+     *                      @OA\Property(property="user_id", type="integer", example="1"),
+     *                      @OA\Property(property="enabled", type="boolean", example="false"),
+     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                   ),
+     *                   @OA\Property(property="user", type="object", 
+     *                      @OA\Property(property="id", type="integer", example="1"),
+     *                      @OA\Property(property="name", type="string", example="Rocio Mayer"),
+     *                      @OA\Property(property="firstname", type="string", example="something or null"),
+     *                      @OA\Property(property="lastname", type="string", example="something or null"),
+     *                      @OA\Property(property="email", type="string", example="stanton.sibyl@example.net"),
+     *                      @OA\Property(property="email_verified_at", type="integer", example="2023-05-18T01:25:00.000000Z"),
+     *                      @OA\Property(property="providerid", type="string", example="something or null"),
+     *                      @OA\Property(property="provider", type="string", example="something or null"),
+     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                   ),
+     *                ),
+     *             ),
+     *          ),
+     *       ),
      *    ),
      *    @OA\Response(
-     *        response=401,
-     *        description="Unauthorized",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string", example="unauthorized")
-     *        )
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       ),
      *    ),
      *    @OA\Response(
-     *        response=404,
-     *        description="Not found response",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string", example="not found"),
-     *        )
-     *    )
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="not found"),
+     *       ),
+     *    ),
      * )
      * 
-     * Get Tags by id
+     * Get Reviews by id
      *
      * @param Request $request
      * @param integer $id
@@ -260,7 +260,13 @@ class ReviewController extends Controller
         try {
             $input = $request->all();
 
-            $review = Review::create($input);
+            $review = Review::create([
+                'tool_id' => (int) $input['tool_id'],
+                'user_id' => (int) $input['user_id'],
+                'rating' => (int) $input['rating'],
+                'review_text' => $input['review_text'],
+                'review_state' => $input['review_state'],
+            ]);
 
             return response()->json([
                 'message' => 'created',
@@ -358,7 +364,7 @@ class ReviewController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => Review::where('id', $id)->first()
-            ], 202);
+            ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

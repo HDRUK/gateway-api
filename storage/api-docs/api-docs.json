@@ -1228,6 +1228,538 @@
                 }
             }
         },
+        "/api/v1/collections": {
+            "get": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "CollectionController@index",
+                "description": "Returns a list of collections",
+                "operationId": "fetch_all_collections",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "expedita"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "Quibusdam in ducimus eos est."
+                                                    },
+                                                    "image_link": {
+                                                        "type": "string",
+                                                        "example": "https:\\/\\/via.placeholder.com\\/640x480.png\\/003333?text=animals+iusto"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "keywords": {
+                                                        "type": "string",
+                                                        "example": "minus deserunt dolorum"
+                                                    },
+                                                    "public": {
+                                                        "type": "boolean",
+                                                        "example": "0"
+                                                    },
+                                                    "counter": {
+                                                        "type": "integer",
+                                                        "example": "34319"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "CollectionController@store",
+                "description": "Create a new collection",
+                "operationId": "create_collections",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "covid"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Dolorem voluptas consequatur nihil illum et sunt libero."
+                                    },
+                                    "image_link": {
+                                        "type": "string",
+                                        "example": "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    },
+                                    "keywords": {
+                                        "type": "string",
+                                        "example": "key words"
+                                    },
+                                    "public": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    },
+                                    "counter": {
+                                        "type": "integer",
+                                        "example": "123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/collections/{id}": {
+            "get": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "CollectionController@show",
+                "description": "Get collection by id",
+                "operationId": "fetch_collections",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "collection id",
+                        "required": true,
+                        "schema": {
+                            "description": "collection id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "expedita"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "Quibusdam in ducimus eos est."
+                                                    },
+                                                    "image_link": {
+                                                        "type": "string",
+                                                        "example": "https:\\/\\/via.placeholder.com\\/640x480.png\\/003333?text=animals+iusto"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "keywords": {
+                                                        "type": "string",
+                                                        "example": "minus deserunt dolorum"
+                                                    },
+                                                    "public": {
+                                                        "type": "boolean",
+                                                        "example": "0"
+                                                    },
+                                                    "counter": {
+                                                        "type": "integer",
+                                                        "example": "34319"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Update a collection",
+                "description": "Update a collection",
+                "operationId": "f52028cd5c258f360481b17f3f2f37a6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "collection id",
+                        "required": true,
+                        "schema": {
+                            "description": "collection id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "covid"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Dolorem voluptas consequatur nihil illum et sunt libero."
+                                    },
+                                    "image_link": {
+                                        "type": "string",
+                                        "example": "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    },
+                                    "keywords": {
+                                        "type": "string",
+                                        "example": "key words"
+                                    },
+                                    "public": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    },
+                                    "counter": {
+                                        "type": "integer",
+                                        "example": "123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "covid"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Dolorem voluptas consequatur nihil illum et sunt libero."
+                                                },
+                                                "image_link": {
+                                                    "type": "string",
+                                                    "example": "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "true"
+                                                },
+                                                "keywords": {
+                                                    "type": "string",
+                                                    "example": "key words"
+                                                },
+                                                "public": {
+                                                    "type": "boolean",
+                                                    "example": "true"
+                                                },
+                                                "counter": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "deleted_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Collections"
+                ],
+                "summary": "Delete a collection",
+                "description": "Delete a collection",
+                "operationId": "6a9745d555442eb9a157cc035b75c587",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "collection id",
+                        "required": true,
+                        "schema": {
+                            "description": "collection id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/dar-integration": {
             "get": {
                 "summary": "List of system Dar Integrations",
@@ -4163,6 +4695,357 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/api/v1/sectors": {
+            "get": {
+                "summary": "List of system sectors",
+                "description": "Returns a list of sectors enabled on the system",
+                "operationId": "7bb75b189d9b5f518b2a3e6169adcf5d",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Name"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new system sector",
+                "description": "Creates a new system sector",
+                "operationId": "eead253ff30de1422cc8e8df9afaf088",
+                "requestBody": {
+                    "description": "Sector definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "enabled"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Name"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/sectors/{id}": {
+            "get": {
+                "summary": "Return a single system sector",
+                "description": "Return a single system sector",
+                "operationId": "f943e60a72bc597d75f834c209788998",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Name"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "summary": "Update a system sector",
+                "description": "Update a system sector",
+                "operationId": "75e526cec1b7ae17caa6e93d13c423d3",
+                "requestBody": {
+                    "description": "Sector definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "enabled"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Name"
+                                    },
+                                    "enabled": {
+                                        "type": "string",
+                                        "example": "true"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Name"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "true"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Delete a system sector",
+                "description": "Delete a system sector",
+                "operationId": "b414aece220bc1f67dbd0e88ba08159f",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/v1/auth/{provider}": {

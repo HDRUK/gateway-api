@@ -6,6 +6,7 @@ use Exception;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use App\Http\Requests\TagRequest;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 
 class TagController extends Controller
@@ -45,9 +46,9 @@ class TagController extends Controller
      * 
      * Get All Tags
      *
-     * @return mixed
+     * @return JsonResponse
      */
-    public function index(): mixed
+    public function index(): JsonResponse
     {
         $tags = Tag::where('enabled', 1)->get();
 
@@ -116,9 +117,9 @@ class TagController extends Controller
      *
      * @param Request $request
      * @param integer $id
-     * @return mixed
+     * @return JsonResponse
      */
-    public function show(Request $request, int $id): mixed
+    public function show(Request $request, int $id): JsonResponse
     {
         $tags = Tag::where([
             'id' => $id,
@@ -186,9 +187,9 @@ class TagController extends Controller
      * Create a new tag
      *
      * @param TagRequest $request
-     * @return mixed
+     * @return JsonResponse
      */
-    public function store(TagRequest $request): mixed
+    public function store(TagRequest $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -273,9 +274,9 @@ class TagController extends Controller
      *
      * @param TagRequest $request
      * @param integer $id
-     * @return mixed
+     * @return JsonResponse
      */
-    public function update(TagRequest $request, int $id): mixed
+    public function update(TagRequest $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -349,9 +350,9 @@ class TagController extends Controller
      * delete tag by id
      *
      * @param string $id
-     * @return mixed
+     * @return JsonResponse
      */
-    public function destroy(string $id): mixed
+    public function destroy(string $id): JsonResponse
     {
         try {
             $tags = Tag::where('id', $id)->count();

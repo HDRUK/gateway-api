@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Exception;
-use Carbon\Carbon;
 use App\Models\Team;
+use Illuminate\Http\Request;
 use App\Models\TeamHasNotification;
 use App\Http\Controllers\Controller;
-
-use Illuminate\Http\Request;
+use App\Exceptions\NotFoundException;
 use App\Http\Traits\TeamTransformation;
 
 
@@ -114,9 +113,7 @@ class TeamController extends Controller
             ], 200);
         }
 
-        return response()->json([
-            'message' => 'not found'
-        ], 404);
+        throw new NotFoundException();
     }
 
     /**
@@ -176,46 +173,49 @@ class TeamController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required',
-            'enabled' => 'required',
-            'allows_messaging' => 'required',
-            'workflow_enabled' => 'required',
-            'access_requests_management' => 'required',
-            'uses_5_safes' => 'required',
-            'is_admin' => 'required',
-            'member_of' => 'required',
-            'contact_point' => 'required',
-            'application_form_updated_by' => 'required',
-            'application_form_updated_on' => 'required',
-            'notifications' => 'required',
-        ]);
+        try {
+            $request->validate([
+                'name' => 'required',
+                'enabled' => 'required',
+                'allows_messaging' => 'required',
+                'workflow_enabled' => 'required',
+                'access_requests_management' => 'required',
+                'uses_5_safes' => 'required',
+                'is_admin' => 'required',
+                'member_of' => 'required',
+                'contact_point' => 'required',
+                'application_form_updated_by' => 'required',
+                'application_form_updated_on' => 'required',
+                'notifications' => 'required',
+            ]);
 
-        $input = $request->all();
-        $arrayTeam = array_filter($input, function ($key) {
-            return $key !== 'notifications';
-        }, ARRAY_FILTER_USE_KEY);
-        $arrayTeamNotification = $input['notifications'];
+            $input = $request->all();
+            $arrayTeam = array_filter($input, function ($key) {
+                return $key !== 'notifications';
+            }, ARRAY_FILTER_USE_KEY);
+            $arrayTeamNotification = $input['notifications'];
 
-        $team = Team::create($arrayTeam);
+            $team = Team::create($arrayTeam);
 
-        if ($team) {
-            foreach ($arrayTeamNotification as $value) {
-                TeamHasNotification::updateOrCreate([
-                    'team_id' => (int) $team->id,
-                    'notification_id' => (int) $value,
-                ]);
+            if ($team) {
+                foreach ($arrayTeamNotification as $value) {
+                    TeamHasNotification::updateOrCreate([
+                        'team_id' => (int) $team->id,
+                        'notification_id' => (int) $value,
+                    ]);
+                }
+            } else {
+                throw new NotFoundException();
             }
-        } else {
-            return response()->json([
-                'message' => 'error',
-            ], 500);
-        }
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $team->id,
-        ], 200);
+            return response()->json([
+                'message' => 'success',
+                'data' => $team->id,
+            ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+        
     }
 
     /**
@@ -346,9 +346,7 @@ class TeamController extends Controller
             ], 500);
         }
 
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
+        throw new NotFoundException();
     }
 
     /**
@@ -394,9 +392,7 @@ class TeamController extends Controller
                 ], 200);
             }
 
-            return response()->json([
-                'message' => 'not found',
-            ], 404);
+            throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

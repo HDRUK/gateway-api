@@ -148,6 +148,9 @@ class ReviewTest extends TestCase
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
                 'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
             ],
             $this->header
         );
@@ -211,6 +214,9 @@ class ReviewTest extends TestCase
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
                 'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
             ],
             $this->header
         );
@@ -260,7 +266,7 @@ class ReviewTest extends TestCase
             ->toArray();
 
         $this->assertTrue((bool) count($existsUpdateReview), 'Response was successfully');
-        $responseUpdateReview->assertStatus(202);
+        $responseUpdateReview->assertStatus(200);
     }
 
     /**
@@ -300,6 +306,9 @@ class ReviewTest extends TestCase
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
                 'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
             ],
             $this->header
         );
