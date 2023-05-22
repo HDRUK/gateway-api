@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Collection;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateReviewRequest extends FormRequest
+class UpdateCollectionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,28 +26,43 @@ class UpdateReviewRequest extends FormRequest
             'id' => [
                 'int',
                 'required',
-                'exists:reviews,id',
+                function ($attribute, $value, $fail) {
+                    $exists = Collection::withTrashed()
+                        ->where('id', $value)
+                        ->exists();
+
+                    if (!$exists) {
+                        $fail('The selected collection does not exists.');
+                    }
+                },
             ],
-            'tool_id' => [
-                'int',
-                'required',
-                'exists:tools,id',
-            ],
-            'user_id' => [
-                'int',
-                'required',
-                'exists:users,id',
-            ],
-            'rating' => [
-                'int',
-                'required',
-            ],
-            'review_text' => [
+            'name' => [
                 'string',
                 'required',
             ],
-            'review_state' => [
+            'description' => [
                 'string',
+                'required',
+            ],
+            'image_link' => [
+                'string',
+                'required',
+                'url',
+            ],
+            'enabled' => [
+                'required',
+                'boolean',
+            ],
+            'keywords' => [
+                'string',
+                'required',
+            ],
+            'public' => [
+                'required',
+                'boolean',
+            ],
+            'counter' => [
+                'integer',
                 'required',
             ],
         ];
