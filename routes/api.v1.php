@@ -36,13 +36,10 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'permissions' => 'PermissionController',
         'users' => 'UserController',
         'notifications' => 'NotificationController',
-<<<<<<< Updated upstream
         'reviews' => 'ReviewController',
         'sectors' => 'SectorController',
         'collections' => 'CollectionController',
-=======
         'audit_logs' => 'AuditLogController',
->>>>>>> Stashed changes
     ];
 
     foreach ($routes as $path => $controller) {
