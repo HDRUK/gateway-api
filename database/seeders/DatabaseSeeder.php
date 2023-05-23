@@ -36,8 +36,12 @@ class DatabaseSeeder extends Seeder
             TeamHasNotificationSeeder::class,
             UserHasNotificationSeeder::class,
             EmailTemplatesSeeder::class,
+<<<<<<< Updated upstream
             ReviewSeeder::class,
             CollectionSeerder::class,
+=======
+            AuditLogSeeder::class,
+>>>>>>> Stashed changes
         ]);
     }
 }
