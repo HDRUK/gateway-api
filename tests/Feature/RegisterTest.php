@@ -69,6 +69,6 @@ class RegisterTest extends TestCase
         $responseFirst->assertStatus(200);
 
         $responseSecond = $this->json('POST', self::TEST_URL, $this->user, ['Accept' => 'application/json']);
-        $responseSecond->assertStatus(500);
+        $responseSecond->assertStatus(400);
     }
 }

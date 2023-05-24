@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 
-use App\Models\ActivityLogType;
-
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+
+use App\Models\ActivityLogType;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateActivityLogType;
 
 class ActivityLogTypeController extends Controller
 {
@@ -36,7 +38,7 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $activityLogTypes = ActivityLogType::all();
         return response()->json([
@@ -74,7 +76,7 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $activityLogType = ActivityLogType::findOrFail($id);
         if ($activityLogType) {
@@ -122,12 +124,8 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function store(Request $request)
+    public function store(CreateActivityLogType $request): JsonResponse
     {
-        $request->validate([
-            'name' => 'required',
-        ]);
-
         $activityLogType = ActivityLogType::create($request->post());
         if ($activityLogType) {
             return response()->json([
@@ -186,12 +184,8 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $id)
+    public function update(CreateActivityLogType $request, int $id): JsonResponse
     {
-        $request->validate([
-            'name' => 'required',
-        ]);
-
         $activityLogType = ActivityLogType::findOrFail($id);
         $body = $request->post();
         $activityLogType->name = $body['name'];
@@ -243,7 +237,7 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id)
+    public function destroy(Request $request, int $id): JsonResponse
     {
         $activityLogType = ActivityLogType::findOrFail($id);
         if ($activityLogType) {

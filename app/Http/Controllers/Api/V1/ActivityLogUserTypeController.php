@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 
-use App\Models\ActivityLogUserType;
-
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+
+use Illuminate\Http\JsonResponse;
+use App\Models\ActivityLogUserType;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateActivityLogUserType;
 
 class ActivityLogUserTypeController extends Controller
 {
@@ -36,7 +38,7 @@ class ActivityLogUserTypeController extends Controller
      *      )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $activityLogUserTypes = ActivityLogUserType::all();
         return response()->json([
@@ -74,7 +76,7 @@ class ActivityLogUserTypeController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $activityLogUserType = ActivityLogUserType::findOrFail($id);
         if ($activityLogUserType) {
@@ -122,12 +124,8 @@ class ActivityLogUserTypeController extends Controller
      *      )
      * )
      */
-    public function store(Request $request)
+    public function store(CreateActivityLogUserType $request): JsonResponse
     {
-        $request->validate([
-            'name' => 'required',
-        ]);
-        
         $activityLogUserType = ActivityLogUserType::create($request->post());
         if ($activityLogUserType) {
             return response()->json([
@@ -186,12 +184,8 @@ class ActivityLogUserTypeController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $id)
+    public function update(CreateActivityLogUserType $request, int $id): JsonResponse
     {
-        $request->validate([
-            'name' => 'required',
-        ]);
-
         $activityLogUserType = ActivityLogUserType::findOrFail($id);
         $body = $request->post();
         $activityLogUserType->name = $body['name'];
@@ -244,7 +238,7 @@ class ActivityLogUserTypeController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id)
+    public function destroy(Request $request, int $id): JsonResponse
     {
         $activityLogUserType = ActivityLogUserType::findOrFail($id);
         if ($activityLogUserType) {

@@ -6,24 +6,19 @@ use Config;
 
 use App\Mail\Email;
 
-use App\Jobs\SendEmailJob;
-
 use App\Models\User;
-use App\Models\EmailTemplate;
 
-use App\Http\Controllers\Controller;
+use App\Jobs\SendEmailJob;
 use Illuminate\Http\Request;
+
+use App\Models\EmailTemplate;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\DispatchEmailRequest;
 
 class EmailController extends Controller
 {
-    public function dispatchEmail(Request $request)
+    public function dispatchEmail(DispatchEmailRequest $request)
     {
-        $request->validate([
-            'to' => 'required|int',
-            'identifier' => 'required|string',
-            'replacements' => 'required',
-        ]);
-
         $body = $request->post();
 
         $template = EmailTemplate::where('identifier', '=', $body['identifier'])->first();

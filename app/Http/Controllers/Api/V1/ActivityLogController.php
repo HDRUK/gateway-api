@@ -6,8 +6,11 @@ use Config;
 
 use App\Models\ActivityLog;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\CreateActivityLog;
+use App\Http\Requests\UpdateActivityLog;
 
 class ActivityLogController extends Controller
 {
@@ -43,7 +46,7 @@ class ActivityLogController extends Controller
      *      )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $activityLogs = ActivityLog::all();
         return response()->json([
@@ -88,7 +91,7 @@ class ActivityLogController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $activityLog = ActivityLog::findOrFail($id);
         if ($activityLog) {
@@ -146,16 +149,8 @@ class ActivityLogController extends Controller
      *      )
      * )
      */
-    public function store(Request $request)
+    public function store(CreateActivityLog $request): JsonResponse
     {
-        $request->validate([
-            'event_type' => 'required',
-            'user_type_id' => 'required',
-            'log_type_id' => 'required',
-            'user_id' => 'required',
-            'plain_text' => 'required',
-        ]);
-
         $activityLog = ActivityLog::create($request->post());
         if ($activityLog) {
             return response()->json([
@@ -231,18 +226,8 @@ class ActivityLogController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $id)
+    public function update(UpdateActivityLog $request, int $id): JsonResponse
     {
-        $request->validate([
-            'event_type' => 'required',
-            'user_type_id' => 'required',
-            'log_type_id' => 'required',
-            'user_id' => 'required',
-            'version' => 'required',
-            'html' => 'required',
-            'plain_text' => 'required',
-        ]);
-
         $activityLog = ActivityLog::findOrFail($id);
         $body = $request->post();
         $activityLog->event_type = $body['event_type'];
@@ -302,7 +287,7 @@ class ActivityLogController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id)
+    public function destroy(Request $request, int $id): JsonResponse
     {
         $activityLog = ActivityLog::findOrFail($id);
         if ($activityLog) {

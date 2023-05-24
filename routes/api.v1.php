@@ -21,7 +21,7 @@ Route::get('/auth/{provider}', [SocialLoginController::class, 'login'])->where('
 Route::get('/auth/{provider}/callback', [SocialLoginController::class, 'callback'])->where('provider', 'google|linkedin|azure');
 
 Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jwt.verify', 'sanitize.input']], function() {
-    Route::any('/test', [TestController::class, 'test']);
+    Route::post('/test', [TestController::class, 'test']);
 
     $routes = [
         'tags' => 'TagController',
@@ -57,6 +57,9 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     Route::post('/dispatch_email', 'EmailController@dispatchEmail');
 
 });
+
+Route::post('/test-validation', [TestController::class, 'testValidation']);
+Route::post('/test-exception', [TestController::class, 'testException']);
 
 // stop all all other routes
 Route::any('{path}', function() {
