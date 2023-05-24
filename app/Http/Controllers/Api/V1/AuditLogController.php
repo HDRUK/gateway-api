@@ -221,7 +221,7 @@ class AuditLogController extends Controller
                     'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
                 ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
             }
-        } catch (AuditLogRequest $e) {
+        } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
