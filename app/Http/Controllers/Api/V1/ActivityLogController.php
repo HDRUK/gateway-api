@@ -16,6 +16,9 @@ class ActivityLogController extends Controller
      *      path="/api/v1/activity_logs",
      *      summary="List of system activity logs",
      *      description="Returns a list of activity logs stored on the system",
+     *      tags={"ActivityLog"},
+     *      summary="ActivityLog@index",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -53,6 +56,9 @@ class ActivityLogController extends Controller
      *      path="/api/v1/activity_logs/{id}",
      *      summary="Return a single system activity log",
      *      description="Return a single system activity log",
+     *      tags={"ActivityLog"},
+     *      summary="ActivityLog@show",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -102,6 +108,9 @@ class ActivityLogController extends Controller
      *      path="/api/v1/activity_logs",
      *      summary="Create a new system activity log",
      *      description="Creates a new system activity log",
+     *      tags={"ActivityLog"},
+     *      summary="ActivityLog@store",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="ActivityLog definition",
@@ -165,6 +174,9 @@ class ActivityLogController extends Controller
      *      path="/api/v1/activity_logs/{id}",
      *      summary="Update a system activity log",
      *      description="Update a system activity log",
+     *      tags={"ActivityLog"},
+     *      summary="ActivityLog@update",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="ActivityLog definition",
@@ -264,6 +276,9 @@ class ActivityLogController extends Controller
      *      path="/api/v1/activity_logs/{id}",
      *      summary="Delete a system activity log",
      *      description="Delete a system activity log",
+     *      tags={"ActivityLog"},
+     *      summary="ActivityLog@destroy",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

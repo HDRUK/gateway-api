@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             EmailTemplatesSeeder::class,
             ReviewSeeder::class,
             CollectionSeerder::class,
+            AuditLogSeeder::class,
         ]);
     }
 }

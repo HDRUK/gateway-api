@@ -5,21 +5,22 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Carbon\Carbon;
 
-use App\Models\Filter;
+use App\Models\AuditLog;
+use App\Http\Requests\AuditLogRequest;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
-class FilterController extends Controller
+use Illuminate\Http\Request;
+
+class AuditLogController extends Controller
 {
     /**
      * @OA\Get(
-     *      path="/api/v1/filters",
-     *      summary="List of system filters",
-     *      description="Returns a list of filters enabled on the system",
-     *      tags={"Filter"},
-     *      summary="Filter@index",
+     *      path="/api/v1/audit_logs",
+     *      summary="List of system audit logs",
+     *      description="Returns a list of audit logs",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -31,10 +32,9 @@ class FilterController extends Controller
      *                      @OA\Property(property="id", type="integer", example="123"),
      *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="type", type="string", example="someType"),
-     *                      @OA\Property(property="value", type="string", example="some value"),
-     *                      @OA\Property(property="keys", type="string", example="someKey"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
+     *                      @OA\Property(property="user_id", type="integer", example="100"),
+     *                      @OA\Property(property="description", type="string", example="someType"),
+     *                      @OA\Property(property="function", type="string", example="some value"),
      *                  )
      *              )
      *          )
@@ -43,19 +43,19 @@ class FilterController extends Controller
      */
     public function index(Request $request)
     {
-        $filters = Filter::where('enabled', 1)->get();
+        $logs = AuditLog::all();
         return response()->json([
-            'data' => $filters
+            'data' => $logs,
         ]);
     }
 
     /**
      * @OA\Get(
-     *      path="/api/v1/filters/{id}",
-     *      summary="Return a single system filter",
-     *      description="Return a single system filter",
-     *      tags={"Filter"},
-     *      summary="Filter@show",
+     *      path="/api/v1/audit_logs/{id}",
+     *      summary="Return a single system audit log",
+     *      description="Return a single system audit log",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@show",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -66,10 +66,9 @@ class FilterController extends Controller
      *                  @OA\Property(property="id", type="integer", example="123"),
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="type", type="string", example="someType"),
-     *                  @OA\Property(property="value", type="string", example="some value"),
-     *                  @OA\Property(property="keys", type="string", example="someKey"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="user_id", type="integer", example="100"),
+     *                  @OA\Property(property="description", type="string", example="someType"),
+     *                  @OA\Property(property="function", type="string", example="some value"),
      *              )
      *          ),
      *      ),
@@ -81,38 +80,38 @@ class FilterController extends Controller
      *          )
      *      )
      * )
-     */
+     */    
     public function show(Request $request, int $id)
     {
-        $filter = Filter::findOrFail($id);
-        if ($filter) {
+        $logs = AuditLog::findOrFail($id);
+        if ($logs) {
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $filter,
+                'data' => $logs,
             ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
         return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
         ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**
      * @OA\Post(
-     *      path="/api/v1/filters",
-     *      summary="Create a new system filter",
-     *      description="Creates a new system filter",
-     *      tags={"Filter"},
-     *      summary="Filter@store",
+     *      path="/api/v1/audit_logs",
+     *      summary="Create a new system audit log",
+     *      description="Creates a new system audit log",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@store",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="Filter definition",
      *          @OA\JsonContent(
-     *              required={"type", "value", "keys", "enabled"},
-     *              @OA\Property(property="type", type="string", example="dataset"),
-     *              @OA\Property(property="value", type="string", example="your filter value here"),
-     *              @OA\Property(property="keys", type="string", example="purpose"),
+     *              required={"user_id", "description", "function"},
+     *              @OA\Property(property="user_id", type="integer", example="100"),
+     *              @OA\Property(property="description", type="string", example="someType"),
+     *              @OA\Property(property="function", type="string", example="some value"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -131,45 +130,42 @@ class FilterController extends Controller
      *          )
      *      )
      * )
-     */
-    public function store(Request $request)
+     */    
+    public function store(AuditLogRequest $request)
     {
-        $request->validate([
-            'type' => 'required',
-            'value' => 'required',
-            'keys' => 'required',
-            'enabled' => 'required',
-        ]);
+        try {
+            $logs = AuditLog::create($request->post());
+            if ($logs) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_CREATED.message'),
+                    'data' => $logs->id,
+                ], Config::get('statuscodes.STATUS_CREATED.code'));
+            }
 
-        $filter = Filter::create($request->post());
-        if ($filter) {
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $filter->id,
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
      * @OA\Put(
-     *      path="/api/v1/filters/{id}",
-     *      summary="Update a system filter",
-     *      description="Update a system filter",
-     *      tags={"Filter"},
-     *      summary="Filter@update",
+     *      path="/api/v1/audit_logs/{id}",
+     *      summary="Update a system audit log",
+     *      description="Update a system audit log",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@update",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
-     *          description="Filter definition",
+     *          description="Audit log definition",
      *          @OA\JsonContent(
-     *              required={"type", "value", "keys", "enabled"},
-     *              @OA\Property(property="type", type="string", example="dataset"),
-     *              @OA\Property(property="value", type="string", example="your filter value here"),
-     *              @OA\Property(property="keys", type="string", example="purpose"),
+     *              required={"user_id", "description", "function"},
+     *              @OA\Property(property="user_id", type="integer", example="100"),
+     *              @OA\Property(property="description", type="string", example="someType"),
+     *              @OA\Property(property="function", type="string", example="some value"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -188,10 +184,9 @@ class FilterController extends Controller
      *                  @OA\Property(property="id", type="integer", example="123"),
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="type", type="string", example="someType"),
-     *                  @OA\Property(property="value", type="string", example="some value"),
-     *                  @OA\Property(property="keys", type="string", example="someKey"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="user_id", type="integer", example="100"),
+     *                  @OA\Property(property="description", type="string", example="someType"),
+     *                  @OA\Property(property="function", type="string", example="some value"),
      *              )
      *          ),
      *      ),
@@ -204,45 +199,39 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $filter)
+    public function update(AuditLogRequest $request, int $id)
     {
-        $request->validate([
-            'type' => 'required',
-            'value' => 'required',
-            'keys' => 'required',
-            'enabled' => 'required',
-        ]);
+        try {
+            $log = AuditLog::findOrFail($id);
+            $body = $request->post();
 
-        $filter = Filter::findOrFail($filter);
-        $body = $request->post();
-        $filter->type = $body['type'];
-        $filter->value = $body['value'];
-        $filter->keys = $body['keys'];
-        $filter->enabled = $body['enabled'];
+            $log->updated_at = Carbon::now();
+            $log->user_id = $body['user_id'];
+            $log->description = $body['description'];
+            $log->function = $body['function'];
 
-        if ($filter->save()) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $filter,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            if ($log->save()) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $log,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            } else {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+                ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+            }
+        } catch (AuditLogRequest $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**
      * @OA\Delete(
-     *      path="/api/v1/filters/{id}",
-     *      summary="Delete a system filter",
-     *      description="Delete a system filter",
-     *      tags={"Filter"},
-     *      summary="Filter@destroy",
+     *      path="/api/v1/audit_logs/{id}",
+     *      summary="Delete a system audit log",
+     *      description="Delete a system audit log",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@destroy",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=404,
@@ -267,13 +256,12 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $filter)
+    public function destroy(Request $request, int $id)
     {
-        $filter = Filter::findOrFail($filter);
-        if ($filter) {
-            $filter->deleted_at = Carbon::now();
-            $filter->enabled = false;
-            if ($filter->save()) {
+        $log = AuditLog::findOrFail($id);
+        if ($log) {
+            $log->deleted_at = Carbon::now();
+            if ($log->save()) {
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
