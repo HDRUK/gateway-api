@@ -290,23 +290,3 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 
-### Exceptions
-#### test validation
-POST {{baseUrl}}/api/{{apiVersion}}/test-validation HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "name": "covid",
-}
-
-#### test exception
-POST {{baseUrl}}/api/{{apiVersion}}/test-exception HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "name": "covid",
-}
