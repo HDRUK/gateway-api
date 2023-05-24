@@ -17,6 +17,8 @@ class NotificationController extends Controller
      *      path="/api/v1/notifications",
      *      summary="List of notifications",
      *      description="Returns a list of notifications enabled on the system",
+     *      tags={"Notification"},
+     *      summary="Notification@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -53,6 +55,8 @@ class NotificationController extends Controller
      *      path="/api/v1/notifications/{id}",
      *      summary="Return a single notification",
      *      description="Return a single notification",
+     *      tags={"Notification"},
+     *      summary="Notification@show",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -99,6 +103,8 @@ class NotificationController extends Controller
      *      path="/api/v1/notifications",
      *      summary="Create a new notification",
      *      description="Creates a new notification",
+     *      tags={"Notification"},
+     *      summary="Notification@store",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -154,6 +160,8 @@ class NotificationController extends Controller
      *      path="/api/v1/notifications/{id}",
      *      summary="Update a notification",
      *      description="Update a notification",
+     *      tags={"Notification"},
+     *      summary="Notification@update",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -233,6 +241,8 @@ class NotificationController extends Controller
      *      path="/api/v1/notifications/{id}",
      *      summary="Delete a notification",
      *      description="Delete a notification",
+     *      tags={"Notification"},
+     *      summary="Notification@destroy",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=404,

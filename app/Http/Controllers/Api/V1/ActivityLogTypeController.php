@@ -16,6 +16,9 @@ class ActivityLogTypeController extends Controller
      *      path="/api/v1/activity_log_types",
      *      summary="List of system activity log types",
      *      description="Returns a list of activity log types enabled on the system",
+     *      tags={"ActivityLogType"},
+     *      summary="ActivityLogType@index",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -46,6 +49,9 @@ class ActivityLogTypeController extends Controller
      *      path="/api/v1/activity_log_types/{id}",
      *      summary="Return a single system activity log type",
      *      description="Return a single system activity log type",
+     *      tags={"ActivityLogType"},
+     *      summary="ActivityLogType@show",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -88,6 +94,9 @@ class ActivityLogTypeController extends Controller
      *      path="/api/v1/activity_log_types",
      *      summary="Create a new system activity log type",
      *      description="Creates a new system activity log type",
+     *      tags={"ActivityLogType"},
+     *      summary="ActivityLogType@store",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="ActivityLogType definition",
@@ -137,6 +146,9 @@ class ActivityLogTypeController extends Controller
      *      path="/api/v1/activity_log_types/{id}",
      *      summary="Update a system activity log type",
      *      description="Update a system activity log type",
+     *      tags={"ActivityLogType"},
+     *      summary="ActivityLogType@update",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="ActivityLogType definition",
@@ -205,6 +217,9 @@ class ActivityLogTypeController extends Controller
      *      path="/api/v1/activity_log_types/{id}",
      *      summary="Delete a system activity log type",
      *      description="Delete a system activity log type",
+     *      tags={"ActivityLogType"},
+     *      summary="ActivityLogType@destroy",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

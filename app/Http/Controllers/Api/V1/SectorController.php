@@ -15,6 +15,9 @@ class SectorController extends Controller
      *      path="/api/v1/sectors",
      *      summary="List of system sectors",
      *      description="Returns a list of sectors enabled on the system",
+     *      tags={"Sector"},
+     *      summary="Sector@index",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -46,6 +49,9 @@ class SectorController extends Controller
      *      path="/api/v1/sectors/{id}",
      *      summary="Return a single system sector",
      *      description="Return a single system sector",
+     *      tags={"Sector"},
+     *      summary="Sector@show",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -89,6 +95,9 @@ class SectorController extends Controller
      *      path="/api/v1/sectors",
      *      summary="Create a new system sector",
      *      description="Creates a new system sector",
+     *      tags={"Sector"},
+     *      summary="Sector@store",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="Sector definition",
@@ -140,6 +149,9 @@ class SectorController extends Controller
      *      path="/api/v1/sectors/{id}",
      *      summary="Update a system sector",
      *      description="Update a system sector",
+     *      tags={"Sector"},
+     *      summary="Sector@update",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="Sector definition",
@@ -208,6 +220,9 @@ class SectorController extends Controller
      *      path="/api/v1/sectors/{id}",
      *      summary="Delete a system sector",
      *      description="Delete a system sector",
+     *      tags={"Sector"},
+     *      summary="Sector@destroy",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

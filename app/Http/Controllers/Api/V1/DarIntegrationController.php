@@ -17,6 +17,8 @@ class DarIntegrationController extends Controller
      *      path="/api/v1/dar-integration",
      *      summary="List of system Dar Integrations",
      *      description="Returns a list of DAR integrations enabled on the system",
+     *      tags={"DarIntegration"},
+     *      summary="DarIntegration@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -64,6 +66,9 @@ class DarIntegrationController extends Controller
      *      path="/api/v1/dar-integration/{id}",
      *      summary="Return a single system Dar Integration",
      *      description="Returns a single DAR integration enabled on the system",
+     *      tags={"DarIntegration"},
+     *      summary="DarIntegration@show",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -118,6 +123,9 @@ class DarIntegrationController extends Controller
      *      path="/api/v1/dar-integration/{id}",
      *      summary="Create a new system Dar Integration",
      *      description="Creates a new DAR integration enabled on the system",
+     *      tags={"DarIntegration"},
+     *      summary="DarIntegration@store",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="DarIntegration definition",
@@ -180,6 +188,9 @@ class DarIntegrationController extends Controller
      *      path="/api/v1/dar-integration/{id}",
      *      summary="Updates a system Dar Integration",
      *      description="Updates a DAR integration enabled on the system",
+     *      tags={"DarIntegration"},
+     *      summary="DarIntegration@update",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="DarIntegration definition",
@@ -265,6 +276,9 @@ class DarIntegrationController extends Controller
      *      path="/api/v1/dar-integrations/{id}",
      *      summary="Delete a system Dar Integration",
      *      description="Delete a system Dar Integration",
+     *      tags={"DarIntegration"},
+     *      summary="DarIntegration@destroy",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

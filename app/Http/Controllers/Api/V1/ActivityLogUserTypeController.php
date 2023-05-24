@@ -16,6 +16,9 @@ class ActivityLogUserTypeController extends Controller
      *      path="/api/v1/activity_log_user_types",
      *      summary="List of system activity log user types",
      *      description="Returns a list of activity log user types enabled on the system",
+     *      tags={"ActivityLogUserType"},
+     *      summary="ActivityLogUserType@index",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -46,6 +49,9 @@ class ActivityLogUserTypeController extends Controller
      *      path="/api/v1/activity_log_user_types/{id}",
      *      summary="Return a single system activity log user type",
      *      description="Return a single system activity log user type",
+     *      tags={"ActivityLogUserType"},
+     *      summary="ActivityLogUserType@show",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -88,6 +94,9 @@ class ActivityLogUserTypeController extends Controller
      *      path="/api/v1/activity_log_user_types",
      *      summary="Create a new system activity log user type",
      *      description="Creates a new system activity log user type",
+     *      tags={"ActivityLogUserType"},
+     *      summary="ActivityLogUserType@store",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="ActivityLogUserTypes definition",
@@ -137,6 +146,9 @@ class ActivityLogUserTypeController extends Controller
      *      path="/api/v1/activity_log_user_types/{id}",
      *      summary="Update a system activity log user type",
      *      description="Update a system activity log user type",
+     *      tags={"ActivityLogUserType"},
+     *      summary="ActivityLogUserType@update",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="ActivityLogUserTypes definition",
@@ -206,6 +218,9 @@ class ActivityLogUserTypeController extends Controller
      *      path="/api/v1/activity_log_user_types/{id}",
      *      summary="Delete a system activity log user type",
      *      description="Delete a system  activity log user type",
+     *      tags={"ActivityLogUserType"},
+     *      summary="ActivityLogUserType@destroy",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

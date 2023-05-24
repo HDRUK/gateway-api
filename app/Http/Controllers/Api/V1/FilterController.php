@@ -18,6 +18,9 @@ class FilterController extends Controller
      *      path="/api/v1/filters",
      *      summary="List of system filters",
      *      description="Returns a list of filters enabled on the system",
+     *      tags={"Filter"},
+     *      summary="Filter@index",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -51,6 +54,9 @@ class FilterController extends Controller
      *      path="/api/v1/filters/{id}",
      *      summary="Return a single system filter",
      *      description="Return a single system filter",
+     *      tags={"Filter"},
+     *      summary="Filter@show",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -96,6 +102,9 @@ class FilterController extends Controller
      *      path="/api/v1/filters",
      *      summary="Create a new system filter",
      *      description="Creates a new system filter",
+     *      tags={"Filter"},
+     *      summary="Filter@store",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="Filter definition",
@@ -150,6 +159,9 @@ class FilterController extends Controller
      *      path="/api/v1/filters/{id}",
      *      summary="Update a system filter",
      *      description="Update a system filter",
+     *      tags={"Filter"},
+     *      summary="Filter@update",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="Filter definition",
@@ -229,6 +241,9 @@ class FilterController extends Controller
      *      path="/api/v1/filters/{id}",
      *      summary="Delete a system filter",
      *      description="Delete a system filter",
+     *      tags={"Filter"},
+     *      summary="Filter@destroy",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

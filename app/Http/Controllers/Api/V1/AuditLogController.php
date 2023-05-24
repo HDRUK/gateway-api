@@ -19,6 +19,9 @@ class AuditLogController extends Controller
      *      path="/api/v1/audit_logs",
      *      summary="List of system audit logs",
      *      description="Returns a list of audit logs",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@index",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -51,6 +54,9 @@ class AuditLogController extends Controller
      *      path="/api/v1/audit_logs/{id}",
      *      summary="Return a single system audit log",
      *      description="Return a single system audit log",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@show",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -95,6 +101,9 @@ class AuditLogController extends Controller
      *      path="/api/v1/audit_logs",
      *      summary="Create a new system audit log",
      *      description="Creates a new system audit log",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@store",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="Filter definition",
@@ -146,6 +155,9 @@ class AuditLogController extends Controller
      *      path="/api/v1/audit_logs/{id}",
      *      summary="Update a system audit log",
      *      description="Update a system audit log",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@update",
+     *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
      *          description="Audit log definition",
@@ -218,6 +230,9 @@ class AuditLogController extends Controller
      *      path="/api/v1/audit_logs/{id}",
      *      summary="Delete a system audit log",
      *      description="Delete a system audit log",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@destroy",
+     *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
