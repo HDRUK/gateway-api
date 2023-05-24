@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Exception;
 use Throwable;
-use App\Models\DarIntegration;
 use Illuminate\Http\Request;
+use App\Models\DarIntegration;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DarIntegrationRequest;
 
@@ -50,7 +51,7 @@ class DarIntegrationController extends Controller
      *      )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $dars = DarIntegration::where('enabled', 1)->get();
         return response()->json([
@@ -98,7 +99,7 @@ class DarIntegrationController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $dar = DarIntegration::findOrFail($id);
         if ($dar) {
@@ -160,7 +161,7 @@ class DarIntegrationController extends Controller
      *      )
      * )
      */
-    public function store(DarIntegrationRequest $request)
+    public function store(DarIntegrationRequest $request): JsonResponse
     {
         $dar = DarIntegration::create($request->post());
         if ($dar) {
@@ -235,7 +236,7 @@ class DarIntegrationController extends Controller
      *      )
      * )
      */
-    public function update(DarIntegrationRequest $request, int $id): mixed
+    public function update(DarIntegrationRequest $request, int $id): JsonResponse
     {
         try {
             $dar = DarIntegration::find($id);
@@ -288,7 +289,7 @@ class DarIntegrationController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id): mixed
+    public function destroy(Request $request, int $id): JsonResponse
     {
         try {
             $dar = DarIntegration::find($id);

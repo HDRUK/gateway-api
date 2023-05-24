@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
+// use Illuminate\Foundation\Http\FormRequest;
 use App\Http\Requests\BaseFormRequest;
 
-class CreateCollectionRequest extends BaseFormRequest
+class TestValidationRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -31,17 +32,10 @@ class CreateCollectionRequest extends BaseFormRequest
                 'required',
                 'boolean',
             ],
-            'keywords' => [
-                'string',
+            'user_id' => [
+                'int',
                 'required',
-            ],
-            'public' => [
-                'required',
-                'boolean',
-            ],
-            'counter' => [
-                'integer',
-                'required',
+                'exists:users,id',
             ],
         ];
     }

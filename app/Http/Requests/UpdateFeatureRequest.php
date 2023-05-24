@@ -3,8 +3,9 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rule;
 
-class DeleteTeamUserRequest extends BaseFormRequest
+class UpdateFeatureRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,15 +15,22 @@ class DeleteTeamUserRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'teamId' => [
-                'int',
+            'id' => [
                 'required',
-                'exists:teams,id',
+                'int',
+                'exists:features,id',
             ],
-            'userId' => [
-                'int',
+            'name' => [
                 'required',
-                'exists:users,id',
+                'string',
+                'max:255',
+                Rule::unique('features')->where(function ($query) {
+                    $query->where('name', trim($this->name));
+                }),
+            ],
+            'enabled' => [
+                'required',
+                'boolean',
             ],
         ];
     }
@@ -34,7 +42,6 @@ class DeleteTeamUserRequest extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge([ 'teamId' => $this->route('teamId') ]);
-        $this->merge([ 'userId' => $this->route('userId') ]);
+        $this->merge(['id' => $this->route('id')]);
     }
 }

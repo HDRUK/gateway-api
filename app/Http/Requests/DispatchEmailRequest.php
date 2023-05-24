@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\BaseFormRequest;
 
-class PermissionRequest extends BaseFormRequest
+class DispatchEmailRequest extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,10 +14,16 @@ class PermissionRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'role' => [
+            'to' => [
+                'required',
+                'int',
+            ],
+            'identifier' => [
                 'required',
                 'string',
-                'unique:permissions,role',
+            ],
+            'replacements' => [
+                'required',
             ],
         ];
     }

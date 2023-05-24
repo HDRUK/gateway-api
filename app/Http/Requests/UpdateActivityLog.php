@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\BaseFormRequest;
 
-class CreateCollectionRequest extends BaseFormRequest
+class UpdateActivityLog extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,35 +14,27 @@ class CreateCollectionRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'name' => [
-                'string',
+            'event_type' => [
                 'required',
             ],
-            'description' => [
-                'string',
+            'user_type_id' => [
                 'required',
             ],
-            'image_link' => [
-                'string',
-                'required',
-                'url',
-            ],
-            'enabled' => [
-                'required',
-                'boolean',
-            ],
-            'keywords' => [
-                'string',
+            'log_type_id' => [
                 'required',
             ],
-            'public' => [
-                'required',
-                'boolean',
-            ],
-            'counter' => [
-                'integer',
+            'user_id' => [
                 'required',
             ],
+            'version' => [
+                'required',
+            ],
+            'html' => [
+                'required',
+            ],
+            'plain_text' => [
+                'required',
+            ],  
         ];
     }
 }

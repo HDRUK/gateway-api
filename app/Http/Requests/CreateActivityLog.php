@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\BaseFormRequest;
 
-class UserLiteRequest extends BaseFormRequest
+class CreateActivityLog extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,18 +14,21 @@ class UserLiteRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'firstname' => [
-                'required', 'string',
+            'event_type' => [
+                'required',
             ],
-            'lastname' => [
-                'required', 'string',
+            'user_type_id' => [
+                'required',
             ],
-            'email' => [
-                'required', 'string', 'email',
+            'log_type_id' => [
+                'required',
             ],
-            'password' => [
-                'string',
+            'user_id' => [
+                'required',
             ],
+            'plain_text' => [
+                'required',
+            ],   
         ];
     }
 }

@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\V1;
 use Exception;
 use App\Models\Feature;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\FeatureRequest;
+use App\Http\Requests\CreateFeatureRequest;
+use App\Http\Requests\UpdateFeatureRequest;
 
 class FeatureController extends Controller
 {
@@ -35,7 +37,7 @@ class FeatureController extends Controller
      *    )
      * )
      */
-    public function index(Request $request): mixed
+    public function index(Request $request): JsonResponse
     {
         $features = Feature::where('enabled', 1)->get();
 
@@ -100,7 +102,7 @@ class FeatureController extends Controller
      *    )
      * )
      */
-    public function show(Request $request, int $id): mixed
+    public function show(Request $request, int $id): JsonResponse
     {
         $features = Feature::where([
             'id' =>  $id,
@@ -165,7 +167,7 @@ class FeatureController extends Controller
      *      )
      * )
      */
-    public function store(FeatureRequest $request): mixed
+    public function store(CreateFeatureRequest $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -246,7 +248,7 @@ class FeatureController extends Controller
      *      )
      * )
      */
-    public function update(FeatureRequest $request, int $id): mixed
+    public function update(UpdateFeatureRequest $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -317,7 +319,7 @@ class FeatureController extends Controller
      *      )
      * )
      */
-    public function destroy(int $id): mixed
+    public function destroy(int $id): JsonResponse
     {
         try {
             $features = Feature::where('id', $id)->get();
