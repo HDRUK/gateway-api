@@ -16,7 +16,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/.phpunit.cache
+/.phpunit.cache/test-results
 # composer.lock
 .phpstorm.meta.php
 .phpunit.result.cache
