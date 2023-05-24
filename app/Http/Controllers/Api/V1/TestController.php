@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Exceptions\NotFoundException;
-use App\Http\Requests\TestValidationRequest;
 
 class TestController extends Controller
 {
