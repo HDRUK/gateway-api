@@ -7,7 +7,10 @@
     "paths": {
         "/api/v1/activity_logs": {
             "get": {
-                "summary": "List of system activity logs",
+                "tags": [
+                    "ActivityLog"
+                ],
+                "summary": "ActivityLog@index",
                 "description": "Returns a list of activity logs stored on the system",
                 "operationId": "f9b155e27b70cf68aa51d2920967090f",
                 "responses": {
@@ -80,10 +83,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
-                "summary": "Create a new system activity log",
+                "tags": [
+                    "ActivityLog"
+                ],
+                "summary": "ActivityLog@store",
                 "description": "Creates a new system activity log",
                 "operationId": "a42500258340544a1535bf6a35e9ad49",
                 "requestBody": {
@@ -190,12 +201,20 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/activity_logs/{id}": {
             "get": {
-                "summary": "Return a single system activity log",
+                "tags": [
+                    "ActivityLog"
+                ],
+                "summary": "ActivityLog@show",
                 "description": "Return a single system activity log",
                 "operationId": "05357e8eaa854776010c42e640b8c454",
                 "responses": {
@@ -281,10 +300,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "put": {
-                "summary": "Update a system activity log",
+                "tags": [
+                    "ActivityLog"
+                ],
+                "summary": "ActivityLog@update",
                 "description": "Update a system activity log",
                 "operationId": "0380caf96da8356c35731a4029d0062a",
                 "requestBody": {
@@ -454,10 +481,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "delete": {
-                "summary": "Delete a system activity log",
+                "tags": [
+                    "ActivityLog"
+                ],
+                "summary": "ActivityLog@destroy",
                 "description": "Delete a system activity log",
                 "operationId": "9f68d53b4e8bccc7ba38a1b7e3eaf910",
                 "responses": {
@@ -509,12 +544,20 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/activity_log_types": {
             "get": {
-                "summary": "List of system activity log types",
+                "tags": [
+                    "ActivityLogType"
+                ],
+                "summary": "ActivityLogType@index",
                 "description": "Returns a list of activity log types enabled on the system",
                 "operationId": "0a27c4cb561f4c14714a6481f6ca74a8",
                 "responses": {
@@ -559,10 +602,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
-                "summary": "Create a new system activity log type",
+                "tags": [
+                    "ActivityLogType"
+                ],
+                "summary": "ActivityLogType@store",
                 "description": "Creates a new system activity log type",
                 "operationId": "f1b99293bae2fd57d8eef56b6529a448",
                 "requestBody": {
@@ -622,12 +673,20 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/activity_log_types/{id}": {
             "get": {
-                "summary": "Return a single system activity log type",
+                "tags": [
+                    "ActivityLogType"
+                ],
+                "summary": "ActivityLogType@show",
                 "description": "Return a single system activity log type",
                 "operationId": "9c58fce9782c18c44d9706c0d1b2dbd0",
                 "responses": {
@@ -685,10 +744,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "put": {
-                "summary": "Update a system activity log type",
+                "tags": [
+                    "ActivityLogType"
+                ],
+                "summary": "ActivityLogType@update",
                 "description": "Update a system activity log type",
                 "operationId": "acd2b8014ea7f10ad6e7d4f25f95c314",
                 "requestBody": {
@@ -783,10 +850,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "delete": {
-                "summary": "Delete a system activity log type",
+                "tags": [
+                    "ActivityLogType"
+                ],
+                "summary": "ActivityLogType@destroy",
                 "description": "Delete a system activity log type",
                 "operationId": "33323cda6916ad04d2f239dea405e80f",
                 "responses": {
@@ -838,12 +913,20 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/activity_log_user_types": {
             "get": {
-                "summary": "List of system activity log user types",
+                "tags": [
+                    "ActivityLogUserType"
+                ],
+                "summary": "ActivityLogUserType@index",
                 "description": "Returns a list of activity log user types enabled on the system",
                 "operationId": "59715acb51e3312794b73e4bf625e848",
                 "responses": {
@@ -888,10 +971,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
-                "summary": "Create a new system activity log user type",
+                "tags": [
+                    "ActivityLogUserType"
+                ],
+                "summary": "ActivityLogUserType@store",
                 "description": "Creates a new system activity log user type",
                 "operationId": "d896e7a4a3d836a1486d40152834ffae",
                 "requestBody": {
@@ -951,12 +1042,20 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/activity_log_user_types/{id}": {
             "get": {
-                "summary": "Return a single system activity log user type",
+                "tags": [
+                    "ActivityLogUserType"
+                ],
+                "summary": "ActivityLogUserType@show",
                 "description": "Return a single system activity log user type",
                 "operationId": "c324ebe5e0165712f4fa947cc00d8e51",
                 "responses": {
@@ -1014,10 +1113,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "put": {
-                "summary": "Update a system activity log user type",
+                "tags": [
+                    "ActivityLogUserType"
+                ],
+                "summary": "ActivityLogUserType@update",
                 "description": "Update a system activity log user type",
                 "operationId": "5d68c0399b48a969b390a16fb6573a12",
                 "requestBody": {
@@ -1112,10 +1219,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "delete": {
-                "summary": "Delete a system activity log user type",
+                "tags": [
+                    "ActivityLogUserType"
+                ],
+                "summary": "ActivityLogUserType@destroy",
                 "description": "Delete a system  activity log user type",
                 "operationId": "a03897a374abe78232b056fea76b2f9f",
                 "responses": {
@@ -1167,7 +1282,425 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/audit_logs": {
+            "get": {
+                "tags": [
+                    "AuditLog"
+                ],
+                "summary": "AuditLog@index",
+                "description": "Returns a list of audit logs",
+                "operationId": "7f6df22fab55210bc2c7a036a1a38e9a",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": "100"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "someType"
+                                                    },
+                                                    "function": {
+                                                        "type": "string",
+                                                        "example": "some value"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "AuditLog"
+                ],
+                "summary": "AuditLog@store",
+                "description": "Creates a new system audit log",
+                "operationId": "a513f5f848d7eb9cd2554f15d11a24b2",
+                "requestBody": {
+                    "description": "Filter definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "description",
+                                    "function"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "100"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "someType"
+                                    },
+                                    "function": {
+                                        "type": "string",
+                                        "example": "some value"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/audit_logs/{id}": {
+            "get": {
+                "tags": [
+                    "AuditLog"
+                ],
+                "summary": "AuditLog@show",
+                "description": "Return a single system audit log",
+                "operationId": "57c32f14045c31789cb71df64af406d3",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": "100"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "someType"
+                                                },
+                                                "function": {
+                                                    "type": "string",
+                                                    "example": "some value"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "AuditLog"
+                ],
+                "summary": "AuditLog@update",
+                "description": "Update a system audit log",
+                "operationId": "6d23f6f3ab89b0867eed1aa968ca1a9a",
+                "requestBody": {
+                    "description": "Audit log definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "description",
+                                    "function"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "100"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "someType"
+                                    },
+                                    "function": {
+                                        "type": "string",
+                                        "example": "some value"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": "100"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "someType"
+                                                },
+                                                "function": {
+                                                    "type": "string",
+                                                    "example": "some value"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "AuditLog"
+                ],
+                "summary": "AuditLog@destroy",
+                "description": "Delete a system audit log",
+                "operationId": "6f55c9a60ed68391f36d29571c5878d7",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/auth": {
@@ -1762,7 +2295,10 @@
         },
         "/api/v1/dar-integration": {
             "get": {
-                "summary": "List of system Dar Integrations",
+                "tags": [
+                    "DarIntegration"
+                ],
+                "summary": "DarIntegration@index",
                 "description": "Returns a list of DAR integrations enabled on the system",
                 "operationId": "7ab50add4fe0a4b7cff7eab0f4b8df18",
                 "responses": {
@@ -1865,7 +2401,10 @@
         },
         "/api/v1/dar-integration/{id}": {
             "get": {
-                "summary": "Return a single system Dar Integration",
+                "tags": [
+                    "DarIntegration"
+                ],
+                "summary": "DarIntegration@show",
                 "description": "Returns a single DAR integration enabled on the system",
                 "operationId": "406144045c21a19659ee66f6d4a78235",
                 "responses": {
@@ -1963,10 +2502,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "put": {
-                "summary": "Updates a system Dar Integration",
+                "tags": [
+                    "DarIntegration"
+                ],
+                "summary": "DarIntegration@update",
                 "description": "Updates a DAR integration enabled on the system",
                 "operationId": "09c033f0336380c3d8bb6801e96378bc",
                 "requestBody": {
@@ -2133,10 +2680,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
-                "summary": "Create a new system Dar Integration",
+                "tags": [
+                    "DarIntegration"
+                ],
+                "summary": "DarIntegration@store",
                 "description": "Creates a new DAR integration enabled on the system",
                 "operationId": "757fd0f4616caa763b0789d7ad7b3053",
                 "requestBody": {
@@ -2252,12 +2807,20 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/dar-integrations/{id}": {
             "delete": {
-                "summary": "Delete a system Dar Integration",
+                "tags": [
+                    "DarIntegration"
+                ],
+                "summary": "DarIntegration@destroy",
                 "description": "Delete a system Dar Integration",
                 "operationId": "17fa1074b71d9cefd3e65f2757117b57",
                 "responses": {
@@ -2309,7 +2872,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/features": {
@@ -2717,7 +3285,10 @@
         },
         "/api/v1/filters": {
             "get": {
-                "summary": "List of system filters",
+                "tags": [
+                    "Filter"
+                ],
+                "summary": "Filter@index",
                 "description": "Returns a list of filters enabled on the system",
                 "operationId": "f0dd6fc4e9602ee41203e9f2c14ba178",
                 "responses": {
@@ -2774,10 +3345,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
-                "summary": "Create a new system filter",
+                "tags": [
+                    "Filter"
+                ],
+                "summary": "Filter@store",
                 "description": "Creates a new system filter",
                 "operationId": "13aee5b7e9f5b784021846da1ec12250",
                 "requestBody": {
@@ -2848,12 +3427,20 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/filters/{id}": {
             "get": {
-                "summary": "Return a single system filter",
+                "tags": [
+                    "Filter"
+                ],
+                "summary": "Filter@show",
                 "description": "Return a single system filter",
                 "operationId": "94c81b101903f62b9d03e8c69a9617d7",
                 "responses": {
@@ -2923,10 +3510,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "put": {
-                "summary": "Update a system filter",
+                "tags": [
+                    "Filter"
+                ],
+                "summary": "Filter@update",
                 "description": "Update a system filter",
                 "operationId": "52b5990ddd2ad98ed3964e11ebaa0f53",
                 "requestBody": {
@@ -3044,10 +3639,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "delete": {
-                "summary": "Delete a system filter",
+                "tags": [
+                    "Filter"
+                ],
+                "summary": "Filter@destroy",
                 "description": "Delete a system filter",
                 "operationId": "d1b3a2333969df0032b161ac078dae96",
                 "responses": {
@@ -3099,12 +3702,20 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/notifications": {
             "get": {
-                "summary": "List of notifications",
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Notification@index",
                 "description": "Returns a list of notifications enabled on the system",
                 "operationId": "cac3bdde44f0be0512f7d05c0a6064e4",
                 "responses": {
@@ -3169,7 +3780,10 @@
                 ]
             },
             "post": {
-                "summary": "Create a new notification",
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Notification@store",
                 "description": "Creates a new notification",
                 "operationId": "1fd84d2c66035574da4902f416cbd96a",
                 "requestBody": {
@@ -3250,7 +3864,10 @@
         },
         "/api/v1/notifications/{id}": {
             "get": {
-                "summary": "Return a single notification",
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Notification@show",
                 "description": "Return a single notification",
                 "operationId": "22581e4d73af25a9036c6610c7e8fc72",
                 "responses": {
@@ -3328,7 +3945,10 @@
                 ]
             },
             "put": {
-                "summary": "Update a notification",
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Notification@update",
                 "description": "Update a notification",
                 "operationId": "b4f86f6c4f52e080b246d560038cdc9b",
                 "requestBody": {
@@ -3450,7 +4070,10 @@
                 ]
             },
             "delete": {
-                "summary": "Delete a notification",
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Notification@destroy",
                 "description": "Delete a notification",
                 "operationId": "3f8fe68ea04e79015d8aad5912cadbc1",
                 "responses": {
@@ -4699,7 +5322,10 @@
         },
         "/api/v1/sectors": {
             "get": {
-                "summary": "List of system sectors",
+                "tags": [
+                    "Sector"
+                ],
+                "summary": "Sector@index",
                 "description": "Returns a list of sectors enabled on the system",
                 "operationId": "7bb75b189d9b5f518b2a3e6169adcf5d",
                 "responses": {
@@ -4748,10 +5374,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
-                "summary": "Create a new system sector",
+                "tags": [
+                    "Sector"
+                ],
+                "summary": "Sector@store",
                 "description": "Creates a new system sector",
                 "operationId": "eead253ff30de1422cc8e8df9afaf088",
                 "requestBody": {
@@ -4816,12 +5450,20 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/sectors/{id}": {
             "get": {
-                "summary": "Return a single system sector",
+                "tags": [
+                    "Sector"
+                ],
+                "summary": "Sector@show",
                 "description": "Return a single system sector",
                 "operationId": "f943e60a72bc597d75f834c209788998",
                 "responses": {
@@ -4883,10 +5525,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "put": {
-                "summary": "Update a system sector",
+                "tags": [
+                    "Sector"
+                ],
+                "summary": "Sector@update",
                 "description": "Update a system sector",
                 "operationId": "75e526cec1b7ae17caa6e93d13c423d3",
                 "requestBody": {
@@ -4990,10 +5640,18 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "delete": {
-                "summary": "Delete a system sector",
+                "tags": [
+                    "Sector"
+                ],
+                "summary": "Sector@destroy",
                 "description": "Delete a system sector",
                 "operationId": "b414aece220bc1f67dbd0e88ba08159f",
                 "responses": {
@@ -5045,7 +5703,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "/api/v1/auth/{provider}": {
