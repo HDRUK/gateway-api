@@ -7,6 +7,7 @@ import { datarequestschemaService } from './../datarequest/schema/dependency';
 import { logger } from '../utilities/logger';
 import { isUserMemberOfTeamById, isUserMemberOfTeamByName } from '../auth/utils';
 import constants from '../utilities/constants.util';
+import HttpExceptions from '../../exceptions/HttpExceptions';
 
 const router = express.Router();
 const questionbankController = new QuestionbankController(questionbankService);
@@ -15,7 +16,9 @@ const logCategory = 'questionbank';
 const validateViewRequest = (req, res, next) => {
 	const { publisherId } = req.params;
 
-	if (isUndefined(publisherId)) return res.status(400).json({ success: false, message: 'You must provide a valid publisher Id' });
+	if (isUndefined(publisherId)) {
+		throw new HttpExceptions(`You must provide a valid publisher Id`, 400);
+	}
 
 	next();
 };
@@ -28,10 +31,7 @@ const authorizeViewRequest = (req, res, next) => {
 	const isAdminUser = requestingUser.teams.map(team => team.type).includes(constants.teamTypes.ADMIN);
 
 	if (!authorised && !isAdminUser) {
-		return res.status(401).json({
-			success: false,
-			message: 'You are not authorised to perform this action',
-		});
+		throw new HttpExceptions(`You are not authorised to perform this action`, 401);
 	}
 
 	next();
@@ -40,7 +40,9 @@ const authorizeViewRequest = (req, res, next) => {
 const validatePostRequest = (req, res, next) => {
 	const { schemaId } = req.params;
 
-	if (isUndefined(schemaId)) return res.status(400).json({ success: false, message: 'You must provide a valid data request schema Id' });
+	if (isUndefined(schemaId)) {
+		throw new HttpExceptions(`You must provide a valid data request schema Id`, 400);
+	}
 
 	next();
 };
@@ -52,20 +54,14 @@ const authorizePostRequest = async (req, res, next) => {
 	const dataRequestSchema = await datarequestschemaService.getDatarequestschemaById(schemaId);
 
 	if (isEmpty(dataRequestSchema)) {
-		return res.status(404).json({
-			success: false,
-			message: 'The requested data request schema could not be found',
-		});
+		throw new HttpExceptions(`The requested data request schema could not be found`, 404);
 	}
 
 	const authorised = isUserMemberOfTeamByName(requestingUser, dataRequestSchema.publisher);
 	const isAdminUser = requestingUser.teams.map(team => team.type).includes(constants.teamTypes.ADMIN);
 
 	if (!authorised && !isAdminUser) {
-		return res.status(401).json({
-			success: false,
-			message: 'You are not authorised to perform this action',
-		});
+		throw new HttpExceptions(`You are not authorised to perform this action`, 401);
 	}
 
 	req.body.dataRequestSchema = dataRequestSchema;

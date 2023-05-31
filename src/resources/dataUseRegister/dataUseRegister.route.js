@@ -15,7 +15,7 @@ router.get('/search', logger.logRequestMiddleware({ logCategory, action: 'Search
 	dataUseRegisterController.searchDataUseRegisters(req, res)
 );
 
-// @route   GET /api/v2/data-use-registers/id
+// @route   GET /api/v2/data-use-registers/:id
 // @desc    Returns a dataUseRegister based on dataUseRegister ID provided
 // @access  Public
 router.get('/:id', logger.logRequestMiddleware({ logCategory, action: 'Viewed dataUseRegister data' }), (req, res) =>
@@ -35,8 +35,9 @@ router.get(
 // @route   PATCH /api/v2/data-use-registers/counter
 // @desc    Updates the data use register counter for page views
 // @access  Public
-router.patch('/counter', logger.logRequestMiddleware({ logCategory, action: 'Data use counter update' }), (req, res) =>
-	dataUseRegisterController.updateDataUseRegisterCounter(req, res)
+router.patch('/counter', 
+	logger.logRequestMiddleware({ logCategory, action: 'Data use counter update' }), 
+	(req, res) => dataUseRegisterController.updateDataUseRegisterCounter(req, res)
 );
 
 // @route   PATCH /api/v2/data-use-registers/id
@@ -54,8 +55,10 @@ router.patch(
 // @route   POST /api/v2/data-use-registers/check
 // @desc    Check the submitted data uses for duplicates and returns links to Gatway entities (datasets, users)
 // @access  Public
-router.post('/check', passport.authenticate('jwt'), logger.logRequestMiddleware({ logCategory, action: 'Check data uses' }), (req, res) =>
-	dataUseRegisterController.checkDataUseRegister(req, res)
+router.post('/check', 
+	passport.authenticate('jwt'), 
+	logger.logRequestMiddleware({ logCategory, action: 'Check data uses' }), 
+	(req, res) => dataUseRegisterController.checkDataUseRegister(req, res)
 );
 
 // @route   POST /api/v2/data-use-registers/upload

@@ -5,6 +5,7 @@ import teamController from '../team/team.controller';
 import constants from '../utilities/constants.util';
 import emailGenerator from '../utilities/emailGenerator.util';
 import notificationBuilder from '../utilities/notificationBuilder';
+import teamV3Util from '../utilities/team.v3.util';
 
 const bpmController = require('../bpmnworkflow/bpmnworkflow.controller');
 
@@ -22,7 +23,8 @@ export default class WorkflowService {
 		// Check if the current user can override the current step
 		if (has(accessRecord, 'publisherObj.team')) {
 			const { team } = accessRecord.publisherObj;
-			isManager = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, team, requestingUserObjectId);
+			// isManager = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, team, requestingUserObjectId);
+			isManager = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team, requestingUserObjectId);
 			// Set the workflow override capability if there is an active step and user is a manager
 			if (!isEmpty(workflow)) {
 				workflow.canOverrideStep = !workflow.isCompleted && isManager;
@@ -141,7 +143,7 @@ export default class WorkflowService {
 	getReviewManagers(team, requestingUserId) {
 		const { members = [], users = [] } = team;
 		const managers = members.filter(mem => {
-			return mem.roles.includes('manager');
+			return mem.roles.includes(constants.roleMemberTeam.CUST_DAR_MANAGER);
 		});
 		return users
 			.filter(user => managers.some(manager => manager.memberid.toString() === user._id.toString()))
@@ -163,13 +165,14 @@ export default class WorkflowService {
 			let { publisherObj, workflow = {}, actioner = '' } = context;
 
 			custodianManagers = teamController.getTeamMembersByRole(publisherObj, 'All');
-			if (publisherObj.notifications[0].optIn) {
+			if (has(publisherObj.notifications[0], 'optIn') && publisherObj.notifications[0].optIn) {
 				publisherObj.notifications[0].subscribedEmails.map(teamEmail => {
 					custodianManagers.push({ email: teamEmail });
 				});
 			}
 			managerUserIds = custodianManagers.map(user => user.id);
-			let { workflowName = 'Workflow Title', _id, steps, createdAt } = workflow;
+			let { workflowName = 'Workflow Title', _id, steps, createdAt, publisher } = workflow;
+
 			const action = type.replace('Workflow', '').toLowerCase();
 			options = {
 				actioner,
@@ -189,7 +192,8 @@ export default class WorkflowService {
 						managerUserIds,
 						`A new workflow of ${workflowName} has been created`,
 						'workflow',
-						_id
+						_id,
+						publisher
 					);
 					// 5. Generate the email
 					html = await emailGenerator.generateWorkflowActionEmail(options);
@@ -204,7 +208,8 @@ export default class WorkflowService {
 						managerUserIds,
 						`A workflow of ${workflowName} has been updated`,
 						'workflow',
-						_id
+						_id,
+						publisher
 					);
 					// 5. Generate the email
 					html = await emailGenerator.generateWorkflowActionEmail(options);
@@ -219,7 +224,8 @@ export default class WorkflowService {
 						managerUserIds,
 						`A workflow of ${workflowName} has been deleted`,
 						'workflow',
-						_id
+						_id,
+						publisher
 					);
 					// 5. Generate the email
 					html = await emailGenerator.generateWorkflowActionEmail(options);
