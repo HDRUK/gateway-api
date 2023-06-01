@@ -49,7 +49,7 @@ const subjectEmail = (teamName = '', userName = '', role, status, deleteUser) =>
             break;
         default:
             if (deleteUser) {
-                subject = `You have been removed as a user for the ${publisherName} team on the Gateway.`;
+                subject = `You have been removed as a user from the ${publisherName} team on the Gateway.`;
             }
             break;
     }
@@ -415,7 +415,7 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
                     </tr>
                     <tr>
                         <td style="padding:40px 10px 10px 10px;">
-                            You have been removed as a user for the ${publisherName} team on the Gateway.
+                            You have been removed as a user from the ${publisherName} team on the Gateway.
                         </td>
                     </tr>
                     <tr>
