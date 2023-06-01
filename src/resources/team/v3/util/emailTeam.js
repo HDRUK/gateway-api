@@ -47,10 +47,10 @@ const subjectEmail = (teamName = '', userName = '', role, status, deleteUser) =>
                 subject = `You have been removed as a Reviewer for the ${publisherName} team on the Gateway.`;
             }
             break;
-        default:     
+        default:
             if (deleteUser) {
                 subject = `You have been removed as a user for the ${publisherName} team on the Gateway.`;
-            }       
+            }
             break;
     }
 
@@ -62,8 +62,8 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
     const urlHdrukHeaderEmail = 'https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg';
 
     let topBodyEmail = '';
-    let middleBodyEmail = ''; 
-    let footerBodyEmail = ''; 
+    let middleBodyEmail = '';
+    let footerBodyEmail = '';
     let bodyEmail = '';
 
     let publisherName = '';
@@ -433,7 +433,7 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
                         </td>
                     </tr>
                 `;
-            }  
+            }
             break;
     }
 
@@ -469,7 +469,7 @@ const _generateTeamAdmin = (team) => {
     let adminMemberNames = [];
 
     members.map(member => {
-        if ( member.roles.some(mem => adminRole.includes(mem)) ) {
+        if (member.roles.some(mem => adminRole.includes(mem))) {
             return adminMemberIds.push(member.memberid.toString());
         }
     });
