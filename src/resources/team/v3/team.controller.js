@@ -43,7 +43,7 @@ class TeamController extends TeamService {
 
         res.status(200).json({
             members,
-        });    
+        });
     }
 
     async deleteTeamMember(req, res) {
@@ -65,14 +65,14 @@ class TeamController extends TeamService {
         }
 
         teamV3Util.checkIfExistAdminRole(
-            updatedMembers, 
+            updatedMembers,
             [
-                constants.roleMemberTeam.CUST_TEAM_ADMIN, 
-                constants.roleMemberTeam.CUST_DAR_MANAGER, 
+                constants.roleMemberTeam.CUST_TEAM_ADMIN,
+                constants.roleMemberTeam.CUST_DAR_MANAGER,
                 constants.roleMemberTeam.CUST_MD_MANAGER
             ]
         );
-            
+
         this.sendLogInGoogle({
             action: 'deleteTeamMember',
             input: {
@@ -84,19 +84,19 @@ class TeamController extends TeamService {
         });
 
         team.members = updatedMembers;
+        let teamClone = team;
         try {
-            team.save(function (err, result) {
+            team.save(async err => {
                 if (err) {
                     throw new HttpExceptions(err.message);
                 } else {
-                    let removedUser = users.find(user => user._id.toString() === deleteUserId.toString());
-                    teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERREMOVED, { removedUser }, team, userObj);
-        
+                    await this.updateTeamMemberMessage(teamId, deleteUserId, currentUserId.toString(), '', null, teamClone, true);
+
                     return res.status(204).json({
                         success: true,
-                    });        
+                    });
                 }
-            });   
+            });
 
         } catch (e) {
             throw new HttpExceptions(e.message);
@@ -137,12 +137,14 @@ class TeamController extends TeamService {
         });
 
         team.members = team.members.concat(newMembers);
+        let teamClone = team;
         team.save(async err => {
             if (err) {
                 throw new HttpExceptions(err.message);
             } else {
-                let newUsers = await UserModel.find({ _id: memberId });
-                teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERADDED, { newUsers }, team, req.user);
+                for (const role of roles) {
+                    await this.updateTeamMemberMessage(teamId, memberId[0], currentUserId.toString(), role, true, teamClone);
+                }
                 const updatedTeam = await this.getMembersByTeamId(teamId);
                 let users = teamV3Util.formatTeamMembers(updatedTeam);
 
@@ -160,7 +162,7 @@ class TeamController extends TeamService {
         const currentUserId = req.user._id;
         const role = req.body;
         const allowPerms = req.allowPerms || [];
-        let tempRole = ''; 
+        let tempRole = '';
 
         if (Object.keys(role).length === 0) {
             throw new HttpExceptions(`No Roles`, 400);
@@ -236,17 +238,17 @@ class TeamController extends TeamService {
 
         } catch (e) {
             throw new HttpExceptions(e.message);
-        } 
+        }
     }
 
-    async updateTeamMemberMessage(teamId, userId, currentUserId, permission, permissionStatus, team) {
+    async updateTeamMemberMessage(teamId, userId, currentUserId, permission, permissionStatus, team, deleteUser = false) {
         const userDetails = await UserModel.findOne({ _id: userId });
         const userName = `${userDetails.firstname.toUpperCase()} ${userDetails.lastname.toUpperCase()}`;
         const currentUserDetails = await UserModel.findOne({ _id: currentUserId });
         const currentUserName = `${currentUserDetails.firstname.toUpperCase()} ${currentUserDetails.lastname.toUpperCase()}`;
         const publisherName = team.publisher.name.toUpperCase();
-        const subjectEmail = emailTeam.subjectEmail(publisherName, currentUserName, permission, permissionStatus);
-        const bodyEmail = emailTeam.bodyEmail(publisherName, currentUserName, userName, permission, permissionStatus, teamId, team);
+        const subjectEmail = emailTeam.subjectEmail(publisherName, currentUserName, permission, permissionStatus, deleteUser);
+        const bodyEmail = emailTeam.bodyEmail(publisherName, currentUserName, userName, permission, permissionStatus, teamId, team, deleteUser);
 
         await emailGenerator.sendEmailOne(userDetails.email, constants.hdrukEmail, subjectEmail, bodyEmail);
     }
@@ -308,10 +310,10 @@ class TeamController extends TeamService {
                 user: { _id },
                 body: data,
             } = req;
-    
+
             let { members, users, notifications } = team;
             let authorised = false;
-    
+
             if (members) {
                 authorised = [...members].some(el => el.memberid.toString() === _id.toString());
             }
@@ -319,19 +321,19 @@ class TeamController extends TeamService {
             if (!authorised) return res.status(401).json({ success: false });
 
             let member = [...members].find(el => el.memberid.toString() === _id.toString());
-    
+
             let isManager = true;
-    
+
             let { memberNotifications = [], teamNotifications = [] } = data;
-    
+
             let missingOptIns = {};
-    
+
             if (!isEmpty(memberNotifications) && !isEmpty(teamNotifications)) {
                 missingOptIns = teamV3Util.findMissingOptIns(memberNotifications, teamNotifications);
             }
-    
+
             if (!isEmpty(missingOptIns)) return res.status(400).json({ success: false, message: missingOptIns });
-    
+
             if (isManager) {
                 const optedOutTeamNotifications = Object.values([...teamNotifications]).filter(notification => !notification.optIn) || [];
                 if (!isEmpty(optedOutTeamNotifications)) {
@@ -350,10 +352,10 @@ class TeamController extends TeamService {
                         });
                     });
                 }
-    
+
                 if (!isEmpty(notifications)) {
                     let manager = [...users].find(user => user._id.toString() === member.memberid.toString());
-    
+
                     [...notifications].forEach(dbNotification => {
                         let { notificationType } = dbNotification;
                         const notificationPayload =
@@ -380,9 +382,8 @@ class TeamController extends TeamService {
                                         ...options,
                                         notificationRemoved: true,
                                         disabled: !payLoadOptIn ? true : false,
-                                        header: `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
-                                            dbOptIn && !payLoadOptIn ? 'disabled all' : 'removed a'
-                                        } generic team email address(es)`,
+                                        header: `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${dbOptIn && !payLoadOptIn ? 'disabled all' : 'removed a'
+                                            } generic team email address(es)`,
                                         emailAddresses: dbOptIn && !payLoadOptIn ? payLoadSubscribedEmails : removedEmails,
                                         publisherId: team.publisher._id.toString(),
                                     };
@@ -390,17 +391,15 @@ class TeamController extends TeamService {
                                     emailGenerator.sendEmail(
                                         memberEmails,
                                         constants.hdrukEmail,
-                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
-                                            dbOptIn && !payLoadOptIn ? 'disabled all' : 'removed a'
+                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${dbOptIn && !payLoadOptIn ? 'disabled all' : 'removed a'
                                         } generic team email address(es)`,
                                         html,
                                         true
                                     );
-    
+
                                     notificationBuilder.triggerNotificationMessage(
                                         [...userIds],
-                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
-                                            dbOptIn && !payLoadOptIn ? 'disabled all' : 'removed a'
+                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${dbOptIn && !payLoadOptIn ? 'disabled all' : 'removed a'
                                         } generic team email address(es)`,
                                         'team',
                                         team.publisher ? team.publisher.name : 'Undefined'
@@ -411,9 +410,8 @@ class TeamController extends TeamService {
                                     options = {
                                         ...options,
                                         notificationRemoved: false,
-                                        header: `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
-                                            !dbOptIn && payLoadOptIn ? 'enabled all' : 'added a'
-                                        } generic team email address(es)`,
+                                        header: `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${!dbOptIn && payLoadOptIn ? 'enabled all' : 'added a'
+                                            } generic team email address(es)`,
                                         emailAddresses: payLoadSubscribedEmails,
                                         publisherId: team.publisher._id.toString(),
                                     };
@@ -421,17 +419,15 @@ class TeamController extends TeamService {
                                     emailGenerator.sendEmail(
                                         memberEmails,
                                         constants.hdrukEmail,
-                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
-                                            !dbOptIn && payLoadOptIn ? 'enabled all' : 'added a'
+                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${!dbOptIn && payLoadOptIn ? 'enabled all' : 'added a'
                                         } generic team email address(es)`,
                                         html,
                                         true
                                     );
-    
+
                                     notificationBuilder.triggerNotificationMessage(
                                         [...userIds],
-                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${
-                                            !dbOptIn && payLoadOptIn ? 'enabled all' : 'added a'
+                                        `A manager for ${team.publisher ? team.publisher.name : 'a team'} has ${!dbOptIn && payLoadOptIn ? 'enabled all' : 'added a'
                                         } generic team email address(es)`,
                                         'team',
                                         team.publisher ? team.publisher.name : 'Undefined'
