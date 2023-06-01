@@ -1,7 +1,7 @@
 import HttpExceptions from "../../../../exceptions/HttpExceptions";
 import constants from "../../../utilities/constants.util";
 
-const subjectEmail = (teamName = '', userName = '', role, status) => {
+const subjectEmail = (teamName = '', userName = '', role, status, deleteUser) => {
     let subject = '';
     let publisherName = '';
 
@@ -47,14 +47,17 @@ const subjectEmail = (teamName = '', userName = '', role, status) => {
                 subject = `You have been removed as a Reviewer for the ${publisherName} team on the Gateway.`;
             }
             break;
-        default:            
+        default:     
+            if (deleteUser) {
+                subject = `You have been removed as a user for the ${publisherName} team on the Gateway.`;
+            }       
             break;
     }
 
     return subject;
 }
 
-const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, status, teamId, team) => {
+const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, status, teamId, team, deleteUser) => {
     const urlHdrukLogoEmail = 'https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg';
     const urlHdrukHeaderEmail = 'https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg';
 
@@ -403,6 +406,34 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             }
             break;
         default:
+            if (deleteUser) {
+                middleBodyEmail = `
+                    <tr>
+                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                            User has been removed
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:40px 10px 10px 10px;">
+                            You have been removed as a user for the ${publisherName} team on the Gateway.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px;">
+                            You can no longer:<br/>
+                            <ul>
+                                <li style="line-height:20px;height:auto;">Process applications and communicate with applicants through the Gateway.</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px;line-height:1.5em;">
+                            For more information, please contact a Team Admin for your team:<br/>
+                            ${teamAdmin}
+                        </td>
+                    </tr>
+                `;
+            }  
             break;
     }
 
