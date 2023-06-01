@@ -56,7 +56,7 @@ class TeamController extends TeamService {
         await this.checkUserAuth(teamId, currentUserId, allowPerms);
 
         const team = await this.getTeamByTeamId(teamId);
-
+        
         let { members = [], users = [] } = team;
 
         let updatedMembers = [...members].filter(mem => mem.memberid.toString() !== deleteUserId.toString());
@@ -84,13 +84,13 @@ class TeamController extends TeamService {
         });
 
         team.members = updatedMembers;
+        let teamClone = team;
         try {
-            team.save(function (err, result) {
+            team.save(async err => {
                 if (err) {
                     throw new HttpExceptions(err.message);
                 } else {
-                    let removedUser = users.find(user => user._id.toString() === deleteUserId.toString());
-                    teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERREMOVED, { removedUser }, team, userObj);
+                    await this.updateTeamMemberMessage(teamId, deleteUserId, currentUserId.toString(), '', null, teamClone, true);
         
                     return res.status(204).json({
                         success: true,
@@ -137,12 +137,14 @@ class TeamController extends TeamService {
         });
 
         team.members = team.members.concat(newMembers);
+        let teamClone = team;
         team.save(async err => {
             if (err) {
                 throw new HttpExceptions(err.message);
             } else {
-                let newUsers = await UserModel.find({ _id: memberId });
-                teamV3Util.createTeamNotifications(constants.notificationTypes.MEMBERADDED, { newUsers }, team, req.user);
+                for (const role of roles) {
+                    await this.updateTeamMemberMessage(teamId, memberId[0], currentUserId.toString(), role, true, teamClone);
+                }                
                 const updatedTeam = await this.getMembersByTeamId(teamId);
                 let users = teamV3Util.formatTeamMembers(updatedTeam);
 
@@ -239,14 +241,14 @@ class TeamController extends TeamService {
         } 
     }
 
-    async updateTeamMemberMessage(teamId, userId, currentUserId, permission, permissionStatus, team) {
+    async updateTeamMemberMessage(teamId, userId, currentUserId, permission, permissionStatus, team, deleteUser = false) {
         const userDetails = await UserModel.findOne({ _id: userId });
         const userName = `${userDetails.firstname.toUpperCase()} ${userDetails.lastname.toUpperCase()}`;
         const currentUserDetails = await UserModel.findOne({ _id: currentUserId });
         const currentUserName = `${currentUserDetails.firstname.toUpperCase()} ${currentUserDetails.lastname.toUpperCase()}`;
         const publisherName = team.publisher.name.toUpperCase();
-        const subjectEmail = emailTeam.subjectEmail(publisherName, currentUserName, permission, permissionStatus);
-        const bodyEmail = emailTeam.bodyEmail(publisherName, currentUserName, userName, permission, permissionStatus, teamId, team);
+        const subjectEmail = emailTeam.subjectEmail(publisherName, currentUserName, permission, permissionStatus, deleteUser);
+        const bodyEmail = emailTeam.bodyEmail(publisherName, currentUserName, userName, permission, permissionStatus, teamId, team, deleteUser);
 
         await emailGenerator.sendEmailOne(userDetails.email, constants.hdrukEmail, subjectEmail, bodyEmail);
     }
