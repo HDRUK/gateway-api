@@ -56,7 +56,7 @@ class TeamController extends TeamService {
         await this.checkUserAuth(teamId, currentUserId, allowPerms);
 
         const team = await this.getTeamByTeamId(teamId);
-
+        
         let { members = [], users = [] } = team;
 
         let updatedMembers = [...members].filter(mem => mem.memberid.toString() !== deleteUserId.toString());
@@ -145,6 +145,7 @@ class TeamController extends TeamService {
                 for (const role of roles) {
                     await this.updateTeamMemberMessage(teamId, memberId[0], currentUserId.toString(), role, true, teamClone);
                 }
+
                 const updatedTeam = await this.getMembersByTeamId(teamId);
                 let users = teamV3Util.formatTeamMembers(updatedTeam);
 
