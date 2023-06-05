@@ -123,8 +123,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             if (status) {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             Custodian Team Admin has been assigned
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
@@ -146,8 +160,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             } else {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             Custodian Team Admin has been removed
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
@@ -178,8 +206,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             if (status) {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             Metadata Manager has been assigned
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
@@ -205,8 +247,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             } else {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             Metadata Manager has been removed
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
@@ -236,8 +292,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             if (status) {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             Metadata Editor has been assigned
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
@@ -263,8 +333,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             } else {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             Metadata Editor has been removed
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
@@ -290,8 +374,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             if (status) {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             DAR Manager has been assigned
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
@@ -318,8 +416,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             } else {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             DAR Manager has been removed
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
@@ -351,8 +463,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             if (status) {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             DAR Reviewer has been assigned
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
@@ -378,8 +504,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             } else {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             DAR Reviewer has been removed
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
@@ -409,8 +549,22 @@ const bodyEmail = (teamName = '', currentUserName = '', userName = '', role, sta
             if (deleteUser) {
                 middleBodyEmail = `
                     <tr>
-                        <td style="background-image:url(${urlHdrukHeaderEmail});background-repeat:no-repeat;height:160px;font-size:32px;color:white;text-align:center;">
+                        <td align="center" bgcolor="#ffffff" background="${urlHdrukHeaderEmail}" width="836" height="160" valign="center" style="background: url(${urlHdrukHeaderEmail}) center / cover no-repeat #ffffff;font-size:32px;color:white;text-align:center;">
+                            <!--[if gte mso 9]>
+                            <v:image xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block; width: 836px; height: 160px;" src="${urlHdrukHeaderEmail}" />
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style=" border: 0;display: inline-block;position: absolute; width: 836px; height:160px;">
+                            <v:fill opacity="0%" color="#ffffff”  />
+                            <v:textbox inset="0,0,0,0">
+                            <![endif]-->
+
                             User has been removed
+
+                            <!--[if gte mso 9]>
+                            </v:textbox>
+                            </v:fill>
+                            </v:rect>
+                            </v:image>
+                            <![endif]-->
                         </td>
                     </tr>
                     <tr>
