@@ -1844,7 +1844,7 @@ export default class DataRequestController extends Controller {
 
 		switch (type) {
 			case constants.notificationTypes.INPROGRESS:
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 				custodianManagersIds = custodianManagers.map(user => user.id);
 				notificationTeam = accessRecord.publisherObj.team.notifications;
 				if (notificationTeam.length && notificationTeam[0].optIn) {
@@ -1884,7 +1884,7 @@ export default class DataRequestController extends Controller {
 				// 1. Create notifications
 				// Custodian manager and current step reviewer notifications
 				// Retrieve all custodian manager user Ids and active step reviewers
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 				let activeStep = this.workflowService.getActiveWorkflowStep(workflow);
 				stepReviewers = this.workflowService.getStepReviewers(activeStep);
 				// Create custodian notification
@@ -1956,7 +1956,7 @@ export default class DataRequestController extends Controller {
 				// Custodian notification
 				if (_.has(accessRecord.datasets[0], 'publisher.team.users') && accessRecord.datasets[0].publisher.allowAccessRequestManagement) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					// check if publisher.team has email notifications
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
@@ -1976,7 +1976,7 @@ export default class DataRequestController extends Controller {
 					}
 				} else if (_.has(accessRecord, 'publisherObj') && accessRecord.publisherObj.allowAccessRequestManagement) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					// check if publisher.team has email notifications
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
@@ -2089,7 +2089,7 @@ export default class DataRequestController extends Controller {
 				// Custodian notification
 				if (_.has(accessRecord.datasets[0], 'publisher.team.users')) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
 						custodianUserIds,
@@ -2107,7 +2107,7 @@ export default class DataRequestController extends Controller {
 					}
 				} else if (_.has(accessRecord, 'publisherObj') && accessRecord.publisherObj.allowAccessRequestManagement) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
@@ -2326,7 +2326,7 @@ export default class DataRequestController extends Controller {
 				break;
 			case constants.notificationTypes.FINALDECISIONREQUIRED:
 				// 1. Get managers for publisher
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 				custodianManagersIds = custodianManagers.map(user => user.id);
 
 				// 2. Create manager notifications
@@ -2364,7 +2364,7 @@ export default class DataRequestController extends Controller {
 				);
 				break;
 			case constants.notificationTypes.DEADLINEWARNING:
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 				custodianManagersIds = custodianManagers.map(user => user.id);
 				notificationTeam = accessRecord.publisherObj.team.notifications;
 				if (notificationTeam.length && notificationTeam[0].optIn) {
@@ -2407,7 +2407,7 @@ export default class DataRequestController extends Controller {
 				break;
 			case constants.notificationTypes.DEADLINEPASSED:
 				// 1. Get all managers
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 				custodianManagersIds = custodianManagers.map(user => user.id);
 				// 2. Combine managers and reviewers remaining
 				let deadlinePassedUserIds = [...remainingReviewerUserIds, ...custodianManagersIds];
@@ -2454,7 +2454,7 @@ export default class DataRequestController extends Controller {
 				break;
 			case constants.notificationTypes.WORKFLOWASSIGNED:
 				// 1. Get managers for publisher
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team.toObject(), 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team.toObject(), constants.roleMemberTeam.CUST_DAR_MANAGER);
 				// 2. Get managerIds for notifications
 				custodianManagersIds = custodianManagers.map(user => user.id);
 				// 3. deconstruct and set options for notifications and email
@@ -2592,7 +2592,7 @@ export default class DataRequestController extends Controller {
 				// Custodian notification
 				if (_.has(accessRecord.datasets[0], 'publisher.team.users')) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
 						custodianUserIds,
@@ -2602,7 +2602,7 @@ export default class DataRequestController extends Controller {
 					);
 				} else if (_.has(accessRecord, 'publisherObj')) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
 						custodianUserIds,
@@ -2693,7 +2693,7 @@ export default class DataRequestController extends Controller {
 				break;
 			case constants.notificationTypes.MESSAGESENT:
 				if (userType === constants.userTypes.APPLICANT) {
-					const custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+					const custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					const custodianManagersIds = custodianManagers.map(user => user.id);
 
 					notificationTeam = accessRecord.publisherObj.team.notifications;
@@ -2728,7 +2728,7 @@ export default class DataRequestController extends Controller {
 						false
 					);
 				} else if (userType === constants.userTypes.CUSTODIAN) {
-					const custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+					const custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					const custodianManagersIds = custodianManagers.map(user => user.id);
 
 					notificationTeam = accessRecord.publisherObj.team.notifications;

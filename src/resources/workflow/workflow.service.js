@@ -164,7 +164,7 @@ export default class WorkflowService {
 			// deconstruct context
 			let { publisherObj, workflow = {}, actioner = '' } = context;
 
-			custodianManagers = teamController.getTeamMembersByRole(publisherObj, 'All');
+			custodianManagers = teamController.getTeamMembersByRole(publisherObj, constants.roleMemberTeam.CUST_DAR_MANAGER);
 			if (has(publisherObj.notifications[0], 'optIn') && publisherObj.notifications[0].optIn) {
 				publisherObj.notifications[0].subscribedEmails.map(teamEmail => {
 					custodianManagers.push({ email: teamEmail });
