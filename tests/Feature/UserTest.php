@@ -145,8 +145,13 @@ class UserTest extends TestCase
                 'email' => 'just.test.123456789@test.com',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => 75697342,
                 'contact_feedback' => 1,
-                'contact_news' => 1,
+                'contact_news' => 1, 
             ],
             $this->header
         );
@@ -156,6 +161,68 @@ class UserTest extends TestCase
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);
+    }
+
+    public function test_it_can_update_a_user(): void
+    {
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            [
+                'firstname' => 'Just',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => 75697342,
+                'contact_feedback' => 1,
+                'contact_news' => 1, 
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(201);      
+        
+        $content = $response->decodeResponseJson();
+        $this->assertEquals($content['message'],
+            'created',
+        );
+
+        // Finally, update the last entered user to prove functionality
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $content['data'],
+            [
+                'firstname' => 'Just',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Updated Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => 75697342,
+                'contact_feedback' => 0,
+                'contact_news' => 0, 
+            ],
+            $this->header
+        );
+
+        $response->assertStatus(202)
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals($content['data']['organisation'], 'Updated Organisation');
+        $this->assertEquals($content['data']['contact_feedback'], false);
+        $this->assertEquals($content['data']['contact_news'], false);
     }
 
     /**
