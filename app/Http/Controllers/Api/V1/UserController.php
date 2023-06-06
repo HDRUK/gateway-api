@@ -200,12 +200,21 @@ class UserController extends Controller
             $input = $request->all();
 
             $array = [
-                "name" => $input['firstname'] . " " . $input['lastname'],
-                "firstmame" => $input['firstname'],
-                "lastname" => $input['lastname'],
-                "email" => $input['email'],
-                "provider" =>  Config::get('constants.provider.service'),
-                "password" => Hash::make($input['password']),
+                'name' => $input['firstname'] . " " . $input['lastname'],
+                'firstmame' => $input['firstname'],
+                'lastname' => $input['lastname'],
+                'email' => $input['email'],
+                'provider' =>  Config::get('constants.provider.service'),
+                'password' => Hash::make($input['password']),
+                'sector_id' => $input['sector_id'],
+                'organisation' => $input['organisation'],
+                'bio' => $input['bio'],
+                'domain' => $input['domain'],
+                'link' => $input['link'],
+                'orcid' => $input['orcid'],
+                'contact_feedback' => $input['contact_feedback'],
+                'contact_news' => $input['contact_news'],
+                
             ];
             $user = User::create($array);
 
@@ -307,8 +316,8 @@ class UserController extends Controller
                 ], 400);
             }
 
-            $checkUser = User::where('id', $id)->get();
-            if ($checkUser) {
+            $user = User::findOrFail($id);
+            if ($user) {
                 $array = [
                     "name" => $input['firstname'] . " " . $input['lastname'],
                     "firstname" => $input['firstname'],
@@ -316,13 +325,21 @@ class UserController extends Controller
                     "email" => $input['email'],
                     "provider" =>  Config::get('constants.provider.service'),
                     "password" => Hash::make($input['password']),
+                    'sector_id' => $input['sector_id'],
+                    'organisation' => $input['organisation'],
+                    'bio' => $input['bio'],
+                    'domain' => $input['domain'],
+                    'link' => $input['link'],
+                    'orcid' => $input['orcid'],
+                    'contact_feedback' => $input['contact_feedback'],
+                    'contact_news' => $input['contact_news'],                    
                 ];
 
                 if (array_key_exists('passwords', $input)) {
                     $array['password'] = Hash::make($input['password']);
                 }
 
-                $user = User::where('id', $id)->update($array);
+                $user->update($array);
 
                 return response()->json([
                     'message' => 'success',
