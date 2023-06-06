@@ -85,7 +85,7 @@ class ReviewController extends Controller
 
     public function index(): JsonResponse
     {
-        $reviews = Review::with(['tool', 'user'])->get();
+        $reviews = Review::with(['tool', 'user'])->paginate(Config::get('constants.per_page'));
 
         return response()->json([
             'message' => 'success',

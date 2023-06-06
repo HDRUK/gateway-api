@@ -48,6 +48,7 @@ class UserTest extends TestCase
         $this->assertCount($countBefore, $response['data']);
         // var_dump($response);
         $response->assertJsonStructure([
+            'current_page',
             'message',
             'data' => [
                 0 => [
@@ -73,6 +74,17 @@ class UserTest extends TestCase
                     'contact_news',
                 ],
             ],
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',            
         ]);
         $response->assertStatus(200);
     }

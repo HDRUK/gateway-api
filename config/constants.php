@@ -17,4 +17,5 @@ return [
             'password' => 'passw@rdJ0hnD0e'
         ],
     ],
+    'per_page' => 25,
 ];

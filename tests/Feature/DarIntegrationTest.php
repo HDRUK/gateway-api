@@ -43,6 +43,7 @@ class DarIntegrationTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
+                'current_page',
                 'data' => [
                     0 => [
                         'id',
@@ -60,6 +61,17 @@ class DarIntegrationTest extends TestCase
                         'inbound_service_account_id',
                     ],
                 ],
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',                
             ]);
 
     }

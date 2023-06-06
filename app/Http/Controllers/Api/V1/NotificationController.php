@@ -43,7 +43,7 @@ class NotificationController extends Controller
 
     public function index(Request $request)
     {
-        $notifications = Notification::where('enabled', 1)->get();
+        $notifications = Notification::where('enabled', 1)->paginate(Config::get('constants.per_page'));
         return response()->json([
             'message' => Config::get('statuscodes.STATUS_OK.message'),
             'data' => $notifications

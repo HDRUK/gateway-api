@@ -47,6 +47,7 @@ class CollectionTest extends TestCase
 
         $this->assertCount($countCollection, $response['data']);
         $response->assertJsonStructure([
+            'current_page',
             'data' => [
                 0 => [
                     'id',
@@ -61,7 +62,18 @@ class CollectionTest extends TestCase
                     'updated_at',
                     'deleted_at',
                 ]
-            ]
+            ],
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
         ]);
         $response->assertStatus(200);
     }

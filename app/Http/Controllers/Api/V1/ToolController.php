@@ -41,7 +41,7 @@ class ToolController extends Controller
      */
     public function index(): mixed
     {
-        $tools = Tool::with(['user', 'tag'])->where('enabled', 1)->get();
+        $tools = Tool::with(['user', 'tag'])->where('enabled', 1)->paginate(Config::get('constants.per_page'));
 
         return response()->json([
             'message' => 'success',

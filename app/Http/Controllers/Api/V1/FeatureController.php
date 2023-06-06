@@ -39,7 +39,7 @@ class FeatureController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $features = Feature::where('enabled', 1)->get();
+        $features = Feature::where('enabled', 1)->paginate(Config::get('constants.per_page'));
 
         return response()->json([
             'message' => 'success',

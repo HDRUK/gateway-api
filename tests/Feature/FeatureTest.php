@@ -47,6 +47,7 @@ class FeatureTest extends TestCase
         $this->assertCount($countTag, $response['data']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
+            'current_page',
             'data' => [
                 0 => [
                     'id',
@@ -57,6 +58,17 @@ class FeatureTest extends TestCase
                     'deleted_at',
                 ],
             ],
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',            
         ]);
     }
 

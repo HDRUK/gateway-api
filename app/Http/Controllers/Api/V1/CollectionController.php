@@ -54,7 +54,7 @@ class CollectionController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tags = Collection::all();
+        $tags = Collection::paginate(Config::get('constants.per_page'));
 
         return response()->json([
             'message' => 'success',

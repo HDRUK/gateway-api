@@ -51,7 +51,7 @@ class TeamController extends Controller
      */
     public function index(Request $request)
     {
-        $teams = Team::where('enabled', 1)->with('users')->get()->toArray();
+        $teams = Team::where('enabled', 1)->with('users')->paginate(Config::get('constants.per_page'))->toArray();
 
         $response = $this->getTeams($teams);
 

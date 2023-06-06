@@ -53,7 +53,7 @@ class UserController extends Controller
      */
     public function index(): mixed
     {
-        $users = User::with('teams')->get()->toArray();
+        $users = User::with('teams')->paginate(Config::get('constants.per_page'))->toArray();
 
         $response = $this->getUsers($users);
 

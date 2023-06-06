@@ -40,7 +40,7 @@ class ActivityLogUserTypeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $activityLogUserTypes = ActivityLogUserType::all();
+        $activityLogUserTypes = ActivityLogUserType::paginate(Config::get('constants.per_page'));
         return response()->json([
             'data' => $activityLogUserTypes,
         ]);
