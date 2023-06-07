@@ -44,9 +44,9 @@ class FilterController extends Controller
     public function index(Request $request)
     {
         $filters = Filter::where('enabled', 1)->paginate(Config::get('constants.per_page'));
-        return response()->json([
-            'data' => $filters
-        ]);
+        return response()->json(
+            $filters
+        );
     }
 
     /**

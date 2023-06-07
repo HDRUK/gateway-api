@@ -2,14 +2,18 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
+
 use App\Models\Collection;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Http\Requests\CreateCollectionRequest;
 use App\Http\Requests\UpdateCollectionRequest;
+
+
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class CollectionController extends Controller
 {
@@ -56,10 +60,9 @@ class CollectionController extends Controller
     {
         $tags = Collection::paginate(Config::get('constants.per_page'));
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $tags
-        ], 200);
+        return response()->json(
+            $tags
+        );
     }
 
     /**

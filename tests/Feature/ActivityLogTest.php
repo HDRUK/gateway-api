@@ -7,6 +7,7 @@ use Config;
 use Tests\TestCase;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class ActivityLogTest extends TestCase
 {
@@ -43,7 +44,7 @@ class ActivityLogTest extends TestCase
 
         // dd($response->getContent());
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))                
             ->assertJsonStructure([
                 'data' => [
                     0 => [
@@ -61,18 +62,18 @@ class ActivityLogTest extends TestCase
                         'version_id_mongo',
                     ],
                 ],
-                // 'current_page',
-                // 'first_page_url',
-                // 'from',
-                // 'last_page',
-                // 'last_page_url',
-                // 'links',
-                // 'next_page_url',
-                // 'path',
-                // 'per_page',
-                // 'prev_page_url',
-                // 'to',
-                // 'total',                
+                'current_page',
+                'first_page_url',
+                'from',
+                'last_page',
+                'last_page_url',
+                'links',
+                'next_page_url',
+                'path',
+                'per_page',
+                'prev_page_url',
+                'to',
+                'total',                
             ]);
     }
 

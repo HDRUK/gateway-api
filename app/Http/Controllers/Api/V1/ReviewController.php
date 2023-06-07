@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
+
 use App\Models\Review;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Http\Requests\CreateReviewRequest;
 use App\Http\Requests\UpdateReviewRequest;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class ReviewController extends Controller
 {
@@ -87,10 +90,9 @@ class ReviewController extends Controller
     {
         $reviews = Review::with(['tool', 'user'])->paginate(Config::get('constants.per_page'));
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $reviews
-        ], 200);
+        return response()->json(
+            $reviews
+        );
     }
 
     /**

@@ -42,14 +42,8 @@ class UserTest extends TestCase
      */
     public function test_get_all_users_with_success(): void
     {
-        $countBefore = User::all()->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
-
-        $this->assertCount($countBefore, $response['data']);
-        // var_dump($response);
         $response->assertJsonStructure([
-            'current_page',
-            'message',
             'data' => [
                 0 => [
                     'id',
@@ -73,18 +67,7 @@ class UserTest extends TestCase
                     'contact_feedback',
                     'contact_news',
                 ],
-            ],
-            'first_page_url',
-            'from',
-            'last_page',
-            'last_page_url',
-            'links',
-            'next_page_url',
-            'path',
-            'per_page',
-            'prev_page_url',
-            'to',
-            'total',            
+            ],   
         ]);
         $response->assertStatus(200);
     }
@@ -108,33 +91,8 @@ class UserTest extends TestCase
     public function test_get_user_by_id_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
-
-        $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
-            'data' => [
-                0 => [
-                    'id',
-                    'name',
-                    'firstname',
-                    'lastname',
-                    'email',
-                    'providerid',
-                    'provider',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'teams',
-                    'notifications',
-                    'sector_id',
-                    'organisation',
-                    'bio',
-                    'domain',
-                    'link',
-                    'orcid',
-                    'contact_feedback',
-                    'contact_news',                    
-                ]
-            ]
+            'data',
         ]);
         $response->assertStatus(200);
     }

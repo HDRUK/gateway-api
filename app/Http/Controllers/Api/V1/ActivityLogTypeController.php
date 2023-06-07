@@ -41,9 +41,9 @@ class ActivityLogTypeController extends Controller
     public function index(Request $request): JsonResponse
     {
         $activityLogTypes = ActivityLogType::paginate(Config::get('constants.per_page'));
-        return response()->json([
-            'data' => $activityLogTypes,
-        ]);
+        return response()->json(
+            $activityLogTypes,
+        );
     }
 
     /**

@@ -49,9 +49,9 @@ class ActivityLogController extends Controller
     public function index(Request $request): JsonResponse
     {
         $activityLogs = ActivityLog::paginate(Config::get('constants.per_page'));
-        return response()->json([
-            'data' => $activityLogs
-        ]);
+        return response()->json(
+            $activityLogs
+        );
     }
 
     /**

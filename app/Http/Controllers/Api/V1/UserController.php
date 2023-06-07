@@ -5,13 +5,15 @@ namespace App\Http\Controllers\Api\V1;
 use Hash;
 use Config;
 use Exception;
+
 use App\Models\User;
 use App\Models\UserHasNotification;
-use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserLiteRequest;
 use App\Http\Traits\UserTransformation;
+
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -53,14 +55,13 @@ class UserController extends Controller
      */
     public function index(): mixed
     {
-        $users = User::with('teams')->paginate(Config::get('constants.per_page'))->toArray();
+        $users = User::with('teams')->get()->toArray();
 
         $response = $this->getUsers($users);
 
         return response()->json([
-            'message' => 'success',
-            'data' => $response,
-        ], 200);
+            'data' => $response
+        ]);
     }
 
     /**

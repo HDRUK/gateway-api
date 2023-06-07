@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
+
 use App\Models\Tool;
 use App\Models\ToolHasTag;
-use Illuminate\Http\Request;
 use App\Http\Requests\ToolRequest;
 use App\Http\Controllers\Controller;
+
+use Illuminate\Http\Request;
 
 class ToolController extends Controller
 {
@@ -43,10 +46,9 @@ class ToolController extends Controller
     {
         $tools = Tool::with(['user', 'tag'])->where('enabled', 1)->paginate(Config::get('constants.per_page'));
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $tools
-        ], 200);
+        return response()->json(
+            $tools
+        );
     }
 
     /**

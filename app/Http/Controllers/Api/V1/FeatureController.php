@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
+
 use App\Models\Feature;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateFeatureRequest;
 use App\Http\Requests\UpdateFeatureRequest;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class FeatureController extends Controller
 {
@@ -41,10 +44,9 @@ class FeatureController extends Controller
     {
         $features = Feature::where('enabled', 1)->paginate(Config::get('constants.per_page'));
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $features
-        ], 200);
+        return response()->json(
+            $features
+        );
     }
 
     /**
