@@ -38,10 +38,10 @@ class SectorController extends Controller
      */
     public function index(Request $request)
     {
-        $sectors = Sector::where('enabled', 1)->get();
-        return response()->json([
-            'data' => $sectors,
-        ]);
+        $sectors = Sector::where('enabled', 1)->paginate(Config::get('constants.per_page'));
+        return response()->json(
+            $sectors
+        );
     }
 
     /**

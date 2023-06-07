@@ -3,14 +3,18 @@
 namespace Tests\Feature;
 
 use Config;
+use ReflectionClass;
+
 use Tests\TestCase;
+
 use App\Models\Tool;
 use App\Models\ToolHasTag;
 use App\Http\Requests\ToolRequest;
-use Tests\Traits\Authorization;
 use App\Http\Controllers\Api\V1\ToolController;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use ReflectionClass;
+
+use Tests\Traits\Authorization;
 
 class ToolTest extends TestCase
 {
@@ -48,7 +52,7 @@ class ToolTest extends TestCase
     {
         $countTool = Tool::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
-        $this->assertCount($countTool, $response['data']);
+        $this->assertEquals($countTool, $response['total']);
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -67,7 +71,19 @@ class ToolTest extends TestCase
                     'user',
                     'tag',
                 ]
-            ]
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
         ]);
         $response->assertStatus(200);
     }

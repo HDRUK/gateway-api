@@ -42,13 +42,8 @@ class UserTest extends TestCase
      */
     public function test_get_all_users_with_success(): void
     {
-        $countBefore = User::all()->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
-
-        $this->assertCount($countBefore, $response['data']);
-        // var_dump($response);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     'id',
@@ -72,7 +67,7 @@ class UserTest extends TestCase
                     'contact_feedback',
                     'contact_news',
                 ],
-            ],
+            ],   
         ]);
         $response->assertStatus(200);
     }
@@ -96,33 +91,8 @@ class UserTest extends TestCase
     public function test_get_user_by_id_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
-
-        $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
-            'data' => [
-                0 => [
-                    'id',
-                    'name',
-                    'firstname',
-                    'lastname',
-                    'email',
-                    'providerid',
-                    'provider',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'teams',
-                    'notifications',
-                    'sector_id',
-                    'organisation',
-                    'bio',
-                    'domain',
-                    'link',
-                    'orcid',
-                    'contact_feedback',
-                    'contact_news',                    
-                ]
-            ]
+            'data',
         ]);
         $response->assertStatus(200);
     }

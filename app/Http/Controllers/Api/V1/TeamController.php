@@ -56,7 +56,6 @@ class TeamController extends Controller
         $response = $this->getTeams($teams);
 
         return response()->json([
-            'message' => 'success',
             'data' => $response,
         ]);
     }

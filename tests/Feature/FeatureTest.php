@@ -44,7 +44,7 @@ class FeatureTest extends TestCase
         $countTag = FeatureModel::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
-        $this->assertCount($countTag, $response['data']);
+        $this->assertEquals($countTag, $response['total']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -57,6 +57,18 @@ class FeatureTest extends TestCase
                     'deleted_at',
                 ],
             ],
+            'current_page',            
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',            
         ]);
     }
 

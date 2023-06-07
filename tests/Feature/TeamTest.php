@@ -42,7 +42,6 @@ class TeamTest extends TestCase
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
-                'message',
                 'data' => [
                     0 => [
                         'id',
@@ -60,7 +59,7 @@ class TeamTest extends TestCase
                         'users',
                         'notifications',
                     ],
-                ],
+                ],               
             ]);
     }
 

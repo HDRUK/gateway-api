@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
+
 use App\Models\Tag;
-use Illuminate\Http\Request;
 use App\Http\Requests\TagRequest;
-use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class TagController extends Controller
 {
@@ -50,12 +53,11 @@ class TagController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tags = Tag::where('enabled', 1)->get();
+        $tags = Tag::where('enabled', 1)->paginate(Config::get('constants.per_page'));
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $tags
-        ], 200);
+        return response()->json(
+            $tags
+        );
     }
 
     /**

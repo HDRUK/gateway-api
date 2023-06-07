@@ -81,7 +81,14 @@ trait UserTransformation
             }
             $tmpUser['notifications'] = $tmpNotification;
 
-            $response[] = $tmpUser;
+            // Added in to stop a singular /users/:id call returning an array for
+            // the users part of the payload
+            if (count($users) === 1) {
+                $response = $tmpUser;
+            } else {
+                $response[] = $tmpUser;
+            }
+
             unset($tmpTeam);
             unset($tmpUser);
             unset($tmpNotification);
