@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-use Carbon\Carbon;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use App\Models\AuthorisationCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\JwtController;
@@ -101,7 +102,8 @@ class AuthController extends Controller
      */
     private function createJwt($user)
     {
-        $currentTime = Carbon::now();
+        $currentTime = CarbonImmutable::now();
+        $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
 
         $userClaims = [
             'id' => (string) $user->id,
@@ -115,13 +117,21 @@ class AuthController extends Controller
             'aud' => (string) env('APP_NAME'),
             'iat' => (string) strtotime($currentTime),
             'nbf' => (string) strtotime($currentTime),
-            'exp' => (string) strtotime($currentTime->addDays(7)),
+            'exp' => (string) strtotime($expireTime),
             'jti' => (string) env('JWT_SECRET'),
             'user' => $userClaims,
         ];
 
         $this->jwt->setPayload($arrayClaims);
         $jwt = $this->jwt->create();
+
+        AuthorisationCode::createRow([
+            'user_id' => (int) $user->id,
+            'jwt' => (string) $jwt,
+            'created_at' => $currentTime,
+            'expired_at' => $expireTime,
+        ]);
+
         return $jwt;
     }
 }

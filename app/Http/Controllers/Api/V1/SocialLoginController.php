@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Exception;
-use Carbon\Carbon;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use App\Models\AuthorisationCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cookie;
@@ -109,11 +110,6 @@ class SocialLoginController extends Controller
             }
 
             $jwt = $this->createJwt($user);
-
-            // JWT_EXPIRATION
-            // $response = redirect(env('GATEWAY_URL'));
-            // $response->withCookie(cookie('token', $jwt, (int) env('JWT_EXPIRATION')));
-            // return $response;
 
             $cookies = [
                 Cookie::make('token', $jwt),
@@ -253,7 +249,8 @@ class SocialLoginController extends Controller
      */
     private function createJwt($user): string
     {
-        $currentTime = Carbon::now();
+        $currentTime = CarbonImmutable::now();
+        $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
 
         $arrayClaims = [
             'iss' => (string) env('APP_URL'),
@@ -261,13 +258,21 @@ class SocialLoginController extends Controller
             'aud' => (string) env('APP_NAME'),
             'iat' => (string) strtotime($currentTime),
             'nbf' => (string) strtotime($currentTime),
-            'exp' => (string) strtotime($currentTime->addSeconds(env('JWT_EXPIRATION'))),
+            'exp' => (string) strtotime($expireTime),
             'jti' => (string) env('JWT_SECRET'),
             'user' => $user,
         ];
 
         $this->jwt->setPayload($arrayClaims);
         $jwt = $this->jwt->create();
+
+        AuthorisationCode::createRow([
+            'user_id' => (int) $user->id,
+            'jwt' => (string) $jwt,
+            'created_at' => $currentTime,
+            'expired_at' => $expireTime,
+        ]);
+        
         return $jwt;
     }
 }
