@@ -55,7 +55,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     Route::delete('/teams/{teamId}/users/{userId}', [TeamUserController::class, 'destroy'])->where(['teamId' => '[0-9]+', 'userId' => '[0-9]+']);
     
     Route::post('/dispatch_email', 'EmailController@dispatchEmail');
-
+    Route::post('/logout', 'LogoutController@logout');
 });
 
 // stop all all other routes

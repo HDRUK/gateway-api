@@ -4,9 +4,11 @@ namespace App\Http\Middleware;
 
 use Config;
 
-use App\Http\Controllers\JwtController;
 use Closure;
 use Illuminate\Http\Request;
+use App\Models\AuthorisationCode;
+use App\Http\Controllers\JwtController;
+use App\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 
 class JwtMiddleware
@@ -34,13 +36,14 @@ class JwtMiddleware
             $authorization = $request->cookie('token');
             $jwtController = new JwtController();
             $jwtController->setJwt($authorization);
-            
-            if (!$jwtController->isValid()) {
-                return response()->json([
-                    Config::get('statuscodes.STATUS_UNAUTHORIZED.message'),
-                ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+            $isValidJwt = $jwtController->isValid();
+            $isJwtInDb = AuthorisationCode::findRowByJwt($jwtBearer);
+
+            if (!$isValidJwt || !$isJwtInDb) {
+                throw new UnauthorizedException();
             }
 
+            $request->merge(['jwt' => $authorization]);
             return $next($request);
         }
 
@@ -54,20 +57,16 @@ class JwtMiddleware
             $jwtController = new JwtController();
             $jwtController->setJwt($jwtBearer);
             $isValidJwt = $jwtController->isValid();
+            $isJwtInDb = AuthorisationCode::findRowByJwt($jwtBearer);
 
-            if (!$isValidJwt) {
-                throw new \Exception("No valid authorization");
+            if (!$isValidJwt || !$isJwtInDb) {
+                throw new UnauthorizedException();
             }
 
-        } else {
-            return response()->json([
-                Config::get('statuscodes.STATUS_UNAUTHORIZED.message'),
-            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
-            // LS - Removed, as this should consistently return an HTTP
-            // Status code, rather than throw an exception
-            // throw new \Exception("No authorization");
+            $request->merge(['jwt' => $jwtBearer]);
+            return $next($request);
         }
 
-        return $next($request);
+        throw new UnauthorizedException();
     }
 }
