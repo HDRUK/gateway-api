@@ -324,21 +324,15 @@ class UserController extends Controller
                     "firstname" => $input['firstname'],
                     "lastname" => $input['lastname'],
                     "email" => $input['email'],
-                    "provider" =>  Config::get('constants.provider.service'),
-                    "password" => Hash::make($input['password']),
-                    'sector_id' => $input['sector_id'],
-                    'organisation' => $input['organisation'],
-                    'bio' => $input['bio'],
-                    'domain' => $input['domain'],
-                    'link' => $input['link'],
-                    'orcid' => $input['orcid'],
-                    'contact_feedback' => $input['contact_feedback'],
-                    'contact_news' => $input['contact_news'],                    
+                    "sector_id" => $input['sector_id'],
+                    "organisation" => $input['organisation'],
+                    "bio" => $input['bio'],
+                    "domain" => $input['domain'],
+                    "link" => $input['link'],
+                    "orcid" => $input['orcid'],
+                    "contact_feedback" => $input['contact_feedback'],
+                    "contact_news" => $input['contact_news'],                    
                 ];
-
-                if (array_key_exists('passwords', $input)) {
-                    $array['password'] = Hash::make($input['password']);
-                }
 
                 $user->update($array);
 
