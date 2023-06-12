@@ -334,10 +334,6 @@ class UserController extends Controller
                     "contact_news" => $input['contact_news'],                    
                 ];
 
-                if (array_key_exists('passwords', $input)) {
-                    $array['password'] = Hash::make($input['password']);
-                }
-
                 $user->update($array);
 
                 return response()->json([
