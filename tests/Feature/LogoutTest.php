@@ -50,6 +50,11 @@ class LogoutTest extends TestCase
                 'sector_id' => 1,
                 'contact_feedback' => 1,
                 'contact_news' => 1,
+                'organisation' => 'Updated Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => 75697342,
             ],
             $this->header
         );
@@ -83,7 +88,7 @@ class LogoutTest extends TestCase
                 'Authorization' => 'Bearer ' . $jwt,
             ]
         );
-        $responseLogout->assertStatus(200);
+        $responseLogout->assertStatus(302);
 
         // check jwt
         $isJwtInDb = AuthorisationCode::findRowByJwt($jwt);

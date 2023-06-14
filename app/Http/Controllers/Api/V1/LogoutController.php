@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Config;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Models\AuthorisationCode;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cookie;
 
 class LogoutController extends Controller
 {
@@ -47,10 +47,9 @@ class LogoutController extends Controller
 
         AuthorisationCode::where(['jwt' => $jwt])->delete();
 
-        // redirect to url
-        // return redirect()->away(env('GATEWAY_LOGOUT_URL'));
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_OK.message'),
-        ], Config::get('statuscodes.STATUS_OK.code'));
+        $cookies = [
+            Cookie::make('token', null),
+        ];
+        return redirect()->away(env('GATEWAY_LOGOUT_URL'))->withCookies($cookies);
     }
 }
