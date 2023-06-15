@@ -131,16 +131,25 @@ module.exports = {
 							[constants.teamNotificationTypes.DATAACCESSREQUEST]
 						);
 						if (!_.isEmpty(subscribedMembersByType)) {
+							
 							// build cleaner array of memberIds from subscribedMembersByType
 							if (topicObj.topicMessages !== undefined) {
-								const memberIds = [...subscribedMembersByType.map(m => m.memberid.toString()), ...topicObj.createdBy._id.toString()];
+								const memberIds = [...subscribedMembersByType.map(m => {
+									if (m.roles.includes('custodian.dar.manager')) {
+										return m.memberid.toString();
+									}
+								}), ...topicObj.createdBy._id.toString()].filter(elem => elem);
 								// returns array of objects [{email: 'email@email.com '}] for members in subscribed emails users is list of full user object
 								const { memberEmails } = teamController.getMemberDetails([...memberIds], [...messageRecipients]);
 								messageRecipients = [...teamNotificationEmails, ...memberEmails];
 							} else {
-								const memberIds = [...subscribedMembersByType.map(m => m.memberid.toString())].filter(
+								const memberIds = [...subscribedMembersByType.map(m => {
+									if (m.roles.includes('custodian.dar.manager')) {
+										return m.memberid.toString();
+									}
+								})].filter(
 									ele => ele !== topicObj.createdBy.toString()
-								);
+								).filter(elem => elem);
 								const creatorObjectId = topicObj.createdBy.toString();
 								// returns array of objects [{email: 'email@email.com '}] for members in subscribed emails users is list of full user object
 								const { memberEmails } = teamController.getMemberDetails([...memberIds], [...messageRecipients]);
