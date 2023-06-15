@@ -36,12 +36,12 @@ class DataUseRegister extends Model
         'organisation_name',
         'organisation_sector',
         'lay_summary',
-        // 'latest_approval_date',
-        // 'enabled',
+        'latest_approval_date',
+        'enabled',
         'team_id',
         'user_id',
-        // 'last_activity',
-        // 'manual_upload',
+        'last_activity',
+        'manual_upload',
         'rejection_reason',
     ];
 
@@ -51,8 +51,6 @@ class DataUseRegister extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        // 'latest_approval_date' => 'datetime',
-        // 'last_activity' => 'datetime',
         'keywords' => 'array',
         'dataset_ids' => 'array',
         'gateway_dataset_ids' => 'array',
@@ -64,6 +62,10 @@ class DataUseRegister extends Model
         'gateway_output_tools' => 'array',
         'gateway_output_papers' => 'array',
         'non_gateway_outputs' => 'array',
+        'latest_approval_date' => 'datetime',
+        'enabled' => 'boolean',
+        'last_activity' => 'datetime',
+        'manual_upload' => 'boolean',
     ];
 
     /**
