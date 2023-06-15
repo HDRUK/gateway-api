@@ -72,16 +72,27 @@ class UpdateDataUseRegisterRequest extends BaseFormRequest
             'lay_summary' => [
                 'string',
             ],
-            //
-            'user_id' => [
-                'int',
-                'required',
-                'exists:users,id',
+            'latest_approval_date' => [
+                'date_format:Y-m-d H:i:s',
+            ],
+            'enabled' => [
+                'boolean',
             ],
             'team_id' => [
                 'int',
                 'required',
                 'exists:teams,id',
+            ],
+            'user_id' => [
+                'int',
+                'required',
+                'exists:users,id',
+            ],
+            'manual_upload' => [
+                'boolean',
+            ],
+            'last_activity' => [
+                'date_format:Y-m-d H:i:s',
             ],
             'rejection_reason' => [
                 'string',

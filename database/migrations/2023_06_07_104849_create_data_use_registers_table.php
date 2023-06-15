@@ -32,12 +32,12 @@ return new class extends Migration
             $table->char('organisation_name', 128);
             $table->char('organisation_sector', 128);
             $table->char('lay_summary', 128)->nullable();
-            // $table->dateTime('latest_approval_date')->nullable();
-            // $table->tinyInteger('enabled')->nullable();
+            $table->dateTime('latest_approval_date')->nullable();
+            $table->boolean('enabled')->default(true);
             $table->bigInteger('team_id')->unsigned();
             $table->bigInteger('user_id')->unsigned();
-            // $table->dateTime('last_activity')->nullable();
-            // $table->tinyInteger('manual_upload')->nullable();
+            $table->dateTime('last_activity')->nullable();
+            $table->boolean('manual_upload')->default(true);
             $table->char('rejection_reason', 255)->nullable();
             $table->foreign('team_id')->references('id')->on('teams');
             $table->foreign('user_id')->references('id')->on('users');

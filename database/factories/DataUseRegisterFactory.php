@@ -43,12 +43,12 @@ class DataUseRegisterFactory extends Factory
             'organisation_name' => $randomString,
             'organisation_sector' => $randomString,
             'lay_summary' => $randomString,
-            // 'latest_approval_date' => fake()->dateTime(),
-            // 'enabled' => fake()->numberBetween(0, 1),
+            'latest_approval_date' => fake()->optional()->dateTimeBetween('+0 days'),
+            'enabled' => fake()->boolean(),
             'team_id' => fake()->randomElement($teams)->id,
             'user_id' => fake()->randomElement($users)->id,
-            // 'last_activity' => fake()->dateTime(),
-            // 'manual_upload' => fake()->numberBetween(0, 1),
+            'last_activity' => fake()->optional()->dateTimeBetween('+0 days'),
+            'manual_upload' => fake()->boolean(),
             'rejection_reason' => $randomString,
         ];
     }
