@@ -16,11 +16,31 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             $table->integer('counter');
+            $table->json('keywords')->nullable();
+            $table->json('dataset_ids');
+            $table->json('gateway_dataset_ids');
+            $table->json('non_gateway_dataset_ids')->nullable();
+            $table->json('gateway_applicants')->nullable();
+            $table->json('non_gateway_applicants')->nullable();
+            $table->json('funders_and_sponsors')->nullable();
+            $table->json('other_approval_committees')->nullable();
+            $table->json('gateway_output_tools')->nullable();
+            $table->json('gateway_output_papers')->nullable();
+            $table->json('non_gateway_outputs')->nullable();
+            $table->char('project_title', 255);
+            $table->char('project_id_text', 64);
+            $table->char('organisation_name', 128);
+            $table->char('organisation_sector', 128);
+            $table->char('lay_summary', 128)->nullable();
+            // $table->dateTime('latest_approval_date')->nullable();
+            // $table->tinyInteger('enabled')->nullable();
             $table->bigInteger('team_id')->unsigned();
             $table->bigInteger('user_id')->unsigned();
+            // $table->dateTime('last_activity')->nullable();
+            // $table->tinyInteger('manual_upload')->nullable();
+            $table->char('rejection_reason', 255)->nullable();
             $table->foreign('team_id')->references('id')->on('teams');
             $table->foreign('user_id')->references('id')->on('users');
-
         });
     }
 

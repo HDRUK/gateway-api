@@ -15,14 +15,10 @@ use App\Http\Controllers\Controller;
 
 class DataUseRegisterController extends Controller
 {
-    public function __construct()
-    {
-        //
-    }
 
     /**
      * @OA\Get(
-     *    path="/api/v1/datauseregisters",
+     *    path="/api/v1/data_use_registers",
      *    operationId="fetch_all_data_use_registers",
      *    tags={"DataUseRegisters"},
      *    summary="DataUseRegisterController@index",
@@ -100,11 +96,11 @@ class DataUseRegisterController extends Controller
      * )
      * 
      * Get All DataUseRegisters
-     *
+     * @param Request request
      * @return JsonResponse
      */
 
-     public function index(): JsonResponse
+     public function index(Request $request): JsonResponse
      {
          $data_use_registers = DataUseRegister::with(['team', 'user'])->paginate(Config::get('constants.per_page'));
  
@@ -115,7 +111,7 @@ class DataUseRegisterController extends Controller
 
      /**
      * @OA\Get(
-     *    path="/api/v1/datauseregisters/{id}",
+     *    path="/api/v1/data_use_registers/{id}",
      *    operationId="fetch_data_use_registers",
      *    tags={"DataUseRegisters"},
      *    summary="DataUseRegisterController@show",
@@ -226,14 +222,14 @@ class DataUseRegisterController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         try {
-            $reviews = DataUseRegister::with(['team', 'user'])
+            $data_use_registers = DataUseRegister::with(['team', 'user'])
                         ->where(['id' => $id])
                         ->get();
 
-            if ($reviews->count()) {
+            if ($data_use_registers->count()) {
                 return response()->json([
                     'message' => 'success',
-                    'data' => $reviews,
+                    'data' => $data_use_registers,
                 ], 200);
             }
 
@@ -245,7 +241,7 @@ class DataUseRegisterController extends Controller
 
     /**
      * @OA\Post(
-     *    path="/api/v1/datauseregisters",
+     *    path="/api/v1/data_use_registers",
      *    operationId="create_data_use_registers",
      *    tags={"DataUseRegisters"},
      *    summary="DataUseRegisterController@store",
@@ -318,21 +314,33 @@ class DataUseRegisterController extends Controller
         try {
             $input = $request->all();
 
-            $datauseregister = DataUseRegister::create([
+            $data_use_registers = DataUseRegister::create([
                 'counter' => (int) $input['counter'],
-                # loads of jsons
-                // 'project_title' => $input['project_title'],
-                // 'project_id_text' => $input['project_id_text'],
-                // 'organisation_name' => $input['organisation_name'],
-                // 'organisation_sector' => $input['organisation_sector'],
-                // 'lay_summary' => $input['lay_summary'],
+                'keywords' => $input['keywords'],
+                'dataset_ids' => $input['dataset_ids'],
+                'gateway_dataset_ids' => $input['gateway_dataset_ids'],
+                'non_gateway_dataset_ids' => $input['non_gateway_dataset_ids'],
+                'gateway_applicants' => $input['gateway_applicants'],
+                'non_gateway_applicants' => $input['non_gateway_applicants'],
+                'funders_and_sponsors' => $input['funders_and_sponsors'],
+                'other_approval_committees' => $input['other_approval_committees'],
+                'gateway_output_tools' => $input['gateway_output_tools'],
+                'gateway_output_papers' => $input['gateway_output_papers'],
+                'non_gateway_outputs' => $input['non_gateway_outputs'],
+                'project_title' => $input['project_title'],
+                'project_id_text' => $input['project_id_text'],
+                'organisation_name' => $input['organisation_name'],
+                'organisation_sector' => $input['organisation_sector'],
+                'lay_summary' => $input['lay_summary'],
+                //
                 'team_id' => (int) $input['team_id'],
                 'user_id' => (int) $input['user_id'],
+                'rejection_reason' => $input['rejection_reason'],
             ]);
 
             return response()->json([
                 'message' => 'created',
-                'data' => $datauseregister->id,
+                'data' => $data_use_registers->id,
             ], 201);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -429,19 +437,37 @@ class DataUseRegisterController extends Controller
                 ], 400);
             }
 
-            $datauseregister = DataUseRegister::findOrFail($id);
-            if ($datauseregister) {
+            $data_use_registers = DataUseRegister::findOrFail($id);
+            if ($data_use_registers) {
                 $array = [
                     "counter" => (int) $input['counter'],
+                    'keywords' => $input['keywords'],
+                    'dataset_ids' => $input['dataset_ids'],
+                    'gateway_dataset_ids' => $input['gateway_dataset_ids'],
+                    'non_gateway_dataset_ids' => $input['non_gateway_dataset_ids'],
+                    'gateway_applicants' => $input['gateway_applicants'],
+                    'non_gateway_applicants' => $input['non_gateway_applicants'],
+                    'funders_and_sponsors' => $input['funders_and_sponsors'],
+                    'other_approval_committees' => $input['other_approval_committees'],
+                    'gateway_output_tools' => $input['gateway_output_tools'],
+                    'gateway_output_papers' => $input['gateway_output_papers'],
+                    'non_gateway_outputs' => $input['non_gateway_outputs'],
+                    'project_title' => $input['project_title'],
+                    'project_id_text' => $input['project_id_text'],
+                    'organisation_name' => $input['organisation_name'],
+                    'organisation_sector' => $input['organisation_sector'],
+                    'lay_summary' => $input['lay_summary'],
+                    //
                     "team_id" => (int) $input['team_id'],
-                    "user_id" => (int) $input['user_id'],                   
+                    "user_id" => (int) $input['user_id'],
+                    'rejection_reason' => $input['rejection_reason'],
                 ];
 
-                $datauseregister->update($array);
+                $data_use_registers->update($array);
 
                 return response()->json([
                     'message' => 'success',
-                    'data' => $datauseregister
+                    'data' => $data_use_registers
                 ], 202);
             }
 
@@ -506,9 +532,9 @@ class DataUseRegisterController extends Controller
     public function destroy(int $id): JsonResponse
     {
         try {
-            $datauseregisters = DataUseRegister::where('id', $id)->get();
+            $data_use_registers = DataUseRegister::where('id', $id)->get();
 
-            if ($datauseregisters) {
+            if ($data_use_registers) {
                 DataUseRegister::where('id', $id)->delete();
 
                 return response()->json([
