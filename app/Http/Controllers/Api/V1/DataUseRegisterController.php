@@ -452,52 +452,37 @@ class DataUseRegisterController extends Controller
         try {
             $input = $request->all();
 
-            if (!$input) {
-                return response()->json([
-                    'message' => 'bad request',
-                ], 400);
-            }
-
-            $data_use_registers = DataUseRegister::findOrFail($id);
-            if ($data_use_registers) {
-                $array = [
-                    "counter" => (int) $input['counter'],
-                    'keywords' => $input['keywords'] ?? null,
-                    'dataset_ids' => $input['dataset_ids'],
-                    'gateway_dataset_ids' => $input['gateway_dataset_ids'],
-                    'non_gateway_dataset_ids' => $input['non_gateway_dataset_ids'] ?? null,
-                    'gateway_applicants' => $input['gateway_applicants'] ?? null,
-                    'non_gateway_applicants' => $input['non_gateway_applicants'] ?? null,
-                    'funders_and_sponsors' => $input['funders_and_sponsors'] ?? null,
-                    'other_approval_committees' => $input['other_approval_committees'] ?? null,
-                    'gateway_output_tools' => $input['gateway_output_tools'] ?? null,
-                    'gateway_output_papers' => $input['gateway_output_papers'] ?? null,
-                    'non_gateway_outputs' => $input['non_gateway_outputs'] ?? null,
-                    'project_title' => $input['project_title'],
-                    'project_id_text' => $input['project_id_text'],
-                    'organisation_name' => $input['organisation_name'],
-                    'organisation_sector' => $input['organisation_sector'],
-                    'lay_summary' => $input['lay_summary'] ?? null,
-                    'latest_approval_date' => $input['latest_approval_date'] ?? null,
-                    'enabled' => $input['enabled'],
-                    'team_id' => (int) $input['team_id'] ?? null,
-                    'user_id' => (int) $input['user_id'] ?? null,
-                    'last_activity' => $input['last_activity'] ?? null,
-                    'manual_upload' => $input['manual_upload'],
-                    'rejection_reason' => $input['rejection_reason'] ?? null,
-                ];
-
-                $data_use_registers->update($array);
-
-                return response()->json([
-                    'message' => 'success',
-                    'data' => $data_use_registers
-                ], 202);
-            }
+            DataUseRegister::where('id', $id)->update([
+                'counter' => (int) $input['counter'],
+                'keywords' => $input['keywords'] ?? null,
+                'dataset_ids' => $input['dataset_ids'],
+                'gateway_dataset_ids' => $input['gateway_dataset_ids'],
+                'non_gateway_dataset_ids' => $input['non_gateway_dataset_ids'] ?? null,
+                'gateway_applicants' => $input['gateway_applicants'] ?? null,
+                'non_gateway_applicants' => $input['non_gateway_applicants'] ?? null,
+                'funders_and_sponsors' => $input['funders_and_sponsors'] ?? null,
+                'other_approval_committees' => $input['other_approval_committees'] ?? null,
+                'gateway_output_tools' => $input['gateway_output_tools'] ?? null,
+                'gateway_output_papers' => $input['gateway_output_papers'] ?? null,
+                'non_gateway_outputs' => $input['non_gateway_outputs'] ?? null,
+                'project_title' => $input['project_title'],
+                'project_id_text' => $input['project_id_text'],
+                'organisation_name' => $input['organisation_name'],
+                'organisation_sector' => $input['organisation_sector'],
+                'lay_summary' => $input['lay_summary'] ?? null,
+                'latest_approval_date' => $input['latest_approval_date'] ?? null,
+                'enabled' => $input['enabled'],
+                'team_id' => (int) $input['team_id'] ?? null,
+                'user_id' => (int) $input['user_id'] ?? null,
+                'last_activity' => $input['last_activity'] ?? null,
+                'manual_upload' => $input['manual_upload'],
+                'rejection_reason' => $input['rejection_reason'] ?? null,
+            ]);
 
             return response()->json([
-                'message' => 'not found',
-            ], 404);
+                'message' => 'success',
+                'data' => DataUseRegister::where('id', $id)->first()
+            ], 202);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

@@ -218,7 +218,7 @@ class DataUseRegisterTest extends TestCase
     public function test_update_data_use_register_with_success(): void 
     {
         $teamHasUser = TeamHasUser::all()->random();
-        $randomString = fake()->words(fake()->randomDigit(), true);
+        $randomString = fake()->words(fake()->numberBetween(1, 10), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
 
@@ -260,7 +260,7 @@ class DataUseRegisterTest extends TestCase
         $idIns = (int) $responseIns['data'];
 
         $teamHasUser2 = TeamHasUser::all()->random();
-        $randomString2 = fake()->words(fake()->randomDigit(), true);
+        $randomString2 = fake()->words(fake()->numberBetween(1, 10), true);
         $shortRandomString2 = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord2 = fake()->word();
 
