@@ -15,86 +15,101 @@ class CreateDataUseRegisterRequest extends BaseFormRequest
     {
         return [
             'counter' => [
-                'int',
                 'required',
+                'int',
             ],
             'keywords' => [
+                'nullable',
                 'array',
             ],
             'dataset_ids' => [
-                'array',
                 'required',
+                'array',
             ],
             'gateway_dataset_ids' => [
-                'array',
                 'required',
+                'array',
             ],
             'non_gateway_dataset_ids' => [
+                'nullable',
                 'array',
             ],
             'gateway_applicants' => [
+                'nullable',
                 'array',
             ],
             'non_gateway_applicants' => [
+                'nullable',
                 'array',
             ],
             'funders_and_sponsors' => [
+                'nullable',
                 'array',
             ],
             'other_approval_committees' => [
+                'nullable',
                 'array',
             ],
             'gateway_output_tools' => [
+                'nullable',
                 'array',
             ],
             'gateway_output_papers' => [
+                'nullable',
                 'array',
             ],
             'non_gateway_outputs' => [
+                'nullable',
                 'array',
             ],
             'project_title' => [
-                'string',
                 'required',
+                'string',
             ],
             'project_id_text' => [
-                'string',
                 'required',
+                'string',
             ],
             'organisation_name' => [
-                'string',
                 'required',
+                'string',
             ],
             'organisation_sector' => [
-                'string',
                 'required',
+                'string',
             ],
             'lay_summary' => [
+                'nullable',
                 'string',
             ],
             'latest_approval_date' => [
+                'nullable',
                 'date_format:Y-m-d H:i:s',
             ],
             'enabled' => [
+                'nullable',
                 'boolean',
             ],
             'team_id' => [
-                'int',
                 'required',
+                'int',
                 'exists:teams,id',
             ],
             'user_id' => [
-                'int',
                 'required',
+                'int',
                 'exists:users,id',
             ],
             'manual_upload' => [
+                'nullable',
                 'boolean',
             ],
             'last_activity' => [
+                'nullable',
                 'date_format:Y-m-d H:i:s',
             ],
             'rejection_reason' => [
+                'nullable',
                 'string',
             ],
         ];
