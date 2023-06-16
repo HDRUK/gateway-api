@@ -163,14 +163,39 @@ class DataUseRegisterTest extends TestCase
     public function test_add_new_data_use_register_with_success(): void
     {
         $countBefore = DataUseRegister::withTrashed()->count();
+
+        $teams = Team::all();
+        $users = User::all();
+
+        $randomString = fake()->words(fake()->randomDigit(), true);
+        $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
+        $randomWord = fake()->word();
+
         $mockData = [
-            "name" => "covid",
-            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
-            "enabled" => true,
-            "keywords" => "key words",
-            "public" => true,
-            "counter" => 123
+            "counter" => fake()->randomNumber(4, false),
+            "keywords" => [$randomWord],
+            "dataset_ids" => [$randomWord],
+            "gateway_dataset_ids" => [$randomWord],
+            "non_gateway_dataset_ids" => [$randomWord],
+            "gateway_applicants" => [$randomWord],
+            "non_gateway_applicants" => [$randomWord],
+            "funders_and_sponsors" => [$randomWord],
+            "other_approval_committees" => [$randomWord],
+            "gateway_output_tools" => [$randomWord],
+            "gateway_output_papers" => [$randomWord],
+            "non_gateway_outputs" => [$randomWord],
+            "project_title" => $randomString,
+            "project_id_text" => $shortRandomString,
+            "organisation_name" => $randomString,
+            "organisation_sector" => $randomString,
+            "lay_summary" => $randomString,
+            "latest_approval_date" => "2023-07-06 10:00:00",
+            "enabled" => fake()->boolean(),
+            "team_id" => fake()->randomElement($teams)->id,
+            "user_id" => fake()->randomElement($users)->id,
+            "last_activity" => "2023-07-06 10:00:00",
+            "manual_upload" => fake()->boolean(),
+            "rejection_reason" => $randomString,
         ];
 
         $response = $this->json(
@@ -220,11 +245,11 @@ class DataUseRegisterTest extends TestCase
             "organisation_name" => $randomString,
             "organisation_sector" => $randomString,
             "lay_summary" => $randomString,
-            "latest_approval_date" => "2023-06-06 10:00:00",
+            "latest_approval_date" => "2023-07-06 10:00:00",
             "enabled" => fake()->boolean(),
             "team_id" => fake()->randomElement($teams)->id,
             "user_id" => fake()->randomElement($users)->id,
-            "last_activity" => "2023-06-06 10:00:00",
+            "last_activity" => "2023-07-06 10:00:00",
             "manual_upload" => fake()->boolean(),
             "rejection_reason" => $randomString,
         ];
@@ -261,11 +286,11 @@ class DataUseRegisterTest extends TestCase
             "organisation_name" => $randomString2,
             "organisation_sector" => $randomString2,
             "lay_summary" => $randomString2,
-            "latest_approval_date" => "2023-06-06 10:00:00",
+            "latest_approval_date" => "2023-07-06 10:00:00",
             "enabled" => fake()->boolean(),
             "team_id" => fake()->randomElement($teams)->id,
             "user_id" => fake()->randomElement($users)->id,
-            "last_activity" => "2023-06-06 10:00:00",
+            "last_activity" => "2023-07-06 10:00:00",
             "manual_upload" => fake()->boolean(),
             "rejection_reason" => $randomString2,
         ];
@@ -276,8 +301,9 @@ class DataUseRegisterTest extends TestCase
             $this->header
         );
         $responseUpdate->assertStatus(202);
-        fwrite(STDERR, print_r($mockDataUpdate['latest_approval_date'], TRUE));
-        fwrite(STDERR, print_r($responseUpdate['data']['latest_approval_date'], TRUE));
+        fwrite(STDERR, print_r(strtotime($mockDataUpdate['last_activity']), TRUE));
+        fwrite(STDERR, print_r("\n", TRUE));
+        fwrite(STDERR, print_r(strtotime($responseUpdate['data']['last_activity']), TRUE));
 
         $this->assertTrue($mockDataUpdate['counter'] === $responseUpdate['data']['counter']);
         $this->assertTrue($mockDataUpdate['keywords'] === $responseUpdate['data']['keywords']);
@@ -296,11 +322,11 @@ class DataUseRegisterTest extends TestCase
         $this->assertTrue($mockDataUpdate['organisation_name'] === $responseUpdate['data']['organisation_name']);
         $this->assertTrue($mockDataUpdate['organisation_sector'] === $responseUpdate['data']['organisation_sector']);
         $this->assertTrue($mockDataUpdate['lay_summary'] === $responseUpdate['data']['lay_summary']);
-        $this->assertTrue($mockDataUpdate['latest_approval_date'] === $responseUpdate['data']['latest_approval_date']);
+        $this->assertTrue(strtotime($mockDataUpdate['latest_approval_date']) === strtotime($responseUpdate['data']['latest_approval_date']));
         $this->assertTrue($mockDataUpdate['enabled'] === $responseUpdate['data']['enabled']);
         $this->assertTrue($mockDataUpdate['team_id'] === $responseUpdate['data']['team_id']);
         $this->assertTrue($mockDataUpdate['user_id'] === $responseUpdate['data']['user_id']);
-        $this->assertTrue((string) $mockDataUpdate['last_activity'] === (string) $responseUpdate['data']['last_activity']);
+        $this->assertTrue(strtotime($mockDataUpdate['last_activity']) === strtotime($responseUpdate['data']['last_activity']));
         $this->assertTrue((boolean) $mockDataUpdate['manual_upload'] === (boolean) $responseUpdate['data']['manual_upload']);
         $this->assertTrue($mockDataUpdate['rejection_reason'] === $responseUpdate['data']['rejection_reason']);
     }
@@ -314,15 +340,40 @@ class DataUseRegisterTest extends TestCase
     {
         $countBefore = DataUseRegister::count();
         $countTrashedBefore = DataUseRegister::onlyTrashed()->count();
+
+        $teams = Team::all();
+        $users = User::all();
+
+        $randomString = fake()->words(fake()->randomDigit(), true);
+        $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
+        $randomWord = fake()->word();
+
         // create new data_use_register
         $mockDataIns = [
-            "name" => "covid",
-            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
-            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
-            "enabled" => true,
-            "keywords" => "key words",
-            "public" => true,
-            "counter" => 123
+            "counter" => fake()->randomNumber(4, false),
+            "keywords" => [$randomWord],
+            "dataset_ids" => [$randomWord],
+            "gateway_dataset_ids" => [$randomWord],
+            "non_gateway_dataset_ids" => [$randomWord],
+            "gateway_applicants" => [$randomWord],
+            "non_gateway_applicants" => [$randomWord],
+            "funders_and_sponsors" => [$randomWord],
+            "other_approval_committees" => [$randomWord],
+            "gateway_output_tools" => [$randomWord],
+            "gateway_output_papers" => [$randomWord],
+            "non_gateway_outputs" => [$randomWord],
+            "project_title" => $randomString,
+            "project_id_text" => $shortRandomString,
+            "organisation_name" => $randomString,
+            "organisation_sector" => $randomString,
+            "lay_summary" => $randomString,
+            "latest_approval_date" => "2023-07-06 10:00:00",
+            "enabled" => fake()->boolean(),
+            "team_id" => fake()->randomElement($teams)->id,
+            "user_id" => fake()->randomElement($users)->id,
+            "last_activity" => "2023-07-06 10:00:00",
+            "manual_upload" => fake()->boolean(),
+            "rejection_reason" => $randomString,
         ];
         $responseIns = $this->json(
             'POST',
