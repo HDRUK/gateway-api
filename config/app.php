@@ -214,6 +214,7 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         // 'ExampleClass' => App\Example\ExampleClass::class,
         'Auditor' => App\Auditor\AuditorFacade::class,
+        'Mauro' => App\Mauro\MauroFacade::class,
     ])->toArray(),
 
 ];
