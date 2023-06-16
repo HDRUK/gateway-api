@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\TeamHasUser;
 use App\Http\Requests\BaseFormRequest;
 
 class UpdateDataUseRegisterRequest extends BaseFormRequest
@@ -104,6 +105,15 @@ class UpdateDataUseRegisterRequest extends BaseFormRequest
                 'required',
                 'int',
                 'exists:users,id',
+                function ($attribute, $value, $fail) {
+                    $exists = TeamHasUser::where('user_id', $value)
+                        ->where('team_id', $this->team_id)
+                        ->exists();
+
+                    if (!$exists) {
+                        $fail('The selected user is not a member of the specified team.');
+                    }
+                },
             ],
             'manual_upload' => [
                 'nullable',

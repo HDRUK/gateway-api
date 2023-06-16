@@ -4,8 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\DataUseRegister;
-use App\Models\Team;
-use App\Models\User;
+use App\Models\TeamHasUser;
 use Tests\Traits\Authorization;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -164,8 +163,7 @@ class DataUseRegisterTest extends TestCase
     {
         $countBefore = DataUseRegister::withTrashed()->count();
 
-        $teams = Team::all();
-        $users = User::all();
+        $teamHasUser = TeamHasUser::all()->random();
 
         $randomString = fake()->words(fake()->randomDigit(), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
@@ -191,8 +189,8 @@ class DataUseRegisterTest extends TestCase
             "lay_summary" => $randomString,
             "latest_approval_date" => "2023-07-06 10:00:00",
             "enabled" => fake()->boolean(),
-            "team_id" => fake()->randomElement($teams)->id,
-            "user_id" => fake()->randomElement($users)->id,
+            "team_id" => (int) $teamHasUser->team_id,
+            "user_id" => (int) $teamHasUser->user_id,
             "last_activity" => "2023-07-06 10:00:00",
             "manual_upload" => fake()->boolean(),
             "rejection_reason" => $randomString,
@@ -219,9 +217,7 @@ class DataUseRegisterTest extends TestCase
      */
     public function test_update_data_use_register_with_success(): void 
     {
-        $teams = Team::all();
-        $users = User::all();
-
+        $teamHasUser = TeamHasUser::all()->random();
         $randomString = fake()->words(fake()->randomDigit(), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
@@ -247,8 +243,8 @@ class DataUseRegisterTest extends TestCase
             "lay_summary" => $randomString,
             "latest_approval_date" => "2023-07-06 10:00:00",
             "enabled" => fake()->boolean(),
-            "team_id" => fake()->randomElement($teams)->id,
-            "user_id" => fake()->randomElement($users)->id,
+            "team_id" => $teamHasUser->team_id,
+            "user_id" => $teamHasUser->user_id,
             "last_activity" => "2023-07-06 10:00:00",
             "manual_upload" => fake()->boolean(),
             "rejection_reason" => $randomString,
@@ -263,6 +259,7 @@ class DataUseRegisterTest extends TestCase
         $responseIns->assertStatus(201);
         $idIns = (int) $responseIns['data'];
 
+        $teamHasUser2 = TeamHasUser::all()->random();
         $randomString2 = fake()->words(fake()->randomDigit(), true);
         $shortRandomString2 = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord2 = fake()->word();
@@ -288,8 +285,8 @@ class DataUseRegisterTest extends TestCase
             "lay_summary" => $randomString2,
             "latest_approval_date" => "2023-07-06 10:00:00",
             "enabled" => fake()->boolean(),
-            "team_id" => fake()->randomElement($teams)->id,
-            "user_id" => fake()->randomElement($users)->id,
+            "team_id" => $teamHasUser2->team_id,
+            "user_id" => $teamHasUser2->user_id,
             "last_activity" => "2023-07-06 10:00:00",
             "manual_upload" => fake()->boolean(),
             "rejection_reason" => $randomString2,
@@ -301,9 +298,6 @@ class DataUseRegisterTest extends TestCase
             $this->header
         );
         $responseUpdate->assertStatus(202);
-        fwrite(STDERR, print_r(strtotime($mockDataUpdate['last_activity']), TRUE));
-        fwrite(STDERR, print_r("\n", TRUE));
-        fwrite(STDERR, print_r(strtotime($responseUpdate['data']['last_activity']), TRUE));
 
         $this->assertTrue($mockDataUpdate['counter'] === $responseUpdate['data']['counter']);
         $this->assertTrue($mockDataUpdate['keywords'] === $responseUpdate['data']['keywords']);
@@ -341,9 +335,7 @@ class DataUseRegisterTest extends TestCase
         $countBefore = DataUseRegister::count();
         $countTrashedBefore = DataUseRegister::onlyTrashed()->count();
 
-        $teams = Team::all();
-        $users = User::all();
-
+        $teamHasUser = TeamHasUser::all()->random();
         $randomString = fake()->words(fake()->randomDigit(), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
@@ -369,8 +361,8 @@ class DataUseRegisterTest extends TestCase
             "lay_summary" => $randomString,
             "latest_approval_date" => "2023-07-06 10:00:00",
             "enabled" => fake()->boolean(),
-            "team_id" => fake()->randomElement($teams)->id,
-            "user_id" => fake()->randomElement($users)->id,
+            "team_id" => $teamHasUser->team_id,
+            "user_id" => $teamHasUser->user_id,
             "last_activity" => "2023-07-06 10:00:00",
             "manual_upload" => fake()->boolean(),
             "rejection_reason" => $randomString,

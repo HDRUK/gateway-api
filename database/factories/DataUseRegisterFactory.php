@@ -2,8 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Team;
-use App\Models\User;
+use App\Models\TeamHasUser;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -19,8 +18,7 @@ class DataUseRegisterFactory extends Factory
      */
     public function definition(): array
     {
-        $teams = Team::all();
-        $users = User::all();
+        $teamHasUser = TeamHasUser::all()->random();
 
         $randomString = fake()->words(fake()->randomDigit(), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
@@ -45,8 +43,8 @@ class DataUseRegisterFactory extends Factory
             'lay_summary' => $randomString,
             'latest_approval_date' => fake()->optional()->dateTimeBetween('+0 days'),
             'enabled' => fake()->boolean(),
-            'team_id' => fake()->randomElement($teams)->id,
-            'user_id' => fake()->randomElement($users)->id,
+            'team_id' => $teamHasUser->team_id,
+            'user_id' => $teamHasUser->user_id,
             'last_activity' => fake()->optional()->dateTimeBetween('+0 days'),
             'manual_upload' => fake()->boolean(),
             'rejection_reason' => $randomString,
