@@ -66,6 +66,7 @@ class UserTest extends TestCase
                     'orcid',
                     'contact_feedback',
                     'contact_news',
+                    'mongo_id',
                 ],
             ],   
         ]);

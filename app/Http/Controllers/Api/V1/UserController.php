@@ -215,7 +215,7 @@ class UserController extends Controller
                 'orcid' => $input['orcid'],
                 'contact_feedback' => $input['contact_feedback'],
                 'contact_news' => $input['contact_news'],
-                
+                'mongo_id' => $input['mongo_id'],
             ];
             $user = User::create($array);
 
@@ -331,7 +331,8 @@ class UserController extends Controller
                     "link" => $input['link'],
                     "orcid" => $input['orcid'],
                     "contact_feedback" => $input['contact_feedback'],
-                    "contact_news" => $input['contact_news'],                    
+                    "contact_news" => $input['contact_news'],  
+                    'mongo_id' => $input['mongo_id'],                  
                 ];
 
                 $user->update($array);

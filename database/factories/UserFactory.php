@@ -39,6 +39,7 @@ class UserFactory extends Factory
             'orcid' => sprintf('https://orcid.org/%d', fake()->randomNumber(8, true)),
             'contact_feedback' => fake()->numberBetween(0, 1),
             'contact_news' => fake()->numberBetween(0, 1),
+            'mongo_id' => fake()->randomNumber(8, true),
         ];
     }
 
