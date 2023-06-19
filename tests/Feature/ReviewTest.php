@@ -165,7 +165,8 @@ class ReviewTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 12345678,                
+                'orcid' => 12345678,  
+                'mongo_id' => 1234567,              
             ],
             $this->header
         );
@@ -236,7 +237,8 @@ class ReviewTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 12345678,   
+                'orcid' => 12345678,  
+                'mongo_id' => 12345657, 
             ],
             $this->header
         );
@@ -477,7 +479,8 @@ class ReviewTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 12345678,                  
+                'orcid' => 12345678,  
+                'mongo_id' => 1234567,                
             ],
             $this->header
         );

@@ -54,7 +54,7 @@ class UserRequest extends BaseFormRequest
             ],
             'mongo_id' => [
                 'integer',
-            ]
+            ],
         ];
     }
 }

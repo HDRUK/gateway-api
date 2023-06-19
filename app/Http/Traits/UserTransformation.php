@@ -38,6 +38,7 @@ trait UserTransformation
                 'orcid' => $user['orcid'],
                 'contact_feedback' => $user['contact_feedback'],
                 'contact_news' => $user['contact_news'],
+                'mongo_id' => $user['mongo_id'],
             ];
 
             $tmpTeam = [];
