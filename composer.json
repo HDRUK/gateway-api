@@ -60,7 +60,7 @@
             "@php artisan key:generate --ansi"
         ],
         "phpstan": [
-            "vendor/bin/phpstan analyse app"
+            "vendor/bin/phpstan analyse app  --memory-limit 512M"
         ],
         "behat": [
             "vendor/bin/behat"

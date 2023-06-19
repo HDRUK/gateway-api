@@ -2,6 +2,7 @@
 
 namespace App\Mauro;
 
+use Exception;
 use App\Exceptions\MauroServiceException;
 
 use Illuminate\Support\Facades\Http;
@@ -220,7 +221,7 @@ class Mauro {
      * @param string $description       Represents the long description for this folder
      * @param string $parentFolderId    If set, this new folder will be created underneath this parent folder
      * 
-     * @return string                   Returns entire response from Mauro Data Mapper as an array
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
      */
     public function createFolder(string $label, string $description, string $parentFolderId = ''): array
     {
@@ -288,7 +289,7 @@ class Mauro {
      * 
      * @param string $label             Represents the short text associated with this data model
      * @param string $description       Represents the long text associated with this data model
-     * @param string $autho             Represents the Author name associated with this data model
+     * @param string $author            Represents the Author name associated with this data model
      * @param string $organisation      Represents the Organisation associated with this author for this data model
      * @param string $parentFolderId    Represents the parent folder id to create this data model under
      * 
@@ -338,9 +339,9 @@ class Mauro {
      * Deletes an existing DataModel from Mauro
      * 
      * @param string $id                The ID of the DataModel to delete
-     * @param string $parentFolderId    The ID of the parent Folder to delete from 
+     * @param string $permanentDeletion Whether or not this model is deleted permanently
      * 
-     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     * @return bool                     Whether the operation completed successfully or not
      */
     public function deleteDataModel(string $id, string $permanentDeletion = 'true'): bool
     {

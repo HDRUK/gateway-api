@@ -161,6 +161,11 @@ class ReviewTest extends TestCase
                 'sector_id' => 1,
                 'contact_feedback' => 1,
                 'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => 12345678,                
             ],
             $this->header
         );
@@ -227,6 +232,11 @@ class ReviewTest extends TestCase
                 'sector_id' => 1,
                 'contact_feedback' => 1,
                 'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => 12345678,   
             ],
             $this->header
         );
@@ -319,6 +329,11 @@ class ReviewTest extends TestCase
                 'sector_id' => 1,
                 'contact_feedback' => 1,
                 'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => 12345678,                  
             ],
             $this->header
         );
