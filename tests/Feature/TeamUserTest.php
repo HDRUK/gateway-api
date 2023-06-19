@@ -274,6 +274,7 @@ class TeamUserTest extends TestCase
                 'orcid' => 75697342,
                 'contact_feedback' => 1,
                 'contact_news' => 1, 
+                'mongo_id' => 1234566,
             ],
             $this->header,
         );
