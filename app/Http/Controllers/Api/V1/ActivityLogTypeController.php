@@ -9,7 +9,10 @@ use Illuminate\Http\Request;
 use App\Models\ActivityLogType;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
 use App\Http\Requests\CreateActivityLogType;
+use App\Http\Requests\UpdateActivityLogType;
+use App\Exceptions\InternalServerErrorException;
 
 class ActivityLogTypeController extends Controller
 {
@@ -86,9 +89,7 @@ class ActivityLogTypeController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 
     /**
@@ -134,9 +135,7 @@ class ActivityLogTypeController extends Controller
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        throw new InternalServerErrorException();
     }
 
     /**
@@ -184,7 +183,7 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function update(CreateActivityLogType $request, int $id): JsonResponse
+    public function update(UpdateActivityLogType $request, int $id): JsonResponse
     {
         $activityLogType = ActivityLogType::findOrFail($id);
         $body = $request->post();
@@ -196,14 +195,10 @@ class ActivityLogTypeController extends Controller
                 'data' => $activityLogType,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } else {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new InternalServerErrorException();
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 
     /**
@@ -247,13 +242,9 @@ class ActivityLogTypeController extends Controller
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new InternalServerErrorException();
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 }

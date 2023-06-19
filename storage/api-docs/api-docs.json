@@ -116,16 +116,6 @@
                                         "type": "integer",
                                         "example": "123"
                                     },
-                                    "created_at": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-03 12:00:00"
-                                    },
-                                    "updated_at": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-03 12:00:00"
-                                    },
                                     "event_type": {
                                         "type": "string",
                                         "example": "passwordReset"
@@ -521,6 +511,177 @@
                                         "message": {
                                             "type": "string",
                                             "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "ActivityLog"
+                ],
+                "summary": "ActivityLog@edit",
+                "description": "Edit a system activity log",
+                "operationId": "dd20219ea5afda956b66eda7c82f8bc8",
+                "requestBody": {
+                    "description": "ActivityLog definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "event_type",
+                                    "user_type_id",
+                                    "log_type_id",
+                                    "version",
+                                    "html",
+                                    "plain_text"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": "123"
+                                    },
+                                    "event_type": {
+                                        "type": "string",
+                                        "example": "passwordReset"
+                                    },
+                                    "user_type_id": {
+                                        "type": "integer",
+                                        "example": "123"
+                                    },
+                                    "log_type_id": {
+                                        "type": "integer",
+                                        "example": "234"
+                                    },
+                                    "version": {
+                                        "type": "string",
+                                        "example": "1.0.0"
+                                    },
+                                    "html": {
+                                        "type": "string",
+                                        "example": "<b>example string</b>"
+                                    },
+                                    "plain_text": {
+                                        "type": "string",
+                                        "example": "example string"
+                                    },
+                                    "user_id_mongo": {
+                                        "type": "string",
+                                        "example": "2529385fsdfsgs69gs9629se"
+                                    },
+                                    "version_id_mongo": {
+                                        "type": "string",
+                                        "example": "2529385fsdfsgs69gs9629se"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "event_type": {
+                                                    "type": "string",
+                                                    "example": "passwordReset"
+                                                },
+                                                "user_type_id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "log_type_id": {
+                                                    "type": "integer",
+                                                    "example": "234"
+                                                },
+                                                "version": {
+                                                    "type": "string",
+                                                    "example": "1.0.0"
+                                                },
+                                                "html": {
+                                                    "type": "string",
+                                                    "example": "<b>example string</b>"
+                                                },
+                                                "plain_text": {
+                                                    "type": "string",
+                                                    "example": "example string"
+                                                },
+                                                "user_id_mongo": {
+                                                    "type": "string",
+                                                    "example": "2529385fsdfsgs69gs9629se"
+                                                },
+                                                "version_id_mongo": {
+                                                    "type": "string",
+                                                    "example": "2529385fsdfsgs69gs9629se"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"

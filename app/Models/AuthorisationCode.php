@@ -66,11 +66,7 @@ class AuthorisationCode extends Model
             'expired_at' => $data['expired_at'],
         ];
 
-        $model = new static($array);
-
-        $model->save();
-
-        return $model;
+        return self::create($array);
     }
 
     /**

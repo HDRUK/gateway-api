@@ -149,6 +149,10 @@ or for one single file test
 ```
 vendor/bin/phpunit --testdox --filter ActivityLogTest
 ```
+or
+```
+php -d memory_limit=2048M ./vendor/bin/phpunit --testdox --filter ActivityLogTest
+```
 
 ### Laravel Status Code
 
