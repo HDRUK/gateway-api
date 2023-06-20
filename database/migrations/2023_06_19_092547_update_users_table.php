@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('mongo_id')->default(0);
+            $table->bigInteger('mongo_id')->default(0);
+            $table->string('password')->nullable()->change();
         });
     }
 

@@ -25,26 +25,26 @@ class UserRequest extends BaseFormRequest
                 'unique:users,email',
             ],
             'password' => [
-                'required', 'string',
+                'nullable', 'string',
             ],
             'sector_id' => [
                 'required', 'integer',
                 'exists:sectors,id',
             ],
             'organisation' => [
-                'string',
+                'nullable', 'string',
             ],
             'bio' => [
-                'string',
+                'nullable', 'string',
             ],
             'domain' => [
-                'string',
+                'nullable', 'string',
             ],
             'link' => [
-                'string',
+                'nullable', 'string',
             ],
             'orcid' => [
-                'integer',
+                'nullable', 'integer',
             ],
             'contact_feedback' => [
                 'required', 'boolean',
