@@ -134,7 +134,7 @@ class PermissionTest extends TestCase
             $this->header
         );
 
-        $checkIfExist = Permission::where('role', $name)->count();
+        $checkIfExist = Permission::where(['role' => $name])->count();
 
         $this->assertTrue((bool) $checkIfExist, 'Response was successfully');
 
