@@ -59,7 +59,7 @@ class JwtMiddleware
             $isValidJwt = $jwtController->isValid();
             $isJwtInDb = AuthorisationCode::findRowByJwt($jwtBearer);
 
-            if (!$isValidJwt || !$isJwtInDb) {
+            if (!$isValidJwt && !$isJwtInDb) {
                 throw new UnauthorizedException();
             }
 
