@@ -11,8 +11,10 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Http\Requests\CreateActivityLogType;
+use App\Http\Requests\DeleteActivityLogType;
 use App\Http\Requests\UpdateActivityLogType;
 use App\Exceptions\InternalServerErrorException;
+use App\Http\Requests\EditActivityLogType;
 
 class ActivityLogTypeController extends Controller
 {
@@ -202,6 +204,34 @@ class ActivityLogTypeController extends Controller
     }
 
     /**
+     * Undocumented function
+     *
+     * @param EditActivityLogType $request
+     * @param integer $id
+     * @return JsonResponse
+     */
+    public function edit(EditActivityLogType $request, int $id): JsonResponse
+    {
+        $activityLogType = ActivityLogType::findOrFail($id);
+        $body = $request->post();
+
+        if (array_key_exists('name', $body)) {
+            $activityLogType->name = $body['name'];
+        }
+
+        if ($activityLogType->save()) {
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $activityLogType,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } else {
+            throw new InternalServerErrorException();
+        }
+
+        throw new NotFoundException();
+    }
+
+    /**
      * @OA\Delete(
      *      path="/api/v1/activity_log_types/{id}",
      *      summary="Delete a system activity log type",
@@ -232,7 +262,7 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(DeleteActivityLogType $request, int $id): JsonResponse
     {
         $activityLogType = ActivityLogType::findOrFail($id);
         if ($activityLogType) {

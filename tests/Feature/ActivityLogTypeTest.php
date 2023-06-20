@@ -187,6 +187,86 @@ class ActivityLogTypeTest extends TestCase
     }
 
     /**
+     * Tests it can edit an ActivityLogType
+     * 
+     * @return void
+     */
+    public function test_id_can_edit_an_activity_log_type()
+    {
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            'api/v1/activity_log_types',
+            [
+                'name' => 'test activity log type',
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals(
+            $contentCreate['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+
+        $id = $contentCreate['data'];
+
+        // update
+        $responseUpdate = $this->json(
+            'PUT',
+            'api/v1/activity_log_types/' . $id,
+            [
+                'name' => 'updated activity log type'
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $contentUpdate = $responseUpdate->decodeResponseJson();
+
+        $this->assertEquals($contentUpdate['data']['name'], 'updated activity log type');
+
+        // edit
+        $responseEdit = $this->json(
+            'PATCH',
+            'api/v1/activity_log_types/' . $id,
+            [],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $contentEdit = $responseEdit->decodeResponseJson();
+
+        $this->assertEquals($contentEdit['data']['name'], 'updated activity log type');
+
+        // edit
+        $responseEditSec = $this->json(
+            'PATCH',
+            'api/v1/activity_log_types/' . $id,
+            [
+                'name' => 'updated activity log type edit'
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $contentEditSec = $responseEditSec->decodeResponseJson();
+
+        $this->assertEquals($contentEditSec['data']['name'], 'updated activity log type edit');
+    }
+
+    /**
      * Tests it can delete an ActivityLogType
      * 
      * @return void
