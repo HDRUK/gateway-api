@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-echo "Running pre-commit hook"
+echo "Starting pre-commit hook - Running test pipeline"
 ./hooks/run-tests.bash
 
 # $? stores exit value of the last command
