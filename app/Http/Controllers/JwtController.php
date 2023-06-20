@@ -101,25 +101,32 @@ class JwtController extends Controller
     public function isValid()
     {
         $tokenParts = explode('.', $this->jwt);
-        $header = base64_decode($tokenParts[0]);
-        $payload = base64_decode($tokenParts[1]);
-        $signatureProvided = $tokenParts[2];
 
-        $expiration = json_decode($payload)->exp;
-        $isTokenExpired = ($expiration - time()) < 0;
+        // dd($tokenParts);
 
-        $base64UrlHeader = $this->base64UrlEncode($header);
-        $base64UrlPayload = $this->base64UrlEncode($payload);
-        $signature = hash_hmac('SHA256', $base64UrlHeader . "." . $base64UrlPayload, $this->secretKey, true);
-        $base64UrlSignature = $this->base64UrlEncode($signature);
+        if (count($tokenParts) > 1) {
+            $header = base64_decode($tokenParts[0]);
+            $payload = base64_decode($tokenParts[1]);
+            $signatureProvided = $tokenParts[2];
 
-        $isSignatureValid = ($base64UrlSignature === $signatureProvided);
+            $expiration = json_decode($payload)->exp;
+            $isTokenExpired = ($expiration - time()) < 0;
 
-        if ($isTokenExpired || !$isSignatureValid) {
-            return FALSE;
-        } else {
-            return TRUE;
+            $base64UrlHeader = $this->base64UrlEncode($header);
+            $base64UrlPayload = $this->base64UrlEncode($payload);
+            $signature = hash_hmac('SHA256', $base64UrlHeader . "." . $base64UrlPayload, $this->secretKey, true);
+            $base64UrlSignature = $this->base64UrlEncode($signature);
+
+            $isSignatureValid = ($base64UrlSignature === $signatureProvided);
+
+            if ($isTokenExpired || !$isSignatureValid) {
+                return FALSE;
+            } else {
+                return TRUE;
+            }
         }
+
+        return FALSE;
     }
 
     /**

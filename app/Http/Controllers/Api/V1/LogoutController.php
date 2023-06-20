@@ -41,15 +41,14 @@ class LogoutController extends Controller
      */
     public function logout(Request $request): mixed
     {
-        $input = $request->all();
-
-        $jwt = $input['jwt'];
+        $jwt = $request->header('Authorization');
 
         AuthorisationCode::where(['jwt' => $jwt])->delete();
 
         $cookies = [
-            Cookie::make('token', null),
+            Cookie::forget('token'),
         ];
-        return redirect()->away(env('GATEWAY_LOGOUT_URL'))->withCookies($cookies);
+
+        return redirect()->away(env('GATEWAY_URL'))->withCookies($cookies);
     }
 }
