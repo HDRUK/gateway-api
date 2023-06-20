@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
-
 use Illuminate\Http\Request;
-
 use Illuminate\Http\JsonResponse;
 use App\Models\ActivityLogUserType;
 use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
+use App\Http\Requests\EditActivityLogUserType;
+use App\Exceptions\InternalServerErrorException;
 use App\Http\Requests\CreateActivityLogUserType;
+use App\Http\Requests\DeleteActivityLogUserType;
+use App\Http\Requests\UpdateActivityLogUserType;
 
 class ActivityLogUserTypeController extends Controller
 {
@@ -86,9 +89,7 @@ class ActivityLogUserTypeController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 
     /**
@@ -134,9 +135,7 @@ class ActivityLogUserTypeController extends Controller
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        throw new InternalServerErrorException();
     }
 
     /**
@@ -184,11 +183,15 @@ class ActivityLogUserTypeController extends Controller
      *      )
      * )
      */
-    public function update(CreateActivityLogUserType $request, int $id): JsonResponse
+    public function update(UpdateActivityLogUserType $request, int $id): JsonResponse
     {
         $activityLogUserType = ActivityLogUserType::findOrFail($id);
         $body = $request->post();
         $activityLogUserType->name = $body['name'];
+
+        if (array_key_exists('name', $body)) {
+            $activityLogUserType->name = $body['name'];
+        }
 
         if ($activityLogUserType->save()) {
             return response()->json([
@@ -196,15 +199,81 @@ class ActivityLogUserTypeController extends Controller
                 'data' => $activityLogUserType,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } else {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new InternalServerErrorException();
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
 
+    }
+
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/activity_log_user_types/{id}",
+     *      summary="Edit a system activity log user type",
+     *      description="Edit a system activity log user type",
+     *      tags={"ActivityLogUserType"},
+     *      summary="ActivityLogUserType@edit",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="ActivityLogUserTypes definition",
+     *          @OA\JsonContent(
+     *              required={"name"},
+     *              @OA\Property(property="name", type="string", example="Name"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="name", type="string", example="Name"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     *
+     * @param EditActivityLogUserType $request
+     * @param integer $id
+     * @return JsonResponse
+     */
+    public function edit(EditActivityLogUserType $request, int $id): JsonResponse
+    {
+        $activityLogUserType = ActivityLogUserType::findOrFail($id);
+        $body = $request->post();
+
+        if (array_key_exists('name', $body)) {
+            $activityLogUserType->name = $body['name'];
+        }
+
+        if ($activityLogUserType->save()) {
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $activityLogUserType,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } else {
+            throw new InternalServerErrorException();
+        }
+
+        throw new NotFoundException();
     }
 
     /**
@@ -238,7 +307,7 @@ class ActivityLogUserTypeController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(DeleteActivityLogUserType $request, int $id): JsonResponse
     {
         $activityLogUserType = ActivityLogUserType::findOrFail($id);
         if ($activityLogUserType) {
@@ -248,9 +317,7 @@ class ActivityLogUserTypeController extends Controller
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new InternalServerErrorException();
         }
     }
 }

@@ -187,6 +187,88 @@ class ActivityLogUserTypeTest extends TestCase
     }
 
     /**
+     * Tests it can edit an ActivityLogUserType
+     * 
+     * @return void
+     */
+    public function test_the_application_can_edit_an_activity_log_user_types()
+    {
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            'api/v1/activity_log_user_types',
+            [
+                'name' => 'test activity log user type',
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals(
+            $contentCreate['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+
+        $id = $contentCreate['data'];
+
+        // update
+        $responseUpdate = $this->json(
+            'PUT',
+            'api/v1/activity_log_user_types/' . $id,
+            [
+                'name' => 'updated activity log user type'
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $contentUpdate = $responseUpdate->decodeResponseJson();
+
+        $this->assertEquals($contentUpdate['data']['name'], 'updated activity log user type');
+
+        // edit
+        $responseUpdateOne = $this->json(
+            'PATCH',
+            'api/v1/activity_log_user_types/' . $id,
+            [
+               
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $contentUpdateOne = $responseUpdateOne->decodeResponseJson();
+
+        $this->assertEquals($contentUpdateOne['data']['name'], 'updated activity log user type');
+
+        // edit
+        $responseUpdateSec = $this->json(
+            'PATCH',
+            'api/v1/activity_log_user_types/' . $id,
+            [
+                'name' => 'updated activity log user type edit'
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $contentUpdateSec = $responseUpdateSec->decodeResponseJson();
+
+        $this->assertEquals($contentUpdateSec['data']['name'], 'updated activity log user type edit');
+    }
+
+    /**
      * Tests it can delete an ActivityLogUserType
      * 
      * @return void
