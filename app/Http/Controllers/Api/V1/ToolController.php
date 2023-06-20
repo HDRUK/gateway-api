@@ -197,7 +197,16 @@ class ToolController extends Controller
             }, ARRAY_FILTER_USE_KEY);
             $arrayToolTag = $input['tag'];
 
-            $tool = Tool::create($arrayTool);
+            $tool = Tool::create([
+                'mongo_object_id' => $arrayTool['mongo_object_id'],
+                'name' => $arrayTool['name'],
+                'url' => $arrayTool['url'],
+                'description' => $arrayTool['description'],
+                'license' => $arrayTool['license'],
+                'tech_stack' =>  $arrayTool['tech_stack'],
+                'user_id' => $arrayTool['user_id'],
+                'enabled' => $arrayTool['enabled'],
+            ]);
 
             if ($tool) {
                 $this->insertToolHasTag($arrayToolTag, (int) $tool->id);
@@ -312,7 +321,16 @@ class ToolController extends Controller
             }, ARRAY_FILTER_USE_KEY);
             $arrayToolTag = $input['tag'];
 
-            Tool::withTrashed()->where('id', $id)->update($arrayTool);
+            Tool::withTrashed()->where('id', $id)->update([
+                'mongo_object_id' => $arrayTool['mongo_object_id'],
+                'name' => $arrayTool['name'],
+                'url' => $arrayTool['url'],
+                'description' => $arrayTool['description'],
+                'license' => $arrayTool['license'],
+                'tech_stack' =>  $arrayTool['tech_stack'],
+                'user_id' => $arrayTool['user_id'],
+                'enabled' => $arrayTool['enabled'],
+            ]);
 
             ToolHasTag::where('tool_id', $id)->delete();
 
