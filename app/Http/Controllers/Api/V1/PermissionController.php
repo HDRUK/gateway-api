@@ -193,7 +193,9 @@ class PermissionController extends Controller
         try {
             $input = $request->all();
 
-            $permission = Permission::create($input);
+            $permission = Permission::create([
+                'role' => $input['role'],
+            ]);
 
             return response()->json([
                 'message' => 'created',
@@ -286,7 +288,9 @@ class PermissionController extends Controller
                 ], 400);
             }
 
-            Permission::where('id', $id)->update($input);
+            Permission::where('id', $id)->update([
+                'role' => $input['role'],
+            ]);
 
             return response()->json([
                 'message' => 'success',
