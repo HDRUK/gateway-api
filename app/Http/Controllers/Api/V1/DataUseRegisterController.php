@@ -349,7 +349,6 @@ class DataUseRegisterController extends Controller
         }
     }
 
-    // TODO
     /**
      * @OA\Put(
      *    path="/api/v1/data_use_registers",
@@ -488,7 +487,6 @@ class DataUseRegisterController extends Controller
         }
     }
 
-    // TODO
     /**
      * @OA\Delete(
      *    path="api/v1/data_use_registers/{id}",
