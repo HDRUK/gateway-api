@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class AuthorisationCode extends Model
+final class AuthorisationCode extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
 
