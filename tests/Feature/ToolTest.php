@@ -250,6 +250,7 @@ class ToolTest extends TestCase
 
         // update
         $mockDataUpdate = array(
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Ea fuga ab aperiam nihil quis.",
             "url" => "http://dach.com/odio-facilis-ex-culpa",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
@@ -266,10 +267,12 @@ class ToolTest extends TestCase
             $mockDataUpdate,
             $this->header
         );
+
         $responseUpdate->assertJsonStructure([
             'message',
             'data',
         ]);
+        
         $responseUpdate->assertStatus(202);
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
