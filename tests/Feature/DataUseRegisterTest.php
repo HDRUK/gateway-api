@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Config;
 use Tests\TestCase;
 use App\Models\DataUseRegister;
 use App\Models\TeamHasUser;
@@ -114,9 +115,63 @@ class DataUseRegisterTest extends TestCase
      */
     public function test_get_data_use_register_by_id_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
+        # Create new DataUseRegister item
+        $teamHasUser = TeamHasUser::all()->random();
 
-        $this->assertCount(1, $response['data']);
+        $randomString = fake()->words(fake()->randomDigitNot(0), true);
+        $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
+        $randomWord = fake()->word();
+
+        $mockData = [
+            "counter" => fake()->randomNumber(4, false),
+            "keywords" => [$randomWord],
+            "dataset_ids" => [$randomWord],
+            "gateway_dataset_ids" => [$randomWord],
+            "non_gateway_dataset_ids" => [$randomWord],
+            "gateway_applicants" => [$randomWord],
+            "non_gateway_applicants" => [$randomWord],
+            "funders_and_sponsors" => [$randomWord],
+            "other_approval_committees" => [$randomWord],
+            "gateway_output_tools" => [$randomWord],
+            "gateway_output_papers" => [$randomWord],
+            "non_gateway_outputs" => [$randomWord],
+            "project_title" => $randomString,
+            "project_id_text" => $shortRandomString,
+            "organisation_name" => $randomString,
+            "organisation_sector" => $randomString,
+            "lay_summary" => $randomString,
+            "latest_approval_date" => "2023-07-06 10:00:00",
+            "enabled" => fake()->boolean(),
+            "team_id" => (int) $teamHasUser->team_id,
+            "user_id" => (int) $teamHasUser->user_id,
+            "last_activity" => "2023-07-06 10:00:00",
+            "manual_upload" => fake()->boolean(),
+            "rejection_reason" => $randomString,
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockData,
+            $this->header
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $content = $response->decodeResponseJson();
+        $this->assertEquals($content['message'], 
+            Config::get('statuscodes.STATUS_CREATED.message'));
+
+        # Get DataUseRegister item
+        $response = $this->json('GET', self::TEST_URL . '/'. $content['data'], [], $this->header);
+
+        $content = $response->decodeResponseJson();
+        $this->assertCount(1, $content['data']);
+
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -151,6 +206,7 @@ class DataUseRegisterTest extends TestCase
                 ]
             ]
         ]);
+
         $response->assertStatus(200);
     }
 
@@ -165,7 +221,7 @@ class DataUseRegisterTest extends TestCase
 
         $teamHasUser = TeamHasUser::all()->random();
 
-        $randomString = fake()->words(fake()->randomDigit(), true);
+        $randomString = fake()->words(fake()->randomDigitNot(0), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
 
@@ -336,7 +392,7 @@ class DataUseRegisterTest extends TestCase
         $countTrashedBefore = DataUseRegister::onlyTrashed()->count();
 
         $teamHasUser = TeamHasUser::all()->random();
-        $randomString = fake()->words(fake()->randomDigit(), true);
+        $randomString = fake()->words(fake()->randomDigitNot(0), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
 
