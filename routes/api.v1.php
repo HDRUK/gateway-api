@@ -66,7 +66,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         // 'tools' => 'ToolController',
         'activity_logs' => 'ActivityLogController',
         'activity_log_types' => 'ActivityLogTypeController',
-        // 'activity_log_user_types' => 'ActivityLogUserTypeController',
+        'activity_log_user_types' => 'ActivityLogUserTypeController',
         // 'permissions' => 'PermissionController',
         // 'users' => 'UserController',
         // 'notifications' => 'NotificationController',
