@@ -7,11 +7,18 @@ use Carbon\Carbon;
 
 use App\Models\Notification;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\EditNotification;
+use App\Http\Requests\CreateNotification;
+use App\Http\Requests\DeleteNotification;
+use App\Http\Requests\UpdateNotification;
+use App\Http\Traits\RequestTransformation;
 
 class NotificationController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * @OA\Get(
      *      path="/api/v1/notifications",
@@ -113,6 +120,7 @@ class NotificationController extends Controller
      *              @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
      *              @OA\Property(property="message", type="string", example="your message here"),
      *              @OA\Property(property="opt_in", type="boolean", example="1"),
+     *              @OA\Property(property="enabled", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -132,26 +140,25 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function store(Request $request)
+    public function store(CreateNotification $request)
     {
-        $request->validate([
-            'notification_type' => 'required',
-            'message' => 'required',
-            'opt_in' => 'required',
-            'enabled' => 'required',
-        ]);
+        try {
+            $input = $request->all();
 
-        $notification = Notification::create($request->post());
-        if ($notification) {
+            $notification = Notification::create([
+                'notification_type' => $input['notification_type'],
+                'message' => $input['message'],
+                'opt_in' => $input['opt_in'],
+                'enabled' => $input['enabled'],
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $notification->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
@@ -170,6 +177,7 @@ class NotificationController extends Controller
      *              @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
      *              @OA\Property(property="message", type="string", example="your message here"),
      *              @OA\Property(property="opt_in", type="boolean", example="1"),
+     *              @OA\Property(property="enabled", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -203,36 +211,98 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $notification)
+    public function update(UpdateNotification $request, int $id)
     {
-        $request->validate([
-            'notification_type' => 'required',
-            'message' => 'required',
-            'opt_in' => 'required',
-            'enabled' => 'required',
-        ]);
+        try {
+            $input = $request->all();
 
-        $notification = Notification::findOrFail($notification);
-        $body = $request->post();
-        $notification->notification_type = $body['notification_type'];
-        $notification->message = $body['message'];
-        $notification->opt_in = $body['opt_in'];
-        $notification->enabled = $body['enabled'];
+            Notification::where('id', $id)->update([
+                'notification_type' => $input['notification_type'],
+                'message' => $input['message'],
+                'opt_in' => $input['opt_in'],
+                'enabled' => $input['enabled'],
+            ]);
 
-        if ($notification->save()) {
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $notification,
+                'data' => Notification::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
+    }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/notifications/{id}",
+     *      summary="Edit a notification",
+     *      description="Edit a notification",
+     *      tags={"Notification"},
+     *      summary="Notification@edit",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Notification definition",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
+     *              @OA\Property(property="message", type="string", example="your message here"),
+     *              @OA\Property(property="opt_in", type="boolean", example="1"),
+     *              @OA\Property(property="enabled", type="boolean", example="1"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-19 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-19 12:00:00"),
+     *                  @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
+     *                  @OA\Property(property="message", type="string", example="your message here"),
+     *                  @OA\Property(property="opt_in", type="boolean", example="1"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditNotification $request, int $id)
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'notification_type',
+                'message',
+                'opt_in',
+                'enabled',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Notification::where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Notification::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -266,25 +336,21 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $notification)
+    public function destroy(DeleteNotification $request, int $id)
     {
-        $notification = Notification::findOrFail($notification);
-        if ($notification) {
-            $notification->deleted_at = Carbon::now();
-            $notification->enabled = false;
-            if ($notification->save()) {
+        try {
+            $notification = Notification::findOrFail($id);
+            if ($notification) {
+                $notification->delete();
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new NotFoundException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 }

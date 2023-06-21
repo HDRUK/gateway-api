@@ -4474,6 +4474,10 @@
                                     "keys": {
                                         "type": "string",
                                         "example": "purpose"
+                                    },
+                                    "enabled": {
+                                        "type": "integer",
+                                        "example": "1"
                                     }
                                 },
                                 "type": "object"
@@ -4605,6 +4609,133 @@
                                         "message": {
                                             "type": "string",
                                             "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Filter"
+                ],
+                "summary": "Filter@edit",
+                "description": "Edit a system filter",
+                "operationId": "0ded703f8536929274c3cc0e7633ec03",
+                "requestBody": {
+                    "description": "Filter definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "dataset"
+                                    },
+                                    "value": {
+                                        "type": "string",
+                                        "example": "your filter value here"
+                                    },
+                                    "keys": {
+                                        "type": "string",
+                                        "example": "purpose"
+                                    },
+                                    "enabled": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "type": {
+                                                    "type": "string",
+                                                    "example": "someType"
+                                                },
+                                                "value": {
+                                                    "type": "string",
+                                                    "example": "some value"
+                                                },
+                                                "keys": {
+                                                    "type": "string",
+                                                    "example": "someKey"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
