@@ -61,7 +61,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         // 'tags' => 'TagController',
         // 'features' => 'FeatureController',
         // 'filters' => 'FilterController',
-        // 'dar-integrations' => 'DarIntegrationController',
+        'dar-integrations' => 'DarIntegrationController',
         // 'teams' => 'TeamController',
         // 'tools' => 'ToolController',
         'activity_logs' => 'ActivityLogController',

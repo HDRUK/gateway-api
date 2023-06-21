@@ -265,9 +265,9 @@ class CollectionTest extends TestCase
             $this->header
         );
         $responseEdit1->assertStatus(200);
-        $this->assertTrue($mockDataUpdate['name'] === $responseEdit1['data']['name']);
-        $this->assertTrue($mockDataUpdate['description'] === $responseEdit1['data']['description']);
-        $this->assertTrue($mockDataUpdate['image_link'] === $responseEdit1['data']['image_link']);
+        $this->assertTrue($mockDataEdit1['name'] === $responseEdit1['data']['name']);
+        $this->assertTrue($mockDataEdit1['description'] === $responseEdit1['data']['description']);
+        $this->assertTrue($mockDataEdit1['image_link'] === $responseEdit1['data']['image_link']);
 
         // edit
         $mockDataEdit2 = [
@@ -281,8 +281,8 @@ class CollectionTest extends TestCase
             $this->header
         );
         $responseEdit2->assertStatus(200);
-        $this->assertTrue($mockDataUpdate['name'] === $responseEdit1['data']['name']);
-        $this->assertTrue((int) $mockDataUpdate['counter'] === (int) $responseEdit1['data']['counter']);
+        $this->assertTrue($mockDataEdit2['name'] === $responseEdit2['data']['name']);
+        $this->assertTrue((int) $mockDataEdit2['counter'] === (int) $responseEdit2['data']['counter']);
 
     }
 

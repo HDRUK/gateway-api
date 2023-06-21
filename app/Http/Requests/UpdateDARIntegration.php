@@ -4,16 +4,20 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\BaseFormRequest;
 
-class DarIntegrationRequest extends BaseFormRequest
+class UpdateDARIntegration extends BaseFormRequest
 {
     /**
-     * Get the validation rules that apply to the request
-     * 
+     * Get the validation rules that apply to the request.
+     *
      * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
      */
     public function rules(): array
     {
         return [
+            'id' => [
+                'required',
+                'exists:dar_integrations,id',
+            ],
             'enabled' => [
                 'required',
                 'integer',
@@ -59,5 +63,15 @@ class DarIntegrationRequest extends BaseFormRequest
                 'max:255',
             ],
         ];
-    }   
+    }
+
+    /**
+     * Add Route parameters to the FormRequest.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge(['id' => $this->route('id')]);
+    }
 }

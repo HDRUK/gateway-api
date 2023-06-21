@@ -9,7 +9,7 @@ trait RequestTransformation
         $response = [];
 
         foreach($input as $key => $value) {
-            if (array_key_exists($key, $keys)) {
+            if (in_array($key, $keys)) {
                 $response[$key] = $value;
             }
         }
