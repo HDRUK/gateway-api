@@ -554,14 +554,6 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "event_type",
-                                    "user_type_id",
-                                    "log_type_id",
-                                    "version",
-                                    "html",
-                                    "plain_text"
-                                ],
                                 "properties": {
                                     "id": {
                                         "type": "integer",
@@ -1094,9 +1086,6 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "name"
-                                ],
                                 "properties": {
                                     "name": {
                                         "type": "string",
@@ -1569,9 +1558,6 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "name"
-                                ],
                                 "properties": {
                                     "name": {
                                         "type": "string",
@@ -2045,6 +2031,125 @@
                                         "message": {
                                             "type": "string",
                                             "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "AuditLog"
+                ],
+                "summary": "AuditLog@edit",
+                "description": "Edit a system audit log",
+                "operationId": "5c46edef7cd4f5c781d2722825d11a59",
+                "requestBody": {
+                    "description": "Audit log definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "100"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "someType"
+                                    },
+                                    "function": {
+                                        "type": "string",
+                                        "example": "some value"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": "100"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "someType"
+                                                },
+                                                "function": {
+                                                    "type": "string",
+                                                    "example": "some value"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"

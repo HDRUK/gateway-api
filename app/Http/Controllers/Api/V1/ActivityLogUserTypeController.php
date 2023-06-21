@@ -218,7 +218,6 @@ class ActivityLogUserTypeController extends Controller
      *          required=true,
      *          description="ActivityLogUserTypes definition",
      *          @OA\JsonContent(
-     *              required={"name"},
      *              @OA\Property(property="name", type="string", example="Name"),
      *          ),
      *      ),

@@ -146,6 +146,57 @@ class AuditLogTest extends TestCase
     }
 
     /**
+     * Tests that an AuditLog can be edit
+     * 
+     * @return void
+     */
+    public function test_the_application_can_edit_an_audit_log()
+    {
+        //create
+        $responseCreate = $this->json(
+            'POST',
+            'api/v1/audit_logs',
+            [
+                'user_id' => 1,
+                'description' => 'Test audit log description',
+                'function' => 'test_audit_log_creation',
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals($contentCreate['message'],Config::get('statuscodes.STATUS_CREATED.message'));
+
+        $id = $contentCreate['data'];
+
+        // edit
+        $responseEdit = $this->json(
+            'PATCH',
+            'api/v1/audit_logs/' . $id,
+            [
+                'description' => 'Test audit log description edit',
+                'function' => 'test_audit_log_edit',
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+        $contentEdit = $responseEdit->decodeResponseJson();
+        $this->assertEquals($contentEdit['data']['id'], $id);
+        $this->assertEquals($contentEdit['data']['description'], 'Test audit log description edit');
+        $this->assertEquals($contentEdit['data']['function'], 'test_audit_log_edit');
+        $responseEdit->assertStatus(200);
+    }
+
+    /**
      * Tests it can update an AuditLog
      * 
      * @return void

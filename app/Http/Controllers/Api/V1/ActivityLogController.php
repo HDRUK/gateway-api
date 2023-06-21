@@ -263,7 +263,6 @@ class ActivityLogController extends Controller
      *          required=true,
      *          description="ActivityLog definition",
      *          @OA\JsonContent(
-     *              required={"event_type", "user_type_id", "log_type_id", "version", "html", "plain_text"},
      *              @OA\Property(property="id", type="integer", example="123"),
      *              @OA\Property(property="event_type", type="string", example="passwordReset"),
      *              @OA\Property(property="user_type_id", type="integer", example="123"),

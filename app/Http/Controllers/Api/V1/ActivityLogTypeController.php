@@ -215,7 +215,6 @@ class ActivityLogTypeController extends Controller
      *          required=true,
      *          description="ActivityLogType definition",
      *          @OA\JsonContent(
-     *              required={"name"},
      *              @OA\Property(property="name", type="string", example="Name"),
      *          ),
      *      ),

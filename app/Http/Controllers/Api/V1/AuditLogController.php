@@ -7,11 +7,15 @@ use Exception;
 use Carbon\Carbon;
 
 use App\Models\AuditLog;
-use App\Http\Requests\AuditLogRequest;
+use Illuminate\Http\Request;
+
+use App\Http\Requests\EditAuditLog;
 
 use App\Http\Controllers\Controller;
-
-use Illuminate\Http\Request;
+use App\Exceptions\NotFoundException;
+use App\Http\Requests\CreateAuditLog;
+use App\Http\Requests\UpdateAuditLog;
+use App\Exceptions\InternalServerErrorException;
 
 class AuditLogController extends Controller
 {
@@ -92,9 +96,7 @@ class AuditLogController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 
     /**
@@ -132,7 +134,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */    
-    public function store(AuditLogRequest $request)
+    public function store(CreateAuditLog $request)
     {
         try {
             $logs = AuditLog::create($request->post());
@@ -143,9 +145,7 @@ class AuditLogController extends Controller
                 ], Config::get('statuscodes.STATUS_CREATED.code'));
             }
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new InternalServerErrorException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -200,7 +200,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */
-    public function update(AuditLogRequest $request, int $id)
+    public function update(UpdateAuditLog $request, int $id)
     {
         try {
             $log = AuditLog::findOrFail($id);
@@ -217,9 +217,88 @@ class AuditLogController extends Controller
                     'data' => $log,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             } else {
+                throw new NotFoundException();
+            }
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/audit_logs/{id}",
+     *      summary="Edit a system audit log",
+     *      description="Edit a system audit log",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@edit",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Audit log definition",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="user_id", type="integer", example="100"),
+     *              @OA\Property(property="description", type="string", example="someType"),
+     *              @OA\Property(property="function", type="string", example="some value"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="user_id", type="integer", example="100"),
+     *                  @OA\Property(property="description", type="string", example="someType"),
+     *                  @OA\Property(property="function", type="string", example="some value"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditAuditLog $request, int $id)
+    {
+        try {
+            $log = AuditLog::findOrFail($id);
+            $body = $request->post();
+
+            $log->updated_at = Carbon::now();
+
+            if (array_key_exists('user_id', $body)) {
+                $log->user_id = $body['user_id'];
+            }
+
+            if (array_key_exists('description', $body)) {
+                $log->description = $body['description'];
+            }
+
+            if (array_key_exists('function', $body)) {
+                $log->function = $body['function'];
+            }
+
+            if ($log->save()) {
                 return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-                ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $log,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            } else {
+                throw new NotFoundException();
             }
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -268,13 +347,9 @@ class AuditLogController extends Controller
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new InternalServerErrorException();
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 }
