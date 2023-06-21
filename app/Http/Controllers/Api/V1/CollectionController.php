@@ -313,6 +313,80 @@ class CollectionController extends Controller
         }
     }
 
+    /**
+     * @OA\Patch(
+     *    path="/api/v1/collections/{id}",
+     *    tags={"Collections"},
+     *    summary="Edit a collection",
+     *    description="Edit a collection",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="collection id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="collection id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="name", type="string", example="covid"),
+     *             @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
+     *             @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
+     *             @OA\Property(property="enabled", type="boolean", example="true"),
+     *             @OA\Property(property="keywords", type="string", example="key words"),
+     *             @OA\Property(property="public", type="boolean", example="true"),
+     *             @OA\Property(property="counter", type="integer", example="123"),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="not found")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=200,
+     *        description="Success",
+     *        @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(
+     *                 property="data", type="object",
+     *                 @OA\Property(property="name", type="string", example="covid"),
+     *                 @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
+     *                 @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
+     *                 @OA\Property(property="enabled", type="boolean", example="true"),
+     *                 @OA\Property(property="keywords", type="string", example="key words"),
+     *                 @OA\Property(property="public", type="boolean", example="true"),
+     *                 @OA\Property(property="counter", type="integer", example="123"),
+     *                 @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                 @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                 @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
+     *              ),
+     *        ),
+     *    ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     *
+     * @param EditCollection $request
+     * @param integer $id
+     * @return JsonResponse
+     */
     public function edit(EditCollection $request, int $id): JsonResponse
     {
         try {
