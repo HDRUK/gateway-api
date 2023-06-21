@@ -4911,6 +4911,10 @@
                                     "opt_in": {
                                         "type": "boolean",
                                         "example": "1"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
                                     }
                                 },
                                 "type": "object"
@@ -5076,6 +5080,10 @@
                                     "opt_in": {
                                         "type": "boolean",
                                         "example": "1"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
                                     }
                                 },
                                 "type": "object"
@@ -5203,6 +5211,129 @@
                                         "message": {
                                             "type": "string",
                                             "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Notification"
+                ],
+                "summary": "Notification@edit",
+                "description": "Edit a notification",
+                "operationId": "a5ca86d5f19ecac396cb830333f307da",
+                "requestBody": {
+                    "description": "Notification definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "notification_type": {
+                                        "type": "string",
+                                        "example": "applicationSubmitted"
+                                    },
+                                    "message": {
+                                        "type": "string",
+                                        "example": "your message here"
+                                    },
+                                    "opt_in": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-19 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-19 12:00:00"
+                                                },
+                                                "notification_type": {
+                                                    "type": "string",
+                                                    "example": "applicationSubmitted"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "your message here"
+                                                },
+                                                "opt_in": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"

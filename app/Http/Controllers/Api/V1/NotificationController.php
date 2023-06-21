@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
-use Carbon\Carbon;
+use Exception;
 
 use App\Models\Notification;
 
