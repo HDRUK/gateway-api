@@ -14,7 +14,7 @@ module.exports = {
 			process.stdout.write(`A topic cannot be created with only the creating user\n`);
 			return [];
 		}
-		let recipients = members.filter(mem => mem.roles.includes('manager') || mem.roles.includes('reviewer')).map(m => m.memberid);
+		let recipients = members.filter(mem => mem.roles.includes('manager') || mem.roles.includes('custodian.dar.manager')).map(m => m.memberid);
 		// 2. Return team recipients plus the user that created the message
 		recipients = [...recipients, createdBy];
 		return recipients;
