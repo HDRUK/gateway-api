@@ -319,7 +319,7 @@ const setStatus = async req => {
 
 			resolve(id);
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`COURSE - setStatus : ${err.message}\n`);
 			reject(new Error(err));
 		}
 	});

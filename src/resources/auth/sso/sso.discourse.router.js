@@ -19,7 +19,7 @@ router.get('/', function (req, res, next) {
 				try {
 					redirectUrl = discourseLogin(req.query.sso, req.query.sig, req.user);
 				} catch (err) {
-					console.error(err.message);
+					process.stdout.write(`Single Sign On for Discourse forum : ${err.message}\n`);
 					return res.status(500).send('Error authenticating the user.');
 				}
 			}

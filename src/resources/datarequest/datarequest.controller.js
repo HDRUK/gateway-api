@@ -3,6 +3,7 @@ import moment from 'moment';
 import mongoose from 'mongoose';
 
 import teamController from '../team/team.controller';
+import teamV3Util from '../utilities/team.v3.util';
 import datarequestUtil from './utils/datarequest.util';
 import notificationBuilder from '../utilities/notificationBuilder';
 import emailGenerator from '../utilities/emailGenerator.util';
@@ -17,6 +18,7 @@ import { UserModel } from '../user/user.model';
 import { PublisherModel } from '../publisher/publisher.model';
 import { dataUseRegisterController } from '../dataUseRegister/dependency';
 import { publishMessageWithRetryToPubSub } from '../../services/google/PubSubWithRetryService';
+import HttpExceptions from '../../exceptions/HttpExceptions';
 
 const logCategory = 'Data Access Request';
 const bpmController = require('../bpmnworkflow/bpmnworkflow.controller');
@@ -83,12 +85,8 @@ export default class DataRequestController extends Controller {
 				canViewSubmitted: true,
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred searching for user applications',
-			});
+			throw new HttpExceptions(`An error occurred searching for user applications`, 500);
 		}
 	}
 
@@ -107,7 +105,7 @@ export default class DataRequestController extends Controller {
 			// 2. Find the matching record and include attached datasets records with publisher details and workflow details
 			let accessRecord = await this.dataRequestService.getApplicationById(id);
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'The application could not be found.' });
+				throw new HttpExceptions(`The application could not be found.`, 404);
 			}
 
 			// 3. If invalid version requested, return 404
@@ -116,7 +114,7 @@ export default class DataRequestController extends Controller {
 				requestedVersion
 			);
 			if (!isValidVersion) {
-				return res.status(404).json({ status: 'error', message: 'The requested application version could not be found.' });
+				throw new HttpExceptions(`The requested application version could not be found.`, 404);
 			}
 
 			// 4. Get requested amendment iteration details
@@ -126,14 +124,11 @@ export default class DataRequestController extends Controller {
 			);
 
 			// 5. Check if requesting user is custodian member or applicant/contributor
-			const { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			const userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord,
 				requestingUserId,
 				requestingUserObjectId
 			);
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-			}
 
 			// 6. Set edit mode for applicants who have not yet submitted
 			const { applicationStatus, jsonSchema, versionTree, applicationType } = accessRecord;
@@ -148,7 +143,7 @@ export default class DataRequestController extends Controller {
 
 			// 9. Get role type for requesting user, applicable for only Custodian users i.e. Manager/Reviewer role
 			const userRole =
-				userType === constants.userTypes.APPLICANT ? '' : isManager ? constants.roleTypes.MANAGER : constants.roleTypes.REVIEWER;
+				userType === constants.userTypes.APPLICANT ? '' : isManager ? constants.roleMemberTeam.CUST_DAR_MANAGER : constants.roleMemberTeam.CUST_DAR_REVIEWER;
 
 			// 10. Handle amendment type application loading for Custodian showing any changes in the major version
 			if (applicationType === constants.submissionTypes.AMENDED && userType === constants.userTypes.CUSTODIAN) {
@@ -222,12 +217,8 @@ export default class DataRequestController extends Controller {
 				},
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred opening this data access request application',
-			});
+			throw new HttpExceptions(`An error occurred opening this data access request application`, 500);
 		}
 	}
 
@@ -262,7 +253,7 @@ export default class DataRequestController extends Controller {
 				return await this.getAccessRequestById(req, res);
 			} else {
 				if (_.isEmpty(datasets)) {
-					return res.status(500).json({ status: 'error', message: 'No datasets available.' });
+					throw new HttpExceptions(`No datasets available.`, 500);
 				}
 				const {
 					datasetfields: { publisher = '' },
@@ -321,12 +312,8 @@ export default class DataRequestController extends Controller {
 				},
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred opening a data access request application for the requested dataset(s)',
-			});
+			throw new HttpExceptions(`An error occurred opening a data access request application for the requested dataset(s)`, 500);
 		}
 	}
 
@@ -347,12 +334,8 @@ export default class DataRequestController extends Controller {
 				}),
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred populating additional information for contributors.',
-			});
+			throw new HttpExceptions(`An error occurred populating additional information for contributors.`, 500);
 		}
 	}
 
@@ -377,14 +360,11 @@ export default class DataRequestController extends Controller {
 			}
 
 			// 3. Check user type and authentication to submit application
-			let { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			let  userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord,
 				requestingUserId,
 				requestingUserObjectId
 			);
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-			}
 
 			// 4. Ensure single datasets are mapped correctly into array (backward compatibility for single dataset applications)
 			if (_.isEmpty(accessRecord.datasets)) {
@@ -427,10 +407,7 @@ export default class DataRequestController extends Controller {
 
 			// 6. Ensure a valid submission is taking place
 			if (_.isNil(accessRecord.applicationType)) {
-				return res.status(400).json({
-					status: 'error',
-					message: 'Application cannot be submitted as it has reached a final decision status.',
-				});
+				throw new HttpExceptions(`Application cannot be submitted as it has reached a final decision status.`, 400);
 			}
 
 			// 7. Save changes to db
@@ -488,15 +465,10 @@ export default class DataRequestController extends Controller {
 				}
 			}
 
-			// 11. Return aplication and successful response
 			return res.status(200).json({ status: 'success', data: savedAccessRecord });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred submitting the application',
-			});
+			throw new HttpExceptions(`An error occurred submitting the application`, 500);
 		}
 	}
 
@@ -518,7 +490,7 @@ export default class DataRequestController extends Controller {
 			let accessRecord = await this.dataRequestService.getApplicationToUpdateById(id);
 			// 4. Check access record
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Data Access Request not found.' });
+				throw new HttpExceptions(`Data Access Request not found.`, 404);
 			}
 			// 5. Update record object
 			accessRecord = await this.dataRequestService.updateApplication(accessRecord, updateObj).catch(err => {
@@ -580,12 +552,8 @@ export default class DataRequestController extends Controller {
 				jsonSchema: dirtySchema ? accessRecord.jsonSchema : undefined,
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred updating the application',
-			});
+			throw new HttpExceptions(`An error occurred updating the application`, 500);
 		}
 	}
 
@@ -607,25 +575,18 @@ export default class DataRequestController extends Controller {
 			// 3. Find the relevant data request application
 			let accessRecord = await this.dataRequestService.getApplicationWithWorkflowById(id, { lean: false });
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 4. Check if the user is permitted to perform update to application
 			let isDirty = false,
 				statusChange = false,
 				contributorChange = false;
-			let { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			let userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord.toObject(),
 				requestingUserId,
 				requestingUserObjectId
 			);
-
-			if (!authorised) {
-				return res.status(401).json({
-					status: 'error',
-					message: 'Unauthorised to perform this update.',
-				});
-			}
 
 			let { authorIds: currentAuthors } = accessRecord;
 			let newAuthors = [];
@@ -633,14 +594,14 @@ export default class DataRequestController extends Controller {
 			// 5. Extract new application status and desc to save updates
 			if (userType === constants.userTypes.CUSTODIAN) {
 				// Only a custodian manager can set the final status of an application
-				authorised = false;
 				const { team = {} } = accessRecord.publisherObj.toObject();
 				if (!_.isEmpty(team)) {
-					authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, team, requestingUserObjectId);
+					let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team, requestingUserObjectId);
+					if (!authorised) {
+						throw new HttpExceptions(`User not authorized to perform this action`,403);
+					}
 				}
-				if (!authorised) {
-					return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-				}
+
 				// Extract params from body
 				({ applicationStatus, applicationStatusDesc } = req.body);
 				const finalStatuses = [
@@ -791,12 +752,8 @@ export default class DataRequestController extends Controller {
 				data: accessRecord._doc,
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred updating the application',
-			});
+			throw new HttpExceptions(`An error occurred updating the application`, 500);
 		}
 	}
 
@@ -815,23 +772,20 @@ export default class DataRequestController extends Controller {
 			const appToDelete = await this.dataRequestService.getApplicationWithTeamById(appIdToDelete, { lean: true });
 
 			// 3. Get the requesting users permission levels
-			let { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			let userType = datarequestUtil.getUserPermissionsForApplication(
 				appToDelete,
 				requestingUserId,
 				requestingUserObjectId
 			);
 
 			// 4. Return unauthorised message if the requesting user is not an applicant
-			if (!authorised || userType !== constants.userTypes.APPLICANT) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+			if (userType !== constants.userTypes.APPLICANT) {
+				throw new HttpExceptions(`Unauthorised`, 401);
 			}
 
 			// 5. If application is not in progress, actions cannot be performed
 			if (appToDelete.applicationStatus !== constants.applicationStatuses.INPROGRESS) {
-				return res.status(400).json({
-					success: false,
-					message: 'This application is no longer in pre-submission status and therefore this action cannot be performed',
-				});
+				throw new HttpExceptions(`This application is no longer in pre-submission status and therefore this action cannot be performed`, 400);
 			}
 
 			// 6. Delete application
@@ -846,12 +800,8 @@ export default class DataRequestController extends Controller {
 				success: true,
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred deleting the existing application',
-			});
+			throw new HttpExceptions(`An error occurred deleting the existing application`, 500);
 		}
 	}
 
@@ -874,24 +824,24 @@ export default class DataRequestController extends Controller {
 			let appToClone = await this.dataRequestService.getApplicationWithTeamById(id, { lean: true });
 
 			if (!appToClone) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 3. If invalid version requested to clone, return 404
 			const { isValidVersion, requestedMinorVersion } = this.dataRequestService.validateRequestedVersion(appToClone, requestedVersion);
 			if (!isValidVersion) {
-				return res.status(404).json({ status: 'error', message: 'The requested application version could not be found.' });
+				throw new HttpExceptions(`The requested application version could not be found.`, 404);
 			}
 
 			// 4. Get requested amendment iteration details
 			const { versionIndex } = this.amendmentService.getAmendmentIterationDetailsByVersion(appToClone, requestedMinorVersion);
 
 			// 5. Get the requesting users permission levels
-			let { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(appToClone, requestingUserId, requestingUserObjectId);
+			let userType = datarequestUtil.getUserPermissionsForApplication(appToClone, requestingUserId, requestingUserObjectId);
 
 			// 6. Return unauthorised message if the requesting user is not an applicant
-			if (!authorised || userType !== constants.userTypes.APPLICANT) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+			if (userType !== constants.userTypes.APPLICANT) {
+				throw new HttpExceptions(`Unauthorised`, 401);
 			}
 
 			// 7. Update question answers with modifications since original submission
@@ -914,16 +864,16 @@ export default class DataRequestController extends Controller {
 				const appToCloneInto = await this.dataRequestService.getApplicationWithTeamById(appIdToCloneInto, { lean: true });
 				// Ensure application to clone into was found
 				if (!appToCloneInto) {
-					return res.status(404).json({ status: 'error', message: 'Application to clone into not found.' });
+					throw new HttpExceptions(`Application to clone into not found.`, 404);
 				}
 				// Get permissions for application to clone into
-				let { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+				let userType = datarequestUtil.getUserPermissionsForApplication(
 					appToCloneInto,
 					requestingUserId,
 					requestingUserObjectId
 				);
 				//  Return unauthorised message if the requesting user is not authorised to the new application
-				if (!authorised || userType !== constants.userTypes.APPLICANT) {
+				if (userType !== constants.userTypes.APPLICANT) {
 					return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
 				}
 				clonedAccessRecord = await datarequestUtil.cloneIntoExistingApplication(appToClone, appToCloneInto);
@@ -949,12 +899,8 @@ export default class DataRequestController extends Controller {
 				accessRecord: clonedAccessRecord,
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred cloning the existing application',
-			});
+			throw new HttpExceptions(`An error occurred cloning the existing application.`, 500);
 		}
 	}
 
@@ -969,34 +915,29 @@ export default class DataRequestController extends Controller {
 			const requestingUserObjectId = req.user._id;
 			let { questionId, questionSetId, questionIds = [], mode, separatorText = '' } = req.body;
 			if (_.isEmpty(questionId) || _.isEmpty(questionSetId)) {
-				return res.status(400).json({
-					success: false,
-					message: 'You must supply the unique identifiers for the question to perform an action',
-				});
+				throw new HttpExceptions(`You must supply the unique identifiers for the question to perform an action`, 400);
 			}
 
 			// 2. Retrieve DAR from database
 			let accessRecord = await this.dataRequestService.getApplicationWithTeamById(id, { lean: false });
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 3. If application is not in progress, actions cannot be performed
 			if (accessRecord.applicationStatus !== constants.applicationStatuses.INPROGRESS) {
-				return res.status(400).json({
-					success: false,
-					message: 'This application is no longer in pre-submission status and therefore this action cannot be performed',
-				});
+				throw new HttpExceptions(`This application is no longer in pre-submission status and therefore this action cannot be performed`, 400);
 			}
 			// 4. Get the requesting users permission levels
-			let { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			let userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord.toObject(),
 				requestingUserId,
 				requestingUserObjectId
 			);
 
 			// 5. Return unauthorised message if the requesting user is not an applicant
-			if (!authorised || userType !== constants.userTypes.APPLICANT) {
+			if (userType !== constants.userTypes.APPLICANT) {
+				throw new HttpExceptions(`Unauthorised`, 401);
 				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
 			}
 
@@ -1015,30 +956,21 @@ export default class DataRequestController extends Controller {
 					break;
 				case constants.formActions.ADDREPEATABLEQUESTIONS:
 					if (_.isEmpty(questionIds)) {
-						return res.status(400).json({
-							success: false,
-							message: 'You must supply the question identifiers to duplicate when performing this action',
-						});
+						throw new HttpExceptions(`You must supply the question identifiers to duplicate when performing this action`, 400);
 					}
 					const duplicateQuestions = dynamicForm.duplicateQuestions(questionSetId, questionIds, separatorText, jsonSchema);
 					jsonSchema = dynamicForm.insertQuestions(questionSetId, questionId, duplicateQuestions, jsonSchema);
 					break;
 				case constants.formActions.REMOVEREPEATABLEQUESTIONS:
 					if (_.isEmpty(questionIds)) {
-						return res.status(400).json({
-							success: false,
-							message: 'You must supply the question identifiers to remove when performing this action',
-						});
+						throw new HttpExceptions(`You must supply the question identifiers to remove when performing this action`, 400);
 					}
 					questionIds = [...questionIds, questionId];
 					jsonSchema = dynamicForm.removeQuestionReferences(questionSetId, questionIds, jsonSchema);
 					questionAnswers = dynamicForm.removeQuestionAnswers(questionIds, questionAnswers);
 					break;
 				default:
-					return res.status(400).json({
-						success: false,
-						message: 'You must supply a valid action to perform',
-					});
+					throw new HttpExceptions(`You must supply a valid action to perform`, 400);
 			}
 
 			// 8. Update record
@@ -1068,12 +1000,8 @@ export default class DataRequestController extends Controller {
 				},
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred updating the application amendment',
-			});
+			throw new HttpExceptions(`An error occurred updating the application amendment`, 500);
 		}
 	}
 
@@ -1092,31 +1020,29 @@ export default class DataRequestController extends Controller {
 			// 2. Find the matching record and include attached datasets records with publisher details and workflow details
 			let accessRecord = await this.dataRequestService.getApplicationById(id);
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'The application could not be found.' });
+				throw new HttpExceptions(`The application could not be found.`, 404);
 			}
 
 			// 3. Check if requesting user is custodian member or applicant/contributor
-			const { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			const userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord,
 				requestingUserId,
 				requestingUserObjectId
 			);
-			if (!authorised || userType !== constants.userTypes.APPLICANT) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+			if (userType !== constants.userTypes.APPLICANT) {
+				throw new HttpExceptions(`Unauthorised`, 401);
 			}
 
 			// 4. If invalid version requested, return 404
 			const { isValidVersion, requestedMinorVersion } = this.dataRequestService.validateRequestedVersion(accessRecord, requestedVersion);
 			if (!isValidVersion) {
-				return res.status(404).json({ status: 'error', message: 'The requested application version could not be found.' });
+				throw new HttpExceptions(`The requested application version could not be found.`, 404);
 			}
 
 			// 5. Check version is the latest version
 			const { isLatestMinorVersion } = this.amendmentService.getAmendmentIterationDetailsByVersion(accessRecord, requestedMinorVersion);
 			if (!isLatestMinorVersion) {
-				return res
-					.status(400)
-					.json({ status: 'error', message: 'This action can only be performed against the latest version of an approved application' });
+				throw new HttpExceptions(`This action can only be performed against the latest version of an approved application`, 400);
 			}
 
 			// 6. Check application is in correct status
@@ -1125,9 +1051,7 @@ export default class DataRequestController extends Controller {
 				applicationStatus !== constants.applicationStatuses.APPROVED &&
 				applicationStatus !== constants.applicationStatuses.APPROVEDWITHCONDITIONS
 			) {
-				return res
-					.status(400)
-					.json({ status: 'error', message: 'This action can only be performed against an application that has been approved' });
+				throw new HttpExceptions(`This action can only be performed against an application that has been approved`, 400);
 			}
 
 			// 7. Update question answers with modifications since original submission (minor version updates)
@@ -1139,7 +1063,7 @@ export default class DataRequestController extends Controller {
 			});
 
 			if (!newAccessRecord) {
-				return res.status(400).json({ status: 'error', message: 'Creating application amendment failed' });
+				throw new HttpExceptions(`Creating application amendment failed`, 400);
 			}
 
 			// 9. Get amended application (new major version) with all details populated
@@ -1154,12 +1078,8 @@ export default class DataRequestController extends Controller {
 				},
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred opening this data access request application',
-			});
+			throw new HttpExceptions(`An error occurred opening this data access request application`, 500);
 		}
 	}
 
@@ -1181,17 +1101,14 @@ export default class DataRequestController extends Controller {
 			// 4. Get access record
 			let accessRecord = await this.dataRequestService.getApplicationWithTeamById(id, { lean: false });
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 			// 5. Check if requesting user is custodian member or applicant/contributor
-			let { authorised } = datarequestUtil.getUserPermissionsForApplication(accessRecord, requestingUserId, requestingUserObjectId);
-			// 6. Check authorisation
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-			}
+			datarequestUtil.getUserPermissionsForApplication(accessRecord, requestingUserId, requestingUserObjectId);
+
 			// 7. Check files
 			if (_.isEmpty(files)) {
-				return res.status(400).json({ status: 'error', message: 'No files to upload' });
+				throw new HttpExceptions(`No files to upload`, 400);
 			}
 			// 8. Upload files
 			const mediaFiles = await this.dataRequestService
@@ -1202,12 +1119,8 @@ export default class DataRequestController extends Controller {
 			// 9. return response
 			return res.status(200).json({ status: 'success', mediaFiles });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred uploading the file to the application',
-			});
+			throw new HttpExceptions(`An error occurred uploading the file to the application`, 500);
 		}
 	}
 
@@ -1222,7 +1135,7 @@ export default class DataRequestController extends Controller {
 			// 2. get AccessRecord
 			const accessRecord = await this.dataRequestService.getFilesForApplicationById(id);
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 3. get file
@@ -1232,12 +1145,8 @@ export default class DataRequestController extends Controller {
 			// 4. Return successful response
 			return res.status(200).json({ status: accessRecord.files[fileIndex].status });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred attempting to retrieve the status of an uploaded file',
-			});
+			throw new HttpExceptions(`An error occurred attempting to retrieve the status of an uploaded file`, 500);
 		}
 	}
 
@@ -1252,7 +1161,7 @@ export default class DataRequestController extends Controller {
 			// 2. Get AccessRecord
 			const accessRecord = await this.dataRequestService.getFilesForApplicationById(id, { lean: false });
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 			// 3. Find the file in the files array from db
 			const mediaFile =
@@ -1262,10 +1171,7 @@ export default class DataRequestController extends Controller {
 				}) || {};
 			// 4. No file return
 			if (_.isEmpty(mediaFile)) {
-				return res.status(400).json({
-					status: 'error',
-					message: 'No file to download, please try again later',
-				});
+				throw new HttpExceptions(`No file to download, please try again later`, 400);
 			}
 			// 6. get the name of the file
 			let { name, fileId: dbFileId } = mediaFile;
@@ -1275,12 +1181,8 @@ export default class DataRequestController extends Controller {
 			// 8. send file back to user
 			return res.status(200).sendFile(`${process.env.TMPDIR}${initialApplicationId}/${dbFileId}_${name}`);
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred attempting to retrieve an uploaded file',
-			});
+			throw new HttpExceptions(`An error occurred attempting to retrieve an uploaded file`, 500);
 		}
 	}
 
@@ -1298,7 +1200,7 @@ export default class DataRequestController extends Controller {
 			const accessRecord = await this.dataRequestService.getFilesForApplicationById(id);
 
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			//3. Check the status is valid
@@ -1308,7 +1210,7 @@ export default class DataRequestController extends Controller {
 				status !== fileStatus.ERROR &&
 				status !== fileStatus.QUARANTINED
 			) {
-				return res.status(400).json({ status: 'error', message: 'File status not valid' });
+				throw new HttpExceptions(`File status not valid`, 400);
 			}
 
 			//4. Update all versions of application using version tree
@@ -1318,12 +1220,8 @@ export default class DataRequestController extends Controller {
 				success: true,
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred attempting to update the status of an uploaded file',
-			});
+			throw new HttpExceptions(`An error occurred attempting to update the status of an uploaded file`, 500);
 		}
 	}
 
@@ -1343,27 +1241,24 @@ export default class DataRequestController extends Controller {
 			const accessRecord = await this.dataRequestService.getFilesForApplicationById(id, { lean: false });
 
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 3. If application is not in progress, actions cannot be performed
 			if (accessRecord.applicationStatus !== constants.applicationStatuses.INPROGRESS) {
-				return res.status(400).json({
-					success: false,
-					message: 'This application is no longer in pre-submission status and therefore this action cannot be performed',
-				});
+				throw new HttpExceptions(`This application is no longer in pre-submission status and therefore this action cannot be performed`, 400);
 			}
 
 			// 4. Get the requesting users permission levels
-			let { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			let userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord.toObject(),
 				requestingUserId,
 				requestingUserObjectId
 			);
 
 			// 5. Return unauthorised message if the requesting user is not an applicant
-			if (!authorised || userType !== constants.userTypes.APPLICANT) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+			if (userType !== constants.userTypes.APPLICANT) {
+				throw new HttpExceptions(`Unauthorised`, 401);
 			}
 
 			// 6. Remove the file from the application
@@ -1378,8 +1273,8 @@ export default class DataRequestController extends Controller {
 			// 8. Return successful response
 			return res.status(200).json({ status: 'success' });
 		} catch (err) {
-			console.error(err.message);
-			res.status(500).json({ status: 'error', message: err.message });
+			process.stdout.write(`DATA REQUEST - updateAccessRequestDeleteFile : ${err.message}\n`);
+			throw new HttpExceptions(err.message, 500);
 		}
 	}
 
@@ -1396,55 +1291,40 @@ export default class DataRequestController extends Controller {
 			const requestingUserObjectId = req.user._id;
 			const { workflowId = '' } = req.body;
 			if (_.isEmpty(workflowId)) {
-				return res.status(400).json({
-					success: false,
-					message: 'You must supply the unique identifier to assign a workflow to this application',
-				});
+				throw new HttpExceptions(`You must supply the unique identifier to assign a workflow to this application`, 400);
 			}
 
 			// 2. Retrieve DAR from database
 			let accessRecord = await this.dataRequestService.getApplicationWithTeamById(id, { lean: false });
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 3. Check permissions of user is manager of associated team
-			let authorised = false;
 			if (_.has(accessRecord.toObject(), 'publisherObj.team')) {
 				let { team } = accessRecord.publisherObj;
-				authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, team.toObject(), requestingUserObjectId);
-			}
-
-			// 4. Refuse access if not authorised
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+				let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team.toObject(), requestingUserObjectId);
+				if (!authorised) {
+					throw new HttpExceptions(`User not authorized to perform this action`,403);
+				}
 			}
 
 			// 5. Check publisher allows workflows
 			const { workflowEnabled = false } = accessRecord.publisherObj;
 			if (!workflowEnabled) {
-				return res.status(400).json({
-					success: false,
-					message: 'This custodian has not enabled workflows',
-				});
+				throw new HttpExceptions(`This custodian has not enabled workflows`, 400);
 			}
 
 			// 6. Check no workflow already assigned
 			const { workflowId: currentWorkflowId = '' } = accessRecord;
 			if (!_.isEmpty(currentWorkflowId)) {
-				return res.status(400).json({
-					success: false,
-					message: 'This application already has a workflow assigned',
-				});
+				throw new HttpExceptions(`This application already has a workflow assigned`, 400);
 			}
 
 			// 7. Check application is in-review
 			const { applicationStatus } = accessRecord;
 			if (applicationStatus !== constants.applicationStatuses.INREVIEW) {
-				return res.status(400).json({
-					success: false,
-					message: 'The application status must be set to in review to assign a workflow',
-				});
+				throw new HttpExceptions(`The application status must be set to in review to assign a workflow`, 400);
 			}
 
 			// 8. Assign workflow and save changes to application
@@ -1478,12 +1358,8 @@ export default class DataRequestController extends Controller {
 				success: true,
 			});
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred assigning the workflow',
-			});
+			throw new HttpExceptions(`An error occurred assigning the workflow`, 500);
 		}
 	}
 
@@ -1499,38 +1375,29 @@ export default class DataRequestController extends Controller {
 			// 2. Retrieve DAR from database
 			let accessRecord = await this.dataRequestService.getApplicationWithWorkflowById(id, { lean: false });
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 3. Check permissions of user is manager of associated team
-			let authorised = false;
 			if (_.has(accessRecord.toObject(), 'publisherObj.team')) {
 				const { team } = accessRecord.publisherObj;
-				authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, team.toObject(), requestingUserObjectId);
-			}
-
-			// 4. Refuse access if not authorised
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+				let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team.toObject(), requestingUserObjectId);
+				if (!authorised) {
+					throw new HttpExceptions(`User not authorized to perform this action`,403);
+				}
 			}
 
 			// 5. Check application is in review state
 			const { applicationStatus } = accessRecord;
 			if (applicationStatus !== constants.applicationStatuses.INREVIEW) {
-				return res.status(400).json({
-					success: false,
-					message: 'The application status must be set to in review',
-				});
+				throw new HttpExceptions(`The application status must be set to in review`, 400);
 			}
 
 			// 6. Check a workflow is assigned with valid steps
 			const { workflow = {} } = accessRecord;
 			const { steps = [] } = workflow;
 			if (_.isEmpty(workflow) || _.isEmpty(steps)) {
-				return res.status(400).json({
-					success: false,
-					message: 'A valid workflow has not been attached to this application',
-				});
+				throw new HttpExceptions(`A valid workflow has not been attached to this application`, 400);
 			}
 
 			// 7. Get the attached active workflow step
@@ -1538,10 +1405,7 @@ export default class DataRequestController extends Controller {
 				return step.active === true;
 			});
 			if (activeStepIndex === -1) {
-				return res.status(400).json({
-					success: false,
-					message: 'There is no active step to override for this workflow',
-				});
+				throw new HttpExceptions(`There is no active step to override for this workflow`, 400);
 			}
 
 			// 8. Update the step to be completed closing off end date/time
@@ -1601,12 +1465,8 @@ export default class DataRequestController extends Controller {
 			// 16. Return aplication and successful response
 			return res.status(200).json({ status: 'success' });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred assigning the workflow',
-			});
+			throw new HttpExceptions(`An error occurred assigning the workflow`, 500);
 		}
 	}
 
@@ -1621,46 +1481,34 @@ export default class DataRequestController extends Controller {
 			const requestingUserObjectId = req.user._id;
 			const { approved, comments = '' } = req.body;
 			if (_.isUndefined(approved) || _.isEmpty(comments)) {
-				return res.status(400).json({
-					success: false,
-					message: 'You must supply the approved status with a reason',
-				});
+				throw new HttpExceptions(`You must supply the approved status with a reason`, 400);
 			}
 
 			// 2. Retrieve DAR from database
 			let accessRecord = await this.dataRequestService.getApplicationWithWorkflowById(id, { lean: false });
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 400);
 			}
 
 			// 3. Check permissions of user is reviewer of associated team
-			let authorised = false;
 			if (_.has(accessRecord.toObject(), 'publisherObj.team')) {
 				const { team } = accessRecord.publisherObj;
-				authorised = teamController.checkTeamPermissions(constants.roleTypes.REVIEWER, team.toObject(), requestingUserObjectId);
-			}
-
-			// 4. Refuse access if not authorised
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+				let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_REVIEWER], team.toObject(), requestingUserObjectId);
+				if (!authorised) {
+					throw new HttpExceptions(`User not authorized to perform this action`,403);
+				}
 			}
 
 			// 5. Check application is in-review
 			const { applicationStatus } = accessRecord;
 			if (applicationStatus !== constants.applicationStatuses.INREVIEW) {
-				return res.status(400).json({
-					success: false,
-					message: 'The application status must be set to in review to cast a vote',
-				});
+				throw new HttpExceptions(`The application status must be set to in review to cast a vote`, 400);
 			}
 
 			// 6. Ensure a workflow has been attached to this application
 			const { workflow } = accessRecord;
 			if (!workflow) {
-				return res.status(400).json({
-					success: false,
-					message: 'There is no workflow attached to this application in order to cast a vote',
-				});
+				throw new HttpExceptions(`There is no workflow attached to this application in order to cast a vote`, 400);
 			}
 
 			// 7. Ensure the requesting user is expected to cast a vote
@@ -1669,10 +1517,7 @@ export default class DataRequestController extends Controller {
 				return step.active === true;
 			});
 			if (!steps[activeStepIndex].reviewers.map(reviewer => reviewer._id.toString()).includes(requestingUserObjectId.toString())) {
-				return res.status(400).json({
-					success: false,
-					message: 'You have not been assigned to vote on this review phase',
-				});
+				throw new HttpExceptions(`You have not been assigned to vote on this review phase`, 400);
 			}
 
 			//8. Ensure the requesting user has not already voted
@@ -1682,10 +1527,7 @@ export default class DataRequestController extends Controller {
 					return rec.reviewer.equals(requestingUserObjectId);
 				});
 				if (found) {
-					return res.status(400).json({
-						success: false,
-						message: 'You have already voted on this review phase',
-					});
+					throw new HttpExceptions(`You have already voted on this review phase`, 400);
 				}
 			}
 
@@ -1770,12 +1612,8 @@ export default class DataRequestController extends Controller {
 			// 17. Return aplication and successful response
 			return res.status(200).json({ status: 'success', data: accessRecord._doc });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred assigning the workflow',
-			});
+			throw new HttpExceptions(`An error occurred assigning the workflow`, 500);
 		}
 	}
 
@@ -1791,28 +1629,22 @@ export default class DataRequestController extends Controller {
 			// 2. Retrieve DAR from database
 			let accessRecord = await this.dataRequestService.getApplicationWithTeamById(id, { lean: false });
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 3. Check permissions of user is reviewer of associated team
-			let authorised = false;
 			if (_.has(accessRecord.toObject(), 'publisherObj.team')) {
 				const { team } = accessRecord.publisherObj;
-				authorised = teamController.checkTeamPermissions(constants.roleTypes.MANAGER, team.toObject(), requestingUserObjectId);
-			}
-
-			// 4. Refuse access if not authorised
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+				let authorised = teamV3Util.checkUserRolesByTeam([constants.roleMemberTeam.CUST_DAR_MANAGER], team.toObject(), requestingUserObjectId);
+				if (!authorised) {
+					throw new HttpExceptions(`User not authorized to perform this action`,403);
+				}
 			}
 
 			// 5. Check application is in submitted state
 			const { applicationStatus } = accessRecord;
 			if (applicationStatus !== constants.applicationStatuses.SUBMITTED) {
-				return res.status(400).json({
-					success: false,
-					message: 'The application status must be set to submitted to start a review',
-				});
+				throw new HttpExceptions(`The application status must be set to submitted to start a review`, 400);
 			}
 
 			// 6. Update application to 'in review'
@@ -1857,12 +1689,8 @@ export default class DataRequestController extends Controller {
 			// 12. Return aplication and successful response
 			return res.status(200).json({ status: 'success' });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred assigning the workflow',
-			});
+			throw new HttpExceptions(`An error occurred assigning the workflow`, 500);
 		}
 	}
 
@@ -1877,14 +1705,11 @@ export default class DataRequestController extends Controller {
 			// 2. Retrieve DAR from database
 			const accessRecord = await this.dataRequestService.getApplicationWithWorkflowById(id);
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 			const { workflow } = accessRecord;
 			if (_.isEmpty(workflow)) {
-				return res.status(400).json({
-					status: 'error',
-					message: 'There is no workflow attached to this application.',
-				});
+				throw new HttpExceptions(`There is no workflow attached to this application.`, 400);
 			}
 			const activeStepIndex = workflow.steps.findIndex(step => {
 				return step.active === true;
@@ -1902,12 +1727,8 @@ export default class DataRequestController extends Controller {
 			}
 			return res.status(200).json({ status: 'success' });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred triggering notifications for workflow review deadlines',
-			});
+			throw new HttpExceptions(`An error occurred triggering notifications for workflow review deadlines`, 500);
 		}
 	}
 
@@ -1928,26 +1749,23 @@ export default class DataRequestController extends Controller {
 			const accessRecord = await this.dataRequestService.getApplicationWithTeamById(id, { lean: true });
 
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'Application not found.' });
+				throw new HttpExceptions(`Application not found.`, 404);
 			}
 
 			// 3. If application is not in progress, actions cannot be performed
 			if (accessRecord.applicationStatus !== constants.applicationStatuses.INPROGRESS) {
-				return res.status(400).json({
-					success: false,
-					message: 'This application is no longer in pre-submission status and therefore this action cannot be performed',
-				});
+				throw new HttpExceptions(`This application is no longer in pre-submission status and therefore this action cannot be performed`, 400);
 			}
 
 			// 4. Get the requesting users permission levels
-			let { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			let userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord,
 				requestingUserId,
 				requestingUserObjectId
 			);
 			// 5. Return unauthorised message if the requesting user is not an applicant
-			if (!authorised || userType !== constants.userTypes.APPLICANT) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+			if (userType !== constants.userTypes.APPLICANT) {
+				throw new HttpExceptions(`Unauthorised`, 401);
 			}
 
 			// 6. Send notification to the authorised user
@@ -1955,12 +1773,8 @@ export default class DataRequestController extends Controller {
 
 			return res.status(200).json({ status: 'success' });
 		} catch (err) {
-			// Return error response if something goes wrong
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred emailing the application',
-			});
+			throw new HttpExceptions(`An error occurred emailing the application`, 500);
 		}
 	}
 
@@ -2030,7 +1844,7 @@ export default class DataRequestController extends Controller {
 
 		switch (type) {
 			case constants.notificationTypes.INPROGRESS:
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 				custodianManagersIds = custodianManagers.map(user => user.id);
 				notificationTeam = accessRecord.publisherObj.team.notifications;
 				if (notificationTeam.length && notificationTeam[0].optIn) {
@@ -2070,7 +1884,7 @@ export default class DataRequestController extends Controller {
 				// 1. Create notifications
 				// Custodian manager and current step reviewer notifications
 				// Retrieve all custodian manager user Ids and active step reviewers
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 				let activeStep = this.workflowService.getActiveWorkflowStep(workflow);
 				stepReviewers = this.workflowService.getStepReviewers(activeStep);
 				// Create custodian notification
@@ -2142,7 +1956,7 @@ export default class DataRequestController extends Controller {
 				// Custodian notification
 				if (_.has(accessRecord.datasets[0], 'publisher.team.users') && accessRecord.datasets[0].publisher.allowAccessRequestManagement) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					// check if publisher.team has email notifications
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
@@ -2162,7 +1976,7 @@ export default class DataRequestController extends Controller {
 					}
 				} else if (_.has(accessRecord, 'publisherObj') && accessRecord.publisherObj.allowAccessRequestManagement) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					// check if publisher.team has email notifications
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
@@ -2275,7 +2089,7 @@ export default class DataRequestController extends Controller {
 				// Custodian notification
 				if (_.has(accessRecord.datasets[0], 'publisher.team.users')) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
 						custodianUserIds,
@@ -2293,7 +2107,7 @@ export default class DataRequestController extends Controller {
 					}
 				} else if (_.has(accessRecord, 'publisherObj') && accessRecord.publisherObj.allowAccessRequestManagement) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
@@ -2512,7 +2326,7 @@ export default class DataRequestController extends Controller {
 				break;
 			case constants.notificationTypes.FINALDECISIONREQUIRED:
 				// 1. Get managers for publisher
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 				custodianManagersIds = custodianManagers.map(user => user.id);
 
 				// 2. Create manager notifications
@@ -2550,7 +2364,7 @@ export default class DataRequestController extends Controller {
 				);
 				break;
 			case constants.notificationTypes.DEADLINEWARNING:
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 				custodianManagersIds = custodianManagers.map(user => user.id);
 				notificationTeam = accessRecord.publisherObj.team.notifications;
 				if (notificationTeam.length && notificationTeam[0].optIn) {
@@ -2593,7 +2407,7 @@ export default class DataRequestController extends Controller {
 				break;
 			case constants.notificationTypes.DEADLINEPASSED:
 				// 1. Get all managers
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 				custodianManagersIds = custodianManagers.map(user => user.id);
 				// 2. Combine managers and reviewers remaining
 				let deadlinePassedUserIds = [...remainingReviewerUserIds, ...custodianManagersIds];
@@ -2640,7 +2454,7 @@ export default class DataRequestController extends Controller {
 				break;
 			case constants.notificationTypes.WORKFLOWASSIGNED:
 				// 1. Get managers for publisher
-				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team.toObject(), 'All');
+				custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team.toObject(), constants.roleMemberTeam.CUST_DAR_MANAGER);
 				// 2. Get managerIds for notifications
 				custodianManagersIds = custodianManagers.map(user => user.id);
 				// 3. deconstruct and set options for notifications and email
@@ -2778,7 +2592,7 @@ export default class DataRequestController extends Controller {
 				// Custodian notification
 				if (_.has(accessRecord.datasets[0], 'publisher.team.users')) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.datasets[0].publisher.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
 						custodianUserIds,
@@ -2788,7 +2602,7 @@ export default class DataRequestController extends Controller {
 					);
 				} else if (_.has(accessRecord, 'publisherObj')) {
 					// Retrieve all custodian user Ids to generate notifications
-					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+					custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					custodianUserIds = custodianManagers.map(user => user.id);
 					await notificationBuilder.triggerNotificationMessage(
 						custodianUserIds,
@@ -2879,7 +2693,7 @@ export default class DataRequestController extends Controller {
 				break;
 			case constants.notificationTypes.MESSAGESENT:
 				if (userType === constants.userTypes.APPLICANT) {
-					const custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+					const custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					const custodianManagersIds = custodianManagers.map(user => user.id);
 
 					notificationTeam = accessRecord.publisherObj.team.notifications;
@@ -2914,7 +2728,7 @@ export default class DataRequestController extends Controller {
 						false
 					);
 				} else if (userType === constants.userTypes.CUSTODIAN) {
-					const custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, 'All');
+					const custodianManagers = teamController.getTeamMembersByRole(accessRecord.publisherObj.team, constants.roleMemberTeam.CUST_DAR_MANAGER);
 					const custodianManagersIds = custodianManagers.map(user => user.id);
 
 					notificationTeam = accessRecord.publisherObj.team.notifications;
@@ -2968,16 +2782,16 @@ export default class DataRequestController extends Controller {
 
 			let accessRecord = await this.dataRequestService.getApplicationById(id);
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'The application could not be found.' });
+				throw new HttpExceptions(`The application could not be found.`, 404);
 			}
 
-			const { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			const userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord,
 				requestingUserId,
 				requestingUserObjectId
 			);
-			if (!authorised || userType !== constants.userTypes.APPLICANT) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+			if (userType !== constants.userTypes.APPLICANT) {
+				throw new HttpExceptions(`Unauthorised`, 401);
 			}
 
 			await this.dataRequestService.shareApplication(accessRecord).catch(err => {
@@ -2989,10 +2803,7 @@ export default class DataRequestController extends Controller {
 			});
 		} catch (err) {
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred updating the application',
-			});
+			throw new HttpExceptions(`An error occurred updating the application`, 500);
 		}
 	}
 
@@ -3008,26 +2819,24 @@ export default class DataRequestController extends Controller {
 
 			let accessRecord = await this.dataRequestService.getApplicationById(id);
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'The application could not be found.' });
+				throw new HttpExceptions(`The application could not be found.`, 404);
 			}
 
-			const { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			const userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord,
 				requestingUserId,
 				requestingUserObjectId
 			);
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-			} else if (
+			if (
 				userType === constants.userTypes.APPLICANT &&
 				![constants.DARMessageTypes.DARNOTESAPPLICANT, constants.DARMessageTypes.DARMESSAGE].includes(messageType)
 			) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+				throw new HttpExceptions(`Unauthorised`, 401);
 			} else if (
 				userType === constants.userTypes.CUSTODIAN &&
 				![constants.DARMessageTypes.DARNOTESCUSTODIAN, constants.DARMessageTypes.DARMESSAGE].includes(messageType)
 			) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+				throw new HttpExceptions(`Unauthorised`, 401);
 			}
 
 			const topic = await this.topicService.getTopicForDAR(id, questionId || panelId, messageType);
@@ -3050,10 +2859,7 @@ export default class DataRequestController extends Controller {
 			});
 		} catch (err) {
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred updating the application',
-			});
+			throw new HttpExceptions(`An error occurred updating the application`, 500);
 		}
 	}
 
@@ -3070,27 +2876,25 @@ export default class DataRequestController extends Controller {
 
 			let accessRecord = await this.dataRequestService.getApplicationWithTeamById(id, { lean: true });
 			if (!accessRecord) {
-				return res.status(404).json({ status: 'error', message: 'The application could not be found.' });
+				throw new HttpExceptions(`The application could not be found.`, 404);
 			}
 
-			const { authorised, userType } = datarequestUtil.getUserPermissionsForApplication(
+			const userType = datarequestUtil.getUserPermissionsForApplication(
 				accessRecord,
 				requestingUserId,
 				requestingUserObjectId
 			);
 
-			if (!authorised) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
-			} else if (
+			if (
 				userType === constants.userTypes.APPLICANT &&
 				![constants.DARMessageTypes.DARNOTESAPPLICANT, constants.DARMessageTypes.DARMESSAGE].includes(messageType)
 			) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+				throw new HttpExceptions(`Unauthorised`, 401);
 			} else if (
 				userType === constants.userTypes.CUSTODIAN &&
 				![constants.DARMessageTypes.DARNOTESCUSTODIAN, constants.DARMessageTypes.DARMESSAGE].includes(messageType)
 			) {
-				return res.status(401).json({ status: 'failure', message: 'Unauthorised' });
+				throw new HttpExceptions(`Unauthorised`, 401);
 			}
 
 			let topic = await this.topicService.getTopicForDAR(id, questionId || panel.panelId, messageType);
@@ -3181,10 +2985,7 @@ export default class DataRequestController extends Controller {
 			});
 		} catch (err) {
 			logger.logError(err, logCategory);
-			return res.status(500).json({
-				success: false,
-				message: 'An error occurred updating the application',
-			});
+			throw new HttpExceptions(`An error occurred updating the application`, 500);
 		}
 	}
 }

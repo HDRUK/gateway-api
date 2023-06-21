@@ -12,7 +12,7 @@ export default class FiltersClass extends Entity {
 
 	mapDto() {
 		if (!this.id) {
-			console.error('Failed to load filters');
+			process.stdout.write(`Failed to load filters`);
 			return;
 		}
 

@@ -17,6 +17,7 @@ import moment from 'moment';
 import helperUtil from '../utilities/helper.util';
 
 export async function getObjectResult(type, searchAll, searchQuery, startIndex, maxResults, sort, authorID, form) {
+
 	let collection = Data;
 	if (type === 'course') {
 		collection = Course;
@@ -279,6 +280,33 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 				},
 			},
 			{
+				$lookup: {
+					from: 'datauseregisters',
+					let: {
+						pid: '$pid',
+					},
+					pipeline: [
+						{ $unwind: '$relatedObjects' },
+						{
+							$match: {
+								$expr: {
+									$and: [
+										{
+											$eq: ['$relatedObjects.pid', '$$pid'],
+										},
+										{
+											$eq: ['$activeflag', 'active'],
+										},
+									],
+								},
+							},
+						},
+						{ $group: { _id: null, count: { $sum: 1 } } },
+					],
+					as: 'relatedResourcesDataUseRegister',
+				},
+			},
+			{
 				$project: {
 					_id: 0,
 					id: 1,
@@ -336,7 +364,7 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 					'datasetfields.metadataquality.weighted_error_percent': 1,
 					'datasetfields.metadataquality.weighted_completeness_percent': 1,
 
-					latestUpdate: '$timestamps.updated',
+					latestUpdate: '$updatedAt',
 					relatedresources: {
 						$add: [
 							{
@@ -353,11 +381,19 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 									else: { $first: '$relatedResourcesCourses.count' },
 								},
 							},
+							{
+								$cond: {
+									if: { $eq: [{ $size: '$relatedResourcesDataUseRegister' }, 0] },
+									then: 0,
+									else: { $first: '$relatedResourcesDataUseRegister.count' },
+								},
+							},
 						],
 					},
 				},
 			},
 		];
+
 	} else {
 		queryObject = [
 			{ $match: newSearchQuery },
@@ -493,14 +529,14 @@ export async function getObjectResult(type, searchAll, searchQuery, startIndex, 
 	const searchResults =
 		type === 'dataUseRegister'
 			? await collection.aggregate(queryObject).catch(err => {
-					console.log(err);
+				process.stdout.write(`${err.message}\n`);
 			  })
 			: await collection
 					.aggregate(queryObject)
 					.skip(parseInt(startIndex))
 					.limit(parseInt(maxResults))
 					.catch(err => {
-						console.log(err);
+						process.stdout.write(`${err.message}\n`);
 					});
 
 	return { data: searchResults };
@@ -939,7 +975,7 @@ export function getObjectFilters(searchQueryStart, queryParams, type) {
 				}
 			}
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`SEARCH - GET OBJECT FILTERS : ${err.message}\n`);
 		}
 	}
 	return searchQuery;

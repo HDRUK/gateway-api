@@ -68,16 +68,16 @@ const getUserPermissionsForDataset = async (id, user, publisherId) => {
 		}
 
 		if (!isEmpty(publisherTeam)) {
-			if (publisherTeam.roles.find(role => role.includes(constants.roleTypes.METADATA_EDITOR))) {
-				return { authorised: true, userType: constants.roleTypes.METADATA_EDITOR };
-			} else if (publisherTeam.roles.find(role => role.includes(constants.roleTypes.MANAGER))) {
-				return { authorised: true, userType: constants.roleTypes.MANAGER };
+			if (publisherTeam.roles.find(role => role.includes(constants.roleMemberTeam.CUST_MD_MANAGER))) {
+				return { authorised: true, userType: constants.roleMemberTeam.CUST_MD_MANAGER };
+			} else if (publisherTeam.roles.find(role => role.includes(constants.roleMemberTeam.CUST_MD_EDITOR))) {
+				return { authorised: true, userType: constants.roleMemberTeam.CUST_MD_EDITOR };
 			}
 		}
 
 		return { authorised, userType };
 	} catch (error) {
-		console.error(error);
+		process.stdout.write(`DATASETONBOARDING - getUserPermissionsForDataset : ${error.message}\n`);
 		return { authorised: false, userType: '' };
 	}
 };
@@ -335,7 +335,7 @@ const updateDataset = async (dataset, updateObj) => {
 	// 2. If application is in progress, update initial question answers
 	if (activeflag === constants.datasetStatuses.DRAFT || activeflag === constants.applicationStatuses.INREVIEW) {
 		await Data.findByIdAndUpdate(_id, updateObj, { new: true }).catch(err => {
-			console.error(err);
+			process.stdout.write(`DATASETONBOARDING - Error updateDataset\n`);
 			throw err;
 		});
 		return dataset;
@@ -758,7 +758,7 @@ const buildMetadataQuality = async (dataset, v2Object, pid) => {
 	let rawdata = fs.readFileSync(__dirname + '/schema.json');
 	schema = JSON.parse(rawdata);
 
-	const ajv = new Ajv({ strict: false, allErrors: true });
+	const ajv = new Ajv({ strict: false, allErrors: false });
 	addFormats(ajv);
 	const validate = ajv.compile(schema);
 	validate(cleanV2Object);
@@ -932,25 +932,29 @@ const createNotifications = async (type, context) => {
 			const isFederated = !_.isUndefined(team.publisher.federation) && team.publisher.federation.active;
 
 			for (let member of team.members) {
-				teamMembers.push(member.memberid);
+				if ((Array.isArray(member.roles) && member.roles.some(role => ['manager', 'metadata_editor'].includes(role)))
+					|| (typeof member.roles === 'string' && ['manager', 'metadata_editor'].includes(member.roles))) {
+					teamMembers.push(member.memberid);
+				}
 			}
 
 			teamMembersDetails = await UserModel.find({ _id: { $in: teamMembers } })
 				.populate('additionalInfo')
 				.lean();
 
-			for (let member of team.members) {
-				if (member.roles.some(role => ['manager', 'metadata_editor'].includes(role))) teamMembers.push(member.memberid);
+			for (let member of teamMembersDetails) {
+				teamMembersIds.push(member.id);
 			}
+
 			// 2. Create user notifications
-			notificationBuilder.triggerNotificationMessage(
-				teamMembersIds,
-				context.datasetVersion !== '1.0.0'
-					? `Your dataset version for "${context.name}" has been reviewed and rejected`
-					: `A dataset "${context.name}" has been reviewed and rejected`,
-				'dataset rejected',
-				context.datasetv2.summary.publisher.identifier
-			);
+			// notificationBuilder.triggerNotificationMessage(
+			// 	teamMembersIds,
+			// 	context.datasetVersion !== '1.0.0'
+			// 		? `Your dataset version for "${context.name}" has been reviewed and rejected`
+			// 		: `A dataset "${context.name}" has been reviewed and rejected`,
+			// 	'dataset rejected',
+			// 	context.datasetv2.summary.publisher.identifier
+			// );
 			// 3. Create email
 			options = {
 				name: context.name,

@@ -1,5 +1,4 @@
 import express from 'express';
-import * as Sentry from '@sentry/node';
 import { getObjectResult } from './linkchecker.repository';
 import { getUserByUserId } from '../user/user.repository';
 import { Data } from '../tool/data.model';
@@ -8,7 +7,6 @@ import _ from 'lodash';
 const sgMail = require('@sendgrid/mail');
 
 const hdrukEmail = `enquiry@healthdatagateway.org`;
-const readEnv = process.env.ENV || 'prod';
 
 const axios = require('axios');
 const router = express.Router();
@@ -104,7 +102,7 @@ router.post('/', async (req, res) => {
 			if (checkUser[0].emailNotifications === true) {
 				let msg = {
 					to: user.email,
-					from: `${hdrukEmail}`,
+					from: hdrukEmail,
 					subject: `Updates required for links in ${item.name}.`,
 					html: `${user.firstname} ${user.lastname}, <br /><br />
                            Please review your ${item.type} "${item.name}"  here: ${resourceLink}. This ${item.type} contains stale links which require updating.
@@ -112,14 +110,7 @@ router.post('/', async (req, res) => {
 				};
 
 				await sgMail.send(msg, false, err => {
-					if (err && (readEnv === 'test' || readEnv === 'prod')) {
-						Sentry.addBreadcrumb({
-							category: 'SendGrid',
-							message: 'Sending email failed',
-							level: Sentry.Severity.Warning,
-						});
-						Sentry.captureException(err);
-					}
+					process.stdout.write(`LINKCHECKER - sendEmailToUsers: error`);
 				});
 			}
 		}

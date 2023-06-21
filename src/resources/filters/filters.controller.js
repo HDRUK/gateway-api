@@ -33,7 +33,7 @@ export default class FiltersController extends Controller {
 			});
 		} catch (err) {
 			// Return error response if something goes wrong
-			console.error(err.message);
+			process.stdout.write(`DISCOURSE - getFilters : ${err.message}`);
 			return res.status(500).json({
 				success: false,
 				message: 'A server error occurred, please try again',

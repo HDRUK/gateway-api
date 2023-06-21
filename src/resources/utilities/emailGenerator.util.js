@@ -4,12 +4,10 @@ import moment from 'moment';
 import { UserModel } from '../user/user.model';
 import helper from '../utilities/helper.util';
 import constants from '../utilities/constants.util';
-import * as Sentry from '@sentry/node';
 import wordTemplateBuilder from '../utilities/wordTemplateBuilder.util';
 
 const fs = require('fs');
 const nodemailer = require('nodemailer');
-const readEnv = process.env.ENV || 'production';
 
 let parent, qsId;
 let questionList = [];
@@ -648,7 +646,7 @@ const _displayDARLink = accessId => {
 const _displayActivityLogLink = (accessId, publisher) => {
 	if (!accessId) return '';
 
-	const activityLogLink = `${process.env.homeURL}/account?tab=dataaccessrequests&team=${publisher}&id=${accessId}`;
+	const activityLogLink = `${process.env.homeURL}/account?tab=dataaccessrequests&teamType=team&teamId=${publisher}&id=${accessId}`;
 	return `<a style="color: #475da7;" href="${activityLogLink}">View activity log</a>`;
 };
 
@@ -660,7 +658,7 @@ const _displayDataUseRegisterLink = dataUseId => {
 };
 
 const _displayDataUseRegisterDashboardLink = () => {
-	const dataUseLink = `${process.env.homeURL}/account?tab=datause&team=admin`;
+	const dataUseLink = `${process.env.homeURL}/account?tab=datause&teamType=admin`;
 	return `<a style="color: #475da7;" href="${dataUseLink}">View all data uses for review </a>`;
 };
 
@@ -1747,7 +1745,7 @@ const _generateRemovedFromTeam = options => {
 };
 
 const _displayViewEmailNotifications = publisherId => {
-	let link = `${process.env.homeURL}/account?tab=teamManagement&innertab=notifications&team=${publisherId}`;
+	let link = `${process.env.homeURL}/account?tab=teamManagement&innertab=notifications&teamType=team&teamId=${publisherId}`;
 	return `<table border="0" border-collapse="collapse" cellpadding="0" cellspacing="0" width="100%">
             <tr>
               <td style=" font-size: 14px; color: #3c3c3b; padding: 45px 5px 10px 5px; text-align: left; vertical-align: top;">
@@ -2041,7 +2039,7 @@ const _generateMetadataOnboardingSumbitted = options => {
                   </tr>
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&team=admin">View datasets pending approval</a>
+                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&teamType=admin">View datasets pending approval</a>
                   </th>
                   </tr>
                 </thead>
@@ -2090,7 +2088,7 @@ const _generateMetadataOnboardingApproved = options => {
                   ${commentHTML}
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&team=${publisherId}">View dataset dashboard</a>
+                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&teamType=team&teamId=${publisherId}">View dataset dashboard</a>
                   </th>
                   </tr>
                 </thead>
@@ -2149,7 +2147,7 @@ const _generateMetadataOnboardingRejected = options => {
                   ${commentHTML}
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&team=${publisherId}">View dataset dashboard</a>
+                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&teamType=team&teamId=${publisherId}">View dataset dashboard</a>
                   </th>
                   </tr>
                 </thead>
@@ -2217,7 +2215,7 @@ const _generateMetadataOnboardingDuplicated = options => {
                   </tr>
                   <tr>
                     <th style="border: 0; font-size: 14px; font-weight: normal; color: #333333; text-align: left;">
-                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&team=${publisher.identifier}">View dataset dashboard</a>
+                    <a style="color: #475da7;" href="${process.env.homeURL}/account?tab=datasets&teamType=team&teamId=${publisher.identifier}">View dataset dashboard</a>
                   </th>
                   </tr>
                 </thead>
@@ -2574,23 +2572,26 @@ const _sendEmail = async (to, from, subject, html, allowUnsubscribe = true, atta
 		try {
 			await transporter.sendMail(message, (error, info) => {
 				if (error) {
-					return console.log(error);
+					return process.stdout.write(`sendMail : ${error.message}`);
 				}
-				console.log('Email sent: ' + info.response);
+				process.stdout.write(`Email sent: ${info.response}`);
 			});
 		} catch (error) {
-			console.error(error.response.body);
-			Sentry.addBreadcrumb({
-				category: 'SendGrid',
-				message: 'Sending email failed',
-				level: Sentry.Severity.Warning,
-			});
-			Sentry.captureException(error);
+			process.stdout.write(`EMAIL GENERATOR - _sendEmail : ${error.message}\n`);
 		}
 	}
 };
 
-const _sendEmailSmtp = async message => {
+const _sendEmailOne = async (to, from, subject, body, attachments = []) => {
+	let message = {
+		to: to,
+		from: from,
+		subject: subject,
+		html: body,
+		attachments,
+	};
+
+	// 4. Send email
 	try {
 		await transporter.sendMail(message, (error, info) => {
 			if (error) {
@@ -2600,12 +2601,19 @@ const _sendEmailSmtp = async message => {
 		});
 	} catch (error) {
 		console.error(error.response.body);
-		Sentry.addBreadcrumb({
-			category: 'SendGrid',
-			message: 'Sending email failed',
-			level: Sentry.Severity.Warning,
+	}
+};
+
+const _sendEmailSmtp = async message => {
+	try {
+		await transporter.sendMail(message, (error, info) => {
+			if (error) {
+				return process.stdout.write(`${error.message}\n`);
+			}
+			process.stdout.write(`Email sent: ${info.response}`);
 		});
-		Sentry.captureException(error);
+	} catch (error) {
+		process.stdout.write(`EMAIL GENERATOR - _sendEmailSmtp : ${error.message}\n`);
 	}
 };
 
@@ -2702,6 +2710,7 @@ const _deleteWordAttachmentTempFiles = async () => {
 export default {
 	//General
 	sendEmail: _sendEmail,
+	sendEmailOne: _sendEmailOne,
 	sendIntroEmail: _sendIntroEmail,
 	generateEmailFooter: _generateEmailFooter,
 	generateAttachment: _generateAttachment,
