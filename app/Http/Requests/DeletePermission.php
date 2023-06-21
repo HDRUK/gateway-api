@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\BaseFormRequest;
 
-class PermissionRequest extends BaseFormRequest
+class DeletePermission extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,11 +14,21 @@ class PermissionRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'role' => [
+            'id' => [
                 'required',
-                'string',
-                'unique:permissions,role',
+                'int',
+                'exists:permissions,id',
             ],
         ];
+    }
+
+    /**
+     * Add Route parameters to the FormRequest.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge(['id' => $this->route('id')]);
     }
 }

@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
 use App\Models\Permission;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\EditPermission;
 use App\Models\TeamUserHasPermission;
-use App\Http\Requests\PermissionRequest;
+use App\Http\Requests\CreatePermission;
+use App\Http\Requests\DeletePermission;
+use App\Http\Requests\UpdatePermission;
+use App\Http\Traits\RequestTransformation;
 
 class PermissionController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * Constructor
      */
@@ -81,11 +88,7 @@ class PermissionController extends Controller
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="message",
-     *             type="string",
-     *             example="success",
-     *          ),
+     *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
      *             property="data",
      *             type="array",
@@ -151,11 +154,7 @@ class PermissionController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(
-     *                property="type",
-     *                type="string",
-     *                example="features",
-     *             ),
+     *             @OA\Property(property="type", type="string", example="features"),
      *          ),
      *       ),
      *    ),
@@ -185,10 +184,10 @@ class PermissionController extends Controller
      * 
      * Create a new permission
      *
-     * @param PermissionRequest $request
+     * @param CreatePermission $request
      * @return mixed
      */
-    public function store(PermissionRequest $request): mixed
+    public function store(CreatePermission $request): mixed
     {
         try {
             $input = $request->all();
@@ -220,11 +219,7 @@ class PermissionController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(
-     *                property="enabled",
-     *                type="boolean",
-     *                example=true,
-     *             ),
+     *             @OA\Property(property="role", type="string", example="fake_role"),
      *          ),
      *       ),
      *    ),
@@ -233,10 +228,7 @@ class PermissionController extends Controller
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(
-     *             property="message",
-     *             type="string",
-     *             example="success",
-     *          ),
+     *             property="message", type="string", example="success"),
      *          @OA\Property(
      *             property="data",
      *             type="array",
@@ -270,32 +262,107 @@ class PermissionController extends Controller
      *        )
      *    )
      * )
-     * 
-     * Update permission
      *
-     * @param PermissionRequest $request
+     * @param UpdatePermission $request
      * @param integer $id
      * @return mixed
      */
-    public function update(PermissionRequest $request, int $id): mixed
+    public function update(UpdatePermission $request, int $id): mixed
     {
         try {
             $input = $request->all();
-
-            if (!$input) {
-                return response()->json([
-                    'message' => 'bad request',
-                ], 400);
-            }
 
             Permission::where('id', $id)->update([
                 'role' => $input['role'],
             ]);
 
             return response()->json([
-                'message' => 'success',
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => Permission::where('id', $id)->first(),
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *    path="/api/v1/permissions",
+     *    operationId="edit_permissions",
+     *    tags={"Permissions"},
+     *    summary="PermissionController@edit",
+     *    description="Edit permission",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="role", type="string", example="fake_role"),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="message", type="string", example="success"),
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=400,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="bad request"),
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
+     * )
+     *
+     * @param EditPermission $request
+     * @param integer $id
+     * @return mixed
+     */
+    public function edit(EditPermission $request, int $id): mixed
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'role',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Permission::where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Permission::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -349,29 +416,19 @@ class PermissionController extends Controller
      *        )
      *    )
      * )
-     * 
-     * delete tag by id
      *
      * @param string $id
      * @return mixed
      */
-    public function destroy(string $id): mixed
+    public function destroy(DeletePermission $request, string $id): mixed
     {
         try {
-            $tags = Permission::where('id', $id)->count();
-
-            if ($tags) {
-                TeamUserHasPermission::where('permission_id', $id)->delete();
-                Permission::where('id', $id)->delete();
-
-                return response()->json([
-                    'message' => 'success',
-                ], 200);
-            }
+            TeamUserHasPermission::where('permission_id', $id)->delete();
+            Permission::where('id', $id)->delete();
 
             return response()->json([
-                'message' => 'not found.',
-            ], 404);
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
