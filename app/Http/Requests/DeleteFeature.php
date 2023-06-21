@@ -3,9 +3,8 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\BaseFormRequest;
-use Illuminate\Validation\Rule;
 
-class UpdateFeatureRequest extends BaseFormRequest
+class DeleteFeature extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -19,18 +18,6 @@ class UpdateFeatureRequest extends BaseFormRequest
                 'required',
                 'int',
                 'exists:features,id',
-            ],
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('features')->where(function ($query) {
-                    $query->where('name', trim($this->name));
-                }),
-            ],
-            'enabled' => [
-                'required',
-                'boolean',
             ],
         ];
     }

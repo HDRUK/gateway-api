@@ -2,12 +2,11 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rule;
 
-class CreateFeatureRequest extends BaseFormRequest
+class UpdateFeature extends BaseFormRequest
 {
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -16,18 +15,33 @@ class CreateFeatureRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
+            'id' => [
+                'required',
+                'int',
+                'exists:features,id',
+            ],
             'name' => [
-                'required', 
-                'string', 
+                'required',
+                'string',
                 'max:255',
                 Rule::unique('features')->where(function ($query) {
                     $query->where('name', trim($this->name));
                 }),
             ],
             'enabled' => [
-                'required', 
+                'required',
                 'boolean',
             ],
         ];
+    }
+
+    /**
+     * Add Route parameters to the FormRequest.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge(['id' => $this->route('id')]);
     }
 }
