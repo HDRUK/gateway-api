@@ -60,7 +60,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     $routesPatch = [
         // 'tags' => 'TagController',
         'features' => 'FeatureController',
-        // 'filters' => 'FilterController',
+        'filters' => 'FilterController',
         'dar-integrations' => 'DarIntegrationController',
         // 'teams' => 'TeamController',
         // 'tools' => 'ToolController',
