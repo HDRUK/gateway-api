@@ -72,7 +72,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         // 'notifications' => 'NotificationController',
         // 'reviews' => 'ReviewController',
         // 'sectors' => 'SectorController',
-        // 'collections' => 'CollectionController',
+        'collections' => 'CollectionController',
         'audit_logs' => 'AuditLogController',
     ];
 

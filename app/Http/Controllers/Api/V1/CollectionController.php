@@ -6,17 +6,21 @@ use Config;
 use Exception;
 
 use App\Models\Collection;
-use App\Http\Controllers\Controller;
-use App\Exceptions\NotFoundException;
-use App\Http\Requests\CreateCollectionRequest;
-use App\Http\Requests\UpdateCollectionRequest;
-
-
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
+
+use App\Http\Requests\EditCollection;
+use App\Http\Requests\CreateCollection;
+use App\Http\Requests\DeleteCollection;
+use App\Http\Requests\UpdateCollection;
+use App\Http\Traits\RequestTransformation;
 
 class CollectionController extends Controller
 {
+    use RequestTransformation;
+    
     public function __construct()
     {
         //
@@ -184,10 +188,10 @@ class CollectionController extends Controller
      * 
      * Create a new collection
      *
-     * @param CreateCollectionRequest $request
+     * @param CreateCollection $request
      * @return JsonResponse
      */
-    public function store(CreateCollectionRequest $request): JsonResponse
+    public function store(CreateCollection $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -281,11 +285,11 @@ class CollectionController extends Controller
      *      )
      * )
      *
-     * @param UpdateCollectionRequest $request
+     * @param UpdateCollection $request
      * @param integer $id
      * @return JsonResponse
      */
-    public function update(UpdateCollectionRequest $request, int $id): JsonResponse
+    public function update(UpdateCollection $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -299,6 +303,24 @@ class CollectionController extends Controller
                 'public' => $input['public'],
                 'counter' => (int) $input['counter'],
             ]);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => Collection::where('id', $id)->first()
+            ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function edit(EditCollection $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+
+            $array = $this->checkEditArray($input, ['name', 'description', 'image_link', 'enabled', 'keywords', 'public', 'counter']);
+
+            Collection::where('id', $id)->update($array);
 
             return response()->json([
                 'message' => 'success',
@@ -353,7 +375,7 @@ class CollectionController extends Controller
      * @param integer $id
      * @return JsonResponse
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(DeleteCollection $request, int $id): JsonResponse
     {
         try {
             $collection = Collection::findOrFail($id);

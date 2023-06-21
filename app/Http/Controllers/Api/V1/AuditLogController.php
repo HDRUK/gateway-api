@@ -14,6 +14,7 @@ use App\Http\Requests\EditAuditLog;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Http\Requests\CreateAuditLog;
+use App\Http\Requests\DeleteAuditLog;
 use App\Http\Requests\UpdateAuditLog;
 use App\Exceptions\InternalServerErrorException;
 
@@ -336,7 +337,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id)
+    public function destroy(DeleteAuditLog $request, int $id)
     {
         $log = AuditLog::findOrFail($id);
         if ($log) {
