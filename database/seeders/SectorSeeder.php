@@ -20,6 +20,7 @@ class SectorSeeder extends Seeder
             'Academia',
             'Public',
             'Charity/Non-profit',
+            'Not specified',
         ];
 
         foreach ($sectors as $sector) {
