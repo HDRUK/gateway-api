@@ -67,11 +67,11 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'activity_logs' => 'ActivityLogController',
         'activity_log_types' => 'ActivityLogTypeController',
         'activity_log_user_types' => 'ActivityLogUserTypeController',
-        // 'permissions' => 'PermissionController',
+        'permissions' => 'PermissionController',
         // 'users' => 'UserController',
         'notifications' => 'NotificationController',
         'reviews' => 'ReviewController',
-        // 'sectors' => 'SectorController',
+        'sectors' => 'SectorController',
         'collections' => 'CollectionController',
         'audit_logs' => 'AuditLogController',
     ];
