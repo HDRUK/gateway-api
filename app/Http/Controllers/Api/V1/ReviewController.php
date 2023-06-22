@@ -6,16 +6,21 @@ use Config;
 use Exception;
 
 use App\Models\Review;
-use App\Http\Controllers\Controller;
-use App\Exceptions\NotFoundException;
-use App\Http\Requests\CreateReviewRequest;
-use App\Http\Requests\UpdateReviewRequest;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\CreateReview;
+use App\Http\Requests\DeleteReview;
+
+use App\Http\Requests\UpdateReview;
+use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
+use App\Http\Requests\EditReview;
+use App\Http\Traits\RequestTransformation;
 
 class ReviewController extends Controller
 {
+    use RequestTransformation;
+
     public function __construct()
     {
         //
@@ -254,10 +259,10 @@ class ReviewController extends Controller
      * 
      * Create a new review
      *
-     * @param CreateReviewRequest $request
+     * @param CreateReview $request
      * @return JsonResponse
      */
-    public function store(CreateReviewRequest $request): JsonResponse
+    public function store(CreateReview $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -271,9 +276,9 @@ class ReviewController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'created',
+                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $review->id,
-            ], 201);
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -346,11 +351,11 @@ class ReviewController extends Controller
      *      )
      * )
      *
-     * @param UpdateReviewRequest $request
+     * @param UpdateReview $request
      * @param integer $id
      * @return JsonResponse
      */
-    public function update(UpdateReviewRequest $request, int $id): JsonResponse
+    public function update(UpdateReview $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -367,6 +372,102 @@ class ReviewController extends Controller
                 'message' => 'success',
                 'data' => Review::where('id', $id)->first()
             ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *    path="/api/v1/reviews/{id}",
+     *    tags={"Reviews"},
+     *    summary="Edit a review",
+     *    description="Edit a review",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="review id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="review id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="tool_id", type="integer", example="1"),
+     *             @OA\Property(property="user_id", type="integer", example="1"),
+     *             @OA\Property(property="rating", type="integer", example="1"),
+     *             @OA\Property(property="review_text", type="string", example="Similique provident natus facere eveniet facere. Cumque corporis et cumque consequatur."),
+     *             @OA\Property(property="review_state", type="string", example="active"),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="not found")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=200,
+     *        description="Success",
+     *        @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(
+     *                  property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="tool_id", type="integer", example="1"),
+     *                  @OA\Property(property="user_id", type="integer", example="1"),
+     *                  @OA\Property(property="rating", type="integer", example="5"),
+     *                  @OA\Property(property="review_text", type="string", example="Similique provident natus facere eveniet facere."),
+     *                  @OA\Property(property="review_state", type="string", example="active"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
+     *            ),
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     *
+     * @param EditReview $request
+     * @param integer $id
+     * @return JsonResponse
+     */
+    public function edit(EditReview $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'tool_id',
+                'user_id',
+                'rating',
+                'review_text',
+                'review_state',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Review::where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Review::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -413,10 +514,11 @@ class ReviewController extends Controller
      *    )
      * )
      *
+     * @param DeleteReview $request
      * @param integer $id
      * @return JsonResponse
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(DeleteReview $request, int $id): JsonResponse
     {
         try {
             $review = Review::findOrFail($id);

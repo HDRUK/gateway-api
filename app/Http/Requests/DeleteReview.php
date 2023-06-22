@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\BaseFormRequest;
 
-class UpdateReviewRequest extends BaseFormRequest
+class DeleteReview extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -18,28 +18,6 @@ class UpdateReviewRequest extends BaseFormRequest
                 'int',
                 'required',
                 'exists:reviews,id',
-            ],
-            'tool_id' => [
-                'int',
-                'required',
-                'exists:tools,id',
-            ],
-            'user_id' => [
-                'int',
-                'required',
-                'exists:users,id',
-            ],
-            'rating' => [
-                'int',
-                'required',
-            ],
-            'review_text' => [
-                'string',
-                'required',
-            ],
-            'review_state' => [
-                'string',
-                'required',
             ],
         ];
     }

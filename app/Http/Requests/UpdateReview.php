@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\BaseFormRequest;
 
-class CreateReviewRequest extends BaseFormRequest
+class UpdateReview extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,6 +14,11 @@ class CreateReviewRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
+            'id' => [
+                'int',
+                'required',
+                'exists:reviews,id',
+            ],
             'tool_id' => [
                 'int',
                 'required',
@@ -37,5 +42,15 @@ class CreateReviewRequest extends BaseFormRequest
                 'required',
             ],
         ];
+    }
+
+    /**
+     * Add Route parameters to the FormRequest.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge(['id' => $this->route('id')]);
     }
 }

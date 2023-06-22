@@ -290,6 +290,150 @@ class ReviewTest extends TestCase
     }
 
     /**
+     * Edit Review with success by id and generate an exception
+     *
+     * @return void
+     */
+    public function test_edit_review_with_success(): void
+    {
+        // tool
+        $responseTool = $this->json(
+            'POST',
+            '/api/v1/tools',
+            [
+                "mongo_object_id" => "5ece82082abda8b3a06f1941",
+                "name" => "Similique sapiente est vero eum.",
+                "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+                "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+                "license" => "Inventore omnis aut laudantium vel alias.",
+                "tech_stack" => "Cumque molestias excepturi quam at.",
+                "user_id" => 1,
+                "tag" => array(1, 2),
+                "enabled" => 1,
+            ],
+            $this->header
+        );
+        $responseTool->assertStatus(201);
+
+        // user
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'Just',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => 12345678,
+            ],
+            $this->header
+        );
+        $responseUser->assertStatus(201);
+
+        // new review
+        $newReviewData =  [
+            "tool_id" => $responseTool['data'],
+            "user_id" => $responseUser['data'],
+            "rating" => 4,
+            "review_text" => htmlentities(implode(" ", $this->faker->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+            "review_state" => "active",
+        ];
+        $responseNewReview = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $newReviewData,
+            $this->header
+        );
+
+        $existsReview = Review::where($newReviewData)
+            ->get()
+            ->toArray();
+
+        $this->assertTrue((bool) count($existsReview), 'Response was successfully');
+        $responseNewReview->assertStatus(201);
+
+        $newReviewId = (int) $responseNewReview['data'];
+
+        // update review by id
+        $updateReviewData =  [
+            "tool_id" => $responseTool['data'],
+            "user_id" => $responseUser['data'],
+            "rating" => 4,
+            "review_text" => htmlentities(implode(" ", $this->faker->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+            "review_state" => "active",
+        ];
+        $responseUpdateReview = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $newReviewId,
+            $updateReviewData,
+            $this->header
+        );
+
+        $existsUpdateReview = Review::where($updateReviewData)
+            ->get()
+            ->toArray();
+
+        $this->assertTrue((bool) count($existsUpdateReview), 'Response was successfully');
+        $responseUpdateReview->assertStatus(200);
+
+        // edit
+        $editReviewText = htmlentities(implode(" ", $this->faker->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+        $editReviewData =  [
+            "tool_id" => $responseTool['data'],
+            "user_id" => $responseUser['data'],
+            "rating" => 3,
+            "review_text" => $editReviewText,
+            "review_state" => "rejected",
+        ];
+        $responseEditReview = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $newReviewId,
+            $editReviewData,
+            $this->header
+        );
+
+        $existsEditReview = Review::where($editReviewData)
+            ->get()
+            ->toArray();
+
+        $this->assertTrue((bool) count($existsEditReview), 'Response was successfully');
+        $responseEditReview->assertStatus(200);
+
+        // edit
+        $editReviewData2 =  [
+            "rating" => 5,
+            "review_text" => $editReviewText,
+            "review_state" => "active",
+        ];
+        $responseEditReview2 = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $newReviewId,
+            $editReviewData2,
+            $this->header
+        );
+
+        $existsEditReview2 = Review::where([
+            "tool_id" => $responseTool['data'],
+            "user_id" => $responseUser['data'],
+            "rating" => 5,
+            "review_text" => $editReviewText,
+            "review_state" => "active",
+        ])
+            ->get()
+            ->toArray();
+
+        $this->assertTrue((bool) count($existsEditReview2), 'Response was successfully');
+        $responseEditReview2->assertStatus(200);
+    }
+
+    /**
      * SoftDelete Review by Id with success
      *
      * @return void
