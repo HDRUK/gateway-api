@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-use NotFoundException;
+use App\Exceptions\NotFoundException;
 
 use App\Models\DataUseRegister;
 use Illuminate\Http\Request;
@@ -96,7 +96,7 @@ class DataUseRegisterController extends Controller
      * )
      * 
      * Get All DataUseRegisters
-     * @param Request request
+     * @param Request $request
      * @return JsonResponse
      */
 
