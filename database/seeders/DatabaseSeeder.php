@@ -39,6 +39,7 @@ class DatabaseSeeder extends Seeder
             ReviewSeeder::class,
             CollectionSeerder::class,
             AuditLogSeeder::class,
+            DataUseRegisterSeeder::class,
         ]);
     }
 }
