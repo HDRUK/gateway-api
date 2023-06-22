@@ -2,12 +2,13 @@
 
 namespace App\Http\Requests;
 
-use App\Http\Enums\TagType;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Enum;
 use App\Http\Requests\BaseFormRequest;
+use App\Http\Enums\TagType;
+use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Rule;
 
-class TagRequest extends BaseFormRequest
+
+class EditTag extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -17,35 +18,34 @@ class TagRequest extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'type' => [
+            'id' => [
+                'int',
                 'required',
+                'exists:tags,id',
+            ],
+            'type' => [
                 'string',
                 new Enum(TagType::class),
             ],
             'description' => [
-                'required',
                 'string',
                 Rule::unique('tags')->where(function ($query) {
                     $query->where('description', trim($this->type));
                 }),
             ],
             'enabled' => [
-                'required',
                 'boolean',
             ],
         ];
     }
 
     /**
-     * Messages
-     * 
-     * @return array
+     * Add Route parameters to the FormRequest.
+     *
+     * @return void
      */
-    public function messages(): array
+    protected function prepareForValidation()
     {
-        return [
-            'type.required' => 'A type is required',
-            'type.string' => 'A type need to be string format',
-        ];
+        $this->merge(['id' => $this->route('id')]);
     }
 }

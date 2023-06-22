@@ -58,7 +58,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     Route::post('/logout', 'LogoutController@logout');
 
     $routesPatch = [
-        // 'tags' => 'TagController',
+        'tags' => 'TagController',
         'features' => 'FeatureController',
         'filters' => 'FilterController',
         'dar-integrations' => 'DarIntegrationController',
