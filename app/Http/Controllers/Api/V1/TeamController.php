@@ -2,18 +2,25 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
 use App\Models\Team;
 use Illuminate\Http\Request;
+use App\Http\Requests\EditTest;
+use App\Http\Requests\CreateTeam;
+use App\Http\Requests\DeleteTeam;
+use App\Http\Requests\UpdateTeam;
 use App\Models\TeamHasNotification;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\TeamTransformation;
+use App\Http\Traits\RequestTransformation;
 
 
 class TeamController extends Controller
 {
     use TeamTransformation;
+    use RequestTransformation;
 
     /**
      * @OA\Get(
@@ -170,24 +177,9 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function store(Request $request)
+    public function store(CreateTeam $request)
     {
         try {
-            $request->validate([
-                'name' => 'required',
-                'enabled' => 'required',
-                'allows_messaging' => 'required',
-                'workflow_enabled' => 'required',
-                'access_requests_management' => 'required',
-                'uses_5_safes' => 'required',
-                'is_admin' => 'required',
-                'member_of' => 'required',
-                'contact_point' => 'required',
-                'application_form_updated_by' => 'required',
-                'application_form_updated_on' => 'required',
-                'notifications' => 'required',
-            ]);
-
             $input = $request->all();
             $arrayTeam = array_filter($input, function ($key) {
                 return $key !== 'notifications';
@@ -294,24 +286,9 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $team)
+    public function update(UpdateTeam $request, int $id)
     {
-        $request->validate([
-            'name' => 'required',
-            'enabled' => 'required',
-            'allows_messaging' => 'required',
-            'workflow_enabled' => 'required',
-            'access_requests_management' => 'required',
-            'uses_5_safes' => 'required',
-            'is_admin' => 'required',
-            'member_of' => 'required',
-            'contact_point' => 'required',
-            'application_form_updated_by' => 'required',
-            'application_form_updated_on' => 'required',
-            'notifications' => 'required',
-        ]);
-
-        $team = Team::findOrFail($team);
+        $team = Team::findOrFail($id);
         $body = $request->post();
         $team->name = $body['name'];
         $team->enabled = $body['enabled'];
@@ -326,10 +303,10 @@ class TeamController extends Controller
         $team->application_form_updated_on = $body['application_form_updated_on'];
 
         $arrayTeamNotification = $body['notifications'];
-        TeamHasNotification::where('team_id', $team->id)->delete();
+        TeamHasNotification::where('team_id', $id)->delete();
         foreach ($arrayTeamNotification as $value) {
             TeamHasNotification::updateOrCreate([
-                'team_id' => (int) $team->id,
+                'team_id' => (int) $id,
                 'notification_id' => (int) $value,
             ]);
         }
@@ -346,6 +323,110 @@ class TeamController extends Controller
         }
 
         throw new NotFoundException();
+    }
+
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/teams/{id}",
+     *      tags={"Teams"},
+     *      summary="Edit a team",
+     *      description="Edit a team",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Team definition",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="name", type="string", example="someName"),
+     *              @OA\Property(property="allows_messaging", type="boolean", example="1"),
+     *              @OA\Property(property="workflow_enabled", type="boolean", example="1"),
+     *              @OA\Property(property="access_requests_management", type="boolean", example="1"),
+     *              @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *              @OA\Property(property="is_admin", type="boolean", example="1"),
+     *              @OA\Property(property="member_of", type="string", example="someOrg"),
+     *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
+     *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
+     *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
+     *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                  @OA\Property(property="name", type="string", example="someName"),
+     *                  @OA\Property(property="allows_messaging", type="boolean", example="1"),
+     *                  @OA\Property(property="workflow_enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="access_requests_management", type="boolean", example="1"),
+     *                  @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *                  @OA\Property(property="is_admin", type="boolean", example="1"),
+     *                  @OA\Property(property="member_of", type="string", example="someOrg"),
+     *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
+     *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
+     *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
+     *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditTest $request, int $id)
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'name',
+                'enabled',
+                'allows_messaging',
+                'workflow_enabled',
+                'access_requests_management',
+                'uses_5_safes',
+                'is_admin',
+                'member_of',
+                'contact_point',
+                'application_form_updated_by',
+                'application_form_updated_on',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Team::where('id', $id)->update($array);
+
+            $arrayTeamNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
+
+            TeamHasNotification::where('team_id', $id)->delete();
+            foreach ($arrayTeamNotification as $value) {
+                TeamHasNotification::updateOrCreate([
+                    'team_id' => (int) $id,
+                    'notification_id' => (int) $value,
+                ]);
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Team::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -378,17 +459,17 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $team): mixed
+    public function destroy(DeleteTeam $request, int $id): mixed
     {
         try {
-            $team = Team::findOrFail($team);
+            $team = Team::findOrFail($id);
             if ($team) {
-                TeamHasNotification::where('team_id', $team->id)->delete();
+                TeamHasNotification::where('team_id', $id)->delete();
                 $team->delete();
-                
+
                 return response()->json([
-                    'message' => 'success',
-                ], 200);
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
             throw new NotFoundException();
