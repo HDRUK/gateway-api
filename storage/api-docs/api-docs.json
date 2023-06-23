@@ -7392,9 +7392,17 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "features"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "lorem ipsum"
+                                    },
                                     "enabled": {
                                         "type": "boolean",
-                                        "example": true
+                                        "example": "true"
                                     }
                                 },
                                 "type": "object"
@@ -7499,6 +7507,14 @@
                                     "type": {
                                         "type": "string",
                                         "example": "features"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "lorem ipsum"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "true"
                                     }
                                 },
                                 "type": "object"
@@ -7552,6 +7568,118 @@
                                         "message": {
                                             "type": "string",
                                             "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "TagController@edit",
+                "description": "Edit tag",
+                "operationId": "edit_tags",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "features"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "lorem ipsum"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
                                         }
                                     },
                                     "type": "object"
@@ -8330,6 +8458,199 @@
                                         "message": {
                                             "type": "string",
                                             "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Edit a team",
+                "description": "Edit a team",
+                "operationId": "c889ff82053060caaa0fe4ef3f73414e",
+                "requestBody": {
+                    "description": "Team definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "someName"
+                                    },
+                                    "allows_messaging": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "workflow_enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "access_requests_management": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "uses_5_safes": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "is_admin": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "member_of": {
+                                        "type": "string",
+                                        "example": "someOrg"
+                                    },
+                                    "contact_point": {
+                                        "type": "string",
+                                        "example": "someone@mail.com"
+                                    },
+                                    "application_form_updated_by": {
+                                        "type": "integer",
+                                        "example": "555"
+                                    },
+                                    "application_form_updated_on": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11"
+                                    },
+                                    "notifications": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "example": "[111, 222]"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "someName"
+                                                },
+                                                "allows_messaging": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "workflow_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "access_requests_management": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "uses_5_safes": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "is_admin": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "member_of": {
+                                                    "type": "string",
+                                                    "example": "someOrg"
+                                                },
+                                                "contact_point": {
+                                                    "type": "string",
+                                                    "example": "someone@mail.com"
+                                                },
+                                                "application_form_updated_by": {
+                                                    "type": "integer",
+                                                    "example": "555"
+                                                },
+                                                "application_form_updated_on": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11"
+                                                },
+                                                "notifications": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {}
+                                                    },
+                                                    "example": "[111, 222]"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
