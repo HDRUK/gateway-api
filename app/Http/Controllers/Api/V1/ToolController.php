@@ -436,7 +436,8 @@ class ToolController extends Controller
     {
         try {
             Tool::where('id', $id)->delete();
-
+            ToolHasTag::where('tool_id', $id)->delete();
+            
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
