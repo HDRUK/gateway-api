@@ -66,6 +66,7 @@ class UserTest extends TestCase
                     'orcid',
                     'contact_feedback',
                     'contact_news',
+                    'mongo_id',
                 ],
             ],   
         ]);
@@ -122,6 +123,7 @@ class UserTest extends TestCase
                 'orcid' => 75697342,
                 'contact_feedback' => 1,
                 'contact_news' => 1, 
+                'mongo_id' => 1234567,
             ],
             $this->header
         );
@@ -151,6 +153,7 @@ class UserTest extends TestCase
                 'orcid' => 75697342,
                 'contact_feedback' => 1,
                 'contact_news' => 1, 
+                'mongo_id' => 1234567,
             ],
             $this->header
         );
@@ -179,6 +182,7 @@ class UserTest extends TestCase
                 'orcid' => 75697342,
                 'contact_feedback' => 0,
                 'contact_news' => 0, 
+                'mongo_id' => 1234567,
             ],
             $this->header
         );
