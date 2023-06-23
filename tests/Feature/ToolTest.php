@@ -273,7 +273,7 @@ class ToolTest extends TestCase
             'data',
         ]);
         
-        $responseUpdate->assertStatus(202);
+        $responseUpdate->assertStatus(200);
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
@@ -287,6 +287,136 @@ class ToolTest extends TestCase
         $this->assertEquals(count($toolHasTags), 1);
 
         $this->assertEquals($toolHasTags[0]['tag_id'], 2);
+    }
+
+    /**
+     * Edit Tool with sucess by id
+     *
+     * @return void
+     */
+    public function test_edit_tool_with_success(): void
+    {
+        // insert
+        $mockDataIns = array(
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            "license" => "Inventore omnis aut laudantium vel alias.",
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "user_id" => 1,
+            "tag" => array(1),
+            "enabled" => 1,
+        );
+        $responseIns = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $mockDataIns,
+            $this->header
+        );
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseIns->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+        $this->assertEquals(
+            $responseIns['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+        $toolIdInsert = $responseIns['data'];
+
+        $responseIns->assertStatus(201);
+
+        // update
+        $mockDataUpdate = array(
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Ea fuga ab aperiam nihil quis.",
+            "url" => "http://dach.com/odio-facilis-ex-culpa",
+            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
+            "license" => "Modi tenetur et et perferendis.",
+            "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "user_id" => 1,
+            "tag" => array(2),
+            "enabled" => 1,
+        );
+
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $toolIdInsert,
+            $mockDataUpdate,
+            $this->header
+        );
+
+        $responseUpdate->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseUpdate->assertStatus(200);
+        $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
+        $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
+        $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
+        $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
+        $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
+        $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
+        $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
+
+        $toolHasTags = ToolHasTag::where('tool_id', $toolIdInsert)->get();
+
+        $this->assertEquals(count($toolHasTags), 1);
+
+        $this->assertEquals($toolHasTags[0]['tag_id'], 2);
+
+        // edit 
+        $mockDataEdit1 = array(
+            "name" => "Ea fuga ab aperiam nihil quis e1.",
+            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque. e1",
+            "enabled" => 0,
+        );
+
+        $responseEdit1 = $this->json(
+                'PATCH',
+                self::TEST_URL . '/' . $toolIdInsert,
+                $mockDataEdit1,
+                $this->header
+            );
+
+        $responseEdit1->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+        $responseEdit1->assertStatus(200);
+        $this->assertEquals($responseEdit1['data']['name'], $mockDataEdit1['name']);
+        $this->assertEquals($responseEdit1['data']['description'], $mockDataEdit1['description']);
+        $this->assertEquals($responseEdit1['data']['enabled'], $mockDataEdit1['enabled']);
+
+        // edit 
+        $mockDataEdit2 = array(
+            "url" => "http://dach.com/odio-facilis-ex-culpa-e2",
+            "license" => "Modi tenetur et et perferendis. e2",
+            "tech_stack" => "Dolor accusamus rerum numquam et. e2",
+        );
+
+        $responseEdit2 = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $toolIdInsert,
+            $mockDataEdit2,
+            $this->header
+        );
+
+        $responseEdit2->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+        $responseEdit2->assertStatus(200);
+        $this->assertEquals($responseEdit2['data']['url'], $mockDataEdit2['url']);
+        $this->assertEquals($responseEdit2['data']['license'], $mockDataEdit2['license']);
+        $this->assertEquals($responseEdit2['data']['tech_stack'], $mockDataEdit2['tech_stack']);
     }
 
     /**

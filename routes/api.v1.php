@@ -63,7 +63,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'filters' => 'FilterController',
         'dar-integrations' => 'DarIntegrationController',
         'teams' => 'TeamController',
-        // 'tools' => 'ToolController',
+        'tools' => 'ToolController',
         'activity_logs' => 'ActivityLogController',
         'activity_log_types' => 'ActivityLogTypeController',
         'activity_log_user_types' => 'ActivityLogUserTypeController',
@@ -75,6 +75,8 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'collections' => 'CollectionController',
         'audit_logs' => 'AuditLogController',
     ];
+
+    // @todo: check TeamUserController
 
     foreach ($routes as $path => $controller) {
         Route::patch('/' . $path . '/{id}', ['as' => $path . '.patch.update', 'uses' => $controller . '@edit'])->where('id', '[0-9]+');

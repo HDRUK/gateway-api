@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Tool;
 use App\Http\Requests\BaseFormRequest;
 
-class ToolRequest extends BaseFormRequest
+class CreateTool extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -18,31 +19,46 @@ class ToolRequest extends BaseFormRequest
                 'string',
             ],
             'name' => [
-                'required', 'string',
+                'required', 
+                'string',
+                function ($attribute, $value, $fail) {
+                    $exists = Tool::withTrashed()->where('name', $value)->count();
+
+                    if ($exists) {
+                        $fail('The selected name already exist.');
+                    }
+                },
             ],
             'url' => [
-                'nullable', 'string',
+                'nullable', 
+                'string',
             ],
             'description' => [
-                'required', 'string',
+                'required', 
+                'string',
             ],
             'license' => [
-                'nullable', 'string',
+                'nullable', 
+                'string',
             ],
             'tech_stack' => [
-                'nullable', 'string',
+                'nullable', 
+                'string',
             ],
             'user_id' => [
-                'required', 'integer'
+                'required', 
+                'integer'
             ],
             'tag' => [
-                'nullable', 'array', 
+                'nullable', 
+                'array', 
             ],
             'tag.*' => [
                 'integer',
             ],
             'enabled' => [
-                'required', 'boolean',
+                'required', 
+                'boolean',
             ],
         ];
     }
