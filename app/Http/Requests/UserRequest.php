@@ -44,7 +44,7 @@ class UserRequest extends BaseFormRequest
                 'nullable', 'string',
             ],
             'orcid' => [
-                'nullable', 'string',
+                'integer',
             ],
             'contact_feedback' => [
                 'required', 'boolean',
