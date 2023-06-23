@@ -8,6 +8,7 @@ use Exception;
 use App\Models\Notification;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EditNotification;
 use App\Http\Requests\CreateNotification;
@@ -48,7 +49,7 @@ class NotificationController extends Controller
      * )
      */
 
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $notifications = Notification::where('enabled', 1)->paginate(Config::get('constants.per_page'));
         return response()->json(
@@ -89,7 +90,7 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $notification = Notification::findOrFail($id);
         if ($notification) {
@@ -140,7 +141,7 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function store(CreateNotification $request)
+    public function store(CreateNotification $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -211,7 +212,7 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function update(UpdateNotification $request, int $id)
+    public function update(UpdateNotification $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -281,7 +282,7 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function edit(EditNotification $request, int $id)
+    public function edit(EditNotification $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -336,7 +337,7 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteNotification $request, int $id)
+    public function destroy(DeleteNotification $request, int $id): JsonResponse
     {
         try {
             $notification = Notification::findOrFail($id);

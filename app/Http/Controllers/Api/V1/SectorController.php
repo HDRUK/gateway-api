@@ -8,6 +8,7 @@ use App\Models\Sector;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\EditSector;
+use Illuminate\Http\JsonResponse;
 use App\Http\Requests\CreateSector;
 use App\Http\Requests\DeleteSector;
 use App\Http\Requests\UpdateSector;
@@ -44,7 +45,7 @@ class SectorController extends Controller
      *      )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $sectors = Sector::where('enabled', 1)->paginate(Config::get('constants.per_page'));
         return response()->json(
@@ -83,7 +84,7 @@ class SectorController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $sector = Sector::findOrFail($id);
         if ($sector) {
@@ -132,7 +133,7 @@ class SectorController extends Controller
      *      )
      * )
      */
-    public function store(CreateSector $request)
+    public function store(CreateSector $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -198,7 +199,7 @@ class SectorController extends Controller
      *      )
      * )
      */
-    public function update(UpdateSector $request, int $id)
+    public function update(UpdateSector $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -263,7 +264,7 @@ class SectorController extends Controller
      *      )
      * )
      */
-    public function edit(EditSector $request, int $id)
+    public function edit(EditSector $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -316,7 +317,7 @@ class SectorController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteSector $request, int $id)
+    public function destroy(DeleteSector $request, int $id): JsonResponse
     {
         $sector = Sector::findOrFail($id);
         if ($sector) {

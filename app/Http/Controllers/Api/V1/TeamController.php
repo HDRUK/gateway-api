@@ -10,6 +10,7 @@ use App\Http\Requests\EditTest;
 use App\Http\Requests\CreateTeam;
 use App\Http\Requests\DeleteTeam;
 use App\Http\Requests\UpdateTeam;
+use Illuminate\Http\JsonResponse;
 use App\Models\TeamHasNotification;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
@@ -56,7 +57,7 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $teams = Team::where('enabled', 1)->with('users')->get()->toArray();
 
@@ -107,7 +108,7 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $team = Team::with('notifications')->where('id', $id)->firstOrFail();
 
@@ -177,7 +178,7 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function store(CreateTeam $request)
+    public function store(CreateTeam $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -286,7 +287,7 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function update(UpdateTeam $request, int $id)
+    public function update(UpdateTeam $request, int $id): JsonResponse
     {
         $team = Team::findOrFail($id);
         $body = $request->post();
@@ -388,7 +389,7 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function edit(EditTest $request, int $id)
+    public function edit(EditTest $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -459,7 +460,7 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteTeam $request, int $id): mixed
+    public function destroy(DeleteTeam $request, int $id): JsonResponse
     {
         try {
             $team = Team::findOrFail($id);

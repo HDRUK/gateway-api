@@ -9,8 +9,9 @@ use Carbon\Carbon;
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
 
-use App\Http\Requests\EditAuditLog;
+use Illuminate\Http\JsonResponse;
 
+use App\Http\Requests\EditAuditLog;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Http\Requests\CreateAuditLog;
@@ -47,7 +48,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $logs = AuditLog::paginate(Config::get('constants.per_page'));
         return response()->json(
@@ -87,7 +88,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */    
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $logs = AuditLog::findOrFail($id);
         if ($logs) {
@@ -135,7 +136,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */    
-    public function store(CreateAuditLog $request)
+    public function store(CreateAuditLog $request): JsonResponse
     {
         try {
             $logs = AuditLog::create($request->post());
@@ -201,7 +202,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */
-    public function update(UpdateAuditLog $request, int $id)
+    public function update(UpdateAuditLog $request, int $id): JsonResponse
     {
         try {
             $log = AuditLog::findOrFail($id);
@@ -273,7 +274,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */
-    public function edit(EditAuditLog $request, int $id)
+    public function edit(EditAuditLog $request, int $id): JsonResponse
     {
         try {
             $log = AuditLog::findOrFail($id);
@@ -337,7 +338,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteAuditLog $request, int $id)
+    public function destroy(DeleteAuditLog $request, int $id): JsonResponse
     {
         $log = AuditLog::findOrFail($id);
         if ($log) {

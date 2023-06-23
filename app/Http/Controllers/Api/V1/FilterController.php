@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 
-use App\Models\Filter;
 use Exception;
+use App\Models\Filter;
 use Illuminate\Http\Request;
 use App\Http\Requests\EditFilter;
+use Illuminate\Http\JsonResponse;
 use App\Http\Requests\CreateFilter;
 use App\Http\Requests\DeleteFilter;
 use App\Http\Requests\UpdateFilter;
@@ -46,7 +47,7 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $filters = Filter::where('enabled', 1)->paginate(Config::get('constants.per_page'));
         return response()->json(
@@ -87,7 +88,7 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id)
+    public function show(Request $request, int $id): JsonResponse
     {
         $filter = Filter::findOrFail($id);
         if ($filter) {
@@ -137,7 +138,7 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function store(CreateFilter $request)
+    public function store(CreateFilter $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -209,7 +210,7 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function update(UpdateFilter $request, int $id)
+    public function update(UpdateFilter $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -280,7 +281,7 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function edit(EditFilter $request, int $id)
+    public function edit(EditFilter $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -330,7 +331,7 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteFilter $request, int $id)
+    public function destroy(DeleteFilter $request, int $id): JsonResponse
     {
         try {
             $filter = Filter::findOrFail($id);

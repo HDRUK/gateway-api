@@ -6,6 +6,7 @@ use Config;
 use Exception;
 use App\Models\Permission;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EditPermission;
 use App\Models\TeamUserHasPermission;
@@ -50,12 +51,8 @@ class PermissionController extends Controller
      *       ),
      *    ),
      * )
-     * 
-     * Get All Permissions
-     *
-     * @return mixed
      */
-    public function index(): mixed
+    public function index(): JsonResponse
     {
         $permissions = Permission::all()->toArray();
 
@@ -116,13 +113,8 @@ class PermissionController extends Controller
      *      )
      * )
      * 
-     * Get Permissions by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return mixed
      */
-    public function show(Request $request, int $id): mixed
+    public function show(Request $request, int $id): JsonResponse
     {
         $tags = Permission::where([
             'id' => $id,
@@ -181,13 +173,8 @@ class PermissionController extends Controller
      *        )
      *    )
      * )
-     * 
-     * Create a new permission
-     *
-     * @param CreatePermission $request
-     * @return mixed
      */
-    public function store(CreatePermission $request): mixed
+    public function store(CreatePermission $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -262,12 +249,8 @@ class PermissionController extends Controller
      *        )
      *    )
      * )
-     *
-     * @param UpdatePermission $request
-     * @param integer $id
-     * @return mixed
      */
-    public function update(UpdatePermission $request, int $id): mixed
+    public function update(UpdatePermission $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -342,12 +325,8 @@ class PermissionController extends Controller
      *        )
      *    )
      * )
-     *
-     * @param EditPermission $request
-     * @param integer $id
-     * @return mixed
      */
-    public function edit(EditPermission $request, int $id): mixed
+    public function edit(EditPermission $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -417,10 +396,8 @@ class PermissionController extends Controller
      *    )
      * )
      *
-     * @param string $id
-     * @return mixed
      */
-    public function destroy(DeletePermission $request, string $id): mixed
+    public function destroy(DeletePermission $request, string $id): JsonResponse
     {
         try {
             TeamUserHasPermission::where('permission_id', $id)->delete();
