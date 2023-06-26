@@ -211,7 +211,6 @@ class DataUseRegisterController extends Controller
      *      )
      *   )
      * )
-     * 
      */
     public function show(GetDataUseRegister $request, int $id): JsonResponse
     {

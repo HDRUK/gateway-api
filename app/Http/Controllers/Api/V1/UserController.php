@@ -386,32 +386,6 @@ class UserController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
-
-
-
-        try {
-            $input = $request->all();
-
-            $user = User::findOrFail($id);
-            if ($user) {
-                $array = [
-                    'mongo_id' => $input['mongo_id'],
-                ];
-
-                $user->update($array);
-
-                return response()->json([
-                    'message' => 'success',
-                    'data' => $user
-                ], 202);
-            }
-
-            return response()->json([
-                'message' => 'not found',
-            ], 404);
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
     }
 
     /**
