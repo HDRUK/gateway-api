@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Config;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 use App\Models\Feature as FeatureModel;
@@ -131,6 +132,80 @@ class FeatureTest extends TestCase
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);
+    }
+
+    /**
+     * Edit Feature with success
+     * 
+     * @return void
+     */
+    public function test_edit_feature_with_success(): void
+    {
+        // create
+        $countBefore = FeatureModel::all()->count();
+
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'name' => 'fake_for_test',
+                'enabled' => true,
+            ],
+            $this->header
+        );
+
+        $countAfter = FeatureModel::all()->count();
+        $countNewRow = $countAfter - $countBefore;
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+        $responseCreate->assertStatus(201);
+
+        $id = $contentCreate['data'];
+
+        // edit
+        $responseEdit1 = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $id,
+            [
+                'name' => 'fake_for_test_e1',
+            ],
+            $this->header
+        );
+        $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentEdit1 = $responseEdit1->decodeResponseJson();
+        $this->assertEquals($contentEdit1['data']['name'], 'fake_for_test_e1');
+
+        // edit
+        $responseEdit2 = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $id,
+            [
+                'name' => 'fake_for_test_e2',
+                'enabled' => false,
+            ],
+            $this->header
+        );
+        $responseEdit2->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentEdit2 = $responseEdit2->decodeResponseJson();
+        $this->assertEquals($contentEdit2['data']['name'], 'fake_for_test_e2');
+        $this->assertEquals($contentEdit2['data']['enabled'], false);
     }
     
     /**

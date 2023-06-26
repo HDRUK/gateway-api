@@ -5,16 +5,23 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Exception;
 use Carbon\Carbon;
-
 use App\Models\AuditLog;
-use App\Http\Requests\AuditLogRequest;
-
-use App\Http\Controllers\Controller;
-
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\AuditLog\GetAuditLog;
+use App\Http\Requests\AuditLog\EditAuditLog;
+use App\Http\Requests\AuditLog\CreateAuditLog;
+use App\Http\Requests\AuditLog\DeleteAuditLog;
+use App\Http\Requests\AuditLog\UpdateAuditLog;
+use App\Exceptions\InternalServerErrorException;
 
 class AuditLogController extends Controller
 {
+    use RequestTransformation;
+
     /**
      * @OA\Get(
      *      path="/api/v1/audit_logs",
@@ -42,7 +49,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $logs = AuditLog::paginate(Config::get('constants.per_page'));
         return response()->json(
@@ -82,7 +89,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */    
-    public function show(Request $request, int $id)
+    public function show(GetAuditLog $request, int $id): JsonResponse
     {
         $logs = AuditLog::findOrFail($id);
         if ($logs) {
@@ -92,9 +99,7 @@ class AuditLogController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 
     /**
@@ -132,7 +137,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */    
-    public function store(AuditLogRequest $request)
+    public function store(CreateAuditLog $request): JsonResponse
     {
         try {
             $logs = AuditLog::create($request->post());
@@ -143,9 +148,7 @@ class AuditLogController extends Controller
                 ], Config::get('statuscodes.STATUS_CREATED.code'));
             }
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new InternalServerErrorException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -200,7 +203,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */
-    public function update(AuditLogRequest $request, int $id)
+    public function update(UpdateAuditLog $request, int $id): JsonResponse
     {
         try {
             $log = AuditLog::findOrFail($id);
@@ -217,10 +220,79 @@ class AuditLogController extends Controller
                     'data' => $log,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             } else {
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-                ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+                throw new NotFoundException();
             }
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/audit_logs/{id}",
+     *      summary="Edit a system audit log",
+     *      description="Edit a system audit log",
+     *      tags={"AuditLog"},
+     *      summary="AuditLog@edit",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Audit log definition",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="user_id", type="integer", example="100"),
+     *              @OA\Property(property="description", type="string", example="someType"),
+     *              @OA\Property(property="function", type="string", example="some value"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="user_id", type="integer", example="100"),
+     *                  @OA\Property(property="description", type="string", example="someType"),
+     *                  @OA\Property(property="function", type="string", example="some value"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditAuditLog $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'user_id',
+                'description',
+                'function',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            AuditLog::where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => AuditLog::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -257,7 +329,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id)
+    public function destroy(DeleteAuditLog $request, int $id): JsonResponse
     {
         $log = AuditLog::findOrFail($id);
         if ($log) {
@@ -268,13 +340,9 @@ class AuditLogController extends Controller
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new InternalServerErrorException();
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 }

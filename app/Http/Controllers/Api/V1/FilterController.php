@@ -3,16 +3,23 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
-use Carbon\Carbon;
 
+use Exception;
 use App\Models\Filter;
-
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Filter\GetFilter;
+use App\Http\Requests\Filter\EditFilter;
+use App\Http\Requests\Filter\CreateFilter;
+use App\Http\Requests\Filter\DeleteFilter;
+use App\Http\Requests\Filter\UpdateFilter;
+use App\Http\Traits\RequestTransformation;
 
 class FilterController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * @OA\Get(
      *      path="/api/v1/filters",
@@ -41,7 +48,7 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
         $filters = Filter::where('enabled', 1)->paginate(Config::get('constants.per_page'));
         return response()->json(
@@ -82,7 +89,7 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id)
+    public function show(GetFilter $request, int $id): JsonResponse
     {
         $filter = Filter::findOrFail($id);
         if ($filter) {
@@ -132,26 +139,25 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function store(Request $request)
+    public function store(CreateFilter $request): JsonResponse
     {
-        $request->validate([
-            'type' => 'required',
-            'value' => 'required',
-            'keys' => 'required',
-            'enabled' => 'required',
-        ]);
+        try {
+            $input = $request->all();
 
-        $filter = Filter::create($request->post());
-        if ($filter) {
+            $filter = Filter::create([
+                'type' => $input['type'],
+                'value' => $input['value'],
+                'keys' => $input['keys'],
+                'enabled' => $input['enabled'],
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $filter->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
@@ -170,6 +176,7 @@ class FilterController extends Controller
      *              @OA\Property(property="type", type="string", example="dataset"),
      *              @OA\Property(property="value", type="string", example="your filter value here"),
      *              @OA\Property(property="keys", type="string", example="purpose"),
+     *              @OA\Property(property="enabled", type="integer", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -204,36 +211,94 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $filter)
+    public function update(UpdateFilter $request, int $id): JsonResponse
     {
-        $request->validate([
-            'type' => 'required',
-            'value' => 'required',
-            'keys' => 'required',
-            'enabled' => 'required',
-        ]);
+        try {
+            $input = $request->all();
 
-        $filter = Filter::findOrFail($filter);
-        $body = $request->post();
-        $filter->type = $body['type'];
-        $filter->value = $body['value'];
-        $filter->keys = $body['keys'];
-        $filter->enabled = $body['enabled'];
+            Filter::where('id', $id)->update([
+                'type' => $input['type'],
+                'value' => $input['value'],
+                'keys' => $input['keys'],
+                'enabled' => $input['enabled'],
+            ]);
 
-        if ($filter->save()) {
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $filter,
+                'data' => Filter::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
+    }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/filters/{id}",
+     *      summary="Edit a system filter",
+     *      description="Edit a system filter",
+     *      tags={"Filter"},
+     *      summary="Filter@edit",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Filter definition",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="type", type="string", example="dataset"),
+     *              @OA\Property(property="value", type="string", example="your filter value here"),
+     *              @OA\Property(property="keys", type="string", example="purpose"),
+     *              @OA\Property(property="enabled", type="integer", example="1"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="type", type="string", example="someType"),
+     *                  @OA\Property(property="value", type="string", example="some value"),
+     *                  @OA\Property(property="keys", type="string", example="someKey"),
+     *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditFilter $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = ['type', 'value', 'keys', 'enabled'];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Filter::where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Filter::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -267,25 +332,21 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $filter)
+    public function destroy(DeleteFilter $request, int $id): JsonResponse
     {
-        $filter = Filter::findOrFail($filter);
-        if ($filter) {
-            $filter->deleted_at = Carbon::now();
-            $filter->enabled = false;
-            if ($filter->save()) {
+        try {
+            $filter = Filter::findOrFail($id);
+            if ($filter) {
+                $filter->delete();
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new NotFoundException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 }

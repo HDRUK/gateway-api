@@ -3,17 +3,23 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
-
+use Exception;
 use App\Models\ActivityLog;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateActivityLog;
-use App\Http\Requests\UpdateActivityLog;
+use App\Exceptions\NotFoundException;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\ActivityLog\GetActivityLog;
+use App\Http\Requests\ActivityLog\EditActivityLog;
+use App\Http\Requests\ActivityLog\CreateActivityLog;
+use App\Http\Requests\ActivityLog\DeleteActivityLog;
+use App\Http\Requests\ActivityLog\UpdateActivityLog;
 
 class ActivityLogController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * @OA\Get(
      *      path="/api/v1/activity_logs",
@@ -91,7 +97,7 @@ class ActivityLogController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetActivityLog $request, int $id): JsonResponse
     {
         $activityLog = ActivityLog::findOrFail($id);
         if ($activityLog) {
@@ -101,9 +107,7 @@ class ActivityLogController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 
     /**
@@ -120,8 +124,6 @@ class ActivityLogController extends Controller
      *          @OA\JsonContent(
      *              required={"event_type", "user_type_id", "log_type_id", "version", "html", "plain_text"},
      *              @OA\Property(property="id", type="integer", example="123"),
-     *              @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *              @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *              @OA\Property(property="event_type", type="string", example="passwordReset"),
      *              @OA\Property(property="user_type_id", type="integer", example="123"),
      *              @OA\Property(property="log_type_id", type="integer", example="234"),
@@ -151,17 +153,28 @@ class ActivityLogController extends Controller
      */
     public function store(CreateActivityLog $request): JsonResponse
     {
-        $activityLog = ActivityLog::create($request->post());
-        if ($activityLog) {
+        try {
+            $input = $request->all();
+
+            $activityLog = ActivityLog::create([
+                'event_type' => $input['event_type'],
+                'user_type_id' => $input['user_type_id'],
+                'log_type_id' => $input['log_type_id'],
+                'user_id' => $input['user_id'],
+                'version' => $input['version'],
+                'html' => $input['html'],
+                'plain_text' => $input['plain_text'],
+                'user_id_mongo' => $input['user_id_mongo'],
+                'version_id_mongo' => $input['version_id_mongo'],
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $activityLog->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
@@ -228,33 +241,118 @@ class ActivityLogController extends Controller
      */
     public function update(UpdateActivityLog $request, int $id): JsonResponse
     {
-        $activityLog = ActivityLog::findOrFail($id);
-        $body = $request->post();
-        $activityLog->event_type = $body['event_type'];
-        $activityLog->user_type_id = $body['user_type_id'];
-        $activityLog->log_type_id = $body['log_type_id'];
-        $activityLog->user_id = $body['user_id'];
-        $activityLog->version = $body['version'];
-        $activityLog->html = $body['html'];
-        $activityLog->plain_text = $body['plain_text'];
-        $activityLog->user_id_mongo = (isset($body['user_id_mongo']) ? $body['user_id_mongo'] : null);
-        $activityLog->version_id_mongo = (isset($body['version_id_mongo']) ? $body['version_id_mongo'] : null);
+        try {
+            $input = $request->all();
 
-        if ($activityLog->save()) {
+            ActivityLog::where('id', $id)->update([
+                'event_type' => $input['event_type'],
+                'user_type_id' => $input['user_type_id'],
+                'log_type_id' => $input['log_type_id'],
+                'user_id' => $input['user_id'],
+                'version' => $input['version'],
+                'html' => $input['html'],
+                'plain_text' => $input['plain_text'],
+                'user_id_mongo' => $input['user_id_mongo'],
+                'version_id_mongo' => $input['version_id_mongo'],
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $activityLog,
+                'data' => ActivityLog::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message')
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
+
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/activity_logs/{id}",
+     *      summary="Edit a system activity log",
+     *      description="Edit a system activity log",
+     *      tags={"ActivityLog"},
+     *      summary="ActivityLog@edit",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="ActivityLog definition",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="id", type="integer", example="123"),
+     *              @OA\Property(property="event_type", type="string", example="passwordReset"),
+     *              @OA\Property(property="user_type_id", type="integer", example="123"),
+     *              @OA\Property(property="log_type_id", type="integer", example="234"),
+     *              @OA\Property(property="version", type="string", example="1.0.0"),
+     *              @OA\Property(property="html", type="string", example="<b>example string</b>"),
+     *              @OA\Property(property="plain_text", type="string", example="example string"),
+     *              @OA\Property(property="user_id_mongo", type="string", example="2529385fsdfsgs69gs9629se"),
+     *              @OA\Property(property="version_id_mongo", type="string", example="2529385fsdfsgs69gs9629se")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="event_type", type="string", example="passwordReset"),
+     *                  @OA\Property(property="user_type_id", type="integer", example="123"),
+     *                  @OA\Property(property="log_type_id", type="integer", example="234"),
+     *                  @OA\Property(property="version", type="string", example="1.0.0"),
+     *                  @OA\Property(property="html", type="string", example="<b>example string</b>"),
+     *                  @OA\Property(property="plain_text", type="string", example="example string"),
+     *                  @OA\Property(property="user_id_mongo", type="string", example="2529385fsdfsgs69gs9629se"),
+     *                  @OA\Property(property="version_id_mongo", type="string", example="2529385fsdfsgs69gs9629se")
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditActivityLog $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'event_type',
+                'user_type_id',
+                'log_type_id',
+                'user_id',
+                'version',
+                'html',
+                'plain_text',
+                'user_id_mongo',
+                'version_id_mongo',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            ActivityLog::where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => ActivityLog::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
 
     /**
      * @OA\Delete(
@@ -287,23 +385,16 @@ class ActivityLogController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(DeleteActivityLog $request, int $id): JsonResponse
     {
-        $activityLog = ActivityLog::findOrFail($id);
-        if ($activityLog) {
-            if ($activityLog->delete()) {
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
+        try {
+            ActivityLog::where('permission_id', $id)->delete();
 
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 }

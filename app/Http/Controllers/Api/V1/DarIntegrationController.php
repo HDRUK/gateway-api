@@ -4,15 +4,21 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-use Throwable;
 use Illuminate\Http\Request;
 use App\Models\DarIntegration;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\DarIntegrationRequest;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\DarIntegration\GetDARIntegration;
+use App\Http\Requests\DarIntegration\EditDARIntegration;
+use App\Http\Requests\DarIntegration\CreateDARIntegration;
+use App\Http\Requests\DarIntegration\DeleteDARIntegration;
+use App\Http\Requests\DarIntegration\UpdateDARIntegration;
 
 class DarIntegrationController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * @OA\Get(
      *      path="/api/v1/dar-integration",
@@ -103,7 +109,7 @@ class DarIntegrationController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetDARIntegration $request, int $id): JsonResponse
     {
         $dar = DarIntegration::findOrFail($id);
         if ($dar) {
@@ -168,19 +174,30 @@ class DarIntegrationController extends Controller
      *      )
      * )
      */
-    public function store(DarIntegrationRequest $request): JsonResponse
+    public function store(CreateDARIntegration $request): JsonResponse
     {
-        $dar = DarIntegration::create($request->post());
-        if ($dar) {
+        try {
+            $input = $request->all();
+
+            $dar = DarIntegration::create([
+                'enabled' => $input['enabled'],
+                'notification_email' => $input['notification_email'],
+                'outbound_auth_type' => $input['outbound_auth_type'],
+                'outbound_auth_key' => $input['outbound_auth_key'],
+                'outbound_endpoints_base_url' => $input['outbound_endpoints_base_url'],
+                'outbound_endpoints_enquiry' => $input['outbound_endpoints_enquiry'],
+                'outbound_endpoints_5safes' => $input['outbound_endpoints_5safes'],
+                'outbound_endpoints_5safes_files' => $input['outbound_endpoints_5safes_files'],
+                'inbound_service_account_id' => $input['inbound_service_account_id'],
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $dar->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
@@ -246,26 +263,116 @@ class DarIntegrationController extends Controller
      *      )
      * )
      */
-    public function update(DarIntegrationRequest $request, int $id): JsonResponse
+    public function update(UpdateDARIntegration $request, int $id): JsonResponse
     {
         try {
-            $dar = DarIntegration::find($id);
-            if ($dar) {
-                if ($dar->update($request->all()) === false) {
-                    return response()->json([
-                        'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
-                    ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
-                }
+            $input = $request->all();
 
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => $dar,
-                ], Config::get('statuscodes.STATUS_OK.code'));                
-            }
+            DarIntegration::where('id', $id)->update([
+                'enabled' => $input['enabled'],
+                'notification_email' => $input['notification_email'],
+                'outbound_auth_type' => $input['outbound_auth_type'],
+                'outbound_auth_key' => $input['outbound_auth_key'],
+                'outbound_endpoints_base_url' => $input['outbound_endpoints_base_url'],
+                'outbound_endpoints_enquiry' => $input['outbound_endpoints_enquiry'],
+                'outbound_endpoints_5safes' => $input['outbound_endpoints_5safes'],
+                'outbound_endpoints_5safes_files' => $input['outbound_endpoints_5safes_files'],
+                'inbound_service_account_id' => $input['inbound_service_account_id'],
+            ]);
 
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => DarIntegration::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/dar-integration/{id}",
+     *      summary="Edit a system Dar Integration",
+     *      description="Edit a DAR integration enabled on the system",
+     *      tags={"DarIntegration"},
+     *      summary="DarIntegration@edit",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="DarIntegration definition",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="enabled", type="integer", example="1"),
+     *              @OA\Property(property="notification_email", type="string", example="someone@somewhere.com"),
+     *              @OA\Property(property="outbound_auth_type", type="string", example=""),
+     *              @OA\Property(property="outbound_auth_key", type="string", example=""),
+     *              @OA\Property(property="outbound_endpoints_base_url", type="string", example=""),
+     *              @OA\Property(property="outbound_endpoints_enquiry", type="string", example=""),
+     *              @OA\Property(property="outbound_endpoints_5safes", type="string", example=""),
+     *              @OA\Property(property="outbound_endpoints_5safes_files", type="string", example=""),
+     *              @OA\Property(property="inbound_service_account_id", type="string", example="")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Updated",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="notification_email", type="string", example="someone@somewhere.com"),
+     *                  @OA\Property(property="outbound_auth_type", type="string", example=""),
+     *                  @OA\Property(property="outbound_auth_key", type="string", example=""),
+     *                  @OA\Property(property="outbound_endpoints_base_url", type="string", example=""),
+     *                  @OA\Property(property="outbound_endpoints_enquiry", type="string", example=""),
+     *                  @OA\Property(property="outbound_endpoints_5safes", type="string", example=""),
+     *                  @OA\Property(property="outbound_endpoints_5safes_files", type="string", example=""),
+     *                  @OA\Property(property="inbound_service_account_id", type="string", example="")
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditDARIntegration $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'enabled', 
+                'notification_email', 
+                'outbound_auth_type', 
+                'outbound_auth_key', 
+                'outbound_endpoints_base_url', 
+                'outbound_endpoints_enquiry', 
+                'outbound_endpoints_5safes',
+                'outbound_endpoints_5safes_files',
+                'inbound_service_account_id',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            DarIntegration::where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => DarIntegration::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -302,15 +409,19 @@ class DarIntegrationController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(DeleteDARIntegration $request, int $id): JsonResponse
     {
         try {
-            $dar = DarIntegration::find($id);
-            $dar->delete();
+            $dar = DarIntegration::findOrFail($id);
+            if ($dar) {
+                $dar->delete();
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-            ], Config::get('statuscodes.STATUS_OK.code'));
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+
+            throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

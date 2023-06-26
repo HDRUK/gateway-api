@@ -4,16 +4,21 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-
 use App\Models\Tag;
-use App\Http\Requests\TagRequest;
-use App\Http\Controllers\Controller;
-
 use Illuminate\Http\Request;
+use App\Http\Requests\Tag\GetTag;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Tag\EditTag;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Tag\CreateTag;
+use App\Http\Requests\Tag\DeleteTag;
+use App\Http\Requests\Tag\UpdateTag;
+use App\Http\Traits\RequestTransformation;
 
 class TagController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * constructor method
      */
@@ -46,10 +51,6 @@ class TagController extends Controller
      *       ),
      *    ),
      * )
-     * 
-     * Get All Tags
-     *
-     * @return JsonResponse
      */
     public function index(): JsonResponse
     {
@@ -83,11 +84,7 @@ class TagController extends Controller
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="message",
-     *             type="string",
-     *             example="success",
-     *          ),
+     *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
      *             property="data",
      *             type="array",
@@ -114,14 +111,8 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Get Tags by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return JsonResponse
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetTag $request, int $id): JsonResponse
     {
         $tags = Tag::where([
             'id' => $id,
@@ -154,11 +145,9 @@ class TagController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(
-     *                property="type",
-     *                type="string",
-     *                example="features",
-     *             ),
+     *             @OA\Property(property="type", type="string", example="features"),
+     *             @OA\Property(property="description", type="string", example="lorem ipsum"),
+     *             @OA\Property(property="enabled", type="boolean", example="true")
      *          ),
      *       ),
      *    ),
@@ -185,23 +174,22 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Create a new tag
-     *
-     * @param TagRequest $request
-     * @return JsonResponse
      */
-    public function store(TagRequest $request): JsonResponse
+    public function store(CreateTag $request): JsonResponse
     {
         try {
             $input = $request->all();
 
-            $tag = Tag::create($input);
+            $tag = Tag::create([
+                'type' => $input['type'],
+                'description' => $input['description'],
+                'enabled' => $input['enabled'],
+            ]);
 
             return response()->json([
-                'message' => 'created',
+                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $tag->id,
-            ], 201);
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -221,11 +209,9 @@ class TagController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(
-     *                property="enabled",
-     *                type="boolean",
-     *                example=true,
-     *             ),
+     *             @OA\Property(property="type", type="string", example="features"),
+     *             @OA\Property(property="description", type="string", example="lorem ipsum"),
+     *             @OA\Property(property="enabled", type="boolean", example="true")
      *          ),
      *       ),
      *    ),
@@ -233,11 +219,7 @@ class TagController extends Controller
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="message",
-     *             type="string",
-     *             example="success",
-     *          ),
+     *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
      *             property="data",
      *             type="array",
@@ -271,30 +253,104 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Update tag
-     *
-     * @param TagRequest $request
-     * @param integer $id
-     * @return JsonResponse
      */
-    public function update(TagRequest $request, int $id): JsonResponse
+    public function update(UpdateTag $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
 
-            if (!$input) {
-                return response()->json([
-                    'message' => 'bad request',
-                ], 400);
-            }
-
-            $tag = Tag::where('id', $id)->update($input);
+            Tag::where('id', $id)->update([
+                'type' => $input['type'],
+                'description' => $input['description'],
+                'enabled' => $input['enabled'],
+            ]);
 
             return response()->json([
-                'message' => 'success',
-                'data' => $tag
-            ], 202);
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Tag::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *    path="/api/v1/tags",
+     *    operationId="edit_tags",
+     *    tags={"Tags"},
+     *    summary="TagController@edit",
+     *    description="Edit tag",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="type", type="string", example="features"),
+     *             @OA\Property(property="description", type="string", example="lorem ipsum"),
+     *             @OA\Property(property="enabled", type="boolean", example="true")
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success"),
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          ),
+     *       ),
+     *    ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="bad request"),
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditTag $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'type',
+                'description',
+                'enabled',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Tag::where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Tag::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -348,28 +404,15 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     * 
-     * delete tag by id
-     *
-     * @param string $id
-     * @return JsonResponse
      */
-    public function destroy(string $id): JsonResponse
+    public function destroy(DeleteTag $request, string $id): JsonResponse
     {
         try {
-            $tags = Tag::where('id', $id)->count();
-
-            if ($tags) {
-                Tag::where('id', $id)->delete();
-
-                return response()->json([
-                    'message' => 'success',
-                ], 200);
-            }
+            Tag::where('id', $id)->delete();
 
             return response()->json([
-                'message' => 'not found.',
-            ], 404);
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

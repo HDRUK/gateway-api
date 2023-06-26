@@ -3,16 +3,24 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
-
+use Exception;
 use Illuminate\Http\Request;
-
 use App\Models\ActivityLogType;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateActivityLogType;
+use App\Exceptions\NotFoundException;
+use App\Http\Traits\RequestTransformation;
+use App\Exceptions\InternalServerErrorException;
+use App\Http\Requests\ActivityLogType\GetActivityLogType;
+use App\Http\Requests\ActivityLogType\EditActivityLogType;
+use App\Http\Requests\ActivityLogType\CreateActivityLogType;
+use App\Http\Requests\ActivityLogType\DeleteActivityLogType;
+use App\Http\Requests\ActivityLogType\UpdateActivityLogType;
 
 class ActivityLogTypeController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * @OA\Get(
      *      path="/api/v1/activity_log_types",
@@ -76,7 +84,7 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetActivityLogType $request, int $id): JsonResponse
     {
         $activityLogType = ActivityLogType::findOrFail($id);
         if ($activityLogType) {
@@ -86,9 +94,7 @@ class ActivityLogTypeController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 
     /**
@@ -126,17 +132,19 @@ class ActivityLogTypeController extends Controller
      */
     public function store(CreateActivityLogType $request): JsonResponse
     {
-        $activityLogType = ActivityLogType::create($request->post());
-        if ($activityLogType) {
+        try {
+            $input = $request->all();
+            $activityLogType = ActivityLogType::create([
+                'name' => $input['name'],
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $activityLogType->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-        ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     }
 
     /**
@@ -184,26 +192,87 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function update(CreateActivityLogType $request, int $id): JsonResponse
+    public function update(UpdateActivityLogType $request, int $id): JsonResponse
     {
-        $activityLogType = ActivityLogType::findOrFail($id);
-        $body = $request->post();
-        $activityLogType->name = $body['name'];
+        try {
+            $input = $request->all();
 
-        if ($activityLogType->save()) {
+            ActivityLogType::where('id', $id)->update([
+                'name' => $input['name'],
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $activityLogType,
+                'data' => ActivityLogType::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
+    }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+    /**
+     * @OA\Patch(
+     *      path="/api/v1/activity_log_types/{id}",
+     *      summary="Edit a system activity log type",
+     *      description="Edit a system activity log type",
+     *      tags={"ActivityLogType"},
+     *      summary="ActivityLogType@edit",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="ActivityLogType definition",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="name", type="string", example="Name"),
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="name", type="string", example="Name"),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditActivityLogType $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'name',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            ActivityLogType::where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => ActivityLogType::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -237,7 +306,7 @@ class ActivityLogTypeController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(DeleteActivityLogType $request, int $id): JsonResponse
     {
         $activityLogType = ActivityLogType::findOrFail($id);
         if ($activityLogType) {
@@ -247,13 +316,9 @@ class ActivityLogTypeController extends Controller
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+            throw new InternalServerErrorException();
         }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        throw new NotFoundException();
     }
 }

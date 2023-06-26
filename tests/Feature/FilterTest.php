@@ -212,6 +212,114 @@ class FilterTest extends TestCase
         $this->assertEquals($content['data']['enabled'], 1);
     }
 
+
+    /**
+     * Tests that a filter record can be edited
+     * 
+     * @return void
+     */
+    public function test_the_application_can_edit_a_filter()
+    {
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            'api/v1/filters',
+            [
+                'type' => 'project',
+                'value' => 'Initial Value',
+                'keys' => 'purpose',
+                'enabled' => 0,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals($contentCreate['message'], Config::get('statuscodes.STATUS_CREATED.message'));
+
+        $id = $contentCreate['data'];
+
+        // update
+        $responseUpdate = $this->json(
+            'PUT',
+            'api/v1/filters/' . $id,
+            [
+                'type' => 'project',
+                'value' => 'New Value',
+                'keys' => 'purpose',
+                'enabled' => 1,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentUpdate = $responseUpdate->decodeResponseJson();
+        $this->assertEquals($contentUpdate['data']['value'], 'New Value');
+        $this->assertEquals($contentUpdate['data']['enabled'], 1);
+
+        // edit
+        $responseEdit1 = $this->json(
+            'PATCH',
+            'api/v1/filters/' . $id,
+            [
+                'type' => 'collection',
+                'value' => 'New Value e1',
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentEdit1 = $responseEdit1->decodeResponseJson();
+        $this->assertEquals($contentEdit1['data']['type'], 'collection');
+        $this->assertEquals($contentEdit1['data']['value'], 'New Value e1');
+
+        // edit
+        $responseEdit2 = $this->json(
+            'PATCH',
+            'api/v1/filters/' . $id,
+            [
+                'value' => 'New Value e2',
+                'keys' => 'purpose e2',
+                'enabled' => 0,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseEdit2->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentEdit2 = $responseEdit2->decodeResponseJson();
+        $this->assertEquals($contentEdit2['data']['value'], 'New Value e2');
+        $this->assertEquals($contentEdit2['data']['keys'], 'purpose e2');
+        $this->assertEquals($contentEdit2['data']['enabled'], 0);
+    }
+
     /**
      * Tests it can delete a filter
      * 

@@ -203,6 +203,90 @@ class CollectionTest extends TestCase
     }
 
     /**
+     * Edit Collection with sucess by id
+     *
+     * @return void
+     */
+    public function test_edit_collection_with_success(): void
+    {
+        // create new collection
+        $mockDataIns = [
+            "name" => "covid",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
+            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "enabled" => true,
+            "keywords" => "key words",
+            "public" => true,
+            "counter" => 123
+        ];
+        $responseIns = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockDataIns,
+            $this->header
+        );
+
+        $responseIns->assertStatus(201);
+        $idIns = (int) $responseIns['data'];
+
+        // update collection
+        $mockDataUpdate = [
+            "name" => "covid 2",
+            "description" => "Suscipit vitae mollitia molestias qui.",
+            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+            "enabled" => false,
+            "keywords" => "key words",
+            "public" => false,
+            "counter" => 125
+        ];
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $idIns,
+            $mockDataUpdate,
+            $this->header
+        );
+        $responseUpdate->assertStatus(200);
+        $this->assertTrue($mockDataUpdate['name'] === $responseUpdate['data']['name']);
+        $this->assertTrue($mockDataUpdate['description'] === $responseUpdate['data']['description']);
+        $this->assertTrue((bool) $mockDataUpdate['enabled'] === (bool) $responseUpdate['data']['enabled']);
+        $this->assertTrue((bool) $mockDataUpdate['public'] === (bool) $responseUpdate['data']['public']);
+        $this->assertTrue((int) $mockDataUpdate['counter'] === (int) $responseUpdate['data']['counter']);
+
+        // edit
+        $mockDataEdit1 = [
+            "name" => "covid edit",
+            "description" => "Nam dictum urna quis euismod lacinia.",
+            "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+        ];
+        $responseEdit1 = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $idIns,
+            $mockDataEdit1,
+            $this->header
+        );
+        $responseEdit1->assertStatus(200);
+        $this->assertTrue($mockDataEdit1['name'] === $responseEdit1['data']['name']);
+        $this->assertTrue($mockDataEdit1['description'] === $responseEdit1['data']['description']);
+        $this->assertTrue($mockDataEdit1['image_link'] === $responseEdit1['data']['image_link']);
+
+        // edit
+        $mockDataEdit2 = [
+            "name" => "covid another edit",
+            "counter" => 126
+        ];
+        $responseEdit2 = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $idIns,
+            $mockDataEdit2,
+            $this->header
+        );
+        $responseEdit2->assertStatus(200);
+        $this->assertTrue($mockDataEdit2['name'] === $responseEdit2['data']['name']);
+        $this->assertTrue((int) $mockDataEdit2['counter'] === (int) $responseEdit2['data']['counter']);
+
+    }
+
+    /**
      * SoftDelete Collection by Id with success
      *
      * @return void

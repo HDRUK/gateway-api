@@ -4,19 +4,22 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-
 use App\Models\Collection;
-use App\Http\Controllers\Controller;
-use App\Exceptions\NotFoundException;
-use App\Http\Requests\CreateCollectionRequest;
-use App\Http\Requests\UpdateCollectionRequest;
-
-
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\Collection\GetCollection;
+use App\Http\Requests\Collection\EditCollection;
+use App\Http\Requests\Collection\CreateCollection;
+use App\Http\Requests\Collection\DeleteCollection;
+use App\Http\Requests\Collection\UpdateCollection;
 
 class CollectionController extends Controller
 {
+    use RequestTransformation;
+    
     public function __construct()
     {
         //
@@ -53,8 +56,6 @@ class CollectionController extends Controller
      *       )
      *    )
      * )
-     *
-     * @return JsonResponse
      */
     public function index(): JsonResponse
     {
@@ -108,14 +109,8 @@ class CollectionController extends Controller
      *       ),
      *    ),
      * )
-     * 
-     * Get Collections by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return JsonResponse
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetCollection $request, int $id): JsonResponse
     {
         try {
             $collections = Collection::where(['id' => $id])
@@ -181,13 +176,8 @@ class CollectionController extends Controller
      *       )
      *    )
      * )
-     * 
-     * Create a new collection
-     *
-     * @param CreateCollectionRequest $request
-     * @return JsonResponse
      */
-    public function store(CreateCollectionRequest $request): JsonResponse
+    public function store(CreateCollection $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -280,12 +270,8 @@ class CollectionController extends Controller
      *          )
      *      )
      * )
-     *
-     * @param UpdateCollectionRequest $request
-     * @param integer $id
-     * @return JsonResponse
      */
-    public function update(UpdateCollectionRequest $request, int $id): JsonResponse
+    public function update(UpdateCollection $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -299,6 +285,95 @@ class CollectionController extends Controller
                 'public' => $input['public'],
                 'counter' => (int) $input['counter'],
             ]);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => Collection::where('id', $id)->first()
+            ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *    path="/api/v1/collections/{id}",
+     *    tags={"Collections"},
+     *    summary="Edit a collection",
+     *    description="Edit a collection",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="collection id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="collection id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="name", type="string", example="covid"),
+     *             @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
+     *             @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
+     *             @OA\Property(property="enabled", type="boolean", example="true"),
+     *             @OA\Property(property="keywords", type="string", example="key words"),
+     *             @OA\Property(property="public", type="boolean", example="true"),
+     *             @OA\Property(property="counter", type="integer", example="123"),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="not found")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=200,
+     *        description="Success",
+     *        @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(
+     *                 property="data", type="object",
+     *                 @OA\Property(property="name", type="string", example="covid"),
+     *                 @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
+     *                 @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
+     *                 @OA\Property(property="enabled", type="boolean", example="true"),
+     *                 @OA\Property(property="keywords", type="string", example="key words"),
+     *                 @OA\Property(property="public", type="boolean", example="true"),
+     *                 @OA\Property(property="counter", type="integer", example="123"),
+     *                 @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                 @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                 @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
+     *              ),
+     *        ),
+     *    ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditCollection $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+
+            $arrayKeys = ['name', 'description', 'image_link', 'enabled', 'keywords', 'public', 'counter'];
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Collection::where('id', $id)->update($array);
 
             return response()->json([
                 'message' => 'success',
@@ -349,11 +424,8 @@ class CollectionController extends Controller
      *       )
      *    )
      * )
-     *
-     * @param integer $id
-     * @return JsonResponse
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(DeleteCollection $request, int $id): JsonResponse
     {
         try {
             $collection = Collection::findOrFail($id);

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Config;
 use Tests\TestCase;
 use App\Models\Permission;
 use App\Models\TeamUserHasPermission;
@@ -139,6 +140,67 @@ class PermissionTest extends TestCase
         $this->assertTrue((bool) $checkIfExist, 'Response was successfully');
 
         $response->assertStatus(200);
+    }
+
+    public function test_edit_permission_with_success()
+    {
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'role' => 'fake_for_test',
+            ],
+            $this->header
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals($contentCreate['message'], Config::get('statuscodes.STATUS_CREATED.message'));
+
+        $id = $contentCreate['data'];
+
+        // update
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $id,
+            [
+                'role' => 'fake_for_test_update',
+            ],
+            $this->header
+        );
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentUpdate = $responseUpdate->decodeResponseJson();
+        $this->assertEquals($contentUpdate['data']['role'], 'fake_for_test_update');
+
+        // edit
+        $responseEdit = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $id,
+            [
+                'role' => 'fake_for_test_edit',
+            ],
+            $this->header
+        );
+
+        $responseEdit->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentEdit = $responseEdit->decodeResponseJson();
+        $this->assertEquals($contentEdit['data']['role'], 'fake_for_test_edit');
     }
 
     /**

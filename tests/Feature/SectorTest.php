@@ -198,6 +198,105 @@ class SectorTest extends TestCase
     }
 
     /**
+     * Tests that a sector record can be edited
+     * 
+     * @return void
+     */
+    public function test_the_application_can_edit_a_sector()
+    {
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            'api/v1/sectors',
+            [
+                'name' => 'Test Sector',
+                'enabled' => false,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals($contentCreate['message'], Config::get('statuscodes.STATUS_CREATED.message'));
+
+        $id = $contentCreate['data'];
+
+        // update
+        $responseUpdate = $this->json(
+            'PUT',
+            'api/v1/sectors/' . $id,
+            [
+                'name' => 'Updated Test Sector',
+                'enabled' => true,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentUpdate = $responseUpdate->decodeResponseJson();
+        $this->assertEquals($contentUpdate['data']['name'], 'Updated Test Sector');
+        $this->assertEquals($contentUpdate['data']['enabled'], true);
+
+        // edit
+        $responseEdit1 = $this->json(
+            'Patch',
+            'api/v1/sectors/' . $id,
+            [
+                'name' => 'Updated Test Sector - e1',
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentEdit1 = $responseEdit1->decodeResponseJson();
+        $this->assertEquals($contentEdit1['data']['name'], 'Updated Test Sector - e1');
+
+        // edit
+        $responseEdit2 = $this->json(
+            'Patch',
+            'api/v1/sectors/' . $id,
+            [
+                'name' => 'Updated Test Sector - e2',
+                'enabled' => false,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseEdit2->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentEdit2 = $responseEdit2->decodeResponseJson();
+        $this->assertEquals($contentEdit2['data']['name'], 'Updated Test Sector - e2');
+        $this->assertEquals($contentEdit2['data']['enabled'], false);
+    }
+
+    /**
      * Tests it can delete a sector
      * 
      * @return void
