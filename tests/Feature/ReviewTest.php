@@ -327,13 +327,14 @@ class ReviewTest extends TestCase
                 'email' => 'just.test.123456789@test.com',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
-                'contact_feedback' => 1,
-                'contact_news' => 1,
                 'organisation' => 'Test Organisation',
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => 12345678,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234567,
             ],
             $this->header
         );
