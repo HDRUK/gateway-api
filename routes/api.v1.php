@@ -49,6 +49,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         Route::get('/' . $path . '/{id}', ['as' => $path . '.get.show', 'uses' => $controller . '@show'])->where('id', '[0-9]+');
         Route::post('/' . $path, ['as' => $path . '.post.store', 'uses' => $controller . '@store']);
         Route::put('/' . $path . '/{id}', ['as' => $path . '.put.update', 'uses' => $controller . '@update'])->where('id', '[0-9]+');
+        Route::patch('/' . $path . '/{id}', ['as' => $path . '.patch.update', 'uses' => $controller . '@edit'])->where('id', '[0-9]+');
         Route::delete('/' . $path . '/{id}', ['as' => $path . '.delete.destroy', 'uses' => $controller . '@destroy'])->where('id', '[0-9]+');
     }
 
@@ -58,30 +59,6 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     
     Route::post('/dispatch_email', 'EmailController@dispatchEmail');
     Route::post('/logout', 'LogoutController@logout');
-
-    $routesPatch = [
-        'tags' => 'TagController',
-        'features' => 'FeatureController',
-        'filters' => 'FilterController',
-        'dar-integrations' => 'DarIntegrationController',
-        'teams' => 'TeamController',
-        'tools' => 'ToolController',
-        'activity_logs' => 'ActivityLogController', //
-        'activity_log_types' => 'ActivityLogTypeController',
-        'activity_log_user_types' => 'ActivityLogUserTypeController',
-        'permissions' => 'PermissionController',
-        // 'users' => 'UserController',
-        'notifications' => 'NotificationController',
-        'reviews' => 'ReviewController',
-        'sectors' => 'SectorController',
-        'collections' => 'CollectionController',
-        'audit_logs' => 'AuditLogController',
-        'data_use_registers' => 'DataUseRegisterController',
-    ];
-
-    foreach ($routes as $path => $controller) {
-        Route::patch('/' . $path . '/{id}', ['as' => $path . '.patch.update', 'uses' => $controller . '@edit'])->where('id', '[0-9]+');
-    }
 });
 
 // stop all all other routes

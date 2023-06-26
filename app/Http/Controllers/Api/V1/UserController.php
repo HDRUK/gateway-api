@@ -19,11 +19,6 @@ class UserController extends Controller
 {
     use UserTransformation;
 
-    public function __construct()
-    {
-        //
-    }
-
     /**
      * @OA\Get(
      *    path="/api/v1/users",
