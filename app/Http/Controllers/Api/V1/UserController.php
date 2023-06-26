@@ -5,15 +5,15 @@ namespace App\Http\Controllers\Api\V1;
 use Hash;
 use Config;
 use Exception;
-
 use App\Models\User;
+use App\Http\Requests\User\GetUser;
 use App\Models\UserHasNotification;
-use App\Http\Requests\UserRequest;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UserLiteRequest;
+use App\Http\Requests\User\EditUser;
+use App\Http\Requests\User\CreateUser;
+use App\Http\Requests\User\DeleteUser;
+use App\Http\Requests\User\UpdateUser;
 use App\Http\Traits\UserTransformation;
-
-use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -48,10 +48,6 @@ class UserController extends Controller
      *       ),
      *    ),
      * )
-     * 
-     * Get All Users
-     *
-     * @return mixed
      */
     public function index(): mixed
     {
@@ -118,14 +114,8 @@ class UserController extends Controller
      *        )
      *    )
      * )
-     * 
-     * Get Permissions by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return mixed
      */
-    public function show(Request $request, int $id): mixed
+    public function show(GetUser $request, int $id): mixed
     {
         $users = User::where([
             'id' => $id,
@@ -189,13 +179,8 @@ class UserController extends Controller
      *        )
      *    )
      * )
-     * 
-     * Create a new user
-     *
-     * @param UserRequest $request
-     * @return mixed
      */
-    public function store(UserRequest $request): mixed
+    public function store(CreateUser $request): mixed
     {
         try {
             $input = $request->all();
@@ -299,23 +284,11 @@ class UserController extends Controller
      *        )
      *    )
      * )
-     * 
-     * Update user
-     *
-     * @param UserLiteRequest $request
-     * @param integer $id
-     * @return mixed
      */
-    public function update(UserLiteRequest $request, int $id): mixed
+    public function update(UpdateUser $request, int $id): mixed
     {
         try {
             $input = $request->all();
-
-            if (!$input) {
-                return response()->json([
-                    'message' => 'bad request',
-                ], 400);
-            }
 
             $user = User::findOrFail($id);
             if ($user) {
@@ -324,6 +297,8 @@ class UserController extends Controller
                     "firstname" => $input['firstname'],
                     "lastname" => $input['lastname'],
                     "email" => $input['email'],
+                    'provider' =>  Config::get('constants.provider.service'),
+                    'password' => Hash::make($input['password']),
                     "sector_id" => $input['sector_id'],
                     "organisation" => $input['organisation'],
                     "bio" => $input['bio'],
@@ -333,6 +308,99 @@ class UserController extends Controller
                     "contact_feedback" => $input['contact_feedback'],
                     "contact_news" => $input['contact_news'],  
                     'mongo_id' => $input['mongo_id'],                  
+                ];
+
+                $user->update($array);
+
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $user
+                ], 202);
+            }
+
+            return response()->json([
+                'message' => 'not found',
+            ], 404);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function edit(EditUser $request, int $id): mixed
+    {
+        try {
+            $input = $request->all();
+
+            $array = [];
+            if (array_key_exists('firstname', $input) && array_key_exists('lastname', $input)) {
+                $array['name'] = $input['firstname'] . " " . $input['lastname'];
+                $array['firstname'] = $input['firstname'];
+                $array['lastname'] = $input['lastname'];
+            }
+            
+            if (array_key_exists('email', $input)) {
+                $array['email'] = $input['email'];
+            }
+
+            if (array_key_exists('password', $input)) {
+                $array['password'] = Hash::make($input['password']);
+            }
+
+            if (array_key_exists('sector_id', $input)) {
+                $array['sector_id'] = $input['sector_id'];
+            }
+
+            if (array_key_exists('organisation', $input)) {
+                $array['organisation'] = $input['organisation'];
+            }
+
+            if (array_key_exists('bio', $input)) {
+                $array['bio'] = $input['bio'];
+            }
+
+            if (array_key_exists('domain', $input)) {
+                $array['domain'] = $input['domain'];
+            }
+
+            if (array_key_exists('link', $input)) {
+                $array['link'] = $input['link'];
+            }
+
+            if (array_key_exists('orcid', $input)) {
+                $array['orcid'] = $input['orcid'];
+            }
+
+            if (array_key_exists('contact_feedback', $input)) {
+                $array['contact_feedback'] = $input['contact_feedback'];
+            }
+
+            if (array_key_exists('contact_news', $input)) {
+                $array['contact_news'] = $input['contact_news'];
+            }
+
+            if (array_key_exists('mongo_id', $input)) {
+                $array['mongo_id'] = $input['mongo_id'];
+            }
+
+            User::withTrashed()->where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => User::withTrashed()->where('id', $id)->first(),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+
+
+
+        try {
+            $input = $request->all();
+
+            $user = User::findOrFail($id);
+            if ($user) {
+                $array = [
+                    'mongo_id' => $input['mongo_id'],
                 ];
 
                 $user->update($array);
@@ -400,23 +468,15 @@ class UserController extends Controller
      *    )
      * )
      */
-    public function destroy(int $id): mixed
+    public function destroy(DeleteUser $request, int $id): mixed
     {
         try {
-            $users = User::where('id', $id)->get();
-
-            if ($users) {
-                UserHasNotification::where('user_id', $id)->delete();
-                User::where('id', $id)->delete();
-
-                return response()->json([
-                    'message' => 'success',
-                ], 200);
-            }
+            UserHasNotification::where('user_id', $id)->delete();
+            User::where('id', $id)->delete();
 
             return response()->json([
-                'message' => 'not found',
-            ], 404);
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
