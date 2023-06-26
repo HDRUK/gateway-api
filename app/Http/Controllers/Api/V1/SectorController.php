@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Exception;
 use App\Models\Sector;
-
 use Illuminate\Http\Request;
-use App\Http\Requests\EditSector;
 use Illuminate\Http\JsonResponse;
-use App\Http\Requests\CreateSector;
-use App\Http\Requests\DeleteSector;
-use App\Http\Requests\UpdateSector;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Sector\GetSector;
+use App\Http\Requests\Sector\EditSector;
+use App\Http\Requests\Sector\CreateSector;
+use App\Http\Requests\Sector\DeleteSector;
+use App\Http\Requests\Sector\UpdateSector;
 use App\Http\Traits\RequestTransformation;
 
 class SectorController extends Controller
@@ -84,7 +84,7 @@ class SectorController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetSector $request, int $id): JsonResponse
     {
         $sector = Sector::findOrFail($id);
         if ($sector) {

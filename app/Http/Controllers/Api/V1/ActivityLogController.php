@@ -3,21 +3,23 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
+use Exception;
 use App\Models\ActivityLog;
-
 use Illuminate\Http\Request;
-
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Http\Requests\EditActivityLog;
-use App\Http\Requests\CreateActivityLog;
-use App\Http\Requests\DeleteActivityLog;
-use App\Http\Requests\UpdateActivityLog;
-use App\Exceptions\InternalServerErrorException;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\ActivityLog\GetActivityLog;
+use App\Http\Requests\ActivityLog\EditActivityLog;
+use App\Http\Requests\ActivityLog\CreateActivityLog;
+use App\Http\Requests\ActivityLog\DeleteActivityLog;
+use App\Http\Requests\ActivityLog\UpdateActivityLog;
 
 class ActivityLogController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * @OA\Get(
      *      path="/api/v1/activity_logs",
@@ -95,7 +97,7 @@ class ActivityLogController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetActivityLog $request, int $id): JsonResponse
     {
         $activityLog = ActivityLog::findOrFail($id);
         if ($activityLog) {
@@ -151,15 +153,28 @@ class ActivityLogController extends Controller
      */
     public function store(CreateActivityLog $request): JsonResponse
     {
-        $activityLog = ActivityLog::create($request->post());
-        if ($activityLog) {
+        try {
+            $input = $request->all();
+
+            $activityLog = ActivityLog::create([
+                'event_type' => $input['event_type'],
+                'user_type_id' => $input['user_type_id'],
+                'log_type_id' => $input['log_type_id'],
+                'user_id' => $input['user_id'],
+                'version' => $input['version'],
+                'html' => $input['html'],
+                'plain_text' => $input['plain_text'],
+                'user_id_mongo' => $input['user_id_mongo'],
+                'version_id_mongo' => $input['version_id_mongo'],
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $activityLog->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new InternalServerErrorException();
     }
 
     /**
@@ -226,30 +241,29 @@ class ActivityLogController extends Controller
      */
     public function update(UpdateActivityLog $request, int $id): JsonResponse
     {
-        $activityLog = ActivityLog::findOrFail($id);
-        $body = $request->post();
-        $activityLog->event_type = $body['event_type'];
-        $activityLog->user_type_id = $body['user_type_id'];
-        $activityLog->log_type_id = $body['log_type_id'];
-        $activityLog->user_id = $body['user_id'];
-        $activityLog->version = $body['version'];
-        $activityLog->html = $body['html'];
-        $activityLog->plain_text = $body['plain_text'];
-        $activityLog->user_id_mongo = (isset($body['user_id_mongo']) ? $body['user_id_mongo'] : null);
-        $activityLog->version_id_mongo = (isset($body['version_id_mongo']) ? $body['version_id_mongo'] : null);
+        try {
+            $input = $request->all();
 
-        if ($activityLog->save()) {
+            ActivityLog::where('id', $id)->update([
+                'event_type' => $input['event_type'],
+                'user_type_id' => $input['user_type_id'],
+                'log_type_id' => $input['log_type_id'],
+                'user_id' => $input['user_id'],
+                'version' => $input['version'],
+                'html' => $input['html'],
+                'plain_text' => $input['plain_text'],
+                'user_id_mongo' => $input['user_id_mongo'],
+                'version_id_mongo' => $input['version_id_mongo'],
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $activityLog,
+                'data' => ActivityLog::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            throw new InternalServerErrorException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new NotFoundException();
     }
-
 
     /**
      * @OA\Patch(
@@ -309,63 +323,34 @@ class ActivityLogController extends Controller
      *          )
      *      )
      * )
-     *
-     * @param EditActivityLog $request
-     * @param integer $id
-     * @return JsonResponse
      */
     public function edit(EditActivityLog $request, int $id): JsonResponse
     {
-        $activityLog = ActivityLog::findOrFail($id);
-        $body = $request->all();
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'event_type',
+                'user_type_id',
+                'log_type_id',
+                'user_id',
+                'version',
+                'html',
+                'plain_text',
+                'user_id_mongo',
+                'version_id_mongo',
+            ];
 
-        if (array_key_exists('event_type', $body)) {
-            $activityLog->event_type = $body['event_type'];
-        }
+            $array = $this->checkEditArray($input, $arrayKeys);
 
-        if (array_key_exists('user_type_id', $body)) {
-            $activityLog->user_type_id = $body['user_type_id'];
-        }
+            ActivityLog::where('id', $id)->update($array);
 
-        if (array_key_exists('log_type_id', $body)) {
-            $activityLog->log_type_id = $body['log_type_id'];
-        }
-
-        if (array_key_exists('user_id', $body)) {
-            $activityLog->user_id = $body['user_id'];
-        }
-
-        if (array_key_exists('version', $body)) {
-            $activityLog->version = $body['version'];
-        }
-
-        if (array_key_exists('html', $body)) {
-            $activityLog->html = $body['html'];
-        }
-
-        if (array_key_exists('plain_text', $body)) {
-            $activityLog->plain_text = $body['plain_text'];
-        }
-
-        if (array_key_exists('user_id_mongo', $body)) {
-            $activityLog->user_id_mongo = $body['user_id_mongo'];
-        }
-
-        if (array_key_exists('version_id_mongo', $body)) {
-            $activityLog->version_id_mongo = $body['version_id_mongo'];
-        }
-
-        if ($activityLog->save()) {
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'body' => $body,
-                'data' => $activityLog,
+                'data' => ActivityLog::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            throw new InternalServerErrorException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new NotFoundException();
     }
 
 
@@ -402,17 +387,14 @@ class ActivityLogController extends Controller
      */
     public function destroy(DeleteActivityLog $request, int $id): JsonResponse
     {
-        $activityLog = ActivityLog::findOrFail($id);
-        if ($activityLog) {
-            if ($activityLog->delete()) {
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
+        try {
+            ActivityLog::where('permission_id', $id)->delete();
 
-            throw new InternalServerErrorException();
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new NotFoundException();
     }
 }

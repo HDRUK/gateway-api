@@ -5,22 +5,23 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Exception;
 use Carbon\Carbon;
-
 use App\Models\AuditLog;
 use Illuminate\Http\Request;
-
 use Illuminate\Http\JsonResponse;
-
-use App\Http\Requests\EditAuditLog;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Http\Requests\CreateAuditLog;
-use App\Http\Requests\DeleteAuditLog;
-use App\Http\Requests\UpdateAuditLog;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\AuditLog\GetAuditLog;
+use App\Http\Requests\AuditLog\EditAuditLog;
+use App\Http\Requests\AuditLog\CreateAuditLog;
+use App\Http\Requests\AuditLog\DeleteAuditLog;
+use App\Http\Requests\AuditLog\UpdateAuditLog;
 use App\Exceptions\InternalServerErrorException;
 
 class AuditLogController extends Controller
 {
+    use RequestTransformation;
+
     /**
      * @OA\Get(
      *      path="/api/v1/audit_logs",
@@ -88,7 +89,7 @@ class AuditLogController extends Controller
      *      )
      * )
      */    
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetAuditLog $request, int $id): JsonResponse
     {
         $logs = AuditLog::findOrFail($id);
         if ($logs) {
@@ -277,31 +278,21 @@ class AuditLogController extends Controller
     public function edit(EditAuditLog $request, int $id): JsonResponse
     {
         try {
-            $log = AuditLog::findOrFail($id);
-            $body = $request->post();
+            $input = $request->all();
+            $arrayKeys = [
+                'user_id',
+                'description',
+                'function',
+            ];
 
-            $log->updated_at = Carbon::now();
+            $array = $this->checkEditArray($input, $arrayKeys);
 
-            if (array_key_exists('user_id', $body)) {
-                $log->user_id = $body['user_id'];
-            }
+            AuditLog::where('id', $id)->update($array);
 
-            if (array_key_exists('description', $body)) {
-                $log->description = $body['description'];
-            }
-
-            if (array_key_exists('function', $body)) {
-                $log->function = $body['function'];
-            }
-
-            if ($log->save()) {
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => $log,
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            } else {
-                throw new NotFoundException();
-            }
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => AuditLog::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

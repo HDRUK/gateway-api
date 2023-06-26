@@ -8,12 +8,13 @@ use App\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\EditPermission;
 use App\Models\TeamUserHasPermission;
-use App\Http\Requests\CreatePermission;
-use App\Http\Requests\DeletePermission;
-use App\Http\Requests\UpdatePermission;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\Permission\GetPermission;
+use App\Http\Requests\Permission\EditPermission;
+use App\Http\Requests\Permission\CreatePermission;
+use App\Http\Requests\Permission\DeletePermission;
+use App\Http\Requests\Permission\UpdatePermission;
 
 class PermissionController extends Controller
 {
@@ -114,7 +115,7 @@ class PermissionController extends Controller
      * )
      * 
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetPermission $request, int $id): JsonResponse
     {
         $tags = Permission::where([
             'id' => $id,

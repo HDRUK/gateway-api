@@ -6,28 +6,29 @@ use Config;
 
 use Tests\TestCase;
 
+use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AuditLogTest extends TestCase
 {
     use RefreshDatabase;
+    use Authorization;
 
-    private $accessToken = '';
+    const TEST_URL = '/api/v1/audit_logs';
+
+    protected $header = [];
 
     public function setUp() :void
     {
         parent::setUp();
 
         $this->seed();
-
-        $response = $this->postJson('api/v1/auth', [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
-        ]);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $content = $response->decodeResponseJson();
-        $this->accessToken = $content['access_token'];
+        $this->authorisationUser();
+        $jwt = $this->getAuthorisationJwt();
+        $this->header = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
     }
 
     /**
@@ -37,9 +38,12 @@ class AuditLogTest extends TestCase
      */
     public function test_the_application_can_list_audit_logs()
     {
-        $response = $this->get('api/v1/audit_logs', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->json(
+            'GET',
+            self::TEST_URL,
+            [],
+            $this->header,
+        );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -75,32 +79,33 @@ class AuditLogTest extends TestCase
      */
     public function test_the_application_can_list_a_single_audit_log()
     {
-        $response = $this->json(
+        $responseCreate = $this->json(
             'POST',
-            'api/v1/audit_logs',
+            self::TEST_URL,
             [
                 'user_id' => 1,
                 'description' => 'Test audit log description',
                 'function' => 'test_audit_log_creation',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header,
         );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
                 'data',
             ]);
 
-        $content = $response->decodeResponseJson();
+        $contentCreate = $responseCreate->decodeResponseJson();
 
-        $response = $this->get('api/v1/audit_logs/' . $content['data'], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $responseGet = $this->json(
+            'GET',
+            self::TEST_URL . '/' . $contentCreate['data'], 
+            [],
+            $this->header,
+        );
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        $responseGet->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
                     'id',
@@ -122,15 +127,13 @@ class AuditLogTest extends TestCase
     {
         $response = $this->json(
             'POST',
-            'api/v1/audit_logs',
+            self::TEST_URL,
             [
                 'user_id' => 1,
                 'description' => 'Test audit log description',
                 'function' => 'test_audit_log_creation',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header,
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -155,15 +158,13 @@ class AuditLogTest extends TestCase
         //create
         $responseCreate = $this->json(
             'POST',
-            'api/v1/audit_logs',
+            self::TEST_URL,
             [
                 'user_id' => 1,
                 'description' => 'Test audit log description',
                 'function' => 'test_audit_log_creation',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header,
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -180,14 +181,12 @@ class AuditLogTest extends TestCase
         // edit
         $responseEdit = $this->json(
             'PATCH',
-            'api/v1/audit_logs/' . $id,
+            self::TEST_URL . '/' . $id,
             [
                 'description' => 'Test audit log description edit',
                 'function' => 'test_audit_log_edit',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header,
         );
         $contentEdit = $responseEdit->decodeResponseJson();
         $this->assertEquals($contentEdit['data']['id'], $id);
@@ -207,15 +206,13 @@ class AuditLogTest extends TestCase
         // within this test case
         $response = $this->json(
             'POST',
-            'api/v1/audit_logs',
+            self::TEST_URL,
             [
                 'user_id' => 1,
                 'description' => 'Test audit log description',
                 'function' => 'test_audit_log_creation',                
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header,
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -233,15 +230,13 @@ class AuditLogTest extends TestCase
         // prove functionality
         $response = $this->json(
             'PUT',
-            'api/v1/audit_logs/' . $content['data'],
+            self::TEST_URL . '/' . $content['data'],
             [
                 'user_id' => 2,
                 'description' => 'Updated test audit log description',
                 'function' => 'test_audit_log_update',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header,
         );
 
         $content = $response->decodeResponseJson();
@@ -262,15 +257,13 @@ class AuditLogTest extends TestCase
         // within this test case
         $response = $this->json(
             'POST',
-            'api/v1/audit_logs',
+            self::TEST_URL,
             [
                 'user_id' => 1,
                 'description' => 'Test audit log description',
                 'function' => 'test_audit_log_for_deletion',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header,
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -288,11 +281,9 @@ class AuditLogTest extends TestCase
         // prove functionality
         $response = $this->json(
             'DELETE',
-            'api/v1/audit_logs/' . $content['data'],
+            self::TEST_URL . '/' . $content['data'],
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header,
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))

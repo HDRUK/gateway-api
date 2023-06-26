@@ -6,14 +6,15 @@ use Config;
 use Exception;
 use App\Models\Team;
 use Illuminate\Http\Request;
-use App\Http\Requests\EditTest;
-use App\Http\Requests\CreateTeam;
-use App\Http\Requests\DeleteTeam;
-use App\Http\Requests\UpdateTeam;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Team\GetTeam;
 use App\Models\TeamHasNotification;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Team\EditTeam;
 use App\Exceptions\NotFoundException;
+use App\Http\Requests\Team\CreateTeam;
+use App\Http\Requests\Team\DeleteTeam;
+use App\Http\Requests\Team\UpdateTeam;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
 
@@ -108,7 +109,7 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetTeam $request, int $id): JsonResponse
     {
         $team = Team::with('notifications')->where('id', $id)->firstOrFail();
 
@@ -389,7 +390,7 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function edit(EditTest $request, int $id): JsonResponse
+    public function edit(EditTeam $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();

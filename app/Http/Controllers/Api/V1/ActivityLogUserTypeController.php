@@ -3,19 +3,24 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\ActivityLogUserType;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Http\Requests\EditActivityLogUserType;
+use App\Http\Traits\RequestTransformation;
 use App\Exceptions\InternalServerErrorException;
-use App\Http\Requests\CreateActivityLogUserType;
-use App\Http\Requests\DeleteActivityLogUserType;
-use App\Http\Requests\UpdateActivityLogUserType;
+use App\Http\Requests\ActivityLogUserType\GetActivityLogUserType;
+use App\Http\Requests\ActivityLogUserType\CreateActivityLogUserType;
+use App\Http\Requests\ActivityLogUserType\DeleteActivityLogUserType;
+use App\Http\Requests\ActivityLogUserType\EditActivityLogUserType;
+use App\Http\Requests\ActivityLogUserType\UpdateActivityLogUserType;
 
 class ActivityLogUserTypeController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * @OA\Get(
      *      path="/api/v1/activity_log_user_types",
@@ -79,7 +84,7 @@ class ActivityLogUserTypeController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetActivityLogUserType $request, int $id): JsonResponse
     {
         $activityLogUserType = ActivityLogUserType::findOrFail($id);
         if ($activityLogUserType) {
@@ -189,10 +194,6 @@ class ActivityLogUserTypeController extends Controller
         $body = $request->post();
         $activityLogUserType->name = $body['name'];
 
-        if (array_key_exists('name', $body)) {
-            $activityLogUserType->name = $body['name'];
-        }
-
         if ($activityLogUserType->save()) {
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -203,7 +204,6 @@ class ActivityLogUserTypeController extends Controller
         }
 
         throw new NotFoundException();
-
     }
 
     /**
@@ -256,23 +256,23 @@ class ActivityLogUserTypeController extends Controller
      */
     public function edit(EditActivityLogUserType $request, int $id): JsonResponse
     {
-        $activityLogUserType = ActivityLogUserType::findOrFail($id);
-        $body = $request->post();
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'name',
+            ];
 
-        if (array_key_exists('name', $body)) {
-            $activityLogUserType->name = $body['name'];
-        }
+            $array = $this->checkEditArray($input, $arrayKeys);
 
-        if ($activityLogUserType->save()) {
+            ActivityLogUserType::where('id', $id)->update($array);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $activityLogUserType,
+                'data' => ActivityLogUserType::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            throw new InternalServerErrorException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new NotFoundException();
     }
 
     /**

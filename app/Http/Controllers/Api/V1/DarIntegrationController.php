@@ -8,11 +8,12 @@ use Illuminate\Http\Request;
 use App\Models\DarIntegration;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\EditDARIntegration;
 use App\Http\Traits\RequestTransformation;
-use App\Http\Requests\CreateDARIntegration;
-use App\Http\Requests\DeleteDARIntegration;
-use App\Http\Requests\UpdateDARIntegration;
+use App\Http\Requests\DarIntegration\GetDARIntegration;
+use App\Http\Requests\DarIntegration\EditDARIntegration;
+use App\Http\Requests\DarIntegration\CreateDARIntegration;
+use App\Http\Requests\DarIntegration\DeleteDARIntegration;
+use App\Http\Requests\DarIntegration\UpdateDARIntegration;
 
 class DarIntegrationController extends Controller
 {
@@ -108,7 +109,7 @@ class DarIntegrationController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetDARIntegration $request, int $id): JsonResponse
     {
         $dar = DarIntegration::findOrFail($id);
         if ($dar) {

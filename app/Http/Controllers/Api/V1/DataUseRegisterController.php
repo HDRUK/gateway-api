@@ -4,17 +4,21 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-use App\Exceptions\NotFoundException;
-
-use App\Models\DataUseRegister;
 use Illuminate\Http\Request;
-use App\Http\Requests\CreateDataUseRegisterRequest;
-use App\Http\Requests\UpdateDataUseRegisterRequest;
+use App\Models\DataUseRegister;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
+use App\Http\Requests\DataUseRegister\EditDataUseRegister;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\DataUseRegister\GetDataUseRegister;
+use App\Http\Requests\DataUseRegister\CreateDataUseRegister;
+use App\Http\Requests\DataUseRegister\DeleteDataUseRegister;
+use App\Http\Requests\DataUseRegister\UpdateDataUseRegister;
 
 class DataUseRegisterController extends Controller
 {
+    use RequestTransformation;
 
     /**
      * @OA\Get(
@@ -94,10 +98,6 @@ class DataUseRegisterController extends Controller
      *      ),
      *    ),
      * )
-     * 
-     * Get All DataUseRegisters
-     * @param Request $request
-     * @return JsonResponse
      */
 
      public function index(Request $request): JsonResponse
@@ -212,13 +212,8 @@ class DataUseRegisterController extends Controller
      *   )
      * )
      * 
-     * Get Data Use Registers by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return JsonResponse
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetDataUseRegister $request, int $id): JsonResponse
     {
         try {
             $data_use_registers = DataUseRegister::with(['team', 'user'])
@@ -302,13 +297,8 @@ class DataUseRegisterController extends Controller
      *       )
      *    )
      * )
-     * 
-     * Create a new data use register
-     *
-     * @param CreateDataUseRegisterRequest $request
-     * @return JsonResponse
      */
-    public function store(CreateDataUseRegisterRequest $request): JsonResponse
+    public function store(CreateDataUseRegister $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -394,11 +384,7 @@ class DataUseRegisterController extends Controller
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="message",
-     *             type="string",
-     *             example="success",
-     *          ),
+     *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
      *             property="data",
      *             type="array",
@@ -439,14 +425,8 @@ class DataUseRegisterController extends Controller
      *        )
      *    )
      * )
-     * 
-     * Update data use register
-     *
-     * @param UpdateDataUseRegisterRequest $request
-     * @param integer $id
-     * @return mixed
      */
-    public function update(UpdateDataUseRegisterRequest $request, int $id): mixed
+    public function update(UpdateDataUseRegister $request, int $id): mixed
     {
         try {
             $input = $request->all();
@@ -482,6 +462,137 @@ class DataUseRegisterController extends Controller
                 'message' => 'success',
                 'data' => DataUseRegister::where('id', $id)->first()
             ], 202);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *    path="/api/v1/data_use_registers",
+     *    operationId="edit_data_use_registers",
+     *    tags={"DataUseRegisters"},
+     *    summary="DataUseRegisterController@edit",
+     *    description="Edit data use register",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="counter", type="integer", example="1"),
+     *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="dataset_ids", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="gateway_dataset_ids", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="non_gateway_dataset_ids", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="gateway_applicants", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="non_gateway_applicants", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="funders_and_sponsors", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="other_approval_committees", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="gateway_output_tools", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="gateway_output_papers", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="non_gateway_outputs", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="project_title", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="project_id_text", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="organisation_name", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="organisation_sector", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="lay_summary", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="latest_approval_date", type="datetime", example="2023-04-11 12:00:00"),
+     *             @OA\Property(property="enabled", type="boolean", example="false"),
+     *             @OA\Property(property="team_id", type="integer", example="1"), 
+     *             @OA\Property(property="user_id", type="integer", example="1"),
+     *             @OA\Property(property="last_activity", type="datetime", example="2023-04-11 12:00:00"),
+     *             @OA\Property(property="manual_upload", type="boolean", example="false"),
+     *             @OA\Property(property="rejection_reason", type="string", example="Sit quisquam est recusandae."),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success"),
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=400,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="bad request"),
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Error response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource not found"),
+     *       )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
+     * )
+     */
+    public function edit(EditDataUseRegister $request, int $id): mixed
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'counter',
+                'keywords',
+                'dataset_ids',
+                'gateway_dataset_ids',
+                'non_gateway_dataset_ids',
+                'gateway_applicants',
+                'non_gateway_applicants',
+                'funders_and_sponsors',
+                'other_approval_committees',
+                'gateway_output_tools',
+                'gateway_output_papers',
+                'non_gateway_outputs',
+                'project_title',
+                'project_id_text',
+                'organisation_name',
+                'organisation_sector',
+                'lay_summary',
+                'latest_approval_date',
+                'enabled',
+                'team_id',
+                'user_id',
+                'last_activity',
+                'manual_upload',
+                'rejection_reason',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            DataUseRegister::where('id', $id)->update($array);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => DataUseRegister::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -536,22 +647,14 @@ class DataUseRegisterController extends Controller
      *    )
      * )
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(DeleteDataUseRegister $request, int $id): JsonResponse
     {
         try {
-            $data_use_registers = DataUseRegister::where('id', $id)->get();
-
-            if ($data_use_registers) {
-                DataUseRegister::where('id', $id)->delete();
-
-                return response()->json([
-                    'message' => 'success',
-                ], 200);
-            }
+            DataUseRegister::where('id', $id)->delete();
 
             return response()->json([
-                'message' => 'not found',
-            ], 404);
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

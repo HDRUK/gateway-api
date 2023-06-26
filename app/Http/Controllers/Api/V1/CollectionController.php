@@ -4,18 +4,17 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-
 use App\Models\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-
-use App\Http\Requests\EditCollection;
-use App\Http\Requests\CreateCollection;
-use App\Http\Requests\DeleteCollection;
-use App\Http\Requests\UpdateCollection;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\Collection\GetCollection;
+use App\Http\Requests\Collection\EditCollection;
+use App\Http\Requests\Collection\CreateCollection;
+use App\Http\Requests\Collection\DeleteCollection;
+use App\Http\Requests\Collection\UpdateCollection;
 
 class CollectionController extends Controller
 {
@@ -57,8 +56,6 @@ class CollectionController extends Controller
      *       )
      *    )
      * )
-     *
-     * @return JsonResponse
      */
     public function index(): JsonResponse
     {
@@ -112,14 +109,8 @@ class CollectionController extends Controller
      *       ),
      *    ),
      * )
-     * 
-     * Get Collections by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return JsonResponse
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetCollection $request, int $id): JsonResponse
     {
         try {
             $collections = Collection::where(['id' => $id])
@@ -185,11 +176,6 @@ class CollectionController extends Controller
      *       )
      *    )
      * )
-     * 
-     * Create a new collection
-     *
-     * @param CreateCollection $request
-     * @return JsonResponse
      */
     public function store(CreateCollection $request): JsonResponse
     {
@@ -284,10 +270,6 @@ class CollectionController extends Controller
      *          )
      *      )
      * )
-     *
-     * @param UpdateCollection $request
-     * @param integer $id
-     * @return JsonResponse
      */
     public function update(UpdateCollection $request, int $id): JsonResponse
     {
@@ -382,17 +364,14 @@ class CollectionController extends Controller
      *          )
      *      )
      * )
-     *
-     * @param EditCollection $request
-     * @param integer $id
-     * @return JsonResponse
      */
     public function edit(EditCollection $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
 
-            $array = $this->checkEditArray($input, ['name', 'description', 'image_link', 'enabled', 'keywords', 'public', 'counter']);
+            $arrayKeys = ['name', 'description', 'image_link', 'enabled', 'keywords', 'public', 'counter'];
+            $array = $this->checkEditArray($input, $arrayKeys);
 
             Collection::where('id', $id)->update($array);
 
@@ -445,9 +424,6 @@ class CollectionController extends Controller
      *       )
      *    )
      * )
-     *
-     * @param integer $id
-     * @return JsonResponse
      */
     public function destroy(DeleteCollection $request, int $id): JsonResponse
     {

@@ -10,11 +10,12 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\EditNotification;
-use App\Http\Requests\CreateNotification;
-use App\Http\Requests\DeleteNotification;
-use App\Http\Requests\UpdateNotification;
+use App\Http\Requests\Notification\EditNotification;
+use App\Http\Requests\Notification\CreateNotification;
+use App\Http\Requests\Notification\DeleteNotification;
+use App\Http\Requests\Notification\UpdateNotification;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\Notification\GetNotification;
 
 class NotificationController extends Controller
 {
@@ -90,7 +91,7 @@ class NotificationController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetNotification $request, int $id): JsonResponse
     {
         $notification = Notification::findOrFail($id);
         if ($notification) {

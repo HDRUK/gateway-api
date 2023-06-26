@@ -7,12 +7,13 @@ use Config;
 use Exception;
 use App\Models\Filter;
 use Illuminate\Http\Request;
-use App\Http\Requests\EditFilter;
 use Illuminate\Http\JsonResponse;
-use App\Http\Requests\CreateFilter;
-use App\Http\Requests\DeleteFilter;
-use App\Http\Requests\UpdateFilter;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Filter\GetFilter;
+use App\Http\Requests\Filter\EditFilter;
+use App\Http\Requests\Filter\CreateFilter;
+use App\Http\Requests\Filter\DeleteFilter;
+use App\Http\Requests\Filter\UpdateFilter;
 use App\Http\Traits\RequestTransformation;
 
 class FilterController extends Controller
@@ -88,7 +89,7 @@ class FilterController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetFilter $request, int $id): JsonResponse
     {
         $filter = Filter::findOrFail($id);
         if ($filter) {

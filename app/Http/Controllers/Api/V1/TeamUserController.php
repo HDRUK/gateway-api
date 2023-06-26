@@ -9,9 +9,9 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Models\TeamUserHasPermission;
-use App\Http\Requests\CreateTeamUserRequest;
-use App\Http\Requests\DeleteTeamUserRequest;
-use App\Http\Requests\UpdateTeamUserRequest;
+use App\Http\Requests\TeamUser\CreateTeamUser;
+use App\Http\Requests\TeamUser\DeleteTeamUser;
+use App\Http\Requests\TeamUser\UpdateTeamUser;
 
 class TeamUserController extends Controller
 {
@@ -82,12 +82,8 @@ class TeamUserController extends Controller
      *        )
      *    )
      * )
-     *
-     * @param CreateTeamUserRequest $request
-     * @param integer $teamId
-     * @return JsonResponse
      */
-    public function store(CreateTeamUserRequest $request, int $teamId): JsonResponse
+    public function store(CreateTeamUser $request, int $teamId): JsonResponse
     {
         try {
             $input = $request->all();
@@ -187,13 +183,8 @@ class TeamUserController extends Controller
      *        )
      *    )
      * )
-     *
-     * @param UpdateTeamUserRequest $request
-     * @param integer $teamId
-     * @param integer $userId
-     * @return JsonResponse
      */
-    public function update(UpdateTeamUserRequest $request, int $teamId, int $userId): JsonResponse
+    public function update(UpdateTeamUser $request, int $teamId, int $userId): JsonResponse
     {
         try {
             $input = $request->all();
@@ -267,13 +258,8 @@ class TeamUserController extends Controller
      *        )
      *    )
      * )
-     * 
-     * @param DeleteTeamUserRequest $request
-     * @param integer $teamId
-     * @param integer $userId
-     * @return JsonResponse
      */
-    public function destroy(DeleteTeamUserRequest $request, int $teamId, int $userId): JsonResponse
+    public function destroy(DeleteTeamUser $request, int $teamId, int $userId): JsonResponse
     {
         try {
             $teamHasUsers = TeamHasUser::where([

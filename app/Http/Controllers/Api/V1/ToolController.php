@@ -7,12 +7,13 @@ use Exception;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
 use Illuminate\Http\Request;
-use App\Http\Requests\EditTool;
-use App\Http\Requests\CreateTool;
-use App\Http\Requests\DeleteTool;
-use App\Http\Requests\UpdateTool;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Tool\GetTool;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tool\EditTool;
+use App\Http\Requests\Tool\CreateTool;
+use App\Http\Requests\Tool\DeleteTool;
+use App\Http\Requests\Tool\UpdateTool;
 use App\Http\Traits\RequestTransformation;
 
 class ToolController extends Controller
@@ -92,7 +93,7 @@ class ToolController extends Controller
      *    )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetTool $request, int $id): JsonResponse
     {
         $tags = Tool::with(['user', 'tag'])->where([
             'id' => $id,

@@ -4,17 +4,16 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-
 use App\Models\Feature;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Http\Requests\EditFeature;
-
 use App\Http\Controllers\Controller;
-use App\Http\Requests\CreateFeature;
-use App\Http\Requests\DeleteFeature;
-use App\Http\Requests\UpdateFeature;
+use App\Http\Requests\Feature\GetFeature;
+use App\Http\Requests\Feature\EditFeature;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\Feature\CreateFeature;
+use App\Http\Requests\Feature\DeleteFeature;
+use App\Http\Requests\Feature\UpdateFeature;
 
 class FeatureController extends Controller
 {
@@ -105,7 +104,7 @@ class FeatureController extends Controller
      *    )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetFeature $request, int $id): JsonResponse
     {
         $features = Feature::where([
             'id' =>  $id,

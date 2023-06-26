@@ -4,17 +4,16 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-
 use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Http\Requests\CreateReview;
-use App\Http\Requests\DeleteReview;
-
-use App\Http\Requests\UpdateReview;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Http\Requests\EditReview;
+use App\Http\Requests\Review\GetReview;
+use App\Http\Requests\Review\EditReview;
+use App\Http\Requests\Review\CreateReview;
+use App\Http\Requests\Review\DeleteReview;
+use App\Http\Requests\Review\UpdateReview;
 use App\Http\Traits\RequestTransformation;
 
 class ReviewController extends Controller
@@ -85,10 +84,6 @@ class ReviewController extends Controller
      *      ),
      *    ),
      * )
-     * 
-     * Get All Reviews
-     *
-     * @return JsonResponse
      */
 
     public function index(): JsonResponse
@@ -184,14 +179,8 @@ class ReviewController extends Controller
      *       ),
      *    ),
      * )
-     * 
-     * Get Reviews by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return JsonResponse
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetReview $request, int $id): JsonResponse
     {
         try {
             $reviews = Review::with(['tool', 'user'])

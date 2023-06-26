@@ -6,12 +6,13 @@ use Config;
 use Exception;
 use App\Models\Tag;
 use Illuminate\Http\Request;
-use App\Http\Requests\EditTag;
-use App\Http\Requests\CreateTag;
-use App\Http\Requests\DeleteTag;
-use App\Http\Requests\UpdateTag;
+use App\Http\Requests\Tag\GetTag;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Tag\EditTag;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tag\CreateTag;
+use App\Http\Requests\Tag\DeleteTag;
+use App\Http\Requests\Tag\UpdateTag;
 use App\Http\Traits\RequestTransformation;
 
 class TagController extends Controller
@@ -50,10 +51,6 @@ class TagController extends Controller
      *       ),
      *    ),
      * )
-     * 
-     * Get All Tags
-     *
-     * @return JsonResponse
      */
     public function index(): JsonResponse
     {
@@ -114,14 +111,8 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Get Tags by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return JsonResponse
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetTag $request, int $id): JsonResponse
     {
         $tags = Tag::where([
             'id' => $id,
@@ -183,11 +174,6 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Create a new tag
-     *
-     * @param CreateTag $request
-     * @return JsonResponse
      */
     public function store(CreateTag $request): JsonResponse
     {
@@ -267,10 +253,6 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     *
-     * @param UpdateTag $request
-     * @param integer $id
-     * @return JsonResponse
      */
     public function update(UpdateTag $request, int $id): JsonResponse
     {
@@ -350,10 +332,6 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     *
-     * @param EditTag $request
-     * @param integer $id
-     * @return JsonResponse
      */
     public function edit(EditTag $request, int $id): JsonResponse
     {
@@ -426,10 +404,6 @@ class TagController extends Controller
      *          )
      *      )
      * )
-     * 
-     * @param DeleteTag $request
-     * @param string $id
-     * @return JsonResponse
      */
     public function destroy(DeleteTag $request, string $id): JsonResponse
     {
