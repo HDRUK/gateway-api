@@ -43,12 +43,14 @@ class LogoutController extends Controller
     {
         $jwt = $request->header('Authorization');
 
-        AuthorisationCode::where(['jwt' => $jwt])->delete();
+        if (AuthorisationCode::where(['jwt' => $jwt])->delete()) {
+            return response()->json([
+                'message' => 'OK',
+            ], 200);
+        }
 
-        $cookies = [
-            Cookie::forget('token'),
-        ];
-
-        return redirect()->away(env('GATEWAY_URL'))->withCookies($cookies);
+        return response()->json([
+            'message' => 'not found',
+        ], 404);
     }
 }
