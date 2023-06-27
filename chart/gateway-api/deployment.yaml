@@ -18,3 +18,4 @@ spec:
           ports:
             - containerPort: 8000
               name: gateway-api
+      dnsPolicy: ClusterFirst

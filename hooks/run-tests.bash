@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 
-kubectl exec -it gateway-api -- composer run phpstan
-kubectl exec -it gateway-api -- composer run pest
+POD=$(kubectl get pod -l app=gateway-api -o jsonpath="{.items[0].metadata.name}")
+
+kubectl exec -it $POD -- composer run phpstan
+kubectl exec -it $POD -- composer run pest
