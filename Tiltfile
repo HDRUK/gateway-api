@@ -53,7 +53,7 @@ docker_build(
     ]
 )
 
-k8s_yaml('chart/' + cfg.get('name') + '/' + cfg.get('name') + '.yaml')
+k8s_yaml('chart/' + cfg.get('name') + '/deployment.yaml')
 k8s_yaml('chart/' + cfg.get('name') + '/service.yaml')
 k8s_resource(
    cfg.get('name'),
