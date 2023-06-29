@@ -1677,31 +1677,55 @@
                                                     },
                                                     "name": {
                                                         "type": "string",
-                                                        "example": "expedita"
+                                                        "example": "Voluptas incidunt repellat animi. Sed ut beatae fugit ullam."
+                                                    },
+                                                    "app_id": {
+                                                        "type": "string",
+                                                        "example": "obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ3"
+                                                    },
+                                                    "client_id": {
+                                                        "type": "string",
+                                                        "example": "w8CLyeP8vhnPK1V0mJ8ubU7UHCVnK7Bm"
+                                                    },
+                                                    "logo": {
+                                                        "type": "string",
+                                                        "example": "hhttps:\\/\\/via.placeholder.com\\/640x480.png\\/0044ee?text=animals+harum"
                                                     },
                                                     "description": {
                                                         "type": "string",
-                                                        "example": "Quibusdam in ducimus eos est."
+                                                        "example": "Magni minima facilis quo soluta. Ab quasi quaerat doloremque. Sapiente asperiores nisi maiores ex quia velit."
                                                     },
-                                                    "image_link": {
-                                                        "type": "string",
-                                                        "example": "https:\\/\\/via.placeholder.com\\/640x480.png\\/003333?text=animals+iusto"
+                                                    "team_id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": "2"
                                                     },
                                                     "enabled": {
                                                         "type": "boolean",
-                                                        "example": "1"
+                                                        "example": "false"
                                                     },
-                                                    "keywords": {
-                                                        "type": "string",
-                                                        "example": "minus deserunt dolorum"
+                                                    "permissions": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
                                                     },
-                                                    "public": {
-                                                        "type": "boolean",
-                                                        "example": "0"
+                                                    "tags": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
                                                     },
-                                                    "counter": {
-                                                        "type": "integer",
-                                                        "example": "34319"
+                                                    "team": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "user": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
                                                     },
                                                     "created_at": {
                                                         "type": "string",
