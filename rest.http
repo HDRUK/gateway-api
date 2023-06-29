@@ -339,3 +339,11 @@ DELETE {{baseUrl}}/api/{{apiVersion}}/tags/2 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+
+### APPLICATIONS
+#### get all applications
+GET {{baseUrl}}/api/{{apiVersion}}/applications HTTP/1.1
+Content-Type: application/json
+
+

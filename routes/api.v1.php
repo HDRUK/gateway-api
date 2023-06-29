@@ -5,8 +5,8 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\TestController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\TeamUserController;
+use App\Http\Controllers\Api\V1\ApplicationController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
-use App\Http\Controllers\Api\V1\DataUseRegisterController;
 
 Route::get('/test', function() {
     return Response::json([
@@ -60,6 +60,12 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     Route::post('/dispatch_email', 'EmailController@dispatchEmail');
     Route::post('/logout', 'LogoutController@logout');
 });
+
+Route::get('/applications', [ApplicationController::class, 'index']);
+// Route::get('/applications/{id}', [ApplicationController::class, 'show'])->where('id', '[0-9]+');
+// Route::post('/applications', [ApplicationController::class, 'store']);
+// Route::put('/applications/{id}', [ApplicationController::class, 'update'])->where('id', '[0-9]+');
+// Route::delete('/v/{id}', [ApplicationController::class, 'destroy'])->where('id', '[0-9]+');
 
 // stop all all other routes
 Route::any('{path}', function() {

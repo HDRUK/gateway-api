@@ -1649,6 +1649,88 @@
                 ]
             }
         },
+        "/api/v1/applications": {
+            "get": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "ApplicationController@index",
+                "description": "Returns a list of applications",
+                "operationId": "fetch_all_applications",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "expedita"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "Quibusdam in ducimus eos est."
+                                                    },
+                                                    "image_link": {
+                                                        "type": "string",
+                                                        "example": "https:\\/\\/via.placeholder.com\\/640x480.png\\/003333?text=animals+iusto"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "keywords": {
+                                                        "type": "string",
+                                                        "example": "minus deserunt dolorum"
+                                                    },
+                                                    "public": {
+                                                        "type": "boolean",
+                                                        "example": "0"
+                                                    },
+                                                    "counter": {
+                                                        "type": "integer",
+                                                        "example": "34319"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/audit_logs": {
             "get": {
                 "tags": [
@@ -7750,6 +7832,38 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -11565,40 +11679,6 @@
         }
     },
     "components": {
-        "responses": {
-            "401": {
-                "description": "Unauthorized",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "properties": {
-                                "message": {
-                                    "type": "string",
-                                    "example": "unauthorized"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    }
-                }
-            },
-            "404": {
-                "description": "Not found response",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "properties": {
-                                "message": {
-                                    "type": "string",
-                                    "example": "not found"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",
