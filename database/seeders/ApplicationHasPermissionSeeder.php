@@ -2,20 +2,20 @@
 
 namespace Database\Seeders;
 
-use App\Models\AppHasPermission;
+use App\Models\ApplicationHasPermission;
 use App\Models\Permission;
-use App\Models\AppRegistration;
+use App\Models\Application;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class AppHasPermissionSeeder extends Seeder
+class ApplicationHasPermissionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $appIds = AppRegistration::all()->pluck('id')->toArray();
+        $appIds = Application::all()->pluck('id')->toArray();
         $permissionIds = Permission::all()->pluck('id')->toArray();
 
         $count = 0;
@@ -23,14 +23,14 @@ class AppHasPermissionSeeder extends Seeder
             $appId = $appIds[array_rand($appIds)];
             $permissionId = $permissionIds[array_rand($permissionIds)];
 
-            $appHasPermission = AppHasPermission::where([
-                'app_id' => $appId,
+            $appHasPermission = ApplicationHasPermission::where([
+                'application_id' => $appId,
                 'permission_id' => $permissionId,
             ])->first();
 
             if (!$appHasPermission) {
-                AppHasPermission::create([
-                    'app_id' => $appId,
+                ApplicationHasPermission::create([
+                    'application_id' => $appId,
                     'permission_id' => $permissionId,
                 ]);
                 // $count += 1;

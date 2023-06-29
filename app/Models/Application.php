@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class AppRegistration extends Model
+class Application extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
 
@@ -17,7 +17,7 @@ class AppRegistration extends Model
      * 
      * @var string
      */
-    protected $table = 'app_registrations';
+    protected $table = 'applications';
 
     protected $fillable = [
         'name',

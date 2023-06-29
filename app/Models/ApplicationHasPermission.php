@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AppHasTag extends Model
+class ApplicationHasPermission extends Model
 {
     use HasFactory;
 
@@ -14,7 +14,7 @@ class AppHasTag extends Model
      * 
      * @var string
      */
-    protected $table = 'app_has_tags';
+    protected $table = 'application_has_permissions';
 
     /**
      * Indicates if the model should be timestamped
@@ -24,7 +24,7 @@ class AppHasTag extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'app_id',
-        'tag_id',
+        'application_id',
+        'permission_id',
     ];
 }

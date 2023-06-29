@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('app_has_tags', function (Blueprint $table) {
+        Schema::create('application_has_tags', function (Blueprint $table) {
             $table->id();
 
-            $table->bigInteger('app_id')->unsigned();
+            $table->bigInteger('application_id')->unsigned();
             $table->bigInteger('tag_id')->unsigned();
 
-            $table->foreign('app_id')->references('id')->on('app_registrations');
+            $table->foreign('application_id')->references('id')->on('applications');
             $table->foreign('tag_id')->references('id')->on('tags');
 
-            $table->unique(['app_id', 'tag_id']);
+            $table->unique(['application_id', 'tag_id']);
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('app_has_tags');
+        Schema::dropIfExists('application_has_tags');
     }
 };
