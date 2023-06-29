@@ -40,6 +40,9 @@ class DatabaseSeeder extends Seeder
             CollectionSeerder::class,
             AuditLogSeeder::class,
             DataUseRegisterSeeder::class,
+            AppRegistrationSeeder::class,
+            AppHasTagSeeder::class,
+            AppHasPermissionSeeder::class,
         ]);
     }
 }

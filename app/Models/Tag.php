@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Tool;
-use App\Http\Enums\TagType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -47,7 +46,6 @@ class Tag extends Model
      * Specifically requests that Laravel casts the tiny ints as boolean
      */
     protected $casts = [
-        'type' => TagType::class,
         'enabled' => 'boolean',
     ];
 
