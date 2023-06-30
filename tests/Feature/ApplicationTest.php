@@ -164,7 +164,7 @@ class ApplicationTest extends TestCase
         $responseGet->assertStatus(200);
     }
 
-    public function test_get_application_create_application_with_success()
+    public function test_create_application_with_success()
     {
         $responseCreate = $this->json(
             'POST',
@@ -201,5 +201,81 @@ class ApplicationTest extends TestCase
             $contentCreate['message'],
             Config::get('statuscodes.STATUS_CREATED.message')
         );
+    }
+
+    public function test_update_application_with_success()
+    {
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'name' => 'Hello World',
+                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4',
+                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6S6digs',
+                'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam',
+                'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
+                'team_id' => 5,
+                'user_id' => 2,
+                'enabled' => true,
+                'tags' => [
+                    1,
+                    5,
+                ],
+                'permissions' => [
+                    1,
+                    2,
+                ],
+            ],
+            $this->header,
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals(
+            $contentCreate['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+
+        $id = $contentCreate['data'];
+
+        // update
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $id,
+            [
+                'name' => 'Hello World',
+                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyUpdate',
+                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate',
+                'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Update',
+                'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Update.',
+                'team_id' => 2,
+                'user_id' => 1,
+                'enabled' => false,
+                'tags' => [
+                    2,
+                    3,
+                ],
+                'permissions' => [
+                    2,
+                ],
+            ],
+            $this->header,
+        );
+
+        $responseUpdate->assertStatus(200);
+        $contentUpdate = $responseUpdate->decodeResponseJson();
+        $this->assertEquals($contentUpdate['data']['name'], 'Hello World');
+        $this->assertEquals($contentUpdate['data']['app_id'], 'obmWCcsccdxH5iHgLTJDZNXNkyUpdate');
+        $this->assertEquals($contentUpdate['data']['client_id'], 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate');
+        $this->assertEquals($contentUpdate['data']['image_link'], 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Update');
+        $this->assertEquals($contentUpdate['data']['team_id'], 2);
+        $this->assertEquals($contentUpdate['data']['user_id'], 1);
+        $this->assertEquals($contentUpdate['data']['enabled'], false);
     }
 }
