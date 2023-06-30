@@ -350,12 +350,13 @@ Content-Type: application/json
 #### get one application by id
 GET {{baseUrl}}/api/{{apiVersion}}/applications/2 HTTP/1.1
 Content-Type: application/json
-# Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{accessToken}}
 
 #### create application
 POST {{baseUrl}}/api/{{apiVersion}}/applications HTTP/1.1
 Content-Type: application/json
 Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 {
     "name": "Hello World",
@@ -374,7 +375,7 @@ Accept: application/json
 PUT {{baseUrl}}/api/{{apiVersion}}/applications/51 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-# Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{accessToken}}
 
 {
     "name": "Hello World Update",
@@ -393,7 +394,7 @@ Accept: application/json
 PATCH {{baseUrl}}/api/{{apiVersion}}/applications/51 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
-# Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{accessToken}}
 
 {
     "name": "Hello World PATCH",
@@ -402,3 +403,9 @@ Accept: application/json
     "image_link": "https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+PATCH",
     "description": "Praesentium ut et quae suscipit ut quo adipisci. PATCH."
 }
+
+#### delete application by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/applications/51 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}

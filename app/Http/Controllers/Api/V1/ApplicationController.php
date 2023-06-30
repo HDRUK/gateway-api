@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Js;
 use Config;
 use Exception;
 use App\Models\Application;
@@ -15,6 +14,7 @@ use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Application\GetApplication;
 use App\Http\Requests\Application\EditApplication;
 use App\Http\Requests\Application\CreateApplication;
+use App\Http\Requests\Application\DeleteApplication;
 use App\Http\Requests\Application\UpdateApplication;
 
 class ApplicationController extends Controller
@@ -402,10 +402,62 @@ class ApplicationController extends Controller
         }
     }
 
-    // public function destroy(Request $request, int $id): JsonResponse
-    // {
-    //     //
-    // }
+    /**
+     * @OA\Delete(
+     *    path="/api/v1/applications/{id}",
+     *    tags={"Application"},
+     *    summary="Delete application",
+     *    description="Delete application",
+     *    summary="ApplicationController@delete",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="application id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="application id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="not found")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="Success",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=500,
+     *       description="Error",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="error")
+     *       )
+     *    )
+     * )
+     */
+    public function destroy(DeleteApplication $request, int $id): JsonResponse
+    {
+        try {
+            Application::where('id', $id)->delete();
+            ApplicationHasTag::where('application_id', $id)->delete();
+            ApplicationHasPermission::where('application_id', $id)->delete();
+
+            return response()->json([
+                'message' => 'success',
+            ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 
     /**
      * Application has tags associated
