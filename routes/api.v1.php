@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\TestController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\TeamUserController;
-use App\Http\Controllers\Api\V1\ApplicationController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
 
 Route::get('/test', function() {
