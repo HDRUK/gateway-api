@@ -62,8 +62,8 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
 });
 
 Route::get('/applications', [ApplicationController::class, 'index']);
-// Route::get('/applications/{id}', [ApplicationController::class, 'show'])->where('id', '[0-9]+');
-// Route::post('/applications', [ApplicationController::class, 'store']);
+Route::get('/applications/{id}', [ApplicationController::class, 'show'])->where('id', '[0-9]+');
+Route::post('/applications', [ApplicationController::class, 'store']);
 // Route::put('/applications/{id}', [ApplicationController::class, 'update'])->where('id', '[0-9]+');
 // Route::delete('/v/{id}', [ApplicationController::class, 'destroy'])->where('id', '[0-9]+');
 

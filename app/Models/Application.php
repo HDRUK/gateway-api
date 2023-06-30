@@ -29,7 +29,7 @@ class Application extends Model
         'name',
         'app_id',
         'client_id',
-        'logo',
+        'image_link',
         'description',
         'team_id',
         'user_id',

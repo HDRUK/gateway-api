@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('name', 255);
             $table->string('app_id', 255);
             $table->string('client_id', 255);
-            $table->string('logo', 255)->nullable();
-            $table->text('description')->nullable();
+            $table->string('image_link', 255);
+            $table->text('description');
             $table->bigInteger('team_id')->unsigned();
             $table->bigInteger('user_id')->unsigned();
             $table->boolean('enabled')->default(1);

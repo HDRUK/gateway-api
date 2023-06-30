@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Config;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -55,7 +56,7 @@ class ApplicationTest extends TestCase
                     'name',
                     'app_id',
                     'client_id',
-                    'logo',
+                    'image_link',
                     'description',
                     'team_id',
                     'user_id',
@@ -83,5 +84,122 @@ class ApplicationTest extends TestCase
             'total',
         ]);
         $response->assertStatus(200);
+    }
+
+    /**
+     * Get Application by Id with success
+     * 
+     * @return void
+     */
+    public function test_get_application_by_id_with_success(): void
+    {
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'name' => 'Hello World',
+                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4',
+                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6S6digs',
+                'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam',
+                'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
+                'team_id' => 5,
+                'user_id' => 2,
+                'enabled' => true,
+                'tags' => [
+                    1,
+                    5,
+                ],
+                'permissions' => [
+                    1,
+                    2,
+                ],
+            ],
+            $this->header,
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals(
+            $contentCreate['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+
+        $id = $contentCreate['data'];
+
+        // get by id
+        $responseGet = $this->json(
+            'GET', 
+            self::TEST_URL . '/' . $id, 
+            [], 
+            $this->header,
+        );
+
+        $responseGet->assertJsonStructure([
+            'message',
+            'data' => [
+                'id',
+                'name',
+                'app_id',
+                'client_id',
+                'image_link',
+                'description',
+                'team_id',
+                'user_id',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'permissions',
+                'tags',
+                'team',
+                'user',
+            ],
+        ]);
+        $responseGet->assertStatus(200);
+    }
+
+    public function test_get_application_create_application_with_success()
+    {
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'name' => 'Hello World',
+                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4',
+                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6S6digs',
+                'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam',
+                'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
+                'team_id' => 5,
+                'user_id' => 2,
+                'enabled' => true,
+                'tags' => [
+                    1,
+                    5,
+                ],
+                'permissions' => [
+                    1,
+                    2,
+                ],
+            ],
+            $this->header,
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals(
+            $contentCreate['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
     }
 }

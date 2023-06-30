@@ -345,5 +345,27 @@ Authorization: Bearer {{accessToken}}
 #### get all applications
 GET {{baseUrl}}/api/{{apiVersion}}/applications HTTP/1.1
 Content-Type: application/json
+# Authorization: Bearer {{accessToken}}
 
+#### get one application by id
+GET {{baseUrl}}/api/{{apiVersion}}/applications/2 HTTP/1.1
+Content-Type: application/json
+# Authorization: Bearer {{accessToken}}
 
+#### create a new application
+POST {{baseUrl}}/api/{{apiVersion}}/applications HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "Hello World",
+    "app_id": "obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4",
+    "client_id": "iem4i3geb1FxehvvQBlSOZ2A6S6digs",
+    "image_link": "https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam",
+    "description": "Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.",
+    "team_id": 5,
+    "user_id": 2,
+    "enabled": true,
+    "tags": [1,5],
+    "permissions": [1,2]
+}
