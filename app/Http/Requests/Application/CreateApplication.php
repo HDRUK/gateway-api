@@ -39,10 +39,12 @@ class CreateApplication extends BaseFormRequest
             ],
             'team_id' => [
                 'required',
+                'integer',
                 'exists:teams,id',
             ],
             'user_id' => [
                 'required',
+                'integer',
                 'exists:users,id',
             ],
             'enabled' => [

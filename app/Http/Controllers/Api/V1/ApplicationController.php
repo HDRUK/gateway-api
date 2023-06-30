@@ -2,21 +2,25 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Js;
 use Config;
 use Exception;
 use App\Models\Application;
 use Illuminate\Http\Request;
+use App\Models\ApplicationHasTag;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Application\CreateApplication;
-use App\Http\Requests\Application\GetApplication;
-use App\Http\Requests\Application\UpdateApplication;
 use App\Models\ApplicationHasPermission;
-use App\Models\ApplicationHasTag;
-use Js;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\Application\GetApplication;
+use App\Http\Requests\Application\EditApplication;
+use App\Http\Requests\Application\CreateApplication;
+use App\Http\Requests\Application\UpdateApplication;
 
 class ApplicationController extends Controller
 {
+    use RequestTransformation;
+    
     public function __construct()
     {
         //
@@ -79,12 +83,12 @@ class ApplicationController extends Controller
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
-     *       description="collection id",
+     *       description="application id",
      *       required=true,
      *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="collection id",
+     *          description="application id",
      *       ),
      *    ),
      *    @OA\Response(
@@ -133,14 +137,14 @@ class ApplicationController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/applications",
-     *    summary="Create a new application",
-     *    description="Creates a new application",
+     *    summary="Create application",
+     *    description="Creates application",
      *    tags={"Application"},
      *    summary="ApplicationController@store",
      *    security={{"bearerAuth":{}}},
      *    @OA\RequestBody(
      *        required=true,
-     *        description="ActivityLog definition",
+     *        description="Application definition",
      *        @OA\JsonContent(
      *            required={"name", "app_id", "client_id", "image_link", "description", "team_id", "user_id", "enabled", "tags", "permissions"},
      *            @OA\Property(property="name", type="string", example="Corrupti in a voluptas. Eligendi saepe sed sit."),
@@ -211,12 +215,12 @@ class ApplicationController extends Controller
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
-     *       description="collection id",
+     *       description="application id",
      *       required=true,
      *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="collection id",
+     *          description="application id",
      *       ),
      *    ),
      *    @OA\RequestBody(
@@ -293,17 +297,110 @@ class ApplicationController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => Application::where('id', $id)->first()
+                'data' => Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first()
             ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
 
-    // public function edit(Request $request, int $id): JsonResponse
-    // {
-    //     //
-    // }
+    /**
+     * @OA\Patch(
+     *    path="/api/v1/applications/{id}",
+     *    tags={"Application"},
+     *    summary="Edit application",
+     *    description="Edit application",
+     *    summary="ApplicationController@edit",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="application id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="application id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *        required=true,
+     *        description="ActivityLog definition",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="name", type="string", example="Corrupti in a voluptas. Eligendi saepe sed sit."),
+     *            @OA\Property(property="app_id", type="string", example="obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4"),
+     *            @OA\Property(property="client_id", type="string", example="iem4i3geb1FxehvvQBlSOZ2A6S6digs"),
+     *            @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam"),
+     *            @OA\Property(property="description", type="string", example="Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. "),
+     *            @OA\Property(property="team_id", type="integer", example="1"),
+     *            @OA\Property(property="user_id", type="integer", example="2"),
+     *            @OA\Property(property="enabled", type="boolean", example="false"),
+     *            @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
+     *            @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
+     *        ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="not found")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=200,
+     *        description="Success",
+     *        @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(
+     *                 property="data", type="object",
+     *                 @OA\Property(property="name", type="string", example="covid"),
+     *                 @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
+     *                 @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
+     *                 @OA\Property(property="enabled", type="boolean", example="true"),
+     *                 @OA\Property(property="keywords", type="string", example="key words"),
+     *                 @OA\Property(property="public", type="boolean", example="true"),
+     *                 @OA\Property(property="counter", type="integer", example="123"),
+     *                 @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                 @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                 @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
+     *              ),
+     *        ),
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error")
+     *        )
+     *    )
+     * )
+     */
+    public function edit(EditApplication $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+
+            $arrayKeys = ['name', 'app_id', 'client_id', 'image_link', 'description', 'team_id', 'user_id', 'enabled'];
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Application::where('id', $id)->update($array);
+
+            if (array_key_exists('tags', $input)) {
+                $this->applicationHasTags((int) $id, $input['tags']);
+            }
+
+            if (array_key_exists('permissions', $input)) {
+                $this->applicationHasPermissions((int) $id, $input['permissions']);
+            }
+            
+            return response()->json([
+                'message' => 'success',
+                'data' => Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first()
+            ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 
     // public function destroy(Request $request, int $id): JsonResponse
     // {

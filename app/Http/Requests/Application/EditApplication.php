@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\Application;
 
-use App\Http\Requests\BaseFormRequest;
 use App\Models\Application;
+use App\Http\Requests\BaseFormRequest;
 
-class UpdateApplication extends BaseFormRequest
+class EditApplication extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -15,18 +15,16 @@ class UpdateApplication extends BaseFormRequest
     public function rules(): array
     {
         $id = $this->route('id');
-        
+
         return [
             'id' => [
                 'required',
                 'exists:applications,id',
             ],
             'name' => [
-                'required',
                 'string',
             ],
             'app_id' => [
-                'required',
                 'string',
                 function ($attribute, $value, $fail) use ($id) {
                     $exists = Application::withTrashed()->where('app_id', $value)->where('id', '<>', $id)->count();
@@ -37,7 +35,6 @@ class UpdateApplication extends BaseFormRequest
                 },
             ],
             'client_id' => [
-                'required',
                 'string',
                 function ($attribute, $value, $fail) use ($id) {
                     $exists = Application::withTrashed()->where('client_id', $value)->where('id', '<>', $id)->count();
@@ -48,44 +45,35 @@ class UpdateApplication extends BaseFormRequest
                 },
             ],
             'image_link' => [
-                'required',
                 'string',
                 'url',
             ],
             'description' => [
-                'required',
                 'string',
             ],
             'team_id' => [
-                'required',
                 'integer',
                 'exists:teams,id',
             ],
             'user_id' => [
-                'required',
                 'integer',
                 'exists:users,id',
             ],
             'enabled' => [
-                'required',
                 'boolean',
             ],
             'tags' => [
-                'present',
                 'array',
             ],
             'tags.*'  => [
-                'required',
                 'integer',
                 'distinct',
                 'exists:tags,id',
             ],
             'permissions' => [
-                'present',
                 'array',
             ],
             'permissions.*'  => [
-                'required',
                 'integer',
                 'distinct',
                 'exists:permissions,id',
