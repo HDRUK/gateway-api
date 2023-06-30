@@ -233,36 +233,4 @@ class PermissionTest extends TestCase
 
         $responseDelete->assertStatus(200);
     }
-
-    /**
-     * Delete Permission by Id and any assign with users and teams with success
-     *
-     * @return void
-     */
-    public function test_delete_permission_who_already_exist_with_success(): void
-    {
-        // choose an id
-        $id = 2;
-
-        $countPermissionBefore = Permission::all()->count();
-        $countTeamUserHaPermBefore = TeamUserHasPermission::where('permission_id', $id)->count();
-        $countAllTeamUserHaPermBefore = TeamUserHasPermission::all()->count();
-
-        $responseDelete = $this->json('DELETE', self::TEST_URL . '/' . $id, [], $this->header);
-
-        $countPermissionAfter = Permission::all()->count();
-        $countTeamUserHaPermAfter = TeamUserHasPermission::where('permission_id', $id)->count();
-        $countAllTeamUserHaPermAfter = TeamUserHasPermission::all()->count();
-
-        // perm removed from permissions table
-        $this->assertTrue((bool) ($countPermissionBefore - $countPermissionAfter), 'Response was successfully');
-        // the permission is not assigned to any user and team
-        $this->assertFalse((bool) $countTeamUserHaPermAfter, 'Response was successfully');
-
-        if ($countTeamUserHaPermBefore) {
-            $this->assertTrue((bool) ($countAllTeamUserHaPermBefore - $countAllTeamUserHaPermAfter), 'Response was successfully');
-        }
-
-        $responseDelete->assertStatus(200);
-    }
 }

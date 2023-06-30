@@ -42,7 +42,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'collections' => 'CollectionController',
         'audit_logs' => 'AuditLogController',
         'data_use_registers' => 'DataUseRegisterController',
-        // 'applications' => 'ApplicationController',
+        'applications' => 'ApplicationController',
     ];
 
     foreach ($routes as $path => $controller) {
