@@ -25,30 +25,7 @@ class UpdateApplication extends BaseFormRequest
                 'required',
                 'string',
             ],
-            'app_id' => [
-                'required',
-                'string',
-                function ($attribute, $value, $fail) use ($id) {
-                    $exists = Application::withTrashed()->where('app_id', $value)->where('id', '<>', $id)->count();
-
-                    if ($exists) {
-                        $fail('The selected app_id already exist.');
-                    }
-                },
-            ],
-            'client_id' => [
-                'required',
-                'string',
-                function ($attribute, $value, $fail) use ($id) {
-                    $exists = Application::withTrashed()->where('client_id', $value)->where('id', '<>', $id)->count();
-
-                    if ($exists) {
-                        $fail('The selected client_id already exist.');
-                    }
-                },
-            ],
             'image_link' => [
-                'required',
                 'string',
                 'url',
             ],
@@ -71,21 +48,17 @@ class UpdateApplication extends BaseFormRequest
                 'boolean',
             ],
             'tags' => [
-                'present',
                 'array',
             ],
             'tags.*'  => [
-                'required',
                 'integer',
                 'distinct',
                 'exists:tags,id',
             ],
             'permissions' => [
-                'present',
                 'array',
             ],
             'permissions.*'  => [
-                'required',
                 'integer',
                 'distinct',
                 'exists:permissions,id',

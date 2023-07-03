@@ -1767,18 +1767,6 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "name",
-                                    "app_id",
-                                    "client_id",
-                                    "image_link",
-                                    "description",
-                                    "team_id",
-                                    "user_id",
-                                    "enabled",
-                                    "tags",
-                                    "permissions"
-                                ],
                                 "properties": {
                                     "name": {
                                         "type": "string",

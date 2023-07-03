@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
+use Hash;
 use App\Models\Application;
 use Illuminate\Http\Request;
 use App\Models\ApplicationHasTag;
@@ -65,7 +66,12 @@ class ApplicationController extends Controller
      */
     public function index(): JsonResponse
     {
-        $applications = Application::with(['permissions', 'tags', 'team', 'user'])->paginate(Config::get('constants.per_page'));
+        $applications = Application::with(['permissions', 'tags', 'team', 'user'])
+            ->paginate(Config::get('constants.per_page'));
+
+        $applications->getCollection()->each(function ($application) {
+            $application->makeHidden(['client_secret']);
+        });
 
         return response()->json(
             $applications
@@ -124,11 +130,13 @@ class ApplicationController extends Controller
     public function show(GetApplication $request, int $id): JsonResponse
     {
         try {
+            $application = Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first();
+            $application->makeHidden(['client_secret']);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first(),
+                'data' => $application,
             ], Config::get('statuscodes.STATUS_OK.code'));
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -146,7 +154,6 @@ class ApplicationController extends Controller
      *        required=true,
      *        description="Application definition",
      *        @OA\JsonContent(
-     *            required={"name", "app_id", "client_id", "image_link", "description", "team_id", "user_id", "enabled", "tags", "permissions"},
      *            @OA\Property(property="name", type="string", example="Corrupti in a voluptas. Eligendi saepe sed sit."),
      *            @OA\Property(property="app_id", type="string", example="obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4"),
      *            @OA\Property(property="client_id", type="string", example="iem4i3geb1FxehvvQBlSOZ2A6S6digs"),
@@ -181,23 +188,40 @@ class ApplicationController extends Controller
         try {
             $input = $request->all();
 
-            $application = Application::create([
+            $appId = fake()->regexify('[A-Za-z0-9]{32}');
+            $clientId = fake()->regexify('[A-Za-z0-9]{32}');
+            $clientSecret = Hash::make($appId . ':' . $clientId);
+
+            $array = [
                 'name' => $input['name'],
-                'app_id' => $input['app_id'],
-                'client_id' => $input['client_id'],
-                'image_link' => $input['image_link'],
+                'app_id' => $appId,
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
                 'description' => $input['description'],
                 'team_id' => $input['team_id'],
                 'user_id' => $input['user_id'],
                 'enabled' => $input['enabled'],
-            ]);
+            ];
 
-            $this->applicationHasTags((int) $application->id, $input['tags']);
-            $this->applicationHasPermissions((int) $application->id, $input['permissions']);
+            if (array_key_exists('image_link', $input)) {
+                $array['image_link'] = $input['image_link'];
+            }
+
+            $application = Application::create($array);
+
+            if (array_key_exists('tags', $input)) {
+                $this->applicationHasTags((int) $application->id, $input['tags']);
+            }
+
+            if (array_key_exists('permissions', $input)) {
+                $this->applicationHasPermissions((int) $application->id, $input['permissions']);
+            }
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $application->id,
+                'data' => Application::with(['permissions', 'tags', 'team', 'user'])
+                    ->where('id', $application->id)
+                    ->first(),
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -281,23 +305,34 @@ class ApplicationController extends Controller
         try {
             $input = $request->all();
 
-            Application::where('id', $id)->update([
+            $array = [
                 'name' => $input['name'],
-                'app_id' => $input['app_id'],
-                'client_id' => $input['client_id'],
-                'image_link' => $input['image_link'],
                 'description' => $input['description'],
                 'team_id' => $input['team_id'],
                 'user_id' => $input['user_id'],
                 'enabled' => $input['enabled'],
-            ]);
+            ];
 
-            $this->applicationHasTags((int) $id, $input['tags']);
-            $this->applicationHasPermissions((int) $id, $input['permissions']);
+            if (array_key_exists('image_link', $input)) {
+                $array['image_link'] = $input['image_link'];
+            }
+
+            Application::where('id', $id)->update($array);
+
+            if (array_key_exists('tags', $input)) {
+                $this->applicationHasTags((int) $id, $input['tags']);
+            }
+
+            if (array_key_exists('permissions', $input)) {
+                $this->applicationHasPermissions((int) $id, $input['permissions']);
+            }
+
+            $application = Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first();
+            $application->makeHidden(['client_secret']);
 
             return response()->json([
                 'message' => 'success',
-                'data' => Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first()
+                'data' => $application
             ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -380,7 +415,7 @@ class ApplicationController extends Controller
         try {
             $input = $request->all();
 
-            $arrayKeys = ['name', 'app_id', 'client_id', 'image_link', 'description', 'team_id', 'user_id', 'enabled'];
+            $arrayKeys = ['name', 'image_link', 'description', 'team_id', 'user_id', 'enabled'];
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Application::where('id', $id)->update($array);
@@ -392,10 +427,13 @@ class ApplicationController extends Controller
             if (array_key_exists('permissions', $input)) {
                 $this->applicationHasPermissions((int) $id, $input['permissions']);
             }
+
+            $application = Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first();
+            $application->makeHidden(['client_secret']);
             
             return response()->json([
                 'message' => 'success',
-                'data' => Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first()
+                'data' => $application
             ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

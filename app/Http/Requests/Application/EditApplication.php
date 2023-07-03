@@ -24,26 +24,6 @@ class EditApplication extends BaseFormRequest
             'name' => [
                 'string',
             ],
-            'app_id' => [
-                'string',
-                function ($attribute, $value, $fail) use ($id) {
-                    $exists = Application::withTrashed()->where('app_id', $value)->where('id', '<>', $id)->count();
-
-                    if ($exists) {
-                        $fail('The selected app_id already exist.');
-                    }
-                },
-            ],
-            'client_id' => [
-                'string',
-                function ($attribute, $value, $fail) use ($id) {
-                    $exists = Application::withTrashed()->where('client_id', $value)->where('id', '<>', $id)->count();
-
-                    if ($exists) {
-                        $fail('The selected client_id already exist.');
-                    }
-                },
-            ],
             'image_link' => [
                 'string',
                 'url',

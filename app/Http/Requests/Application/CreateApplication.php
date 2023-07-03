@@ -18,18 +18,7 @@ class CreateApplication extends BaseFormRequest
                 'required',
                 'string',
             ],
-            'app_id' => [
-                'required',
-                'string',
-                'unique:applications,app_id',
-            ],
-            'client_id' => [
-                'required',
-                'string',
-                'unique:applications,client_id',
-            ],
             'image_link' => [
-                'required',
                 'string',
                 'url',
             ],
@@ -52,21 +41,17 @@ class CreateApplication extends BaseFormRequest
                 'boolean',
             ],
             'tags' => [
-                'present',
                 'array',
             ],
             'tags.*'  => [
-                'required',
                 'integer', 
                 'distinct',
                 'exists:tags,id',
             ],
             'permissions' => [
-                'present',
                 'array',
             ],
             'permissions.*'  => [
-                'required',
                 'integer',
                 'distinct',
                 'exists:permissions,id',

@@ -89,8 +89,6 @@ class ApplicationTest extends TestCase
             self::TEST_URL,
             [
                 'name' => 'Hello World',
-                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4',
-                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6S6digs',
                 'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam',
                 'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
                 'team_id' => 5,
@@ -120,7 +118,7 @@ class ApplicationTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        $id = $contentCreate['data'];
+        $id = $contentCreate['data']['id'];
 
         // get by id
         $responseGet = $this->json(
@@ -161,8 +159,6 @@ class ApplicationTest extends TestCase
             self::TEST_URL,
             [
                 'name' => 'Hello World',
-                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4',
-                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6S6digs',
                 'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam',
                 'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
                 'team_id' => 5,
@@ -201,8 +197,6 @@ class ApplicationTest extends TestCase
             self::TEST_URL,
             [
                 'name' => 'Hello World',
-                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4',
-                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6S6digs',
                 'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam',
                 'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
                 'team_id' => 5,
@@ -232,7 +226,7 @@ class ApplicationTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        $id = $contentCreate['data'];
+        $id = $contentCreate['data']['id'];
 
         // update
         $responseUpdate = $this->json(
@@ -240,8 +234,6 @@ class ApplicationTest extends TestCase
             self::TEST_URL . '/' . $id,
             [
                 'name' => 'Hello World',
-                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyUpdate',
-                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate',
                 'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Update',
                 'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Update.',
                 'team_id' => 2,
@@ -261,8 +253,8 @@ class ApplicationTest extends TestCase
         $responseUpdate->assertStatus(200);
         $contentUpdate = $responseUpdate->decodeResponseJson();
         $this->assertEquals($contentUpdate['data']['name'], 'Hello World');
-        $this->assertEquals($contentUpdate['data']['app_id'], 'obmWCcsccdxH5iHgLTJDZNXNkyUpdate');
-        $this->assertEquals($contentUpdate['data']['client_id'], 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate');
+        $this->assertEquals($contentUpdate['data']['app_id'], $contentCreate['data']['app_id']);
+        $this->assertEquals($contentUpdate['data']['client_id'], $contentCreate['data']['client_id']);
         $this->assertEquals($contentUpdate['data']['image_link'], 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Update');
         $this->assertEquals($contentUpdate['data']['team_id'], 2);
         $this->assertEquals($contentUpdate['data']['user_id'], 1);
@@ -277,8 +269,6 @@ class ApplicationTest extends TestCase
             self::TEST_URL,
             [
                 'name' => 'Hello World',
-                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4',
-                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6S6digs',
                 'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam',
                 'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
                 'team_id' => 5,
@@ -308,7 +298,7 @@ class ApplicationTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        $id = $contentCreate['data'];
+        $id = $contentCreate['data']['id'];
 
         // update
         $responseUpdate = $this->json(
@@ -316,8 +306,6 @@ class ApplicationTest extends TestCase
             self::TEST_URL . '/' . $id,
             [
                 'name' => 'Hello World Update',
-                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyUpdate',
-                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate',
                 'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Update',
                 'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Update.',
                 'team_id' => 2,
@@ -337,8 +325,8 @@ class ApplicationTest extends TestCase
         $responseUpdate->assertStatus(200);
         $contentUpdate = $responseUpdate->decodeResponseJson();
         $this->assertEquals($contentUpdate['data']['name'], 'Hello World Update');
-        $this->assertEquals($contentUpdate['data']['app_id'], 'obmWCcsccdxH5iHgLTJDZNXNkyUpdate');
-        $this->assertEquals($contentUpdate['data']['client_id'], 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate');
+        $this->assertEquals($contentUpdate['data']['app_id'], $contentCreate['data']['app_id']);
+        $this->assertEquals($contentUpdate['data']['client_id'], $contentCreate['data']['client_id']);
         $this->assertEquals($contentUpdate['data']['image_link'], 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Update');
         $this->assertEquals($contentUpdate['data']['team_id'], 2);
         $this->assertEquals($contentUpdate['data']['user_id'], 1);
@@ -350,8 +338,6 @@ class ApplicationTest extends TestCase
             self::TEST_URL . '/' . $id,
             [
                 'name' => 'Hello World Edit',
-                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyEdit',
-                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate',
                 'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Edit',
                 'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Edit.',
                 'enabled' => true,
@@ -362,8 +348,8 @@ class ApplicationTest extends TestCase
         $responseEdit->assertStatus(200);
         $contentEdit = $responseEdit->decodeResponseJson();
         $this->assertEquals($contentEdit['data']['name'], 'Hello World Edit');
-        $this->assertEquals($contentEdit['data']['app_id'], 'obmWCcsccdxH5iHgLTJDZNXNkyEdit');
-        $this->assertEquals($contentEdit['data']['client_id'], 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate');
+        $this->assertEquals($contentEdit['data']['app_id'], $contentCreate['data']['app_id']);
+        $this->assertEquals($contentEdit['data']['client_id'], $contentCreate['data']['client_id']);
         $this->assertEquals($contentEdit['data']['image_link'], 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Edit');
         $this->assertEquals($contentEdit['data']['enabled'], true);
     }
@@ -376,8 +362,6 @@ class ApplicationTest extends TestCase
             self::TEST_URL,
             [
                 'name' => 'Hello World',
-                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4',
-                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6S6digs',
                 'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam',
                 'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
                 'team_id' => 5,
@@ -407,7 +391,7 @@ class ApplicationTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
 
-        $id = $contentCreate['data'];
+        $id = $contentCreate['data']['id'];
 
         // update
         $responseUpdate = $this->json(
@@ -415,8 +399,6 @@ class ApplicationTest extends TestCase
             self::TEST_URL . '/' . $id,
             [
                 'name' => 'Hello World Update',
-                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyUpdate',
-                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate',
                 'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Update',
                 'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Update.',
                 'team_id' => 2,
@@ -436,8 +418,8 @@ class ApplicationTest extends TestCase
         $responseUpdate->assertStatus(200);
         $contentUpdate = $responseUpdate->decodeResponseJson();
         $this->assertEquals($contentUpdate['data']['name'], 'Hello World Update');
-        $this->assertEquals($contentUpdate['data']['app_id'], 'obmWCcsccdxH5iHgLTJDZNXNkyUpdate');
-        $this->assertEquals($contentUpdate['data']['client_id'], 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate');
+        $this->assertEquals($contentUpdate['data']['app_id'], $contentCreate['data']['app_id']);
+        $this->assertEquals($contentUpdate['data']['client_id'], $contentCreate['data']['client_id']);
         $this->assertEquals($contentUpdate['data']['image_link'], 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Update');
         $this->assertEquals($contentUpdate['data']['team_id'], 2);
         $this->assertEquals($contentUpdate['data']['user_id'], 1);
@@ -449,8 +431,6 @@ class ApplicationTest extends TestCase
             self::TEST_URL . '/' . $id,
             [
                 'name' => 'Hello World Edit',
-                'app_id' => 'obmWCcsccdxH5iHgLTJDZNXNkyEdit',
-                'client_id' => 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate',
                 'image_link' => 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Edit',
                 'description' => 'Praesentium ut et quae suscipit ut quo adipisci. Edit.',
                 'enabled' => true,
@@ -461,8 +441,8 @@ class ApplicationTest extends TestCase
         $responseEdit->assertStatus(200);
         $contentEdit = $responseEdit->decodeResponseJson();
         $this->assertEquals($contentEdit['data']['name'], 'Hello World Edit');
-        $this->assertEquals($contentEdit['data']['app_id'], 'obmWCcsccdxH5iHgLTJDZNXNkyEdit');
-        $this->assertEquals($contentEdit['data']['client_id'], 'iem4i3geb1FxehvvQBlSOZ2A6SUpdate');
+        $this->assertEquals($contentEdit['data']['app_id'], $contentCreate['data']['app_id']);
+        $this->assertEquals($contentEdit['data']['client_id'], $contentCreate['data']['client_id']);
         $this->assertEquals($contentEdit['data']['image_link'], 'https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Edit');
         $this->assertEquals($contentEdit['data']['enabled'], true);
 

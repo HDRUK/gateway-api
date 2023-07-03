@@ -12,8 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('application_has_permissions', function (Blueprint $table) {
-            $table->id();
-
             $table->bigInteger('application_id')->unsigned();
             $table->bigInteger('permission_id')->unsigned();
 
