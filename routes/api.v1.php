@@ -5,7 +5,6 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\TestController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\TeamUserController;
-use App\Http\Controllers\Api\V1\ApplicationController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
 
 Route::get('/test', function() {
@@ -42,7 +41,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'collections' => 'CollectionController',
         'audit_logs' => 'AuditLogController',
         'data_use_registers' => 'DataUseRegisterController',
-        // 'applications' => 'ApplicationController',
+        'applications' => 'ApplicationController',
     ];
 
     foreach ($routes as $path => $controller) {
@@ -61,14 +60,6 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     Route::post('/dispatch_email', 'EmailController@dispatchEmail');
     Route::post('/logout', 'LogoutController@logout');
 });
-
-// routes
-Route::get('/applications', [ApplicationController::class, 'index']);
-Route::get('/applications/{id}', [ApplicationController::class, 'show'])->where('id', '[0-9]+');
-Route::post('/applications', [ApplicationController::class, 'store']);
-Route::put('/applications/{id}', [ApplicationController::class, 'update'])->where('id', '[0-9]+');
-Route::patch('/applications/{id}', [ApplicationController::class, 'edit'])->where('id', '[0-9]+');
-Route::delete('/applications/{id}', [ApplicationController::class, 'destroy'])->where('id', '[0-9]+');
 
 // stop all all other routes
 Route::any('{path}', function() {
