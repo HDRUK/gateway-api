@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Hash;
 use Config;
 use Exception;
-use Hash;
 use App\Models\Application;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Models\ApplicationHasTag;
 use Illuminate\Http\JsonResponse;
@@ -188,8 +189,8 @@ class ApplicationController extends Controller
         try {
             $input = $request->all();
 
-            $appId = fake()->regexify('[A-Za-z0-9]{32}');
-            $clientId = fake()->regexify('[A-Za-z0-9]{32}');
+            $appId = Str::random(32);
+            $clientId = Str::random(32);
             $clientSecret = Hash::make($appId . ':' . $clientId);
 
             $array = [
