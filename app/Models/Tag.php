@@ -65,6 +65,6 @@ class Tag extends Model
 
     public function applications(): BelongsToMany
     {
-        return $this->belongsToMany(Application::class, 'application_has_permissions');
+        return $this->belongsToMany(Application::class, 'application_has_tags');
     }
 }
