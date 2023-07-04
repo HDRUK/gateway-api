@@ -3,8 +3,6 @@
 namespace App\Http\Requests\Tag;
 
 use App\Http\Requests\BaseFormRequest;
-use App\Http\Enums\TagType;
-use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\Rule;
 
 class UpdateTag extends BaseFormRequest
@@ -25,7 +23,7 @@ class UpdateTag extends BaseFormRequest
             'type' => [
                 'required',
                 'string',
-                new Enum(TagType::class),
+                'unique:tags,type',
             ],
             'description' => [
                 'required',

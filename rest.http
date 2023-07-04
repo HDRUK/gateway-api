@@ -299,3 +299,107 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 
+### TAGS
+#### get all tags
+GET {{baseUrl}}/api/{{apiVersion}}/tags HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one tag by id
+GET {{baseUrl}}/api/{{apiVersion}}/tags/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create a new tag
+POST {{baseUrl}}/api/{{apiVersion}}/tags HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "type": "Type Test",
+    "enabled": 1,
+    "description": "type for test"
+}
+
+#### update tag
+PUT {{baseUrl}}/api/{{apiVersion}}/tags/1 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "type": "Something",
+    "enabled": 1,
+    "description": "Something"
+}
+
+#### delete tag by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/tags/2 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### APPLICATIONS
+#### get all applications
+GET {{baseUrl}}/api/{{apiVersion}}/applications HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one application by id
+GET {{baseUrl}}/api/{{apiVersion}}/applications/51 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create application
+POST {{baseUrl}}/api/{{apiVersion}}/applications HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Hello World",
+    "image_link": "https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam",
+    "description": "Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.",
+    "team_id": 5,
+    "user_id": 2,
+    "enabled": true
+}
+
+#### update application
+PUT {{baseUrl}}/api/{{apiVersion}}/applications/51 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Hello World Update sdsd",
+    "image_link": "https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+Update",
+    "description": "Praesentium ut et quae suscipit ut quo adipisci. Update.",
+    "team_id": 1,
+    "user_id": 3,
+    "enabled": true,
+    "tags": [1,2],
+    "permissions": [3,2]
+}
+
+#### edit application
+PATCH {{baseUrl}}/api/{{apiVersion}}/applications/51 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Hello World PATCH",
+    "app_id": "obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4PATCH",
+    "client_id": "iem4i3geb1FxehvvQBlSOZ2A6SPATCH",
+    "image_link": "https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam+PATCH",
+    "description": "Praesentium ut et quae suscipit ut quo adipisci. PATCH."
+}
+
+#### delete application by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/applications/51 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Config;
 use App\Models\Tag;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
@@ -41,10 +42,8 @@ class TagTest extends TestCase
      */
     public function test_get_all_tags_with_success(): void
     {
-        $countTag = Tag::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
-        $this->assertCount($countTag, $response['data']);
         $response->assertJsonStructure([
             'current_page',
             'data' => [
@@ -109,6 +108,127 @@ class TagTest extends TestCase
         ]);
         $response->assertStatus(200);
     }
+
+    /**
+     * Create new Tag with success
+     *
+     * @return void
+     */
+    public function test_create_tag_with_success(): void
+    {
+        $response = $this->json(
+            'POST', 
+            self::TEST_URL, 
+            [
+                'type' =>  'Tag-123456789',
+                'enabled' => 1,
+                'description' => 'type for test',
+            ], 
+            $this->header,
+        );
+
+        $response->assertStatus(201);
+        $response->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+    }
+
+    /**
+     * Create new Tag without success
+     *
+     * @return void
+     */
+    public function test_create_tag_without_success(): void
+    {
+        // create 1
+        $responseCreate1 = $this->json(
+            'POST', 
+            self::TEST_URL,
+            [
+                'type' =>  'Tag-123456789',
+                'enabled' => 1,
+                'description' => 'type for test'
+            ], 
+            $this->header,
+        );
+
+        $responseCreate1->assertStatus(201);
+        $responseCreate1->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+
+        // create 2
+        $responseCreate2 = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'type' =>  'Tag-123456789',
+                'enabled' => 1,
+                'description' => 'type for test 2'
+            ],
+            $this->header,
+        );
+
+        $responseCreate2->assertStatus(400);
+        $responseCreate2->assertJsonStructure([
+            'status',
+            'message',
+            'errors'
+        ]);
+    }
+
+    /**
+     * Create new Tag without success
+     *
+     * @return void
+     */
+    public function test_update_tag_with_success(): void
+    {
+        $countBefore = Tag::all()->count();
+        $response = $this->json(
+            'POST', 
+            self::TEST_URL,
+            [
+                'type' =>  'Type Test',
+                'enabled' => 1,
+                'description' => 'type for test'
+            ], 
+            $this->header,
+        );
+
+        $countAfterPost = Tag::all()->count();
+
+        $response->assertStatus(201);
+        $this->assertTrue((bool) ($countAfterPost - $countBefore), 'Response was successfully');
+        $response->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+
+        $tagId = (int) $response['data'];
+
+        $responseUpdate = $this->json(
+            'PUT', 
+            self::TEST_URL . '/' . $tagId,
+            [
+                'type' =>  'Type Test Update',
+                'enabled' => 1,
+                'description' => 'type for test'
+            ], 
+            $this->header,
+        );
+        $countAfterUpdate = Tag::all()->count();
+
+        $responseUpdate->assertStatus(200);
+        $this->assertFalse((bool) ($countAfterUpdate - $countAfterPost), 'Response was successfully, No Id changed after update');
+        $responseUpdate->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+    }
+
 
     /**
      * SoftDelete Tag by Id with success

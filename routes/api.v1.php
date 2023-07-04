@@ -6,7 +6,6 @@ use App\Http\Controllers\Api\V1\TestController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\TeamUserController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
-use App\Http\Controllers\Api\V1\DataUseRegisterController;
 
 Route::get('/test', function() {
     return Response::json([
@@ -42,6 +41,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'collections' => 'CollectionController',
         'audit_logs' => 'AuditLogController',
         'data_use_registers' => 'DataUseRegisterController',
+        'applications' => 'ApplicationController',
     ];
 
     foreach ($routes as $path => $controller) {

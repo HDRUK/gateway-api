@@ -1,12 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Tag;
+namespace App\Http\Requests\Application;
 
 use App\Http\Requests\BaseFormRequest;
-use Illuminate\Validation\Rule;
 
-
-class EditTag extends BaseFormRequest
+class DeleteApplication extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -17,22 +15,8 @@ class EditTag extends BaseFormRequest
     {
         return [
             'id' => [
-                'int',
                 'required',
-                'unique:tags,id',
-            ],
-            'type' => [
-                'string',
-                'exists:tags,type',
-            ],
-            'description' => [
-                'string',
-                Rule::unique('tags')->where(function ($query) {
-                    $query->where('description', trim($this->type));
-                }),
-            ],
-            'enabled' => [
-                'boolean',
+                'exists:applications,id',
             ],
         ];
     }

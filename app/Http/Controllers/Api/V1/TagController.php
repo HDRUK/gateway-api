@@ -114,21 +114,18 @@ class TagController extends Controller
      */
     public function show(GetTag $request, int $id): JsonResponse
     {
-        $tags = Tag::where([
-            'id' => $id,
-            'enabled' => 1,
-        ])->get();
+        try {
+            $tags = Tag::where([
+                'id' => $id,
+            ])->get();
 
-        if ($tags->count()) {
             return response()->json([
-                'message' => 'success',
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $tags,
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Application;
 use App\Models\TeamHasUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,5 +33,10 @@ class Permission extends Model
     public function teamHasUsers(): BelongsToMany
     {
         return $this->belongsToMany(TeamHasUser::class, 'team_user_has_permissions');
+    }
+
+    public function applications(): BelongsToMany
+    {
+        return $this->belongsToMany(Application::class, 'application_has_permissions');
     }
 }

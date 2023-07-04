@@ -1649,6 +1649,868 @@
                 ]
             }
         },
+        "/api/v1/applications": {
+            "get": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "ApplicationController@index",
+                "description": "Returns a list of applications",
+                "operationId": "fetch_all_applications",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Voluptas incidunt repellat animi. Sed ut beatae fugit ullam."
+                                                    },
+                                                    "app_id": {
+                                                        "type": "string",
+                                                        "example": "obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ3"
+                                                    },
+                                                    "client_id": {
+                                                        "type": "string",
+                                                        "example": "w8CLyeP8vhnPK1V0mJ8ubU7UHCVnK7Bm"
+                                                    },
+                                                    "image_link": {
+                                                        "type": "string",
+                                                        "example": "hhttps:\\/\\/via.placeholder.com\\/640x480.png\\/0044ee?text=animals+harum"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "Magni minima facilis quo soluta. Ab quasi quaerat doloremque. Sapiente asperiores nisi maiores ex quia velit."
+                                                    },
+                                                    "team_id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": "2"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "false"
+                                                    },
+                                                    "permissions": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "tags": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "team": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "user": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "ApplicationController@store",
+                "description": "Creates application",
+                "operationId": "e210052adcf6fdcfc472998b430081aa",
+                "requestBody": {
+                    "description": "Application definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Corrupti in a voluptas. Eligendi saepe sed sit."
+                                    },
+                                    "image_link": {
+                                        "type": "string",
+                                        "example": "https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. "
+                                    },
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "2"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "false"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Voluptas incidunt repellat animi. Sed ut beatae fugit ullam."
+                                                    },
+                                                    "app_id": {
+                                                        "type": "string",
+                                                        "example": "obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ3"
+                                                    },
+                                                    "client_id": {
+                                                        "type": "string",
+                                                        "example": "w8CLyeP8vhnPK1V0mJ8ubU7UHCVnK7Bm"
+                                                    },
+                                                    "client_secret": {
+                                                        "type": "string",
+                                                        "example": "w8CLyeP8vhnPK1V0mJ8ubU7UHCVnK7Bm"
+                                                    },
+                                                    "image_link": {
+                                                        "type": "string",
+                                                        "example": "hhttps:\\/\\/via.placeholder.com\\/640x480.png\\/0044ee?text=animals+harum"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "Magni minima facilis quo soluta. Ab quasi quaerat doloremque. Sapiente asperiores nisi maiores ex quia velit."
+                                                    },
+                                                    "team_id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": "2"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "false"
+                                                    },
+                                                    "permissions": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "tags": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "team": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "user": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/applications/{id}": {
+            "get": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "ApplicationController@show",
+                "description": "Get application by id",
+                "operationId": "fetch_applications",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "application id",
+                        "required": true,
+                        "schema": {
+                            "description": "application id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Voluptas incidunt repellat animi. Sed ut beatae fugit ullam."
+                                                    },
+                                                    "app_id": {
+                                                        "type": "string",
+                                                        "example": "obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ3"
+                                                    },
+                                                    "client_id": {
+                                                        "type": "string",
+                                                        "example": "w8CLyeP8vhnPK1V0mJ8ubU7UHCVnK7Bm"
+                                                    },
+                                                    "image_link": {
+                                                        "type": "string",
+                                                        "example": "hhttps:\\/\\/via.placeholder.com\\/640x480.png\\/0044ee?text=animals+harum"
+                                                    },
+                                                    "description": {
+                                                        "type": "string",
+                                                        "example": "Magni minima facilis quo soluta. Ab quasi quaerat doloremque. Sapiente asperiores nisi maiores ex quia velit."
+                                                    },
+                                                    "team_id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": "2"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "false"
+                                                    },
+                                                    "permissions": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "tags": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "team": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "user": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "ApplicationController@update",
+                "description": "Update application",
+                "operationId": "3c8adeb001330f5198ca1072be78e299",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "application id",
+                        "required": true,
+                        "schema": {
+                            "description": "application id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "ActivityLog definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "app_id",
+                                    "client_id",
+                                    "image_link",
+                                    "description",
+                                    "team_id",
+                                    "user_id",
+                                    "enabled",
+                                    "tags",
+                                    "permissions"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Corrupti in a voluptas. Eligendi saepe sed sit."
+                                    },
+                                    "image_link": {
+                                        "type": "string",
+                                        "example": "https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. "
+                                    },
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "2"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "false"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "covid"
+                                                },
+                                                "app_id": {
+                                                    "type": "string",
+                                                    "example": "obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4"
+                                                },
+                                                "client_id": {
+                                                    "type": "string",
+                                                    "example": "iem4i3geb1FxehvvQBlSOZ2A6S6digs"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Dolorem voluptas consequatur nihil illum et sunt libero."
+                                                },
+                                                "image_link": {
+                                                    "type": "string",
+                                                    "example": "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "true"
+                                                },
+                                                "keywords": {
+                                                    "type": "string",
+                                                    "example": "key words"
+                                                },
+                                                "public": {
+                                                    "type": "boolean",
+                                                    "example": "true"
+                                                },
+                                                "counter": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "deleted_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "ApplicationController@delete",
+                "description": "Delete application",
+                "operationId": "ddca747ae792e5b6837b97c6ad510fd3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "application id",
+                        "required": true,
+                        "schema": {
+                            "description": "application id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Application"
+                ],
+                "summary": "ApplicationController@edit",
+                "description": "Edit application",
+                "operationId": "45ae3b415211ef0712a8ea070e66449f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "application id",
+                        "required": true,
+                        "schema": {
+                            "description": "application id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "ActivityLog definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Corrupti in a voluptas. Eligendi saepe sed sit."
+                                    },
+                                    "app_id": {
+                                        "type": "string",
+                                        "example": "obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4"
+                                    },
+                                    "client_id": {
+                                        "type": "string",
+                                        "example": "iem4i3geb1FxehvvQBlSOZ2A6S6digs"
+                                    },
+                                    "image_link": {
+                                        "type": "string",
+                                        "example": "https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. "
+                                    },
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "2"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "false"
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "covid"
+                                                },
+                                                "app_id": {
+                                                    "type": "string",
+                                                    "example": "obmWCcsccdxH5iHgLTJDZNXNkyW1ZxZ4"
+                                                },
+                                                "client_id": {
+                                                    "type": "string",
+                                                    "example": "iem4i3geb1FxehvvQBlSOZ2A6S6digs"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "Dolorem voluptas consequatur nihil illum et sunt libero."
+                                                },
+                                                "image_link": {
+                                                    "type": "string",
+                                                    "example": "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "true"
+                                                },
+                                                "keywords": {
+                                                    "type": "string",
+                                                    "example": "key words"
+                                                },
+                                                "public": {
+                                                    "type": "boolean",
+                                                    "example": "true"
+                                                },
+                                                "counter": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "deleted_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/audit_logs": {
             "get": {
                 "tags": [
@@ -7750,6 +8612,38 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [
@@ -11565,40 +12459,6 @@
         }
     },
     "components": {
-        "responses": {
-            "401": {
-                "description": "Unauthorized",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "properties": {
-                                "message": {
-                                    "type": "string",
-                                    "example": "unauthorized"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    }
-                }
-            },
-            "404": {
-                "description": "Not found response",
-                "content": {
-                    "application/json": {
-                        "schema": {
-                            "properties": {
-                                "message": {
-                                    "type": "string",
-                                    "example": "not found"
-                                }
-                            },
-                            "type": "object"
-                        }
-                    }
-                }
-            }
-        },
         "securitySchemes": {
             "bearerAuth": {
                 "type": "http",

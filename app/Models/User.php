@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Team;
 use App\Models\Tool;
 // use Laravel\Sanctum\HasApiTokens;
+use App\Models\Application;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -81,5 +82,10 @@ class User extends Authenticatable
     public function review(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+    
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
     }
 }
