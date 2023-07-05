@@ -25,12 +25,13 @@ class FAIRShareCommandSeeder extends Seeder
                             "password": "Challenge12Havoc!_"
                         }
                     },
-                    "auth_type": "Bearer"
+                    "token_response_key": "jwt"
                 },
                 {
                     "type": "run",
                     "url": "https://api.fairsharing.org/collections",
-                    "method": "get"
+                    "method": "get",
+                    "auth_type": "bearer"
                 }
             ]
         }';

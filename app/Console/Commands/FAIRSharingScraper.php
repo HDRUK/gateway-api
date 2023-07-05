@@ -67,11 +67,22 @@ class FAIRSharingScraper extends Command
      */
     private function runStep(stdClass $runStep): void
     {
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->authToken,
-        ])
-        ->acceptJson()
-        ->{$runStep->method}($runStep->url);
+        $response = null; 
+        switch(strtolower($runStep->auth_type)) {
+            case 'bearer':
+                try {
+                    $response = Http::withHeaders([
+                        'Authorization' => 'Bearer ' . $this->authToken,
+                    ])
+                    ->acceptJson()
+                    ->{$runStep->method}($runStep->url);
+                } catch (Exception $e) {
+                    throw new Exception($e->getMessage());
+                }
+                break;
+            default:
+                throw new Exception('unknown auth type: ' . $runStep->auth_type);
+        }
 
         // TODO - Do something with the response
         dd($response->json());
@@ -88,14 +99,10 @@ class FAIRSharingScraper extends Command
             ->post($authStep->url, $authStep->payload);
 
         if($response->status() === 200) {
-            switch (strtolower($authStep->auth_type)) {
-                case 'bearer':
-                    $this->authToken = $response->json()['jwt'];
-                    break;
-                default:
-                    throw new Exception('unknown auth type ' . $step->auth_type);
-                    break;
-            }
+            $this->authToken = $response->json()[$authStep->token_response_key];
+            return;
         }
+        
+        throw new Exception('authStep received non 200 status: ' . $response->json());
     }
 }
