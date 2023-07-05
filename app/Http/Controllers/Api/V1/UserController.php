@@ -293,7 +293,6 @@ class UserController extends Controller
                     "lastname" => $input['lastname'],
                     "email" => $input['email'],
                     'provider' =>  Config::get('constants.provider.service'),
-                    'password' => Hash::make($input['password']),
                     "sector_id" => $input['sector_id'],
                     "organisation" => $input['organisation'],
                     "bio" => $input['bio'],

@@ -43,7 +43,6 @@ class UpdateUser extends BaseFormRequest
                 },
             ],
             'password' => [
-                'required',
                 'nullable',
                 'string',
             ],
