@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
             ApplicationSeeder::class,
             ApplicationHasTagSeeder::class,
             ApplicationHasPermissionSeeder::class,
+            FAIRShareCommandSeeder::class,
         ]);
     }
 }
