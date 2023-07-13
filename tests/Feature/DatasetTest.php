@@ -172,7 +172,7 @@ class DatasetTest extends TestCase
         // delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
-            self::TEST_URL_DATASET . '/' . $datasetId,
+            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
             [],
             $this->header
         );
@@ -304,7 +304,7 @@ class DatasetTest extends TestCase
         // delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
-            self::TEST_URL_DATASET . '/' . $datasetId,
+            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
             [],
             $this->header
         );

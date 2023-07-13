@@ -270,7 +270,12 @@ class DatasetController extends Controller
         try {
             $dataset = Dataset::where('id', (int) $id)->first()->toArray();
 
-            Mauro::deleteDataModel($dataset['datasetid']);
+            $deletePermanently = false;
+            if ($request->has('deletePermanently')) {
+                $deletePermanently = (bool) $request->query('deletePermanently');
+            }
+
+            Mauro::deleteDataModel($dataset['datasetid'], $deletePermanently);
 
             Dataset::where('id', (int) $id)->delete();
 
