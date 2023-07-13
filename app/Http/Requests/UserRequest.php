@@ -55,6 +55,9 @@ class UserRequest extends BaseFormRequest
             'mongo_id' => [
                 'integer',
             ],
+            'mongo_object_id' => [
+                'nullable', 'string',
+            ],
         ];
     }
 }

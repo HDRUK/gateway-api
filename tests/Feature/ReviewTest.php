@@ -166,7 +166,8 @@ class ReviewTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => 12345678,  
-                'mongo_id' => 1234567,              
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",           
             ],
             $this->header
         );
@@ -238,7 +239,8 @@ class ReviewTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => 12345678,  
-                'mongo_id' => 12345657, 
+                'mongo_id' => 12345657,
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -335,6 +337,7 @@ class ReviewTest extends TestCase
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -481,7 +484,8 @@ class ReviewTest extends TestCase
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => 12345678,  
-                'mongo_id' => 1234567,                
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",                
             ],
             $this->header
         );
