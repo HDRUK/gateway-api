@@ -79,7 +79,7 @@ jobs:
 
       - name: Read VERSION file
         id: getversion
-        run: echo "version=$(cat Chart.yaml)" >> $GITHUB_OUTPUT
+        run: echo "version=$(cat version.yaml)" >> $GITHUB_OUTPUT
           
       - name: Deploy to Cloud Run
         uses: actions-hub/gcloud@master
