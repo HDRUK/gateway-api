@@ -47,11 +47,11 @@ class CreateTeam extends BaseFormRequest
                 'integer',
             ],
             'contact_point' => [
-                'required',
+                'nullable',
                 'string',
             ],
             'application_form_updated_by' => [
-                'required',
+                'nullable',
                 'string',
             ],
             'application_form_updated_on' => [

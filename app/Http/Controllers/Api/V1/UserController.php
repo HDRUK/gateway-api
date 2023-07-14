@@ -196,6 +196,7 @@ class UserController extends Controller
                 'contact_feedback' => $input['contact_feedback'],
                 'contact_news' => $input['contact_news'],
                 'mongo_id' => $input['mongo_id'],
+                'mongo_object_id' => $input['mongo_object_id'],  
             ];
             $user = User::create($array);
 
@@ -301,7 +302,8 @@ class UserController extends Controller
                     "orcid" => $input['orcid'],
                     "contact_feedback" => $input['contact_feedback'],
                     "contact_news" => $input['contact_news'],  
-                    'mongo_id' => $input['mongo_id'],                  
+                    "mongo_id" => $input['mongo_id'], 
+                    "mongo_object_id" => $input['mongo_object_id'],                 
                 ];
 
                 $user->update($array);
@@ -446,6 +448,10 @@ class UserController extends Controller
 
             if (array_key_exists('mongo_id', $input)) {
                 $array['mongo_id'] = $input['mongo_id'];
+            }
+
+            if (array_key_exists('mongo_object_id', $input)) {
+                $array['mongo_object_id'] = $input['mongo_object_id'];
             }
 
             User::withTrashed()->where('id', $id)->update($array);

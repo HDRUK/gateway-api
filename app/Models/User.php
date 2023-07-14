@@ -39,6 +39,7 @@ class User extends Authenticatable
         'contact_feedback',
         'contact_news',
         'mongo_id',
+        'mongo_object_id',
     ];
 
     /**

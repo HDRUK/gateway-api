@@ -68,6 +68,7 @@ class UserTest extends TestCase
                     'contact_feedback',
                     'contact_news',
                     'mongo_id',
+                    'mongo_object_id',
                 ],
             ],   
         ]);
@@ -125,6 +126,7 @@ class UserTest extends TestCase
                 'contact_feedback' => 1,
                 'contact_news' => 1, 
                 'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -155,6 +157,7 @@ class UserTest extends TestCase
                 'contact_feedback' => 1,
                 'contact_news' => 1, 
                 'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -184,6 +187,7 @@ class UserTest extends TestCase
                 'contact_feedback' => 0,
                 'contact_news' => 0, 
                 'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -220,6 +224,7 @@ class UserTest extends TestCase
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
@@ -249,6 +254,7 @@ class UserTest extends TestCase
                 'contact_feedback' => 0,
                 'contact_news' => 0,
                 'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
