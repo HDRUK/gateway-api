@@ -7,6 +7,9 @@ use App\Models\Permission;
 use App\Models\Application;
 use App\Models\Notification;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -14,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Team extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable, SoftDeletes, Prunable;
 
     protected $fillable = [
         'updated_at',
@@ -30,6 +33,7 @@ class Team extends Model
         'contact_point',
         'application_form_updated_by',
         'application_form_updated_on',
+        'mdm_folder_id',
     ];
 
     /**

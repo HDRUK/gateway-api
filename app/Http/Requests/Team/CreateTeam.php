@@ -63,6 +63,9 @@ class CreateTeam extends BaseFormRequest
                 'array',
 
             ],
+            'mdm_folder_id' => [
+                'string',
+            ]
         ];
     }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\TestController;
+use App\Http\Controllers\Api\V1\DatasetController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\TeamUserController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
@@ -59,6 +60,12 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     
     Route::post('/dispatch_email', 'EmailController@dispatchEmail');
     Route::post('/logout', 'LogoutController@logout');
+
+    Route::get('/datasets', [DatasetController::class, 'index']);
+    Route::get('/datasets/{id}', [DatasetController::class, 'show'])->where('id', '[0-9]+');
+    Route::post('/datasets', [DatasetController::class, 'store']);
+    Route::delete('/datasets/{id}', [DatasetController::class, 'destroy'])->where('id', '[0-9]+');
+    
 });
 
 // stop all all other routes

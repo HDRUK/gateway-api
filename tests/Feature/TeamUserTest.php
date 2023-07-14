@@ -69,6 +69,8 @@ class TeamUserTest extends TestCase
         $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissions, $getUserPermissions);
         $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
+
+        $this->deleteTeam($teamId);
     }
 
     /**
@@ -82,6 +84,8 @@ class TeamUserTest extends TestCase
         $url = 'api/v1/teams/' . $teamId . '/users';
         $response = $this->json('POST', $url, [], []);
         $response->assertStatus(401);
+
+        $this->deleteTeam($teamId);
     }
 
     /**
@@ -131,6 +135,8 @@ class TeamUserTest extends TestCase
         $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissionsExpected, $getUserPermissions);
         $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
+
+        $this->deleteTeam($teamId);
     }
 
     /**
@@ -180,6 +186,8 @@ class TeamUserTest extends TestCase
         $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissionsExpected, $getUserPermissions);
         $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
+
+        $this->deleteTeam($teamId);
     }
 
     /**
@@ -213,6 +221,8 @@ class TeamUserTest extends TestCase
             'message'
         ]);
         $responseDelete->assertStatus(200);
+
+        $this->deleteTeam($teamId);
     }
 
     private function createTeam()
@@ -254,6 +264,20 @@ class TeamUserTest extends TestCase
         $responseNewTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         return $responseNewTeam['data'];
+    }
+
+    private function deleteTeam($id)
+    {
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $id . '?deletePermanently=true',
+            [],
+            $this->header,
+        );
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
     }
 
     private function createUser()
