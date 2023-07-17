@@ -1,16 +1,14 @@
 name: Run quality checks
-run-name: ${{ github.actor }} triggered build pipeline
+run-name: ${{ github.actor }} triggered quality check pipeline
 on:
   push:
     branches:
       - dev
       - main
-      - GAT-2587
   pull_request:
     branches:
       - main
       - dev
-      - GAT-2587
 jobs:
   test:
     timeout-minutes: 10
