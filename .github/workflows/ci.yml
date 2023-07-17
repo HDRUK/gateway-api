@@ -5,10 +5,12 @@ on:
     branches:
       - dev
       - main
+      - GAT-2587
   pull_request:
     branches:
       - main
       - dev
+      - GAT-2587
 jobs:
   test:
     timeout-minutes: 10
