@@ -27,12 +27,6 @@ class CreateTeamUser extends BaseFormRequest
             'permissions' => [
                 'required',
                 'array',
-                'exists:permissions,role',
-            ],
-            'permissions.*' => [
-                'required',
-                'string',
-                'distinct',
             ],
         ];
     }

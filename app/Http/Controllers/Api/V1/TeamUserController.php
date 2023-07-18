@@ -326,9 +326,9 @@ class TeamUserController extends Controller
     {
         try {
             foreach ($permissions as $permission) {
-                $teamUserPermissions = Permission::where([
+                $teamUserPermissions = Permission::updateOrCreate([
                     'role' => $permission,
-                ])->first();
+                ]);
 
                 $teamUserHasPermissions = TeamUserHasPermission::where([
                     'team_has_user_id' => $teamHasUsers['id'],
@@ -364,7 +364,7 @@ class TeamUserController extends Controller
             ])->first();
 
             foreach ($input['permissions'] as $permision => $action) {
-                $perm = Permission::where('role', $permision)->first();
+                $perm = Permission::updateOrCreate('role', $permision);
 
                 if ($action) {
                     TeamUserHasPermission::updateOrCreate([
