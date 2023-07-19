@@ -59,7 +59,6 @@ class CreateTeam extends BaseFormRequest
                 'string',
             ],
             'notifications' => [
-                'required',
                 'array',
 
             ],

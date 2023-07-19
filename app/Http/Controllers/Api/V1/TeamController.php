@@ -493,7 +493,7 @@ class TeamController extends Controller
                 if ($request->has('deletePermanently')) {
                     $deletePermanently = (bool) $request->query('deletePermanently');
                 }
-var_dump($deletePermanently);
+
                 // soft delete subfolder in mauro
                 Mauro::deleteFolder(
                     $team['mdm_folder_id'],

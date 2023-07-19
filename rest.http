@@ -166,8 +166,10 @@ Authorization: Bearer {{accessToken}}
     "member_of": 1001,
     "contact_point": "dinos345@mail.com",
     "application_form_updated_by": "Someone Somewhere",
-    "application_form_updated_on": "2023-04-06 15:44:41"
+    "application_form_updated_on": "2023-04-06 15:44:41",
+    "notifications": []
 }
+
 
 #### add new user in team
 POST {{baseUrl}}/api/{{apiVersion}}/teams/1/users HTTP/1.1
