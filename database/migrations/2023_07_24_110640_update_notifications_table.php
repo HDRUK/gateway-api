@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('mongo_object_id')->nullable();
+        Schema::table('notifications', function (Blueprint $table) {
+            $table->string('message')->nullable()->change();
         });
     }
 
@@ -21,8 +21,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('mongo_object_id');
-        });
+        //
     }
 };

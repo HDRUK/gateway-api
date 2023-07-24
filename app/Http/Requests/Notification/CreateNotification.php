@@ -19,7 +19,7 @@ class CreateNotification extends BaseFormRequest
                 'string',
             ],
             'message' => [
-                'required',
+                'nullable',
                 'string',
             ],
             'opt_in' => [
