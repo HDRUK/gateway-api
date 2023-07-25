@@ -117,14 +117,14 @@ class TeamUserTest extends TestCase
         $arrayPermissionsExpected = ["create", "read", "update"];
         $arrayPermissionsPut = ["update" => true];
         $payloadPut = [
-            "permissions" => $arrayPermissionsPut,
+            "permissions" => ["update" => true],
         ];
-        $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
+        $responsePut = $this->json('PUT', $urlPut, $payloadPut, $this->header);
 
-        $responsePost->assertJsonStructure([
+        $responsePut->assertJsonStructure([
             'message'
         ]);
-        $responsePost->assertStatus(200);
+        $responsePut->assertStatus(200);
 
         $getTeamHasUsers = $this->getTeamHasUsers($teamId, $userId);
         $this->assertTrue((bool) (count($getTeamHasUsers) === 1), 'Team has one single user');
@@ -245,7 +245,7 @@ class TeamUserTest extends TestCase
             'POST',
             'api/v1/teams',
             [
-                'name' => 'A. Test Team',
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
