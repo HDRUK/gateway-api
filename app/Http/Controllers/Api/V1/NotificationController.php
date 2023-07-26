@@ -52,7 +52,8 @@ class NotificationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $notifications = Notification::where('enabled', 1)->paginate(Config::get('constants.per_page'));
+        $perPage = request('perPage', Config::get('constants.per_page'));
+        $notifications = Notification::where('enabled', 1)->paginate($perPage);
         return response()->json(
             $notifications
         );
