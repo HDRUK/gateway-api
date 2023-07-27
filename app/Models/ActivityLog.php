@@ -100,4 +100,22 @@ class ActivityLog extends Model
      * @var string
      */
     private $version_id_mongo = '';
+
+
+    public function scopeGetAll($query, $jwtUser)
+    {
+        if (!count($jwtUser)) {
+            return $query;
+        }
+
+        $userId = $jwtUser['id'];
+        $userIsAdmin = (bool) $jwtUser['is_admin'];
+
+        if (!$userIsAdmin) {
+            return $query->where('user_id', $userId);
+        }
+
+        return $query;
+    }
+
 }
