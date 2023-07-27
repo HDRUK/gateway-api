@@ -21,13 +21,21 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-install sockets
 
+# Install Redis
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin --filename=composer
 
+# Send update for php.ini
 COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 
+# Copy the application
 COPY . /var/www
 
+# Composer & laravel
 RUN composer install \
     && chmod -R 777 storage bootstrap/cache \
     && php artisan optimize:clear \
@@ -35,9 +43,12 @@ RUN composer install \
     && php artisan config:clear \
     && composer dumpautoload
 
+# Generate Swagger
 RUN php artisan l5-swagger:generate
 
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+
+# Expose port
 EXPOSE 8000
 
 # for study:
