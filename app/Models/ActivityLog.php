@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Http\Traits\WithJwtUser;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ActivityLog extends Model
 {
     use HasFactory;
+    use WithJwtUser;
 
     protected $fillable = [
         'updated_at',
@@ -100,21 +102,4 @@ class ActivityLog extends Model
      * @var string
      */
     private $version_id_mongo = '';
-
-    public function scopeGetAll($query, $jwtUser)
-    {
-        if (!count($jwtUser)) {
-            return $query;
-        }
-
-        $userId = $jwtUser['id'];
-        $userIsAdmin = (bool) $jwtUser['is_admin'];
-
-        if (!$userIsAdmin) {
-            return $query->where('user_id', $userId);
-        }
-
-        return $query;
-    }
-
 }

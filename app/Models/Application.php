@@ -6,6 +6,7 @@ use App\Models\Tag;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Permission;
+use App\Http\Traits\WithJwtUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Application extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use WithJwtUser;
 
     /**
      * The table associated with the model.
@@ -58,21 +60,5 @@ class Application extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function scopeGetAll($query, $jwtUser)
-    {
-        if (!count($jwtUser)) {
-            return $query;
-        }
-
-        $userId = $jwtUser['id'];
-        $userIsAdmin = (bool) $jwtUser['is_admin'];
-
-        if (!$userIsAdmin) {
-            return $query->where('user_id', $userId);
-        }
-
-        return $query;
     }
 }

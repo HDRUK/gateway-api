@@ -69,7 +69,7 @@ class ApplicationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $applications = Application::getAll($jwtUser)->with(['permissions', 'tags', 'team', 'user'])->paginate(Config::get('constants.per_page'));
+        $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'tags', 'team', 'user'])->paginate(Config::get('constants.per_page'));
 
         $applications->getCollection()->each(function ($application) {
             $application->makeHidden(['client_secret']);
