@@ -49,7 +49,7 @@ class UserController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $users = User::getAll($jwtUser)->with('teams')->get()->toArray();
+        $users = User::getAll('id', $jwtUser)->with('teams')->get()->toArray();
 
         $response = $this->getUsers($users);
 

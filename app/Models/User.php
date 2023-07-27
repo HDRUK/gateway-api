@@ -6,6 +6,7 @@ use App\Models\Team;
 use App\Models\Tool;
 // use Laravel\Sanctum\HasApiTokens;
 use App\Models\Application;
+use App\Http\Traits\WithJwtUser;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
+    use WithJwtUser;
 
     /**
      * The attributes that are mass assignable.
@@ -89,21 +91,5 @@ class User extends Authenticatable
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class);
-    }
-
-    public function scopeGetAll($query, $jwtUser)
-    {
-        if (!count($jwtUser)) {
-            return $query;
-        }
-
-        $userId = $jwtUser['id'];
-        $userIsAdmin = (bool) $jwtUser['is_admin'];
-
-        if (!$userIsAdmin) {
-            return $query->where('id', $userId);
-        }
-        
-        return $query;
     }
 }
