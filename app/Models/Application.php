@@ -59,4 +59,20 @@ class Application extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function scopeGetAll($query, $jwtUser)
+    {
+        if (!count($jwtUser)) {
+            return $query;
+        }
+
+        $userId = $jwtUser['id'];
+        $userIsAdmin = (bool) $jwtUser['is_admin'];
+
+        if (!$userIsAdmin) {
+            return $query->where('user_id', $userId);
+        }
+
+        return $query;
+    }
 }

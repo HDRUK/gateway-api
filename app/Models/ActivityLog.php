@@ -101,7 +101,6 @@ class ActivityLog extends Model
      */
     private $version_id_mongo = '';
 
-
     public function scopeGetAll($query, $jwtUser)
     {
         if (!count($jwtUser)) {
