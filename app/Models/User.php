@@ -40,6 +40,7 @@ class User extends Authenticatable
         'contact_news',
         'mongo_id',
         'mongo_object_id',
+        'is_admin',
     ];
 
     /**
@@ -88,5 +89,26 @@ class User extends Authenticatable
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class);
+    }
+
+    public function scopeGetAll($query, $jwtUser)
+    {
+        if (!count($jwtUser)) {
+            return $query;
+        }
+
+        $user = $this->findUserById($jwtUser['id']);
+        $userIsAdmin = (bool) $user['is_admin'];
+
+        if (!$userIsAdmin) {
+            return $query->where('id', $jwtUser['id']);
+        }
+        
+        return $query;
+    }
+
+    public function findUserById($userId)
+    {
+        return $this->find($userId);
     }
 }

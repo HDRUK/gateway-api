@@ -5,8 +5,10 @@ namespace App\Http\Middleware;
 use Config;
 
 use Closure;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Models\AuthorisationCode;
+use App\Exceptions\NotFoundException;
 use App\Http\Controllers\JwtController;
 use App\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
@@ -64,9 +66,32 @@ class JwtMiddleware
             }
 
             $request->merge(['jwt' => $jwtBearer]);
+
+            $payloadJwt = $jwtController->decode();
+            $userJwt = $payloadJwt['user'];
+
+            $validateUserId = $this->validateUserId((int) $userJwt['id']);
+
+            if (!$validateUserId) {
+                throw new NotFoundException('User not found.');
+            }
+
+            $request->merge(['jwt_user' => $userJwt]);
             return $next($request);
         }
 
         throw new UnauthorizedException();
+    }
+
+
+    private function validateUserId(int $userId)
+    {
+        $user = User::find($userId);
+
+        if (!$user) {
+            return false;
+        }
+
+        return true;
     }
 }
