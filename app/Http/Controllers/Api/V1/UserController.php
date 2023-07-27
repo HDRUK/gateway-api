@@ -48,11 +48,12 @@ class UserController extends Controller
     public function index(Request $request): mixed
     {
         // filter based on user id
-        // $input = $request->all();
-        // $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        // $users = User::getAll($jwtUser)->with('teams')->get()->toArray();
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $users = User::getAll($jwtUser)->with('teams')->get()->toArray();
 
-        $users = User::with('teams')->get()->toArray();
+        // no filter
+        // $users = User::with('teams')->get()->toArray();
 
         $response = $this->getUsers($users);
 
