@@ -70,13 +70,22 @@ class JwtMiddleware
             $payloadJwt = $jwtController->decode();
             $userJwt = $payloadJwt['user'];
 
-            $validateUserId = $this->validateUserId((int) $userJwt['id']);
+            $user = $this->validateUserId((int) $userJwt['id']);
 
-            if (!$validateUserId) {
+            if (!$user) {
                 throw new NotFoundException('User not found.');
             }
 
-            $request->merge(['jwt_user' => $userJwt]);
+            $request->merge(
+                [
+                    'jwt_user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'is_admin' => $user->is_admin,
+                        ]
+                    ]
+                );
             return $next($request);
         }
 
@@ -86,12 +95,6 @@ class JwtMiddleware
 
     private function validateUserId(int $userId)
     {
-        $user = User::find($userId);
-
-        if (!$user) {
-            return false;
-        }
-
-        return true;
+        return User::find($userId);
     }
 }

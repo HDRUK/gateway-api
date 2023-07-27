@@ -97,18 +97,13 @@ class User extends Authenticatable
             return $query;
         }
 
-        $user = $this->findUserById($jwtUser['id']);
-        $userIsAdmin = (bool) $user['is_admin'];
+        $userId = $jwtUser['id'];
+        $userIsAdmin = (bool) $jwtUser['is_admin'];
 
         if (!$userIsAdmin) {
-            return $query->where('id', $jwtUser['id']);
+            return $query->where('id', $userId);
         }
         
         return $query;
-    }
-
-    public function findUserById($userId)
-    {
-        return $this->find($userId);
     }
 }
