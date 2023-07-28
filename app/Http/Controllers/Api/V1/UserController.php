@@ -6,6 +6,7 @@ use Hash;
 use Config;
 use Exception;
 use App\Models\User;
+use Illuminate\Http\Request;
 use App\Http\Requests\User\GetUser;
 use App\Models\UserHasNotification;
 use App\Http\Controllers\Controller;
@@ -44,9 +45,11 @@ class UserController extends Controller
      *    ),
      * )
      */
-    public function index(): mixed
+    public function index(Request $request): mixed
     {
-        $users = User::with('teams')->get()->toArray();
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $users = User::getAll('id', $jwtUser)->with('teams')->get()->toArray();
 
         $response = $this->getUsers($users);
 

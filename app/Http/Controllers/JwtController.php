@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use Exception;
 use Carbon\Carbon;
 
 class JwtController extends Controller
@@ -128,6 +128,24 @@ class JwtController extends Controller
 
         return FALSE;
     }
+
+    /**
+     * decode the JWT token
+     *
+     * @return mixed
+     */
+    public function decode(): mixed
+    {
+        try {
+            $tokenParts = explode('.', $this->jwt);
+            $payload = json_decode(base64_decode($tokenParts[1]), true);
+
+            return $payload;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
 
     /**
      * encode value in base64

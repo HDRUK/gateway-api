@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Http\Traits\WithJwtUser;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ActivityLog extends Model
 {
     use HasFactory;
+    use WithJwtUser;
 
     protected $fillable = [
         'updated_at',

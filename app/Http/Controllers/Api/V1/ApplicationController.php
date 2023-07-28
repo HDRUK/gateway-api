@@ -65,10 +65,11 @@ class ApplicationController extends Controller
      *    )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $applications = Application::with(['permissions', 'tags', 'team', 'user'])
-            ->paginate(Config::get('constants.per_page'));
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'tags', 'team', 'user'])->paginate(Config::get('constants.per_page'));
 
         $applications->getCollection()->each(function ($application) {
             $application->makeHidden(['client_secret']);
