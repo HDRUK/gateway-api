@@ -129,7 +129,11 @@ class TeamTest extends TestCase
                 'data',
             ]);
 
-        $this->assertEquals($content['data'][0]['notifications'][0]['notification_type'], 'applicationSubmitted');
+        if(count($content['data']) > 1) {
+            $this->assertEquals($content['data'][0]['notifications'][0]['notification_type'], 'applicationSubmitted');
+        }
+
+        $this->assertEquals($content['data']['notifications'][0]['notification_type'], 'applicationSubmitted');
     }
 
     /**
