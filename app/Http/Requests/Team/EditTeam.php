@@ -54,8 +54,11 @@ class EditTeam extends BaseFormRequest
             ],
             'notifications' => [
                 'array',
-
             ],
+            'mdm_folder_id' => [
+                'string',
+            ]
+
         ];
     }
 

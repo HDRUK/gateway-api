@@ -69,6 +69,8 @@ class TeamUserTest extends TestCase
         $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissions, $getUserPermissions);
         $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
+
+        $this->deleteTeam($teamId);
     }
 
     /**
@@ -82,6 +84,8 @@ class TeamUserTest extends TestCase
         $url = 'api/v1/teams/' . $teamId . '/users';
         $response = $this->json('POST', $url, [], []);
         $response->assertStatus(401);
+
+        $this->deleteTeam($teamId);
     }
 
     /**
@@ -113,14 +117,14 @@ class TeamUserTest extends TestCase
         $arrayPermissionsExpected = ["create", "read", "update"];
         $arrayPermissionsPut = ["update" => true];
         $payloadPut = [
-            "permissions" => $arrayPermissionsPut,
+            "permissions" => ["update" => true],
         ];
-        $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
+        $responsePut = $this->json('PUT', $urlPut, $payloadPut, $this->header);
 
-        $responsePost->assertJsonStructure([
+        $responsePut->assertJsonStructure([
             'message'
         ]);
-        $responsePost->assertStatus(200);
+        $responsePut->assertStatus(200);
 
         $getTeamHasUsers = $this->getTeamHasUsers($teamId, $userId);
         $this->assertTrue((bool) (count($getTeamHasUsers) === 1), 'Team has one single user');
@@ -131,6 +135,8 @@ class TeamUserTest extends TestCase
         $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissionsExpected, $getUserPermissions);
         $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
+
+        $this->deleteTeam($teamId);
     }
 
     /**
@@ -180,6 +186,8 @@ class TeamUserTest extends TestCase
         $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissionsExpected, $getUserPermissions);
         $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
+
+        $this->deleteTeam($teamId);
     }
 
     /**
@@ -213,6 +221,8 @@ class TeamUserTest extends TestCase
             'message'
         ]);
         $responseDelete->assertStatus(200);
+
+        $this->deleteTeam($teamId);
     }
 
     private function createTeam()
@@ -235,7 +245,7 @@ class TeamUserTest extends TestCase
             'POST',
             'api/v1/teams',
             [
-                'name' => 'A. Test Team',
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -254,6 +264,20 @@ class TeamUserTest extends TestCase
         $responseNewTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         return $responseNewTeam['data'];
+    }
+
+    private function deleteTeam($id)
+    {
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $id . '?deletePermanently=true',
+            [],
+            $this->header,
+        );
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
     }
 
     private function createUser()
@@ -275,6 +299,7 @@ class TeamUserTest extends TestCase
                 'contact_feedback' => 1,
                 'contact_news' => 1, 
                 'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header,
         );

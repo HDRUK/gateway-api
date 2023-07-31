@@ -40,6 +40,8 @@ class UserFactory extends Factory
             'contact_feedback' => fake()->numberBetween(0, 1),
             'contact_news' => fake()->numberBetween(0, 1),
             'mongo_id' => fake()->randomNumber(8, true),
+            'mongo_object_id' => fake()->words(1, true),
+            'is_admin' => false,
         ];
     }
 

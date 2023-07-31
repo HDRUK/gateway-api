@@ -6,6 +6,7 @@ use Hash;
 use Config;
 use Exception;
 use App\Models\User;
+use Illuminate\Http\Request;
 use App\Http\Requests\User\GetUser;
 use App\Models\UserHasNotification;
 use App\Http\Controllers\Controller;
@@ -44,9 +45,11 @@ class UserController extends Controller
      *    ),
      * )
      */
-    public function index(): mixed
+    public function index(Request $request): mixed
     {
-        $users = User::with('teams')->get()->toArray();
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $users = User::getAll('id', $jwtUser)->with('teams')->get()->toArray();
 
         $response = $this->getUsers($users);
 
@@ -196,6 +199,7 @@ class UserController extends Controller
                 'contact_feedback' => $input['contact_feedback'],
                 'contact_news' => $input['contact_news'],
                 'mongo_id' => $input['mongo_id'],
+                'mongo_object_id' => $input['mongo_object_id'],  
             ];
             $user = User::create($array);
 
@@ -301,7 +305,8 @@ class UserController extends Controller
                     "orcid" => $input['orcid'],
                     "contact_feedback" => $input['contact_feedback'],
                     "contact_news" => $input['contact_news'],  
-                    'mongo_id' => $input['mongo_id'],                  
+                    "mongo_id" => $input['mongo_id'], 
+                    "mongo_object_id" => $input['mongo_object_id'],                 
                 ];
 
                 $user->update($array);
@@ -446,6 +451,10 @@ class UserController extends Controller
 
             if (array_key_exists('mongo_id', $input)) {
                 $array['mongo_id'] = $input['mongo_id'];
+            }
+
+            if (array_key_exists('mongo_object_id', $input)) {
+                $array['mongo_object_id'] = $input['mongo_object_id'];
             }
 
             User::withTrashed()->where('id', $id)->update($array);

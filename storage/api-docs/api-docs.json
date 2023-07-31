@@ -5884,6 +5884,292 @@
                 ]
             }
         },
+        "/api/v1/datasets": {
+            "get": {
+                "tags": [
+                    "Datasets"
+                ],
+                "summary": "DatasetController@index",
+                "description": "Get All Datasets",
+                "operationId": "fetch_all_datasets",
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Datasets"
+                ],
+                "summary": "DatasetController@store",
+                "description": "Create a new dataset",
+                "operationId": "create_datasets",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "3"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "example": "label dataset for test"
+                                    },
+                                    "short_description": {
+                                        "type": "string",
+                                        "example": "lorem ipsum"
+                                    },
+                                    "data": {
+                                        "type": "array",
+                                        "items": {}
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/datasets/{id}": {
+            "get": {
+                "tags": [
+                    "Datasets"
+                ],
+                "summary": "DatasetController@show",
+                "description": "Get dataset by id",
+                "operationId": "fetch_datasets",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "dataset id",
+                        "required": true,
+                        "schema": {
+                            "description": "dataset id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Datasets"
+                ],
+                "summary": "DatasetController@destroy",
+                "description": "Delete a dataset",
+                "operationId": "d1bfb268aa381f155b16347e8e8c4a6e",
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/features": {
             "get": {
                 "tags": [
@@ -10179,6 +10465,11 @@
                                                         "type": "string",
                                                         "format": "date-time",
                                                         "example": "2023-04-11"
+                                                    },
+                                                    "mdm_folder_id": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "xxxxxxx"
                                                     }
                                                 },
                                                 "type": "object"
@@ -10265,6 +10556,10 @@
                                         "type": "string",
                                         "format": "date-time",
                                         "example": "2023-04-11"
+                                    },
+                                    "mdm_folder_id": {
+                                        "type": "string",
+                                        "example": "xxxx"
                                     },
                                     "notifications": {
                                         "type": "array",
@@ -10404,6 +10699,10 @@
                                                     "format": "date-time",
                                                     "example": "2023-04-11"
                                                 },
+                                                "mdm_folder_id": {
+                                                    "type": "string",
+                                                    "example": "xxxx"
+                                                },
                                                 "notifications": {
                                                     "type": "array",
                                                     "items": {
@@ -10513,6 +10812,10 @@
                                         "format": "date-time",
                                         "example": "2023-04-11"
                                     },
+                                    "mdm_folder_id": {
+                                        "type": "string",
+                                        "example": "xxx"
+                                    },
                                     "notifications": {
                                         "type": "array",
                                         "items": {
@@ -10610,6 +10913,10 @@
                                                     "type": "string",
                                                     "format": "date-time",
                                                     "example": "2023-04-11"
+                                                },
+                                                "mdm_folder_id": {
+                                                    "type": "string",
+                                                    "example": "xxxx"
                                                 },
                                                 "notifications": {
                                                     "type": "array",
@@ -10769,6 +11076,10 @@
                                         "format": "date-time",
                                         "example": "2023-04-11"
                                     },
+                                    "mdm_folder_id": {
+                                        "type": "string",
+                                        "example": "xxxxx"
+                                    },
                                     "notifications": {
                                         "type": "array",
                                         "items": {
@@ -10866,6 +11177,10 @@
                                                     "type": "string",
                                                     "format": "date-time",
                                                     "example": "2023-04-11"
+                                                },
+                                                "mdm_folder_id": {
+                                                    "type": "string",
+                                                    "example": "xxxxx"
                                                 },
                                                 "notifications": {
                                                     "type": "array",

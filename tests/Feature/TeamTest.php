@@ -92,7 +92,7 @@ class TeamTest extends TestCase
             'POST', 
             'api/v1/teams', 
             [  
-                'name' => 'A. Test Team', 
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'), 
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -117,8 +117,9 @@ class TeamTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
+        $teamId = $content['data'];
                 
-        $response = $this->get('api/v1/teams/' . $content['data'], [
+        $response = $this->get('api/v1/teams/' .$teamId, [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
         $content = $response->decodeResponseJson();
@@ -130,6 +131,21 @@ class TeamTest extends TestCase
             ]);
 
         $this->assertEquals($content['data']['notifications'][0]['notification_type'], 'applicationSubmitted');
+
+        // delete the team created
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '?deletePermanently=true',
+            [],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
     }
 
     /**
@@ -161,7 +177,7 @@ class TeamTest extends TestCase
             'POST', 
             'api/v1/teams', 
             [  
-                'name' => 'A. Test Team', 
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'), 
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -184,6 +200,24 @@ class TeamTest extends TestCase
                 'message',
                 'data',
             ]);
+
+        $content = $response->decodeResponseJson();
+        $teamId = $content['data'];
+
+        // delete the team created
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '?deletePermanently=true',
+            [],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
     }
 
     /**
@@ -216,7 +250,7 @@ class TeamTest extends TestCase
             'POST', 
             'api/v1/teams', 
             [  
-                'name' => 'Created Test Team', 
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'), 
                 'enabled' => 0,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -241,13 +275,16 @@ class TeamTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-                
+
+        $teamId = $content['data'];
+    
         // Finally, update this team with new details
+        $updateTeamName = 'Updated Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $response = $this->json(
             'PUT', 
-            'api/v1/teams/' . $content['data'],
+            'api/v1/teams/' . $teamId,
             [  
-                'name' => 'Updated Test Team', 
+                'name' => $updateTeamName,
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -275,7 +312,22 @@ class TeamTest extends TestCase
 
         $this->assertEquals($content['data']['enabled'], 1);
         $this->assertEquals($content['data']['member_of'], 1002);
-        $this->assertEquals($content['data']['name'], 'Updated Test Team');
+        $this->assertEquals($content['data']['name'], $updateTeamName);
+
+        // delete the team created
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '?deletePermanently=true',
+            [],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
     }
 
     /**
@@ -307,7 +359,7 @@ class TeamTest extends TestCase
             'POST',
             'api/v1/teams',
             [
-                'name' => 'Created Test Team',
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'enabled' => 0,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -335,11 +387,12 @@ class TeamTest extends TestCase
         $id = $contentCreate['data'];
 
         // update team
+        $updateTeamName = 'Updated Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseUpdate = $this->json(
             'PUT',
             'api/v1/teams/' . $id,
             [
-                'name' => 'Updated Test Team',
+                'name' => $updateTeamName,
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -367,7 +420,7 @@ class TeamTest extends TestCase
 
         $this->assertEquals($contentUpdate['data']['enabled'], 1);
         $this->assertEquals($contentUpdate['data']['member_of'], 1002);
-        $this->assertEquals($contentUpdate['data']['name'], 'Updated Test Team');
+        $this->assertEquals($contentUpdate['data']['name'], $updateTeamName);
 
         // edit team
         $responseEdit1 = $this->json(
@@ -415,6 +468,21 @@ class TeamTest extends TestCase
         $contentEdit2 = $responseEdit2->decodeResponseJson();
 
         $this->assertEquals($contentEdit2['data']['enabled'], 0);
+
+        // delete the team created
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $id . '?deletePermanently=true',
+            [],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
     }
 
     /**
@@ -447,7 +515,7 @@ class TeamTest extends TestCase
             'POST', 
             'api/v1/teams', 
             [  
-                'name' => 'Deletable Test Team', 
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'), 
                 'enabled' => 0,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -477,7 +545,7 @@ class TeamTest extends TestCase
         // Finally, delete the team we just created
         $responseDelete = $this->json(
             'DELETE', 
-            'api/v1/teams/' . $content['data'], 
+            'api/v1/teams/' . $content['data'] . '?deletePermanently=true', 
             [],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

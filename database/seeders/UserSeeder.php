@@ -22,6 +22,7 @@ class UserSeeder extends Seeder
             'email' => 'developers@hdruk.ac.uk',
             'provider' => 'service',
             'password' => Hash::make('Watch26Task?'),
+            'is_admin' => true,
         ]);
 
         User::factory(10)->create();

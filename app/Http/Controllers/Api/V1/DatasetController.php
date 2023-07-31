@@ -1,0 +1,290 @@
+<?php
+
+namespace App\Http\Controllers\Api\V1;
+
+use Mauro;
+use Config;
+use Exception;
+use App\Models\Team;
+use App\Models\User;
+use App\Models\Dataset;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
+use App\Http\Requests\Dataset\GetDataset;
+use App\Http\Requests\Dataset\CreateDataset;
+
+class DatasetController extends Controller
+{
+    /**
+     * @OA\Get(
+     *    path="/api/v1/datasets",
+     *    operationId="fetch_all_datasets",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@index",
+     *    description="Get All Datasets",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function index(): JsonResponse
+    {
+        $datasets = Dataset::paginate(Config::get('constants.per_page'));
+
+        foreach ($datasets as $dataset) {
+            if ($dataset->datasetid) {
+                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
+                $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
+            } else {
+                $dataset['mauro'] = [];
+            }
+        }
+
+        return response()->json(
+            $datasets
+        );
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/datasets/{id}",
+     *    operationId="fetch_datasets",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@show",
+     *    description="Get dataset by id",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="dataset id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="dataset id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success"),
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          ),
+     *       ),
+     *    ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     * 
+     */
+    public function show(GetDataset $request, int $id): JsonResponse
+    {
+        try {
+            $dataset = Dataset::findOrFail($id)->toArray();
+
+            if ($dataset['datasetid']) {
+                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
+                $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
+            }
+            
+            return response()->json([
+                'message' => 'success',
+                'data' => $dataset,
+            ], 200);
+
+            throw new NotFoundException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *    path="/api/v1/datasets",
+     *    operationId="create_datasets",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@store",
+     *    description="Create a new dataset",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="team_id", type="integer", example="1"),
+     *             @OA\Property(property="user_id", type="integer", example="3"),
+     *             @OA\Property(property="label", type="string", example="label dataset for test"),
+     *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
+     *             @OA\Property(property="data", type="array", @OA\Items())
+     *          )
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Created",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="integer", example="100")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function store(CreateDataset $request): JsonResponse
+    {
+        try {
+            $input = $request->all();
+
+            $user = User::where('id', (int) $input['user_id'])->first()->toArray();
+            $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
+
+            // Health Data Research
+            // 0930397d-6f49-4f56-b41f-499da24e35b8
+            if ($team['mdm_folder_id']) {
+                $mauro = Mauro::createDataModel(
+                    $input['label'],
+                    $input['short_description'],
+                    $user['name'],
+                    $team['name'],
+                    $team['mdm_folder_id'],
+                    $input
+                );
+
+                $dataset = Dataset::create([
+                    'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
+                    'label' => $input['label'],
+                    'short_description' => $input['short_description'],
+                    'user_id' => $input['user_id'],
+                    'team_id' => $input['team_id'],
+                    'dataset' => json_encode($input['data']),
+                    'created' => now(),
+                    'updated' => now(),
+                    'submitted' => now(),
+                ]);
+
+                return response()->json([
+                    'message' => 'created',
+                    'data' => $dataset->id,
+                ], 201);
+            }
+
+            throw new NotFoundException('Mauro Data Mapper folder id for team ' . $input['team_id'] . ' not found');
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function update(Request $request, int $id)
+    {
+        //
+    }
+
+    public function edit(Request $request, int $id)
+    {
+        //
+    }
+
+    /**
+     * @OA\Delete(
+     *      path="/api/v1/datasets/{id}",
+     *      summary="Delete a dataset",
+     *      description="Delete a dataset",
+     *      tags={"Datasets"},
+     *      summary="DatasetController@destroy",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found")
+     *           ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success")
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error")
+     *          )
+     *      )
+     * )
+     */
+    public function destroy(Request $request, string $id) // softdelete
+    {
+        try {
+            $dataset = Dataset::where('id', (int) $id)->first()->toArray();
+
+            $deletePermanently = false;
+            if ($request->has('deletePermanently')) {
+                $deletePermanently = (bool) $request->query('deletePermanently');
+            }
+
+            Mauro::deleteDataModel($dataset['datasetid'], $deletePermanently);
+
+            Dataset::where('id', (int) $id)->delete();
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+}

@@ -52,11 +52,11 @@ class UpdateTeam extends BaseFormRequest
                 'integer',
             ],
             'contact_point' => [
-                'required',
+                'nullable',
                 'string',
             ],
             'application_form_updated_by' => [
-                'required',
+                'nullable',
                 'string',
             ],
             'application_form_updated_on' => [
@@ -66,7 +66,9 @@ class UpdateTeam extends BaseFormRequest
             'notifications' => [
                 'required',
                 'array',
-
+            ],
+            'mdm_folder_id' => [
+                'string',
             ],
         ];
     }

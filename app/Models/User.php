@@ -6,6 +6,7 @@ use App\Models\Team;
 use App\Models\Tool;
 // use Laravel\Sanctum\HasApiTokens;
 use App\Models\Application;
+use App\Http\Traits\WithJwtUser;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
+    use WithJwtUser;
 
     /**
      * The attributes that are mass assignable.
@@ -39,6 +41,8 @@ class User extends Authenticatable
         'contact_feedback',
         'contact_news',
         'mongo_id',
+        'mongo_object_id',
+        'is_admin',
     ];
 
     /**

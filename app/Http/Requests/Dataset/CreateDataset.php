@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Notification;
+namespace App\Http\Requests\Dataset;
 
 use App\Http\Requests\BaseFormRequest;
 
-class CreateNotification extends BaseFormRequest
+class CreateDataset extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,21 +14,26 @@ class CreateNotification extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'notification_type' => [
+            'team_id' => [
+                'int',
                 'required',
+                'exists:teams,id',
+            ],
+            'user_id' => [
+                'int',
+                'required',
+                'exists:users,id',
+            ],
+            'label' => [
                 'string',
+                'required',
             ],
-            'message' => [
-                'nullable',
+            'short_description' => [
                 'string',
-            ],
-            'opt_in' => [
                 'required',
-                'boolean',
             ],
-            'enabled' => [
+            'data' => [
                 'required',
-                'boolean',
             ],
         ];
     }

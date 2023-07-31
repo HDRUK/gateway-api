@@ -54,7 +54,10 @@ class ActivityLogController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $activityLogs = ActivityLog::paginate(Config::get('constants.per_page'));
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $activityLogs = ActivityLog::getAll('user_id', $jwtUser)->paginate(Config::get('constants.per_page'));
+
         return response()->json(
             $activityLogs
         );

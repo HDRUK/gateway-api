@@ -23,4 +23,19 @@ return [
         'paper',
         'dataUseRegister',
     ],
+    'dataset_states' => [
+        'active', 
+        'archive', 
+        'draft', 
+        'inReview', 
+        'rejected', 
+        'review',
+    ],
+    'weighted_quality_rating' => [
+        'Bronze', 
+        'Gold', 
+        'Not Rated', 
+        'Platinum', 
+        'Silver',
+    ],
 ];
