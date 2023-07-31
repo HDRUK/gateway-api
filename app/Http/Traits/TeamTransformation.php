@@ -80,6 +80,10 @@ trait TeamTransformation
             unset($tmpNotification);
         }
 
-        return $response;
+        if (count($response) > 1) {
+            return $response;
+        }
+
+        return $response[0];
     }
 }
