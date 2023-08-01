@@ -130,7 +130,7 @@ class TeamTest extends TestCase
                 'data',
             ]);
 
-        $this->assertEquals($content['data'][0]['notifications'][0]['notification_type'], 'applicationSubmitted');
+        $this->assertEquals($content['data']['notifications'][0]['notification_type'], 'applicationSubmitted');
 
         // delete the team created
         $responseDelete = $this->json(
