@@ -303,7 +303,7 @@ class UserTest extends TestCase
                 'contact_feedback' => 0,
                 'contact_news' => 0,
                 'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde"
+                'mongo_object_id' => "12345abcde",
             ],
             $this->header
         );
