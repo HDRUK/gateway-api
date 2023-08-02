@@ -15,6 +15,7 @@ use App\Http\Requests\User\CreateUser;
 use App\Http\Requests\User\DeleteUser;
 use App\Http\Requests\User\UpdateUser;
 use App\Http\Traits\UserTransformation;
+use App\Exceptions\NotFoundException;
 
 class UserController extends Controller
 {
