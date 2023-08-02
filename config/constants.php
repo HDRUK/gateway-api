@@ -14,7 +14,8 @@ return [
             'firstname' => 'John',
             'lastname' => 'Doe',
             'email' => 'john.doe.1234567890@example.com',
-            'password' => 'passw@rdJ0hnD0e'
+            'password' => 'passw@rdJ0hnD0e',
+            'is_admin' => 1
         ],
     ],
     'per_page' => 25,

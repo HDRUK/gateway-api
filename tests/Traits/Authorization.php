@@ -11,6 +11,7 @@ trait Authorization
     const CFG_TEST_NAME = 'constants.test.user.name';
     const CFG_TEST_EMAIL = 'constants.test.user.email';
     const CFG_TEST_PASSWORD = 'constants.test.user.password';
+    const CFG_TEST_ADMIN = 'constants.test.user.is_admin';
     const CFG_PROVIDER_SERVICE = 'constants.provider.service';
 
     public function authorisationUser(): bool
@@ -22,6 +23,7 @@ trait Authorization
             'email' => Config::get(self::CFG_TEST_EMAIL),
             'provider' => Config::get(self::CFG_PROVIDER_SERVICE),
             'password' => Hash::make(Config::get(self::CFG_TEST_PASSWORD)),
+            'is_admin' => Config::get(self::CFG_TEST_ADMIN),
         ];
 
         $userId = $this->checkUserIfExist();
