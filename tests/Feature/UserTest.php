@@ -69,6 +69,7 @@ class UserTest extends TestCase
                     'contact_news',
                     'mongo_id',
                     'mongo_object_id',
+                    'notifications',
                 ],
             ],   
         ]);
@@ -109,6 +110,21 @@ class UserTest extends TestCase
     {
         $countBefore = User::all()->count();
 
+        // Create a notification to be used by the new user
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
         $response = $this->json(
             'POST',
             self::TEST_URL . '/',
@@ -127,6 +143,7 @@ class UserTest extends TestCase
                 'contact_news' => 1, 
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",
+                'notifications' => [$notificationID],
             ],
             $this->header
         );
@@ -140,6 +157,21 @@ class UserTest extends TestCase
 
     public function test_it_can_update_a_user(): void
     {
+        // Create a notification to be used by the new user
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+ 
         $responseCreate = $this->json(
             'POST',
             self::TEST_URL,
@@ -158,6 +190,7 @@ class UserTest extends TestCase
                 'contact_news' => 1, 
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",
+                'notifications' => [$notificationID],
             ],
             $this->header
         );
@@ -188,6 +221,7 @@ class UserTest extends TestCase
                 'contact_news' => 0, 
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",
+                'notifications' => [$notificationID],
             ],
             $this->header
         );
@@ -206,7 +240,22 @@ class UserTest extends TestCase
 
     public function test_it_can_edit_a_user(): void
     {
-        // create
+        // Create a notification to be used by the new user
+        $responseNotification = $this->json(
+            'POST',
+            'api/v1/notifications',
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // create user (with no notifications initially)
         $responseCreate = $this->json(
             'POST',
             self::TEST_URL,
@@ -254,7 +303,7 @@ class UserTest extends TestCase
                 'contact_feedback' => 0,
                 'contact_news' => 0,
                 'mongo_id' => 1234567,
-                'mongo_object_id' => "12345abcde",
+                'mongo_object_id' => "12345abcde"
             ],
             $this->header
         );
@@ -270,13 +319,14 @@ class UserTest extends TestCase
         $this->assertEquals($contentUpdate['data']['contact_feedback'], false);
         $this->assertEquals($contentUpdate['data']['contact_news'], false);
 
-        // edit
+        // edit - change names and notifications
         $responseEdit1 = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $id,
             [
                 'firstname' => 'JustE1',
                 'lastname' => 'TestE1',
+                'notifications' => [$notificationID]
             ],
             $this->header
         );
@@ -291,6 +341,10 @@ class UserTest extends TestCase
         $this->assertEquals($contentEdit1['data']['name'], 'JustE1 TestE1');
         $this->assertEquals($contentEdit1['data']['firstname'], 'JustE1');
         $this->assertEquals($contentEdit1['data']['lastname'], 'TestE1');
+        $this->assertEquals(
+            $contentEdit1['data']['notifications'][0]['notification_type'], 
+            "applicationSubmitted",
+        );
 
         // edit
         $responseEdit2 = $this->json(
