@@ -15,6 +15,7 @@ use App\Http\Requests\User\CreateUser;
 use App\Http\Requests\User\DeleteUser;
 use App\Http\Requests\User\UpdateUser;
 use App\Http\Traits\UserTransformation;
+use App\Exceptions\NotFoundException;
 
 class UserController extends Controller
 {
@@ -49,7 +50,7 @@ class UserController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $users = User::getAll('id', $jwtUser)->with('teams')->get()->toArray();
+        $users = User::getAll('id', $jwtUser)->with('teams', 'notifications')->get()->toArray();
 
         $response = $this->getUsers($users);
 
@@ -185,7 +186,7 @@ class UserController extends Controller
 
             $array = [
                 'name' => $input['firstname'] . " " . $input['lastname'],
-                'firstmame' => $input['firstname'],
+                'firstname' => $input['firstname'],
                 'lastname' => $input['lastname'],
                 'email' => $input['email'],
                 'provider' =>  Config::get('constants.provider.service'),
@@ -201,7 +202,21 @@ class UserController extends Controller
                 'mongo_id' => $input['mongo_id'],
                 'mongo_object_id' => $input['mongo_object_id'],  
             ];
+
+            $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
+            
             $user = User::create($array);
+
+            if ($user) {
+                foreach ($arrayUserNotification as $value) {
+                    UserHasNotification::updateOrCreate([
+                        'user_id' => (int) $user->id,
+                        'notification_id' => (int) $value,
+                    ]);
+                }
+            } else {
+                throw new NotFoundException();
+            }
 
             return response()->json([
                 'message' => 'created',
@@ -308,6 +323,16 @@ class UserController extends Controller
                     "mongo_id" => $input['mongo_id'], 
                     "mongo_object_id" => $input['mongo_object_id'],                 
                 ];
+
+                $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
+
+                UserHasNotification::where('user_id', $id)->delete();
+                foreach ($arrayUserNotification as $value) {
+                    UserHasNotification::updateOrCreate([
+                        'user_id' => (int) $id,
+                        'notification_id' => (int) $value,
+                    ]);
+                }
 
                 $user->update($array);
 
@@ -459,9 +484,19 @@ class UserController extends Controller
 
             User::withTrashed()->where('id', $id)->update($array);
 
+            $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
+                
+            UserHasNotification::where('user_id', $id)->delete();
+            foreach ($arrayUserNotification as $value) {
+                UserHasNotification::updateOrCreate([
+                    'user_id' => (int) $id,
+                    'notification_id' => (int) $value,
+                ]);
+            }
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => User::withTrashed()->where('id', $id)->first(),
+                'data' => User::withTrashed()->where('id', $id)->with(['notifications'])->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
