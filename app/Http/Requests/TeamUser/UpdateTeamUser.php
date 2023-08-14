@@ -40,8 +40,7 @@ class UpdateTeamUser extends BaseFormRequest
             'permissions.*' => [
                 'required',
                 function ($attribute, $value, $fail) {
-                    $inputKey = explode('.', $attribute);
-                    $exists = Permission::where('role', $inputKey[1])
+                    $exists = Permission::where('role', $value)
                         ->first();
 
                     if (!$exists) {

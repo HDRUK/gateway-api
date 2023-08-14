@@ -99,7 +99,7 @@ class TeamUserTest extends TestCase
         $userId = $this->createUser();
 
         $urlPost = 'api/v1/teams/' . $teamId . '/users';
-        $arrayPermissionsPost = ["create", "read"];
+        $arrayPermissionsPost = ["permissions.update", "datasets.read"];
         $payloadPost = [
             "userId" => $userId,
             "permissions" => $arrayPermissionsPost,
@@ -114,10 +114,9 @@ class TeamUserTest extends TestCase
         $responsePost->assertStatus(201);
 
         $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
-        $arrayPermissionsExpected = ["create", "read", "update"];
-        $arrayPermissionsPut = ["update" => true];
+        $arrayPermissionsExpected = ["datasets.read"];
         $payloadPut = [
-            "permissions" => ["update" => true],
+            "permissions" => ["datasets.create"],
         ];
         $responsePut = $this->json('PUT', $urlPut, $payloadPut, $this->header);
 
@@ -165,12 +164,12 @@ class TeamUserTest extends TestCase
         $responsePost->assertStatus(201);
 
         $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
-        $arrayPermissionsExpected = ["create"];
-        $arrayPermissionsPut = ["read" => false];
+        $arrayPermissionsExpected = ["datasets.read"];
         $payloadPut = [
-            "permissions" => $arrayPermissionsPut,
+            "permissions" => ["datasets.create"],
         ];
         $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
+        dd($responsePost);
 
         $responsePost->assertJsonStructure([
             'message'
