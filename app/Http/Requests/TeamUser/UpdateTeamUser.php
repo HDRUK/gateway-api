@@ -36,15 +36,15 @@ class UpdateTeamUser extends BaseFormRequest
             'permissions' => [
                 'required',
                 'array',
-            ],
-            'permissions.*' => [
-                'required',
+                'min:1',
                 function ($attribute, $value, $fail) {
-                    $exists = Permission::where('role', $value)
-                        ->first();
-
-                    if (!$exists) {
-                        $fail('One or more of the roles in the permissions field do not exist.');
+                    foreach ($value as $perm => $status) {
+                        $exists = Permission::where('role', $perm)
+                            ->first();
+                        if (!$exists) {
+                            $fail('The role `' . $perm . '` does not exist in the permissions table.');
+                            break;
+                        }
                     }
                 }
             ],

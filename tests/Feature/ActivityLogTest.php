@@ -42,8 +42,6 @@ class ActivityLogTest extends TestCase
     {
         $response = $this->get('api/v1/activity_logs', $this->header);
 
-        // dd($response->getContent());
-
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))                
             ->assertJsonStructure([
                 'data' => [

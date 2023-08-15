@@ -30,15 +30,6 @@ class Role extends Model
     ];
 
     /**
-     * What, if any parameters are cast to other data types
-     * 
-     * @var array
-     */
-    protected $casts = [
-        'enabled' => 'boolean',
-    ];
-
-    /**
      * The name representing this model record
      * 
      * @var string

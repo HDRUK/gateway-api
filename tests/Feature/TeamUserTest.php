@@ -97,14 +97,17 @@ class TeamUserTest extends TestCase
     {
         $teamId = $this->createTeam();
         $userId = $this->createUser();
+        $this->cleanTeamUserPermissions($teamId, $userId);
 
         $urlPost = 'api/v1/teams/' . $teamId . '/users';
-        $arrayPermissionsPost = ["permissions.update", "datasets.read"];
+        $arrayPermissionsPost = [
+            "permissions.update", 
+            "datasets.read",
+        ];
         $payloadPost = [
             "userId" => $userId,
             "permissions" => $arrayPermissionsPost,
         ];
-        $this->cleanTeamUserPermissions($teamId, $userId);
 
         $responsePost = $this->json('POST', $urlPost, $payloadPost, $this->header);
 
@@ -116,7 +119,10 @@ class TeamUserTest extends TestCase
         $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
         $arrayPermissionsExpected = ["datasets.read"];
         $payloadPut = [
-            "permissions" => ["datasets.create"],
+            "permissions" => [
+                "permissions.update" => false,
+                "datasets.create" => true,
+            ],
         ];
         $responsePut = $this->json('PUT', $urlPut, $payloadPut, $this->header);
 
@@ -129,7 +135,8 @@ class TeamUserTest extends TestCase
         $this->assertTrue((bool) (count($getTeamHasUsers) === 1), 'Team has one single user');
 
         $getTeamUserHasPermissions = $this->getTeamUserHasPermissions($teamId, $userId);
-        $this->assertTrue((bool) (count($getTeamUserHasPermissions) === count($arrayPermissionsExpected)), 'The user in the team has ' . count($arrayPermissionsExpected) . ' permissions');
+
+        $this->assertTrue((bool) (count($getTeamUserHasPermissions) === 2), 'The user in the team has 2 permissions');
 
         $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissionsExpected, $getUserPermissions);
@@ -149,7 +156,10 @@ class TeamUserTest extends TestCase
         $userId = $this->createUser();
 
         $urlPost = 'api/v1/teams/' . $teamId . '/users';
-        $arrayPermissionsPost = ["create", "read"];
+        $arrayPermissionsPost = [
+            "permissions.update",
+            "datasets.read",
+        ];
         $payloadPost = [
             "userId" => $userId,
             "permissions" => $arrayPermissionsPost,
@@ -166,10 +176,12 @@ class TeamUserTest extends TestCase
         $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
         $arrayPermissionsExpected = ["datasets.read"];
         $payloadPut = [
-            "permissions" => ["datasets.create"],
+            "permissions" => [
+                "permissions.update" => false,
+                "datasets.create" => true,
+            ],
         ];
         $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
-        dd($responsePost);
 
         $responsePost->assertJsonStructure([
             'message'
@@ -180,7 +192,7 @@ class TeamUserTest extends TestCase
         $this->assertTrue((bool) (count($getTeamHasUsers) === 1), 'Team has one single user');
 
         $getTeamUserHasPermissions = $this->getTeamUserHasPermissions($teamId, $userId);
-        $this->assertTrue((bool) (count($getTeamUserHasPermissions) === count($arrayPermissionsExpected)), 'The user in the team has ' . count($arrayPermissionsExpected) . ' permissions');
+        $this->assertTrue((bool) (count($getTeamUserHasPermissions) === 2), 'The user in the team has 2 permissions');
 
         $getUserPermissions = $this->getUserPermissions($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissionsExpected, $getUserPermissions);

@@ -363,7 +363,7 @@ class TeamUserController extends Controller
                 'user_id' => $userId,
             ])->first();
 
-            foreach ($input['permissions'] as $permision) {
+            foreach ($input['permissions'] as $permision => $action) {
                 $perm = Permission::where('role', $permision)->first();
 
                 if ($action) {
