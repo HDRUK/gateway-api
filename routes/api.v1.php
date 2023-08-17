@@ -43,6 +43,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'audit_logs' => 'AuditLogController',
         'data_use_registers' => 'DataUseRegisterController',
         'applications' => 'ApplicationController',
+        'roles' => 'RoleController',
     ];
 
     foreach ($routes as $path => $controller) {

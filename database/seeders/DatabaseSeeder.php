@@ -45,6 +45,7 @@ class DatabaseSeeder extends Seeder
             ApplicationHasTagSeeder::class,
             ApplicationHasPermissionSeeder::class,
             FAIRShareCommandSeeder::class,
+            TeamUserHasRoleSeeder::class,
         ]);
     }
 }

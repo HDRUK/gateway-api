@@ -1,28 +1,23 @@
 <?php
 
-namespace App\Http\Requests\Permission;
+namespace App\Http\Requests\Role;
 
 use App\Http\Requests\BaseFormRequest;
 
-class EditPermission extends BaseFormRequest
+class GetRole extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
             'id' => [
-                'required',
                 'int',
-                'exists:permissions,id',
-            ],
-            'role' => [
-                'string',
-                'max:255',
-                'unique:permissions,name',
+                'required',
+                'exists:roles,id',
             ],
         ];
     }

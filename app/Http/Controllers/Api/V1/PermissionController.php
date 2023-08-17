@@ -181,7 +181,7 @@ class PermissionController extends Controller
             $input = $request->all();
 
             $permission = Permission::create([
-                'role' => $input['role'],
+                'name' => $input['role'],
             ]);
 
             return response()->json([
@@ -257,7 +257,7 @@ class PermissionController extends Controller
             $input = $request->all();
 
             Permission::where('id', $id)->update([
-                'role' => $input['role'],
+                'name' => $input['role'],
             ]);
 
             return response()->json([
@@ -331,12 +331,11 @@ class PermissionController extends Controller
     {
         try {
             $input = $request->all();
-            $arrayKeys = [
-                'role',
-            ];
+            $array = [];
 
-            $array = $this->checkEditArray($input, $arrayKeys);
-
+            if (array_key_exists('role', $input)) {
+                $array['name'] = $input['role'];
+            }
             Permission::where('id', $id)->update($array);
 
             return response()->json([

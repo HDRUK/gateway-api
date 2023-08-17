@@ -18,7 +18,7 @@ class CreatePermission extends BaseFormRequest
                 'required',
                 'string',
                 'max:255',
-                'unique:permissions,role',
+                'unique:permissions,name',
             ],
         ];
     }

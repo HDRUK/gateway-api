@@ -22,7 +22,7 @@ class UpdatePermission extends BaseFormRequest
             'role' => [
                 'required',
                 'string',
-                'unique:permissions,role',
+                'unique:permissions,name',
             ],
         ];
     }

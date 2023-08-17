@@ -110,7 +110,7 @@ class PermissionSeeder extends Seeder
 
         foreach ($permissions as $perm) {
             Permission::create([
-                'role' => $perm,
+                'name' => $perm,
             ]);
         }
     }
