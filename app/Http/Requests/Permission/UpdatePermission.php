@@ -19,7 +19,7 @@ class UpdatePermission extends BaseFormRequest
                 'int',
                 'exists:permissions,id',
             ],
-            'role' => [
+            'name' => [
                 'required',
                 'string',
                 'unique:permissions,name',

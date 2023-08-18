@@ -8,7 +8,6 @@ use App\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Models\TeamUserHasPermission;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Permission\GetPermission;
 use App\Http\Requests\Permission\EditPermission;
@@ -147,7 +146,7 @@ class PermissionController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="type", type="string", example="features"),
+     *             @OA\Property(property="name", type="string", example="features"),
      *          ),
      *       ),
      *    ),
@@ -181,7 +180,7 @@ class PermissionController extends Controller
             $input = $request->all();
 
             $permission = Permission::create([
-                'name' => $input['role'],
+                'name' => $input['name'],
             ]);
 
             return response()->json([
@@ -207,7 +206,7 @@ class PermissionController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="role", type="string", example="fake_role"),
+     *             @OA\Property(property="name", type="string", example="fake_role"),
      *          ),
      *       ),
      *    ),
@@ -257,7 +256,7 @@ class PermissionController extends Controller
             $input = $request->all();
 
             Permission::where('id', $id)->update([
-                'name' => $input['role'],
+                'name' => $input['name'],
             ]);
 
             return response()->json([
@@ -283,7 +282,7 @@ class PermissionController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="role", type="string", example="fake_role"),
+     *             @OA\Property(property="name", type="string", example="fake_role"),
      *          ),
      *       ),
      *    ),
@@ -333,8 +332,8 @@ class PermissionController extends Controller
             $input = $request->all();
             $array = [];
 
-            if (array_key_exists('role', $input)) {
-                $array['name'] = $input['role'];
+            if (array_key_exists('name', $input)) {
+                $array['name'] = $input['name'];
             }
             Permission::where('id', $id)->update($array);
 
@@ -400,7 +399,6 @@ class PermissionController extends Controller
     public function destroy(DeletePermission $request, string $id): JsonResponse
     {
         try {
-            TeamUserHasPermission::where('permission_id', $id)->delete();
             Permission::where('id', $id)->delete();
 
             return response()->json([

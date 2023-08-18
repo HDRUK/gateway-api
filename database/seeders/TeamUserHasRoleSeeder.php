@@ -16,7 +16,7 @@ class TeamUserHasRoleSeeder extends Seeder
     public function run(): void
     {
         for ($count = 1; $count <= 100; $count++) {
-            $thuId = TeamHasUser::all()->random()->id;
+            $thuId = TeamHasUser::where('user_id', '<>', 1)->get()->random()->id;
             $roleId = Role::all()->random()->id;
 
             $tuhrUser = TeamUserHasRole::where([

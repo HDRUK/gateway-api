@@ -19,7 +19,7 @@ class EditPermission extends BaseFormRequest
                 'int',
                 'exists:permissions,id',
             ],
-            'role' => [
+            'name' => [
                 'string',
                 'max:255',
                 'unique:permissions,name',

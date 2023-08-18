@@ -3,12 +3,13 @@
 namespace Database\Seeders;
 
 use Hash;
-use App\Models\User;
-use App\Models\Team;
 use App\Models\Role;
+use App\Models\Team;
+use App\Models\User;
 use App\Models\TeamHasUser;
-use App\Models\TeamUserHasPermission;
+use App\Models\TeamUserHasRole;
 use Illuminate\Database\Seeder;
+use App\Models\TeamUserHasPermission;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserSeeder extends Seeder
@@ -29,24 +30,19 @@ class UserSeeder extends Seeder
             'is_admin' => true,
         ]);
 
+        $role = Role::with('permissions')->where('name', 'hdruk.superadmin')->first();
+
         // Assign this account to every single team
         $teams = Team::all();
         foreach ($teams as $team) {
-            TeamHasUser::create([
+            $thasu = TeamHasUser::create([
                 'user_id' => $user->id,
                 'team_id' => $team->id,
             ]);
-        }
 
-        // Finally add all permissions for hdruk.superadmin to this
-        // user account
-        $role = Role::with('permissions')
-            ->where('name', 'hdruk.superadmin')->first();
-
-        foreach ($role->permissions as $perm) {
-            TeamUserHasPermission::create([
-                'team_has_user_id' => $user->id,
-                'permission_id' => $perm->id,
+            TeamUserHasRole::create([
+                'team_has_user_id' => $thasu->id,
+                'role_id' => $role->id,
             ]);
         }
 

@@ -7895,7 +7895,7 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "role": {
+                                    "name": {
                                         "type": "string",
                                         "example": "fake_role"
                                     }
@@ -7999,7 +7999,7 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "type": {
+                                    "name": {
                                         "type": "string",
                                         "example": "features"
                                     }
@@ -8083,7 +8083,7 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "role": {
+                                    "name": {
                                         "type": "string",
                                         "example": "fake_role"
                                     }
@@ -11936,11 +11936,11 @@
         "/api/v1/teams/{teamId}/users": {
             "post": {
                 "tags": [
-                    "Team-User-Permission"
+                    "Team-User-Role"
                 ],
                 "summary": "TeamUserController@store",
-                "description": "Create a new team - user - permissions",
-                "operationId": "create_team_user_perms",
+                "description": "Create a new team - user - roles",
+                "operationId": "create_team_user_roles",
                 "parameters": [
                     {
                         "name": "teamId",
@@ -11965,7 +11965,7 @@
                                         "type": "integer",
                                         "example": "1"
                                     },
-                                    "permissions": {
+                                    "roles": {
                                         "type": "array",
                                         "items": {
                                             "type": "string",
@@ -12058,11 +12058,11 @@
         "/api/v1/teams/{teamId}/users/{userId}": {
             "put": {
                 "tags": [
-                    "Team-User-Permission"
+                    "Team-User-Role"
                 ],
                 "summary": "TeamUserController@update",
-                "description": "Update team - user - permissions",
-                "operationId": "update_team_user_perms",
+                "description": "Update team - user - roles",
+                "operationId": "update_team_user_roles",
                 "parameters": [
                     {
                         "name": "teamId",
@@ -12094,7 +12094,7 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "permissions": {
+                                    "roles": {
                                         "properties": {
                                             "read": {
                                                 "type": "boolean",
@@ -12187,11 +12187,11 @@
             },
             "delete": {
                 "tags": [
-                    "Team-User-Permission"
+                    "Team-User-Role"
                 ],
                 "summary": "TeamUserController@destroy",
-                "description": "Delete team - user - permissions",
-                "operationId": "delete_team_user_perms",
+                "description": "Delete team - user - roles",
+                "operationId": "delete_team_user_roles",
                 "parameters": [
                     {
                         "name": "teamId",

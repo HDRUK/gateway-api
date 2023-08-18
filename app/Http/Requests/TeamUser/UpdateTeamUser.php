@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\TeamUser;
 
-use App\Models\Permission;
+use App\Models\Role;
 use App\Models\TeamHasUser;
 use App\Http\Requests\BaseFormRequest;
 
@@ -33,16 +33,16 @@ class UpdateTeamUser extends BaseFormRequest
                     }
                 },
             ],
-            'permissions' => [
+            'roles' => [
                 'required',
                 'array',
                 'min:1',
                 function ($attribute, $value, $fail) {
                     foreach ($value as $perm => $status) {
-                        $exists = Permission::where('role', $perm)
-                            ->first();
+                        $exists = Role::where('name', $perm)->first();
+                        
                         if (!$exists) {
-                            $fail('The role `' . $perm . '` does not exist in the permissions table.');
+                            $fail('The role `' . $perm . '` does not exist in the roles table.');
                             break;
                         }
                     }

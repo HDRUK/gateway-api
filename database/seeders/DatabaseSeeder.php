@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
             ActivityLogSeeder::class,
             // TeamUserPermissionSeeder::class,
             TeamHasUserSeeder::class,
-            TeamUserHasPermissionSeeder::class,
+            // TeamUserHasPermissionSeeder::class,
             NotificationSeeder::class,
             TeamHasNotificationSeeder::class,
             UserHasNotificationSeeder::class,

@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Permission;
-use App\Models\TeamUserHasPermission;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -52,7 +51,7 @@ class PermissionTest extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'role',
+                    'name',
                 ]
             ]
         ]);
@@ -85,7 +84,7 @@ class PermissionTest extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'role',
+                    'name',
                 ]
             ]
         ]);
@@ -105,7 +104,7 @@ class PermissionTest extends TestCase
             'POST',
             self::TEST_URL . '/',
             [
-                'role' => 'fake_for_test',
+                'name' => 'fake_for_test',
             ],
             $this->header
         );
@@ -130,12 +129,12 @@ class PermissionTest extends TestCase
             'PUT',
             self::TEST_URL . '/' . $id,
             [
-                'role' => $name,
+                'name' => $name,
             ],
             $this->header
         );
 
-        $checkIfExist = Permission::where(['role' => $name])->count();
+        $checkIfExist = Permission::where(['name' => $name])->count();
 
         $this->assertTrue((bool) $checkIfExist, 'Response was successfully');
 
@@ -149,7 +148,7 @@ class PermissionTest extends TestCase
             'POST',
             self::TEST_URL,
             [
-                'role' => 'fake_for_test',
+                'name' => 'fake_for_test',
             ],
             $this->header
         );
@@ -170,7 +169,7 @@ class PermissionTest extends TestCase
             'PUT',
             self::TEST_URL . '/' . $id,
             [
-                'role' => 'fake_for_test_update',
+                'name' => 'fake_for_test_update',
             ],
             $this->header
         );
@@ -181,14 +180,14 @@ class PermissionTest extends TestCase
         ]);
 
         $contentUpdate = $responseUpdate->decodeResponseJson();
-        $this->assertEquals($contentUpdate['data']['role'], 'fake_for_test_update');
+        $this->assertEquals($contentUpdate['data']['name'], 'fake_for_test_update');
 
         // edit
         $responseEdit = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $id,
             [
-                'role' => 'fake_for_test_edit',
+                'name' => 'fake_for_test_edit',
             ],
             $this->header
         );
@@ -200,7 +199,7 @@ class PermissionTest extends TestCase
         ]);
 
         $contentEdit = $responseEdit->decodeResponseJson();
-        $this->assertEquals($contentEdit['data']['role'], 'fake_for_test_edit');
+        $this->assertEquals($contentEdit['data']['name'], 'fake_for_test_edit');
     }
 
     /**
@@ -215,7 +214,7 @@ class PermissionTest extends TestCase
             'POST',
             self::TEST_URL . '/',
             [
-                'role' => 'fake_for_test',
+                'name' => 'fake_for_test',
             ],
             $this->header
         );
