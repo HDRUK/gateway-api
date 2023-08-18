@@ -69,10 +69,6 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     
 });
 
-// Route::post('/teams/{teamId}/users', [TeamUserController::class, 'store'])->where('teamId', '[0-9]+');
-// Route::put('/teams/{teamId}/users/{userId}', [TeamUserController::class, 'update'])->where(['teamId' => '[0-9]+', 'userId' => '[0-9]+']);
-// Route::delete('/teams/{teamId}/users/{userId}', [TeamUserController::class, 'destroy'])->where(['teamId' => '[0-9]+', 'userId' => '[0-9]+']);
-
 // stop all all other routes
 Route::any('{path}', function() {
     $response = [
