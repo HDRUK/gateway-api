@@ -44,6 +44,7 @@ class UserTest extends TestCase
     public function test_get_all_users_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
+
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -57,6 +58,7 @@ class UserTest extends TestCase
                     'created_at',
                     'updated_at',
                     'deleted_at',
+                    'sector_id',
                     'teams',
                     'notifications',
                     'sector_id',

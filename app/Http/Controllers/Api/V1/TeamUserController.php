@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Exception;
-use App\Models\Permission;
+use App\Models\Role;
 use App\Models\TeamHasUser;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Models\TeamUserHasPermission;
 use App\Http\Requests\TeamUser\CreateTeamUser;
 use App\Http\Requests\TeamUser\DeleteTeamUser;
 use App\Http\Requests\TeamUser\UpdateTeamUser;
+use App\Models\TeamUserHasRole;
 
 class TeamUserController extends Controller
 {
@@ -23,10 +23,10 @@ class TeamUserController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/teams/{teamId}/users",
-     *    operationId="create_team_user_perms",
-     *    tags={"Team-User-Permission"},
+     *    operationId="create_team_user_roles",
+     *    tags={"Team-User-Role"},
      *    summary="TeamUserController@store",
-     *    description="Create a new team - user - permissions",
+     *    description="Create a new team - user - roles",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="teamId",
@@ -43,7 +43,7 @@ class TeamUserController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property( property="userId", type="integer", example="1" ),
-     *             @OA\Property( property="permissions", type="array",   
+     *             @OA\Property( property="roles", type="array",   
      *                @OA\Items(
      *                   type="string",
      *                   example="create",
@@ -89,11 +89,11 @@ class TeamUserController extends Controller
             $input = $request->all();
 
             $uId = $input['userId'];
-            $permissions = $input['permissions'];
+            $permissions = $input['roles'];
 
             $teamHasUsers = $this->teamHasUser($teamId, $uId);
 
-            $this->teamUsersHasPermissions($teamHasUsers, $permissions);
+            $this->teamUsersHasRoles($teamHasUsers, $permissions);
 
             return response()->json([
                 'message' => 'success',
@@ -106,10 +106,10 @@ class TeamUserController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/teams/{teamId}/users/{userId}",
-     *    operationId="update_team_user_perms",
-     *    tags={"Team-User-Permission"},
+     *    operationId="update_team_user_roles",
+     *    tags={"Team-User-Role"},
      *    summary="TeamUserController@update",
-     *    description="Update team - user - permissions",
+     *    description="Update team - user - roles",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="teamId",
@@ -139,7 +139,7 @@ class TeamUserController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property( property="permissions", type="object",  
+     *             @OA\Property( property="roles", type="object",  
      *                @OA\Property( 
      *                   property="read",
      *                   type="boolean",
@@ -189,7 +189,7 @@ class TeamUserController extends Controller
         try {
             $input = $request->all();
 
-            $this->teamUserPermissions($teamId, $userId, $input);
+            $this->teamUserRoles($teamId, $userId, $input);
 
             return response()->json([
                 'message' => 'success',
@@ -202,10 +202,10 @@ class TeamUserController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/teams/{teamId}/users/{userId}",
-     *    operationId="delete_team_user_perms",
-     *    tags={"Team-User-Permission"},
+     *    operationId="delete_team_user_roles",
+     *    tags={"Team-User-Role"},
      *    summary="TeamUserController@destroy",
-     *    description="Delete team - user - permissions",
+     *    description="Delete team - user - roles",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="teamId",
@@ -271,7 +271,7 @@ class TeamUserController extends Controller
                 throw new NotFoundException();
             }
 
-            TeamUserHasPermission::where([
+            TeamUserHasRole::where([
                 "team_has_user_id" => $teamHasUsers->id,
             ])->delete();
 
@@ -317,31 +317,24 @@ class TeamUserController extends Controller
     }
 
     /**
-     * Add permissions to user from team
+     * Add roles to user from team
      *
      * @param array $teamHasUsers
-     * @param array $permissions
+     * @param array $roles
      * @return void
      */
-    private function teamUsersHasPermissions(array $teamHasUsers, array $permissions): void
+    private function teamUsersHasRoles(array $teamHasUsers, array $roles): void
     {
         try {
-            foreach ($permissions as $permission) {
-                $teamUserPermissions = Permission::updateOrCreate([
-                    'role' => $permission,
+            foreach ($roles as $role) {
+                $roles = Role::updateOrCreate([
+                    'name' => $role,
                 ]);
 
-                $teamUserHasPermissions = TeamUserHasPermission::where([
+                TeamUserHasRole::updateOrCreate([
                     'team_has_user_id' => $teamHasUsers['id'],
-                    'permission_id' => $teamUserPermissions->id,
-                ])->first();
-
-                if (!$teamUserHasPermissions) {
-                    TeamUserHasPermission::insert([
-                        'team_has_user_id' => $teamHasUsers['id'],
-                        'permission_id' => $teamUserPermissions->id,
-                    ]);
-                }
+                    'role_id' => $roles->id,
+                ]);
             }
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -349,14 +342,14 @@ class TeamUserController extends Controller
     }
 
     /**
-     * Update or delete permissions for a user with in a team
+     * Update or delete roles for a user with in a team
      *
      * @param integer $teamId
      * @param integer $userId
      * @param array $input
      * @return mixed
      */
-    private function teamUserPermissions(int $teamId, int $userId, array $input): mixed
+    private function teamUserRoles(int $teamId, int $userId, array $input): mixed
     {
         try {
             $teamHasUsers = TeamHasUser::where([
@@ -364,17 +357,17 @@ class TeamUserController extends Controller
                 'user_id' => $userId,
             ])->first();
 
-            foreach ($input['permissions'] as $permision => $action) {
-                $perm = Permission::where('role', $permision)->first();
+            foreach ($input['roles'] as $permision => $action) {
+                $role = Role::where('name', $permision)->first();
 
                 if ($action) {
-                    TeamUserHasPermission::updateOrCreate([
+                    TeamUserHasRole::updateOrCreate([
                         'team_has_user_id' => $teamHasUsers->id,
-                        'permission_id' => $perm->id,
+                        'role_id' => $role->id,
                     ]);
                 } else {
-                    TeamUserHasPermission::where('team_has_user_id', $teamHasUsers->id)
-                        ->where('permission_id', $perm->id)
+                    TeamUserHasRole::where('team_has_user_id', $teamHasUsers->id)
+                        ->where('role_id', $role->id)
                         ->delete();
                 }
             }

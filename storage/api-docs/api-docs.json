@@ -7895,7 +7895,7 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "role": {
+                                    "name": {
                                         "type": "string",
                                         "example": "fake_role"
                                     }
@@ -7999,7 +7999,7 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "type": {
+                                    "name": {
                                         "type": "string",
                                         "example": "features"
                                     }
@@ -8083,7 +8083,7 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "role": {
+                                    "name": {
                                         "type": "string",
                                         "example": "fake_role"
                                     }
@@ -9290,6 +9290,716 @@
                                                 }
                                             },
                                             "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/roles": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "RoleController@index",
+                "description": "Get All Roles",
+                "operationId": "fetch_all_roles",
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "hdruk.superadmin"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "permissions": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "role": {
+                                                                "type": "string",
+                                                                "example": "applications.read"
+                                                            },
+                                                            "allowed_from_apps": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "null"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "RoleController@store",
+                "description": "Create a new role",
+                "operationId": "create_role",
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "this.is.a.new.role"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "create"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/roles/{id}": {
+            "get": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "RoleController@show",
+                "description": "Get roles by id",
+                "operationId": "fetch_roles",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "role id",
+                        "required": true,
+                        "schema": {
+                            "description": "roles id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "hdruk.superadmin"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "permissions": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "role": {
+                                                                "type": "string",
+                                                                "example": "applications.read"
+                                                            },
+                                                            "allowed_from_apps": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "null"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Update a role",
+                "description": "Update a role",
+                "operationId": "b3bbedf26c1519fed8b75569959e525c",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "role id",
+                        "required": true,
+                        "schema": {
+                            "description": "role id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "this.is.a.new.role"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "create"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "hdruk.superadmin"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "permissions": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "role": {
+                                                                "type": "string",
+                                                                "example": "applications.read"
+                                                            },
+                                                            "allowed_from_apps": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "null"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Delete a role",
+                "description": "Delete a role",
+                "operationId": "6bc525095ab83caa6eff5e63447cf7f5",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "role id",
+                        "required": true,
+                        "schema": {
+                            "description": "role id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Edit a role",
+                "description": "Edit a role",
+                "operationId": "ee859610d9d3cfeece6d0bf5fa4dee5e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "role id",
+                        "required": true,
+                        "schema": {
+                            "description": "role id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "this.is.a.new.role"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "create"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "1"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "hdruk.superadmin"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "permissions": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "role": {
+                                                                "type": "string",
+                                                                "example": "applications.read"
+                                                            },
+                                                            "allowed_from_apps": {
+                                                                "type": "integer",
+                                                                "example": "1"
+                                                            },
+                                                            "description": {
+                                                                "type": "string",
+                                                                "example": "null"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
                                         }
                                     },
                                     "type": "object"
@@ -11226,11 +11936,11 @@
         "/api/v1/teams/{teamId}/users": {
             "post": {
                 "tags": [
-                    "Team-User-Permission"
+                    "Team-User-Role"
                 ],
                 "summary": "TeamUserController@store",
-                "description": "Create a new team - user - permissions",
-                "operationId": "create_team_user_perms",
+                "description": "Create a new team - user - roles",
+                "operationId": "create_team_user_roles",
                 "parameters": [
                     {
                         "name": "teamId",
@@ -11255,7 +11965,7 @@
                                         "type": "integer",
                                         "example": "1"
                                     },
-                                    "permissions": {
+                                    "roles": {
                                         "type": "array",
                                         "items": {
                                             "type": "string",
@@ -11348,11 +12058,11 @@
         "/api/v1/teams/{teamId}/users/{userId}": {
             "put": {
                 "tags": [
-                    "Team-User-Permission"
+                    "Team-User-Role"
                 ],
                 "summary": "TeamUserController@update",
-                "description": "Update team - user - permissions",
-                "operationId": "update_team_user_perms",
+                "description": "Update team - user - roles",
+                "operationId": "update_team_user_roles",
                 "parameters": [
                     {
                         "name": "teamId",
@@ -11384,7 +12094,7 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "permissions": {
+                                    "roles": {
                                         "properties": {
                                             "read": {
                                                 "type": "boolean",
@@ -11477,11 +12187,11 @@
             },
             "delete": {
                 "tags": [
-                    "Team-User-Permission"
+                    "Team-User-Role"
                 ],
                 "summary": "TeamUserController@destroy",
-                "description": "Delete team - user - permissions",
-                "operationId": "delete_team_user_perms",
+                "description": "Delete team - user - roles",
+                "operationId": "delete_team_user_roles",
                 "parameters": [
                     {
                         "name": "teamId",

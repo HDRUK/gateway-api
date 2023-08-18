@@ -16,11 +16,13 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FilterSeeder::class,
             SectorSeeder::class,
-            UserSeeder::class,
             TagSeeder::class,
             FeatureSeeder::class,
             DarIntegrationSeeder::class,
+            PermissionSeeder::class,
+            RoleSeeder::class,
             TeamSeeder::class,
+            UserSeeder::class,
             ToolSeeder::class,
             ToolHasTagSeeder::class,
             // This one we do in order to ensure data is linked for
@@ -28,10 +30,9 @@ class DatabaseSeeder extends Seeder
             ActivityLogUserTypeSeeder::class,
             ActivityLogTypeSeeder::class,
             ActivityLogSeeder::class,
-            PermissionSeeder::class,
             // TeamUserPermissionSeeder::class,
             TeamHasUserSeeder::class,
-            TeamUserHasPermissionSeeder::class,
+            // TeamUserHasPermissionSeeder::class,
             NotificationSeeder::class,
             TeamHasNotificationSeeder::class,
             UserHasNotificationSeeder::class,
@@ -44,6 +45,7 @@ class DatabaseSeeder extends Seeder
             ApplicationHasTagSeeder::class,
             ApplicationHasPermissionSeeder::class,
             FAIRShareCommandSeeder::class,
+            TeamUserHasRoleSeeder::class,
         ]);
     }
 }

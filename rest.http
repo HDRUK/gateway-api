@@ -78,7 +78,7 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "role" : "test"
+    "name" : "test"
 }
 
 #### update permission by id
@@ -88,7 +88,7 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "role" : "test2"
+    "name" : "test2"
 }
 
 #### delete permission by id
@@ -169,42 +169,6 @@ Authorization: Bearer {{accessToken}}
     "application_form_updated_on": "2023-04-06 15:44:41",
     "notifications": []
 }
-
-
-#### add new user in team
-POST {{baseUrl}}/api/{{apiVersion}}/teams/1/users HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "userId": 1,
-    "permissions" : [
-        "create",
-        "read"
-    ]
-}
-
-#### update user in team
-PUT {{baseUrl}}/api/{{apiVersion}}/teams/1/users/1 HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "permissions" : {
-        "read": false,
-        "create": true,
-        "update": true
-    }
-}
-
-#### update permissions for user in team
-DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/2 HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
 
 ### Review
 #### get all reviews
@@ -570,6 +534,105 @@ Authorization: Bearer {{accessToken}}
 
 #### delete application by id
 DELETE {{baseUrl}}/api/{{apiVersion}}/datasets/4 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+### ROLES
+#### get all roles
+GET {{baseUrl}}/api/{{apiVersion}}/roles HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one role by id
+GET {{baseUrl}}/api/{{apiVersion}}/roles/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create role
+POST {{baseUrl}}/api/{{apiVersion}}/roles HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "this.is.a.new.role.4",
+    "enabled": true,
+    "permissions" : [
+        "create",
+        "read",
+        "test",
+        "test2"
+    ]
+}
+
+#### update role
+PUT {{baseUrl}}/api/{{apiVersion}}/roles/13 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "this.is.a.new.role",
+    "enabled": true,
+    "permissions" : [
+        "create",
+        "read",
+        "test",
+        "test2"
+    ]
+}
+
+#### edit role
+PATCH {{baseUrl}}/api/{{apiVersion}}/roles/13 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "this.is.a.new.role.y",
+    "permissions" : [
+        "enquiries.update"
+    ]
+}
+
+#### delete role by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/roles/15 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+### TEAMS - USERS - ROLES
+#### add new user in team
+POST {{baseUrl}}/api/{{apiVersion}}/teams/1/users HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "userId": 1,
+    "roles" : [
+        "create",
+        "read"
+    ]
+}
+
+#### update team - user - role
+PUT {{baseUrl}}/api/{{apiVersion}}/teams/1/users/1 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "roles" : {
+        "read": false,
+        "create": true,
+        "update": true
+    }
+}
+
+#### delete team - user - role
+DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/2 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}

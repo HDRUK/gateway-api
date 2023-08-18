@@ -13,6 +13,105 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        Permission::factory(4)->create();
+        $permissions = [
+            'applications.read',
+            'applications.create',
+            'applications.update',
+            'applications.delete',
+            
+            'integrations.metadata',
+            'integrations.dar',
+            
+            'datasets.read',
+            'datasets.create',
+            'datasets.update',
+            'datasets.delete',
+
+            'enquiries.create',
+            'enquiries.read',
+            'enquiries.update',
+            'enquiries.delete', // Shouldn't be possible. Investigate need.
+
+            'dar.read.all',
+            'dar.read.assigned',
+            'dar.update',
+            'dar.decision',
+            
+            'application.read',
+            'application.create',
+            'application.update',
+            'application.delete',
+
+            'workflows.read',
+            'workflows.create',
+            'workflows.update',
+            'workflows.delete',
+            
+            'workflow.assign',
+
+            'dar-config.update',
+            'dar-form.create',
+            'dar-form.read',
+            'dar-form.update',
+
+            'dur.read',
+            'dur.create',
+            'dur.update',
+            'dur.delete',
+
+            'permissions.update',
+
+            'custodians.create',
+            'custodians.read',
+            'custodians.update',
+            'custodians.delete',
+
+            'papers.read',
+            'papers.create',
+            'papers.update',
+            'papers.delete',
+
+            'tools.read',
+            'tools.create',
+            'tools.update',
+            'tools.delete',
+
+            'collections.read',
+            'collections.create',
+            'collections.update',
+            'collections.delete',
+
+            'people.read',
+            'people.create',
+            'people.update',
+            'people.delete',
+            
+            'filters.read',
+            'filters.create',
+            'filters.update',
+            'filters.delete',
+
+            'features.read',
+            'features.create',
+            'features.update',
+            'features.delete',
+
+            'sectors.read',
+            'sectors.create',
+            'sectors.update',
+            'sectors.delete',
+
+            'audit.read',
+            'audit.create',
+            'audit.update',
+            'audit.delete',
+
+        ];
+
+        foreach ($permissions as $perm) {
+            Permission::create([
+                'name' => $perm,
+            ]);
+        }
     }
 }

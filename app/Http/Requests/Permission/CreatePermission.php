@@ -14,11 +14,11 @@ class CreatePermission extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'role' => [
+            'name' => [
                 'required',
                 'string',
                 'max:255',
-                'unique:permissions,role',
+                'unique:permissions,name',
             ],
         ];
     }

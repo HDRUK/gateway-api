@@ -27,7 +27,7 @@ class Permission extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'role',
+        'name',
     ];
 
     public function teamHasUsers(): BelongsToMany
@@ -38,5 +38,10 @@ class Permission extends Model
     public function applications(): BelongsToMany
     {
         return $this->belongsToMany(Application::class, 'application_has_permissions');
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(TeamHasUser::class, 'role_has_permissions');
     }
 }

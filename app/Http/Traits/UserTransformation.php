@@ -61,13 +61,13 @@ trait UserTransformation
 
                 $teamHasUserId = (int) $team['pivot']['id'];
 
-                $permissions = TeamHasUser::where('id', $teamHasUserId)->with('permissions')->get()->toArray();
+                $roles = TeamHasUser::where('id', $teamHasUserId)->with('roles')->get()->toArray();
 
                 $tmpPerm = [];
-                foreach ($permissions[0]['permissions'] as $permission) {
-                    $tmpPerm[] = $permission['role'];
+                foreach ($roles[0]['roles'] as $role) {
+                    $tmpPerm[] = $role;
                 }
-                $tmp['permissions'] = $tmpPerm;
+                $tmp['roles'] = $tmpPerm;
 
                 $tmpTeam[] = $tmp;
                 unset($tmp);

@@ -3,9 +3,13 @@
 namespace Database\Seeders;
 
 use Hash;
+use App\Models\Role;
+use App\Models\Team;
 use App\Models\User;
-use App\Models\Sector;
+use App\Models\TeamHasUser;
+use App\Models\TeamUserHasRole;
 use Illuminate\Database\Seeder;
+use App\Models\TeamUserHasPermission;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserSeeder extends Seeder
@@ -15,7 +19,8 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::factory()->create([
+        // Create our super user account
+        $user = User::factory()->create([
             'name' => 'HDRUK Super-User',
             'firstname' => 'HDRUK',
             'lastname' => 'Super-User',
@@ -24,6 +29,22 @@ class UserSeeder extends Seeder
             'password' => Hash::make('Watch26Task?'),
             'is_admin' => true,
         ]);
+
+        $role = Role::with('permissions')->where('name', 'hdruk.superadmin')->first();
+
+        // Assign this account to every single team
+        $teams = Team::all();
+        foreach ($teams as $team) {
+            $thasu = TeamHasUser::create([
+                'user_id' => $user->id,
+                'team_id' => $team->id,
+            ]);
+
+            TeamUserHasRole::create([
+                'team_has_user_id' => $thasu->id,
+                'role_id' => $role->id,
+            ]);
+        }
 
         User::factory(10)->create();
     }
