@@ -276,7 +276,8 @@ class TeamUserController extends Controller
             ])->delete();
 
             TeamHasUser::where([
-                'teamHasUsers' => $teamHasUsers->id,
+                'team_id' => $teamHasUsers->team_id,
+                'user_id' => $teamHasUsers->user_id,
             ])->delete();
 
             return response()->json([
