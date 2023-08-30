@@ -187,12 +187,23 @@ class FeatureController extends Controller
 
     /**
      * @OA\Put(
-     *    path="/api/v1/features",
+     *    path="/api/v1/features/{id}",
      *    operationId="update_features",
      *    tags={"Features"},
      *    summary="FeatureController@update",
      *    description="Update feature",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="feature id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="feature id",
+     *       )
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
@@ -264,12 +275,23 @@ class FeatureController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/features",
+     *    path="/api/v1/features/{id}",
      *    operationId="edit_features",
      *    tags={"Features"},
      *    summary="FeatureController@edit",
      *    description="Edit feature",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="feature id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="feature id",
+     *       )
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",

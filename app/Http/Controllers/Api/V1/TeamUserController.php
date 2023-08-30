@@ -377,4 +377,9 @@ class TeamUserController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    private function sendEmail(string $role, bool $action)
+    {
+        // TODO: send email when the user adds a role or removes a role
+    }
 }

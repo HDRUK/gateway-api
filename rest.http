@@ -610,24 +610,24 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "userId": 1,
+    "userId": 12,
     "roles" : [
-        "create",
-        "read"
+        "custodian.team.admin",
+        "custodian.metadata.manager"
     ]
 }
 
 #### update team - user - role
-PUT {{baseUrl}}/api/{{apiVersion}}/teams/1/users/1 HTTP/1.1
+PUT {{baseUrl}}/api/{{apiVersion}}/teams/1/users/12 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
     "roles" : {
-        "read": false,
-        "create": true,
-        "update": true
+        "custodian.team.admin": false,
+        "custodian.metadata.manager": false,
+        "metadata_editor": true
     }
 }
 
@@ -636,3 +636,64 @@ DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/2 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+### Test Email
+#### test email
+GET {{baseUrl}}/api/{{apiVersion}}/email-test HTTP/1.1
+Content-Type: application/json
+
+### Email Templates
+#### get all email templates
+GET {{baseUrl}}/api/{{apiVersion}}/emailtemplates HTTP/1.1
+Content-Type: application/json
+# Authorization: Bearer {{accessToken}}
+
+#### get one email template by id
+GET {{baseUrl}}/api/{{apiVersion}}/emailtemplates/2 HTTP/1.1
+Content-Type: application/json
+# Authorization: Bearer {{accessToken}}
+
+#### create email template
+POST {{baseUrl}}/api/{{apiVersion}}/emailtemplates HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+# Authorization: Bearer {{accessToken}}
+
+{
+    "identifier": "identifier email template",
+    "subject": "subject email template",
+    "body": "<mjml>...</mjml>",
+    "enabled": true
+}
+
+#### update email template
+PUT {{baseUrl}}/api/{{apiVersion}}/emailtemplates/8 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+# Authorization: Bearer {{accessToken}}
+
+{
+    "identifier": "identifier email template test",
+    "subject": "subject email template test",
+    "body": "<mjml>...</mjml>",
+    "enabled": true
+}
+
+#### edit email template
+PATCH {{baseUrl}}/api/{{apiVersion}}/emailtemplates/8 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+# Authorization: Bearer {{accessToken}}
+
+{
+    "identifier": "identifier email template edit",
+    "subject": "subject email template edit",
+    "body": "<mjml>...</mjml>",
+    "enabled": true
+}
+
+#### delete email template
+DELETE {{baseUrl}}/api/{{apiVersion}}/emailtemplates/8 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+# Authorization: Bearer {{accessToken}}

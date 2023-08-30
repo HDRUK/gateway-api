@@ -75,7 +75,7 @@ class RoleSeeder extends Seeder
                 'permissions.update',
                 'custodians.create',
             ],
-            'custodian.teamadmin' => [
+            'custodian.team.admin' => [
                 'applications.read',
                 'applications.create',
                 'applications.update',
@@ -101,7 +101,7 @@ class RoleSeeder extends Seeder
                 'integrations.dar',
                 'datasets.read',
             ],
-            'metadata.manager' => [
+            'custodian.metadata.manager' => [
                 'integrations.metadata',
                 'datasets.read',
                 'datasets.create',
@@ -109,12 +109,12 @@ class RoleSeeder extends Seeder
                 'datasets.delete',
                 'permissions.update',
             ],
-            'metadata.editor' => [
+            'metadata_editor' => [
                 'datasets.read',
                 'datasets.create',
                 'datasets.update',
             ],
-            'dar.manager' => [
+            'custodian.dar.manager' => [
                 'integrations.dar',
                 'datasets.read',
                 'enquiries.create',
@@ -133,7 +133,7 @@ class RoleSeeder extends Seeder
                 'dar-form.update',
                 'permissions.update',                
             ],
-            'dar.reviewer' => [
+            'reviewer' => [
                 'datasets.read',
                 'dar.read.assigned',
                 'dar.update',                

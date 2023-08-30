@@ -75,6 +75,17 @@ class DarIntegrationController extends Controller
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@show",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="dar integration id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="dar integration id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -208,6 +219,17 @@ class DarIntegrationController extends Controller
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@update",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="dar integration id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="dar integration id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="DarIntegration definition",
@@ -297,6 +319,17 @@ class DarIntegrationController extends Controller
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@edit",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="dar integration id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="dar integration id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="DarIntegration definition",
@@ -386,6 +419,17 @@ class DarIntegrationController extends Controller
      *      tags={"DarIntegration"},
      *      summary="DarIntegration@destroy",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="dar integration id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="dar integration id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

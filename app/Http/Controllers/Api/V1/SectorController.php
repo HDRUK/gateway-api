@@ -61,6 +61,17 @@ class SectorController extends Controller
      *      tags={"Sector"},
      *      summary="Sector@show",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="sector id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="sector id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -160,6 +171,17 @@ class SectorController extends Controller
      *      tags={"Sector"},
      *      summary="Sector@update",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="sector id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="sector id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Sector definition",
@@ -226,6 +248,17 @@ class SectorController extends Controller
      *      tags={"Sector"},
      *      summary="Sector@update",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="sector id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="sector id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Sector definition",
@@ -294,6 +327,17 @@ class SectorController extends Controller
      *      tags={"Sector"},
      *      summary="Sector@destroy",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="sector id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="sector id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

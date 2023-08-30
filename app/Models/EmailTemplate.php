@@ -11,8 +11,6 @@ class EmailTemplate extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'updated_at',
-        'deleted_at',
         'identifier',
         'enabled',
         'body',

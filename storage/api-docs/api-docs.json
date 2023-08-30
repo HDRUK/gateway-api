@@ -207,6 +207,19 @@
                 "summary": "ActivityLog@show",
                 "description": "Return a single system activity log",
                 "operationId": "05357e8eaa854776010c42e640b8c454",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -304,6 +317,19 @@
                 "summary": "ActivityLog@update",
                 "description": "Update a system activity log",
                 "operationId": "0380caf96da8356c35731a4029d0062a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "ActivityLog definition",
                     "required": true,
@@ -485,6 +511,19 @@
                 "summary": "ActivityLog@destroy",
                 "description": "Delete a system activity log",
                 "operationId": "9f68d53b4e8bccc7ba38a1b7e3eaf910",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "404": {
                         "description": "Not found response",
@@ -548,6 +587,19 @@
                 "summary": "ActivityLog@edit",
                 "description": "Edit a system activity log",
                 "operationId": "dd20219ea5afda956b66eda7c82f8bc8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "ActivityLog definition",
                     "required": true,
@@ -842,6 +894,19 @@
                 "summary": "ActivityLogType@show",
                 "description": "Return a single system activity log type",
                 "operationId": "9c58fce9782c18c44d9706c0d1b2dbd0",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log type id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log type id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -911,6 +976,19 @@
                 "summary": "ActivityLogType@update",
                 "description": "Update a system activity log type",
                 "operationId": "acd2b8014ea7f10ad6e7d4f25f95c314",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log type id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log type id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "ActivityLogType definition",
                     "required": true,
@@ -1017,6 +1095,19 @@
                 "summary": "ActivityLogType@destroy",
                 "description": "Delete a system activity log type",
                 "operationId": "33323cda6916ad04d2f239dea405e80f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log type id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log type id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "404": {
                         "description": "Not found response",
@@ -1080,6 +1171,19 @@
                 "summary": "ActivityLogType@edit",
                 "description": "Edit a system activity log type",
                 "operationId": "7de8774a9e43322a5c07c9f41a2b7659",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log type id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log type id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "ActivityLogType definition",
                     "required": true,
@@ -1314,6 +1418,19 @@
                 "summary": "ActivityLogUserType@show",
                 "description": "Return a single system activity log user type",
                 "operationId": "c324ebe5e0165712f4fa947cc00d8e51",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log user type id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log user type id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -1383,6 +1500,19 @@
                 "summary": "ActivityLogUserType@update",
                 "description": "Update a system activity log user type",
                 "operationId": "5d68c0399b48a969b390a16fb6573a12",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log user type id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log user type id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "ActivityLogUserTypes definition",
                     "required": true,
@@ -1489,6 +1619,19 @@
                 "summary": "ActivityLogUserType@destroy",
                 "description": "Delete a system  activity log user type",
                 "operationId": "a03897a374abe78232b056fea76b2f9f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log user type id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log user type id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "404": {
                         "description": "Not found response",
@@ -1552,6 +1695,19 @@
                 "summary": "ActivityLogUserType@edit",
                 "description": "Edit a system activity log user type",
                 "operationId": "f8fcf6fee074a948978cabb67e44f487",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "activity log user type id",
+                        "required": true,
+                        "schema": {
+                            "description": "activity log user type id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "ActivityLogUserTypes definition",
                     "required": true,
@@ -2666,6 +2822,19 @@
                 "summary": "AuditLog@show",
                 "description": "Return a single system audit log",
                 "operationId": "57c32f14045c31789cb71df64af406d3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "audit log id",
+                        "required": true,
+                        "schema": {
+                            "description": "audit log id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -2743,6 +2912,19 @@
                 "summary": "AuditLog@update",
                 "description": "Update a system audit log",
                 "operationId": "6d23f6f3ab89b0867eed1aa968ca1a9a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "audit log id",
+                        "required": true,
+                        "schema": {
+                            "description": "audit log id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Audit log definition",
                     "required": true,
@@ -2867,6 +3049,19 @@
                 "summary": "AuditLog@destroy",
                 "description": "Delete a system audit log",
                 "operationId": "6f55c9a60ed68391f36d29571c5878d7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "audit log id",
+                        "required": true,
+                        "schema": {
+                            "description": "audit log id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "404": {
                         "description": "Not found response",
@@ -2930,6 +3125,19 @@
                 "summary": "AuditLog@edit",
                 "description": "Edit a system audit log",
                 "operationId": "5c46edef7cd4f5c781d2722825d11a59",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "audit log id",
+                        "required": true,
+                        "schema": {
+                            "description": "audit log id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Audit log definition",
                     "required": true,
@@ -3912,6 +4120,19 @@
                 "summary": "DarIntegration@show",
                 "description": "Returns a single DAR integration enabled on the system",
                 "operationId": "406144045c21a19659ee66f6d4a78235",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "dar integration id",
+                        "required": true,
+                        "schema": {
+                            "description": "dar integration id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -4021,6 +4242,19 @@
                 "summary": "DarIntegration@update",
                 "description": "Updates a DAR integration enabled on the system",
                 "operationId": "09c033f0336380c3d8bb6801e96378bc",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "dar integration id",
+                        "required": true,
+                        "schema": {
+                            "description": "dar integration id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "DarIntegration definition",
                     "required": true,
@@ -4326,6 +4560,19 @@
                 "summary": "DarIntegration@edit",
                 "description": "Edit a DAR integration enabled on the system",
                 "operationId": "c663ccf8b1926d7678370d095b9b358f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "dar integration id",
+                        "required": true,
+                        "schema": {
+                            "description": "dar integration id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "DarIntegration definition",
                     "required": true,
@@ -4495,6 +4742,19 @@
                 "summary": "DarIntegration@destroy",
                 "description": "Delete a system Dar Integration",
                 "operationId": "17fa1074b71d9cefd3e65f2757117b57",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "dar integration id",
+                        "required": true,
+                        "schema": {
+                            "description": "dar integration id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "404": {
                         "description": "Not found response",
@@ -4828,231 +5088,6 @@
                     }
                 ]
             },
-            "put": {
-                "tags": [
-                    "DataUseRegisters"
-                ],
-                "summary": "DataUseRegisterController@update",
-                "description": "Update data use register",
-                "operationId": "update_data_use_registers",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "counter": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
-                                    "keywords": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_applicants": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_applicants": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "funders_and_sponsors": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "other_approval_committees": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_output_tools": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_output_papers": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_outputs": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "project_title": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "project_id_text": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "organisation_name": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "organisation_sector": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "lay_summary": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "latest_approval_date": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11 12:00:00"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean",
-                                        "example": "false"
-                                    },
-                                    "team_id": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
-                                    "user_id": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
-                                    "last_activity": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11 12:00:00"
-                                    },
-                                    "manual_upload": {
-                                        "type": "boolean",
-                                        "example": "false"
-                                    },
-                                    "rejection_reason": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "bad request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Error response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Resource not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
             "post": {
                 "tags": [
                     "DataUseRegisters"
@@ -5212,231 +5247,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "patch": {
-                "tags": [
-                    "DataUseRegisters"
-                ],
-                "summary": "DataUseRegisterController@edit",
-                "description": "Edit data use register",
-                "operationId": "edit_data_use_registers",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "counter": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
-                                    "keywords": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_applicants": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_applicants": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "funders_and_sponsors": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "other_approval_committees": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_output_tools": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_output_papers": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_outputs": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "project_title": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "project_id_text": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "organisation_name": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "organisation_sector": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "lay_summary": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "latest_approval_date": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11 12:00:00"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean",
-                                        "example": "false"
-                                    },
-                                    "team_id": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
-                                    "user_id": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
-                                    "last_activity": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11 12:00:00"
-                                    },
-                                    "manual_upload": {
-                                        "type": "boolean",
-                                        "example": "false"
-                                    },
-                                    "rejection_reason": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "bad request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Error response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Resource not found"
                                         }
                                     },
                                     "type": "object"
@@ -5788,6 +5598,482 @@
                         "bearerAuth": []
                     }
                 ]
+            },
+            "put": {
+                "tags": [
+                    "DataUseRegisters"
+                ],
+                "summary": "DataUseRegisterController@update",
+                "description": "Update data use register",
+                "operationId": "update_data_use_registers",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "data use register id",
+                        "required": true,
+                        "schema": {
+                            "description": "data use register id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "counter": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "keywords": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "dataset_ids": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "gateway_dataset_ids": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "non_gateway_dataset_ids": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "gateway_applicants": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "non_gateway_applicants": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "funders_and_sponsors": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "other_approval_committees": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "gateway_output_tools": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "gateway_output_papers": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "non_gateway_outputs": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "project_title": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "project_id_text": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "organisation_name": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "organisation_sector": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "lay_summary": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "latest_approval_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11 12:00:00"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "false"
+                                    },
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "last_activity": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11 12:00:00"
+                                    },
+                                    "manual_upload": {
+                                        "type": "boolean",
+                                        "example": "false"
+                                    },
+                                    "rejection_reason": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "DataUseRegisters"
+                ],
+                "summary": "DataUseRegisterController@edit",
+                "description": "Edit data use register",
+                "operationId": "edit_data_use_registers",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "data use register id",
+                        "required": true,
+                        "schema": {
+                            "description": "data use register id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "counter": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "keywords": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "dataset_ids": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "gateway_dataset_ids": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "non_gateway_dataset_ids": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "gateway_applicants": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "non_gateway_applicants": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "funders_and_sponsors": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "other_approval_committees": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "gateway_output_tools": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "gateway_output_papers": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "non_gateway_outputs": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "project_title": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "project_id_text": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "organisation_name": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "organisation_sector": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "lay_summary": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "latest_approval_date": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11 12:00:00"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "false"
+                                    },
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "last_activity": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11 12:00:00"
+                                    },
+                                    "manual_upload": {
+                                        "type": "boolean",
+                                        "example": "false"
+                                    },
+                                    "rejection_reason": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
         "api/v1/data_use_registers/{id}": {
@@ -6113,6 +6399,19 @@
                 "summary": "DatasetController@destroy",
                 "description": "Delete a dataset",
                 "operationId": "d1bfb268aa381f155b16347e8e8c4a6e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "dataset id",
+                        "required": true,
+                        "schema": {
+                            "description": "dataset id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "404": {
                         "description": "Not found response",
@@ -6170,14 +6469,14 @@
                 ]
             }
         },
-        "/api/v1/features": {
+        "/api/v1/emailtemplates": {
             "get": {
                 "tags": [
-                    "Features"
+                    "Email Templates"
                 ],
-                "summary": "FeatureController@index",
-                "description": "Get All Features",
-                "operationId": "fetch_all_features",
+                "summary": "EmailTemplateController@index",
+                "description": "Get All Email Templates",
+                "operationId": "fetch_all_emailtemplates",
                 "responses": {
                     "200": {
                         "description": "Success response",
@@ -6206,13 +6505,13 @@
                     }
                 ]
             },
-            "put": {
+            "post": {
                 "tags": [
-                    "Features"
+                    "Email Templates"
                 ],
-                "summary": "FeatureController@update",
-                "description": "Update feature",
-                "operationId": "update_features",
+                "summary": "EmailTemplateController@store",
+                "description": "Create a new email template",
+                "operationId": "create_emailtemplates",
                 "requestBody": {
                     "description": "Pass user credentials",
                     "required": true,
@@ -6220,13 +6519,216 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "name": {
+                                    "identifier": {
                                         "type": "string",
                                         "example": "example"
                                     },
                                     "enabled": {
                                         "type": "boolean",
                                         "example": true
+                                    },
+                                    "body": {
+                                        "type": "string",
+                                        "example": "body example"
+                                    },
+                                    "subject": {
+                                        "type": "string",
+                                        "example": "subject example"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/emailtemplates/{id}": {
+            "get": {
+                "tags": [
+                    "Email Templates"
+                ],
+                "summary": "EmailTemplateController@show",
+                "description": "Get Email Templates by id",
+                "operationId": "fetch_emailtemplates",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "email template id",
+                        "required": true,
+                        "schema": {
+                            "description": "email template id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Email Templates"
+                ],
+                "summary": "EmailTemplateController@update",
+                "description": "Update email template",
+                "operationId": "update_emailtemplates",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "email template id",
+                        "required": true,
+                        "schema": {
+                            "description": "email template id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "identifier": {
+                                        "type": "string",
+                                        "example": "example"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "body": {
+                                        "type": "string",
+                                        "example": "body example"
+                                    },
+                                    "subject": {
+                                        "type": "string",
+                                        "example": "subject example"
                                     }
                                 },
                                 "type": "object"
@@ -6300,6 +6802,264 @@
                                         "message": {
                                             "type": "string",
                                             "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Email Templates"
+                ],
+                "summary": "EmailTemplateController@destroy",
+                "description": "Delete email template based in id",
+                "operationId": "delete_emailtemplates",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "email template id",
+                        "required": true,
+                        "schema": {
+                            "description": "email template id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Email Templates"
+                ],
+                "summary": "EmailTemplateController@edit",
+                "description": "Edit email template",
+                "operationId": "edit_emailtemplates",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "email template id",
+                        "required": true,
+                        "schema": {
+                            "description": "email template id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "identifier": {
+                                        "type": "string",
+                                        "example": "example"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "body": {
+                                        "type": "string",
+                                        "example": "body example"
+                                    },
+                                    "subject": {
+                                        "type": "string",
+                                        "example": "subject example"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/features": {
+            "get": {
+                "tags": [
+                    "Features"
+                ],
+                "summary": "FeatureController@index",
+                "description": "Get All Features",
+                "operationId": "fetch_all_features",
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
                                         }
                                     },
                                     "type": "object"
@@ -6401,14 +7161,113 @@
                         "bearerAuth": []
                     }
                 ]
-            },
-            "patch": {
+            }
+        },
+        "/api/v1/features/{id}": {
+            "get": {
                 "tags": [
                     "Features"
                 ],
-                "summary": "FeatureController@edit",
-                "description": "Edit feature",
-                "operationId": "edit_features",
+                "summary": "FeatureController@show",
+                "description": "Get Feature by id",
+                "operationId": "fetch_features",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "feature id",
+                        "required": true,
+                        "schema": {
+                            "description": "feature id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Features"
+                ],
+                "summary": "FeatureController@update",
+                "description": "Update feature",
+                "operationId": "update_features",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "feature id",
+                        "required": true,
+                        "schema": {
+                            "description": "feature id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Pass user credentials",
                     "required": true,
@@ -6418,7 +7277,7 @@
                                 "properties": {
                                     "name": {
                                         "type": "string",
-                                        "example": "fake_test"
+                                        "example": "example"
                                     },
                                     "enabled": {
                                         "type": "boolean",
@@ -6496,92 +7355,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "bad request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/features/{id}": {
-            "get": {
-                "tags": [
-                    "Features"
-                ],
-                "summary": "FeatureController@show",
-                "description": "Get Feature by id",
-                "operationId": "fetch_features",
-                "parameters": [
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "feature id",
-                        "required": true,
-                        "schema": {
-                            "description": "feature id",
-                            "type": "integer"
-                        },
-                        "example": "1"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not found response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "not found"
                                         }
                                     },
                                     "type": "object"
@@ -6674,6 +7447,127 @@
                                         "message": {
                                             "type": "string",
                                             "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Features"
+                ],
+                "summary": "FeatureController@edit",
+                "description": "Edit feature",
+                "operationId": "edit_features",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "feature id",
+                        "required": true,
+                        "schema": {
+                            "description": "feature id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "fake_test"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
                                         }
                                     },
                                     "type": "object"
@@ -6849,6 +7743,19 @@
                 "summary": "Filter@show",
                 "description": "Return a single system filter",
                 "operationId": "94c81b101903f62b9d03e8c69a9617d7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "filter id",
+                        "required": true,
+                        "schema": {
+                            "description": "filter id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -6930,6 +7837,19 @@
                 "summary": "Filter@update",
                 "description": "Update a system filter",
                 "operationId": "52b5990ddd2ad98ed3964e11ebaa0f53",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "filter id",
+                        "required": true,
+                        "schema": {
+                            "description": "filter id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Filter definition",
                     "required": true,
@@ -7063,6 +7983,19 @@
                 "summary": "Filter@destroy",
                 "description": "Delete a system filter",
                 "operationId": "d1b3a2333969df0032b161ac078dae96",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "filter id",
+                        "required": true,
+                        "schema": {
+                            "description": "filter id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "404": {
                         "description": "Not found response",
@@ -7126,6 +8059,19 @@
                 "summary": "Filter@edit",
                 "description": "Edit a system filter",
                 "operationId": "0ded703f8536929274c3cc0e7633ec03",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "filter id",
+                        "required": true,
+                        "schema": {
+                            "description": "filter id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Filter definition",
                     "required": true,
@@ -7455,6 +8401,19 @@
                 "summary": "Notification@show",
                 "description": "Return a single notification",
                 "operationId": "22581e4d73af25a9036c6610c7e8fc72",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "notification id",
+                        "required": true,
+                        "schema": {
+                            "description": "notification id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -7536,6 +8495,19 @@
                 "summary": "Notification@update",
                 "description": "Update a notification",
                 "operationId": "b4f86f6c4f52e080b246d560038cdc9b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "notification id",
+                        "required": true,
+                        "schema": {
+                            "description": "notification id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Notification definition",
                     "required": true,
@@ -7665,6 +8637,19 @@
                 "summary": "Notification@destroy",
                 "description": "Delete a notification",
                 "operationId": "3f8fe68ea04e79015d8aad5912cadbc1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "notification id",
+                        "required": true,
+                        "schema": {
+                            "description": "notification id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "404": {
                         "description": "Not found response",
@@ -7728,6 +8713,19 @@
                 "summary": "Notification@edit",
                 "description": "Edit a notification",
                 "operationId": "a5ca86d5f19ecac396cb830333f307da",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "notification id",
+                        "required": true,
+                        "schema": {
+                            "description": "notification id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Notification definition",
                     "required": true,
@@ -7881,110 +8879,6 @@
                     }
                 ]
             },
-            "put": {
-                "tags": [
-                    "Permissions"
-                ],
-                "summary": "PermissionController@update",
-                "description": "Update permission",
-                "operationId": "update_permissions",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "fake_role"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "bad request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
             "post": {
                 "tags": [
                     "Permissions"
@@ -8023,110 +8917,6 @@
                                         "data": {
                                             "type": "integer",
                                             "example": "100"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "patch": {
-                "tags": [
-                    "Permissions"
-                ],
-                "summary": "PermissionController@edit",
-                "description": "Edit permission",
-                "operationId": "edit_permissions",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "fake_role"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "bad request"
                                         }
                                     },
                                     "type": "object"
@@ -8259,6 +9049,123 @@
                     }
                 ]
             },
+            "put": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "PermissionController@update",
+                "description": "Update permission",
+                "operationId": "update_permissions",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "permission id",
+                        "required": true,
+                        "schema": {
+                            "description": "permission id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "fake_role"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "delete": {
                 "tags": [
                     "Permissions"
@@ -8321,6 +9228,123 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "PermissionController@edit",
+                "description": "Edit permission",
+                "operationId": "edit_permissions",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "permission id",
+                        "required": true,
+                        "schema": {
+                            "description": "permission id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "fake_role"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
                                         }
                                     },
                                     "type": "object"
@@ -10177,6 +11201,19 @@
                 "summary": "Sector@show",
                 "description": "Return a single system sector",
                 "operationId": "f943e60a72bc597d75f834c209788998",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "sector id",
+                        "required": true,
+                        "schema": {
+                            "description": "sector id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -10250,6 +11287,19 @@
                 "summary": "Sector@update",
                 "description": "Update a system sector",
                 "operationId": "75e526cec1b7ae17caa6e93d13c423d3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "sector id",
+                        "required": true,
+                        "schema": {
+                            "description": "sector id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Sector definition",
                     "required": true,
@@ -10365,6 +11415,19 @@
                 "summary": "Sector@destroy",
                 "description": "Delete a system sector",
                 "operationId": "b414aece220bc1f67dbd0e88ba08159f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "sector id",
+                        "required": true,
+                        "schema": {
+                            "description": "sector id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "404": {
                         "description": "Not found response",
@@ -10428,6 +11491,19 @@
                 "summary": "Sector@update",
                 "description": "Edit a system sector",
                 "operationId": "0f47f9876a9edd1eddae590880c5dc62",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "sector id",
+                        "required": true,
+                        "schema": {
+                            "description": "sector id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Sector definition",
                     "required": true,
@@ -10600,118 +11676,6 @@
                     }
                 ]
             },
-            "put": {
-                "tags": [
-                    "Tags"
-                ],
-                "summary": "TagController@update",
-                "description": "Update tag",
-                "operationId": "update_tags",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "example": "features"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "lorem ipsum"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean",
-                                        "example": "true"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "bad request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
             "post": {
                 "tags": [
                     "Tags"
@@ -10790,118 +11754,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "patch": {
-                "tags": [
-                    "Tags"
-                ],
-                "summary": "TagController@edit",
-                "description": "Edit tag",
-                "operationId": "edit_tags",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "type": {
-                                        "type": "string",
-                                        "example": "features"
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "example": "lorem ipsum"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean",
-                                        "example": "true"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "bad request"
                                         }
                                     },
                                     "type": "object"
@@ -11002,6 +11854,131 @@
                     }
                 ]
             },
+            "put": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "TagController@update",
+                "description": "Update tag",
+                "operationId": "update_tags",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "tag id",
+                        "required": true,
+                        "schema": {
+                            "description": "tag id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "features"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "lorem ipsum"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "delete": {
                 "tags": [
                     "Tags"
@@ -11080,6 +12057,131 @@
                                         "message": {
                                             "type": "string",
                                             "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "TagController@edit",
+                "description": "Edit tag",
+                "operationId": "edit_tags",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "tag id",
+                        "required": true,
+                        "schema": {
+                            "description": "tag id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "example": "features"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "lorem ipsum"
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": "true"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
                                         }
                                     },
                                     "type": "object"
@@ -11338,6 +12440,19 @@
                 "summary": "Return a single team",
                 "description": "Return a single team",
                 "operationId": "6ea35f97e59b3b4f042839afbb548dbb",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -11460,6 +12575,19 @@
                 "summary": "Update a team",
                 "description": "Update a team",
                 "operationId": "db86bc9cd9a6a0c9bcdd8851e76536f3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Team definition",
                     "required": true,
@@ -11675,6 +12803,19 @@
                 "summary": "Delete a team",
                 "description": "Delete a team",
                 "operationId": "3f6a7fabcca6967050816f5781024699",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "responses": {
                     "404": {
                         "description": "Not found response",
@@ -11738,6 +12879,19 @@
                 "summary": "Edit a team",
                 "description": "Edit a team",
                 "operationId": "c889ff82053060caaa0fe4ef3f73414e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
                 "requestBody": {
                     "description": "Team definition",
                     "required": true,
@@ -12965,126 +14119,6 @@
                     }
                 ]
             },
-            "put": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "UserController@update",
-                "description": "Update user",
-                "operationId": "update_users",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "enabled": {
-                                        "type": "boolean",
-                                        "example": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "bad request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Error response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Resource not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
             "post": {
                 "tags": [
                     "Users"
@@ -13139,126 +14173,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "patch": {
-                "tags": [
-                    "Users"
-                ],
-                "summary": "UserController@edit",
-                "description": "Edit user",
-                "operationId": "edit_users",
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "enabled": {
-                                        "type": "boolean",
-                                        "example": true
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {}
-                                            },
-                                            "example": "[]"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "bad request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Error response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Resource not found"
                                         }
                                     },
                                     "type": "object"
@@ -13361,6 +14275,272 @@
                                         "message": {
                                             "type": "string",
                                             "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "UserController@update",
+                "description": "Update user",
+                "operationId": "update_users",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "user id",
+                        "required": true,
+                        "schema": {
+                            "description": "user id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "UserController@edit",
+                "description": "Edit user",
+                "operationId": "edit_users",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "user id",
+                        "required": true,
+                        "schema": {
+                            "description": "user id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
                                         }
                                     },
                                     "type": "object"

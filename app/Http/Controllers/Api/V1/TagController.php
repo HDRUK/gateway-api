@@ -194,12 +194,23 @@ class TagController extends Controller
 
     /**
      * @OA\Put(
-     *    path="/api/v1/tags",
+     *    path="/api/v1/tags/{id}",
      *    operationId="update_tags",
      *    tags={"Tags"},
      *    summary="TagController@update",
      *    description="Update tag",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="tag id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="tag id",
+     *       ),
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
@@ -273,12 +284,23 @@ class TagController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/tags",
+     *    path="/api/v1/tags/{id}",
      *    operationId="edit_tags",
      *    tags={"Tags"},
      *    summary="TagController@edit",
      *    description="Edit tag",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="tag id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="tag id",
+     *       ),
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
