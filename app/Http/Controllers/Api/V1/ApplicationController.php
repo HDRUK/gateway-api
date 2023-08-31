@@ -71,7 +71,6 @@ class ApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'tags', 'team', 'user']);
 
-
         $textTerm = $request->query('text');
         if ($textTerm !== null) {
             $applications = $applications->where('name','like','%'.$textTerm.'%')
@@ -82,14 +81,12 @@ class ApplicationController extends Controller
         if ($enabledTerm !== null) {
             $applications = $applications->where('enabled',$enabledTerm);
         }
-
         
         $applications = $applications->paginate(Config::get('constants.per_page'));
 
         $applications->getCollection()->each(function ($application) {
             $application->makeHidden(['client_secret']);
         });
-
 
         return response()->json(
             $applications
