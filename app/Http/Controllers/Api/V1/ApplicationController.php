@@ -7,6 +7,7 @@ use Config;
 use Exception;
 use App\Models\Application;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Models\ApplicationHasTag;
 use Illuminate\Http\JsonResponse;
@@ -69,11 +70,27 @@ class ApplicationController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'tags', 'team', 'user'])->paginate(Config::get('constants.per_page'));
+        $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'tags', 'team', 'user']);
+
+
+        $textTerm = $request->query('text');
+        if ($textTerm !== null) {
+            $applications = $applications->where('name','like','%'.$textTerm.'%')
+                                         ->orWhere('description', 'like', '%' . $textTerm . '%');
+        }
+
+        $enabledTerm = $request->query('enabled');
+        if ($enabledTerm !== null) {
+            $applications = $applications->where('enabled',$enabledTerm);
+        }
+
+        
+        $applications = $applications->paginate(Config::get('constants.per_page'));
 
         $applications->getCollection()->each(function ($application) {
             $application->makeHidden(['client_secret']);
         });
+
 
         return response()->json(
             $applications
