@@ -83,10 +83,17 @@ class ApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'tags', 'team', 'user']);
 
-        $textTerm = $request->query('text');
-        if ($textTerm !== null) {
-            $applications = $applications->where('name','like','%'.$textTerm.'%')
-                                         ->orWhere('description', 'like', '%' . $textTerm . '%');
+        $textTerms = $request->query('text');
+        if ($textTerms !== null) {
+            if (!is_array($textTerms)) {
+                $textTerms = [$textTerms];
+            }
+            foreach ($textTerms as $textTerm) {
+                $applications = $applications->where(function ($query) use ($textTerm) {
+                    $query->where('name', 'like', '%' . $textTerm . '%')
+                          ->orWhere('description', 'like', '%' . $textTerm . '%');
+                });
+            }
         }
 
         $enabledTerm = $request->query('enabled');
