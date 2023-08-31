@@ -3,6 +3,7 @@
 
 ### Variables
 @baseUrl = http://localhost:8000
+# @baseUrl = https://api.dev.hdruk.cloud
 @apiVersion = v1
 @uFirstName = "John"
 @uLastName = "Doe"
