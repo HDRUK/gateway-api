@@ -4,17 +4,27 @@ namespace App\Http\Controllers\Api\V1;
 
 use Exception;
 use App\Models\Role;
+use App\Models\Team;
+use App\Models\User;
+use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
+use App\Models\EmailTemplate;
+use App\Models\TeamUserHasRole;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
+use App\Http\Traits\TeamTransformation;
+use App\Exceptions\UnauthorizedException;
 use App\Http\Requests\TeamUser\CreateTeamUser;
 use App\Http\Requests\TeamUser\DeleteTeamUser;
 use App\Http\Requests\TeamUser\UpdateTeamUser;
-use App\Models\TeamUserHasRole;
 
 class TeamUserController extends Controller
 {
+    use TeamTransformation;
+    
+    private $roleAdmin = 'custodian.team.admin';
+
     public function __construct()
     {
         //
@@ -88,12 +98,12 @@ class TeamUserController extends Controller
         try {
             $input = $request->all();
 
-            $uId = $input['userId'];
+            $userId = $input['userId'];
             $permissions = $input['roles'];
 
-            $teamHasUsers = $this->teamHasUser($teamId, $uId);
+            $teamHasUsers = $this->teamHasUser($teamId, $userId);
 
-            $this->teamUsersHasRoles($teamHasUsers, $permissions);
+            $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId);
 
             return response()->json([
                 'message' => 'success',
@@ -323,18 +333,21 @@ class TeamUserController extends Controller
      * @param array $roles
      * @return void
      */
-    private function teamUsersHasRoles(array $teamHasUsers, array $roles): void
+    private function teamUsersHasRoles(array $teamHasUsers, array $roles, int $teamId, int $userId): void
     {
         try {
-            foreach ($roles as $role) {
+            foreach ($roles as $roleName) {
                 $roles = Role::updateOrCreate([
-                    'name' => $role,
+                    'name' => $roleName,
                 ]);
 
                 TeamUserHasRole::updateOrCreate([
                     'team_has_user_id' => $teamHasUsers['id'],
                     'role_id' => $roles->id,
                 ]);
+
+                // send email - add roles
+                $this->sendEmail($roleName, true, $teamId, $userId);
             }
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -357,19 +370,25 @@ class TeamUserController extends Controller
                 'user_id' => $userId,
             ])->first();
 
-            foreach ($input['roles'] as $permision => $action) {
-                $role = Role::where('name', $permision)->first();
+            foreach ($input['roles'] as $roleName => $action) {
+                $roles = Role::where('name', $roleName)->first();
 
                 if ($action) {
                     TeamUserHasRole::updateOrCreate([
                         'team_has_user_id' => $teamHasUsers->id,
-                        'role_id' => $role->id,
+                        'role_id' => $roles->id,
                     ]);
                 } else {
+                    if ($roleName === $this->roleAdmin && count($this->listOfAdmin($teamId)) === 1) {
+                        throw new UnauthorizedException('You cannot remove last team admin role');
+                    }
+
                     TeamUserHasRole::where('team_has_user_id', $teamHasUsers->id)
-                        ->where('role_id', $role->id)
+                        ->where('role_id', $roles->id)
                         ->delete();
                 }
+
+                $this->sendEmail($roleName, $action, $teamId, $userId);
             }
 
             return true;
@@ -378,8 +397,63 @@ class TeamUserController extends Controller
         }
     }
 
-    private function sendEmail(string $role, bool $action)
+    private function sendEmail(string $role, bool $action, int $teamId, int $userId)
     {
-        // TODO: send email when the user adds a role or removes a role
+        try {
+            $assignRemove = $action ? 'assign' : 'remove';
+            $role = $role . '.' . $assignRemove;
+            $template = EmailTemplate::where('identifier', '=', $role)->first();
+            $user = User::where('id', '=', $userId)->first();
+            $team = Team::where('id', '=', $teamId)->first();
+
+            $to = [
+                'to' => [
+                    'email' => $user['email'],
+                    'name' => $user['name'],
+                ],
+            ];
+
+            $userAdmins = $this->listOfAdmin($teamId);
+            $userAdminsString = '<ul>';
+            if (count($userAdmins)) {
+                foreach ($userAdmins as $userAdmin) {
+                    $userAdminsString.= '<li>' . $userAdmin . '</li>';
+                }
+            }
+            $userAdminsString.= '<ul>';
+
+            $replacements = [
+                '[[ASSIGNER_NAME]]' => $user['name'],
+                '[[TEAM_NAME]]' => $team['name'],
+                '[[CURRENT_YEAR]]' => date("Y"),
+                '[[LIST_TEAM_ADMINS]]' => $userAdminsString,
+            ];
+
+            SendEmailJob::dispatch($to, $template, $replacements);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function listOfAdmin(int $teamId) {
+        try {
+            $admins = [];
+            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
+            $team = $this->getTeams($userTeam);
+
+            $users = $team['users'];
+            foreach ($users as $user) {
+                $userName = $user['name'];
+                foreach ($user['roles'] as $role) {
+                    if ($role['name'] === $this->roleAdmin) {
+                        $admins[] = $userName;
+                    }
+                }
+            }
+
+            return $admins;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        } 
     }
 }

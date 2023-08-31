@@ -1,7 +1,5 @@
 <?php
 
-use App\Jobs\SendEmailJob;
-use App\Models\EmailTemplate;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\TestController;
@@ -9,8 +7,6 @@ use App\Http\Controllers\Api\V1\DatasetController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\TeamUserController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
-
-use App\Http\Controllers\Api\V1\EmailTemplateController;
 
 Route::get('/test', function() {
     return Response::json([
@@ -48,7 +44,7 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         'data_use_registers' => 'DataUseRegisterController',
         'applications' => 'ApplicationController',
         'roles' => 'RoleController',
-        // 'emailtemplates' => 'EmailTemplateController',
+        'emailtemplates' => 'EmailTemplateController',
     ];
 
     foreach ($routes as $path => $controller) {
@@ -72,33 +68,6 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     Route::post('/datasets', [DatasetController::class, 'store']);
     Route::delete('/datasets/{id}', [DatasetController::class, 'destroy'])->where('id', '[0-9]+');
     
-});
-
-// routes
-Route::get('/emailtemplates', [EmailTemplateController::class, 'index']);
-Route::get('/emailtemplates/{id}', [EmailTemplateController::class, 'show'])->where('id', '[0-9]+');
-Route::post('/emailtemplates', [EmailTemplateController::class, 'store']);
-Route::put('/emailtemplates/{id}', [EmailTemplateController::class, 'update'])->where('id', '[0-9]+');
-Route::patch('/emailtemplates/{id}', [EmailTemplateController::class, 'edit'])->where('id', '[0-9]+');
-Route::delete('/emailtemplates/{id}', [EmailTemplateController::class, 'destroy'])->where('id', '[0-9]+');
-
-Route::get('email-test', function () {
-    $to = [
-        'to' => [
-            'email' => 'loki.sinclair@hdruk.ac.uk',
-            'name' => 'Loki Sinclair',
-        ],
-    ];
-
-    $template = EmailTemplate::where('identifier', '=', 'example_template')->first();
-
-    $replacements = [
-        '[[header_text]]' => 'Health Data Research UK',
-        '[[button_text]]' => 'Click me!',
-        '[[subheading_text]]' => 'Sub Heading Something or other',
-    ];
-
-    SendEmailJob::dispatch($to, $template, $replacements);
 });
 
 // stop all all other routes
