@@ -254,7 +254,7 @@ class SocialLoginController extends Controller
 
         $arrayClaims = [
             'iss' => (string) env('APP_URL'),
-            'sub' => (string) $user['fullName'],
+            'sub' => (string) $user['name'],
             'aud' => (string) env('APP_NAME'),
             'iat' => (string) strtotime($currentTime),
             'nbf' => (string) strtotime($currentTime),
