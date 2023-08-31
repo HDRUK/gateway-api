@@ -179,8 +179,8 @@ class EmailTemplateController extends Controller
 
             $emailTemplate = EmailTemplate::create([
                 'identifier' => $input['identifier'],
-                'subject' => $input['subject'],
-                'body' => $input['body'],
+                'subject' => html_entity_decode($input['subject']),
+                'body' => html_entity_decode($input['body']),
                 'enabled' => $input['enabled'],
             ]);
 
@@ -271,8 +271,8 @@ class EmailTemplateController extends Controller
 
             EmailTemplate::where('id', $id)->update([
                 'identifier' => $input['identifier'],
-                'subject' => $input['subject'],
-                'body' => $input['body'],
+                'subject' => html_entity_decode($input['subject']),
+                'body' => html_entity_decode($input['body']),
                 'enabled' => $input['enabled'],
             ]);
 
@@ -364,14 +364,23 @@ class EmailTemplateController extends Controller
     {
         try {
             $input = $request->all();
-            $arrayKeys = [
-                'identifier',
-                'subject',
-                'body',
-                'enabled',
-            ];
+            $array = [];
 
-            $array = $this->checkEditArray($input, $arrayKeys);
+            if (array_key_exists('identifier', $input)) {
+                $array['identifier'] = $input['identifier'];
+            }
+
+            if (array_key_exists('subject', $input)) {
+                $array['subject'] = html_entity_decode($input['subject']);
+            }
+
+            if (array_key_exists('body', $input)) {
+                $array['body'] = html_entity_decode($input['body']);
+            }
+
+            if (array_key_exists('enabled', $input)) {
+                $array['enabled'] = $input['enabled'];
+            }
 
             EmailTemplate::where('id', $id)->update($array);
 

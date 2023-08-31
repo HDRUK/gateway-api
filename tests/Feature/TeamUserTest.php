@@ -46,8 +46,8 @@ class TeamUserTest extends TestCase
         $userId = $this->createUser();
 
         $url = 'api/v1/teams/' . $teamId . '/users';
-        $arrayPermissions = ["developer", "metadata.manager"];
-        $arrayPermissionsExpected = ["developer", "metadata.manager"];
+        $arrayPermissions = ["developer", "custodian.dar.manager"];
+        $arrayPermissionsExpected = ["developer", "custodian.dar.manager"];
         $payload = [
             "userId" => $userId,
             "roles" => $arrayPermissions,
@@ -101,10 +101,7 @@ class TeamUserTest extends TestCase
         $this->cleanTeamUserRoles($teamId, $userId);
 
         $urlPost = 'api/v1/teams/' . $teamId . '/users';
-        $arrayPermissionsPost = [
-            "developer",
-            "hdruk.dar",
-        ];
+        $arrayPermissionsPost = ["developer", "custodian.dar.manager"];
         $payloadPost = [
             "userId" => $userId,
             "roles" => $arrayPermissionsPost,
@@ -118,10 +115,10 @@ class TeamUserTest extends TestCase
         $responsePost->assertStatus(201);
 
         $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
-        $arrayPermissionsExpected = ["developer", "hdruk.dar", "hdruk.custodian"];
+        $arrayPermissionsExpected = ["developer", "custodian.dar.manager", "metadata_editor"];
         $payloadPut = [
             "roles" => [
-                "hdruk.custodian" => true,
+                "metadata_editor" => true,
             ],
         ];
         $responsePut = $this->json('PUT', $urlPut, $payloadPut, $this->header);
@@ -156,10 +153,7 @@ class TeamUserTest extends TestCase
         $userId = $this->createUser();
 
         $urlPost = 'api/v1/teams/' . $teamId . '/users';
-        $arrayPermissionsPost = [
-            "developer",
-            "hdruk.dar",
-        ];
+        $arrayPermissionsPost = ["developer", "custodian.dar.manager"];
         $payloadPost = [
             "userId" => $userId,
             "roles" => $arrayPermissionsPost,
@@ -174,11 +168,11 @@ class TeamUserTest extends TestCase
         $responsePost->assertStatus(201);
 
         $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
-        $arrayPermissionsExpected = ["developer", "hdruk.custodian"];
+        $arrayPermissionsExpected = ["developer", "reviewer"];
         $payloadPut = [
             "roles" => [
-                "hdruk.dar" => false,
-                "hdruk.custodian" => true,
+                "custodian.dar.manager" => false,
+                "reviewer" => true,
             ],
         ];
         $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
@@ -212,10 +206,7 @@ class TeamUserTest extends TestCase
         $userId = $this->createUser();
 
         $urlPost = 'api/v1/teams/' . $teamId . '/users';
-        $arrayPermissions = [
-            "developer",
-            "hdruk.dar",
-        ];
+        $arrayPermissions = ["developer", "custodian.dar.manager"];
         $payload = [
             "userId" => $userId,
             "roles" => $arrayPermissions,

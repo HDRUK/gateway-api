@@ -245,6 +245,7 @@ class EmailTemplateTest extends TestCase
             $bodyEdit,
             $this->header
         );
+
         $responseEdit->assertStatus(200);
         $responseEdit->assertJsonStructure([
             'message',

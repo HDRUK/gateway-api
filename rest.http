@@ -9,10 +9,11 @@
 @uEmail = "john.doe.1234567890@example.com"
 @uEmail2 = "john.for.doe.1234567890@example.com"
 @uPassword = "passw@rdJ0hnD0e"
-@accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwOlwvXC9sb2NhbGhvc3Q6MzAwMCIsInN1YiI6IkRhbiBOaXRhIiwiYXVkIjoiTGFyYXZlbCIsImlhdCI6IjE2OTM0ODQ3MzEiLCJuYmYiOiIxNjkzNDg0NzMxIiwiZXhwIjoiMTY5MzU3MTEzMSIsImp0aSI6IjdEZ0tnZlZ2b2NETnJWenhYSlBSM2ZrSnVwbE4wUHNJUTRQSW5qamJBRUhSRG1GTHh3cEhidkNiTFBQdGlzaU0iLCJ1c2VyIjp7ImlkIjoxMiwibmFtZSI6IkRhbiBOaXRhIiwiZmlyc3RuYW1lIjoiRGFuIiwibGFzdG5hbWUiOiJOaXRhIiwiZW1haWwiOiJkYW4ubml0YS5oZHJ1a0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZF9hdCI6bnVsbCwicHJvdmlkZXJpZCI6IjEwMDc0MjEyODg2NDM5NTI0OTc5MSIsInByb3ZpZGVyIjoiZ29vZ2xlIiwiY3JlYXRlZF9hdCI6IjIwMjMtMDgtMzFUMTI6MDM6MDguMDAwMDAwWiIsInVwZGF0ZWRfYXQiOiIyMDIzLTA4LTMxVDEyOjI1OjMxLjAwMDAwMFoiLCJkZWxldGVkX2F0IjpudWxsLCJzZWN0b3JfaWQiOm51bGwsIm9yZ2FuaXNhdGlvbiI6IiIsImJpbyI6IiIsImRvbWFpbiI6IiIsImxpbmsiOiIiLCJvcmNpZCI6Imh0dHBzOlwvXC9vcmNpZC5vcmdcLyIsImNvbnRhY3RfZmVlZGJhY2siOjAsImNvbnRhY3RfbmV3cyI6MCwibW9uZ29faWQiOjAsIm1vbmdvX29iamVjdF9pZCI6bnVsbCwiaXNfYWRtaW4iOjB9fQ.MIVgdvRBR0R9yF1p8mY3E2BhTkaccfemJxyltp1zeIc
+# @accessToken=jwt....
 
 ### Login
 #### create new auth
+# @name createUserAuth
 POST {{baseUrl}}/api/{{apiVersion}}/register HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -27,6 +28,9 @@ Accept: application/json
     "contact_news": 1
 }
 
+### Variables jwt token
+@accessToken = {{createUserAuth.response.body.$.access_token}}
+
 ### Access Token
 # @name loginUsernamePassword
 POST {{baseUrl}}/api/{{apiVersion}}/auth HTTP/1.1
@@ -38,7 +42,7 @@ Accept: application/json
     "password": {{uPassword}}
 }
 
-### Variables jwt token
+# ### Variables jwt token
 # @accessToken = {{loginUsernamePassword.response.body.$.access_token}}
 
 ### Logout
@@ -691,7 +695,7 @@ Authorization: Bearer {{accessToken}}
 }
 
 #### update email template
-PUT {{baseUrl}}/api/{{apiVersion}}/emailtemplates/8 HTTP/1.1
+PUT {{baseUrl}}/api/{{apiVersion}}/emailtemplates/17 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
@@ -704,20 +708,19 @@ Authorization: Bearer {{accessToken}}
 }
 
 #### edit email template
-PATCH {{baseUrl}}/api/{{apiVersion}}/emailtemplates/8 HTTP/1.1
+PATCH {{baseUrl}}/api/{{apiVersion}}/emailtemplates/17 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "identifier": "identifier email template edit",
+    "identifier": "identifier email template edit2",
     "subject": "subject email template edit",
-    "body": "<mjml>...</mjml>",
-    "enabled": true
+    "body": "<mjml>...</mjml>"
 }
 
 #### delete email template
-DELETE {{baseUrl}}/api/{{apiVersion}}/emailtemplates/8 HTTP/1.1
+DELETE {{baseUrl}}/api/{{apiVersion}}/emailtemplates/16 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}

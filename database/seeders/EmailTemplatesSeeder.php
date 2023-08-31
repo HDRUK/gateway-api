@@ -845,5 +845,355 @@ class EmailTemplatesSeeder extends Seeder
           </mjml>
           ',
       ]);
+
+        // hdruk.superadmin - assign
+        EmailTemplate::create([
+            'identifier' => 'hdruk.superadmin.assign',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.superadmin.assign',
+            'body' => '
+                <mjml>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Mhdruk.superadmin.assign role has been assigned</mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
+
+        // hdruk.superadmin - remove
+        EmailTemplate::create([
+            'identifier' => 'hdruk.superadmin.remove',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.superadmin.remove',
+            'body' => '
+                <mjml>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">hdruk.superadmin.assign role has been removed</mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
+
+        // hdruk.admin - assign
+        EmailTemplate::create([
+            'identifier' => 'hdruk.admin.assign',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.admin.assign',
+            'body' => '
+                <mjml>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">hdruk.admin.assign role has been assigned</mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
+
+        // hdruk.admin - remove
+        EmailTemplate::create([
+            'identifier' => 'hdruk.admin.remove',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.admin.remove',
+            'body' => '
+                <mjml>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">hdruk.admin.assign role has been removed</mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
+
+        // hdruk.metadata - assign
+        EmailTemplate::create([
+            'identifier' => 'hdruk.metadata.assign',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.metadata.assign',
+            'body' => '
+                <mjml>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">hdruk.metadata.assign role has been assigned</mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
+
+        // hdruk.metadata - remove
+        EmailTemplate::create([
+            'identifier' => 'hdruk.metadata.remove',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.metadata.remove',
+            'body' => '
+                <mjml>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">hdruk.metadata.assign role has been removed</mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
+
+        // hdruk.dar - assign
+        EmailTemplate::create([
+            'identifier' => 'hdruk.dar.assign',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.dar.assign',
+            'body' => '
+                <mjml>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">hdruk.dar.assign role has been assigned</mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
+
+        // hdruk.dar - remove
+        EmailTemplate::create([
+            'identifier' => 'hdruk.dar.remove',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.dar.remove',
+            'body' => '
+                <mjml>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">hdruk.dar.assign role has been removed</mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
+
+        // hdruk.custodian - assign
+        EmailTemplate::create([
+            'identifier' => 'hdruk.custodian.assign',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.custodian.assign',
+            'body' => '
+                <mjml>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">hdruk.custodian.assign role has been assigned</mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
+
+        // hdruk.custodian - remove
+        EmailTemplate::create([
+            'identifier' => 'hdruk.custodian.remove',
+            'subject' => '[[ASSIGNER_NAME]] - hdruk.custodian.remove',
+            'body' => '
+                <mjml>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">hdruk.custodian.assign role has been removed</mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
     }
 }
