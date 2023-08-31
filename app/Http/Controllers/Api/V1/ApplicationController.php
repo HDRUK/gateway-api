@@ -7,7 +7,6 @@ use Config;
 use Exception;
 use App\Models\Application;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Models\ApplicationHasTag;
 use Illuminate\Http\JsonResponse;
