@@ -35,6 +35,18 @@ class ApplicationController extends Controller
      *    tags={"Application"},
      *    summary="ApplicationController@index",
      *    description="Returns a list of applications",
+     *     @OA\Parameter(
+     *         name="text",
+     *         in="query",
+     *         description="Search term to filter by application name or description.",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="enabled",
+     *         in="query",
+     *         description="Filter by application enabled status (0 or 1).",
+     *         @OA\Schema(type="integer", enum={0, 1})
+     *     ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -79,7 +91,7 @@ class ApplicationController extends Controller
 
         $enabledTerm = $request->query('enabled');
         if ($enabledTerm !== null) {
-            $applications = $applications->where('enabled',$enabledTerm);
+            $applications = $applications->where('enabled',(int)$enabledTerm);
         }
         
         $applications = $applications->paginate(Config::get('constants.per_page'));
