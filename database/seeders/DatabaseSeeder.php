@@ -2,13 +2,7 @@
 
 namespace Database\Seeders;
 
-use Database\Seeders\TagSeeder;
 use Illuminate\Database\Seeder;
-use Database\Seeders\ToolSeeder;
-use Database\Seeders\UserSeeder;
-use Database\Seeders\FilterSeeder;
-use Database\Seeders\PublisherSeeder;
-use Database\Seeders\DarIntegrationSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,13 +15,37 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             FilterSeeder::class,
-            UserSeeder::class,
+            SectorSeeder::class,
             TagSeeder::class,
             FeatureSeeder::class,
             DarIntegrationSeeder::class,
-            PublisherSeeder::class,
+            PermissionSeeder::class,
+            RoleSeeder::class,
+            TeamSeeder::class,
+            UserSeeder::class,
             ToolSeeder::class,
             ToolHasTagSeeder::class,
+            // This one we do in order to ensure data is linked for
+            // demonstration purposes
+            ActivityLogUserTypeSeeder::class,
+            ActivityLogTypeSeeder::class,
+            ActivityLogSeeder::class,
+            // TeamUserPermissionSeeder::class,
+            TeamHasUserSeeder::class,
+            // TeamUserHasPermissionSeeder::class,
+            NotificationSeeder::class,
+            TeamHasNotificationSeeder::class,
+            UserHasNotificationSeeder::class,
+            EmailTemplatesSeeder::class,
+            ReviewSeeder::class,
+            CollectionSeerder::class,
+            AuditLogSeeder::class,
+            DataUseRegisterSeeder::class,
+            ApplicationSeeder::class,
+            ApplicationHasTagSeeder::class,
+            ApplicationHasPermissionSeeder::class,
+            FAIRShareCommandSeeder::class,
+            TeamUserHasRoleSeeder::class,
         ]);
     }
 }

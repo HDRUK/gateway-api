@@ -3,9 +3,9 @@
 namespace App\Exceptions;
 
 use Config;
-use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\Request;
 use Throwable;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
 {
@@ -59,9 +59,15 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e): mixed
     {
+        $statusCode = 500;
+
+        if ($e->getCode()) {
+            $statusCode = (int) $e->getCode();
+        }
+
         $response = [
+            'code' => $statusCode,
             'message' => $e->getMessage(),
-            'code' => $e->getCode(),
         ];
 
         if (Config::get('app.debug')) {
@@ -69,11 +75,6 @@ class Handler extends ExceptionHandler
                 'exception' => get_class($e),
                 'trace' => $e->getTrace(),
             ];
-        }
-
-        $statusCode = 500;
-        if ($e->getCode()) {
-            $statusCode = $e->getCode();
         }
 
         return response()->json($response, $statusCode);

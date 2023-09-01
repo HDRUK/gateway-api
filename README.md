@@ -14,7 +14,7 @@ Helm: https://helm.sh/docs/intro/install/
 With Docker-desktop and Helm installed, you'll need an instance of mysql. Using Helm you can run the following commands:
 
  - To install the mysql repo: `helm repo add bitnami https://charts.bitnami.com/bitnami`
- - To install mysql container: `helm install <container name> bitnami/mysql`
+ - To install mysql container: `helm install mysql bitnami/mysql`
  - Provided everything went well, run the following to get the password for your mysql instance: `echo $(kubectl get secret --namespace default mysql -o jsonpath="{.data.mysql-root-password}" | base64 -d)` (make sure to keep a copy of this, and you'll need it for your `.env` file below)
 
  If you don't have a mysql client installed you can use the following to deploy a pod to k8s and act as your mysql client: ` kubectl run mysql-client --rm --tty -i --restart='Never' --image  docker.io/bitnami/mysql:8.0.31-debian-11-r30 --namespace default --env MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --command -- bash`
@@ -23,6 +23,17 @@ With Docker-desktop and Helm installed, you'll need an instance of mysql. Using 
 
 ## Configuring
 Copy `.env.example` to `.env` and fill in the required parameters. Namely the database connectivity credentials and host address
+ - Your .env should look something like this
+ 
+```
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=gateway
+DB_USERNAME=<username>
+DB_PASSWORD=<password>
+```
+
  - When port-forwarding mysql port to your localhost (as above), you can connect to mysql locally with either `127.0.0.1` or `localhost`. Generally speaking your mysql instance will be available on `mysql.default.svc.cluster.local`
 
 Create a new (gitignore'd) `tiltconf.json` following the same format as below:
@@ -133,4 +144,18 @@ vendor/bin/phpunit --testdox
 or
 ```
 php -d memory_limit=2048M ./vendor/bin/phpunit
+```
+or for one single file test
+```
+vendor/bin/phpunit --testdox --filter ActivityLogTest
+```
+or
+```
+php -d memory_limit=2048M ./vendor/bin/phpunit --testdox --filter ActivityLogTest
+```
+
+### Laravel Status Code
+
+```
+https://gist.github.com/jeffochoa/a162fc4381d69a2d862dafa61cda0798
 ```

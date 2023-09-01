@@ -2,17 +2,26 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
 use App\Models\Feature;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\FeatureRequest;
+use App\Http\Requests\Feature\GetFeature;
+use App\Http\Requests\Feature\EditFeature;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\Feature\CreateFeature;
+use App\Http\Requests\Feature\DeleteFeature;
+use App\Http\Requests\Feature\UpdateFeature;
 
 class FeatureController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * @OA\Get(
-     *    path="api/v1/features",
+     *    path="/api/v1/features",
      *    operationId="fetch_all_features",
      *    tags={"Features"},
      *    summary="FeatureController@index",
@@ -35,19 +44,18 @@ class FeatureController extends Controller
      *    )
      * )
      */
-    public function index(Request $request): mixed
+    public function index(Request $request): JsonResponse
     {
-        $features = Feature::where('enabled', 1)->get();
+        $features = Feature::where('enabled', 1)->paginate(Config::get('constants.per_page'));
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $features
-        ], 200);
+        return response()->json(
+            $features
+        );
     }
 
     /**
      * @OA\Get(
-     *    path="api/v1/features/{id}",
+     *    path="/api/v1/features/{id}",
      *    operationId="fetch_features",
      *    tags={"Features"},
      *    summary="FeatureController@show",
@@ -68,11 +76,7 @@ class FeatureController extends Controller
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="message",
-     *             type="string",
-     *             example="success",
-     *          ),
+     *          @OA\Property(property="message", type="string", example="success"),
      *          @OA\Property(
      *             property="data",
      *             type="array",
@@ -100,7 +104,7 @@ class FeatureController extends Controller
      *    )
      * )
      */
-    public function show(Request $request, int $id): mixed
+    public function show(GetFeature $request, int $id): JsonResponse
     {
         $features = Feature::where([
             'id' =>  $id,
@@ -121,7 +125,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Post(
-     *    path="api/v1/features",
+     *    path="/api/v1/features",
      *    operationId="create_features",
      *    tags={"Features"},
      *    summary="FeatureController@store",
@@ -133,11 +137,8 @@ class FeatureController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(
-     *                property="type",
-     *                type="string",
-     *                example="features",
-     *             )
+     *             @OA\Property(property="name", type="string", example="example"),
+     *             @OA\Property(property="enabled", type="boolean", example=true)
      *          )
      *       )
      *    ),
@@ -165,17 +166,108 @@ class FeatureController extends Controller
      *      )
      * )
      */
-    public function store(FeatureRequest $request): mixed
+    public function store(CreateFeature $request): JsonResponse
     {
         try {
             $input = $request->all();
 
-            $feature = Feature::create($input);
+            $feature = Feature::create([
+                'name' => $input['name'],
+                'enabled' => $input['enabled'],
+            ]);
 
             return response()->json([
-                'message' => 'created',
+                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $feature->id,
-            ], 201);
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Put(
+     *    path="/api/v1/features/{id}",
+     *    operationId="update_features",
+     *    tags={"Features"},
+     *    summary="FeatureController@update",
+     *    description="Update feature",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="feature id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="feature id",
+     *       )
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="name", type="string", example="example"),
+     *             @OA\Property(property="enabled", type="boolean", example=true)
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success"),
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          )
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="bad request"),
+     *          )
+     *      )
+     * )
+     */
+    public function update(UpdateFeature $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+
+            Feature::where('id', $id)->update([
+                'name' => $input['name'],
+                'enabled' => $input['enabled'],
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Feature::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -183,23 +275,31 @@ class FeatureController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="api/v1/features",
-     *    operationId="update_features",
+     *    path="/api/v1/features/{id}",
+     *    operationId="edit_features",
      *    tags={"Features"},
-     *    summary="FeatureController@update",
-     *    description="Update feature",
+     *    summary="FeatureController@edit",
+     *    description="Edit feature",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="feature id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="feature id",
+     *       )
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(
-     *                property="enabled",
-     *                type="boolean",
-     *                example=true,
-     *             )
+     *             @OA\Property(property="name", type="string", example="fake_test"),
+     *             @OA\Property(property="enabled", type="boolean", example=true)
      *          )
      *       )
      *    ),
@@ -246,23 +346,23 @@ class FeatureController extends Controller
      *      )
      * )
      */
-    public function update(FeatureRequest $request, int $id): mixed
+    public function edit(EditFeature $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
+            $arrayKeys = [
+                'name',
+                'enabled',
+            ];
 
-            if (!$input) {
-                return response()->json([
-                    'message' => 'bad request',
-                ], 400);
-            }
+            $array = $this->checkEditArray($input, $arrayKeys);
 
-            $features = Feature::where('id', $id)->update($input);
+            Feature::where('id', $id)->update($array);
 
             return response()->json([
-                'message' => 'success',
-                'data' => $features
-            ], 200);
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Feature::where('id', $id)->first()
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -270,7 +370,7 @@ class FeatureController extends Controller
 
     /**
      * @OA\Delete(
-     *    path="api/v1/features/{id}",
+     *    path="/api/v1/features/{id}",
      *    operationId="delete_features",
      *    tags={"Features"},
      *    summary="FeatureController@destroy",
@@ -317,22 +417,19 @@ class FeatureController extends Controller
      *      )
      * )
      */
-    public function destroy(int $id): mixed
+    public function destroy(DeleteFeature $request, int $id): JsonResponse
     {
         try {
-            $features = Feature::where('id', $id)->get();
-
+            $features = Feature::findOrFail($id);
             if ($features) {
-                Feature::where('id', $id)->delete();
+                $features->delete();
 
                 return response()->json([
-                    'message' => 'success',
-                ], 200);
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
-            return response()->json([
-                'message' => 'not found',
-            ], 404);
+            throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

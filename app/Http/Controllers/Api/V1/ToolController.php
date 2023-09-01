@@ -2,15 +2,24 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
 use Illuminate\Http\Request;
-use App\Http\Requests\ToolRequest;
+use Illuminate\Http\JsonResponse;
+use App\Http\Requests\Tool\GetTool;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tool\EditTool;
+use App\Http\Requests\Tool\CreateTool;
+use App\Http\Requests\Tool\DeleteTool;
+use App\Http\Requests\Tool\UpdateTool;
+use App\Http\Traits\RequestTransformation;
 
 class ToolController extends Controller
 {
+    use RequestTransformation;
+
     /**
      * constructor method
      */
@@ -34,19 +43,14 @@ class ToolController extends Controller
      *       ),
      *    ),
      * )
-     * 
-     * Get All Tools
-     * 
-     * @return mixed
      */
-    public function index(): mixed
+    public function index(): JsonResponse
     {
-        $tools = Tool::with(['user', 'tag'])->where('enabled', 1)->get();
+        $tools = Tool::with(['user', 'tag'])->where('enabled', 1)->paginate(Config::get('constants.per_page'));
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $tools
-        ], 200);
+        return response()->json(
+            $tools
+        );
     }
 
     /**
@@ -88,14 +92,8 @@ class ToolController extends Controller
      *       )
      *    )
      * )
-     * 
-     * Get Tools by id
-     *
-     * @param Request $request
-     * @param integer $id
-     * @return mixed
      */
-    public function show(Request $request, int $id): mixed
+    public function show(GetTool $request, int $id): JsonResponse
     {
         $tags = Tool::with(['user', 'tag'])->where([
             'id' => $id,
@@ -169,41 +167,24 @@ class ToolController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Create a new tool
-     *
-     * @param ToolRequest $request
-     * @return mixed
      */
-    public function store(ToolRequest $request): mixed
+    public function store(CreateTool $request): JsonResponse
     {
         try {
             $input = $request->all();
 
-            $checkToolByName = Tool::withTrashed()->where([
+            $tool = Tool::create([
+                'mongo_object_id' => $input['mongo_object_id'],
                 'name' => $input['name'],
-            ])->first();
+                'url' => $input['url'],
+                'description' => $input['description'],
+                'license' => $input['license'],
+                'tech_stack' =>  $input['tech_stack'],
+                'user_id' => $input['user_id'],
+                'enabled' => $input['enabled'],
+            ]);
 
-            if ($checkToolByName) {
-                return response()->json([
-                    'message' => 'bad request',
-                ], 400);
-            }
-
-            $arrayTool = array_filter($input, function ($key) {
-                return $key !== 'tag';
-            }, ARRAY_FILTER_USE_KEY);
-            $arrayToolTag = $input['tag'];
-
-            $tool = Tool::create($arrayTool);
-
-            if ($tool) {
-                $this->insertToolHasTag($arrayToolTag, (int) $tool->id);
-            } else {
-                return response()->json([
-                    'message' => 'bad request',
-                ], 400);
-            }
+            $this->insertToolHasTag($input['tag'], (int) $tool->id);
 
             return response()->json([
                 'message' => 'created',
@@ -215,7 +196,7 @@ class ToolController extends Controller
     }
 
     /**
-     * @OA\Post(
+     * @OA\Put(
      *    path="/api/v1/tools/{id}",
      *    operationId="update_tools",
      *    tags={"Tools"},
@@ -277,54 +258,131 @@ class ToolController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Update tool
-     *
-     * @param ToolRequest $request
-     * @param integer $id
-     * @return mixed
      */
-    public function update(ToolRequest $request, int $id): mixed
+    public function update(UpdateTool $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
 
-            if (!$input) {
-                return response()->json([
-                    'message' => 'bad request',
-                ], 400);
-            }
-
-            $checkToolById = Tool::withTrashed()->where([
-                'id' => $id,
-            ])->first();
-
-            if (!$checkToolById) {
-                return response()->json([
-                    'message' => 'bad request',
-                ], 400);
-            }
-
-            $arrayTool = array_filter($input, function ($key) {
-                return $key !== 'tag';
-            }, ARRAY_FILTER_USE_KEY);
-            $arrayToolTag = $input['tag'];
-
-            Tool::withTrashed()->where('id', $id)->update($arrayTool);
+            Tool::withTrashed()->where('id', $id)->update([
+                'mongo_object_id' => $input['mongo_object_id'],
+                'name' => $input['name'],
+                'url' => $input['url'],
+                'description' => $input['description'],
+                'license' => $input['license'],
+                'tech_stack' =>  $input['tech_stack'],
+                'user_id' => $input['user_id'],
+                'enabled' => $input['enabled'],
+            ]);
 
             ToolHasTag::where('tool_id', $id)->delete();
-
-            $this->insertToolHasTag($arrayToolTag, (int) $id);
+            $this->insertToolHasTag($input['tag'], (int) $id);
 
             return response()->json([
-                'message' => 'success',
-                'data' => Tool::with(['user', 'tag'])->withTrashed()->where('id', $id)->first()
-            ], 202);
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Tool::with(['user', 'tag'])->withTrashed()->where('id', $id)->first(),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
 
+    /**
+     * @OA\Patch(
+     *    path="/api/v1/tools/{id}",
+     *    operationId="edit_tools",
+     *    tags={"Tools"},
+     *    summary="ToolController@edit",
+     *    description="Edit tool by id",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="tool id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema( type="integer", description="tool id" ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property( property="name", type="string", example="Similique sapiente est vero eum." ),
+     *             @OA\Property( property="url", type="string", example="http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim" ),
+     *             @OA\Property( property="description", type="string", example="Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel." ),
+     *             @OA\Property( property="license", type="string", example="Inventore omnis aut laudantium vel alias." ),
+     *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
+     *             @OA\Property( property="user_id", type="integer", example=1 ),
+     *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="enabled", type="integer", example=1 ),
+     *          ),
+     *       ),
+     *    ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Created",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="integer", example="100")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=400,
+     *          description="bad request",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="bad request"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function edit(EditTool $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'license',
+                'tech_stack',
+                'user_id',
+                'enabled',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Tool::withTrashed()->where('id', $id)->update($array);
+
+            if (array_key_exists('tag', $input)) {
+                ToolHasTag::where('tool_id', $id)->delete();
+                $this->insertToolHasTag($input['tag'], (int) $id);
+            };
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => Tool::with(['user', 'tag'])->withTrashed()->where('id', $id)->first(),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 
     /**
      * @OA\Delete(
@@ -374,30 +432,16 @@ class ToolController extends Controller
      *          )
      *      )
      * )
-     * 
-     * Delete tool by id
-     * 
-     * @param integer $id
-     * @return mixed
      */
-    public function destroy(int $id): mixed
+    public function destroy(DeleteTool $request, int $id): JsonResponse
     {
         try {
-            $tool = Tool::where([
-                'id' => $id,
-            ])->first();
-
-            if ($tool) {
-                Tool::where('id', $id)->delete();
-
-                return response()->json([
-                    'message' => 'success',
-                ], 200);
-            }
-
+            Tool::where('id', $id)->delete();
+            ToolHasTag::where('tool_id', $id)->delete();
+            
             return response()->json([
-                'message' => 'not found.',
-            ], 404);
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

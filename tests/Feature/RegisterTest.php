@@ -12,7 +12,7 @@ class RegisterTest extends TestCase
 {
     use RefreshDatabase;
 
-    const TEST_URL_REGISTER = '/api/v1/register';
+    const TEST_URL = '/api/v1/register';
 
     protected $user = [];
 
@@ -29,8 +29,13 @@ class RegisterTest extends TestCase
 
         $this->user = [
             'name' => Config::get('constants.test.user.name'),
+            'firstname' => Config::get('constants.test.user.firstname'),
+            'lastname' => Config::get('constants.test.user.lastname'),
             'email' => Config::get('constants.test.user.email'),
             'password' => Config::get('constants.test.user.email'),
+            'sector_id' => 1,
+            'contact_feedback' => 1,
+            'contact_news' => 1,
         ];
     }
 
@@ -41,7 +46,7 @@ class RegisterTest extends TestCase
      */
     public function test_register_user_with_success_in_database(): void
     {
-        $response = $this->json('POST', self::TEST_URL_REGISTER, $this->user, ['Accept' => 'application/json']);
+        $response = $this->json('POST', self::TEST_URL, $this->user, ['Accept' => 'application/json']);
 
         $this->assertIsObject(
             $response,
@@ -59,21 +64,11 @@ class RegisterTest extends TestCase
     public function test_register_user_and_generate_exception(): void
     {
         $this->withExceptionHandling();
-        $this->createNewEntryInUserTable();
-        $response = $this->json('POST', self::TEST_URL_REGISTER, $this->user, ['Accept' => 'application/json']);
-        $response->assertStatus(500);
-    }
 
-    private function createNewEntryInUserTable()
-    {
-        $user = [
-            'name' => $this->user['name'],
-            'firstname' => null,
-            'lastname' => null,
-            'email' => $this->user['email'],
-            'provider' => Config:: get('constants.provider.service'),
-            'password' => Hash::make($this->user['password']),
-        ];
-        return User::create($user);
+        $responseFirst = $this->json('POST', self::TEST_URL, $this->user, ['Accept' => 'application/json']);
+        $responseFirst->assertStatus(200);
+
+        $responseSecond = $this->json('POST', self::TEST_URL, $this->user, ['Accept' => 'application/json']);
+        $responseSecond->assertStatus(400);
     }
 }

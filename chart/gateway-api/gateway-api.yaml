@@ -3,6 +3,13 @@ kind: Pod
 metadata:
   name: gateway-api
 spec:
+  selector:
+    matchLabels:
+      app: gateway-api
+  template:
+    metadata:
+      labels:
+        app: gateway-api
   containers:
     - name: gateway-api
       image: hdruk/gateway-api:latest

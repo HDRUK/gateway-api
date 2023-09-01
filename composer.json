@@ -14,11 +14,14 @@
         "laravel/socialite": "^5.6",
         "laravel/tinker": "^2.8",
         "laravel/ui": "^4.2",
-        "socialiteproviders/microsoft-azure": "^5.1"
+        "predis/predis": "^2.2",
+        "socialiteproviders/microsoft-azure": "^5.1",
+        "staudenmeir/belongs-to-through": "^2.5"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.13",
         "behat/behat": "^3.12",
+        "brianium/paratest": "^7.2",
         "fakerphp/faker": "^1.9.1",
         "laravel/pint": "^1.0",
         "laravel/sail": "^1.18",
@@ -59,7 +62,7 @@
             "@php artisan key:generate --ansi"
         ],
         "phpstan": [
-            "vendor/bin/phpstan analyse app"
+            "vendor/bin/phpstan analyse app  --memory-limit 512M"
         ],
         "behat": [
             "vendor/bin/behat"

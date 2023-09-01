@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 
 class TestController extends Controller
 {
@@ -17,9 +18,9 @@ class TestController extends Controller
      * Test with Jwt credentials
      *
      * @param Request $request
-     * @return mixed
+     * @return JsonResponse
      */
-    public function test(Request $request): mixed
+    public function test(Request $request): JsonResponse
     {
         return response()->json([
             'message' => 'Lorem ipsum dolor sit amet, consectetur adip',

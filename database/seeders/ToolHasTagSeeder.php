@@ -30,8 +30,6 @@ class ToolHasTagSeeder extends Seeder
                     'tag_id' => $tagId,
                 ]);
             }
-
-            $count++;
         }
     }
 }

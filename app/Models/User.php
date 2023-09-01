@@ -2,15 +2,23 @@
 
 namespace App\Models;
 
+use App\Models\Team;
 use App\Models\Tool;
-use Laravel\Sanctum\HasApiTokens;
+// use Laravel\Sanctum\HasApiTokens;
+use App\Models\Application;
+use App\Http\Traits\WithJwtUser;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
+    use WithJwtUser;
 
     /**
      * The attributes that are mass assignable.
@@ -18,7 +26,23 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name', 'firstname', 'lastname', 'email', 'password', 'provider',
+        'name',
+        'firstname',
+        'lastname',
+        'email',
+        'password',
+        'provider',
+        'sector_id',
+        'organisation',
+        'bio',
+        'domain',
+        'link',
+        'orcid',
+        'contact_feedback',
+        'contact_news',
+        'mongo_id',
+        'mongo_object_id',
+        'is_admin',
     ];
 
     /**
@@ -42,8 +66,30 @@ class User extends Authenticatable
     /**
      * Get the tool that owns the user
      */
-    public function tool()
+    public function tool(): HasOne
     {
         return $this->hasOne(Tool::class, 'user_id', 'id');
+    }
+
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_has_users')
+            ->withPivot('team_id', 'id')
+            ->orderBy('team_has_users.team_id');  
     }    
+
+    public function notifications(): BelongsToMany
+    {
+        return $this->belongsToMany(Notification::class, 'user_has_notifications');
+    }
+
+    public function review(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+    
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
+    }
 }

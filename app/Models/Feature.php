@@ -20,6 +20,13 @@ class Feature extends Model
     protected $table = 'features';
 
     /**
+     * Specifically requests that Laravel casts the tiny ints as boolean
+     */
+    protected $casts = [
+        'enabled' => 'boolean',
+    ];
+
+    /**
      * Indicates if the model should be timestamped
      * 
      * @var bool

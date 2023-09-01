@@ -13,7 +13,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        if (env('APP_DEBUG') === true) {
+            \DB::listen(function ($query) {
+                $bindings = [];
+                foreach ($query->bindings as $i => $binding) {
+                    if ($binding instanceof \DateTime) {
+                        $bindings[$i] = $binding->format('\'Y-m-d H:i:s\'');
+                    } else if (is_string($binding)) {
+                        $bindings[$i] = "'$binding'";
+                    } else {
+                        $bindings[$i] = "'$binding'";
+                    }
+                }
+
+                $sql = str_replace(array('%', '?'), array('%%', '%s'), $query->sql);
+                $sql = vsprintf($sql, $bindings);
+                \Log::warning("SQL query: " . $sql, ['time' => $query->time]);
+            });
+        }
     }
 
     /**
