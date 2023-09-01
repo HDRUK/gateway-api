@@ -21,6 +21,7 @@ class Email extends Mailable
 
     private $template = null;
     private $replacements = [];
+    public $subject = '';
 
     /**
      * Create a new message instance.
@@ -30,6 +31,7 @@ class Email extends Mailable
 
         $this->template = $template;
         $this->replacements = $replacements;
+        $this->subject = $this->template['subject'];
     }
 
     /**
@@ -37,9 +39,11 @@ class Email extends Mailable
      */
     public function envelope(): Envelope
     {
+        $this->replaceSubjectText();
+
         return new Envelope(
             from: new Address('noreply@healthdatagateway.org'),
-            subject: $this->template->subject,
+            subject: $this->subject,
         );
     }
 
@@ -82,6 +86,13 @@ class Email extends Mailable
     {
         foreach ($this->replacements as $k => $v) {
             $this->template['body'] = str_replace($k, $v, $this->template['body']);
+        }
+    }
+
+    private function replaceSubjectText(): void
+    {
+        foreach ($this->replacements as $k => $v) {
+            $this->subject = str_replace($k, $v, $this->subject);
         }
     }
 }

@@ -62,6 +62,17 @@ class ActivityLogUserTypeController extends Controller
      *      tags={"ActivityLogUserType"},
      *      summary="ActivityLogUserType@show",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="activity log user type id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="activity log user type id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -151,6 +162,17 @@ class ActivityLogUserTypeController extends Controller
      *      tags={"ActivityLogUserType"},
      *      summary="ActivityLogUserType@update",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="activity log user type id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="activity log user type id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="ActivityLogUserTypes definition",
@@ -214,6 +236,17 @@ class ActivityLogUserTypeController extends Controller
      *      tags={"ActivityLogUserType"},
      *      summary="ActivityLogUserType@edit",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="activity log user type id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="activity log user type id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="ActivityLogUserTypes definition",
@@ -283,6 +316,17 @@ class ActivityLogUserTypeController extends Controller
      *      tags={"ActivityLogUserType"},
      *      summary="ActivityLogUserType@destroy",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="activity log user type id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="activity log user type id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

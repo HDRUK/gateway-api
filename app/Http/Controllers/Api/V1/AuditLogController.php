@@ -65,6 +65,17 @@ class AuditLogController extends Controller
      *      tags={"AuditLog"},
      *      summary="AuditLog@show",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="audit log id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="audit log id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -162,6 +173,17 @@ class AuditLogController extends Controller
      *      tags={"AuditLog"},
      *      summary="AuditLog@update",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="audit log id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="audit log id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Audit log definition",
@@ -235,6 +257,17 @@ class AuditLogController extends Controller
      *      tags={"AuditLog"},
      *      summary="AuditLog@edit",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="audit log id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="audit log id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Audit log definition",
@@ -306,6 +339,17 @@ class AuditLogController extends Controller
      *      tags={"AuditLog"},
      *      summary="AuditLog@destroy",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="audit log id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="audit log id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

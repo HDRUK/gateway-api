@@ -229,12 +229,23 @@ class UserController extends Controller
 
     /**
      * @OA\Put(
-     *    path="/api/v1/users",
+     *    path="/api/v1/users/{id}",
      *    operationId="update_users",
      *    tags={"Users"},
      *    summary="UserController@update",
      *    description="Update user",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="user id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="user id",
+     *       ),
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
@@ -352,12 +363,23 @@ class UserController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/users",
+     *    path="/api/v1/users/{id}",
      *    operationId="edit_users",
      *    tags={"Users"},
      *    summary="UserController@edit",
      *    description="Edit user",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="user id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="user id",
+     *       ),
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",

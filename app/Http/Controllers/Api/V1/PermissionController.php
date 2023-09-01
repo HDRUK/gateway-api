@@ -194,12 +194,23 @@ class PermissionController extends Controller
 
     /**
      * @OA\Put(
-     *    path="/api/v1/permissions",
+     *    path="/api/v1/permissions/{id}",
      *    operationId="update_permissions",
      *    tags={"Permissions"},
      *    summary="PermissionController@update",
      *    description="Update permission",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="permission id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="permission id",
+     *       ),
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
@@ -270,12 +281,23 @@ class PermissionController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/permissions",
+     *    path="/api/v1/permissions/{id}",
      *    operationId="edit_permissions",
      *    tags={"Permissions"},
      *    summary="PermissionController@edit",
      *    description="Edit permission",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="permission id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="permission id",
+     *       ),
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
