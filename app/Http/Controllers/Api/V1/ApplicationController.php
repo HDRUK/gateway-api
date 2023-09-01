@@ -36,6 +36,12 @@ class ApplicationController extends Controller
      *    summary="ApplicationController@index",
      *    description="Returns a list of applications",
      *    @OA\Parameter(
+     *       name="teamId",
+     *       in="query",
+     *       description="Filter Apps by the teamId",
+     *       @OA\Schema(type="integer")
+     *    ),
+     *    @OA\Parameter(
      *       name="text",
      *       in="query",
      *       description="Search term to filter by application name or description.",
@@ -84,6 +90,16 @@ class ApplicationController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'tags', 'team', 'user']);
 
+
+        $teamId = $request->query('team_id');
+        if ($teamId !== null) {
+            $applications = $applications->where('team_id',(int)$teamId);
+        }
+        
+        $enabledTerm = $request->query('enabled');
+        if ($enabledTerm !== null) {
+            $applications = $applications->where('enabled',(int)$enabledTerm);
+        }
         
         $textTerms = $request->query('text',[]);
         if ($textTerms !== null) {
@@ -98,10 +114,6 @@ class ApplicationController extends Controller
             }
         }
 
-        $enabledTerm = $request->query('enabled');
-        if ($enabledTerm !== null) {
-            $applications = $applications->where('enabled',(int)$enabledTerm);
-        }
         
         $applications = $applications->paginate(Config::get('constants.per_page'));
 
