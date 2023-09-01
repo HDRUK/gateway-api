@@ -79,11 +79,13 @@ class ApplicationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'tags', 'team', 'user']);
 
-        $textTerms = $request->query('text');
+        
+        $textTerms = $request->query('text',[]);
         if ($textTerms !== null) {
             if (!is_array($textTerms)) {
                 $textTerms = [$textTerms];
