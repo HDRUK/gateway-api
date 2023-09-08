@@ -78,6 +78,17 @@ class TeamController extends Controller
      *      summary="Return a single team",
      *      description="Return a single team",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="team id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -230,6 +241,17 @@ class TeamController extends Controller
      *      summary="Update a team",
      *      description="Update a team",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="team id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Team definition",
@@ -352,6 +374,17 @@ class TeamController extends Controller
      *      summary="Edit a team",
      *      description="Edit a team",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="team id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Team definition",
@@ -459,6 +492,17 @@ class TeamController extends Controller
      *      summary="Delete a team",
      *      description="Delete a team",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="team id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="team id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

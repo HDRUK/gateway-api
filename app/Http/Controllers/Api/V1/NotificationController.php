@@ -67,6 +67,17 @@ class NotificationController extends Controller
      *      tags={"Notification"},
      *      summary="Notification@show",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="notification id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="notification id",
+     *         )
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -172,6 +183,17 @@ class NotificationController extends Controller
      *      tags={"Notification"},
      *      summary="Notification@update",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="notification id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="notification id",
+     *         )
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Notification definition",
@@ -243,6 +265,17 @@ class NotificationController extends Controller
      *      tags={"Notification"},
      *      summary="Notification@edit",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="notification id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="notification id",
+     *         )
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Notification definition",
@@ -316,6 +349,17 @@ class NotificationController extends Controller
      *      tags={"Notification"},
      *      summary="Notification@destroy",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="notification id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="notification id",
+     *         )
+     *      ),
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

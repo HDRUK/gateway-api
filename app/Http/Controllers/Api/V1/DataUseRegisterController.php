@@ -340,12 +340,23 @@ class DataUseRegisterController extends Controller
 
     /**
      * @OA\Put(
-     *    path="/api/v1/data_use_registers",
+     *    path="/api/v1/data_use_registers/{id}",
      *    operationId="update_data_use_registers",
      *    tags={"DataUseRegisters"},
      *    summary="DataUseRegisterController@update",
      *    description="Update data use register",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="data use register id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="data use register id",
+     *       ),
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
@@ -468,12 +479,23 @@ class DataUseRegisterController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/data_use_registers",
+     *    path="/api/v1/data_use_registers/{id}",
      *    operationId="edit_data_use_registers",
      *    tags={"DataUseRegisters"},
      *    summary="DataUseRegisterController@edit",
      *    description="Edit data use register",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="data use register id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="data use register id",
+     *       ),
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",

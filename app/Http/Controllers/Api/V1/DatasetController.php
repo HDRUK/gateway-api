@@ -242,6 +242,17 @@ class DatasetController extends Controller
      *      tags={"Datasets"},
      *      summary="DatasetController@destroy",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="dataset id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="dataset id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

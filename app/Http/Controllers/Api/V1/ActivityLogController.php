@@ -71,6 +71,17 @@ class ActivityLogController extends Controller
      *      tags={"ActivityLog"},
      *      summary="ActivityLog@show",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="activity log id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="activity log id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -188,6 +199,17 @@ class ActivityLogController extends Controller
      *      tags={"ActivityLog"},
      *      summary="ActivityLog@update",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="activity log id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="activity log id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="ActivityLog definition",
@@ -276,6 +298,17 @@ class ActivityLogController extends Controller
      *      tags={"ActivityLog"},
      *      summary="ActivityLog@edit",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="activity log id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="activity log id",
+     *         ),
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="ActivityLog definition",
@@ -365,6 +398,17 @@ class ActivityLogController extends Controller
      *      tags={"ActivityLog"},
      *      summary="ActivityLog@destroy",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="activity log id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="activity log id",
+     *         ),
+     *      ),
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",

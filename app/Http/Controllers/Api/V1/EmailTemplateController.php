@@ -4,24 +4,22 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-use App\Models\Tag;
 use Illuminate\Http\Request;
-use App\Http\Requests\Tag\GetTag;
+use App\Models\EmailTemplate;
 use Illuminate\Http\JsonResponse;
-use App\Http\Requests\Tag\EditTag;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Tag\CreateTag;
-use App\Http\Requests\Tag\DeleteTag;
-use App\Http\Requests\Tag\UpdateTag;
+use App\Exceptions\NotFoundException;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\EmailTemplate\GetEmailTemplate;
+use App\Http\Requests\EmailTemplate\EditEmailTemplate;
+use App\Http\Requests\EmailTemplate\CreateEmailTemplate;
+use App\Http\Requests\EmailTemplate\DeleteEmailTemplate;
+use App\Http\Requests\EmailTemplate\UpdateEmailTemplate;
 
-class TagController extends Controller
+class EmailTemplateController extends Controller
 {
     use RequestTransformation;
     
-    /**
-     * constructor method
-     */
     public function __construct()
     {
         //
@@ -29,11 +27,11 @@ class TagController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v1/tags",
-     *    operationId="fetch_all_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@index",
-     *    description="Get All Tags",
+     *    path="/api/v1/emailtemplates",
+     *    operationId="fetch_all_emailtemplates",
+     *    tags={"Email Templates"},
+     *    summary="EmailTemplateController@index",
+     *    description="Get All Email Templates",
      *    security={{"bearerAuth":{}}},
      *    @OA\Response(
      *       response="200",
@@ -47,38 +45,38 @@ class TagController extends Controller
      *                type="array",
      *                @OA\Items()
      *             )
-     *          ),
-     *       ),
-     *    ),
+     *          )
+     *       )
+     *    )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $tags = Tag::where('enabled', 1)->paginate(Config::get('constants.per_page'));
+        $emailTemplates = EmailTemplate::all()->toArray();
 
         return response()->json(
-            $tags
+            $emailTemplates
         );
     }
 
     /**
      * @OA\Get(
-     *    path="/api/v1/tags/{id}",
-     *    operationId="fetch_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@show",
-     *    description="Get tag by id",
+     *    path="/api/v1/emailtemplates/{id}",
+     *    operationId="fetch_emailtemplates",
+     *    tags={"Email Templates"},
+     *    summary="EmailTemplateController@show",
+     *    description="Get Email Templates by id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
-     *       description="tag id",
+     *       description="email template id",
      *       required=true,
      *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="tag id",
-     *       ),
+     *          description="email template id",
+     *       )
      *    ),
      *    @OA\Response(
      *       response="200",
@@ -93,48 +91,49 @@ class TagController extends Controller
      *                type="array",
      *                @OA\Items()
      *             )
-     *          ),
-     *       ),
+     *          )
+     *       )
      *    ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=404,
-     *          description="Not found response",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="not found"),
-     *          )
-     *      )
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=404,
+     *        description="Not found response",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="not found"),
+     *        )
+     *    )
      * )
      */
-    public function show(GetTag $request, int $id): JsonResponse
+    public function show(GetEmailTemplate $request, int $id): JsonResponse
     {
-        try {
-            $tags = Tag::where([
-                'id' => $id,
-            ])->get();
+        $emailTemplates = EmailTemplate::where([
+            'id' =>  $id,
+            'enabled' => 1,
+        ])->get();
 
+        if ($emailTemplates->count()) {
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $tags,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+                'message' => 'success',
+                'data' => $emailTemplates,
+            ], 200);
         }
+
+        throw new NotFoundException();
     }
 
     /**
      * @OA\Post(
-     *    path="/api/v1/tags",
-     *    operationId="create_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@store",
-     *    description="Create a new tag",
+     *    path="/api/v1/emailtemplates",
+     *    operationId="create_emailtemplates",
+     *    tags={"Email Templates"},
+     *    summary="EmailTemplateController@store",
+     *    description="Create a new email template",
      *    security={{"bearerAuth":{}}},
      *    @OA\RequestBody(
      *       required=true,
@@ -142,11 +141,12 @@ class TagController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="type", type="string", example="features"),
-     *             @OA\Property(property="description", type="string", example="lorem ipsum"),
-     *             @OA\Property(property="enabled", type="boolean", example="true")
-     *          ),
-     *       ),
+     *             @OA\Property(property="identifier", type="string", example="example"),
+     *             @OA\Property(property="enabled", type="boolean", example=true),
+     *             @OA\Property(property="body", type="string", example="body example"),
+     *             @OA\Property(property="subject", type="string", example="subject example")
+     *          )
+     *       )
      *    ),
      *      @OA\Response(
      *          response=201,
@@ -172,20 +172,21 @@ class TagController extends Controller
      *      )
      * )
      */
-    public function store(CreateTag $request): JsonResponse
+    public function store(CreateEmailTemplate $request): JsonResponse
     {
         try {
             $input = $request->all();
 
-            $tag = Tag::create([
-                'type' => $input['type'],
-                'description' => $input['description'],
+            $emailTemplate = EmailTemplate::create([
+                'identifier' => $input['identifier'],
+                'subject' => html_entity_decode($input['subject']),
+                'body' => html_entity_decode($input['body']),
                 'enabled' => $input['enabled'],
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $tag->id,
+                'data' => $emailTemplate->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -194,21 +195,21 @@ class TagController extends Controller
 
     /**
      * @OA\Put(
-     *    path="/api/v1/tags/{id}",
-     *    operationId="update_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@update",
-     *    description="Update tag",
+     *    path="/api/v1/emailtemplates/{id}",
+     *    operationId="update_emailtemplates",
+     *    tags={"Email Templates"},
+     *    summary="EmailTemplateController@update",
+     *    description="Update email template",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
-     *       description="tag id",
+     *       description="email template id",
      *       required=true,
      *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="tag id",
+     *          description="email template id",
      *       ),
      *    ),
      *    @OA\RequestBody(
@@ -217,11 +218,12 @@ class TagController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="type", type="string", example="features"),
-     *             @OA\Property(property="description", type="string", example="lorem ipsum"),
-     *             @OA\Property(property="enabled", type="boolean", example="true")
-     *          ),
-     *       ),
+     *             @OA\Property(property="identifier", type="string", example="example"),
+     *             @OA\Property(property="enabled", type="boolean", example=true),
+     *             @OA\Property(property="body", type="string", example="body example"),
+     *             @OA\Property(property="subject", type="string", example="subject example")
+     *          )
+     *       )
      *    ),
      *    @OA\Response(
      *       response="200",
@@ -236,8 +238,8 @@ class TagController extends Controller
      *                type="array",
      *                @OA\Items()
      *             )
-     *          ),
-     *       ),
+     *          )
+     *       )
      *    ),
      *      @OA\Response(
      *          response=401,
@@ -262,20 +264,21 @@ class TagController extends Controller
      *      )
      * )
      */
-    public function update(UpdateTag $request, int $id): JsonResponse
+    public function update(UpdateEmailTemplate $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
 
-            Tag::where('id', $id)->update([
-                'type' => $input['type'],
-                'description' => $input['description'],
+            EmailTemplate::where('id', $id)->update([
+                'identifier' => $input['identifier'],
+                'subject' => html_entity_decode($input['subject']),
+                'body' => html_entity_decode($input['body']),
                 'enabled' => $input['enabled'],
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Tag::where('id', $id)->first()
+                'data' => EmailTemplate::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -284,21 +287,21 @@ class TagController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/tags/{id}",
-     *    operationId="edit_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@edit",
-     *    description="Edit tag",
+     *    path="/api/v1/emailtemplates/{id}",
+     *    operationId="edit_emailtemplates",
+     *    tags={"Email Templates"},
+     *    summary="EmailTemplateController@edit",
+     *    description="Edit email template",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
-     *       description="tag id",
+     *       description="email template id",
      *       required=true,
      *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="tag id",
+     *          description="email template id",
      *       ),
      *    ),
      *    @OA\RequestBody(
@@ -307,17 +310,22 @@ class TagController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="type", type="string", example="features"),
-     *             @OA\Property(property="description", type="string", example="lorem ipsum"),
-     *             @OA\Property(property="enabled", type="boolean", example="true")
-     *          ),
-     *       ),
+     *             @OA\Property(property="identifier", type="string", example="example"),
+     *             @OA\Property(property="enabled", type="boolean", example=true),
+     *             @OA\Property(property="body", type="string", example="body example"),
+     *             @OA\Property(property="subject", type="string", example="subject example")
+     *          )
+     *       )
      *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="success"),
+     *          @OA\Property(
+     *             property="message",
+     *             type="string",
+     *             example="success",
+     *          ),
      *          @OA\Property(
      *             property="data",
      *             type="array",
@@ -326,8 +334,8 @@ class TagController extends Controller
      *                type="array",
      *                @OA\Items()
      *             )
-     *          ),
-     *       ),
+     *          )
+     *       )
      *    ),
      *      @OA\Response(
      *          response=401,
@@ -352,23 +360,33 @@ class TagController extends Controller
      *      )
      * )
      */
-    public function edit(EditTag $request, int $id): JsonResponse
+    public function edit(EditEmailTemplate $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
-            $arrayKeys = [
-                'type',
-                'description',
-                'enabled',
-            ];
+            $array = [];
 
-            $array = $this->checkEditArray($input, $arrayKeys);
+            if (array_key_exists('identifier', $input)) {
+                $array['identifier'] = $input['identifier'];
+            }
 
-            Tag::where('id', $id)->update($array);
+            if (array_key_exists('subject', $input)) {
+                $array['subject'] = html_entity_decode($input['subject']);
+            }
+
+            if (array_key_exists('body', $input)) {
+                $array['body'] = html_entity_decode($input['body']);
+            }
+
+            if (array_key_exists('enabled', $input)) {
+                $array['enabled'] = $input['enabled'];
+            }
+
+            EmailTemplate::where('id', $id)->update($array);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Tag::where('id', $id)->first()
+                'data' => EmailTemplate::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -377,36 +395,36 @@ class TagController extends Controller
 
     /**
      * @OA\Delete(
-     *    path="/api/v1/tags/{id}",
-     *    operationId="delete_tags",
-     *    tags={"Tags"},
-     *    summary="TagController@destroy",
-     *    description="Delete tag by id",
+     *    path="/api/v1/emailtemplates/{id}",
+     *    operationId="delete_emailtemplates",
+     *    tags={"Email Templates"},
+     *    summary="EmailTemplateController@destroy",
+     *    description="Delete email template based in id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
-     *       description="tag id",
+     *       description="email template id",
      *       required=true,
      *       example="1",
      *       @OA\Schema(
      *          type="integer",
-     *          description="tag id",
-     *       ),
+     *          description="email template id",
+     *       )
      *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
-     *       ),
+     *       )
      *    ),
      *    @OA\Response(
      *       response=404,
      *       description="Error response",
      *       @OA\JsonContent(
      *          @OA\Property(property="message", type="string", example="Resource not found"),
-     *       ),
+     *       )
      *    ),
      *      @OA\Response(
      *          response=401,
@@ -424,14 +442,19 @@ class TagController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteTag $request, string $id): JsonResponse
+    public function destroy(DeleteEmailTemplate $request, int $id): JsonResponse
     {
         try {
-            Tag::where('id', $id)->delete();
+            $emailTemplates = EmailTemplate::findOrFail($id);
+            if ($emailTemplates) {
+                $emailTemplates->delete();
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-            ], Config::get('statuscodes.STATUS_OK.code'));
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+
+            throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

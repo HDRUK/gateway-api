@@ -64,6 +64,17 @@ class FilterController extends Controller
      *      tags={"Filter"},
      *      summary="Filter@show",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="filter id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="filter id",
+     *         )
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -168,6 +179,17 @@ class FilterController extends Controller
      *      tags={"Filter"},
      *      summary="Filter@update",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="filter id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="filter id",
+     *         )
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Filter definition",
@@ -240,6 +262,17 @@ class FilterController extends Controller
      *      tags={"Filter"},
      *      summary="Filter@edit",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="filter id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="filter id",
+     *         )
+     *      ),
      *      @OA\RequestBody(
      *          required=true,
      *          description="Filter definition",
@@ -309,6 +342,17 @@ class FilterController extends Controller
      *      tags={"Filter"},
      *      summary="Filter@destroy",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="filter id",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="filter id",
+     *         )
+     *      ),
      *      @OA\Response(
      *          response=404,
      *          description="Not found response",
