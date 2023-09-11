@@ -41,6 +41,10 @@ cfg = read_json('tiltconf.json')
 
 include(cfg.get('gatewayWeb2Root') + '/Tiltfile')
 
+# Load our service layer for deployment - if enabled
+if cfg.get('traserEnabled'):
+    include(cfg.get('traserServiceRoot') + '/Tiltfile')
+
 docker_build(
     ref='hdruk/' + cfg.get('name'),
     context='.',
