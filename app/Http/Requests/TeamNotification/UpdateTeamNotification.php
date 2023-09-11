@@ -1,23 +1,38 @@
 <?php
 
-namespace App\Http\Requests\Notification;
+namespace App\Http\Requests\TeamNotification;
 
+use App\Models\TeamHasNotification;
 use App\Http\Requests\BaseFormRequest;
 
-class UpdateNotification extends BaseFormRequest
+class UpdateTeamNotification extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'id' => [
-                'required',
+            'team_id' => [
                 'int',
+                'required',
+                'exists:teams,id',
+            ],
+            'notification_id' => [
+                'int',
+                'required',
                 'exists:notifications,id',
+                function ($attribute, $value, $fail) {
+                    $exists = TeamHasNotification::where('notification_id', $value)
+                        ->where('team_id', $this->team_id)
+                        ->exists();
+
+                    if (!$exists) {
+                        $fail('The selected notification is not part of the specified team.');
+                    }
+                },
             ],
             'notification_type' => [
                 'required',
@@ -49,6 +64,9 @@ class UpdateNotification extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge([
+            'team_id' => $this->route('teamId'),
+            'notification_id' => $this->route('notificationId'),
+        ]);
     }
 }

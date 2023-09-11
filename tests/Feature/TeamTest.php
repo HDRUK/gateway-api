@@ -79,6 +79,7 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -164,6 +165,7 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -236,6 +238,7 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -346,6 +349,7 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -501,6 +505,7 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

@@ -5,6 +5,7 @@ namespace Tests\Traits;
 use Hash;
 use Config;
 use App\Models\User;
+use App\Http\Controllers\JwtController;
 
 trait Authorization
 {
@@ -48,6 +49,16 @@ trait Authorization
         $response = $this->json('POST', '/api/v1/auth', $authData, ['Accept' => 'application/json']);
         
         return $response['access_token'];
+    }
+
+    public function getUserFromJwt(string $jwt) : mixed
+    {
+        $jwtController = new JwtController();
+        $jwtController->setJwt($jwt);
+        $payloadJwt = $jwtController->decode();
+        $userJwt = $payloadJwt['user'];
+
+        return $userJwt;
     }
 
     protected function checkUserIfExist(): mixed
