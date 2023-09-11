@@ -80,6 +80,7 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
+                'email' => 'Some@email.com',
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -222,6 +223,7 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
+                'email' => 'some@email.com',
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
