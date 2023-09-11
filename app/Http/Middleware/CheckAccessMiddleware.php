@@ -27,8 +27,12 @@ class CheckAccessMiddleware
         $input = $request->all();
         $userId = $input['jwt_user']['id'];
         $access = explode("|", $data);
-
         $teamId = $request->route('teamId');
+
+        $user = User::where('id', $userId)->first();
+        if ($user->is_admin) {
+            return $next($request);
+        }
 
         if ($teamId) {
             $currentUserRoles = $this->getRoles($teamId, $userId);

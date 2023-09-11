@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\CheckRolesMiddleware;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\TestController;
 use App\Http\Controllers\Api\V1\DatasetController;
@@ -73,13 +72,16 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     Route::delete('/datasets/{id}', [DatasetController::class, 'destroy'])->where('id', '[0-9]+');
 
     // team - notifications
-    Route::post('/teams/{teamId}/notifications', [TeamNotificationController::class, 'storeTeamNotification'])->where('teamId', '[0-9]+');
-    Route::put('/teams/{teamId}/notifications/{notificationId}', [TeamNotificationController::class, 'updateTeamNotification'])->where(['teamId' => '[0-9]+', 'notificationId' => '[0-9]+']);
-    Route::delete('/teams/{teamId}/notifications/{notificationId}', [TeamNotificationController::class, 'destroyTeamNotification'])->where(['teamId' => '[0-9]+', 'notificationId' => '[0-9]+']);
+    Route::post('/teams/{teamId}/notifications', [TeamNotificationController::class, 'storeTeamNotification'])
+        ->where('teamId', '[0-9]+')
+        ->middleware(['check.access:roles,custodian.team.admin']);
+    Route::put('/teams/{teamId}/notifications/{notificationId}', [TeamNotificationController::class, 'updateTeamNotification'])
+        ->where(['teamId' => '[0-9]+', 'notificationId' => '[0-9]+'])
+        ->middleware(['check.access:roles,custodian.team.admin']);
+    Route::delete('/teams/{teamId}/notifications/{notificationId}', [TeamNotificationController::class, 'destroyTeamNotification'])
+        ->where(['teamId' => '[0-9]+', 'notificationId' => '[0-9]+'])
+        ->middleware(['check.access:roles,custodian.team.admin']);
 });
-
-// 'check.roles' => \App\Http\Middleware\CheckRolesMiddleware::class,
-// 'check.perms' => \App\Http\Middleware\CheckPermissionsMiddleware::class,
 
 // stop all all other routes
 Route::any('{path}', function() {

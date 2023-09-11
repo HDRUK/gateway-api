@@ -281,4 +281,9 @@ class TeamNotificationTest extends TestCase
             $teamNotifications
         );
     }
+
+    public function updateTeamUserRoles(int $teamId, int $userId)
+    {
+
+    }
 }
