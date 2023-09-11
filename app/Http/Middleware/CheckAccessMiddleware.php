@@ -34,6 +34,10 @@ class CheckAccessMiddleware
             return $next($request);
         }
 
+        if (!count($access)) {
+            throw new UnauthorizedException();
+        }
+
         if ($teamId) {
             $currentUserRoles = $this->getRoles($teamId, $userId);
         } else {
