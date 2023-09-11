@@ -91,6 +91,7 @@ class NotificationController extends Controller
      *                  @OA\Property(property="message", type="string", example="some message"),
      *                  @OA\Property(property="opt_in", type="boolean", example="1"),
      *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="email", type="string", example="john@example.com"),
      *              )
      *          ),
      *      ),
@@ -135,6 +136,7 @@ class NotificationController extends Controller
      *              @OA\Property(property="message", type="string", example="your message here"),
      *              @OA\Property(property="opt_in", type="boolean", example="1"),
      *              @OA\Property(property="enabled", type="boolean", example="1"),
+     *              @OA\Property(property="email", type="string", example="john@example.com"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -164,6 +166,7 @@ class NotificationController extends Controller
                 'message' => $input['message'],
                 'opt_in' => $input['opt_in'],
                 'enabled' => $input['enabled'],
+                'email' => $input['email'],
             ]);
 
             return response()->json([
@@ -203,6 +206,7 @@ class NotificationController extends Controller
      *              @OA\Property(property="message", type="string", example="your message here"),
      *              @OA\Property(property="opt_in", type="boolean", example="1"),
      *              @OA\Property(property="enabled", type="boolean", example="1"),
+     *              @OA\Property(property="email", type="string", example="john@example.com"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -224,6 +228,7 @@ class NotificationController extends Controller
      *                  @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
      *                  @OA\Property(property="message", type="string", example="your message here"),
      *                  @OA\Property(property="opt_in", type="boolean", example="1"),
+     *                  @OA\Property(property="email", type="string", example="john@example.com"),
      *              )
      *          ),
      *      ),
@@ -246,6 +251,7 @@ class NotificationController extends Controller
                 'message' => $input['message'],
                 'opt_in' => $input['opt_in'],
                 'enabled' => $input['enabled'],
+                'email' => $input['email'],
             ]);
 
             return response()->json([
@@ -284,6 +290,7 @@ class NotificationController extends Controller
      *              @OA\Property(property="message", type="string", example="your message here"),
      *              @OA\Property(property="opt_in", type="boolean", example="1"),
      *              @OA\Property(property="enabled", type="boolean", example="1"),
+     *              @OA\Property(property="email", type="string", example="john@example.com"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -305,6 +312,7 @@ class NotificationController extends Controller
      *                  @OA\Property(property="notification_type", type="string", example="applicationSubmitted"),
      *                  @OA\Property(property="message", type="string", example="your message here"),
      *                  @OA\Property(property="opt_in", type="boolean", example="1"),
+     *                  @OA\Property(property="email", type="string", example="john@example.com"),
      *              )
      *          ),
      *      ),
@@ -326,6 +334,7 @@ class NotificationController extends Controller
                 'message',
                 'opt_in',
                 'enabled',
+                'email',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);

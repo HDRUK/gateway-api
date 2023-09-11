@@ -22,6 +22,7 @@ class NotificationFactory extends Factory
             'message' => fake()->words(3, true),
             'opt_in'=> fake()->boolean(),
             'enabled' => fake()->boolean(),
+            'email' => fake()->unique()->safeEmail(),
         ];
     }
 }

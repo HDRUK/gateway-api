@@ -1,37 +1,42 @@
 <?php
 
-namespace App\Http\Requests\Notification;
+namespace App\Http\Requests\TeamNotification;
 
 use App\Http\Requests\BaseFormRequest;
 
-class EditNotification extends BaseFormRequest
+class CreateTeamNotification extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'id' => [
-                'required',
+            'teamId' => [
                 'int',
-                'exists:notifications,id',
+                'required',
+                'exists:teams,id',
             ],
             'notification_type' => [
+                'required',
                 'string',
             ],
             'message' => [
+                'required',
                 'string',
             ],
             'opt_in' => [
+                'required',
                 'boolean',
             ],
             'enabled' => [
+                'required',
                 'boolean',
             ],
             'email' => [
+                'required',
                 'email',
             ],
         ];
@@ -44,6 +49,6 @@ class EditNotification extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge(['teamId' => $this->route('teamId')]);
     }
 }

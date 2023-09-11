@@ -28,4 +28,13 @@ class TestController extends Controller
             'request_body' => $request->all(),
         ]);
     }
+
+    public function testCheckAccess(Request $request)
+    {
+        return response()->json([
+            'message' => 'TestController.checkRoles',
+            'request_method' => $request->method(),
+            'request_body' => $request->all(),
+        ]);
+    }
 }
