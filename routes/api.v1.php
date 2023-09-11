@@ -25,7 +25,7 @@ Route::get('/auth/{provider}/callback', [SocialLoginController::class, 'callback
 Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jwt.verify', 'sanitize.input']], function() {
     // Route::any('/test', [TestController::class, 'test']);
     // Route::any('/test/check_access', [TestController::class, 'testCheckRoles'])->middleware(['check.access:roles,reviewer|custodian.team.admin']);
-    Route::any('/test/check_access', [TestController::class, 'testCheckAccess'])->middleware(['check.access:permissions,datasets.read|dur.read|filters.read']);
+    // Route::any('/test/check_access', [TestController::class, 'testCheckAccess'])->middleware(['check.access:permissions,datasets.read|dur.read|filters.read']);
 
     $routes = [
         'tags' => 'TagController',
