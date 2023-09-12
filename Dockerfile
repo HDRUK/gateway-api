@@ -1,6 +1,7 @@
 FROM php:8.2.3-fpm
 
 ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/application_default_credentials.json"
+ENV COMPOSER_PROCESS_TIMEOUT=600
 
 WORKDIR /var/www
 
