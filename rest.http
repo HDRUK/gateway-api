@@ -109,7 +109,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get user by id
-GET {{baseUrl}}/api/{{apiVersion}}/users/1 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/users/2 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -151,7 +151,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get one team by id
-GET {{baseUrl}}/api/{{apiVersion}}/teams/1 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/teams/4 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -643,33 +643,6 @@ Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
-### Test Email
-#### test email
-# GET {{baseUrl}}/api/{{apiVersion}}/email-test HTTP/1.1
-# Content-Type: application/json
-
-# // add in routes (api.v1.php)
-# // use App\Jobs\SendEmailJob;
-# // use App\Models\EmailTemplate;
-# Route::get('email-test', function () {
-#     $to = [
-#         'to' => [
-#             'email' => 'loki.sinclair@hdruk.ac.uk',
-#             'name' => 'Loki Sinclair',
-#         ],
-#     ];
-
-#     $template = EmailTemplate::where('identifier', '=', 'example_template')->first();
-
-#     $replacements = [
-#         '[[header_text]]' => 'Health Data Research UK',
-#         '[[button_text]]' => 'Click me!',
-#         '[[subheading_text]]' => 'Sub Heading Something or other',
-#     ];
-
-#     SendEmailJob::dispatch($to, $template, $replacements);
-# });
-
 
 ### Email Templates
 #### get all email templates
@@ -722,6 +695,92 @@ Authorization: Bearer {{accessToken}}
 
 #### delete email template
 DELETE {{baseUrl}}/api/{{apiVersion}}/emailtemplates/16 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### Team Notifications
+#### create notifications for team
+POST {{baseUrl}}/api/{{apiVersion}}/teams/1/notifications HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "notification_type": "applicationSubmitted",
+    "message": "Some message here applicationSubmitted",
+    "opt_in": true,
+    "enabled": true,
+    "email": "joe1@example.com"
+}
+
+#### update notifications for team
+PUT {{baseUrl}}/api/{{apiVersion}}/teams/1/notifications/200 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "notification_type": "applicationSubmitted",
+    "message": "Some message here applicationSubmitted",
+    "opt_in": true,
+    "enabled": true,
+    "email": "joe2@example.com"
+}
+
+#### delete notifications for team
+DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/notifications/200 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+
+
+
+
+
+
+
+
+
+## TESTS
+### Test Email
+#### test email
+# GET {{baseUrl}}/api/{{apiVersion}}/email-test HTTP/1.1
+# Content-Type: application/json
+
+# // add in routes (api.v1.php)
+# // use App\Jobs\SendEmailJob;
+# // use App\Models\EmailTemplate;
+# Route::get('email-test', function () {
+#     $to = [
+#         'to' => [
+#             'email' => 'loki.sinclair@hdruk.ac.uk',
+#             'name' => 'Loki Sinclair',
+#         ],
+#     ];
+
+#     $template = EmailTemplate::where('identifier', '=', 'example_template')->first();
+
+#     $replacements = [
+#         '[[header_text]]' => 'Health Data Research UK',
+#         '[[button_text]]' => 'Click me!',
+#         '[[subheading_text]]' => 'Sub Heading Something or other',
+#     ];
+
+#     SendEmailJob::dispatch($to, $template, $replacements);
+# });
+
+#### send a test for jwt
+POST {{baseUrl}}/api/{{apiVersion}}/test HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+#### send a test and check access
+POST {{baseUrl}}/api/{{apiVersion}}/test/check_access HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}

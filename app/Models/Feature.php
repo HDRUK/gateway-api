@@ -47,7 +47,6 @@ class Feature extends Model
      */
     private $name = '';
 
-
     protected $fillable = [
         'name',
         'enabled',

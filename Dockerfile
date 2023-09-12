@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libc-dev \
+    wget \
     zlib1g-dev \
     zip \
     default-mysql-client \
@@ -22,8 +23,11 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install sockets
 
 # Install Redis
-RUN pecl install redis \
-    && docker-php-ext-enable redis
+RUN wget -O redis-5.3.7.tgz 'http://pecl.php.net/get/redis-5.3.7.tgz' \
+    && pecl install redis-5.3.7.tgz \
+    &&  rm -rf redis-5.3.7.tgz \
+    &&  rm -rf /tmp/pear \
+    &&  docker-php-ext-enable redis
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- \
