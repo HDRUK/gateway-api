@@ -18,7 +18,10 @@ class DatasetTest extends TestCase
     const TEST_URL_NOTIFICATION = 'api/v1/notifications';
     const TEST_URL_USER = 'api/v1/users';
 
+    private $dataset = null;
+
     protected $header = [];
+    
 
     /**
      * Set up the database
@@ -36,6 +39,10 @@ class DatasetTest extends TestCase
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
         ];
+
+        // Lengthy process, but a more consistent representation
+        // of an incoming dataset
+        $this->dataset = $this->getFakeDataset();
     }
 
     /**
@@ -154,10 +161,11 @@ class DatasetTest extends TestCase
                 'user_id' => $userId,
                 'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                'data' => $this->getFakeDataset(),
+                'data' => $this->dataset,
             ],
             $this->header,
         );
+
         $responseCreateDataset->assertStatus(201);
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];
@@ -297,7 +305,7 @@ class DatasetTest extends TestCase
                 'user_id' => $userId,
                 'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                'data' => $this->getFakeDataset(),
+                'data' => $this->dataset,
             ],
             $this->header,
         );
@@ -343,141 +351,9 @@ class DatasetTest extends TestCase
 
     private function getFakeDataset()
     {
-        return [
-            'datasetv2' => [
-                'identifier' => 'bd18eb49-9789-4ed3-a6c1-7b4f851ec2e7',
-                'version' => '1.0.0',
-                'issued' => '12/04/2022',
-                'modified' => '12/04/2022',
-                'revisions' => [],
-                'summary' => [
-                    'title' => htmlentities(fake()->paragraph(), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'abstract' => htmlentities(implode(" ", fake()->paragraphs(1, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'publisher' => [
-                        'identifier' => '607db9c5e1f9d3704d570d5f',
-                        'name' => 'PIONEER',
-                        'logo' => '',
-                        'description' => '',
-                        'contactPoint' => [],
-                        'memberOf' => 'HUB',
-                        'accessRights' => [],
-                        'deliveryLeadTime' => '',
-                        'accessService' => '',
-                        'accessRequestCost' => '',
-                        'dataUseLimitation' => [],
-                        'dataUseRequirements' => []
-                    ],
-                    'contactPoint' => 'PIONEER@UHB.NHS.UK',
-                    'keywords' => [
-                        'Urinary Tract Infection',
-                        'Infection',
-                        'UTI',
-                        'Antibiotics',
-                    ],
-                    'alternateIdentifiers' => [],
-                    'doiName' => '',
-                ],
-                'documentation' => [
-                    'description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'associatedMedia' => [],
-                    'isPartOf' => [],
-                ],
-                'coverage' => [
-                    'spatial' => [
-                        'United Kingdom,England,West Midlands'
-                    ],
-                    'typicalAgeRange' => '0-112',
-                    'physicalSampleAvailability' => [
-                        'NOT AVAILABLE'
-                    ],
-                    'followup' => 'OTHER',
-                    'pathway' => htmlentities(fake()->paragraph(), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                ],
-                'provenance' => [
-                    'origin' => [
-                        'purpose' => [
-                            'CARE'
-                        ],
-                        'source' => [
-                            'EPR'
-                        ],
-                        'collectionSituation' => [
-                            'ACCIDENT AND EMERGENCY',
-                            'OUTPATIENTS',
-                            'IN-PATIENTS',
-                        ]
-                    ],
-                    'temporal' => [
-                        'accrualPeriodicity' => 'QUARTERLY',
-                        'distributionReleaseDate' => '20/01/2022',
-                        'startDate' => '12/01/2000',
-                        'endDate' => '01/01/2022',
-                        'timeLag' => 'OTHER',
-                    ],
-                ],
-                'accessibility' => [
-                    'usage' => [
-                        'dataUseLimitation' => [
-                            'RESEARCH USE ONLY'
-                        ],
-                        'dataUseRequirements' => [
-                            'PROJECT SPECIFIC RESTRICTIONS',
-                        ],
-                        'resourceCreator' => [
-                            htmlentities(fake()->paragraph(), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                        ],
-                        'investigations' => [],
-                        'isReferencedBy' => [],
-                    ],
-                    'access' => [
-                        "accessRights" => [
-                            "https://www.pioneerdatahub.co.uk/data/data-request-process/"
-                        ],
-                        "accessService" => htmlentities(fake()->paragraph(), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                        "accessRequestCost" => [
-                            "www.pioneerdatahub.co.uk/data/data-services-costs/"
-                        ],
-                        "deliveryLeadTime" => "1-2 MONTHS",
-                        "jurisdiction" => [
-                            "GB-ENG"
-                        ],
-                        "dataProcessor" => "NOT APPLICABLE",
-                        "dataController" => "University Hospitals Birmingham NHS Foundation Trust"
-                    ],
-                    'formatAndStandards' => [
-                        'vocabularyEncodingScheme' => [
-                            'SNOMED CT',
-                            'OPCS4',
-                            'ICD10',
-                        ],
-                        'conformsTo' => [
-                            'LOCAL',
-                        ],
-                        'language' => [
-                            'en',
-                        ],
-                        'format' => [
-                            'SQL',
-                        ]
-                    ],
-                ],
-                'enrichmentAndLinkage' => [
-                    'qualifiedRelation' => [],
-                    'derivation' => [
-                        'Not Available',
-                    ],
-                    'tools' => [],
-                ],
-                'observations' => [
-                    [
-                        'measuredProperty' => 'Count',
-                        'observedNode' => 'EVENTS',
-                        'measuredValue' => '91568',
-                        'disambiguatingDescription' => '91,568 spells with patients with diabetes between 12-01-2000 and 01-01-2022',
-                        'observationDate' => '02/01/2022',
-                    ]
-                ]
-            ]
-        ];
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/mauro_test_dataset.json', 0, null, null);
+        $json = json_decode($jsonFile, true);
+
+        return $json;
     }
 }

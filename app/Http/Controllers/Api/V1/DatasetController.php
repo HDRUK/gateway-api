@@ -15,6 +15,8 @@ use App\Exceptions\NotFoundException;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 
+use App\Jobs\TechnicalObjectDataStore;
+
 class DatasetController extends Controller
 {
     /**
@@ -211,6 +213,15 @@ class DatasetController extends Controller
                     'submitted' => now(),
                 ]);
 
+                // Dispatch this potentially lengthy subset of data
+                // to a technical object data store job - API doesn't
+                // care if it exists or not. We leave that determination to
+                // the service itself.
+                TechnicalObjectDataStore::dispatch(
+                    $mauro['DataModel']['responseJson']['id'],
+                    base64_encode(gzcompress(gzencode(json_encode($input['data'])), 6))
+                );
+                
                 return response()->json([
                     'message' => 'created',
                     'data' => $dataset->id,
