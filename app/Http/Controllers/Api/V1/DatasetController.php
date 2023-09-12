@@ -4,16 +4,20 @@ namespace App\Http\Controllers\Api\V1;
 
 use Mauro;
 use Config;
+use Artisan;
 use Exception;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Process;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\CreateDataset;
+
+use App\Jobs\TechnicalObjectDataStore;
 
 class DatasetController extends Controller
 {
@@ -211,9 +215,23 @@ class DatasetController extends Controller
                     'submitted' => now(),
                 ]);
 
+                // Offload this potentially lengthy subset of data
+                // to the technical object data store command - API doesn't
+                // care if it exists or not. We leave that determination to
+                // the service itself.
+                TechnicalObjectDataStore::dispatch(
+                    $mauro['DataModel']['responseJson']['id'],
+                    base64_encode(gzcompress(gzencode(json_encode($input['data'])), 6))
+                );
+                
+
+                // dd(gzcompress(gzencode(json_encode($input['data']))));
+                
                 return response()->json([
                     'message' => 'created',
                     'data' => $dataset->id,
+                    // 'mauro_dataset_id' => $mauro['DataModel']['responseJson']['id'],
+                    // 'compressed' => base64_encode(gzcompress(gzencode(json_encode($input['data'])), 6)),
                 ], 201);
             }
 

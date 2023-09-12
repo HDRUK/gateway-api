@@ -46,7 +46,8 @@ RUN composer install \
 # Generate Swagger
 RUN php artisan l5-swagger:generate
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Starts both, laravel server and job queue
+CMD ["/var/www/docker/start.sh"]
 
 # Expose port
 EXPOSE 8000
