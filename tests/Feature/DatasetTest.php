@@ -40,7 +40,7 @@ class DatasetTest extends TestCase
             'Authorization' => 'Bearer ' . $jwt,
         ];
 
-        // Lenghty process, but a more consistent representation
+        // Lengthy process, but a more consistent representation
         // of an incoming dataset
         $this->dataset = $this->getFakeDataset();
     }
