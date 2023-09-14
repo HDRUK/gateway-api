@@ -31,7 +31,6 @@ trait FederationTransformation
 
             if ($federationId && !count($federation)) {
                 return [];
-                break;
             }
 
             $team = [
