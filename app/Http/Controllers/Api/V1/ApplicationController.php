@@ -106,11 +106,11 @@ class ApplicationController extends Controller
         $disabledTerm = $request->query('disabled');
 
         if ($disabledTerm === "true" && $enabledTerm === "false") {
-            $applications = $applications->where('enabled',(int)false);
+            $applications = $applications->where('enabled', false);
         }
 
         if ($disabledTerm === "false" && $enabledTerm === "true") {
-            $applications = $applications->where('enabled',(int)true);
+            $applications = $applications->where('enabled', true);
         }
         
         $textTerms = $request->query('text',[]);
