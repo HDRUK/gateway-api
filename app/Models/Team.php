@@ -162,4 +162,9 @@ class Team extends Model
     {
         return $this->hasMany(Application::class);
     }
+
+    public function federation(): BelongsToMany
+    {
+        return $this->belongsToMany(Federation::class, 'team_has_federations');
+    }
 }

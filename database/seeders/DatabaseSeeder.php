@@ -46,6 +46,8 @@ class DatabaseSeeder extends Seeder
             ApplicationHasPermissionSeeder::class,
             FAIRShareCommandSeeder::class,
             TeamUserHasRoleSeeder::class,
+            FederationSeeder::class,
+            TeamHasFederationSeeder::class,
         ]);
     }
 }
