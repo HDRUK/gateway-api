@@ -50,8 +50,14 @@ class ApplicationController extends Controller
      *    @OA\Parameter(
      *       name="enabled",
      *       in="query",
-     *       description="Filter by application enabled status (0 or 1).",
-     *       @OA\Schema(type="integer", enum={0, 1})
+     *       description="Filter by application enabled status (true or false).",
+     *       @OA\Schema(type="boolean", enum={true, false})
+     *    ),
+     *    @OA\Parameter(
+     *       name="disabled",
+     *       in="query",
+     *       description="Filter by application disabled status (true or false).",
+     *       @OA\Schema(type="boolean", enum={true, false})
      *    ),
      *    @OA\Response(
      *       response=200,
@@ -97,8 +103,14 @@ class ApplicationController extends Controller
         }
         
         $enabledTerm = $request->query('enabled');
-        if ($enabledTerm !== null) {
-            $applications = $applications->where('enabled',(int)$enabledTerm);
+        $disabledTerm = $request->query('disabled');
+
+        if ($disabledTerm === "true" && $enabledTerm === "false") {
+            $applications = $applications->where('enabled',(int)false);
+        }
+
+        if ($disabledTerm === "false" && $enabledTerm === "true") {
+            $applications = $applications->where('enabled',(int)true);
         }
         
         $textTerms = $request->query('text',[]);
