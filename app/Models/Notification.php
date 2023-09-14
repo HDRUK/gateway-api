@@ -4,21 +4,27 @@ namespace App\Models;
 
 use App\Models\Team;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Notification extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable, SoftDeletes, Prunable;
 
     protected $fillable = [
-        'updated_at',
-        'deleted_at',
         'notification_type',
         'message',
         'opt_in',
         'enabled',
+        'email',
+    ];
+
+    protected $casts = [
+        'enabled' => 'boolean',
     ];
 
     /**

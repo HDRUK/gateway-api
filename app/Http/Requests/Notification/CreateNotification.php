@@ -30,6 +30,10 @@ class CreateNotification extends BaseFormRequest
                 'required',
                 'boolean',
             ],
+            'email' => [
+                'required',
+                'email',
+            ],
         ];
     }
 }

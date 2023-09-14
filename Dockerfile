@@ -1,6 +1,7 @@
 FROM php:8.2.3-fpm
 
 ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/application_default_credentials.json"
+ENV COMPOSER_PROCESS_TIMEOUT=600
 
 WORKDIR /var/www
 
@@ -13,6 +14,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libc-dev \
+    wget \
     zlib1g-dev \
     zip \
     default-mysql-client \
@@ -22,8 +24,11 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install sockets
 
 # Install Redis
-RUN pecl install redis \
-    && docker-php-ext-enable redis
+RUN wget -O redis-5.3.7.tgz 'http://pecl.php.net/get/redis-5.3.7.tgz' \
+    && pecl install redis-5.3.7.tgz \
+    &&  rm -rf redis-5.3.7.tgz \
+    &&  rm -rf /tmp/pear \
+    &&  docker-php-ext-enable redis
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- \
@@ -46,7 +51,8 @@ RUN composer install \
 # Generate Swagger
 RUN php artisan l5-swagger:generate
 
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Starts both, laravel server and job queue
+CMD ["/var/www/docker/start.sh"]
 
 # Expose port
 EXPOSE 8000

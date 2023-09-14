@@ -28,4 +28,8 @@ class Collection extends Model
         'public',
         'counter',
     ];
+    
+    protected $casts = [
+        'enabled' => 'boolean',
+    ];
 }
