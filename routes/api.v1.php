@@ -85,16 +85,23 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
 
     // teams - federation
     Route::get('/teams/{teamId}/federations', [FederationController::class, 'index'])
-        ->where('teamId', '[0-9]+');
+        ->where('teamId', '[0-9]+')
+        ->middleware(['check.access:permissions,integrations.metadata']);
     Route::get('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'show'])
-        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+']);
-    Route::post('/teams/{teamId}/federations', [FederationController::class, 'store'])->where('teamId', '[0-9]+');
+        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+'])
+        ->middleware(['check.access:permissions,integrations.metadata']);
+    Route::post('/teams/{teamId}/federations', [FederationController::class, 'store'])
+        ->where('teamId', '[0-9]+')
+        ->middleware(['check.access:permissions,integrations.metadata']);
     Route::put('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'update'])
-        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+']);
+        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+'])
+        ->middleware(['check.access:permissions,integrations.metadata']);
     Route::patch('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'edit'])
-        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+']);
+        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+'])
+        ->middleware(['check.access:permissions,integrations.metadata']);
     Route::delete('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'delete'])
-        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+']);
+        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+'])
+        ->middleware(['check.access:permissions,integrations.metadata']);
 });
 
 // stop all all other routes
