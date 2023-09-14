@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\TestController;
 use App\Http\Controllers\Api\V1\DatasetController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\TeamUserController;
+use App\Http\Controllers\Api\V1\FederationController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
 use App\Http\Controllers\Api\V1\TeamNotificationController;
 
@@ -81,6 +82,19 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     Route::delete('/teams/{teamId}/notifications/{notificationId}', [TeamNotificationController::class, 'destroyTeamNotification'])
         ->where(['teamId' => '[0-9]+', 'notificationId' => '[0-9]+'])
         ->middleware(['check.access:roles,custodian.team.admin']);
+
+    // teams - federation
+    Route::get('/teams/{teamId}/federations', [FederationController::class, 'index'])
+        ->where('teamId', '[0-9]+');
+    Route::get('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'show'])
+        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+']);
+    Route::post('/teams/{teamId}/federations', [FederationController::class, 'store'])->where('teamId', '[0-9]+');
+    Route::put('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'update'])
+        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+']);
+    Route::patch('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'edit'])
+        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+']);
+    Route::delete('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'delete'])
+        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+']);
 });
 
 // stop all all other routes

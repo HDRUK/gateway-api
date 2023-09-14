@@ -7583,6 +7583,789 @@
                 ]
             }
         },
+        "/api/v1/teams/{teamId}/federations": {
+            "get": {
+                "tags": [
+                    "Team-Federations"
+                ],
+                "summary": "FederationController@index",
+                "description": "Get federations by team id",
+                "operationId": "get_federation_team_id",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "null"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "someName"
+                                                    },
+                                                    "allows_messaging": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "workflow_enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "access_requests_management": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "uses_5_safes": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "is_admin": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "member_of": {
+                                                        "type": "string",
+                                                        "example": "someOrg"
+                                                    },
+                                                    "contact_point": {
+                                                        "type": "string",
+                                                        "example": "someone@mail.com"
+                                                    },
+                                                    "application_form_updated_by": {
+                                                        "type": "integer",
+                                                        "example": "555"
+                                                    },
+                                                    "application_form_updated_on": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11"
+                                                    },
+                                                    "mdm_folder_id": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "xxxxxxx"
+                                                    },
+                                                    "federation": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "array",
+                                                            "items": {}
+                                                        },
+                                                        "example": "[]"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Team-Federations"
+                ],
+                "summary": "FederationController@store",
+                "description": "Create federation",
+                "operationId": "create_federation_team",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "auth_type": {
+                                        "type": "string",
+                                        "example": "oauth"
+                                    },
+                                    "auth_secret_key": {
+                                        "type": "string",
+                                        "example": "path/for/secret/key"
+                                    },
+                                    "endpoint_baseurl": {
+                                        "type": "string",
+                                        "example": "https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app"
+                                    },
+                                    "endpoint_datasets": {
+                                        "type": "string",
+                                        "example": "/api/v1/noauth/datasets"
+                                    },
+                                    "endpoint_dataset": {
+                                        "type": "string",
+                                        "example": "/api/v1/noauth/datasets/{id}"
+                                    },
+                                    "run_time_hour": {
+                                        "type": "integer",
+                                        "example": 11
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "notification": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "example": "['t1@test.com','t2@test.com']"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/teams/{teamId}/federations/{federationId}": {
+            "get": {
+                "tags": [
+                    "Team-Federations"
+                ],
+                "summary": "FederationController@show",
+                "description": "Get federation by federation id from team id",
+                "operationId": "get_federation_by_federation_id_and_team_id",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    },
+                    {
+                        "name": "federationId",
+                        "in": "path",
+                        "description": "federation id",
+                        "required": true,
+                        "schema": {
+                            "description": "federation id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "null"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "someName"
+                                                    },
+                                                    "allows_messaging": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "workflow_enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "access_requests_management": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "uses_5_safes": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "is_admin": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "member_of": {
+                                                        "type": "string",
+                                                        "example": "someOrg"
+                                                    },
+                                                    "contact_point": {
+                                                        "type": "string",
+                                                        "example": "someone@mail.com"
+                                                    },
+                                                    "application_form_updated_by": {
+                                                        "type": "integer",
+                                                        "example": "555"
+                                                    },
+                                                    "application_form_updated_on": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11"
+                                                    },
+                                                    "mdm_folder_id": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "xxxxxxx"
+                                                    },
+                                                    "federation": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "array",
+                                                            "items": {}
+                                                        },
+                                                        "example": "[]"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Team-Federations"
+                ],
+                "summary": "FederationController@update",
+                "description": "Update federation for team",
+                "operationId": "update_federation_team",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    },
+                    {
+                        "name": "federationId",
+                        "in": "path",
+                        "description": "federation id",
+                        "required": true,
+                        "schema": {
+                            "description": "federation id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "auth_type": {
+                                        "type": "string",
+                                        "example": "oauth"
+                                    },
+                                    "auth_secret_key": {
+                                        "type": "string",
+                                        "example": "path/for/secret/key"
+                                    },
+                                    "endpoint_baseurl": {
+                                        "type": "string",
+                                        "example": "https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app"
+                                    },
+                                    "endpoint_datasets": {
+                                        "type": "string",
+                                        "example": "/api/v1/noauth/datasets"
+                                    },
+                                    "endpoint_dataset": {
+                                        "type": "string",
+                                        "example": "/api/v1/noauth/datasets/{id}"
+                                    },
+                                    "run_time_hour": {
+                                        "type": "integer",
+                                        "example": 11
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "notification": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "example": "['t1@test.com','t2@test.com']"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Team-Federations"
+                ],
+                "summary": "FederationController@delete",
+                "description": "Delete federation for team",
+                "operationId": "delete_federation",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    },
+                    {
+                        "name": "federationId",
+                        "in": "path",
+                        "description": "federation id",
+                        "required": true,
+                        "schema": {
+                            "description": "federation id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource deleted successfully."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Error response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Team-Federations"
+                ],
+                "summary": "FederationController@edit",
+                "description": "Edit federation for team",
+                "operationId": "edit_federation_team",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    },
+                    {
+                        "name": "federationId",
+                        "in": "path",
+                        "description": "federation id",
+                        "required": true,
+                        "schema": {
+                            "description": "federation id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "auth_type": {
+                                        "type": "string",
+                                        "example": "oauth"
+                                    },
+                                    "auth_secret_key": {
+                                        "type": "string",
+                                        "example": "path/for/secret/key"
+                                    },
+                                    "endpoint_baseurl": {
+                                        "type": "string",
+                                        "example": "https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app"
+                                    },
+                                    "endpoint_datasets": {
+                                        "type": "string",
+                                        "example": "/api/v1/noauth/datasets"
+                                    },
+                                    "endpoint_dataset": {
+                                        "type": "string",
+                                        "example": "/api/v1/noauth/datasets/{id}"
+                                    },
+                                    "run_time_hour": {
+                                        "type": "integer",
+                                        "example": 11
+                                    },
+                                    "enabled": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "notification": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "example": "['t1@test.com','t2@test.com']"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/v1/filters": {
             "get": {
                 "tags": [
