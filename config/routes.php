@@ -40,7 +40,6 @@ return [
             ],
         ],
 
-
         // dispatch.email
         [
             'name' => 'dispatch.email',
