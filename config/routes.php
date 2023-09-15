@@ -6,6 +6,40 @@ return [
 
     // private
     'private' => [
+        // team.user.role
+        [
+            'name' => 'team.user.role',
+            'method' => 'post',
+            'path' => '/teams/{teamId}/users',
+            'methodController' => 'TeamUserController@store',
+            'middleware' => [],
+            'constraint' => [
+                'teamId', '[0-9]+'
+            ],
+        ],
+        [
+            'name' => 'team.user.role',
+            'method' => 'put',
+            'path' => '/teams/{teamId}/users/{userId}',
+            'methodController' => 'TeamUserController@update',
+            'middleware' => [],
+            'constraint' => [
+                'teamId' => '[0-9]+', 
+                'userId' => '[0-9]+',
+            ],
+        ],
+        [
+            'name' => 'team.user.role',
+            'method' => 'delete',
+            'path' => '/teams/{teamId}/users/{userId}',
+            'methodController' => 'TeamUserController@destroy',
+            'middleware' => [],
+            'constraint' => [
+                'teamId' => '[0-9]+',
+                'userId' => '[0-9]+',
+            ],
+        ],
+
 
         // dispatch.email
         [
