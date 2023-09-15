@@ -6,6 +6,7 @@ use Hash;
 use Config;
 use Exception;
 use App\Models\User;
+use App\Models\UserHasRole;
 use Illuminate\Http\Request;
 use App\Http\Requests\User\GetUser;
 use App\Models\UserHasNotification;
@@ -50,7 +51,12 @@ class UserController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $users = User::getAll('id', $jwtUser)->with('teams', 'notifications')->get()->toArray();
+        $users = User::getAll('id', $jwtUser)->with(
+            'roles',
+            'roles.permissions',
+            'teams',
+            'notifications'
+        )->get()->toArray();
 
         $response = $this->getUsers($users);
 
@@ -121,7 +127,12 @@ class UserController extends Controller
         ])->get();
 
         if ($users->count()) {
-            $userTeam = User::where('id', $id)->with(['teams', 'notifications'])->get()->toArray();
+            $userTeam = User::where('id', $id)->with(
+                'roles',
+                'roles.permissions',
+                'teams',
+                'notifications'
+            )->get()->toArray();
             return response()->json([
                 'message' => 'success',
                 'data' => $this->getUsers($userTeam),
@@ -200,8 +211,13 @@ class UserController extends Controller
                 'contact_feedback' => $input['contact_feedback'],
                 'contact_news' => $input['contact_news'],
                 'mongo_id' => $input['mongo_id'],
-                'mongo_object_id' => $input['mongo_object_id'],  
+                'mongo_object_id' => $input['mongo_object_id'],
             ];
+
+            // TODO - At this stage we may want to use the is_admin
+            // model flag to signify creation of HDR specific users
+            // which use user_has_roles relation to determine their
+            // role/permissions outside of a team
 
             $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
             
@@ -578,6 +594,7 @@ class UserController extends Controller
     {
         try {
             UserHasNotification::where('user_id', $id)->delete();
+            UserHasRole::where('user_id', $id)->delete();
             User::where('id', $id)->delete();
 
             return response()->json([
