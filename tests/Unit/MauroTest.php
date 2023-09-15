@@ -116,7 +116,8 @@ class MauroTest extends TestCase
     public function test_it_can_create_and_delete_a_dataset(): void
     {
         // First read our test json metadata file
-        $payload = file_get_contents('tests/Unit/test_files/mauro_test_dataset.json');
+        $payload = file_get_contents('tests/Unit/test_files/mauro_test_dataset_min.json');
+        $json = json_decode($payload, true);
 
         // Secondly create a new folder (publisher) for this data model (dataset)
         $jsonResponse = Mauro::createFolder(
@@ -136,7 +137,7 @@ class MauroTest extends TestCase
             'A. Test',
             'Health Data Research UK',
             $parentFolderId,
-            json_decode($payload, true)
+            $json
         );
 
         $this->assertIsArray($jsonResponse);

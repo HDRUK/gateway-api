@@ -1,0 +1,439 @@
+{
+    "success": true,
+    "isLatestVersion": true,
+    "isDatasetArchived": false,
+    "data": {
+        "categories": {
+            "programmingLanguage": []
+        },
+        "tags": {
+            "features": [
+                "Urinary Tract Infection",
+                "Infection",
+                "UTI",
+                "Antibiotics",
+                "urine",
+                "dipstick",
+                "cystitis",
+                "pyelonephritis",
+                "uropathogens",
+                "acute urethral syndrome",
+                "dehydrated",
+                "urine culture",
+                "bacteriuria",
+                "sensitivities",
+                "resistance",
+                "cultures",
+                "administration",
+                "intravenous",
+                "oral",
+                "Outcomes",
+                "Admissions",
+                "Demography",
+                "acuity",
+                "Sepsis",
+                "NEWS2",
+                "Mortality",
+                "length of stay"
+            ],
+            "topics": []
+        },
+        "document_links": {
+            "doi": [],
+            "pdf": [],
+            "html": []
+        },
+        "datasetfields": {
+            "geographicCoverage": [
+                "United Kingdom,England,West Midlands"
+            ],
+            "physicalSampleAvailability": [
+                "NOT AVAILABLE"
+            ],
+            "technicaldetails": [
+                {
+                    "label": "PDR28Admission",
+                    "description": "Spell admission details",
+                    "domainType": "DataClass",
+                    "elements": [
+                        {
+                            "label": "care_spell_id",
+                            "description": "Unique identifier for the spell",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "varchar",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "patient_pseudo_id",
+                            "description": "Hashed patient identification",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "varchar",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "admission_type_translated",
+                            "description": "States whether spell is elective or emergency",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "varchar",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "arrival_datetime",
+                            "description": "Datetime at which the CareSpell started",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "datetime",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "arrival_datetime_id",
+                            "description": "dim.Time record ID for arrival_datetime",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "char",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "discharge_datetime",
+                            "description": "Datetime at which the CareSpell ended. Null is still ongoing",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "datetime",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "discharge_datetime_id",
+                            "description": "dim.Time record ID fordischarge_datetime",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "char",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "admission_location_translated",
+                            "description": "Admission type  (Daycase, Elective,Emergency etc)",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "varchar",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "discharge_location_translated",
+                            "description": "Outcome of the carespell  (discharged home, transferred out etc)",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "varchar",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "ethnicity",
+                            "description": "Patient's ethnicity description",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "varchar",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "age",
+                            "description": "Patient's age at the time of admission",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "numeric",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "quintile",
+                            "description": "Index of multiple deprivation quintile score based off postcode (1 is most deprived 5 is least deprived)",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "float",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "sex",
+                            "description": "Patient's gender",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "varchar",
+                                "domainType": "PrimitiveType"
+                            }
+                        },
+                        {
+                            "label": "dod",
+                            "description": "Patient's date of death",
+                            "domainType": "DataElement",
+                            "dataType": {
+                                "label": "datetime",
+                                "domainType": "PrimitiveType"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "versionLinks": [],
+            "phenotypes": [],
+            "publisher": "HUB > PIONEER",
+            "abstract": "Acute presentations of UTIs (2000 to date). Deeply phenotyped, longitudinal granular data. Serial acuity, physiology, microbiology cultures, blood parameters, treatments, interventions, outcomes. Presenting complaints. Catheterisation status.",
+            "releaseDate": "20/01/2022",
+            "accessRequestDuration": "1-2 MONTHS",
+            "datasetStartDate": "12/01/2000",
+            "datasetEndDate": "01/01/2022",
+            "ageBand": "0-112",
+            "contactPoint": "PIONEER@UHB.NHS.UK",
+            "periodicity": "QUARTERLY",
+            "metadataquality": {
+                "schema_version": "2.0.1",
+                "pid": "ae2192ce-7d75-4cec-8ebd-e07c2eacb7c3",
+                "id": "bd18eb49-9789-4ed3-a6c1-7b4f851ec2e7",
+                "publisher": "HUB > PIONEER",
+                "title": "Urinary tract infections acute presentations: microbiology, treatment, outcome",
+                "weighted_quality_rating": "Platinum",
+                "weighted_quality_score": "94.63",
+                "weighted_completeness_percent": "91.95",
+                "weighted_error_percent": "2.68"
+            },
+            "datautility": {
+                "pid": "",
+                "id": "bd18eb49-9789-4ed3-a6c1-7b4f851ec2e7",
+                "publisher": null,
+                "title": "Urinary tract infections acute presentations: microbiology, treatment, outcome",
+                "metadata_richness": "Platinum",
+                "availability_of_additional_documentation_and_support": "",
+                "data_model": "",
+                "data_dictionary": "",
+                "provenance": "",
+                "data_quality_management_process": "",
+                "dama_quality_dimensions": "",
+                "pathway_coverage": "",
+                "length_of_follow_up": "",
+                "allowable_uses": "",
+                "research_environment": "",
+                "time_lag": "",
+                "timeliness": "",
+                "linkages": "",
+                "data_enrichments": ""
+            }
+        },
+        "timestamps": {
+            "created": "2022-04-08T12:25:50.112Z",
+            "updated": "2022-04-12T08:58:12.569Z",
+            "submitted": "2022-04-08T12:26:12.206Z",
+            "published": "2022-04-12T08:58:12.569Z"
+        },
+        "authors": [],
+        "emailNotifications": true,
+        "showOrganisation": false,
+        "datasetVersionIsV1": false,
+        "isCohortDiscovery": false,
+        "toolids": [],
+        "datasetids": [],
+        "_id": "625029ce045158b6b8c86bff",
+        "relatedObjects": [],
+        "programmingLanguage": [],
+        "pid": "ae2192ce-7d75-4cec-8ebd-e07c2eacb7c3",
+        "datasetVersion": "2.0.0",
+        "id": 10907933607955478,
+        "datasetid": "bd18eb49-9789-4ed3-a6c1-7b4f851ec2e7",
+        "name": "Urinary tract infections acute presentations: microbiology, treatment, outcome",
+        "datasetv2": {
+            "identifier": "bd18eb49-9789-4ed3-a6c1-7b4f851ec2e7",
+            "version": "2.0.0",
+            "issued": "12/04/2022",
+            "modified": "12/04/2022",
+            "revisions": [],
+            "summary": {
+                "title": "Urinary tract infections acute presentations: microbiology, treatment, outcome",
+                "abstract": "Acute presentations of UTIs (2000 to date). Deeply phenotyped, longitudinal granular data. Serial acuity, physiology, microbiology cultures, blood parameters, treatments, interventions, outcomes. Presenting complaints. Catheterisation status.",
+                "publisher": {
+                    "identifier": "607db9c5e1f9d3704d570d5f",
+                    "name": "PIONEER",
+                    "logo": "",
+                    "description": "",
+                    "contactPoint": [],
+                    "memberOf": "HUB",
+                    "accessRights": [],
+                    "deliveryLeadTime": "",
+                    "accessService": "",
+                    "accessRequestCost": "",
+                    "dataUseLimitation": [],
+                    "dataUseRequirements": []
+                },
+                "contactPoint": "PIONEER@UHB.NHS.UK",
+                "keywords": [
+                    "Urinary Tract Infection",
+                    "Infection",
+                    "UTI",
+                    "Antibiotics",
+                    "urine",
+                    "dipstick",
+                    "cystitis",
+                    "pyelonephritis",
+                    "uropathogens",
+                    "acute urethral syndrome",
+                    "dehydrated",
+                    "urine culture",
+                    "bacteriuria",
+                    "sensitivities",
+                    "resistance",
+                    "cultures",
+                    "administration",
+                    "intravenous",
+                    "oral",
+                    "Outcomes",
+                    "Admissions",
+                    "Demography",
+                    "acuity",
+                    "Sepsis",
+                    "NEWS2",
+                    "Mortality",
+                    "length of stay"
+                ],
+                "alternateIdentifiers": [],
+                "doiName": ""
+            },
+            "documentation": {
+                "description": "Background: A urinary tract infection (UTI) is a common infection that affects the bladder (cystitis), urethra (urethritis) or kidneys (pyelonephritis). They are more prevalent in women, and the incidence in women over 65 years old is double the rate compared with the overall female population. Catheterisation is known to affect the likelihood of infection. The National Institute for Clinical Excellence suggests that UTIs in the elderly are often over-diagnosed and over-treated. This has led to NHS England requiring a reduction in the number of Trimethoprim prescriptions prescribed to patients over 70 years old. \n\nPIONEER geography: The West Midlands (WM) has a population of 5.9 million and includes a diverse ethnic and socio-economic mix.  \n\nEHR: UHB is one of the largest NHS Trusts in England, providing direct acute services and specialist care across four hospital sites, with 2.2 million patient episodes per year, 2750 beds and an expanded 250 ITU bed capacity during COVID. UHB runs a fully electronic healthcare record (EHR) (PICS; Birmingham Systems), a shared primary and secondary care record (Your Care Connected) and a patient portal “My Health”. \n\nScope: All hospitalised patients from 2000 onwards, curated to focus on Urinary tract infection. Longitudinal and individually linked, so that the preceding and subsequent health journey can be mapped and healthcare utilisation prior to and after admission understood. The dataset includes highly granular patient demographics and co-morbidities taken from ICD-10 and SNOMED-CT codes. Serial, structured data pertaining to acute care process (timings, staff grades, specialty review, wards and triage). Along with presenting complaints, outpatients admissions, microbiology results, referrals, procedures, therapies, all physiology readings (pulse, blood pressure, respiratory rate, oxygen saturations and others), all blood results (urea, albumin, platelets, white blood cells and others). This dataset includes all prescribed and administered treatments including antibiotics, bacterial resistance patterns from microbiology assessments and outcomes. Linked images are also available (radiographs, CT scans, MRI). \n\nAvailable supplementary data: Matched controls; ambulance, OMOP data, synthetic data. \n\nAvailable supplementary support: Analytics, Model build, validation and refinement; A.I.; Data partner support for ETL (extract, transform and load) process, Clinical expertise, Patient and end-user access, Purchaser access, Regulatory requirements, Data-driven trials, “fast screen” services. ",
+                "associatedMedia": [],
+                "isPartOf": []
+            },
+            "coverage": {
+                "spatial": [
+                    "United Kingdom,England,West Midlands"
+                ],
+                "typicalAgeRange": "0-112",
+                "physicalSampleAvailability": [
+                    "NOT AVAILABLE"
+                ],
+                "followup": "OTHER",
+                "pathway": "Data is representative of the multi-ethnicity population within the West Midlands (42% non white). Data includes all patients admitted during this timeframe, with National data Opt Outs applied, and therefore is representative of admissions to secondary care. Data focuses on in-patient stay in hospital during the acute episode but can be supplemented on request to include previous and subsequent hospital contacts (including outpatient appointments) and ambulance, 111, 999 data. "
+            },
+            "provenance": {
+                "origin": {
+                    "purpose": [
+                        "CARE"
+                    ],
+                    "source": [
+                        "EPR"
+                    ],
+                    "collectionSituation": [
+                        "ACCIDENT AND EMERGENCY",
+                        "OUTPATIENTS",
+                        "IN-PATIENTS"
+                    ]
+                },
+                "temporal": {
+                    "accrualPeriodicity": "QUARTERLY",
+                    "distributionReleaseDate": "20/01/2022",
+                    "startDate": "12/01/2000",
+                    "endDate": "01/01/2022",
+                    "timeLag": "OTHER"
+                }
+            },
+            "accessibility": {
+                "usage": {
+                    "dataUseLimitation": [
+                        "RESEARCH USE ONLY"
+                    ],
+                    "dataUseRequirements": [
+                        "PROJECT SPECIFIC RESTRICTIONS"
+                    ],
+                    "resourceCreator": [
+                        "This publication uses data from PIONEER, an ethically approved database and analytical environment (East Midlands Derby Research Ethics 20/EM/0158)"
+                    ],
+                    "investigations": [],
+                    "isReferencedBy": []
+                },
+                "access": {
+                    "accessRights": [
+                        "https://www.pioneerdatahub.co.uk/data/data-request-process/"
+                    ],
+                    "accessService": "Trusted Research Environments (TRE) are built using Microsoft Azure services and hosted in the UK to provide research teams a safe, secure and agile environment which allows users to quickly analyse, interpret and form an enriched view of primary care information through a range of integrated datasets.\n\nHealth data collated from multiple sources is ingested into a secure data lake which will then allow subsets of data to be made available to research teams on approval of a data request. Once approved a customer specific TRE is made available with a standard set of leading analytical tools from Microsoft including Azure Databricks, Azure Machine Learning, Azure SQL and Azure Synapse (for large-scale data warehouses). Specific tools can be provided at an additional cost over the standard platform data access charge and the PIONEER team will work with you to determine your exact needs.\n\nAccess to the TRE is managed using the latest virtual desktop technology to provide a safe and secure end-user experience.  By utilising leading edge design PIONEER are able to create TREs rapidly to enable us to service any customer requirement.",
+                    "accessRequestCost": [
+                        "www.pioneerdatahub.co.uk/data/data-services-costs/"
+                    ],
+                    "deliveryLeadTime": "1-2 MONTHS",
+                    "jurisdiction": [
+                        "GB-ENG"
+                    ],
+                    "dataProcessor": "NOT APPLICABLE",
+                    "dataController": "University Hospitals Birmingham NHS Foundation Trust"
+                },
+                "formatAndStandards": {
+                    "vocabularyEncodingScheme": [
+                        "SNOMED CT",
+                        "OPCS4",
+                        "ICD10"
+                    ],
+                    "conformsTo": [
+                        "LOCAL"
+                    ],
+                    "language": [
+                        "en"
+                    ],
+                    "format": [
+                        "SQL"
+                    ]
+                }
+            },
+            "enrichmentAndLinkage": {
+                "qualifiedRelation": [],
+                "derivation": [
+                    "Not Available"
+                ],
+                "tools": []
+            },
+            "observations": [
+                {
+                    "measuredProperty": "Count",
+                    "observedNode": "EVENTS",
+                    "measuredValue": "91568",
+                    "disambiguatingDescription": "91,568 spells with patients with diabetes between 12-01-2000 and 01-01-2022",
+                    "observationDate": "02/01/2022"
+                }
+            ]
+        },
+        "type": "dataset",
+        "activeflag": "active",
+        "source": "HDRUK MDC",
+        "questionAnswers": "{\"properties/summary/title\":\"Urinary tract infections acute presentations: microbiology, treatment, outcome\",\"properties/summary/contactPoint\":\"PIONEER@UHB.NHS.UK\",\"properties/coverage/spatial\":[\"United Kingdom,England,West Midlands\"],\"properties/coverage/physicalSampleAvailability\":[\"NOT AVAILABLE\"],\"properties/provenance/temporal/accrualPeriodicity\":\"QUARTERLY\",\"properties/accessibility/usage/resourceCreator\":[\"This publication uses data from PIONEER, an ethically approved database and analytical environment (East Midlands Derby Research Ethics 20/EM/0158)\"],\"properties/accessibility/access/accessRights\":[\"https://www.pioneerdatahub.co.uk/data/data-request-process/\"],\"properties/accessibility/access/accessService\":\"Trusted Research Environments (TRE) are built using Microsoft Azure services and hosted in the UK to provide research teams a safe, secure and agile environment which allows users to quickly analyse, interpret and form an enriched view of primary care information through a range of integrated datasets.\\n\\nHealth data collated from multiple sources is ingested into a secure data lake which will then allow subsets of data to be made available to research teams on approval of a data request. Once approved a customer specific TRE is made available with a standard set of leading analytical tools from Microsoft including Azure Databricks, Azure Machine Learning, Azure SQL and Azure Synapse (for large-scale data warehouses). Specific tools can be provided at an additional cost over the standard platform data access charge and the PIONEER team will work with you to determine your exact needs.\\n\\nAccess to the TRE is managed using the latest virtual desktop technology to provide a safe and secure end-user experience.  By utilising leading edge design PIONEER are able to create TREs rapidly to enable us to service any customer requirement.\",\"properties/accessibility/access/accessRequestCost\":[\"www.pioneerdatahub.co.uk/data/data-services-costs/\"],\"properties/accessibility/access/deliveryLeadTime\":\"1-2 MONTHS\",\"properties/accessibility/access/jurisdiction\":[\"GB-ENG\"],\"properties/accessibility/access/dataController\":\"University Hospitals Birmingham NHS Foundation Trust\",\"properties/accessibility/access/dataProcessor\":\"NOT APPLICABLE\",\"properties/accessibility/formatAndStandards/language\":[\"en\"],\"properties/enrichmentAndLinkage/derivation\":[\"Not Available\"],\"properties/observation/measuredProperty\":\"Count\",\"properties/coverage/pathway\":\"Data is representative of the multi-ethnicity population within the West Midlands (42% non white). Data includes all patients admitted during this timeframe, with National data Opt Outs applied, and therefore is representative of admissions to secondary care. Data focuses on in-patient stay in hospital during the acute episode but can be supplemented on request to include previous and subsequent hospital contacts (including outpatient appointments) and ambulance, 111, 999 data. \",\"properties/coverage/typicalAgeRange\":\"0-112\",\"properties/coverage/followup\":\"OTHER\",\"properties/provenance/temporal/distributionReleaseDate\":\"20/01/2022\",\"properties/provenance/temporal/startDate\":\"12/01/2000\",\"properties/provenance/temporal/endDate\":\"01/01/2022\",\"properties/provenance/temporal/timeLag\":\"OTHER\",\"properties/accessibility/formatAndStandards/vocabularyEncodingScheme\":[\"SNOMED CT\",\"OPCS4\",\"ICD10\"],\"properties/accessibility/formatAndStandards/conformsTo\":[\"LOCAL\"],\"properties/accessibility/formatAndStandards/format\":[\"SQL\"],\"properties/observation/observedNode\":\"EVENTS\",\"properties/observation/measuredValue\":\"91568\",\"properties/observation/disambiguatingDescription\":\"91,568 spells with patients with diabetes between 12-01-2000 and 01-01-2022\",\"properties/observation/observationDate\":\"02/01/2022\",\"properties/summary/abstract\":\"Acute presentations of UTIs (2000 to date). Deeply phenotyped, longitudinal granular data. Serial acuity, physiology, microbiology cultures, blood parameters, treatments, interventions, outcomes. Presenting complaints. Catheterisation status.\",\"properties/summary/keywords\":[\"Urinary Tract Infection\",\"Infection\",\"UTI\",\"Antibiotics\",\"urine\",\"dipstick\",\"cystitis\",\"pyelonephritis\",\"uropathogens\",\"acute urethral syndrome\",\"dehydrated\",\"urine culture\",\"bacteriuria\",\"sensitivities\",\"resistance\",\"cultures\",\"administration\",\"intravenous\",\"oral\",\"Outcomes\",\"Admissions\",\"Demography\",\"acuity\",\"Sepsis\",\"NEWS2\",\"Mortality\",\"length of stay\"],\"properties/documentation/description\":\"Background: A urinary tract infection (UTI) is a common infection that affects the bladder (cystitis), urethra (urethritis) or kidneys (pyelonephritis). They are more prevalent in women, and the incidence in women over 65 years old is double the rate compared with the overall female population. Catheterisation is known to affect the likelihood of infection. The National Institute for Clinical Excellence suggests that UTIs in the elderly are often over-diagnosed and over-treated. This has led to NHS England requiring a reduction in the number of Trimethoprim prescriptions prescribed to patients over 70 years old. \\n\\nPIONEER geography: The West Midlands (WM) has a population of 5.9 million and includes a diverse ethnic and socio-economic mix.  \\n\\nEHR: UHB is one of the largest NHS Trusts in England, providing direct acute services and specialist care across four hospital sites, with 2.2 million patient episodes per year, 2750 beds and an expanded 250 ITU bed capacity during COVID. UHB runs a fully electronic healthcare record (EHR) (PICS; Birmingham Systems), a shared primary and secondary care record (Your Care Connected) and a patient portal “My Health”. \\n\\nScope: All hospitalised patients from 2000 onwards, curated to focus on Urinary tract infection. Longitudinal and individually linked, so that the preceding and subsequent health journey can be mapped and healthcare utilisation prior to and after admission understood. The dataset includes highly granular patient demographics and co-morbidities taken from ICD-10 and SNOMED-CT codes. Serial, structured data pertaining to acute care process (timings, staff grades, specialty review, wards and triage). Along with presenting complaints, outpatients admissions, microbiology results, referrals, procedures, therapies, all physiology readings (pulse, blood pressure, respiratory rate, oxygen saturations and others), all blood results (urea, albumin, platelets, white blood cells and others). This dataset includes all prescribed and administered treatments including antibiotics, bacterial resistance patterns from microbiology assessments and outcomes. Linked images are also available (radiographs, CT scans, MRI). \\n\\nAvailable supplementary data: Matched controls; ambulance, OMOP data, synthetic data. \\n\\nAvailable supplementary support: Analytics, Model build, validation and refinement; A.I.; Data partner support for ETL (extract, transform and load) process, Clinical expertise, Patient and end-user access, Purchaser access, Regulatory requirements, Data-driven trials, “fast screen” services. \",\"properties/provenance/origin/purpose\":[\"CARE\"],\"properties/provenance/origin/source\":[\"EPR\"],\"properties/provenance/origin/collectionSituation\":[\"ACCIDENT AND EMERGENCY\",\"OUTPATIENTS\",\"IN-PATIENTS\"],\"properties/accessibility/usage/dataUseLimitation\":[\"RESEARCH USE ONLY\"],\"properties/accessibility/usage/dataUseRequirements\":[\"PROJECT SPECIFIC RESTRICTIONS\"]}",
+        "percentageCompleted": {
+            "summary": 80,
+            "documentation": 33,
+            "coverage": 100,
+            "origin": 100,
+            "temporal": 100,
+            "usage": 60,
+            "access": 100,
+            "formatAndStandards": 100,
+            "enrichmentAndLinkage": 33,
+            "observations": 100,
+            "provenance": 100,
+            "accessibility": 88,
+            "structural": 100
+        },
+        "createdAt": "2022-04-08T12:25:50.114Z",
+        "updatedAt": "2023-05-11T13:25:08.520Z",
+        "__v": 1,
+        "applicationStatusDesc": "",
+        "commercialUse": false,
+        "counter": 126,
+        "description": "",
+        "discourseTopicId": 0,
+        "hasTechnicalDetails": true
+    }
+}
