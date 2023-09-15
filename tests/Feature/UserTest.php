@@ -72,6 +72,7 @@ class UserTest extends TestCase
                     'mongo_id',
                     'mongo_object_id',
                     'notifications',
+                    'roles',
                 ],
             ],   
         ]);

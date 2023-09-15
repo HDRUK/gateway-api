@@ -40,6 +40,7 @@ trait UserTransformation
                 'contact_news' => $user['contact_news'],
                 'mongo_id' => $user['mongo_id'],
                 'mongo_object_id' => $user['mongo_object_id'],
+                'roles' => $user['roles'],
             ];
 
             $tmpTeam = [];

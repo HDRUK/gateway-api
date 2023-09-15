@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Team;
 use App\Models\Tool;
+use App\Models\Role;
 // use Laravel\Sanctum\HasApiTokens;
 use App\Models\Application;
 use App\Http\Traits\WithJwtUser;
@@ -91,5 +92,10 @@ class User extends Authenticatable
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class);
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'user_has_roles');
     }
 }
