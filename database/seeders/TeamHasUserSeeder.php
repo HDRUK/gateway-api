@@ -17,7 +17,7 @@ class TeamHasUserSeeder extends Seeder
     {
         for ($count = 1; $count <= 100; $count++) {
             $teamId = Team::all()->random()->id;
-            $userId = User::all()->random()->id;
+            $userId = User::where('id', '!=', 1)->inRandomOrder()->first()->id;
 
             $teamHasUser = TeamHasUser::where([
                 'team_id' => $teamId,
