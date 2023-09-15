@@ -83,25 +83,37 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         ->where(['teamId' => '[0-9]+', 'notificationId' => '[0-9]+'])
         ->middleware(['check.access:roles,custodian.team.admin']);
 
-    // teams - federation
-    Route::get('/teams/{teamId}/federations', [FederationController::class, 'index'])
-        ->where('teamId', '[0-9]+')
-        ->middleware(['check.access:permissions,integrations.metadata']);
-    Route::get('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'show'])
-        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+'])
-        ->middleware(['check.access:permissions,integrations.metadata']);
-    Route::post('/teams/{teamId}/federations', [FederationController::class, 'store'])
-        ->where('teamId', '[0-9]+')
-        ->middleware(['check.access:permissions,integrations.metadata']);
-    Route::put('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'update'])
-        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+'])
-        ->middleware(['check.access:permissions,integrations.metadata']);
-    Route::patch('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'edit'])
-        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+'])
-        ->middleware(['check.access:permissions,integrations.metadata']);
-    Route::delete('/teams/{teamId}/federations/{federationId}', [FederationController::class, 'delete'])
-        ->where(['teamId' => '[0-9]+', 'federationId' => '[0-9]+'])
-        ->middleware(['check.access:permissions,integrations.metadata']);
+    foreach (config('routes.private') as $route) {
+        switch ($route['method']) {
+            case 'get':
+                Route::get($route['path'], ['as' => $route['name'] . '.get', 'uses' => $route['methodController']])
+                    ->where($route['middleware'])
+                    ->middleware($route['constraint']);
+                break;
+            case 'post':
+                Route::post($route['path'], ['as' => $route['name'] . '.post', 'uses' => $route['methodController']])
+                    ->where($route['middleware'])
+                    ->middleware($route['constraint']);
+                break;
+            case 'put':
+                Route::put($route['path'], ['as' => $route['name'] . '.put', 'uses' => $route['methodController']])
+                    ->where($route['middleware'])
+                    ->middleware($route['constraint']);
+                break;
+            case 'patch':
+                Route::patch($route['path'], ['as' => $route['name'] . '.patch', 'uses' => $route['methodController']])
+                    ->where($route['middleware'])
+                    ->middleware($route['constraint']);
+                break;
+            case 'delete':
+                Route::delete($route['path'], ['as' => $route['name'] . '.destroy', 'uses' => $route['methodController']])
+                    ->where($route['middleware'])
+                    ->middleware($route['constraint']);
+                break;
+            default:
+                //
+        }
+    }
 });
 
 // stop all all other routes
