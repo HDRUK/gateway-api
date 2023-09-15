@@ -87,28 +87,28 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
         switch ($route['method']) {
             case 'get':
                 Route::get($route['path'], ['as' => $route['name'] . '.get', 'uses' => $route['methodController']])
-                    ->where($route['middleware'])
-                    ->middleware($route['constraint']);
+                    ->where($route['constraint'])
+                    ->middleware($route['middleware']);
                 break;
             case 'post':
                 Route::post($route['path'], ['as' => $route['name'] . '.post', 'uses' => $route['methodController']])
-                    ->where($route['middleware'])
-                    ->middleware($route['constraint']);
+                    ->where($route['constraint'])
+                    ->middleware($route['middleware']);
                 break;
             case 'put':
                 Route::put($route['path'], ['as' => $route['name'] . '.put', 'uses' => $route['methodController']])
-                    ->where($route['middleware'])
-                    ->middleware($route['constraint']);
+                    ->where($route['constraint'])
+                    ->middleware($route['middleware']);
                 break;
             case 'patch':
                 Route::patch($route['path'], ['as' => $route['name'] . '.patch', 'uses' => $route['methodController']])
-                    ->where($route['middleware'])
-                    ->middleware($route['constraint']);
+                    ->where($route['constraint'])
+                    ->middleware($route['middleware']);
                 break;
             case 'delete':
                 Route::delete($route['path'], ['as' => $route['name'] . '.destroy', 'uses' => $route['methodController']])
-                    ->where($route['middleware'])
-                    ->middleware($route['constraint']);
+                   ->where($route['constraint'])
+                    ->middleware($route['middleware']);
                 break;
             default:
                 //
