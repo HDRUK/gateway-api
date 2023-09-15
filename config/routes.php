@@ -6,6 +6,106 @@ return [
 
     // private
     'private' => [
+
+        // dispatch.email
+        [
+            'name' => 'dispatch.email',
+            'method' => 'post',
+            'path' => '/dispatch_email',
+            'methodController' => 'EmailController@dispatchEmail',
+            'middleware' => [],
+            'constraint' => [],
+        ],
+
+        // logout
+        [
+            'name' => 'logout',
+            'method' => 'post',
+            'path' => '/logout',
+            'methodController' => 'LogoutController@logout',
+            'middleware' => [],
+            'constraint' => [],
+        ],
+
+        // datasets
+        [
+            'name' => 'datasets',
+            'method' => 'get',
+            'path' => '/datasets',
+            'methodController' => 'DatasetController@index',
+            'middleware' => [],
+            'constraint' => [],
+        ],
+        [
+            'name' => 'datasets',
+            'method' => 'get',
+            'path' => '/datasets/{id}',
+            'methodController' => 'DatasetController@show',
+            'middleware' => [],
+            'constraint' => [
+                'id' => '[0-9]+',
+            ],
+        ],
+        [
+            'name' => 'datasets',
+            'method' => 'post',
+            'path' => '/datasets',
+            'methodController' => 'DatasetController@store',
+            'middleware' => [],
+            'constraint' => [],
+        ],
+        [
+            'name' => 'datasets',
+            'method' => 'post',
+            'path' => '/datasets/{id}',
+            'methodController' => 'DatasetController@destroy',
+            'middleware' => [],
+            'constraint' => [
+                'id', '[0-9]+'
+            ],
+        ],
+
+        // team.notification
+        [
+            'name' => 'team.notification',
+            'method' => 'post',
+            'path' => '/teams/{teamId}/notifications',
+            'methodController' => 'TeamNotificationController@storeTeamNotification',
+            'middleware' => [
+                'check.access:roles,custodian.team.admin',
+            ],
+            'constraint' => [
+                'teamId' => '[0-9]+',
+            ],
+        ],
+        [
+            'name' => 'team.notification',
+            'method' => 'put',
+            'path' => '/teams/{teamId}/notifications/{notificationId}',
+            'methodController' => 'TeamNotificationController@updateTeamNotification',
+            'middleware' => [
+                'check.access:roles,custodian.team.admin',
+            ],
+            'constraint' => [
+                'teamId' => '[0-9]+',
+                'notificationId' => '[0-9]+',
+            ],
+        ],
+        [
+            'name' => 'team.notification',
+            'method' => 'delete',
+            'path' => '/teams/{teamId}/notifications/{notificationId}',
+            'methodController' => 'TeamNotificationController@destroyTeamNotification',
+            'middleware' => [
+                'check.access:roles,custodian.team.admin',
+            ],
+            'constraint' => [
+                'teamId' => '[0-9]+',
+                'notificationId' => '[0-9]+',
+            ],
+        ],
+
+        // team.federation
         [
             'name' => 'team.federation',
             'method' => 'get',

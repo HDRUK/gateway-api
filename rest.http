@@ -3,7 +3,6 @@
 
 ### Variables
 @baseUrl = http://localhost:8000
-# @baseUrl = https://api.dev.hdruk.cloud
 @apiVersion = v1
 @uFirstName = "John"
 @uLastName = "Doe"
@@ -30,7 +29,8 @@ Accept: application/json
 }
 
 ### Variables jwt token
-@accessToken = {{createUserAuth.response.body.$.access_token}}
+# @accessToken = {{createUserAuth.response.body.$.access_token}}
+@accessToken = {{loginUsernamePassword.response.body.$.access_token}}
 
 ### Access Token
 # @name loginUsernamePassword

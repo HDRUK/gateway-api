@@ -3,12 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\TestController;
-use App\Http\Controllers\Api\V1\DatasetController;
 use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\TeamUserController;
-use App\Http\Controllers\Api\V1\FederationController;
 use App\Http\Controllers\Api\V1\SocialLoginController;
-use App\Http\Controllers\Api\V1\TeamNotificationController;
 
 Route::get('/test', function() {
     return Response::json([
@@ -63,25 +60,6 @@ Route::group(['namespace' => 'App\Http\Controllers\Api\V1', 'middleware' => ['jw
     Route::post('/teams/{teamId}/users', [TeamUserController::class, 'store'])->where('teamId', '[0-9]+');
     Route::put('/teams/{teamId}/users/{userId}', [TeamUserController::class, 'update'])->where(['teamId' => '[0-9]+', 'userId' => '[0-9]+']);
     Route::delete('/teams/{teamId}/users/{userId}', [TeamUserController::class, 'destroy'])->where(['teamId' => '[0-9]+', 'userId' => '[0-9]+']);
-    
-    Route::post('/dispatch_email', 'EmailController@dispatchEmail');
-    Route::post('/logout', 'LogoutController@logout');
-
-    Route::get('/datasets', [DatasetController::class, 'index']);
-    Route::get('/datasets/{id}', [DatasetController::class, 'show'])->where('id', '[0-9]+');
-    Route::post('/datasets', [DatasetController::class, 'store']);
-    Route::delete('/datasets/{id}', [DatasetController::class, 'destroy'])->where('id', '[0-9]+');
-
-    // team - notifications
-    Route::post('/teams/{teamId}/notifications', [TeamNotificationController::class, 'storeTeamNotification'])
-        ->where('teamId', '[0-9]+')
-        ->middleware(['check.access:roles,custodian.team.admin']);
-    Route::put('/teams/{teamId}/notifications/{notificationId}', [TeamNotificationController::class, 'updateTeamNotification'])
-        ->where(['teamId' => '[0-9]+', 'notificationId' => '[0-9]+'])
-        ->middleware(['check.access:roles,custodian.team.admin']);
-    Route::delete('/teams/{teamId}/notifications/{notificationId}', [TeamNotificationController::class, 'destroyTeamNotification'])
-        ->where(['teamId' => '[0-9]+', 'notificationId' => '[0-9]+'])
-        ->middleware(['check.access:roles,custodian.team.admin']);
 
     foreach (config('routes.private') as $route) {
         switch ($route['method']) {
