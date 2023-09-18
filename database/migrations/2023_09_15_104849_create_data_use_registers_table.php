@@ -20,7 +20,7 @@ return new class extends Migration
             $table->bigInteger('dataset_id')->unsigned();
             $table->boolean('enabled')->default(true);
             $table->bigInteger('user_id')->unsigned();
-            $table->string('ro_crate')->nullable();
+            $table->mediumText('ro_crate')->nullable();
             $table->foreign('dataset_id')->references('id')->on('datasets');
             $table->foreign('user_id')->references('id')->on('users');
         });
