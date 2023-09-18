@@ -15,7 +15,7 @@ return [
         'name' => 'register',
         'method' => 'post',
         'path' => '/auth',
-        'methodController' => 'RegisterController@checkAuthorization',
+        'methodController' => 'AuthController@checkAuthorization',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
