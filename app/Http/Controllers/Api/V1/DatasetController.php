@@ -207,7 +207,7 @@ class DatasetController extends Controller
                     'short_description' => $input['short_description'],
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
-                    'dataset' => json_encode($input['data']),
+                    'dataset' => json_encode($input['dataset']),
                     'created' => now(),
                     'updated' => now(),
                     'submitted' => now(),
@@ -219,7 +219,7 @@ class DatasetController extends Controller
                 // the service itself.
                 TechnicalObjectDataStore::dispatch(
                     $mauro['DataModel']['responseJson']['id'],
-                    base64_encode(gzcompress(gzencode(json_encode($input['data'])), 6))
+                    base64_encode(gzcompress(gzencode(json_encode($input['dataset'])), 6))
                 );
                 
                 return response()->json([

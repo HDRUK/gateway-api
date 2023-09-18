@@ -161,7 +161,7 @@ class DatasetTest extends TestCase
                 'user_id' => $userId,
                 'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                'data' => $this->dataset,
+                'dataset' => $this->dataset,
             ],
             $this->header,
         );
@@ -305,7 +305,7 @@ class DatasetTest extends TestCase
                 'user_id' => $userId,
                 'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                'data' => $this->dataset,
+                'dataset' => $this->dataset,
             ],
             $this->header,
         );

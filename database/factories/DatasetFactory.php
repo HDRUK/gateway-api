@@ -2,15 +2,14 @@
 
 namespace Database\Factories;
 
+use Config;
 use App\Models\TeamHasUser;
-use App\Models\Dataset;
-
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DataUseRegister>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Filter>
  */
-class DataUseRegisterFactory extends Factory
+class DatasetFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -20,15 +19,12 @@ class DataUseRegisterFactory extends Factory
     public function definition(): array
     {
         $teamHasUser = TeamHasUser::all()->random();
-        $datasetId = Dataset::all()->random()->id;
-
-        $randomString = fake()->words(fake()->randomDigit(), true);
 
         return [
-            'dataset_id' => $datasetId,
-            'enabled' => fake()->boolean(),
             'user_id' => $teamHasUser->user_id,
-            'ro_crate' => $randomString,
+            'team_id' => $teamHasUser->team_id,
+            'label' => fake()->words(fake()->randomDigit(), true),
+            'short_description' => fake()->words(fake()->randomDigit(), true),
         ];
     }
 }

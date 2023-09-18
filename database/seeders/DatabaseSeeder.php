@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
             ReviewSeeder::class,
             CollectionSeerder::class,
             AuditLogSeeder::class,
+            DatasetSeeder::class,
             DataUseRegisterSeeder::class,
             ApplicationSeeder::class,
             ApplicationHasTagSeeder::class,
