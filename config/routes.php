@@ -137,6 +137,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,features.read',
         ],
         'constraint' => [],
     ],
@@ -149,6 +150,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,features.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -163,6 +165,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,features.create',
         ],
         'constraint' => [],
     ],
@@ -175,6 +178,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,features.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -189,6 +193,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,features.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -203,6 +208,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,features.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
