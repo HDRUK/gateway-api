@@ -532,7 +532,7 @@ class FederationController extends Controller
      *    path="/api/v1/teams/{teamId}/federations/{federationId}",
      *    operationId="delete_federation",
      *    tags={"Team-Federations"},
-     *    summary="FederationController@delete",
+     *    summary="FederationController@destroy",
      *    description="Delete federation for team",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -587,7 +587,7 @@ class FederationController extends Controller
      *      )
      * )
      */
-    public function delete(DeleteFederation $request, int $teamId, int $federationId)
+    public function destroy(DeleteFederation $request, int $teamId, int $federationId)
     {
         try {
             $federationNotifications = FederationHasNotification::where([

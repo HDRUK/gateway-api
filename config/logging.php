@@ -6,6 +6,8 @@ use Monolog\Handler\SyslogUdpHandler;
 
 return [
 
+    'sqlLog' =>  env('LOG_SQL', false),
+
     /*
     |--------------------------------------------------------------------------
     | Default Log Channel
