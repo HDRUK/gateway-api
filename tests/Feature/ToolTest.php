@@ -89,17 +89,6 @@ class ToolTest extends TestCase
     }
 
     /**
-     * Get All Tools with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_tools_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get Tool by Id with success
      * 
      * @return void

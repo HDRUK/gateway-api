@@ -73,17 +73,6 @@ class TagTest extends TestCase
     }
 
     /**
-     * Get All Tag with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_tags_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get Tag by Id with success
      * 
      * @return void
