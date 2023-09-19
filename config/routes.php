@@ -52,10 +52,7 @@ return [
         'path' => '/tags',
         'methodController' => 'TagController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -64,10 +61,7 @@ return [
         'path' => '/tags/{id}',
         'methodController' => 'TagController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-        ],
+        'middleware' => [],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -81,6 +75,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:roles,hdr.superadmin',
         ],
         'constraint' => [],
     ],
@@ -93,6 +88,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:roles,hdr.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -107,6 +103,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:roles,hdr.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -121,6 +118,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:roles,hdr.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -470,11 +468,7 @@ return [
         'path' => '/tools',
         'methodController' => 'ToolController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,tools.read',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -483,11 +477,7 @@ return [
         'path' => '/tools/{id}',
         'methodController' => 'ToolController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,tools.read',
-        ],
+        'middleware' => [],
         'constraint' => [
             'id' => '[0-9]+',
         ],
