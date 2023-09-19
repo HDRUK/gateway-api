@@ -6,6 +6,7 @@ use Config;
 use Tests\TestCase;
 use App\Models\DataUseRegister;
 use App\Models\TeamHasUser;
+use App\Models\Dataset;
 use Tests\Traits\Authorization;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,33 +53,10 @@ class DataUseRegisterTest extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'counter',
-                    'keywords',
-                    'dataset_ids',
-                    'gateway_dataset_ids',
-                    'non_gateway_dataset_ids',
-                    'gateway_applicants',
-                    'non_gateway_applicants',
-                    'funders_and_sponsors',
-                    'other_approval_committees',
-                    'gateway_output_tools',
-                    'gateway_output_papers',
-                    'non_gateway_outputs',
-                    'project_title',
-                    'project_id_text',
-                    'organisation_name',
-                    'organisation_sector',
-                    'lay_summary',
-                    'latest_approval_date',
+                    'dataset_id',
                     'enabled',
-                    'team_id',
                     'user_id',
-                    'last_activity',
-                    'manual_upload',
-                    'rejection_reason',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
+                    'ro_crate',
                 ],
             ],
             'current_page',
@@ -117,36 +95,17 @@ class DataUseRegisterTest extends TestCase
     {
         # Create new DataUseRegister item
         $teamHasUser = TeamHasUser::all()->random();
+        $dataset = Dataset::all()->random();
 
         $randomString = fake()->words(fake()->randomDigitNot(0), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
 
         $mockData = [
-            "counter" => fake()->randomNumber(4, false),
-            "keywords" => [$randomWord],
-            "dataset_ids" => [$randomWord],
-            "gateway_dataset_ids" => [$randomWord],
-            "non_gateway_dataset_ids" => [$randomWord],
-            "gateway_applicants" => [$randomWord],
-            "non_gateway_applicants" => [$randomWord],
-            "funders_and_sponsors" => [$randomWord],
-            "other_approval_committees" => [$randomWord],
-            "gateway_output_tools" => [$randomWord],
-            "gateway_output_papers" => [$randomWord],
-            "non_gateway_outputs" => [$randomWord],
-            "project_title" => $randomString,
-            "project_id_text" => $shortRandomString,
-            "organisation_name" => $randomString,
-            "organisation_sector" => $randomString,
-            "lay_summary" => $randomString,
-            "latest_approval_date" => "2023-07-06 10:00:00",
+            "dataset_id" => (int) $dataset->id,
             "enabled" => fake()->boolean(),
-            "team_id" => (int) $teamHasUser->team_id,
             "user_id" => (int) $teamHasUser->user_id,
-            "last_activity" => "2023-07-06 10:00:00",
-            "manual_upload" => fake()->boolean(),
-            "rejection_reason" => $randomString,
+            "ro_crate" => $randomString,
         ];
 
         $response = $this->json(
@@ -176,33 +135,10 @@ class DataUseRegisterTest extends TestCase
             'data' => [
                 0 => [
                     'id',
-                    'counter',
-                    'keywords',
-                    'dataset_ids',
-                    'gateway_dataset_ids',
-                    'non_gateway_dataset_ids',
-                    'gateway_applicants',
-                    'non_gateway_applicants',
-                    'funders_and_sponsors',
-                    'other_approval_committees',
-                    'gateway_output_tools',
-                    'gateway_output_papers',
-                    'non_gateway_outputs',
-                    'project_title',
-                    'project_id_text',
-                    'organisation_name',
-                    'organisation_sector',
-                    'lay_summary',
-                    'latest_approval_date',
+                    'dataset_id',
                     'enabled',
-                    'team_id',
                     'user_id',
-                    'last_activity',
-                    'manual_upload',
-                    'rejection_reason',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
+                    'ro_crate',
                 ]
             ]
         ]);
@@ -220,36 +156,17 @@ class DataUseRegisterTest extends TestCase
         $countBefore = DataUseRegister::withTrashed()->count();
 
         $teamHasUser = TeamHasUser::all()->random();
+        $dataset = Dataset::all()->random();
 
         $randomString = fake()->words(fake()->randomDigitNot(0), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
 
         $mockData = [
-            "counter" => fake()->randomNumber(4, false),
-            "keywords" => [$randomWord],
-            "dataset_ids" => [$randomWord],
-            "gateway_dataset_ids" => [$randomWord],
-            "non_gateway_dataset_ids" => [$randomWord],
-            "gateway_applicants" => [$randomWord],
-            "non_gateway_applicants" => [$randomWord],
-            "funders_and_sponsors" => [$randomWord],
-            "other_approval_committees" => [$randomWord],
-            "gateway_output_tools" => [$randomWord],
-            "gateway_output_papers" => [$randomWord],
-            "non_gateway_outputs" => [$randomWord],
-            "project_title" => $randomString,
-            "project_id_text" => $shortRandomString,
-            "organisation_name" => $randomString,
-            "organisation_sector" => $randomString,
-            "lay_summary" => $randomString,
-            "latest_approval_date" => "2023-07-06 10:00:00",
+            "dataset_id" => (int) $dataset->id,
             "enabled" => fake()->boolean(),
-            "team_id" => (int) $teamHasUser->team_id,
             "user_id" => (int) $teamHasUser->user_id,
-            "last_activity" => "2023-07-06 10:00:00",
-            "manual_upload" => fake()->boolean(),
-            "rejection_reason" => $randomString,
+            "ro_crate" => $randomString,
         ];
 
         $response = $this->json(
@@ -261,8 +178,7 @@ class DataUseRegisterTest extends TestCase
 
         $countAfter = DataUseRegister::withTrashed()->count();
         $countNewRow = $countAfter - $countBefore;
-
-        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+        $this->assertTrue((bool) $countNewRow, 'Response was successful');
         $response->assertStatus(201);
     }
 
@@ -274,36 +190,16 @@ class DataUseRegisterTest extends TestCase
     public function test_update_data_use_register_with_success(): void 
     {
         $teamHasUser = TeamHasUser::all()->random();
+        $dataset = Dataset::all()->random();
         $randomString = fake()->words(fake()->numberBetween(1, 10), true);
-        $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
 
         // create new data_use_register
         $mockDataIns = [
-            "counter" => fake()->randomNumber(4, false),
-            "keywords" => [$randomWord],
-            "dataset_ids" => [$randomWord],
-            "gateway_dataset_ids" => [$randomWord],
-            "non_gateway_dataset_ids" => [$randomWord],
-            "gateway_applicants" => [$randomWord],
-            "non_gateway_applicants" => [$randomWord],
-            "funders_and_sponsors" => [$randomWord],
-            "other_approval_committees" => [$randomWord],
-            "gateway_output_tools" => [$randomWord],
-            "gateway_output_papers" => [$randomWord],
-            "non_gateway_outputs" => [$randomWord],
-            "project_title" => $randomString,
-            "project_id_text" => $shortRandomString,
-            "organisation_name" => $randomString,
-            "organisation_sector" => $randomString,
-            "lay_summary" => $randomString,
-            "latest_approval_date" => "2023-07-06 10:00:00",
+            "dataset_id" => (int) $dataset->id,
             "enabled" => fake()->boolean(),
-            "team_id" => $teamHasUser->team_id,
             "user_id" => $teamHasUser->user_id,
-            "last_activity" => "2023-07-06 10:00:00",
-            "manual_upload" => fake()->boolean(),
-            "rejection_reason" => $randomString,
+            "ro_crate" => $randomString,
         ];
         $responseIns = $this->json(
             'POST',
@@ -316,36 +212,16 @@ class DataUseRegisterTest extends TestCase
         $idIns = (int) $responseIns['data'];
 
         $teamHasUser2 = TeamHasUser::all()->random();
+        $dataset2 = Dataset::all()->random();
         $randomString2 = fake()->words(fake()->numberBetween(1, 10), true);
-        $shortRandomString2 = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord2 = fake()->word();
 
         // update data_use_register
         $mockDataUpdate = [
-            "counter" => fake()->randomNumber(4, false),
-            "keywords" => [$randomWord2],
-            "dataset_ids" => [$randomWord2],
-            "gateway_dataset_ids" => [$randomWord2],
-            "non_gateway_dataset_ids" => [$randomWord2],
-            "gateway_applicants" => [$randomWord2],
-            "non_gateway_applicants" => [$randomWord2],
-            "funders_and_sponsors" => [$randomWord2],
-            "other_approval_committees" => [$randomWord2],
-            "gateway_output_tools" => [$randomWord2],
-            "gateway_output_papers" => [$randomWord2],
-            "non_gateway_outputs" => [$randomWord2],
-            "project_title" => $randomString2,
-            "project_id_text" => $shortRandomString2,
-            "organisation_name" => $randomString2,
-            "organisation_sector" => $randomString2,
-            "lay_summary" => $randomString2,
-            "latest_approval_date" => "2023-07-06 10:00:00",
+            "dataset_id" => (int) $dataset2->id,
             "enabled" => fake()->boolean(),
-            "team_id" => $teamHasUser2->team_id,
             "user_id" => $teamHasUser2->user_id,
-            "last_activity" => "2023-07-06 10:00:00",
-            "manual_upload" => fake()->boolean(),
-            "rejection_reason" => $randomString2,
+            "ro_crate" => $randomString2,
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -355,30 +231,11 @@ class DataUseRegisterTest extends TestCase
         );
         $responseUpdate->assertStatus(202);
 
-        $this->assertTrue($mockDataUpdate['counter'] === $responseUpdate['data']['counter']);
-        $this->assertTrue($mockDataUpdate['keywords'] === $responseUpdate['data']['keywords']);
-        $this->assertTrue($mockDataUpdate['dataset_ids'] === $responseUpdate['data']['dataset_ids']);
-        $this->assertTrue($mockDataUpdate['gateway_dataset_ids'] === $responseUpdate['data']['gateway_dataset_ids']);
-        $this->assertTrue($mockDataUpdate['non_gateway_dataset_ids'] === $responseUpdate['data']['non_gateway_dataset_ids']);
-        $this->assertTrue($mockDataUpdate['gateway_applicants'] === $responseUpdate['data']['gateway_applicants']);
-        $this->assertTrue($mockDataUpdate['non_gateway_applicants'] === $responseUpdate['data']['non_gateway_applicants']);
-        $this->assertTrue($mockDataUpdate['funders_and_sponsors'] === $responseUpdate['data']['funders_and_sponsors']);
-        $this->assertTrue($mockDataUpdate['other_approval_committees'] === $responseUpdate['data']['other_approval_committees']);
-        $this->assertTrue($mockDataUpdate['gateway_output_tools'] === $responseUpdate['data']['gateway_output_tools']);
-        $this->assertTrue($mockDataUpdate['gateway_output_papers'] === $responseUpdate['data']['gateway_output_papers']);
-        $this->assertTrue($mockDataUpdate['non_gateway_outputs'] === $responseUpdate['data']['non_gateway_outputs']);
-        $this->assertTrue($mockDataUpdate['project_title'] === $responseUpdate['data']['project_title']);
-        $this->assertTrue($mockDataUpdate['project_id_text'] === $responseUpdate['data']['project_id_text']);
-        $this->assertTrue($mockDataUpdate['organisation_name'] === $responseUpdate['data']['organisation_name']);
-        $this->assertTrue($mockDataUpdate['organisation_sector'] === $responseUpdate['data']['organisation_sector']);
-        $this->assertTrue($mockDataUpdate['lay_summary'] === $responseUpdate['data']['lay_summary']);
-        $this->assertTrue(strtotime($mockDataUpdate['latest_approval_date']) === strtotime($responseUpdate['data']['latest_approval_date']));
+
+        $this->assertTrue($mockDataUpdate['dataset_id'] === $responseUpdate['data']['dataset_id']);
         $this->assertTrue($mockDataUpdate['enabled'] === $responseUpdate['data']['enabled']);
-        $this->assertTrue($mockDataUpdate['team_id'] === $responseUpdate['data']['team_id']);
         $this->assertTrue($mockDataUpdate['user_id'] === $responseUpdate['data']['user_id']);
-        $this->assertTrue(strtotime($mockDataUpdate['last_activity']) === strtotime($responseUpdate['data']['last_activity']));
-        $this->assertTrue((boolean) $mockDataUpdate['manual_upload'] === (boolean) $responseUpdate['data']['manual_upload']);
-        $this->assertTrue($mockDataUpdate['rejection_reason'] === $responseUpdate['data']['rejection_reason']);
+        $this->assertTrue($mockDataUpdate['ro_crate'] === $responseUpdate['data']['ro_crate']);
     }
 
     /**
@@ -392,36 +249,17 @@ class DataUseRegisterTest extends TestCase
         $countTrashedBefore = DataUseRegister::onlyTrashed()->count();
 
         $teamHasUser = TeamHasUser::all()->random();
+        $dataset = Dataset::all()->random();
         $randomString = fake()->words(fake()->randomDigitNot(0), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
 
         // create new data_use_register
         $mockDataIns = [
-            "counter" => fake()->randomNumber(4, false),
-            "keywords" => [$randomWord],
-            "dataset_ids" => [$randomWord],
-            "gateway_dataset_ids" => [$randomWord],
-            "non_gateway_dataset_ids" => [$randomWord],
-            "gateway_applicants" => [$randomWord],
-            "non_gateway_applicants" => [$randomWord],
-            "funders_and_sponsors" => [$randomWord],
-            "other_approval_committees" => [$randomWord],
-            "gateway_output_tools" => [$randomWord],
-            "gateway_output_papers" => [$randomWord],
-            "non_gateway_outputs" => [$randomWord],
-            "project_title" => $randomString,
-            "project_id_text" => $shortRandomString,
-            "organisation_name" => $randomString,
-            "organisation_sector" => $randomString,
-            "lay_summary" => $randomString,
-            "latest_approval_date" => "2023-07-06 10:00:00",
+            "dataset_id" => (int) $dataset->id,
             "enabled" => fake()->boolean(),
-            "team_id" => $teamHasUser->team_id,
             "user_id" => $teamHasUser->user_id,
-            "last_activity" => "2023-07-06 10:00:00",
-            "manual_upload" => fake()->boolean(),
-            "rejection_reason" => $randomString,
+            "ro_crate" => $randomString,
         ];
         $responseIns = $this->json(
             'POST',
@@ -434,12 +272,12 @@ class DataUseRegisterTest extends TestCase
         $idIns = (int) $responseIns['data'];
 
         $countAfter = DataUseRegister::count();
-        $this->assertTrue((bool) ($countAfter - $countBefore), 'Response was successfully');
+        $this->assertTrue((bool) ($countAfter - $countBefore), 'Response was successful');
 
         // delete data_use_register
         $response = $this->json('DELETE', self::TEST_URL . '/' . $idIns, [], $this->header);
         $response->assertStatus(200);
         $countTrasherAfter = DataUseRegister::onlyTrashed()->count();
-        $this->assertTrue((bool) ($countTrasherAfter - $countTrashedBefore), 'Response was successfully');
+        $this->assertTrue((bool) ($countTrasherAfter - $countTrashedBefore), 'Response was successful');
     }
 }
