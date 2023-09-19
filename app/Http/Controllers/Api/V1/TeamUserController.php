@@ -103,7 +103,9 @@ class TeamUserController extends Controller
 
             $teamHasUsers = $this->teamHasUser($teamId, $userId);
 
-            $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId);
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            
+            $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser);
 
             return response()->json([
                 'message' => 'success',
@@ -333,7 +335,7 @@ class TeamUserController extends Controller
      * @param array $roles
      * @return void
      */
-    private function teamUsersHasRoles(array $teamHasUsers, array $roles, int $teamId, int $userId): void
+    private function teamUsersHasRoles(array $teamHasUsers, array $roles, int $teamId, int $userId, array $jwtUser): void
     {
         try {
             foreach ($roles as $roleName) {
@@ -347,7 +349,7 @@ class TeamUserController extends Controller
                 ]);
 
                 // send email - add roles
-                $this->sendEmail($roleName, true, $teamId, $userId);
+                $this->sendEmail($roleName, true, $teamId, $userId, $jwtUser);
             }
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
