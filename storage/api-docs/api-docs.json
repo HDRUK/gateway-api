@@ -1813,6 +1813,48 @@
                 "summary": "ApplicationController@index",
                 "description": "Returns a list of applications",
                 "operationId": "fetch_all_applications",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "query",
+                        "description": "Filter Apps by the teamId",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "text",
+                        "in": "query",
+                        "description": "Search term to filter by application name or description.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "enabled",
+                        "in": "query",
+                        "description": "Filter by application enabled status (true or false).",
+                        "schema": {
+                            "type": "boolean",
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    },
+                    {
+                        "name": "disabled",
+                        "in": "query",
+                        "description": "Filter by application disabled status (true or false).",
+                        "schema": {
+                            "type": "boolean",
+                            "enum": [
+                                true,
+                                false
+                            ]
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success",
@@ -8126,7 +8168,7 @@
                 "tags": [
                     "Team-Federations"
                 ],
-                "summary": "FederationController@delete",
+                "summary": "FederationController@destroy",
                 "description": "Delete federation for team",
                 "operationId": "delete_federation",
                 "parameters": [
