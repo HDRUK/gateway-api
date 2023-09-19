@@ -32,7 +32,7 @@ class CreateDataset extends BaseFormRequest
                 'string',
                 'required',
             ],
-            'data' => [
+            'dataset' => [
                 'required',
             ],
         ];

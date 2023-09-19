@@ -20,101 +20,20 @@ class EditDataUseRegister extends BaseFormRequest
                 'required',
                 'exists:data_use_registers,id',
             ],
-            'counter' => [
+            'dataset_id' => [
+                'required',
                 'int',
-            ],
-            'keywords' => [
-                'nullable',
-                'array',
-            ],
-            'dataset_ids' => [
-                'array',
-            ],
-            'gateway_dataset_ids' => [
-                'array',
-            ],
-            'non_gateway_dataset_ids' => [
-                'nullable',
-                'array',
-            ],
-            'gateway_applicants' => [
-                'nullable',
-                'array',
-            ],
-            'non_gateway_applicants' => [
-                'nullable',
-                'array',
-            ],
-            'funders_and_sponsors' => [
-                'nullable',
-                'array',
-            ],
-            'other_approval_committees' => [
-                'nullable',
-                'array',
-            ],
-            'gateway_output_tools' => [
-                'nullable',
-                'array',
-            ],
-            'gateway_output_papers' => [
-                'nullable',
-                'array',
-            ],
-            'non_gateway_outputs' => [
-                'nullable',
-                'array',
-            ],
-            'project_title' => [
-                'string',
-            ],
-            'project_id_text' => [
-                'string',
-            ],
-            'organisation_name' => [
-                'string',
-            ],
-            'organisation_sector' => [
-                'string',
-            ],
-            'lay_summary' => [
-                'nullable',
-                'string',
-            ],
-            'latest_approval_date' => [
-                'nullable',
-                'date_format:Y-m-d H:i:s',
+                'exists:datasets,id'
             ],
             'enabled' => [
                 'nullable',
                 'boolean',
             ],
-            'team_id' => [
-                'int',
-                'exists:teams,id',
-            ],
             'user_id' => [
                 'int',
                 'exists:users,id',
-                function ($attribute, $value, $fail) {
-                    $exists = TeamHasUser::where('user_id', $value)
-                        ->where('team_id', $this->team_id)
-                        ->exists();
-
-                    if (!$exists) {
-                        $fail('The selected user is not a member of the specified team.');
-                    }
-                },
             ],
-            'manual_upload' => [
-                'nullable',
-                'boolean',
-            ],
-            'last_activity' => [
-                'nullable',
-                'date_format:Y-m-d H:i:s',
-            ],
-            'rejection_reason' => [
+            'ro_crate' => [
                 'nullable',
                 'string',
             ],
