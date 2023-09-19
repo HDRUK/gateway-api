@@ -377,12 +377,10 @@ class TeamUserController extends Controller
 
                 $wasUpdated = false;                
                 if ($action) {
-                    
                     $teamUser = TeamUserHasRole::updateOrCreate([
                         'team_has_user_id' => $teamHasUsers->id,
                         'role_id' => $roles->id,
                     ]);
-
                     //need to make sure the values were actually changed (or created)
                     // before sending an email.. otherwise email will be sent even when not changed
                     if($teamUser->wasRecentlyCreated ||  $teamUser->wasChanged()){
@@ -434,8 +432,6 @@ class TeamUserController extends Controller
                 }
             }
             $userAdminsString.= '<ul>';
-
-            \Log::channel('stderr')->info($user);
             $replacements = [
                 '[[ASSIGNER_NAME]]' => $jwtUser['name'],
                 '[[TEAM_NAME]]' => $team['name'],
