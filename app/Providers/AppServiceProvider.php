@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Config;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        if (env('APP_DEBUG') === true) {
+        if (Config::get('logging.LOG_SQL') === true) {
             \DB::listen(function ($query) {
                 $bindings = [];
                 foreach ($query->bindings as $i => $binding) {

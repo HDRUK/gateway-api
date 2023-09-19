@@ -1824,7 +1824,7 @@ return [
     ],
     [
         'name' => 'datasets',
-        'method' => 'post',
+        'method' => 'delete',
         'path' => '/datasets/{id}',
         'methodController' => 'DatasetController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
