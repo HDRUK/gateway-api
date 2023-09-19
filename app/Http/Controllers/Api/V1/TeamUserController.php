@@ -375,7 +375,7 @@ class TeamUserController extends Controller
             foreach ($input['roles'] as $roleName => $action) {
                 $roles = Role::where('name', $roleName)->first();
 
-                $wasUpdated = false;                
+                $notifyChange = false;                
                 if ($action) {
                     $teamUser = TeamUserHasRole::updateOrCreate([
                         'team_has_user_id' => $teamHasUsers->id,
@@ -384,7 +384,7 @@ class TeamUserController extends Controller
                     //need to make sure the values were actually changed (or created)
                     // before sending an email.. otherwise email will be sent even when not changed
                     if($teamUser->wasRecentlyCreated ||  $teamUser->wasChanged()){
-                        $wasUpdated = true;
+                        $notifyChange = true;
                     }
 
                 } else {
@@ -394,10 +394,10 @@ class TeamUserController extends Controller
                     TeamUserHasRole::where('team_has_user_id', $teamHasUsers->id)
                         ->where('role_id', $roles->id)
                         ->delete();
-                    $wasUpdated = true;
+                    $notifyChange = true;
                 }
 
-                if($wasUpdated){
+                if($notifyChange){
                     $this->sendEmail($roleName, $action, $teamId, $userId, $jwtUser);
                 }
             }
