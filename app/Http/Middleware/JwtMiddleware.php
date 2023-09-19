@@ -46,6 +46,27 @@ class JwtMiddleware
             }
 
             $request->merge(['jwt' => $authorization]);
+
+            $payloadJwt = $jwtController->decode();
+            $userJwt = $payloadJwt['user'];
+
+            $user = $this->validateUserId((int) $userJwt['id']);
+
+            if (!$user) {
+                throw new NotFoundException('User not found.');
+            }
+
+            $request->merge(
+                [
+                    'jwt_user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'is_admin' => $user->is_admin,
+                        ]
+                    ]
+                );
+
             return $next($request);
         }
 

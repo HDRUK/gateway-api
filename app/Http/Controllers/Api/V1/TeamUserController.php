@@ -370,25 +370,38 @@ class TeamUserController extends Controller
                 'user_id' => $userId,
             ])->first();
 
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             foreach ($input['roles'] as $roleName => $action) {
                 $roles = Role::where('name', $roleName)->first();
 
+                $wasUpdated = false;                
                 if ($action) {
-                    TeamUserHasRole::updateOrCreate([
+                    
+                    $teamUser = TeamUserHasRole::updateOrCreate([
                         'team_has_user_id' => $teamHasUsers->id,
                         'role_id' => $roles->id,
                     ]);
+
+                    //need to make sure the values were actually changed (or created)
+                    // before sending an email.. otherwise email will be sent even when not changed
+                    if($teamUser->wasRecentlyCreated ||  $teamUser->wasChanged()){
+                        $wasUpdated = true;
+                    }
+
                 } else {
                     if ($roleName === $this->roleAdmin && count($this->listOfAdmin($teamId)) === 1) {
                         throw new UnauthorizedException('You cannot remove last team admin role');
                     }
-
                     TeamUserHasRole::where('team_has_user_id', $teamHasUsers->id)
                         ->where('role_id', $roles->id)
                         ->delete();
+                    $wasUpdated = true;
                 }
 
-                $this->sendEmail($roleName, $action, $teamId, $userId);
+                if($wasUpdated){
+                    $this->sendEmail($roleName, $action, $teamId, $userId, $jwtUser);
+                }
             }
 
             return true;
@@ -397,7 +410,7 @@ class TeamUserController extends Controller
         }
     }
 
-    private function sendEmail(string $role, bool $action, int $teamId, int $userId)
+    private function sendEmail(string $role, bool $action, int $teamId, int $userId, array $jwtUser)
     {
         try {
             $assignRemove = $action ? 'assign' : 'remove';
@@ -422,8 +435,9 @@ class TeamUserController extends Controller
             }
             $userAdminsString.= '<ul>';
 
+            \Log::channel('stderr')->info($user);
             $replacements = [
-                '[[ASSIGNER_NAME]]' => $user['name'],
+                '[[ASSIGNER_NAME]]' => $jwtUser['name'],
                 '[[TEAM_NAME]]' => $team['name'],
                 '[[CURRENT_YEAR]]' => date("Y"),
                 '[[LIST_TEAM_ADMINS]]' => $userAdminsString,
