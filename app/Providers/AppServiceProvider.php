@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        if (env('LOG_SQL') === true) {
+        if (env('APP_DEBUG') === true) {
             \DB::listen(function ($query) {
                 $bindings = [];
                 foreach ($query->bindings as $i => $binding) {
