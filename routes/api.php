@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ServiceLayerController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +38,8 @@ Route::get('/email', function (Request $reqest) {
         ],
     ]);
 });
+
+Route::get('/services/federations', [ServiceLayerController::class, 'getActiveFederationApplications']);
 
 // stop all all other routes
 Route::any('{path}', function() {
