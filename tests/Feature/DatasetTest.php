@@ -202,8 +202,6 @@ class DatasetTest extends TestCase
             'message'
         ]);
 
-        dd($responseDeleteTeam);
-        
         $responseDeleteTeam->assertStatus(200);
 
         // delete user
