@@ -19,7 +19,6 @@ trait UserTransformation
         $response = [];
 
         foreach ($users as $user) {
-            
             $tmpUser = [
                 'id' => $user['id'],
                 'name' => $user['name'],
