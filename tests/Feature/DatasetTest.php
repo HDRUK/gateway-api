@@ -324,7 +324,6 @@ class DatasetTest extends TestCase
         $responseDeleteDataset->assertJsonStructure([
             'message'
         ]);
-        //dd($responseDeleteDataset);
         $responseDeleteDataset->assertStatus(200);
 
         // delete team
