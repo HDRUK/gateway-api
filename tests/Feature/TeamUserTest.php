@@ -194,6 +194,75 @@ class TeamUserTest extends TestCase
 
         $this->deleteTeam($teamId);
     }
+    /**
+     * Update Team-User-Roles permissions and email the updated permissions
+     * 
+     * @return void
+     */
+    public function test_update_team_user_permissions_and_send_email(): void
+    {
+
+        $initialRoles = ["developer", "reviewer"];
+        $teamId = $this->createTeam();
+        $userId = $this->createUser();
+        $this->createTeamRoles($teamId,$userId,$initialRoles);
+
+        $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
+        
+        //the following should add the "custodian.dar.manager" as a role
+        $payloadPut = [
+            "roles" => [
+                "developer" => true,
+                "reviewer" => true,
+                "custodian.dar.manager" => true,
+            ],
+        ];
+
+        $expectedRoles = ["developer", "reviewer", "custodian.dar.manager"];  
+        $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
+        $responsePost->assertJsonStructure([
+            'message'
+        ]);
+        $responsePost->assertStatus(200);
+        $userRoles = $this->getUserRoles($teamId, $userId);
+        sort($userRoles);
+        sort($expectedRoles);
+        $this->assertTrue($expectedRoles === $userRoles,'User now has 3 roles');
+
+        $expectedDispatchedEmails = [
+            "custodian.dar.manager" => "assign",
+        ];
+        $dispatchedEmails = $responsePost['data'];
+        $this->assertTrue( $dispatchedEmails ===  $expectedDispatchedEmails,'One email sent for assigning custodian.dar.manager');
+        
+        //now the developer role should be removed...
+        $payloadPut = [
+            "roles" => [
+                "developer" => false,
+                "reviewer" => true,
+                "custodian.dar.manager" => true,
+            ],
+        ];
+
+        $expectedRoles = ["reviewer", "custodian.dar.manager"];  
+        $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
+        $responsePost->assertJsonStructure([
+            'message'
+        ]);
+        $responsePost->assertStatus(200);
+        $userRoles = $this->getUserRoles($teamId, $userId);
+        sort($userRoles);
+        sort($expectedRoles);
+        $this->assertTrue($expectedRoles === $userRoles,'Developer role should no longer be present');
+
+        $dispatchedEmails = $responsePost['data'];
+        $expectedDispatchedEmails = [
+            "developer" => "remove",
+        ];
+        $this->assertTrue( $dispatchedEmails ===  $expectedDispatchedEmails,'One email sent for removing developer');
+
+    }
+
 
     /**
      * Delete Team-User-Roles with success
@@ -229,7 +298,6 @@ class TeamUserTest extends TestCase
 
         $this->deleteTeam($teamId);
     }
-
     private function createTeam()
     {
         $responseNotification = $this->json(
@@ -313,7 +381,21 @@ class TeamUserTest extends TestCase
         
         return $responseNewUser['data'];
     }
-
+    
+    private function createTeamRoles(int $tId, int $uId, array $roles)
+    {
+        $responseNewRoles = $this->json(
+            'POST',
+            '/api/v1/teams/' . $tId . '/users',
+            [
+                "userId" => $uId,
+                "roles" => $roles,
+            ],    
+            $this->header,
+        );
+        $responseNewRoles->assertStatus(201);
+    }
+    
     private function cleanTeamUserRoles($tId, $uId)
     {
         $userhasTeam = TeamHasUser::where('team_id', $tId)->where('user_id', $uId)->first();

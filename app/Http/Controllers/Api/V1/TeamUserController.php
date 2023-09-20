@@ -201,10 +201,11 @@ class TeamUserController extends Controller
         try {
             $input = $request->all();
 
-            $this->teamUserRoles($teamId, $userId, $input);
+            $res = $this->teamUserRoles($teamId, $userId, $input);
 
             return response()->json([
                 'message' => 'success',
+                'data' => $res,
             ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -373,7 +374,7 @@ class TeamUserController extends Controller
             ])->first();
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
+            $updatesMade = [];
             foreach ($input['roles'] as $roleName => $action) {
                 $roles = Role::where('name', $roleName)->first();
 
@@ -401,10 +402,10 @@ class TeamUserController extends Controller
 
                 if($notifyChange){
                     $this->sendEmail($roleName, $action, $teamId, $userId, $jwtUser);
+                    $updatesMade[$roleName] = $action ? 'assign' : 'remove';
                 }
             }
-
-            return true;
+            return $updatesMade;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
