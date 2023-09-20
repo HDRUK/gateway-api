@@ -374,7 +374,7 @@ class TeamUserController extends Controller
             ])->first();
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $updatesMade = array();
+            $updatesMade = [];
             foreach ($input['roles'] as $roleName => $action) {
                 $roles = Role::where('name', $roleName)->first();
 
