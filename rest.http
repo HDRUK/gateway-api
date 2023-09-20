@@ -151,7 +151,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get one team by id
-GET {{baseUrl}}/api/{{apiVersion}}/teams/4 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/teams/1 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 

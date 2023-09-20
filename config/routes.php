@@ -75,7 +75,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
     ],
@@ -88,7 +88,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -103,7 +103,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -118,7 +118,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -383,7 +383,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
     ],
@@ -396,7 +396,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -411,7 +411,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
     ],
@@ -424,7 +424,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -439,7 +439,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -454,7 +454,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -639,7 +639,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
     ],
@@ -652,7 +652,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -667,7 +667,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
     ],
@@ -680,7 +680,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -695,7 +695,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -710,7 +710,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -727,7 +727,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
     ],
@@ -740,7 +740,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -755,7 +755,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
     ],
@@ -768,7 +768,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -783,7 +783,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -798,7 +798,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdr.superadmin',
+            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
             'id' => '[0-9]+',

@@ -46,7 +46,6 @@ class CheckAccessMiddleware
 
         if ($type === 'roles') {
             $checkingRoles = array_diff($access, $currentUserRoles);
-
             if (!empty($checkingRoles)) {
                 throw new UnauthorizedException();
             }
@@ -69,7 +68,7 @@ class CheckAccessMiddleware
     {
         $return = [];
 
-        $userTeams = User::where('id', $userId)->with(['teams', 'notifications'])->get()->toArray();
+        $userTeams = User::where('id', $userId)->with(['roles', 'teams', 'notifications'])->get()->toArray();
         $teams = $this->getUsers($userTeams);
 
         foreach ($teams['teams'] as $team) {
@@ -77,7 +76,6 @@ class CheckAccessMiddleware
                 $return[] = $role['name'];
             }
         }
-
         return array_unique($return);
     }
 
