@@ -103,7 +103,9 @@ class TeamUserController extends Controller
 
             $teamHasUsers = $this->teamHasUser($teamId, $userId);
 
-            $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId);
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            
+            $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser);
 
             return response()->json([
                 'message' => 'success',
@@ -333,7 +335,7 @@ class TeamUserController extends Controller
      * @param array $roles
      * @return void
      */
-    private function teamUsersHasRoles(array $teamHasUsers, array $roles, int $teamId, int $userId): void
+    private function teamUsersHasRoles(array $teamHasUsers, array $roles, int $teamId, int $userId, array $jwtUser): void
     {
         try {
             foreach ($roles as $roleName) {
@@ -347,7 +349,7 @@ class TeamUserController extends Controller
                 ]);
 
                 // send email - add roles
-                $this->sendEmail($roleName, true, $teamId, $userId);
+                $this->sendEmail($roleName, true, $teamId, $userId, $jwtUser);
             }
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -370,25 +372,36 @@ class TeamUserController extends Controller
                 'user_id' => $userId,
             ])->first();
 
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             foreach ($input['roles'] as $roleName => $action) {
                 $roles = Role::where('name', $roleName)->first();
 
+                $notifyChange = false;                
                 if ($action) {
-                    TeamUserHasRole::updateOrCreate([
+                    $teamUser = TeamUserHasRole::updateOrCreate([
                         'team_has_user_id' => $teamHasUsers->id,
                         'role_id' => $roles->id,
                     ]);
+                    //need to make sure the values were actually changed (or created)
+                    // before sending an email.. otherwise email will be sent even when not changed
+                    if($teamUser->wasRecentlyCreated ||  $teamUser->wasChanged()){
+                        $notifyChange = true;
+                    }
+
                 } else {
                     if ($roleName === $this->roleAdmin && count($this->listOfAdmin($teamId)) === 1) {
                         throw new UnauthorizedException('You cannot remove last team admin role');
                     }
-
                     TeamUserHasRole::where('team_has_user_id', $teamHasUsers->id)
                         ->where('role_id', $roles->id)
                         ->delete();
+                    $notifyChange = true;
                 }
 
-                $this->sendEmail($roleName, $action, $teamId, $userId);
+                if($notifyChange){
+                    $this->sendEmail($roleName, $action, $teamId, $userId, $jwtUser);
+                }
             }
 
             return true;
@@ -397,7 +410,7 @@ class TeamUserController extends Controller
         }
     }
 
-    private function sendEmail(string $role, bool $action, int $teamId, int $userId)
+    private function sendEmail(string $role, bool $action, int $teamId, int $userId, array $jwtUser)
     {
         try {
             $assignRemove = $action ? 'assign' : 'remove';
@@ -421,9 +434,8 @@ class TeamUserController extends Controller
                 }
             }
             $userAdminsString.= '<ul>';
-
             $replacements = [
-                '[[ASSIGNER_NAME]]' => $user['name'],
+                '[[ASSIGNER_NAME]]' => $jwtUser['name'],
                 '[[TEAM_NAME]]' => $team['name'],
                 '[[CURRENT_YEAR]]' => date("Y"),
                 '[[LIST_TEAM_ADMINS]]' => $userAdminsString,

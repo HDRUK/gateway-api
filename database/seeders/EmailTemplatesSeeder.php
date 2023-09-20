@@ -100,7 +100,7 @@ class EmailTemplatesSeeder extends Seeder
 
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Custodian Team Admin role has been assigned</mj-text>
+                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Team Admin role has been assigned</mj-text>
                     </mj-column>
                 </mj-section>
 
@@ -159,7 +159,7 @@ class EmailTemplatesSeeder extends Seeder
 
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Custodian Team Admin role has been removed</mj-text>
+                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Team Admin role has been removed</mj-text>
                     </mj-column>
                 </mj-section>
 
