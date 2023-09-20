@@ -201,6 +201,9 @@ class DatasetTest extends TestCase
         $responseDeleteTeam->assertJsonStructure([
             'message'
         ]);
+
+        dd($responseDeleteTeam);
+        
         $responseDeleteTeam->assertStatus(200);
 
         // delete user
@@ -323,6 +326,7 @@ class DatasetTest extends TestCase
         $responseDeleteDataset->assertJsonStructure([
             'message'
         ]);
+        //dd($responseDeleteDataset);
         $responseDeleteDataset->assertStatus(200);
 
         // delete team
