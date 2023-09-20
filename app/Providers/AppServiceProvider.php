@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        if (Config::get('logging.LOG_SQL') === true) {
+        if (Config::get('logging.sqlLog') === true) {
             \DB::listen(function ($query) {
                 $bindings = [];
                 foreach ($query->bindings as $i => $binding) {
