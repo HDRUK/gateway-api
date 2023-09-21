@@ -38,29 +38,24 @@ class UserSeeder extends Seeder
             'metadata.manager',
         ]);
 
-        // // Create our super user account
-        // $user = User::factory()->create([
-        //     'name' => 'HDRUK Super-User',
-        //     'firstname' => 'HDRUK',
-        //     'lastname' => 'Super-User',
-        //     'email' => 'developers@hdruk.ac.uk',
-        //     'provider' => 'service',
-        //     'password' => Hash::make('Watch26Task?'),
-        //     'is_admin' => true,
-        // ]);
-
-        // $role = Role::with('permissions')->where('name', 'hdruk.superadmin')->first();
-
-        // UserHasRole::create([
-        //     'user_id' => $user->id,
-        //     'role_id' => $role->id,
-        // ]);
-
+        $this->createUser('Dar', 'Reviewer', 'hdrreviewer@gmail.com', 'Gateway@123', false, ['dar.reviewer']);
 
         User::factory(10)->create();
     }
 
-    private function createUser(string $firstname, string $lastname, string $email, string $password, bool $isAdmin, array $roles)
+    /**
+     * Generically creates users per passed params
+     * 
+     * @param string $firstname     The firstname of the user to create
+     * @param string $lastname      The lastname of the user to create
+     * @param string $email         The email address of the user to create
+     * @param string $password      The password of the user to create
+     * @param bool $isAdmin         Whether this user being created is an admin
+     * @param array $roles          The roles that should be applied to the user being created
+     * 
+     * @return void
+     */
+    private function createUser(string $firstname, string $lastname, string $email, string $password, bool $isAdmin, array $roles): void
     {
         $user = User::factory()->create([
             'name' => $firstname . ' ' . $lastname,

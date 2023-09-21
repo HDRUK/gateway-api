@@ -140,7 +140,7 @@ class RoleSeeder extends Seeder
                 'dar-form.update',
                 'permissions.update',                
             ],
-            'reviewer' => [
+            'dar.reviewer' => [
                 'datasets.read',
                 'dar.read.assigned',
                 'dar.update',                
