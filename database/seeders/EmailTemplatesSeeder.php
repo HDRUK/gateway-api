@@ -588,9 +588,9 @@ class EmailTemplatesSeeder extends Seeder
             ',
       ]);
 
-      // metadata_editor - assign
+      // metadata.editor - assign
       EmailTemplate::create([
-        'identifier' => 'metadata_editor.assign',
+        'identifier' => 'metadata.editor.assign',
         'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Metadata Editor',
         'body' => '
           <mjml>
@@ -652,9 +652,9 @@ class EmailTemplatesSeeder extends Seeder
           ',
       ]);
 
-      // metadata_editor - remove
+      // metadata.editor - remove
       EmailTemplate::create([
-        'identifier' => 'metadata_editor.remove',
+        'identifier' => 'metadata.editor.remove',
         'subject' => 'You have been removed as a Metadata Editor for the [[TEAM_NAME]] team on the Gateway.',
         'body' => '
           <mjml>

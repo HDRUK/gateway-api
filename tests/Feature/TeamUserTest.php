@@ -115,10 +115,10 @@ class TeamUserTest extends TestCase
         $responsePost->assertStatus(201);
 
         $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
-        $arrayPermissionsExpected = ["developer", "custodian.dar.manager", "metadata_editor"];
+        $arrayPermissionsExpected = ["developer", "custodian.dar.manager", "metadata.editor"];
         $payloadPut = [
             "roles" => [
-                "metadata_editor" => true,
+                "metadata.editor" => true,
             ],
         ];
         $responsePut = $this->json('PUT', $urlPut, $payloadPut, $this->header);
