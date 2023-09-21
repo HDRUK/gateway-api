@@ -1703,8 +1703,6 @@ return [
         ],
     ],
 
-
-
     // team.user.role
     [
         'name' => 'team.user.role',
@@ -1715,6 +1713,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,permissions.update',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
@@ -1729,6 +1728,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,permissions.update',
         ],
         'constraint' => [
             'teamId' => '[0-9]+', 
@@ -1744,6 +1744,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+            'check.access:permissions,permissions.update',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
