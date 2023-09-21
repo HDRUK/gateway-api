@@ -632,7 +632,7 @@ Authorization: Bearer {{accessToken}}
 {
     "roles" : {
         "custodian.metadata.manager": false,
-        "metadata_editor": true,
+        "metadata.editor": true,
         "reviewer": true
     }
 }
