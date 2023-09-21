@@ -168,11 +168,11 @@ class TeamUserTest extends TestCase
         $responsePost->assertStatus(201);
 
         $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
-        $arrayPermissionsExpected = ["developer", "reviewer"];
+        $arrayPermissionsExpected = ["developer", "dar.reviewer"];
         $payloadPut = [
             "roles" => [
                 "custodian.dar.manager" => false,
-                "reviewer" => true,
+                "dar.reviewer" => true,
             ],
         ];
         $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
@@ -202,7 +202,7 @@ class TeamUserTest extends TestCase
     public function test_update_team_user_permissions_and_send_email(): void
     {
 
-        $initialRoles = ["developer", "reviewer"];
+        $initialRoles = ["developer", "dar.reviewer"];
         $teamId = $this->createTeam();
         $userId = $this->createUser();
         $this->createTeamRoles($teamId,$userId,$initialRoles);
@@ -213,12 +213,12 @@ class TeamUserTest extends TestCase
         $payloadPut = [
             "roles" => [
                 "developer" => true,
-                "reviewer" => true,
+                "dar.reviewer" => true,
                 "custodian.dar.manager" => true,
             ],
         ];
 
-        $expectedRoles = ["developer", "reviewer", "custodian.dar.manager"];  
+        $expectedRoles = ["developer", "dar.reviewer", "custodian.dar.manager"];  
         $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
         $responsePost->assertJsonStructure([
             'message'
@@ -239,12 +239,12 @@ class TeamUserTest extends TestCase
         $payloadPut = [
             "roles" => [
                 "developer" => false,
-                "reviewer" => true,
+                "dar.reviewer" => true,
                 "custodian.dar.manager" => true,
             ],
         ];
 
-        $expectedRoles = ["reviewer", "custodian.dar.manager"];  
+        $expectedRoles = ["dar.reviewer", "custodian.dar.manager"];  
         $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
         $responsePost->assertJsonStructure([
             'message'

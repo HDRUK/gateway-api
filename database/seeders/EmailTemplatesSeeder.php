@@ -333,9 +333,9 @@ class EmailTemplatesSeeder extends Seeder
         ',
       ]);
 
-      // reviewer - assign
+      // dar.reviewer - assign
       EmailTemplate::create([
-        'identifier' => 'reviewer.assign',
+        'identifier' => 'dar.reviewer.assign',
         'subject' => '[[ASSIGNER_NAME]] has added you to the [[TEAM_NAME]] publishing team on the Gateway as a Reviewer',
         'body' => '
           <mjml>
@@ -397,9 +397,9 @@ class EmailTemplatesSeeder extends Seeder
           ',
       ]);
 
-      // reviewer - remove
+      // dar.reviewer - remove
       EmailTemplate::create([
-        'identifier' => 'reviewer.remove',
+        'identifier' => 'dar.reviewer.remove',
         'subject' => 'You have been removed as a Reviewer for the [[TEAM_NAME]] team on the Gateway.',
         'body' => '
           <mjml>
