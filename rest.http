@@ -638,7 +638,7 @@ Authorization: Bearer {{accessToken}}
 }
 
 #### delete team - user - role
-DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/2 HTTP/1.1
+DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/12 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}

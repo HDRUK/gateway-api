@@ -14,7 +14,7 @@ class UpdateTeam extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'id' => [
+            'teamId' => [
                 'int',
                 'required',
                 'exists:teams,id',
@@ -80,6 +80,6 @@ class UpdateTeam extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge(['teamId' => $this->route('teamId')]);
     }
 }

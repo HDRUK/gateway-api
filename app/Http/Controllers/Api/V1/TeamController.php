@@ -73,13 +73,13 @@ class TeamController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/teams/{id}",
+     *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
      *      summary="Return a single team",
      *      description="Return a single team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *         name="id",
+     *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
@@ -123,12 +123,12 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function show(GetTeam $request, int $id): JsonResponse
+    public function show(GetTeam $request, int $teamId): JsonResponse
     {
-        $team = Team::with('notifications')->where('id', $id)->firstOrFail();
+        $team = Team::with('notifications')->where('id', $teamId)->firstOrFail();
 
         if ($team) {
-            $userTeam = Team::where('id', $id)->with(['users', 'notifications'])->get()->toArray();
+            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
             return response()->json([
                 'message' => 'success',
                 'data' => $this->getTeams($userTeam),
@@ -236,13 +236,13 @@ class TeamController extends Controller
 
     /**
      * @OA\Put(
-     *      path="/api/v1/teams/{id}",
+     *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
      *      summary="Update a team",
      *      description="Update a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *         name="id",
+     *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
@@ -324,9 +324,9 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function update(UpdateTeam $request, int $id): JsonResponse
+    public function update(UpdateTeam $request, int $teamId): JsonResponse
     {
-        $team = Team::findOrFail($id);
+        $team = Team::findOrFail($teamId);
         $body = $request->post();
         $team->name = $body['name'];
         $team->enabled = $body['enabled'];
@@ -345,10 +345,10 @@ class TeamController extends Controller
         }
 
         $arrayTeamNotification = $body['notifications'];
-        TeamHasNotification::where('team_id', $id)->delete();
+        TeamHasNotification::where('team_id', $teamId)->delete();
         foreach ($arrayTeamNotification as $value) {
             TeamHasNotification::updateOrCreate([
-                'team_id' => (int) $id,
+                'team_id' => (int) $teamId,
                 'notification_id' => (int) $value,
             ]);
         }
@@ -369,13 +369,13 @@ class TeamController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="/api/v1/teams/{id}",
+     *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
      *      summary="Edit a team",
      *      description="Edit a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *         name="id",
+     *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
@@ -443,7 +443,7 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function edit(EditTeam $request, int $id): JsonResponse
+    public function edit(EditTeam $request, int $teamId): JsonResponse
     {
         try {
             $input = $request->all();
@@ -464,21 +464,21 @@ class TeamController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            Team::where('id', $id)->update($array);
+            Team::where('id', $teamId)->update($array);
 
             $arrayTeamNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
 
-            TeamHasNotification::where('team_id', $id)->delete();
+            TeamHasNotification::where('team_id', $teamId)->delete();
             foreach ($arrayTeamNotification as $value) {
                 TeamHasNotification::updateOrCreate([
-                    'team_id' => (int) $id,
+                    'team_id' => (int) $teamId,
                     'notification_id' => (int) $value,
                 ]);
             }
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Team::where('id', $id)->first()
+                'data' => Team::where('id', $teamId)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -487,13 +487,13 @@ class TeamController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="/api/v1/teams/{id}",
+     *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
      *      summary="Delete a team",
      *      description="Delete a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *         name="id",
+     *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
@@ -526,12 +526,12 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteTeam $request, int $id): JsonResponse
+    public function destroy(DeleteTeam $request, int $teamId): JsonResponse
     {
         try {
-            $team = Team::findOrFail($id);
+            $team = Team::findOrFail($teamId);
             if ($team) {
-                TeamHasNotification::where('team_id', $id)->delete();
+                TeamHasNotification::where('team_id', $teamId)->delete();
 
                 $deletePermanently = false;
                 if ($request->has('deletePermanently')) {

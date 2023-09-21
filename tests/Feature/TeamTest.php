@@ -444,7 +444,6 @@ class TeamTest extends TestCase
             'message',
             'data',
         ]);
-
         $contentEdit1 = $responseEdit1->decodeResponseJson();
 
         $this->assertEquals($contentEdit1['data']['allows_messaging'], 0);

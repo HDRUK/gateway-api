@@ -383,23 +383,21 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [],
     ],
     [
         'name' => 'teams',
         'method' => 'get',
-        'path' => '/teams/{id}',
+        'path' => '/teams/{teamId}',
         'methodController' => 'TeamController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
@@ -418,37 +416,35 @@ return [
     [
         'name' => 'teams',
         'method' => 'put',
-        'path' => '/teams/{id}',
+        'path' => '/teams/{teamId}',
         'methodController' => 'TeamController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
         'name' => 'teams',
         'method' => 'patch',
-        'path' => '/teams/{id}',
+        'path' => '/teams/{teamId}',
         'methodController' => 'TeamController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
     [
         'name' => 'teams',
         'method' => 'delete',
-        'path' => '/teams/{id}',
+        'path' => '/teams/{teamId}',
         'methodController' => 'TeamController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
@@ -457,7 +453,7 @@ return [
             'check.access:roles,hdruk.superadmin',
         ],
         'constraint' => [
-            'id' => '[0-9]+',
+            'teamId' => '[0-9]+',
         ],
     ],
 
