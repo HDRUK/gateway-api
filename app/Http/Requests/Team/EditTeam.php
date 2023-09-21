@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Team;
 
+use App\Models\Team;
 use App\Http\Requests\BaseFormRequest;
 
 class EditTeam extends BaseFormRequest
@@ -14,10 +15,17 @@ class EditTeam extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'id' => [
+            'teamId' => [
                 'int',
                 'required',
-                'exists:teams,id',
+                // 'exists:teams,teamId',
+                function ($attribute, $value, $fail) {
+                    $exists = Team::where('id', $value)->count();
+
+                    if (!$exists) {
+                        $fail('The selected team not exist.');
+                    }
+                },
             ],
             'name' => [
                 'string',
@@ -69,6 +77,6 @@ class EditTeam extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge(['teamId' => $this->route('teamId')]);
     }
 }
