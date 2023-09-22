@@ -36,6 +36,13 @@ class Federation extends Model
     private $enabled = true;
 
     /**
+     * Tested flag to mark a successful test having been run
+     * 
+     * @var bool
+     */
+    private $tested = false;
+
+    /**
      * Feature name
      * 
      * @var string
