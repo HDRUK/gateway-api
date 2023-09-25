@@ -1775,9 +1775,22 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
         ],
         'constraint' => [],
+    ],
+    // logout - google|linkedin|azure
+    [
+        'name' => 'logout',
+        'method' => 'any',
+        'path' => '/logout/{provider}',
+        'methodController' => 'LogoutController@logoutSocial',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'provider' => 'google|linkedin|azure',
+        ],
     ],
 
     // datasets

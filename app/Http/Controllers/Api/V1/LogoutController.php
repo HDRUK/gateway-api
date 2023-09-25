@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\AuthorisationCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cookie;
+use Laravel\Socialite\Facades\Socialite;
 
 class LogoutController extends Controller
 {
@@ -47,6 +48,21 @@ class LogoutController extends Controller
             return response()->json([
                 'message' => 'OK',
             ], 200);
+        }
+
+        return response()->json([
+            'message' => 'not found',
+        ], 404);
+    }
+
+    public function logoutSocial(Request $request, string $provider): mixed
+    {
+        $jwt = $request->header('Authorization');
+
+        if (AuthorisationCode::where(['jwt' => $jwt])->delete()) {
+            $request->session()->flush();
+            $azureLogoutUrl = Socialite::driver($provider)->getLogoutUrl(env('GATEWAY_URL'));
+            return redirect($azureLogoutUrl)->with('success', 'You have been logged out.');
         }
 
         return response()->json([
