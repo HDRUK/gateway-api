@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\AuthorisationCode;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cookie;
-use Laravel\Socialite\Facades\Socialite;
 
 class LogoutController extends Controller
 {
