@@ -44,6 +44,7 @@ class LogoutController extends Controller
         $jwt = $request->header('Authorization');
 
         if (AuthorisationCode::where(['jwt' => $jwt])->delete()) {
+            $request->session()->flush();
             return response()->json([
                 'message' => 'OK',
             ], 200);
