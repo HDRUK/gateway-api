@@ -61,8 +61,8 @@ class LogoutController extends Controller
 
         if (AuthorisationCode::where(['jwt' => $jwt])->delete()) {
             $request->session()->flush();
-            $azureLogoutUrl = Socialite::driver($provider)->getLogoutUrl(env('GATEWAY_URL'));
-            return redirect($azureLogoutUrl)->with('success', 'You have been logged out.');
+            $logoutUrl = Socialite::driver($provider)->getLogoutUrl(env('GATEWAY_URL'));
+            return redirect($logoutUrl)->with('success', 'You have been logged out.');
         }
 
         return response()->json([
