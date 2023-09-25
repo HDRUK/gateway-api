@@ -45,24 +45,10 @@ class LogoutController extends Controller
         $jwt = $request->header('Authorization');
 
         if (AuthorisationCode::where(['jwt' => $jwt])->delete()) {
+            $request->session()->flush();
             return response()->json([
                 'message' => 'OK',
             ], 200);
-        }
-
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
-    }
-
-    public function logoutSocial(Request $request, string $provider): mixed
-    {
-        $jwt = $request->header('Authorization');
-
-        if (AuthorisationCode::where(['jwt' => $jwt])->delete()) {
-            $request->session()->flush();
-            $logoutUrl = Socialite::driver($provider)->getLogoutUrl(env('GATEWAY_URL'));
-            return redirect($logoutUrl)->with('success', 'You have been logged out.');
         }
 
         return response()->json([
