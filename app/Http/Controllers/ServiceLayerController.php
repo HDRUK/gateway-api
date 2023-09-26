@@ -43,7 +43,7 @@ class ServiceLayerController extends Controller
     }
 
     /**
-     * @OA\Post(
+     * @OA\Patch(
      *     path="/api/services/federations/{id}",
      *     operationId="setFederationInvalidRunState",
      *     summary="ServiceLayerController@setFederationInvalidRunState",
