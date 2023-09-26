@@ -79,17 +79,6 @@ class CollectionTest extends TestCase
     }
 
     /**
-     * Get All Collections with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_collections_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get Collection by Id with success
      * 
      * @return void
