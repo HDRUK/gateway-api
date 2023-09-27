@@ -40,6 +40,7 @@ Route::get('/email', function (Request $reqest) {
 });
 
 Route::get('/services/federations', [ServiceLayerController::class, 'getActiveFederationApplications']);
+Route::patch('/services/federations/{id}', [ServiceLayerController::class, 'setFederationInvalidRunState']);
 
 // stop all all other routes
 Route::any('{path}', function() {
