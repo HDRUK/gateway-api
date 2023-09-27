@@ -147,6 +147,19 @@ class FederationTest extends TestCase
                 ],
             ],
         ]);
+
+        // delete team
+        $responseDeleteTeam = $this->json(
+            'DELETE',
+            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+
+        $responseDeleteTeam->assertStatus(200);
     }
 
     /**
@@ -259,6 +272,19 @@ class FederationTest extends TestCase
                 ],
             ],
         ]);
+
+        // delete team
+        $responseDeleteTeam = $this->json(
+            'DELETE',
+            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+
+        $responseDeleteTeam->assertStatus(200);
     }
 
     /**
@@ -390,6 +416,19 @@ class FederationTest extends TestCase
         ])->get()->toArray();
 
         $this->assertCount(3, $federationNotification, 'Response was successfully');
+
+        // delete team
+        $responseDeleteTeam = $this->json(
+            'DELETE',
+            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+
+        $responseDeleteTeam->assertStatus(200);
     }
 
     /**
@@ -568,6 +607,19 @@ class FederationTest extends TestCase
         ])->get()->toArray();
 
         $this->assertCount(4, $federationNotification, 'Response was successfully');
+
+        // delete team
+        $responseDeleteTeam = $this->json(
+            'DELETE',
+            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+
+        $responseDeleteTeam->assertStatus(200);
     }
 
     /**
@@ -795,6 +847,19 @@ class FederationTest extends TestCase
         $federations = Federation::where('id', $federationId)->first();
 
         $this->assertTrue($federations->auth_secret_key === 'secret/key/path/test/update');
+
+        // delete team
+        $responseDeleteTeam = $this->json(
+            'DELETE',
+            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+
+        $responseDeleteTeam->assertStatus(200);
     }
 
 
@@ -1050,5 +1115,18 @@ class FederationTest extends TestCase
         ])->first();
 
         $this->assertFalse((bool) $federationNotification, 'Response was successfully');
+
+        // delete team
+        $responseDeleteTeam = $this->json(
+            'DELETE',
+            'api/v1/teams' . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+
+        $responseDeleteTeam->assertStatus(200);
     }
 }

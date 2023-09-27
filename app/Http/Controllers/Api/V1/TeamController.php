@@ -539,11 +539,15 @@ class TeamController extends Controller
                 }
 
                 // soft delete subfolder in mauro
-                Mauro::deleteFolder(
+                $result = Mauro::deleteFolder(
                     $team['mdm_folder_id'],
                     $deletePermanently,
                     env('MAURO_PARENT_FOLDER_ID')
                 );
+
+                if (!$result) {
+                    throw new Exception('Mauro team deletion failed for id ' . $team['mdm_folder_id']);
+                }
 
                 $team->delete();
 
