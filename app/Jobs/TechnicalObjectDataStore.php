@@ -3,12 +3,15 @@
 namespace App\Jobs;
 
 use Mauro;
+
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+
+use Illuminate\Support\Facades\Http;
 
 class TechnicalObjectDataStore implements ShouldQueue
 {
@@ -32,6 +35,8 @@ class TechnicalObjectDataStore implements ShouldQueue
 
     /**
      * Execute the job.
+     * 
+     * @return void
      */
     public function handle(): void
     {
@@ -44,9 +49,27 @@ class TechnicalObjectDataStore implements ShouldQueue
             }
         }
 
+        $this->postToTermExtractionDirector($data);
+
         // Jobs aren't garbage collected, so free up
         // resources used before tear down
         unset($this->datasetId);
         unset($this->data);
+    }
+
+    /**
+     * Passes the incoming dataset to TED for extraction
+     * 
+     * @param string $dataset   The dataset json passed to this process
+     * 
+     * @return void
+     */
+    private function postToTermExtractionDirector(string $dataset): void
+    {
+        $response = Http::post(env('TED_SERVICE_URL') . '/datasets', [
+            $dataset,        
+        ]);
+
+        dd($response);
     }
 }
