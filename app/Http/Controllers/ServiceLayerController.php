@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Config;
+use Exception;
 use App\Models\Federation;
 
 use Illuminate\Http\Request;
