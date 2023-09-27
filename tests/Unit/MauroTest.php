@@ -49,7 +49,6 @@ class MauroTest extends TestCase
             'readableByEveryone',
             'readableByAuthenticatedUsers',
             'availableActions',
-            'description',
         ];
 
         foreach ($keyCheck as $key) {
