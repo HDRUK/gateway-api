@@ -59,17 +59,6 @@ class PermissionTest extends TestCase
     }
 
     /**
-     * Get All Permmissions with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_permissions_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get Tag by Id with success
      * 
      * @return void

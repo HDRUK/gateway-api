@@ -4896,157 +4896,13 @@
                                                         "format": "date-time",
                                                         "example": "2023-04-11 12:00:00"
                                                     },
-                                                    "counter": {
+                                                    "dataset_id": {
                                                         "type": "integer",
                                                         "example": "1"
-                                                    },
-                                                    "keywords": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "dataset_ids": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "gateway_dataset_ids": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "non_gateway_dataset_ids": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "gateway_applicants": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "non_gateway_applicants": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "funders_and_sponsors": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "other_approval_committees": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "gateway_output_tools": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "gateway_output_papers": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "non_gateway_outputs": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "project_title": {
-                                                        "type": "string",
-                                                        "example": "Sit quisquam est recusandae."
-                                                    },
-                                                    "project_id_text": {
-                                                        "type": "string",
-                                                        "example": "Sit quisquam est recusandae."
-                                                    },
-                                                    "organisation_name": {
-                                                        "type": "string",
-                                                        "example": "Sit quisquam est recusandae."
-                                                    },
-                                                    "organisation_sector": {
-                                                        "type": "string",
-                                                        "example": "Sit quisquam est recusandae."
-                                                    },
-                                                    "lay_summary": {
-                                                        "type": "string",
-                                                        "example": "Sit quisquam est recusandae."
-                                                    },
-                                                    "latest_approval_date": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
                                                     },
                                                     "enabled": {
                                                         "type": "boolean",
                                                         "example": "false"
-                                                    },
-                                                    "team": {
-                                                        "properties": {
-                                                            "id": {
-                                                                "type": "integer",
-                                                                "example": "123"
-                                                            },
-                                                            "created_at": {
-                                                                "type": "string",
-                                                                "format": "date-time",
-                                                                "example": "2023-04-11 12:00:00"
-                                                            },
-                                                            "updated_at": {
-                                                                "type": "string",
-                                                                "format": "date-time",
-                                                                "example": "2023-04-11 12:00:00"
-                                                            },
-                                                            "enabled": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "name": {
-                                                                "type": "string",
-                                                                "example": "someName"
-                                                            },
-                                                            "allows_messaging": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "workflow_enabled": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "access_requests_management": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "uses_5_safes": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "is_admin": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "member_of": {
-                                                                "type": "string",
-                                                                "example": "someOrg"
-                                                            },
-                                                            "contact_point": {
-                                                                "type": "string",
-                                                                "example": "someone@mail.com"
-                                                            },
-                                                            "application_form_updated_by": {
-                                                                "type": "integer",
-                                                                "example": "555"
-                                                            },
-                                                            "application_form_updated_on": {
-                                                                "type": "string",
-                                                                "format": "date-time",
-                                                                "example": "2023-04-11"
-                                                            }
-                                                        },
-                                                        "type": "object"
                                                     },
                                                     "user": {
                                                         "properties": {
@@ -5100,16 +4956,7 @@
                                                         },
                                                         "type": "object"
                                                     },
-                                                    "last_activity": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
-                                                    },
-                                                    "manual_upload": {
-                                                        "type": "boolean",
-                                                        "example": "false"
-                                                    },
-                                                    "rejection_reason": {
+                                                    "ro_crate": {
                                                         "type": "string",
                                                         "example": "Sit quisquam est recusandae."
                                                     }
@@ -5144,112 +4991,23 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "counter": {
+                                    "id": {
                                         "type": "integer",
                                         "example": "1"
                                     },
-                                    "keywords": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_applicants": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_applicants": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "funders_and_sponsors": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "other_approval_committees": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_output_tools": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_output_papers": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_outputs": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "project_title": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "project_id_text": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "organisation_name": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "organisation_sector": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "lay_summary": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "latest_approval_date": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11 12:00:00"
+                                    "dataset_id": {
+                                        "type": "integer",
+                                        "example": "1"
                                     },
                                     "enabled": {
                                         "type": "boolean",
                                         "example": "false"
                                     },
-                                    "team_id": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
                                     "user_id": {
                                         "type": "integer",
                                         "example": "1"
                                     },
-                                    "last_activity": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11 12:00:00"
-                                    },
-                                    "manual_upload": {
-                                        "type": "boolean",
-                                        "example": "false"
-                                    },
-                                    "rejection_reason": {
+                                    "ro_crate": {
                                         "type": "string",
                                         "example": "Sit quisquam est recusandae."
                                     }
@@ -5360,172 +5118,13 @@
                                                         "type": "integer",
                                                         "example": "1"
                                                     },
-                                                    "created_at": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
-                                                    },
-                                                    "updated_at": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
-                                                    },
-                                                    "deleted_at": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
-                                                    },
-                                                    "counter": {
+                                                    "dataset_id": {
                                                         "type": "integer",
                                                         "example": "1"
-                                                    },
-                                                    "keywords": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "dataset_ids": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "gateway_dataset_ids": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "non_gateway_dataset_ids": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "gateway_applicants": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "non_gateway_applicants": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "funders_and_sponsors": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "other_approval_committees": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "gateway_output_tools": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "gateway_output_papers": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "non_gateway_outputs": {
-                                                        "type": "array",
-                                                        "items": {},
-                                                        "example": "[]"
-                                                    },
-                                                    "project_title": {
-                                                        "type": "string",
-                                                        "example": "Sit quisquam est recusandae."
-                                                    },
-                                                    "project_id_text": {
-                                                        "type": "string",
-                                                        "example": "Sit quisquam est recusandae."
-                                                    },
-                                                    "organisation_name": {
-                                                        "type": "string",
-                                                        "example": "Sit quisquam est recusandae."
-                                                    },
-                                                    "organisation_sector": {
-                                                        "type": "string",
-                                                        "example": "Sit quisquam est recusandae."
-                                                    },
-                                                    "lay_summary": {
-                                                        "type": "string",
-                                                        "example": "Sit quisquam est recusandae."
-                                                    },
-                                                    "latest_approval_date": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
                                                     },
                                                     "enabled": {
                                                         "type": "boolean",
                                                         "example": "false"
-                                                    },
-                                                    "team": {
-                                                        "properties": {
-                                                            "id": {
-                                                                "type": "integer",
-                                                                "example": "123"
-                                                            },
-                                                            "created_at": {
-                                                                "type": "string",
-                                                                "format": "date-time",
-                                                                "example": "2023-04-11 12:00:00"
-                                                            },
-                                                            "updated_at": {
-                                                                "type": "string",
-                                                                "format": "date-time",
-                                                                "example": "2023-04-11 12:00:00"
-                                                            },
-                                                            "enabled": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "name": {
-                                                                "type": "string",
-                                                                "example": "someName"
-                                                            },
-                                                            "allows_messaging": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "workflow_enabled": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "access_requests_management": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "uses_5_safes": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "is_admin": {
-                                                                "type": "boolean",
-                                                                "example": "1"
-                                                            },
-                                                            "member_of": {
-                                                                "type": "string",
-                                                                "example": "someOrg"
-                                                            },
-                                                            "contact_point": {
-                                                                "type": "string",
-                                                                "example": "someone@mail.com"
-                                                            },
-                                                            "application_form_updated_by": {
-                                                                "type": "integer",
-                                                                "example": "555"
-                                                            },
-                                                            "application_form_updated_on": {
-                                                                "type": "string",
-                                                                "format": "date-time",
-                                                                "example": "2023-04-11"
-                                                            }
-                                                        },
-                                                        "type": "object"
                                                     },
                                                     "user": {
                                                         "properties": {
@@ -5579,16 +5178,7 @@
                                                         },
                                                         "type": "object"
                                                     },
-                                                    "last_activity": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
-                                                    },
-                                                    "manual_upload": {
-                                                        "type": "boolean",
-                                                        "example": "false"
-                                                    },
-                                                    "rejection_reason": {
+                                                    "ro_crate": {
                                                         "type": "string",
                                                         "example": "Sit quisquam est recusandae."
                                                     }
@@ -5668,112 +5258,23 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "counter": {
+                                    "id": {
                                         "type": "integer",
                                         "example": "1"
                                     },
-                                    "keywords": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_applicants": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_applicants": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "funders_and_sponsors": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "other_approval_committees": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_output_tools": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_output_papers": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_outputs": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "project_title": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "project_id_text": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "organisation_name": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "organisation_sector": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "lay_summary": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "latest_approval_date": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11 12:00:00"
+                                    "dataset_id": {
+                                        "type": "integer",
+                                        "example": "1"
                                     },
                                     "enabled": {
                                         "type": "boolean",
                                         "example": "false"
                                     },
-                                    "team_id": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
                                     "user_id": {
                                         "type": "integer",
                                         "example": "1"
                                     },
-                                    "last_activity": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11 12:00:00"
-                                    },
-                                    "manual_upload": {
-                                        "type": "boolean",
-                                        "example": "false"
-                                    },
-                                    "rejection_reason": {
+                                    "ro_crate": {
                                         "type": "string",
                                         "example": "Sit quisquam est recusandae."
                                     }
@@ -5906,112 +5407,23 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "counter": {
+                                    "id": {
                                         "type": "integer",
                                         "example": "1"
                                     },
-                                    "keywords": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_dataset_ids": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_applicants": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_applicants": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "funders_and_sponsors": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "other_approval_committees": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_output_tools": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "gateway_output_papers": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "non_gateway_outputs": {
-                                        "type": "array",
-                                        "items": {},
-                                        "example": "[]"
-                                    },
-                                    "project_title": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "project_id_text": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "organisation_name": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "organisation_sector": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "lay_summary": {
-                                        "type": "string",
-                                        "example": "Sit quisquam est recusandae."
-                                    },
-                                    "latest_approval_date": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11 12:00:00"
+                                    "dataset_id": {
+                                        "type": "integer",
+                                        "example": "1"
                                     },
                                     "enabled": {
                                         "type": "boolean",
                                         "example": "false"
                                     },
-                                    "team_id": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
                                     "user_id": {
                                         "type": "integer",
                                         "example": "1"
                                     },
-                                    "last_activity": {
-                                        "type": "string",
-                                        "format": "date-time",
-                                        "example": "2023-04-11 12:00:00"
-                                    },
-                                    "manual_upload": {
-                                        "type": "boolean",
-                                        "example": "false"
-                                    },
-                                    "rejection_reason": {
+                                    "ro_crate": {
                                         "type": "string",
                                         "example": "Sit quisquam est recusandae."
                                     }
@@ -13281,17 +12693,17 @@
                 ]
             }
         },
-        "/api/v1/teams/{id}": {
+        "/api/v1/teams/{teamId}": {
             "get": {
                 "tags": [
                     "Teams"
                 ],
                 "summary": "Return a single team",
                 "description": "Return a single team",
-                "operationId": "6ea35f97e59b3b4f042839afbb548dbb",
+                "operationId": "8b83251e6674751e28f624900b7f4a49",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "teamId",
                         "in": "path",
                         "description": "team id",
                         "required": true,
@@ -13423,10 +12835,10 @@
                 ],
                 "summary": "Update a team",
                 "description": "Update a team",
-                "operationId": "db86bc9cd9a6a0c9bcdd8851e76536f3",
+                "operationId": "8412a49d8a4b788faf88695bcd41e278",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "teamId",
                         "in": "path",
                         "description": "team id",
                         "required": true,
@@ -13651,10 +13063,10 @@
                 ],
                 "summary": "Delete a team",
                 "description": "Delete a team",
-                "operationId": "3f6a7fabcca6967050816f5781024699",
+                "operationId": "90b012c01fa5d1dbe356f723fd0d6a2d",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "teamId",
                         "in": "path",
                         "description": "team id",
                         "required": true,
@@ -13727,10 +13139,10 @@
                 ],
                 "summary": "Edit a team",
                 "description": "Edit a team",
-                "operationId": "c889ff82053060caaa0fe4ef3f73414e",
+                "operationId": "56b140ffba409f5efa5a17d1e5d26b9d",
                 "parameters": [
                     {
-                        "name": "id",
+                        "name": "teamId",
                         "in": "path",
                         "description": "team id",
                         "required": true,
@@ -15879,6 +15291,35 @@
                 "responses": {
                     "200": {
                         "description": "Successful operation"
+                    }
+                }
+            }
+        },
+        "/api/services/federations": {
+            "get": {
+                "summary": "ServiceLayerController@getActiveFederationApplications",
+                "description": "Get a list of all actve federations for use in service layer",
+                "operationId": "getActiveFederationApplications",
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
