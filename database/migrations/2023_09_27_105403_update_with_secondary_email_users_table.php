@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('seconday_email')->after('email')->nullable();
-            $table->enum('preferred_email', ['primary', 'secondary'])->default('primary')->after('seconday_email');
+            $table->string('secondary_email')->after('email')->nullable();
+            $table->enum('preferred_email', ['primary', 'secondary'])->default('primary')->after('secondary_email');
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('seconday_email');
+            $table->dropColumn('secondary_email');
             $table->dropColumn('preferred_email');
         });
     }

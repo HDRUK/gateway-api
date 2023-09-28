@@ -39,7 +39,7 @@ class EditUser extends BaseFormRequest
                     }
                 },
             ],
-            'seconday_email' => [
+            'secondary_email' => [
                 'string',
                 'email',
             ],

@@ -28,7 +28,7 @@ class UserFactory extends Factory
             'firstname' => $firstName,
             'lastname' => $lastName,
             'email' => fake()->unique()->safeEmail(),
-            'seconday_email' => fake()->unique()->safeEmail(),
+            'secondary_email' => fake()->unique()->safeEmail(),
             'preferred_email' => fake()->randomElement(['primary', 'secondary']),
             'email_verified_at' => now(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
