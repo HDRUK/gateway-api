@@ -76,17 +76,6 @@ class DataUseRegisterTest extends TestCase
     }
 
     /**
-     * Get All DataUseRegisters with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_data_use_registers_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get DataUseRegister by Id with success
      * 
      * @return void

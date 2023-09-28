@@ -28,6 +28,14 @@ class CreateUser extends BaseFormRequest
                 'email',
                 'unique:users,email',
             ],
+            'secondary_email' => [
+                'string',
+                'email',
+            ],
+            'preferred_email' => [
+                'string',
+                'in:primary,secondary',
+            ],
             'password' => [
                 'nullable', 
                 'string',

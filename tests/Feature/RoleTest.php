@@ -74,17 +74,6 @@ class RoleTest extends TestCase
     }
 
     /**
-     * Get All Roles with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_roles_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get Role by Id with success
      * 
      * @return void

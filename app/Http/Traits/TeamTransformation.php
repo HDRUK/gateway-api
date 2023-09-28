@@ -42,6 +42,8 @@ trait TeamTransformation
                     'firstname' => $user['firstname'],
                     'lastname' => $user['lastname'],
                     'email' => $user['email'],
+                    'secondary_email' => $user['secondary_email'],
+                    'preferred_email' => $user['preferred_email'],
                     'providerid' => $user['providerid'],
                     'provider' => $user['provider'],
                     'created_at' => $user['created_at'],

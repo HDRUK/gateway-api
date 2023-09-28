@@ -363,6 +363,8 @@ class TeamUserTest extends TestCase
                 'firstname' => 'Firstname',
                 'lastname' => 'Lastname',
                 'email' => 'firstname.lastname.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Test Organisation',

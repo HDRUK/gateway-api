@@ -39,6 +39,14 @@ class EditUser extends BaseFormRequest
                     }
                 },
             ],
+            'secondary_email' => [
+                'string',
+                'email',
+            ],
+            'preferred_email' => [
+                'string',
+                'in:primary,secondary',
+            ],
             'password' => [
                 'nullable',
                 'string',
