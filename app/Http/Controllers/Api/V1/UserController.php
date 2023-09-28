@@ -12,15 +12,17 @@ use App\Http\Requests\User\GetUser;
 use App\Models\UserHasNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\EditUser;
+use App\Exceptions\NotFoundException;
 use App\Http\Requests\User\CreateUser;
 use App\Http\Requests\User\DeleteUser;
 use App\Http\Requests\User\UpdateUser;
 use App\Http\Traits\UserTransformation;
-use App\Exceptions\NotFoundException;
+use App\Http\Traits\RequestTransformation;
 
 class UserController extends Controller
 {
     use UserTransformation;
+    use RequestTransformation;
 
     /**
      * @OA\Get(
@@ -200,6 +202,8 @@ class UserController extends Controller
                 'firstname' => $input['firstname'],
                 'lastname' => $input['lastname'],
                 'email' => $input['email'],
+                'seconday_email' => array_key_exists('seconday_email', $input) ? $input['seconday_email'] : NULL,
+                'preferred_email' => array_key_exists('preferred_email', $input) ? $input['preferred_email'] : 'primary',
                 'provider' =>  Config::get('constants.provider.service'),
                 'password' => Hash::make($input['password']),
                 'sector_id' => $input['sector_id'],
@@ -338,6 +342,8 @@ class UserController extends Controller
                     "firstname" => $input['firstname'],
                     "lastname" => $input['lastname'],
                     "email" => $input['email'],
+                    'seconday_email' => array_key_exists('seconday_email', $input) ? $input['seconday_email'] : NULL,
+                    'preferred_email' => array_key_exists('preferred_email', $input) ? $input['preferred_email'] : 'primary',
                     'provider' =>  Config::get('constants.provider.service'),
                     "sector_id" => $input['sector_id'],
                     "organisation" => $input['organisation'],
@@ -464,60 +470,33 @@ class UserController extends Controller
     {
         try {
             $input = $request->all();
+            $arrayKeys = [
+                'firstname',
+                'lastname',
+                'email',
+                'seconday_email',
+                'preferred_email',
+                'provider',
+                'sector_id',
+                'organisation',
+                'bio',
+                'domain',
+                'link',
+                'orcid',
+                'contact_feedback',
+                'contact_news',
+                'mongo_id',
+                'mongo_object_id',                 
+            ];
 
-            $array = [];
+            $array = $this->checkEditArray($input, $arrayKeys);
+
             if (array_key_exists('firstname', $input) && array_key_exists('lastname', $input)) {
                 $array['name'] = $input['firstname'] . " " . $input['lastname'];
-                $array['firstname'] = $input['firstname'];
-                $array['lastname'] = $input['lastname'];
-            }
-            
-            if (array_key_exists('email', $input)) {
-                $array['email'] = $input['email'];
             }
 
             if (array_key_exists('password', $input)) {
                 $array['password'] = Hash::make($input['password']);
-            }
-
-            if (array_key_exists('sector_id', $input)) {
-                $array['sector_id'] = $input['sector_id'];
-            }
-
-            if (array_key_exists('organisation', $input)) {
-                $array['organisation'] = $input['organisation'];
-            }
-
-            if (array_key_exists('bio', $input)) {
-                $array['bio'] = $input['bio'];
-            }
-
-            if (array_key_exists('domain', $input)) {
-                $array['domain'] = $input['domain'];
-            }
-
-            if (array_key_exists('link', $input)) {
-                $array['link'] = $input['link'];
-            }
-
-            if (array_key_exists('orcid', $input)) {
-                $array['orcid'] = $input['orcid'];
-            }
-
-            if (array_key_exists('contact_feedback', $input)) {
-                $array['contact_feedback'] = $input['contact_feedback'];
-            }
-
-            if (array_key_exists('contact_news', $input)) {
-                $array['contact_news'] = $input['contact_news'];
-            }
-
-            if (array_key_exists('mongo_id', $input)) {
-                $array['mongo_id'] = $input['mongo_id'];
-            }
-
-            if (array_key_exists('mongo_object_id', $input)) {
-                $array['mongo_object_id'] = $input['mongo_object_id'];
             }
 
             User::withTrashed()->where('id', $id)->update($array);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Enums\UserPreferredEmail;
 use App\Models\Team;
 use App\Models\Tool;
 use App\Models\Role;
@@ -31,6 +32,8 @@ class User extends Authenticatable
         'firstname',
         'lastname',
         'email',
+        'seconday_email',
+        'preferred_email',
         'password',
         'provider',
         'sector_id',
@@ -62,6 +65,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'preferred_email' => UserPreferredEmail::class,
     ];
 
     /**

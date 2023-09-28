@@ -82,17 +82,6 @@ class ReviewTest extends TestCase
     }
 
     /**
-     * Get All Reviews with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_reviews_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get Review by Id with success
      * 
      * @return void

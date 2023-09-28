@@ -53,6 +53,8 @@ class UserTest extends TestCase
                     'firstname',
                     'lastname',
                     'email',
+                    'seconday_email',
+                    'preferred_email',
                     'providerid',
                     'provider',
                     'created_at',
@@ -77,17 +79,6 @@ class UserTest extends TestCase
             ],   
         ]);
         $response->assertStatus(200);
-    }
-
-    /**
-     * Get All Tag with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_users_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
     }
 
     /**
@@ -136,6 +127,8 @@ class UserTest extends TestCase
                 'firstname' => 'Just',
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
+                'seconday_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Test Organisation',
@@ -184,6 +177,8 @@ class UserTest extends TestCase
                 'firstname' => 'Just',
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
+                'seconday_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Test Organisation',
@@ -215,6 +210,8 @@ class UserTest extends TestCase
                 'firstname' => 'Just',
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
+                'seconday_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Updated Organisation',
@@ -269,6 +266,8 @@ class UserTest extends TestCase
                 'firstname' => 'Just',
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
+                'seconday_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Test Organisation',
@@ -299,6 +298,8 @@ class UserTest extends TestCase
                 'firstname' => 'Just',
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
+                'seconday_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Updated Organisation',

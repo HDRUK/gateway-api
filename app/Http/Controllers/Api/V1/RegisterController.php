@@ -94,7 +94,7 @@ class RegisterController extends Controller
 
             $array = [
                 "name" => $input['firstname'] . " " . $input['lastname'],
-                "firstmame" => $input['firstname'],
+                "firstname" => $input['firstname'],
                 "lastname" => $input['lastname'],
                 "email" => $input['email'],
                 "provider" =>  Config::get('constants.provider.service'),

@@ -42,6 +42,15 @@ class UpdateUser extends BaseFormRequest
                     }
                 },
             ],
+            'seconday_email' => [
+                'string',
+                'email',
+            ],
+            'preferred_email' => [
+                'required',
+                'string',
+                'in:primary,secondary',
+            ],
             'password' => [
                 'nullable',
                 'string',
