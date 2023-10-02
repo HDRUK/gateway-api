@@ -91,6 +91,7 @@ class RoleSeeder extends Seeder
                 'permissions.update',
                 'custodians.update',
                 'collections.read',
+                'notifications.update',
             ],
             'developer' => [
                 'applications.read',

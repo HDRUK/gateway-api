@@ -1832,7 +1832,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,custodian.team.admin',
+            'check.access:permissions,notifications.update',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
