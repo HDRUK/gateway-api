@@ -48,14 +48,6 @@ class UpdateApplication extends BaseFormRequest
                 'required',
                 'boolean',
             ],
-            'tags' => [
-                'array',
-            ],
-            'tags.*'  => [
-                'integer',
-                'distinct',
-                'exists:tags,id',
-            ],
             'permissions' => [
                 'array',
             ],

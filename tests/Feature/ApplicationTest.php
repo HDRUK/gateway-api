@@ -60,7 +60,6 @@ class ApplicationTest extends TestCase
                     'updated_at',
                     'deleted_at',
                     'permissions',
-                    'tags',
                     'team',
                     'user',
                 ],
@@ -94,10 +93,6 @@ class ApplicationTest extends TestCase
                 'team_id' => 5,
                 'user_id' => 2,
                 'enabled' => true,
-                'tags' => [
-                    1,
-                    5,
-                ],
                 'permissions' => [
                     1,
                     2,
@@ -144,7 +139,6 @@ class ApplicationTest extends TestCase
                 'updated_at',
                 'deleted_at',
                 'permissions',
-                'tags',
                 'team',
                 'user',
             ],
@@ -164,10 +158,6 @@ class ApplicationTest extends TestCase
                 'team_id' => 5,
                 'user_id' => 2,
                 'enabled' => true,
-                'tags' => [
-                    1,
-                    5,
-                ],
                 'permissions' => [
                     1,
                     2,
@@ -202,10 +192,6 @@ class ApplicationTest extends TestCase
                 'team_id' => 5,
                 'user_id' => 2,
                 'enabled' => true,
-                'tags' => [
-                    1,
-                    5,
-                ],
                 'permissions' => [
                     1,
                     2,
@@ -239,10 +225,6 @@ class ApplicationTest extends TestCase
                 'team_id' => 2,
                 'user_id' => 1,
                 'enabled' => false,
-                'tags' => [
-                    2,
-                    3,
-                ],
                 'permissions' => [
                     2,
                 ],
@@ -274,10 +256,6 @@ class ApplicationTest extends TestCase
                 'team_id' => 5,
                 'user_id' => 2,
                 'enabled' => true,
-                'tags' => [
-                    1,
-                    5,
-                ],
                 'permissions' => [
                     1,
                     2,
@@ -311,10 +289,6 @@ class ApplicationTest extends TestCase
                 'team_id' => 2,
                 'user_id' => 1,
                 'enabled' => false,
-                'tags' => [
-                    2,
-                    3,
-                ],
                 'permissions' => [
                     2,
                 ],
@@ -367,10 +341,6 @@ class ApplicationTest extends TestCase
                 'team_id' => 5,
                 'user_id' => 2,
                 'enabled' => true,
-                'tags' => [
-                    1,
-                    5,
-                ],
                 'permissions' => [
                     1,
                     2,
@@ -404,10 +374,6 @@ class ApplicationTest extends TestCase
                 'team_id' => 2,
                 'user_id' => 1,
                 'enabled' => false,
-                'tags' => [
-                    2,
-                    3,
-                ],
                 'permissions' => [
                     2,
                 ],
