@@ -27,6 +27,7 @@ class UpdateApplication extends BaseFormRequest
             ],
             'image_link' => [
                 'string',
+                'nullable',
                 'url',
             ],
             'description' => [
