@@ -106,6 +106,7 @@ class PermissionSeeder extends Seeder
             'audit.update',
             'audit.delete',
 
+            'notifications.update',
         ];
 
         foreach ($permissions as $perm) {
