@@ -43,7 +43,6 @@ class DatabaseSeeder extends Seeder
             DatasetSeeder::class,
             DataUseRegisterSeeder::class,
             ApplicationSeeder::class,
-            ApplicationHasTagSeeder::class,
             ApplicationHasPermissionSeeder::class,
             FAIRShareCommandSeeder::class,
             TeamUserHasRoleSeeder::class,

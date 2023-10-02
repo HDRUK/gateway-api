@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Exception;
 use App\Models\Tag;
-use Illuminate\Http\Request;
 use App\Http\Requests\Tag\GetTag;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Tag\EditTag;

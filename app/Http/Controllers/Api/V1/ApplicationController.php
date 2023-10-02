@@ -8,7 +8,6 @@ use Exception;
 use App\Models\Application;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use App\Models\ApplicationHasTag;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\ApplicationHasPermission;
@@ -76,7 +75,6 @@ class ApplicationController extends Controller
      *                   @OA\Property(property="user_id", type="integer", example="2"),
      *                   @OA\Property(property="enabled", type="boolean", example="false"),
      *                   @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
-     *                   @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
@@ -94,7 +92,7 @@ class ApplicationController extends Controller
 
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'tags', 'team', 'user']);
+        $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'team', 'user']);
 
 
         $teamId = $request->query('team_id');
@@ -174,7 +172,6 @@ class ApplicationController extends Controller
      *                   @OA\Property(property="user_id", type="integer", example="2"),
      *                   @OA\Property(property="enabled", type="boolean", example="false"),
      *                   @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
-     *                   @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
@@ -190,7 +187,7 @@ class ApplicationController extends Controller
     public function show(GetApplication $request, int $id): JsonResponse
     {
         try {
-            $application = Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first();
+            $application = Application::with(['permissions', 'team', 'user'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
 
             return response()->json([
@@ -220,7 +217,6 @@ class ApplicationController extends Controller
      *            @OA\Property(property="team_id", type="integer", example="1"),
      *            @OA\Property(property="user_id", type="integer", example="2"),
      *            @OA\Property(property="enabled", type="boolean", example="false"),
-     *            @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *            @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
      *        ),
      *    ),
@@ -242,7 +238,6 @@ class ApplicationController extends Controller
      *                 @OA\Property(property="user_id", type="integer", example="2"),
      *                 @OA\Property(property="enabled", type="boolean", example="false"),
      *                 @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
-     *                 @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *                 @OA\Property(property="team", type="array", example="[]", @OA\Items()),
      *                 @OA\Property(property="user", type="array", example="[]", @OA\Items()),
      *                 @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
@@ -287,17 +282,13 @@ class ApplicationController extends Controller
 
             $application = Application::create($array);
 
-            if (array_key_exists('tags', $input)) {
-                $this->applicationHasTags((int) $application->id, $input['tags']);
-            }
-
             if (array_key_exists('permissions', $input)) {
                 $this->applicationHasPermissions((int) $application->id, $input['permissions']);
             }
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => Application::with(['permissions', 'tags', 'team', 'user'])
+                'data' => Application::with(['permissions', 'team', 'user'])
                     ->where('id', $application->id)
                     ->first(),
             ], Config::get('statuscodes.STATUS_CREATED.code'));
@@ -336,7 +327,6 @@ class ApplicationController extends Controller
      *            @OA\Property(property="team_id", type="integer", example="1"),
      *            @OA\Property(property="user_id", type="integer", example="2"),
      *            @OA\Property(property="enabled", type="boolean", example="false"),
-     *            @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *            @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
      *        ),
      *    ),
@@ -360,7 +350,6 @@ class ApplicationController extends Controller
      *                 @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
      *                 @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
      *                 @OA\Property(property="enabled", type="boolean", example="true"),
-     *                 @OA\Property(property="keywords", type="string", example="key words"),
      *                 @OA\Property(property="public", type="boolean", example="true"),
      *                 @OA\Property(property="counter", type="integer", example="123"),
      *                 @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -397,15 +386,11 @@ class ApplicationController extends Controller
 
             Application::where('id', $id)->update($array);
 
-            if (array_key_exists('tags', $input)) {
-                $this->applicationHasTags((int) $id, $input['tags']);
-            }
-
             if (array_key_exists('permissions', $input)) {
                 $this->applicationHasPermissions((int) $id, $input['permissions']);
             }
 
-            $application = Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first();
+            $application = Application::with(['permissions', 'team', 'user'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
 
             return response()->json([
@@ -448,7 +433,6 @@ class ApplicationController extends Controller
      *            @OA\Property(property="team_id", type="integer", example="1"),
      *            @OA\Property(property="user_id", type="integer", example="2"),
      *            @OA\Property(property="enabled", type="boolean", example="false"),
-     *            @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *            @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
      *        ),
      *    ),
@@ -472,7 +456,6 @@ class ApplicationController extends Controller
      *                 @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
      *                 @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
      *                 @OA\Property(property="enabled", type="boolean", example="true"),
-     *                 @OA\Property(property="keywords", type="string", example="key words"),
      *                 @OA\Property(property="public", type="boolean", example="true"),
      *                 @OA\Property(property="counter", type="integer", example="123"),
      *                 @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -500,15 +483,11 @@ class ApplicationController extends Controller
 
             Application::where('id', $id)->update($array);
 
-            if (array_key_exists('tags', $input)) {
-                $this->applicationHasTags((int) $id, $input['tags']);
-            }
-
             if (array_key_exists('permissions', $input)) {
                 $this->applicationHasPermissions((int) $id, $input['permissions']);
             }
 
-            $application = Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first();
+            $application = Application::with(['permissions', 'team', 'user'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
             
             return response()->json([
@@ -566,36 +545,11 @@ class ApplicationController extends Controller
     {
         try {
             Application::where('id', $id)->delete();
-            ApplicationHasTag::where('application_id', $id)->delete();
             ApplicationHasPermission::where('application_id', $id)->delete();
 
             return response()->json([
                 'message' => 'success',
             ], 200);
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * Application has tags associated
-     *
-     * @param integer $applicationId
-     * @param array $tags
-     * @return mixed
-     */
-    private function applicationHasTags(int $applicationId, array $tags): mixed
-    {
-        try {
-            ApplicationHasTag::where('application_id', $applicationId)->delete();
-            foreach ($tags as $tag) {
-                ApplicationHasTag::create([
-                    'application_id' => $applicationId,
-                    'tag_id' => $tag,
-                ]);
-            }
-
-            return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

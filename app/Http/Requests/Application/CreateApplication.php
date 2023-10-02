@@ -41,14 +41,6 @@ class CreateApplication extends BaseFormRequest
                 'required',
                 'boolean',
             ],
-            'tags' => [
-                'array',
-            ],
-            'tags.*'  => [
-                'integer', 
-                'distinct',
-                'exists:tags,id',
-            ],
             'permissions' => [
                 'array',
             ],

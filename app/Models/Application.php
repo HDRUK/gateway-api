@@ -47,11 +47,6 @@ class Application extends Model
         return $this->belongsToMany(Permission::class, 'application_has_permissions');
     }
 
-    public function tags(): BelongsToMany
-    {
-        return $this->belongsToMany(Tag::class, 'application_has_tags');
-    }
-
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
