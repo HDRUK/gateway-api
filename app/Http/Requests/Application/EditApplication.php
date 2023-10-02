@@ -26,6 +26,7 @@ class EditApplication extends BaseFormRequest
             ],
             'image_link' => [
                 'string',
+                'nullable',
                 'url',
             ],
             'description' => [

@@ -20,6 +20,7 @@ class CreateApplication extends BaseFormRequest
             ],
             'image_link' => [
                 'string',
+                'nullable',
                 'url',
             ],
             'description' => [
