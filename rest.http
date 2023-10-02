@@ -331,8 +331,8 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "name": "Hello World 2",
-    "image_link": "",
+    "name": "Hello World",
+    "image_link": "https://via.placeholder.com/640x480.png/0022dd?text=animals+aliquam",
     "description": "Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.",
     "team_id": 5,
     "user_id": 2,
