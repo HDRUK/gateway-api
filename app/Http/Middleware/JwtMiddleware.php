@@ -71,11 +71,11 @@ class JwtMiddleware
         }
 
         // Otherwise fall back to bearer authorization header
-        $autorization = $request->header('Authorization');
-        $splitAutorization = explode(' ',$autorization);
+        $authorization = $request->header('Authorization');
+        $splitAuthorization = explode(' ',$authorization);
 
-        if (strtolower(trim($splitAutorization[0])) === 'bearer') {
-            $jwtBearer = $splitAutorization[1];
+        if (strtolower(trim($splitAuthorization[0])) === 'bearer') {
+            $jwtBearer = $splitAuthorization[1];
             
             $jwtController = new JwtController();
             $jwtController->setJwt($jwtBearer);
