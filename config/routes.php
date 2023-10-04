@@ -21,7 +21,7 @@ return [
         'constraint' => [],
     ],
 
-    // login for:  google || azure || linkedin-openid
+    // login for:  google || azure || linkedin
     [
         'name' => 'login.social',
         'method' => 'get',
@@ -30,7 +30,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin-openid',
+            'provider' => 'google|azure|linkedin',
         ],
     ],
     [
@@ -41,7 +41,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin-openid',
+            'provider' => 'google|azure|linkedin',
         ],
     ],
 

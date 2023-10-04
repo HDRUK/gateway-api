@@ -68,6 +68,10 @@ class SocialLoginController extends Controller
      */
     public function login(Request $request, string $provider): mixed
     {
+        if ($provider === 'linkedin') {
+            $provider = 'linkedin-openid';
+        }
+
         return Socialite::driver($provider)->redirect();
     }
 
@@ -109,6 +113,10 @@ class SocialLoginController extends Controller
     public function callback(Request $request, string $provider): mixed
     {
         try {
+            if ($provider === 'linkedin') {
+                $provider = 'linkedin-openid';
+            }
+
             $socialUser = Socialite::driver($provider)->user();
 
             $socialUserDetails = [];
