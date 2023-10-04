@@ -42,14 +42,15 @@ class TechnicalObjectDataStore implements ShouldQueue
     {
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
 
-        foreach ($data['data']['datasetfields']['technicaldetails'] as $class) {
+        foreach ($data['datasetv2']['datasetfields']['technicaldetails'] as $class) {
             $mauroResponse = Mauro::createDataClass($this->datasetId, $class['label'], $class['description']);
             foreach ($class['elements'] as $element) {
-                $mauro = Mauro::createDataElement($this->datasetId, $mauroResponse['id'], $element['label'], $element['description'], $element['dataType']['label']);
+                $mauro = Mauro::createDataElement($this->datasetId, $mauroResponse['id'],
+                    $element['label'], $element['description'], $element['dataType']['label']);
             }
         }
 
-        $this->postToTermExtractionDirector($data);
+        $this->postToTermExtractionDirector(json_encode($data));
 
         // Jobs aren't garbage collected, so free up
         // resources used before tear down
@@ -66,10 +67,8 @@ class TechnicalObjectDataStore implements ShouldQueue
      */
     private function postToTermExtractionDirector(string $dataset): void
     {
-        $response = Http::post(env('TED_SERVICE_URL') . '/datasets', [
+        $response = Http::post(env('TED_SERVICE_URL'), [
             $dataset,        
         ]);
-
-        dd($response);
     }
 }
