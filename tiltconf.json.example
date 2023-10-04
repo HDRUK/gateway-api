@@ -1,0 +1,11 @@
+{
+    "name": "gateway-api",
+
+    "gatewayWeb2Root": "/Users/lokisinclair/Development/HDRUK/gateway-web-2",
+
+    "traserServiceRoot": "/Users/lokisinclair/Development/HDRUK/traser",
+    "tedServiceRoot": "/Users/lokisinclair/Development/HDRUK/term-extraction-director",
+
+    "traserEnabled": true,
+    "tedEnabled": true
+}

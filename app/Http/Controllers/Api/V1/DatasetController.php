@@ -153,7 +153,7 @@ class DatasetController extends Controller
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="label", type="string", example="label dataset for test"),
      *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
-     *             @OA\Property(property="data", type="array", @OA\Items())
+     *             @OA\Property(property="dataset", type="array", @OA\Items())
      *          )
      *       )
      *    ),

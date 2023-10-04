@@ -45,6 +45,9 @@ include(cfg.get('gatewayWeb2Root') + '/Tiltfile')
 if cfg.get('traserEnabled'):
     include(cfg.get('traserServiceRoot') + '/Tiltfile')
 
+if cfg.get('tedEnabled'):
+    include(cfg.get('tedServiceRoot') + '/Tiltfile')
+
 docker_build(
     ref='hdruk/' + cfg.get('name'),
     context='.',
