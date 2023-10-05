@@ -43,6 +43,7 @@ class UpdateUser extends BaseFormRequest
                 },
             ],
             'secondary_email' => [
+                'nullable',
                 'string',
                 'email',
             ],

@@ -29,6 +29,7 @@ class CreateUser extends BaseFormRequest
                 'unique:users,email',
             ],
             'secondary_email' => [
+                'nullable',
                 'string',
                 'email',
             ],
