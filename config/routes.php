@@ -529,7 +529,7 @@ return [
 
     // tools integrations
     [
-        'name' => 'tools',
+        'name' => 'tools.integrations',
         'method' => 'get',
         'path' => '/integrations/tools',
         'methodController' => 'ToolController@index',
@@ -541,7 +541,7 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'tools',
+        'name' => 'tools.integrations',
         'method' => 'get',
         'path' => '/integrations/tools/{id}',
         'methodController' => 'ToolController@show',
@@ -567,7 +567,7 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'tools',
+        'name' => 'tools.integrations',
         'method' => 'put',
         'path' => '/integrations/tools/{id}',
         'methodController' => 'ToolController@update',
@@ -581,7 +581,7 @@ return [
         ],
     ],
     [
-        'name' => 'tools',
+        'name' => 'tools.integrations',
         'method' => 'patch',
         'path' => '/integrations/tools/{id}',
         'methodController' => 'ToolController@edit',
@@ -595,7 +595,7 @@ return [
         ],
     ],
     [
-        'name' => 'tools',
+        'name' => 'tools.integrations',
         'method' => 'delete',
         'path' => '/integrations/tools/{id}',
         'methodController' => 'ToolController@destroy',

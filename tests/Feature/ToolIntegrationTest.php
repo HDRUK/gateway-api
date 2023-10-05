@@ -15,12 +15,9 @@ use App\Http\Controllers\Api\V1\ToolController;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-use Tests\Traits\Authorization;
-
 class ToolIntegrationTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
 
     const TEST_URL = '/api/v1/integrations/tools';
 
@@ -46,7 +43,6 @@ class ToolIntegrationTest extends TestCase
             "app_id" => $this->integration['app_id'], 
             "client_id" => $this->integration['client_id']
         ];
-        // var_dump($this->integration);
     }
 
     /**
@@ -58,7 +54,6 @@ class ToolIntegrationTest extends TestCase
     {
         $countTool = Tool::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL, $this->body, $this->header);
-        // var_dump($response->getContent());
         $this->assertEquals($countTool, $response['total']);
         $response->assertJsonStructure([
             'data' => [
