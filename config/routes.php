@@ -543,6 +543,18 @@ return [
     [
         'name' => 'activity.logs',
         'method' => 'get',
+        'path' => '/app/activity_logs',
+        'methodController' => 'ActivityLogController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'app.auth',
+            // 'check.access:permissions,audit.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'activity.logs',
+        'method' => 'get',
         'path' => '/activity_logs/{id}',
         'methodController' => 'ActivityLogController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',

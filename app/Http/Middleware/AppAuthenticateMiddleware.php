@@ -5,11 +5,9 @@ namespace App\Http\Middleware;
 use Config;
 
 use Closure;
-use App\Models\User;
+use App\Models\Application;
 use Illuminate\Http\Request;
-use App\Models\AuthorisationCode;
 use App\Exceptions\NotFoundException;
-use App\Http\Controllers\JwtController;
 use App\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -33,65 +31,32 @@ class AppAuthenticateMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Use bearer authorization header
-        $authorization = $request->header('Authorization');
-        $splitAuthorization = explode(' ', $authorization);
+        // $authorization = $request->header('Authorization');
+        // $splitAuthorization = explode(' ', $authorization);
 
         # Check that the app id is in the app table
-        $appId = $request;
-        $app = validateAppId($appId);
+        $appId = $request['app_id'];
+        var_dump($appId);
+        $app = Application::where('app_id', $appId)->first();
         if (!$app) {
             throw new NotFoundException('App not found.');
         }
 
-        # Check that the app id, client id, and client secret all match.
+        # Check that the app id, client id, and client secret all match. Throw an exception if not matching.
         $clientId = $app->client_id;
         $clientSecret = $app->client_secret;
-
-
-        # If all successful, then pass the request on
-
-        if (strtolower(trim($splitAuthorization[0])) === 'bearer') {
-            $jwtBearer = $splitAuthorization[1];
-            
-            $jwtController = new JwtController();
-            $jwtController->setJwt($jwtBearer);
-            $isValidJwt = $jwtController->isValid();
-            $isJwtInDb = AuthorisationCode::findRowByJwt($jwtBearer);
-
-            if (!$isValidJwt && !$isJwtInDb) {
-                throw new UnauthorizedException();
-            }
-            
-            $request->merge(['jwt' => $jwtBearer]);
-
-            $payloadJwt = $jwtController->decode();
-            $userJwt = $payloadJwt['user'];
-
-            $user = $this->validateUserId((int) $userJwt['id']);
-
-            if (!$user) {
-                throw new NotFoundException('User not found.');
-            }
-
-            // $request->merge(
-            //     [
-            //         'jwt_user' => [
-            //             'id' => $user->id,
-            //             'name' => $user->name,
-            //             'email' => $user->email,
-            //             'is_admin' => $user->is_admin,
-            //             ]
-            //         ]
-            //     );
-            return $next($request);
+        // var_dump($app);
+        if (!($clientId == $request['client_id'] && $clientSecret == $request['client_secret'])) {
+            throw new UnauthorizedException();
         }
 
-        throw new UnauthorizedException();
+        # Otherwise, it's all successful, so pass the request on
+        return $next($request);
     }
 
-    private function validateAppId(int $appId)
+    private function validateAppId(str $appId)
     {
-        return Application::find($appId);
+        return Application::where('app_id', $appId)->first();
     }
 }
 
