@@ -5,13 +5,14 @@ namespace App\Http\Middleware;
 use Config;
 
 use Closure;
+use Hash;
 use App\Models\Application;
 use Illuminate\Http\Request;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 
-class AppAuthenticateMiddleware
+class AuthenticateIntegrationMiddleware
 {
     /**
      * @OA\SecurityScheme(
@@ -30,25 +31,22 @@ class AppAuthenticateMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Use bearer authorization header
-        // $authorization = $request->header('Authorization');
-        // $splitAuthorization = explode(' ', $authorization);
-
         # Check that the app id is in the app table
         $appId = $request['app_id'];
-        // var_dump($appId);
         $app = Application::where('app_id', $appId)->first();
-
         if (!$app) {
             throw new NotFoundException('App not found.');
         }
 
-        # Check that the app id, client id, and client secret all match. Throw an exception if not matching.
+        # Check that the app id and client id both match. Throw an exception if not matching.
         $clientId = $app->client_id;
         $clientSecret = $app->client_secret;
-        // var_dump($app);
+        if (!($clientId == $request['client_id'])) {
+            throw new UnauthorizedException();
+        }
 
-        if (!($clientId == $request['client_id'] && $clientSecret == $request['client_secret'])) {
+        # Check the client secret
+        if (!Hash::check($appId . ':' . $clientId, $clientSecret)) {
             throw new UnauthorizedException();
         }
 

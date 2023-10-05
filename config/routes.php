@@ -527,6 +527,21 @@ return [
         ],
     ],
 
+    // tools integrations
+    [
+        'name' => 'tools.integrations',
+        'method' => 'post',
+        'path' => '/integrations/tools',
+        'methodController' => 'ToolController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+            // 'check.access:permissions,tools.create',
+        ],
+        'constraint' => [],
+    ],
+
     // activity.logs
     [
         'name' => 'activity.logs',
@@ -537,18 +552,6 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,audit.read',
-        ],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'activity.logs',
-        'method' => 'get',
-        'path' => '/app/activity_logs',
-        'methodController' => 'ActivityLogController@index',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'app.auth',
-            // 'check.access:permissions,audit.read',
         ],
         'constraint' => [],
     ],
