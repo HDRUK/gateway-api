@@ -36,8 +36,9 @@ class AppAuthenticateMiddleware
 
         # Check that the app id is in the app table
         $appId = $request['app_id'];
-        var_dump($appId);
+        // var_dump($appId);
         $app = Application::where('app_id', $appId)->first();
+
         if (!$app) {
             throw new NotFoundException('App not found.');
         }
@@ -46,6 +47,7 @@ class AppAuthenticateMiddleware
         $clientId = $app->client_id;
         $clientSecret = $app->client_secret;
         // var_dump($app);
+
         if (!($clientId == $request['client_id'] && $clientSecret == $request['client_secret'])) {
             throw new UnauthorizedException();
         }
@@ -54,9 +56,5 @@ class AppAuthenticateMiddleware
         return $next($request);
     }
 
-    private function validateAppId(str $appId)
-    {
-        return Application::where('app_id', $appId)->first();
-    }
 }
 
