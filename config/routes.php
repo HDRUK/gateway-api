@@ -529,6 +529,32 @@ return [
 
     // tools integrations
     [
+        'name' => 'tools',
+        'method' => 'get',
+        'path' => '/integrations/tools',
+        'methodController' => 'ToolController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'get',
+        'path' => '/integrations/tools/{id}',
+        'methodController' => 'ToolController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
         'name' => 'tools.integrations',
         'method' => 'post',
         'path' => '/integrations/tools',
@@ -537,9 +563,49 @@ return [
         'middleware' => [
             'integration.auth',
             'sanitize.input',
-            // 'check.access:permissions,tools.create',
         ],
         'constraint' => [],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'put',
+        'path' => '/integrations/tools/{id}',
+        'methodController' => 'ToolController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'patch',
+        'path' => '/integrations/tools/{id}',
+        'methodController' => 'ToolController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools',
+        'method' => 'delete',
+        'path' => '/integrations/tools/{id}',
+        'methodController' => 'ToolController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
 
     // activity.logs
