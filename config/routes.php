@@ -1346,6 +1346,85 @@ return [
         ],
     ],
 
+    // collections integrations
+    [
+        'name' => 'collections.integrations',
+        'method' => 'get',
+        'path' => '/integrations/collections',
+        'methodController' => 'CollectionController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'collections.integrations',
+        'method' => 'get',
+        'path' => '/integrations/collections/{id}',
+        'methodController' => 'CollectionController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'collections.integrations',
+        'method' => 'post',
+        'path' => '/integrations/collections',
+        'methodController' => 'CollectionController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'collections.integrations',
+        'method' => 'put',
+        'path' => '/integrations/collections/{id}',
+        'methodController' => 'CollectionController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'collections.integrations',
+        'method' => 'patch',
+        'path' => '/integrations/collections/{id}',
+        'methodController' => 'CollectionController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'collections.integrations',
+        'method' => 'delete',
+        'path' => '/integrations/collections/{id}',
+        'methodController' => 'CollectionController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // audit.logs
     [
         'name' => 'audit.logs',
