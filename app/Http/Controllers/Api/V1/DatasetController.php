@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use Mauro;
 use Config;
 use Exception;
+use MetadataManagementController AS MMC;
+
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
@@ -189,43 +191,92 @@ class DatasetController extends Controller
             $user = User::where('id', (int) $input['user_id'])->first()->toArray();
             $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
 
-            // Health Data Research
-            // 0930397d-6f49-4f56-b41f-499da24e35b8
-            if ($team['mdm_folder_id']) {
-                $mauro = Mauro::createDataModel(
-                    $input['label'],
-                    $input['short_description'],
-                    $user['name'],
-                    $team['name'],
-                    $team['mdm_folder_id'],
-                    $input
+            // First validate the incoming schema to ensure it's in GWDM format
+            // if not, attempt to translate prior to saving
+            if (MMC::validateDataModelType(
+                json_encode($input['dataset']),
+                env('GWDM_TRASER_IDENT')
+            )) {
+                if ($team['mdm_folder_id']) {
+                    $mauro = Mauro::createDataModel(
+                        $input['label'],
+                        $input['short_description'],
+                        $user['name'],
+                        $team['name'],
+                        $team['mdm_folder_id'],
+                        $input
+                    );
+
+                    $dataset = MMC::createDataset([
+                        'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
+                        'label' => $input['label'],
+                        'short_description' => $input['short_description'],
+                        'user_id' => $input['user_id'],
+                        'team_id' => $input['team_id'],
+                        'dataset' => json_encode($input['dataset']),
+                        'created' => now(),
+                        'updated' => now(),
+                        'submitted' => now(),
+                    ]);
+
+                    // Dispatch this potentially lengthy subset of data
+                    // to a technical object data store job - API doesn't
+                    // care if it exists or not. We leave that determination to
+                    // the service itself.
+                    TechnicalObjectDataStore::dispatch(
+                        $mauro['DataModel']['responseJson']['id'],
+                        base64_encode(gzcompress(gzencode(json_encode($input['dataset'])), 6))
+                    );
+                    
+                    return response()->json([
+                        'message' => 'created',
+                        'data' => $dataset->id,
+                    ], 201);
+                }
+            } else {
+                // Incoming dataset is not in GWDM format, so at this point we
+                // need to translate it
+                $response = MMC::translateDataModelType(
+                    json_encode($input['dataset']),
+                    env('GWDM'),
+                    env('GWDM_CURRENT_VERSION'),
+                    env('HDRUK'),
+                    // TODO
+                    // 
+                    // The following is hardcoded for now - but needs to be
+                    // more intelligent in the future. Need a solution for
+                    // not working on assumptions. Theoretically, we can 
+                    // use the incoming version, but needs confirmation
+                    '2.1.2'
                 );
 
-                $dataset = Dataset::create([
-                    'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
-                    'label' => $input['label'],
-                    'short_description' => $input['short_description'],
-                    'user_id' => $input['user_id'],
-                    'team_id' => $input['team_id'],
-                    'dataset' => json_encode($input['dataset']),
-                    'created' => now(),
-                    'updated' => now(),
-                    'submitted' => now(),
-                ]);
+                if (!empty($response)) {
+                    $dataset = MMC::createDataset([
+                        'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
+                        'label' => $input['label'],
+                        'short_description' => $input['short_description'],
+                        'user_id' => $input['user_id'],
+                        'team_id' => $input['team_id'],
+                        'dataset' => json_encode($input['dataset']),
+                        'created' => now(),
+                        'updated' => now(),
+                        'submitted' => now(),
+                    ]);
 
-                // Dispatch this potentially lengthy subset of data
-                // to a technical object data store job - API doesn't
-                // care if it exists or not. We leave that determination to
-                // the service itself.
-                TechnicalObjectDataStore::dispatch(
-                    $mauro['DataModel']['responseJson']['id'],
-                    base64_encode(gzcompress(gzencode(json_encode($input['dataset'])), 6))
-                );
-                
+                    // Dispatch this potentially lengthy subset of data
+                    // to a technical object data store job - API doesn't
+                    // care if it exists or not. We leave that determination to
+                    // the service itself.
+                    TechnicalObjectDataStore::dispatch(
+                        $mauro['DataModel']['responseJson']['id'],
+                        base64_encode(gzcompress(gzencode(json_encode($input['dataset'])), 6))
+                    );
+                }
+
+                // Fail
                 return response()->json([
-                    'message' => 'created',
-                    'data' => $dataset->id,
-                ], 201);
+                    'message' => 'dataset is in an unknown format and cannot be processed',
+                ], 400);
             }
 
             throw new NotFoundException('Mauro Data Mapper folder id for team ' . $input['team_id'] . ' not found');

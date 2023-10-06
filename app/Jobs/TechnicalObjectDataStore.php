@@ -42,11 +42,11 @@ class TechnicalObjectDataStore implements ShouldQueue
     {
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
 
-        foreach ($data['datasetv2']['datasetfields']['technicaldetails'] as $class) {
-            $mauroResponse = Mauro::createDataClass($this->datasetId, $class['label'], $class['description']);
+        foreach ($data['metadata']['structuralMetadata'] as $class) {
+            $mauroResponse = Mauro::createDataClass($this->datasetId, $class['name'], $class['description']);
             foreach ($class['elements'] as $element) {
                 $mauro = Mauro::createDataElement($this->datasetId, $mauroResponse['id'],
-                    $element['label'], $element['description'], $element['dataType']['label']);
+                    $element['name'], $element['description'], $element['dataType']);
             }
         }
 
