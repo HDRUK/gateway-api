@@ -8,14 +8,12 @@ use App\Models\DataUseRegister;
 use App\Models\TeamHasUser;
 use App\Models\Dataset;
 use App\Models\Application;
-use Tests\Traits\Authorization;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class DataUseRegisterTest extends TestCase
+class DataUseRegisterIntegrationTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
 
     const TEST_URL = '/api/v1/integrations/data_use_registers';
 
