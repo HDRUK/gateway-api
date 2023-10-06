@@ -527,6 +527,87 @@ return [
         ],
     ],
 
+    // tools integrations
+    [
+        'name' => 'tools.integrations',
+        'method' => 'get',
+        'path' => '/integrations/tools',
+        'methodController' => 'ToolController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'tools.integrations',
+        'method' => 'get',
+        'path' => '/integrations/tools/{id}',
+        'methodController' => 'ToolController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.integrations',
+        'method' => 'post',
+        'path' => '/integrations/tools',
+        'methodController' => 'ToolController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'tools.integrations',
+        'method' => 'put',
+        'path' => '/integrations/tools/{id}',
+        'methodController' => 'ToolController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.integrations',
+        'method' => 'patch',
+        'path' => '/integrations/tools/{id}',
+        'methodController' => 'ToolController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'tools.integrations',
+        'method' => 'delete',
+        'path' => '/integrations/tools/{id}',
+        'methodController' => 'ToolController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // activity.logs
     [
         'name' => 'activity.logs',
@@ -1265,6 +1346,85 @@ return [
         ],
     ],
 
+    // collections integrations
+    [
+        'name' => 'collections.integrations',
+        'method' => 'get',
+        'path' => '/integrations/collections',
+        'methodController' => 'CollectionController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'collections.integrations',
+        'method' => 'get',
+        'path' => '/integrations/collections/{id}',
+        'methodController' => 'CollectionController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'collections.integrations',
+        'method' => 'post',
+        'path' => '/integrations/collections',
+        'methodController' => 'CollectionController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'collections.integrations',
+        'method' => 'put',
+        'path' => '/integrations/collections/{id}',
+        'methodController' => 'CollectionController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'collections.integrations',
+        'method' => 'patch',
+        'path' => '/integrations/collections/{id}',
+        'methodController' => 'CollectionController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'collections.integrations',
+        'method' => 'delete',
+        'path' => '/integrations/collections/{id}',
+        'methodController' => 'CollectionController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // audit.logs
     [
         'name' => 'audit.logs',
@@ -1429,6 +1589,85 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,dur.delete',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // data.use.registers integrations
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'get',
+        'path' => '/integrations/data_use_registers',
+        'methodController' => 'DataUseRegisterController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'get',
+        'path' => '/integrations/data_use_registers/{id}',
+        'methodController' => 'DataUseRegisterController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'post',
+        'path' => '/integrations/data_use_registers',
+        'methodController' => 'DataUseRegisterController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'put',
+        'path' => '/integrations/data_use_registers/{id}',
+        'methodController' => 'DataUseRegisterController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'patch',
+        'path' => '/integrations/data_use_registers/{id}',
+        'methodController' => 'DataUseRegisterController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'delete',
+        'path' => '/integrations/data_use_registers/{id}',
+        'methodController' => 'DataUseRegisterController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1801,6 +2040,57 @@ return [
         'middleware' => [
             'jwt.verify',
             'check.access:permissions,datasets.delete',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+
+    // datasets integrations
+    [
+        'name' => 'datasets.integrations',
+        'method' => 'get',
+        'path' => '/integrations/datasets',
+        'methodController' => 'DatasetController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets.integrations',
+        'method' => 'get',
+        'path' => '/integrations/datasets/{id}',
+        'methodController' => 'DatasetController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets.integrations',
+        'method' => 'post',
+        'path' => '/integrations/datasets',
+        'methodController' => 'DatasetController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets.integrations',
+        'method' => 'delete',
+        'path' => '/integrations/datasets/{id}',
+        'methodController' => 'DatasetController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
         ],
         'constraint' => [
             'id', '[0-9]+'
