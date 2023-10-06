@@ -166,6 +166,8 @@ class DatasetTest extends TestCase
             $this->header,
         );
 
+        // dd($responseCreateDataset->decodeResponseJson());
+
         $responseCreateDataset->assertStatus(201);
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];

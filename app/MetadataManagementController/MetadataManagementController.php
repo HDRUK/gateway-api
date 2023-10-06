@@ -3,6 +3,7 @@
 namespace App\MetadataManagementController;
 
 use Config;
+use Mauro;
 use Exception;
 
 use App\Models\Dataset;
@@ -22,7 +23,7 @@ class MetadataManagementController {
      * @return array
      */
     public function translateDataModelType(
-        string $dataset = '',
+        string $dataset,
         string $outputSchema,
         string $outputVersion,
         string $inputSchema,
@@ -53,7 +54,7 @@ class MetadataManagementController {
             )->post($urlString);
 
             if ($response->status() === 200) {
-                return $response;
+                return $response->json();
             }
 
             return [];
@@ -113,6 +114,32 @@ class MetadataManagementController {
         $dataset = Dataset::create($input);
         return $dataset;
     }
+
+    public function createMauroDataModel(array $user, array $team, array $input): array
+    {
+        if ($this->validateTeamExistsInMauro($team)) {
+            return Mauro::createDataModel(
+                $input['label'],
+                $input['short_description'],
+                $user['name'],
+                $team['name'],
+                $team['mdm_folder_id'],
+                $input
+            );
+        }
+
+        return [];
+    }
+
+    public function validateTeamExistsInMauro(array $team): bool
+    {
+        if (!empty($team['mdm_folder_id'])) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * Calls a re-indexing of Elastic search when data changes in

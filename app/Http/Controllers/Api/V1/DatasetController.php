@@ -186,6 +186,7 @@ class DatasetController extends Controller
     public function store(CreateDataset $request): JsonResponse
     {
         try {
+            $mauro = null;
             $input = $request->all();
 
             $user = User::where('id', (int) $input['user_id'])->first()->toArray();
@@ -197,16 +198,8 @@ class DatasetController extends Controller
                 json_encode($input['dataset']),
                 env('GWDM_TRASER_IDENT')
             )) {
-                if ($team['mdm_folder_id']) {
-                    $mauro = Mauro::createDataModel(
-                        $input['label'],
-                        $input['short_description'],
-                        $user['name'],
-                        $team['name'],
-                        $team['mdm_folder_id'],
-                        $input
-                    );
-
+                $mauro = MMC::createMauroDataModel($user, $team, $input);
+                if (!empty($mauro)) {
                     $dataset = MMC::createDataset([
                         'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
                         'label' => $input['label'],
@@ -251,26 +244,36 @@ class DatasetController extends Controller
                 );
 
                 if (!empty($response)) {
-                    $dataset = MMC::createDataset([
-                        'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
-                        'label' => $input['label'],
-                        'short_description' => $input['short_description'],
-                        'user_id' => $input['user_id'],
-                        'team_id' => $input['team_id'],
-                        'dataset' => json_encode($input['dataset']),
-                        'created' => now(),
-                        'updated' => now(),
-                        'submitted' => now(),
-                    ]);
+                    $mauro = MMC::createMauroDataModel($team, $input);
+                    if (!empty($mauro)) {
+                        $dataset = MMC::createDataset([
+                            'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
+                            'label' => $input['label'],
+                            'short_description' => $input['short_description'],
+                            'user_id' => $input['user_id'],
+                            'team_id' => $input['team_id'],
+                            // The raw JSON response from Traser of the translated
+                            // dataset
+                            'dataset' => json_encode($response),
+                            'created' => now(),
+                            'updated' => now(),
+                            'submitted' => now(),
+                        ]);
 
-                    // Dispatch this potentially lengthy subset of data
-                    // to a technical object data store job - API doesn't
-                    // care if it exists or not. We leave that determination to
-                    // the service itself.
-                    TechnicalObjectDataStore::dispatch(
-                        $mauro['DataModel']['responseJson']['id'],
-                        base64_encode(gzcompress(gzencode(json_encode($input['dataset'])), 6))
-                    );
+                        // Dispatch this potentially lengthy subset of data
+                        // to a technical object data store job - API doesn't
+                        // care if it exists or not. We leave that determination to
+                        // the service itself.
+                        TechnicalObjectDataStore::dispatch(
+                            $mauro['DataModel']['responseJson']['id'],
+                            base64_encode(gzcompress(gzencode(json_encode($response)), 6))
+                        );
+
+                        return response()->json([
+                            'message' => 'created',
+                            'data' => $dataset->id,
+                        ], 201);
+                    }
                 }
 
                 // Fail
