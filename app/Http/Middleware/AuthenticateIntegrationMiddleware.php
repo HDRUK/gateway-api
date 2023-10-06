@@ -38,15 +38,10 @@ class AuthenticateIntegrationMiddleware
             throw new NotFoundException('App not found.');
         }
 
-        # Check that the app id and client id both match. Throw an exception if not matching.
+        # Check that the app id and client id both match, and check the client secret. Throw an exception if not matching.
         $clientId = $app->client_id;
         $clientSecret = $app->client_secret;
-        if (!($clientId == $request['client_id'])) {
-            throw new UnauthorizedException();
-        }
-
-        # Check the client secret
-        if (!Hash::check($appId . ':' . $clientId, $clientSecret)) {
+        if (!($clientId == $request['client_id'] && Hash::check($appId . ':' . $clientId, $clientSecret))) {
             throw new UnauthorizedException();
         }
 
