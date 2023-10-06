@@ -352,7 +352,7 @@ class DatasetTest extends TestCase
 
     private function getFakeDataset()
     {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/mauro_test_dataset.json', 0, null);
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
 
         return $json;

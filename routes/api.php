@@ -1,11 +1,12 @@
 <?php
 
+use MetadataManagementController AS MMC;
+
+use App\Http\Controllers\FilterController;
 use App\Http\Controllers\ServiceLayerController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\FilterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,12 @@ Route::get('/email', function (Request $reqest) {
 
 Route::get('/services/federations', [ServiceLayerController::class, 'getActiveFederationApplications']);
 Route::patch('/services/federations/{id}', [ServiceLayerController::class, 'setFederationInvalidRunState']);
+
+Route::get('/services/traser', function(Request $request) {
+    MMC::validateDataModelType(
+        json_encode($request->all()), 'GWDM', '1.0', 'HDRUK', '2.1.2',
+    );
+});
 
 // stop all all other routes
 Route::any('{path}', function() {
