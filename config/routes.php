@@ -1595,6 +1595,85 @@ return [
         ],
     ],
 
+    // data.use.registers integrations
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'get',
+        'path' => '/integrations/data_use_registers',
+        'methodController' => 'DataUseRegisterController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'get',
+        'path' => '/integrations/data_use_registers/{id}',
+        'methodController' => 'DataUseRegisterController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'post',
+        'path' => '/integrations/data_use_registers',
+        'methodController' => 'DataUseRegisterController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'put',
+        'path' => '/integrations/data_use_registers/{id}',
+        'methodController' => 'DataUseRegisterController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'patch',
+        'path' => '/integrations/data_use_registers/{id}',
+        'methodController' => 'DataUseRegisterController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data.use.registers.integrations',
+        'method' => 'delete',
+        'path' => '/integrations/data_use_registers/{id}',
+        'methodController' => 'DataUseRegisterController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // applications
     [
         'name' => 'applications',
