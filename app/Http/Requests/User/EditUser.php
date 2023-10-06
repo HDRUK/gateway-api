@@ -40,6 +40,7 @@ class EditUser extends BaseFormRequest
                 },
             ],
             'secondary_email' => [
+                'nullable',
                 'string',
                 'email',
             ],

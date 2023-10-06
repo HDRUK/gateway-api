@@ -21,7 +21,7 @@ return [
         'constraint' => [],
     ],
 
-    // login for:  google || linkedin || azure
+    // login for:  google || azure || linkedin
     [
         'name' => 'login.social',
         'method' => 'get',
@@ -30,7 +30,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|linkedin|azure',
+            'provider' => 'google|azure|linkedin',
         ],
     ],
     [
@@ -41,7 +41,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|linkedin|azure',
+            'provider' => 'google|azure|linkedin',
         ],
     ],
 
