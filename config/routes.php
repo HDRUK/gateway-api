@@ -2046,6 +2046,57 @@ return [
         ],
     ],
 
+    // datasets integrations
+    [
+        'name' => 'datasets.integrations',
+        'method' => 'get',
+        'path' => '/integrations/datasets',
+        'methodController' => 'DatasetController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets.integrations',
+        'method' => 'get',
+        'path' => '/integrations/datasets/{id}',
+        'methodController' => 'DatasetController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'datasets.integrations',
+        'method' => 'post',
+        'path' => '/integrations/datasets',
+        'methodController' => 'DatasetController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets.integrations',
+        'method' => 'delete',
+        'path' => '/integrations/datasets/{id}',
+        'methodController' => 'DatasetController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+
     // team.notification
     [
         'name' => 'team.notification',
