@@ -244,7 +244,7 @@ class DatasetController extends Controller
                 );
 
                 if (!empty($response)) {
-                    $mauro = MMC::createMauroDataModel($team, $input);
+                    $mauro = MMC::createMauroDataModel($user, $team, $input);
                     if (!empty($mauro)) {
                         $dataset = MMC::createDataset([
                             'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
