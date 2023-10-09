@@ -50,6 +50,7 @@ class Federation extends Model
     private $name = '';
 
     protected $fillable = [
+        'federation_type',
         'auth_type',
         'auth_secret_key',
         'endpoint_baseurl',

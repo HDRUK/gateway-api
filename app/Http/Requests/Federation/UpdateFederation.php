@@ -34,10 +34,14 @@ class UpdateFederation extends BaseFormRequest
                     }
                 },
             ],
+            'federation_type' => [
+                'required',
+                'string',
+            ],
             'auth_type' => [
                 'required',
                 'string',
-                'regex:(oauth|api_key|bearer_token)',
+                'regex:(api_key|bearer|no_auth)',
             ],
             'auth_secret_key' => [
                 'required',
