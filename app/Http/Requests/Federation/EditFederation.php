@@ -39,7 +39,7 @@ class EditFederation extends BaseFormRequest
             ],
             'auth_type' => [
                 'string',
-                'regex:(oauth|api_key|bearer|no_auth)',
+                'regex:(api_key|bearer|no_auth)',
             ],
             'auth_secret_key' => [
                 'string',

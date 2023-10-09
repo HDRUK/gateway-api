@@ -19,7 +19,7 @@ class FederationFactory extends Factory
         $slug = fake()->slug();
         return [
             'federation_type' => fake()->lexify('federation-type-????????'),
-            'auth_type' => fake()->randomElement(['oauth', 'api_key', 'bearer', 'no_auth']),
+            'auth_type' => fake()->randomElement(['api_key', 'bearer', 'no_auth']),
             'auth_secret_key' => fake()->unique()->words(2, true),
             'endpoint_baseurl' => fake()->url(),
             'endpoint_datasets' => '/' . $slug,

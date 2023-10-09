@@ -26,7 +26,7 @@ class CreateFederation extends BaseFormRequest
             'auth_type' => [
                 'required',
                 'string',
-                'regex:(oauth|api_key|bearer|no_auth)',
+                'regex:(api_key|bearer|no_auth)',
             ],
             'auth_secret_key' => [
                 'required',
