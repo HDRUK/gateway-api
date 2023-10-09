@@ -70,5 +70,21 @@ class TechnicalObjectDataStore implements ShouldQueue
         $response = Http::post(env('TED_SERVICE_URL'), [
             $dataset,        
         ]);
+
+        try {
+            foreach ($response['extracted_terms'] as $n) {
+                $named_entity = NamedEntities::create([
+                    'name' => $n,
+                ]);
+                DatasetHasNamedEntity::updateOrCreate([
+                    'dataset_id' => $this->$datasetId,
+                    'named_entity_id' => $named_entity->id
+                ]);
+            }
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+
     }
 }

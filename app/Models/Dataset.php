@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\NamedEntities;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dataset extends Model
 {
@@ -37,4 +39,12 @@ class Dataset extends Model
         'updated',
         'submitted',
     ];
+
+    /**
+     * The named_entities that belong to the dataset.
+     */
+    public function named_entities(): HasMany
+    {
+        return $this->hasMany(NamedEntities::class);
+    }
 }
