@@ -56,7 +56,6 @@ class Federation extends Model
         'endpoint_baseurl',
         'endpoint_datasets',
         'endpoint_dataset',
-        'endpoint_dataset_query',
         'run_time_hour',
         'run_time_minute',
         'enabled',

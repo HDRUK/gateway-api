@@ -45,10 +45,6 @@ class CreateFederation extends BaseFormRequest
                 'required',
                 'string',
             ],
-            'endpoint_dataset_query' => [
-                'string',
-                'nullable',
-            ],
             'run_time_hour' => [
                 'required',
                 'int',

@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::table('federations', function (Blueprint $table) {
             $table->string('federation_type', 255)->nullable(false)->after('id');
-            $table->string('endpoint_dataset_query', 255)->nullable()->after('endpoint_dataset');
             $table->tinyInteger('run_time_minute')->between(0, 59)->after('run_time_hour');
         });
     }

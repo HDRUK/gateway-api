@@ -54,10 +54,6 @@ class EditFederation extends BaseFormRequest
             'endpoint_dataset' => [
                 'string',
             ],
-            'endpoint_dataset_query' => [
-                'string',
-                'nullable',
-            ],
             'run_time_hour' => [
                 'int',
                 'between:0,23',
