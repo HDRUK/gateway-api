@@ -75,9 +75,10 @@ class MetadataManagementController {
     public function validateDataModelType(string $dataset, string $modelName): bool
     {
         try {
-            $urlString = sprintf("%s/validate?model_name=%s",
+            $urlString = sprintf("%s/validate?input_schema=%s&input_version=%s",
                 env('TRASER_SERVICE_URL'),
-                $modelName
+                env('GWDM'),
+                env('GWDM_CURRENT_VERSION')
             );
 
             // !! Dragons ahead !!

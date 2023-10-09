@@ -4,6 +4,10 @@ namespace App\Jobs;
 
 use Mauro;
 
+use App\Models\Dataset;
+use App\Models\NamedEntities;
+use App\Models\DatasetHasNamedEntity;
+
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -44,13 +48,13 @@ class TechnicalObjectDataStore implements ShouldQueue
 
         foreach ($data['metadata']['structuralMetadata'] as $class) {
             $mauroResponse = Mauro::createDataClass($this->datasetId, $class['name'], $class['description']);
-            foreach ($class['elements'] as $element) {
+            foreach ($class['columns'] as $element) {
                 $mauro = Mauro::createDataElement($this->datasetId, $mauroResponse['id'],
                     $element['name'], $element['description'], $element['dataType']);
             }
         }
 
-        $this->postToTermExtractionDirector(json_encode($data));
+        $this->postToTermExtractionDirector(json_encode($data['metadata']));
 
         // Jobs aren't garbage collected, so free up
         // resources used before tear down
@@ -67,17 +71,20 @@ class TechnicalObjectDataStore implements ShouldQueue
      */
     private function postToTermExtractionDirector(string $dataset): void
     {
-        $response = Http::post(env('TED_SERVICE_URL'), [
-            $dataset,        
-        ]);
+        $response = Http::withBody(
+            $dataset, 'application/json'
+        )->post(env('TED_SERVICE_URL'));
 
         try {
-            foreach ($response['extracted_terms'] as $n) {
+            foreach ($response->json()['extracted_terms'] as $n) {
                 $named_entity = NamedEntities::create([
                     'name' => $n,
                 ]);
+                $datasetPrimary = Dataset::where('datasetid', $this->datasetId)
+                    ->first()
+                    ->id;
                 DatasetHasNamedEntity::updateOrCreate([
-                    'dataset_id' => $this->$datasetId,
+                    'dataset_id' => $datasetPrimary,
                     'named_entity_id' => $named_entity->id
                 ]);
             }

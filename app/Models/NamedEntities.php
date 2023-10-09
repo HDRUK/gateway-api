@@ -29,6 +29,10 @@ class NamedEntities extends Model
      */
     public $timestamps = true;
 
+    protected $fillable = [
+        'name'
+    ];
+
     /**
      * Name of this named_entity
      * 
