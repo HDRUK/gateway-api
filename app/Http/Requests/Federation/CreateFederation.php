@@ -50,11 +50,6 @@ class CreateFederation extends BaseFormRequest
                 'int',
                 'between:0,23',
             ],
-            'run_time_minute' => [
-                'required',
-                'int',
-                'between:0,59',
-            ],
             'enabled' => [
                 'required',
                 'boolean',

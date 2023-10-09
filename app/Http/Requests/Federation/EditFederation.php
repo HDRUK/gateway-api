@@ -58,10 +58,6 @@ class EditFederation extends BaseFormRequest
                 'int',
                 'between:0,23',
             ],
-            'run_time_minute' => [
-                'int',
-                'between:0,59',
-            ],
             'enabled' => [
                 'boolean',
             ],

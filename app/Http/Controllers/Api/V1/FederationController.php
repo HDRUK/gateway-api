@@ -204,7 +204,6 @@ class FederationController extends Controller
      *             @OA\Property(property="endpoint_datasets", type="string", example="/api/v1/noauth/datasets"),
      *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/noauth/datasets/{id}"),
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
-     *             @OA\Property(property="run_time_minute", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
      *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
      *          )
@@ -247,7 +246,6 @@ class FederationController extends Controller
                 'endpoint_datasets' => $input['endpoint_datasets'],
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
-                'run_time_minute' => $input['run_time_minute'],
                 'enabled' => $input['enabled'],
             ]);
 
@@ -323,7 +321,6 @@ class FederationController extends Controller
      *             @OA\Property(property="endpoint_datasets", type="string", example="/api/v1/noauth/datasets"),
      *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/noauth/datasets/{id}"),
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
-     *             @OA\Property(property="run_time_minute", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
      *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
      *          )
@@ -366,7 +363,6 @@ class FederationController extends Controller
                 'endpoint_datasets' => $input['endpoint_datasets'],
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
-                'run_time_minute' => $input['run_time_minute'],
                 'enabled' => $input['enabled'],
             ]);
 
@@ -449,7 +445,6 @@ class FederationController extends Controller
      *             @OA\Property(property="endpoint_datasets", type="string", example="/api/v1/noauth/datasets"),
      *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/noauth/datasets/{id}"),
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
-     *             @OA\Property(property="run_time_minute", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
      *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
      *          )
@@ -493,7 +488,6 @@ class FederationController extends Controller
                 'endpoint_datasets',
                 'endpoint_dataset',
                 'run_time_hour',
-                'run_time_minute',
                 'enabled',
             ];
 

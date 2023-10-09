@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('federations', function (Blueprint $table) {
             $table->string('federation_type', 255)->nullable(false)->after('id');
-            $table->tinyInteger('run_time_minute')->between(0, 59)->after('run_time_hour');
+            $table->string('run_time_minute', 2)->default('00')->after('run_time_hour');
         });
     }
 
@@ -23,7 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('federations', function (Blueprint $table) {
-            //
+            $table->dropColumn('federation_type');
+            $table->dropColumn('run_time_minute');
         });
     }
 };

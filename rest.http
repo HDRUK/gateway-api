@@ -738,7 +738,7 @@ Authorization: Bearer {{accessToken}}
 
 ### Federation Team Notifications
 #### get all federations for team
-GET {{baseUrl}}/api/{{apiVersion}}/teams/13/federations HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/teams/10/federations HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -761,7 +761,6 @@ Authorization: Bearer {{accessToken}}
     "endpoint_datasets": "/api/v1/noauth/datasets",
     "endpoint_dataset": "/api/v1/noauth/datasets/{id}",
     "run_time_hour": 11,
-    "run_time_minute": 12,
     "enabled": true,
     "notification": [
         "t1@test.com",
@@ -784,7 +783,6 @@ Authorization: Bearer {{accessToken}}
     "endpoint_datasets": "/api/v1/noauth/datasets",
     "endpoint_dataset": "/api/v1/noauth/datasets/{id}",
     "run_time_hour": 11,
-    "run_time_minute": 12,
     "enabled": true,
     "notification": [
         "t1@test.com",
@@ -807,7 +805,6 @@ Authorization: Bearer {{accessToken}}
     "endpoint_datasets": "/api/v1/noauth/datasets",
     "endpoint_dataset": "/api/v1/noauth/datasets/{id}",
     "run_time_hour": 11,
-    "run_time_minute": 12,
     "enabled": true,
     "notification": [
         "t1@test.com"

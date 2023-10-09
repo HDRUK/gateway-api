@@ -25,7 +25,6 @@ class FederationFactory extends Factory
             'endpoint_datasets' => '/' . $slug,
             'endpoint_dataset' => '/' . $slug . '/{id}',
             'run_time_hour' => fake()->numberBetween(0,23),
-            'run_time_minute' => fake()->numberBetween(0, 59),
             'enabled' => fake()->randomElement([0, 1]),
             'tested' => fake()->randomElement([0, 1]),
         ];
