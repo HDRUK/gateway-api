@@ -34,10 +34,14 @@ class UpdateFederation extends BaseFormRequest
                     }
                 },
             ],
+            'federation_type' => [
+                'required',
+                'string',
+            ],
             'auth_type' => [
                 'required',
                 'string',
-                'regex:(oauth|api_key|bearer_token)',
+                'regex:(oauth|api_key|bearer|no_auth)',
             ],
             'auth_secret_key' => [
                 'required',
@@ -56,10 +60,19 @@ class UpdateFederation extends BaseFormRequest
                 'required',
                 'string',
             ],
+            'endpoint_dataset_query' => [
+                'string',
+                'nullable',
+            ],
             'run_time_hour' => [
                 'required',
                 'int',
                 'between:0,23',
+            ],
+            'run_time_minute' => [
+                'required',
+                'int',
+                'between:0,59',
             ],
             'enabled' => [
                 'required',

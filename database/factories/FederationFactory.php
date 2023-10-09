@@ -18,12 +18,15 @@ class FederationFactory extends Factory
     {
         $slug = fake()->slug();
         return [
-            'auth_type' => fake()->randomElement(['oauth', 'api_key', 'bearer_token']),
+            'federation_type' => fake()->lexify('federation-type-????????'),
+            'auth_type' => fake()->randomElement(['oauth', 'api_key', 'bearer', 'no_auth']),
             'auth_secret_key' => fake()->unique()->words(2, true),
             'endpoint_baseurl' => fake()->url(),
             'endpoint_datasets' => '/' . $slug,
             'endpoint_dataset' => '/' . $slug . '/{id}',
+            'endpoint_dataset_query' => '',
             'run_time_hour' => fake()->numberBetween(0,23),
+            'run_time_minute' => fake()->numberBetween(0, 59),
             'enabled' => fake()->randomElement([0, 1]),
             'tested' => fake()->randomElement([0, 1]),
         ];

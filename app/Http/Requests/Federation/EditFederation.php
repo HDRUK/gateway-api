@@ -34,9 +34,12 @@ class EditFederation extends BaseFormRequest
                     }
                 },
             ],
+            'federation_type' => [
+                'string',
+            ],
             'auth_type' => [
                 'string',
-                'regex:(oauth|api_key|bearer_token)',
+                'regex:(oauth|api_key|bearer|no_auth)',
             ],
             'auth_secret_key' => [
                 'string',
@@ -51,9 +54,17 @@ class EditFederation extends BaseFormRequest
             'endpoint_dataset' => [
                 'string',
             ],
+            'endpoint_dataset_query' => [
+                'string',
+                'nullable',
+            ],
             'run_time_hour' => [
                 'int',
                 'between:0,23',
+            ],
+            'run_time_minute' => [
+                'int',
+                'between:0,59',
             ],
             'enabled' => [
                 'boolean',

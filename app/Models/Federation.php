@@ -50,12 +50,15 @@ class Federation extends Model
     private $name = '';
 
     protected $fillable = [
+        'federation_type',
         'auth_type',
         'auth_secret_key',
         'endpoint_baseurl',
         'endpoint_datasets',
         'endpoint_dataset',
+        'endpoint_dataset_query',
         'run_time_hour',
+        'run_time_minute',
         'enabled',
     ];
 

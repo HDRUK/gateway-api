@@ -127,25 +127,25 @@ class FederationController extends Controller
      *        @OA\JsonContent(
      *            @OA\Property(property="message", type="string"),
      *            @OA\Property(property="data", type="array",
-     *                @OA\Items(
-     *                    @OA\Property(property="id", type="integer", example="123"),
-     *                    @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                    @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                    @OA\Property(property="deleted_at", type="datetime", example="null"),
-     *                    @OA\Property(property="enabled", type="boolean", example="1"),
-     *                    @OA\Property(property="name", type="string", example="someName"),
-     *                    @OA\Property(property="allows_messaging", type="boolean", example="1"),
-     *                    @OA\Property(property="workflow_enabled", type="boolean", example="1"),
-     *                    @OA\Property(property="access_requests_management", type="boolean", example="1"),
-     *                    @OA\Property(property="uses_5_safes", type="boolean", example="1"),
-     *                    @OA\Property(property="is_admin", type="boolean", example="1"),
-     *                    @OA\Property(property="member_of", type="string", example="someOrg"),
-     *                    @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
-     *                    @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
-     *                    @OA\Property(property="mdm_folder_id", type="datetime", example="xxxxxxx"), 
-     *                    @OA\Property(property="federation", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
-     *                )
+     *               @OA\Items(
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                  @OA\Property(property="deleted_at", type="datetime", example="null"),
+     *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="name", type="string", example="someName"),
+     *                  @OA\Property(property="allows_messaging", type="boolean", example="1"),
+     *                  @OA\Property(property="workflow_enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="access_requests_management", type="boolean", example="1"),
+     *                  @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *                  @OA\Property(property="is_admin", type="boolean", example="1"),
+     *                  @OA\Property(property="member_of", type="string", example="someOrg"),
+     *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
+     *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
+     *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
+     *                  @OA\Property(property="mdm_folder_id", type="datetime", example="xxxxxxx"), 
+     *                  @OA\Property(property="federation", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *               )
      *            )
      *        )
      *    )
@@ -197,12 +197,15 @@ class FederationController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
+     *             @OA\Property(property="federation_type", type="string", example="federation type"),
      *             @OA\Property(property="auth_type", type="string", example="oauth"),
      *             @OA\Property(property="auth_secret_key", type="string", example="path/for/secret/key"),
      *             @OA\Property(property="endpoint_baseurl", type="string", example="https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app"),
      *             @OA\Property(property="endpoint_datasets", type="string", example="/api/v1/noauth/datasets"),
      *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/noauth/datasets/{id}"),
+     *             @OA\Property(property="endpoint_dataset_query", type="string", example=""),
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
+     *             @OA\Property(property="run_time_minute", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
      *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
      *          )
@@ -238,12 +241,15 @@ class FederationController extends Controller
             $input = $request->all();
 
             $federation = Federation::create([
-                'auth_type' => html_entity_decode($input['auth_type']),
-                'auth_secret_key' => html_entity_decode($input['auth_secret_key']),
-                'endpoint_baseurl' => html_entity_decode($input['endpoint_baseurl']),
-                'endpoint_datasets' => html_entity_decode($input['endpoint_datasets']),
-                'endpoint_dataset' => html_entity_decode($input['endpoint_dataset']),
+                'federation_type' => $input['federation_type'],
+                'auth_type' => $input['auth_type'],
+                'auth_secret_key' => $input['auth_secret_key'],
+                'endpoint_baseurl' => $input['endpoint_baseurl'],
+                'endpoint_datasets' => $input['endpoint_datasets'],
+                'endpoint_dataset' => $input['endpoint_dataset'],
+                'endpoint_dataset_query' => array_key_exists('endpoint_dataset', $input) ? $input['endpoint_dataset'] : null,
                 'run_time_hour' => $input['run_time_hour'],
+                'run_time_minute' => $input['run_time_minute'],
                 'enabled' => $input['enabled'],
             ]);
 
@@ -312,12 +318,15 @@ class FederationController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
+     *             @OA\Property(property="federation_type", type="string", example="federation type"),
      *             @OA\Property(property="auth_type", type="string", example="oauth"),
      *             @OA\Property(property="auth_secret_key", type="string", example="path/for/secret/key"),
      *             @OA\Property(property="endpoint_baseurl", type="string", example="https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app"),
      *             @OA\Property(property="endpoint_datasets", type="string", example="/api/v1/noauth/datasets"),
      *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/noauth/datasets/{id}"),
+     *             @OA\Property(property="endpoint_dataset_query", type="string", example=""),
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
+     *             @OA\Property(property="run_time_minute", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
      *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
      *          )
@@ -353,12 +362,15 @@ class FederationController extends Controller
             $input = $request->all();
 
             Federation::where('id', $federationId)->update([
-                'auth_type' => html_entity_decode($input['auth_type']),
-                'auth_secret_key' => html_entity_decode($input['auth_secret_key']),
-                'endpoint_baseurl' => html_entity_decode($input['endpoint_baseurl']),
-                'endpoint_datasets' => html_entity_decode($input['endpoint_datasets']),
-                'endpoint_dataset' => html_entity_decode($input['endpoint_dataset']),
+                'federation_type' => $input['federation_type'],
+                'auth_type' => $input['auth_type'],
+                'auth_secret_key' => $input['auth_secret_key'],
+                'endpoint_baseurl' => $input['endpoint_baseurl'],
+                'endpoint_datasets' => $input['endpoint_datasets'],
+                'endpoint_dataset' => $input['endpoint_dataset'],
+                'endpoint_dataset_query' => array_key_exists('endpoint_dataset', $input) ? $input['endpoint_dataset'] : null,
                 'run_time_hour' => $input['run_time_hour'],
+                'run_time_minute' => $input['run_time_minute'],
                 'enabled' => $input['enabled'],
             ]);
 
@@ -434,12 +446,15 @@ class FederationController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
+     *             @OA\Property(property="federation_type", type="string", example="federation type"),
      *             @OA\Property(property="auth_type", type="string", example="oauth"),
      *             @OA\Property(property="auth_secret_key", type="string", example="path/for/secret/key"),
      *             @OA\Property(property="endpoint_baseurl", type="string", example="https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app"),
      *             @OA\Property(property="endpoint_datasets", type="string", example="/api/v1/noauth/datasets"),
      *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/noauth/datasets/{id}"),
+     *             @OA\Property(property="endpoint_dataset_query", type="string", example=""),
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
+     *             @OA\Property(property="run_time_minute", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
      *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
      *          )
@@ -476,12 +491,15 @@ class FederationController extends Controller
 
             $input = $request->all();
             $arrayKeys = [
+                'federation_type',
                 'auth_type',
                 'auth_secret_key',
                 'endpoint_baseurl',
                 'endpoint_datasets',
                 'endpoint_dataset',
+                'endpoint_dataset_query',
                 'run_time_hour',
+                'run_time_minute',
                 'enabled',
             ];
 
