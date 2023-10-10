@@ -4,6 +4,7 @@ use MetadataManagementController AS MMC;
 
 use App\Http\Controllers\FilterController;
 use App\Http\Controllers\ServiceLayerController;
+use App\Http\Controllers\Api\V1\DatasetController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +43,7 @@ Route::get('/email', function (Request $reqest) {
 
 Route::get('/services/federations', [ServiceLayerController::class, 'getActiveFederationApplications']);
 Route::patch('/services/federations/{id}', [ServiceLayerController::class, 'setFederationInvalidRunState']);
+Route::post('/services/federations', [DatasetController::class, 'store']);
 
 Route::get('/services/traser', function(Request $request) {
     MMC::validateDataModelType(
