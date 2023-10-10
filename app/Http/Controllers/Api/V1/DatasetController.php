@@ -120,7 +120,7 @@ class DatasetController extends Controller
     {
         try {
             $dataset = Dataset::where(['id' => $id])
-                ->with(['named_entities'])
+                ->with(['namedEntities'])
                 ->first()
                 ->toArray();
 
