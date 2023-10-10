@@ -119,7 +119,11 @@ class DatasetController extends Controller
     public function show(GetDataset $request, int $id): JsonResponse
     {
         try {
-            $dataset = Dataset::findOrFail($id)->toArray();
+            $dataset = Dataset::where(['id' => $id])
+                ->with(['named_entities'])
+                ->get()
+                ->first()
+                ->toArray();
 
             if ($dataset['datasetid']) {
                 $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
@@ -219,7 +223,7 @@ class DatasetController extends Controller
 
                     TechnicalObjectDataStore::dispatch(
                         $mauro['DataModel']['responseJson']['id'],
-                        base64_encode(gzcompress(gzencode(json_encode($input['dataset'])), 6))
+                        base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6))
                     );
                     
                     return response()->json([

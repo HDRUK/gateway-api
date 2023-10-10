@@ -6,7 +6,7 @@ use Mauro;
 
 use App\Models\Dataset;
 use App\Models\NamedEntities;
-use App\Models\DatasetHasNamedEntity;
+use App\Models\DatasetHasNamedEntities;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -46,7 +46,7 @@ class TechnicalObjectDataStore implements ShouldQueue
     {
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
 
-        foreach ($data['metadata']['structuralMetadata'] as $class) {
+        foreach ($data['structuralMetadata'] as $class) {
             $mauroResponse = Mauro::createDataClass($this->datasetId, $class['name'], $class['description']);
             foreach ($class['columns'] as $element) {
                 $mauro = Mauro::createDataElement($this->datasetId, $mauroResponse['id'],
@@ -54,7 +54,7 @@ class TechnicalObjectDataStore implements ShouldQueue
             }
         }
 
-        $this->postToTermExtractionDirector(json_encode($data['metadata']));
+        $this->postToTermExtractionDirector(json_encode($data));
 
         // Jobs aren't garbage collected, so free up
         // resources used before tear down
@@ -77,15 +77,15 @@ class TechnicalObjectDataStore implements ShouldQueue
 
         try {
             foreach ($response->json()['extracted_terms'] as $n) {
-                $named_entity = NamedEntities::create([
+                $named_entities = NamedEntities::create([
                     'name' => $n,
                 ]);
                 $datasetPrimary = Dataset::where('datasetid', $this->datasetId)
                     ->first()
                     ->id;
-                DatasetHasNamedEntity::updateOrCreate([
+                DatasetHasNamedEntities::updateOrCreate([
                     'dataset_id' => $datasetPrimary,
-                    'named_entity_id' => $named_entity->id
+                    'named_entities_id' => $named_entities->id
                 ]);
             }
 

@@ -45,6 +45,6 @@ class NamedEntities extends Model
      */
     public function datasets(): BelongsToMany
     {
-        return $this->belongsToMany(Dataset::class);
+        return $this->belongsToMany(Dataset::class, 'dataset_has_named_entities');
     }
 }

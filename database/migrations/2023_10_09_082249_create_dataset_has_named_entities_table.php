@@ -12,8 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('dataset_has_named_entities', function (Blueprint $table) {
-            $table->integer('dataset_id');
-            $table->integer('named_entity_id');
+            $table->bigInteger('dataset_id')->unsigned();
+            $table->bigInteger('named_entities_id')->unsigned();
+            $table->foreign('dataset_id')->references('id')->on('datasets');
+            $table->foreign('named_entities_id')->references('id')->on('named_entities');
         });
     }
 

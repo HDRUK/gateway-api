@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DatasetHasNamedEntity extends Model
+class DatasetHasNamedEntities extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'dataset_id',
-        'named_entity_id',
+        'named_entities_id',
     ];
 
     /**

@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Dataset extends Model
 {
@@ -43,8 +43,8 @@ class Dataset extends Model
     /**
      * The named_entities that belong to the dataset.
      */
-    public function named_entities(): HasMany
+    public function named_entities(): BelongsToMany
     {
-        return $this->hasMany(NamedEntities::class);
+        return $this->belongsToMany(NamedEntities::class, 'dataset_has_named_entities');
     }
 }
