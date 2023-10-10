@@ -23,6 +23,11 @@ class UserSeeder extends Seeder
         // Create our super user account
         $this->createUser('HDRUK', 'Super-User', 'developers@hdruk.ac.uk', 'Watch26Task?', true, ['hdruk.superadmin']);
 
+        // Create our service layer user account
+        // TODO - Need to review permissions for this account overall as superadmin may be too much depending
+        // on actual needs
+        $this->createUser('HDRUK', 'Service-User', 'services@hdruk.ac.uk', 'Flood?15Voice', true, ['hdruk.superadmin']);
+
         // Create our automation test users
         $this->createUser('HDR', 'Team-Admin', 'hdrteamadmin@gmail.com', 'Gateway#3177', false, ['custodian.team.admin'], true);
         $this->createUser('HDR', 'Team-Admin-Two', 'hdrgatea@gmail.com', 'December07*', false, ['custodian.team.admin'], true);
