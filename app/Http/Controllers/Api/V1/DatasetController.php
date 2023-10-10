@@ -199,7 +199,8 @@ class DatasetController extends Controller
             // if not, attempt to translate prior to saving
             if (MMC::validateDataModelType(
                 json_encode($input['dataset']),
-                env('GWDM_TRASER_IDENT')
+                env('GWDM'),
+                env('GWDM_CURRENT_VERSION')
             )) {
                 $mauro = MMC::createMauroDataModel($user, $team, $input);
                 if (!empty($mauro)) {

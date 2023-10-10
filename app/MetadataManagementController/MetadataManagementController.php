@@ -68,17 +68,18 @@ class MetadataManagementController {
      * GWDM format
      * 
      * @param string $dataset The incoming dataset to validate
-     * @param string $modelName The schema model to validate against
+     * @param string $input_schema The schema to validate against
+     * @param string $input_version The schema version to validate against
      * 
      * @return bool
      */
-    public function validateDataModelType(string $dataset, string $modelName): bool
+    public function validateDataModelType(string $dataset, string $input_schema, string $input_version): bool
     {
         try {
             $urlString = sprintf("%s/validate?input_schema=%s&input_version=%s",
                 env('TRASER_SERVICE_URL'),
-                env('GWDM'),
-                env('GWDM_CURRENT_VERSION')
+                $input_schema,
+                $input_version
             );
 
             // !! Dragons ahead !!

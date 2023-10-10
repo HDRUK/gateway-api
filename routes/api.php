@@ -45,7 +45,9 @@ Route::patch('/services/federations/{id}', [ServiceLayerController::class, 'setF
 
 Route::get('/services/traser', function(Request $request) {
     MMC::validateDataModelType(
-        json_encode($request->all()), 'GWDM', '1.0', 'HDRUK', '2.1.2',
+        json_encode($request->all()), 
+        env('GWDM'),
+        env('GWDM_CURRENT_VERSION')
     );
 });
 
