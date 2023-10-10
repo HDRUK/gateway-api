@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use Mauro;
+use Exception;
 
 use App\Models\Dataset;
 use App\Models\NamedEntities;
