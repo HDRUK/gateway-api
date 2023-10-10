@@ -96,7 +96,8 @@ class FederationTest extends TestCase
             'POST',
             'api/v1/teams/' . $teamId . '/federations',
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -122,7 +123,6 @@ class FederationTest extends TestCase
 
         // get federation by team id
         $responseGetFederation = $this->get('api/v1/teams/' . $teamId . '/federations', $this->header);
-
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
             'data' => [
@@ -221,7 +221,8 @@ class FederationTest extends TestCase
             'POST',
             'api/v1/teams/' . $teamId . '/federations',
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -346,7 +347,8 @@ class FederationTest extends TestCase
             'POST',
             'api/v1/teams/' . $teamId . '/federations',
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -490,7 +492,8 @@ class FederationTest extends TestCase
             'POST',
             'api/v1/teams/' . $teamId . '/federations',
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -566,7 +569,8 @@ class FederationTest extends TestCase
             'PUT',
             'api/v1/teams/' . $teamId . '/federations/' . $federationId,
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path/test',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -681,7 +685,8 @@ class FederationTest extends TestCase
             'POST',
             'api/v1/teams/' . $teamId . '/federations',
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -757,7 +762,8 @@ class FederationTest extends TestCase
             'PUT',
             'api/v1/teams/' . $teamId . '/federations/' . $federationId,
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path/test',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -804,7 +810,8 @@ class FederationTest extends TestCase
             'PATCH',
             'api/v1/teams/' . $teamId . '/federations/' . $federationId,
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path/test/update',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app/update',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -922,7 +929,8 @@ class FederationTest extends TestCase
             'POST',
             'api/v1/teams/' . $teamId . '/federations',
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -998,7 +1006,8 @@ class FederationTest extends TestCase
             'PUT',
             'api/v1/teams/' . $teamId . '/federations/' . $federationId,
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path/test',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -1045,7 +1054,8 @@ class FederationTest extends TestCase
             'PATCH',
             'api/v1/teams/' . $teamId . '/federations/' . $federationId,
             [
-                'auth_type' => 'oauth',
+                'federation_type' => 'federation type',
+                'auth_type' => 'bearer',
                 'auth_secret_key' => 'secret/key/path/test/update',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app/update',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',

@@ -2186,7 +2186,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,integrations.metadata',
         ],
         'constraint' => [
@@ -2201,7 +2200,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,integrations.metadata',
         ],
         'constraint' => [
@@ -2217,7 +2215,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,integrations.metadata',
         ],
         'constraint' => [
