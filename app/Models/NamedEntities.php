@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\NamedEntities;
+use App\Models\Dataset;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -10,16 +10,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Dataset extends Model
+
+class NamedEntities extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
 
     /**
-     * Table associated with this model
+     * The table associated with the model.
      * 
      * @var string
      */
-    protected $table = 'datasets';
+    protected $table = 'named_entities';
 
     /**
      * Indicates if the model should be timestamped
@@ -29,22 +30,21 @@ class Dataset extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'user_id',
-        'team_id',
-        'label',
-        'short_description',
-        'datasetid',
-        'dataset',
-        'created',
-        'updated',
-        'submitted',
+        'name'
     ];
 
     /**
-     * The named_entities that belong to the dataset.
+     * Name of this named_entity
+     * 
+     * @var string
      */
-    public function namedEntities(): BelongsToMany
+    private $name = '';
+
+    /**
+     * The datasets that belong to the named_entity.
+     */
+    public function datasets(): BelongsToMany
     {
-        return $this->belongsToMany(NamedEntities::class, 'dataset_has_named_entities');
+        return $this->belongsToMany(Dataset::class, 'dataset_has_named_entities');
     }
 }

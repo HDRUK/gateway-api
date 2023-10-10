@@ -119,7 +119,10 @@ class DatasetController extends Controller
     public function show(GetDataset $request, int $id): JsonResponse
     {
         try {
-            $dataset = Dataset::findOrFail($id)->toArray();
+            $dataset = Dataset::where(['id' => $id])
+                ->with(['namedEntities'])
+                ->first()
+                ->toArray();
 
             if ($dataset['datasetid']) {
                 $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
@@ -196,7 +199,8 @@ class DatasetController extends Controller
             // if not, attempt to translate prior to saving
             if (MMC::validateDataModelType(
                 json_encode($input['dataset']),
-                env('GWDM_TRASER_IDENT')
+                env('GWDM'),
+                env('GWDM_CURRENT_VERSION')
             )) {
                 $mauro = MMC::createMauroDataModel($user, $team, $input);
                 if (!empty($mauro)) {
@@ -216,9 +220,10 @@ class DatasetController extends Controller
                     // to a technical object data store job - API doesn't
                     // care if it exists or not. We leave that determination to
                     // the service itself.
+
                     TechnicalObjectDataStore::dispatch(
                         $mauro['DataModel']['responseJson']['id'],
-                        base64_encode(gzcompress(gzencode(json_encode($input['dataset'])), 6))
+                        base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6))
                     );
                     
                     return response()->json([

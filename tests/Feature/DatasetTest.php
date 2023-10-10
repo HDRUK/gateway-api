@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -79,6 +80,13 @@ class DatasetTest extends TestCase
      */
     public function test_get_one_dataset_by_id_with_success(): void
     {
+        Http::fake([
+            'ted*' => Http::response(
+                ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
+                201,
+                ['application/json']
+            )
+        ]);
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -178,6 +186,9 @@ class DatasetTest extends TestCase
             'data'
         ]);
         $responseGetOne->assertStatus(200);
+        
+        $respArray = $responseGetOne->decodeResponseJson();
+        $this->assertArrayHasKey('named_entities', $respArray['data']);
 
         // delete dataset
         $responseDeleteDataset = $this->json(
@@ -224,6 +235,13 @@ class DatasetTest extends TestCase
      */
     public function test_create_delete_dataset_with_success(): void
     {
+        Http::fake([
+            'ted*' => Http::response(
+                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
+                201,
+                ['application/json']
+            )
+        ]);
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(

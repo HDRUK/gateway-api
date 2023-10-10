@@ -3,6 +3,11 @@
 namespace App\Jobs;
 
 use Mauro;
+use Exception;
+
+use App\Models\Dataset;
+use App\Models\NamedEntities;
+use App\Models\DatasetHasNamedEntities;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -42,9 +47,9 @@ class TechnicalObjectDataStore implements ShouldQueue
     {
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
 
-        foreach ($data['metadata']['structuralMetadata'] as $class) {
+        foreach ($data['structuralMetadata'] as $class) {
             $mauroResponse = Mauro::createDataClass($this->datasetId, $class['name'], $class['description']);
-            foreach ($class['elements'] as $element) {
+            foreach ($class['columns'] as $element) {
                 $mauro = Mauro::createDataElement($this->datasetId, $mauroResponse['id'],
                     $element['name'], $element['description'], $element['dataType']);
             }
@@ -67,8 +72,27 @@ class TechnicalObjectDataStore implements ShouldQueue
      */
     private function postToTermExtractionDirector(string $dataset): void
     {
-        $response = Http::post(env('TED_SERVICE_URL'), [
-            $dataset,        
-        ]);
+        $response = Http::withBody(
+            $dataset, 'application/json'
+        )->post(env('TED_SERVICE_URL'));
+
+        try {
+            foreach ($response->json()['extracted_terms'] as $n) {
+                $named_entities = NamedEntities::create([
+                    'name' => $n,
+                ]);
+                $datasetPrimary = Dataset::where('datasetid', $this->datasetId)
+                    ->first()
+                    ->id;
+                DatasetHasNamedEntities::updateOrCreate([
+                    'dataset_id' => $datasetPrimary,
+                    'named_entities_id' => $named_entities->id
+                ]);
+            }
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+
     }
 }

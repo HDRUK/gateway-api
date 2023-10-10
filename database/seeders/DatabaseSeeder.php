@@ -48,6 +48,8 @@ class DatabaseSeeder extends Seeder
             TeamUserHasRoleSeeder::class,
             FederationSeeder::class,
             TeamHasFederationSeeder::class,
+            NamedEntitiesSeeder::class,
+            DatasetHasNamedEntitiesSeeder::class,
         ]);
     }
 }

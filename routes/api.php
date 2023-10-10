@@ -47,7 +47,10 @@ Route::post('/services/federations', [DatasetController::class, 'store']);
 
 Route::get('/services/traser', function(Request $request) {
     MMC::validateDataModelType(
-        json_encode($request->all()), env(GWDM_TRASER_IDENT));
+        json_encode($request->all()), 
+        env('GWDM'),
+        env('GWDM_CURRENT_VERSION')
+    );
 });
 
 // stop all all other routes
