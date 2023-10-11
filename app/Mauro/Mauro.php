@@ -329,6 +329,31 @@ class Mauro {
         }
     }
 
+    public function finalizeDataModel(string $datasetId, string $versionType, string $customVersion): array
+    {
+        $putUrl = env('MAURO_API_URL');
+        $putUrl .= '/dataModels/' . $datasetId . '/finalise';
+
+        try {
+            $payload = [];
+            if ($versionType !== 'custom') {
+                $payload['versionChangeType'] = $versionType;
+            } else {
+                $payload['vesion'] = $customVersion; // major, minor, patch
+            }
+
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+                ->acceptJson()
+                ->put($putUrl, $payload);
+
+            return $response->json();
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
     /**
      * Deletes an existing DataModel from Mauro
      * 
@@ -337,7 +362,7 @@ class Mauro {
      * 
      * @return bool                     Whether the operation completed successfully or not
      */
-    public function deleteDataModel(string $id, string $permanentDeletion = 'true'): bool
+    public function deleteDataModel(string $id, string $permanentDeletion = 'false'): bool
     {
         $url = env('MAURO_API_URL');
         $url .= '/dataModels/' . $id . '?permanent=' . $permanentDeletion;

@@ -18,6 +18,7 @@ use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 
 use App\Jobs\TechnicalObjectDataStore;
+use App\Models\DatasetHasNamedEntities;
 
 class DatasetController extends Controller
 {
@@ -197,11 +198,12 @@ class DatasetController extends Controller
 
             // First validate the incoming schema to ensure it's in GWDM format
             // if not, attempt to translate prior to saving
-            if (MMC::validateDataModelType(
+            $validateDataModelType = MMC::validateDataModelType(
                 json_encode($input['dataset']),
                 env('GWDM'),
                 env('GWDM_CURRENT_VERSION')
-            )) {
+            );
+            if ($validateDataModelType) {
                 $mauro = MMC::createMauroDataModel($user, $team, $input);
                 if (!empty($mauro)) {
                     $dataset = MMC::createDataset([
@@ -351,12 +353,7 @@ class DatasetController extends Controller
         try {
             $dataset = Dataset::where('id', (int) $id)->first()->toArray();
 
-            $deletePermanently = false;
-            if ($request->has('deletePermanently')) {
-                $deletePermanently = (bool) $request->query('deletePermanently');
-            }
-
-            Mauro::deleteDataModel($dataset['datasetid'], $deletePermanently);
+            Mauro::deleteDataModel($dataset['datasetid']);
 
             Dataset::where('id', (int) $id)->delete();
 
