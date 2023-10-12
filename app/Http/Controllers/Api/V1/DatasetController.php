@@ -47,9 +47,13 @@ class DatasetController extends Controller
      *    )
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $datasets = Dataset::paginate(Config::get('constants.per_page'), ['*'], 'page');
+        if ($request->has('withTrashed')) {
+            $datasets = Dataset::withTrashed()->paginate(Config::get('constants.per_page'), ['*'], 'page')->appends($request->except(['page']));
+        } else {
+            $datasets = Dataset::paginate(Config::get('constants.per_page'), ['*'], 'page');
+        }
 
         foreach ($datasets as $dataset) {
             if ($dataset->datasetid) {
