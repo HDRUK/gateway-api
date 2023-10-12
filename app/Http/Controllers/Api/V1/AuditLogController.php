@@ -51,7 +51,7 @@ class AuditLogController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $logs = AuditLog::paginate(Config::get('constants.per_page'));
+        $logs = AuditLog::paginate(Config::get('constants.per_page'), ['*'], 'page');
         return response()->json(
             $logs,
         );

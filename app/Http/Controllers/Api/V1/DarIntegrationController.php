@@ -61,7 +61,7 @@ class DarIntegrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $dars = DarIntegration::where('enabled', 1)->paginate(Config::get('constants.per_page'));
+        $dars = DarIntegration::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
         return response()->json(
             $dars
         );

@@ -50,7 +50,7 @@ class FilterController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $filters = Filter::where('enabled', 1)->paginate(Config::get('constants.per_page'));
+        $filters = Filter::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
         return response()->json(
             $filters
         );

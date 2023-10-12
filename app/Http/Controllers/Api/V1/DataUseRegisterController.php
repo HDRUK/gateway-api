@@ -67,7 +67,7 @@ class DataUseRegisterController extends Controller
 
      public function index(Request $request): JsonResponse
      {
-         $data_use_registers = DataUseRegister::with('user')->paginate(Config::get('constants.per_page'));
+         $data_use_registers = DataUseRegister::with('user')->paginate(Config::get('constants.per_page'), ['*'], 'page');
  
          return response()->json(
              $data_use_registers
