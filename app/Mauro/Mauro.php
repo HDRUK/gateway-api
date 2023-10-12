@@ -622,6 +622,7 @@ class Mauro {
     private function makeDataStandardMetadata(array $schema): array
     {
         $tmpArray = [];
+        $forcedTitle = null;
 
         foreach ($schema['$defs'] as $key => $shape) {
             if (isset($shape['properties'])) {
@@ -656,6 +657,7 @@ class Mauro {
     {
         try {
             $tmpArray = [];
+            $forcedTitle = null;
 
             foreach ($schema['$defs'] as $key => $shape) {
                 if (isset($shape['properties'])) {

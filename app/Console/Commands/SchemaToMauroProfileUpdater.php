@@ -57,7 +57,7 @@ class SchemaToMauroProfileUpdater extends Command
         // the entry
         if ($checksums) {
             $schema = $this->callGitHub();
-            if ($schema !== null) {
+            if ($schema !== '') {
                 $hash = sha1($schema);
                 if ($hash !== $checksums->checksum) {
                     $checksums->checksum = $hash;
@@ -130,10 +130,11 @@ class SchemaToMauroProfileUpdater extends Command
         } 
 
         Auditor::log(
-            $this->simulatedUserId,
+            $this->simulatedUser->id,
             'Unable to retrieve schema from GitHub',
             $this->tag
         );
-        return null;
+
+        return '';
     }
 }
