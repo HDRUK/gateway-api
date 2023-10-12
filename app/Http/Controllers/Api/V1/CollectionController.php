@@ -59,7 +59,7 @@ class CollectionController extends Controller
      */
     public function index(): JsonResponse
     {
-        $collections = Collection::paginate(Config::get('constants.per_page'));
+        $collections = Collection::paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         return response()->json(
             $collections

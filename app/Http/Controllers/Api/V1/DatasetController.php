@@ -49,7 +49,7 @@ class DatasetController extends Controller
      */
     public function index(): JsonResponse
     {
-        $datasets = Dataset::paginate(Config::get('constants.per_page'));
+        $datasets = Dataset::paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         foreach ($datasets as $dataset) {
             if ($dataset->datasetid) {
