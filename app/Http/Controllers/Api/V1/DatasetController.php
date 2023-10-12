@@ -50,7 +50,7 @@ class DatasetController extends Controller
     public function index(Request $request): JsonResponse
     {
         if ($request->has('withTrashed')) {
-            $datasets = Dataset::withTrashed()->paginate(Config::get('constants.per_page'), ['*'], 'page')->appends($request->except(['page']));
+            $datasets = Dataset::withTrashed()->paginate(Config::get('constants.per_page'), ['*'], 'page')->withQueryString();
         } else {
             $datasets = Dataset::paginate(Config::get('constants.per_page'), ['*'], 'page');
         }

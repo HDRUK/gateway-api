@@ -119,8 +119,9 @@ class MauroTest extends TestCase
         $json = json_decode($payload, true);
 
         // Secondly create a new folder (publisher) for this data model (dataset)
+        $teamName = 'Test Parent Folder ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $jsonResponse = Mauro::createFolder(
-            'Test Parent Folder',
+            $teamName,
             'Automated Test - Parent folder creation'
         );
 
@@ -130,8 +131,9 @@ class MauroTest extends TestCase
         $parentFolderId = $jsonResponse['id'];
 
         // Finally, create the data model
+        $label = 'Test Data Model ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $jsonResponse = Mauro::createDataModel(
-            'Test Data Model',
+            $label,
             'Data Model Description',
             'A. Test',
             'Health Data Research UK',
@@ -144,14 +146,15 @@ class MauroTest extends TestCase
 
         $this->assertEquals($jsonResponse['DataModel']['responseStatus'], 201);
         $this->assertEquals($jsonResponse['DataModel']['responseJson']['domainType'], 'DataModel');
-        $this->assertEquals($jsonResponse['DataModel']['responseJson']['label'], 'Test Data Model');
+        $this->assertEquals($jsonResponse['DataModel']['responseJson']['label'], $label);
         $this->assertEquals($jsonResponse['DataModel']['responseJson']['description'], 'Data Model Description');
         $this->assertEquals($jsonResponse['DataModel']['responseJson']['author'], 'A. Test');
         $this->assertEquals($jsonResponse['DataModel']['responseJson']['type'], 'Data Asset');
 
         $dataModelId = $jsonResponse['DataModel']['responseJson']['id'];
 
-        $jsonResponse = Mauro::deleteDataModel($dataModelId);
+        $jsonResponse = Mauro::deleteDataModel($dataModelId, 'true');
+
         $this->assertEquals($jsonResponse, true);
 
         $jsonResponse = Mauro::deleteFolder($parentFolderId, 'true');
