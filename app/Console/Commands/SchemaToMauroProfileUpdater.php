@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Mauro;
 use Auditor;
 
+use App\Models\User;
 use App\Models\SchemaProfileChecksum;
 
 use Illuminate\Console\Command;
@@ -21,12 +22,12 @@ class SchemaToMauroProfileUpdater extends Command
     private $tag = 'SchemaToMauroProfileUpdater';
 
     /**
-     * The internal user id for this command. Denotes an
+     * The internal user for this command. Denotes an
      * internal service and thus no 'real' user account
      * 
-     * @var int
+     * @var User
      */
-    private $simulatedUserId = 2;
+    private $simulatedUser = null;
 
     /**
      * The name and signature of the console command.
@@ -47,9 +48,11 @@ class SchemaToMauroProfileUpdater extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): void
+    public function handle(): int
     {
-        $checksums = SchemaProfileChecksum::firstOrFail();
+        $this->simulatedUser = User::where('id', 2)->first();
+
+        $checksums = SchemaProfileChecksum::first();
         // Should only ever be one, as it's indended to recycle
         // the entry
         if ($checksums) {
@@ -62,16 +65,20 @@ class SchemaToMauroProfileUpdater extends Command
 
                     // Update Mauro Profile with new version of schema
                     Auditor::log(
-                        $this->simulatedUserId,
-                        'Creating new mauro profile version, after detecting changes (old: ' . $checksums->checksum . ' / new: ' . $hash . ')',
+                        $this->simulatedUser,
+                        'Updating mauro profile version, after detecting changes (old: ' . $checksums->checksum . ' / new: ' . $hash . ')',
                         $this->tag
                     );
+
+                    // TODO: Question here - are we intending to 'update' a profile, or just create anew?
                 } else {
                     Auditor::log(
-                        $this->simulatedUserId,
+                        $this->simulatedUser,
                         'No version change detected - aborting',
                         $this->tag
                     );
+
+                    return 0;
                 }
             }
         } else {
@@ -86,12 +93,27 @@ class SchemaToMauroProfileUpdater extends Command
 
                 // Update Mauro Profile with this new schema
                 Auditor::log(
-                    $this->simulatedUserId,
-                    'Updating mauro profile version, no existing version detected with checksum ' . $hash,
+                    $this->simulatedUser,
+                    'Creating mauro profile version, no existing version detected with checksum ' . $hash,
                     $this->tag
                 );
+
+                $mauroResponse = Mauro::createDataStandard('HDRUK Gateway Data Model', 
+                    'Gateway Data Model common format',
+                    'Health Data Research UK',
+                    'Health Data Research UK',
+                    env('MAURO_PARENT_FOLDER_ID'),
+                    json_decode($schema, true)
+                );
+
+                if ($mauroResponse['DataModel']['responseStatus'] === 201) {
+                    return 0;
+                }
             }
         }
+
+        // Failure
+        return -1;
     }
 
     /**
