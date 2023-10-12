@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use Mauro;
 use Exception;
+use MetadataManagementController AS MMC;
 
 use App\Models\Dataset;
 use App\Models\NamedEntities;
@@ -56,6 +57,8 @@ class TechnicalObjectDataStore implements ShouldQueue
         }
 
         $this->postToTermExtractionDirector(json_encode($data));
+
+        MMC::reindexElastic($data, $this->datasetId);
 
         // Jobs aren't garbage collected, so free up
         // resources used before tear down

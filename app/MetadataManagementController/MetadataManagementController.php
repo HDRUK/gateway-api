@@ -149,8 +149,42 @@ class MetadataManagementController {
      * 
      * @return void
      */
-    public function reindexElastic(): void
+    public function reindexElastic(array $dataset, string $datasetId): void
     {
-        // TODO
+        // Get named entities
+        try {
+            $datasetMatch = Dataset::where('datasetid', $datasetId)
+                ->with(['namedEntities'])
+                ->first()
+                ->toArray();
+
+            $namedEntities = array();
+            foreach ($datasetMatch['named_entities'] as $n) {
+                $namedEntities[] = $n['name'];
+            }
+
+            $toIndex = json_encode([
+                'abstract' => $dataset['summary']['abstract'],
+                'keywords' => $dataset['summary']['keywords'],
+                'description' => $dataset['summary']['description'],
+                'shortTitle' => $dataset['summary']['shortTitle'],
+                'title' => $dataset['summary']['title'],
+                'publisher_name' => $dataset['summary']['publisher']['publisherName'],
+                'named_entities' => $namedEntities
+            ]);
+
+            $elasticUrl = sprintf("%s/datasets/_doc/%s",
+                env("ELASTIC_SERVICE_URL"),
+                $datasetMatch['id']
+            );
+
+            $response = Http::withoutVerifying()
+                ->withBody($toIndex, 'application/json')
+                ->withBasicAuth(env('ELASTIC_USER'), env('ELASTIC_PASSWORD'))
+                ->put($elasticUrl);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 }
