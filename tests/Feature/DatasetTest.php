@@ -105,11 +105,12 @@ class DatasetTest extends TestCase
         $notificationID = $contentNotification['data'];
 
         // Create the new team
+        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseCreateTeam = $this->json(
             'POST',
             self::TEST_URL_TEAM,
             [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'name' => $teamName,
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
