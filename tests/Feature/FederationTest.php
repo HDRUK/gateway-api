@@ -123,29 +123,39 @@ class FederationTest extends TestCase
 
         // get federation by team id
         $responseGetFederation = $this->get('api/v1/teams/' . $teamId . '/federations', $this->header);
+
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
+            'current_page',
             'data' => [
                 0 => [
                     'id',
+                    'federation_type',
+                    'auth_type',
+                    'auth_secret_key',
+                    'endpoint_baseurl',
+                    'endpoint_datasets',
+                    'endpoint_dataset',
+                    'run_time_hour',
+                    'run_time_minute',
+                    'enabled',
                     'created_at',
                     'updated_at',
                     'deleted_at',
-                    'name',
-                    'enabled',
-                    'allows_messaging',
-                    'workflow_enabled',
-                    'access_requests_management',
-                    'uses_5_safes',
-                    'is_admin',
-                    'member_of',
-                    'contact_point',
-                    'application_form_updated_by',
-                    'application_form_updated_on',
-                    'mdm_folder_id',
-                    'federation',
+                    'tested',
                 ],
             ],
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
         ]);
 
         // delete team
@@ -251,26 +261,22 @@ class FederationTest extends TestCase
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
+            'message',
             'data' => [
-                0 => [
-                    'id',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'name',
-                    'enabled',
-                    'allows_messaging',
-                    'workflow_enabled',
-                    'access_requests_management',
-                    'uses_5_safes',
-                    'is_admin',
-                    'member_of',
-                    'contact_point',
-                    'application_form_updated_by',
-                    'application_form_updated_on',
-                    'mdm_folder_id',
-                    'federation',
-                ],
+                'id',
+                'federation_type',
+                'auth_type',
+                'auth_secret_key',
+                'endpoint_baseurl',
+                'endpoint_datasets',
+                'endpoint_dataset',
+                'run_time_hour',
+                'run_time_minute',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'tested',
             ],
         ]);
 
@@ -377,26 +383,22 @@ class FederationTest extends TestCase
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
+            'message',
             'data' => [
-                0 => [
-                    'id',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'name',
-                    'enabled',
-                    'allows_messaging',
-                    'workflow_enabled',
-                    'access_requests_management',
-                    'uses_5_safes',
-                    'is_admin',
-                    'member_of',
-                    'contact_point',
-                    'application_form_updated_by',
-                    'application_form_updated_on',
-                    'mdm_folder_id',
-                    'federation',
-                ],
+                'id',
+                'federation_type',
+                'auth_type',
+                'auth_secret_key',
+                'endpoint_baseurl',
+                'endpoint_datasets',
+                'endpoint_dataset',
+                'run_time_hour',
+                'run_time_minute',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'tested',
             ],
         ]);
 
@@ -522,26 +524,22 @@ class FederationTest extends TestCase
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
+            'message',
             'data' => [
-                0 => [
-                    'id',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'name',
-                    'enabled',
-                    'allows_messaging',
-                    'workflow_enabled',
-                    'access_requests_management',
-                    'uses_5_safes',
-                    'is_admin',
-                    'member_of',
-                    'contact_point',
-                    'application_form_updated_by',
-                    'application_form_updated_on',
-                    'mdm_folder_id',
-                    'federation',
-                ],
+                'id',
+                'federation_type',
+                'auth_type',
+                'auth_secret_key',
+                'endpoint_baseurl',
+                'endpoint_datasets',
+                'endpoint_dataset',
+                'run_time_hour',
+                'run_time_minute',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'tested',
             ],
         ]);
 
@@ -715,26 +713,22 @@ class FederationTest extends TestCase
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
+            'message',
             'data' => [
-                0 => [
-                    'id',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'name',
-                    'enabled',
-                    'allows_messaging',
-                    'workflow_enabled',
-                    'access_requests_management',
-                    'uses_5_safes',
-                    'is_admin',
-                    'member_of',
-                    'contact_point',
-                    'application_form_updated_by',
-                    'application_form_updated_on',
-                    'mdm_folder_id',
-                    'federation',
-                ],
+                'id',
+                'federation_type',
+                'auth_type',
+                'auth_secret_key',
+                'endpoint_baseurl',
+                'endpoint_datasets',
+                'endpoint_dataset',
+                'run_time_hour',
+                'run_time_minute',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'tested',
             ],
         ]);
 
@@ -959,26 +953,22 @@ class FederationTest extends TestCase
 
         $responseGetFederation->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
+            'message',
             'data' => [
-                0 => [
-                    'id',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'name',
-                    'enabled',
-                    'allows_messaging',
-                    'workflow_enabled',
-                    'access_requests_management',
-                    'uses_5_safes',
-                    'is_admin',
-                    'member_of',
-                    'contact_point',
-                    'application_form_updated_by',
-                    'application_form_updated_on',
-                    'mdm_folder_id',
-                    'federation',
-                ],
+                'id',
+                'federation_type',
+                'auth_type',
+                'auth_secret_key',
+                'endpoint_baseurl',
+                'endpoint_datasets',
+                'endpoint_dataset',
+                'run_time_hour',
+                'run_time_minute',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'tested',
             ],
         ]);
 

@@ -5652,7 +5652,7 @@
                                         "type": "string",
                                         "example": "lorem ipsum"
                                     },
-                                    "data": {
+                                    "dataset": {
                                         "type": "array",
                                         "items": {}
                                     }
@@ -7022,13 +7022,14 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success",
+                        "description": "Success response",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "message": {
-                                            "type": "string"
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": "1"
                                         },
                                         "data": {
                                             "type": "array",
@@ -7038,82 +7039,116 @@
                                                         "type": "integer",
                                                         "example": "123"
                                                     },
-                                                    "created_at": {
+                                                    "federation_type": {
                                                         "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
+                                                        "example": "federation-type-eqhbjcnl"
                                                     },
-                                                    "updated_at": {
+                                                    "auth_type": {
                                                         "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
+                                                        "example": "api_key"
                                                     },
-                                                    "deleted_at": {
+                                                    "auth_secret_key": {
                                                         "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "null"
+                                                        "example": "velit sapiente"
+                                                    },
+                                                    "endpoint_baseurl": {
+                                                        "type": "string",
+                                                        "example": "https:\\/\\/www.ortiz.com\\/enim-recusandae-aspernatur-quidem-cum-delectus-adipisci"
+                                                    },
+                                                    "endpoint_datasets": {
+                                                        "type": "string",
+                                                        "example": "\\/sed-aut-corrupti-quas-adipisci-aliquam-ad"
+                                                    },
+                                                    "endpoint_dataset": {
+                                                        "type": "string",
+                                                        "example": "\\/sed-aut-corrupti-quas-adipisci-aliquam-ad\\/{id}"
+                                                    },
+                                                    "run_time_hour": {
+                                                        "type": "integer",
+                                                        "example": "5"
+                                                    },
+                                                    "run_time_minute": {
+                                                        "type": "string",
+                                                        "example": "00"
                                                     },
                                                     "enabled": {
                                                         "type": "boolean",
                                                         "example": "1"
                                                     },
-                                                    "name": {
-                                                        "type": "string",
-                                                        "example": "someName"
-                                                    },
-                                                    "allows_messaging": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "workflow_enabled": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "access_requests_management": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "uses_5_safes": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "is_admin": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "member_of": {
-                                                        "type": "string",
-                                                        "example": "someOrg"
-                                                    },
-                                                    "contact_point": {
-                                                        "type": "string",
-                                                        "example": "someone@mail.com"
-                                                    },
-                                                    "application_form_updated_by": {
+                                                    "counter": {
                                                         "type": "integer",
-                                                        "example": "555"
+                                                        "example": "34319"
                                                     },
-                                                    "application_form_updated_on": {
+                                                    "created_at": {
                                                         "type": "string",
                                                         "format": "date-time",
-                                                        "example": "2023-04-11"
+                                                        "example": "2023-04-03 12:00:00"
                                                     },
-                                                    "mdm_folder_id": {
+                                                    "updated_at": {
                                                         "type": "string",
                                                         "format": "date-time",
-                                                        "example": "xxxxxxx"
+                                                        "example": "2023-04-03 12:00:00"
                                                     },
-                                                    "federation": {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "type": "array",
-                                                            "items": {}
-                                                        },
-                                                        "example": "[]"
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-03 12:00:00"
+                                                    },
+                                                    "tested": {
+                                                        "type": "boolean",
+                                                        "example": "0"
                                                     }
                                                 },
                                                 "type": "object"
                                             }
+                                        },
+                                        "first_page_url": {
+                                            "type": "string",
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/teams\\/19\\/federations?page=1"
+                                        },
+                                        "from": {
+                                            "type": "integer",
+                                            "example": "1"
+                                        },
+                                        "last_page": {
+                                            "type": "integer",
+                                            "example": "1"
+                                        },
+                                        "last_page_url": {
+                                            "type": "string",
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/teams\\/19\\/federations?page=1"
+                                        },
+                                        "links": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        },
+                                        "next_page_url": {
+                                            "type": "string",
+                                            "example": "null"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/teams\\/19\\/federations"
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "example": "25"
+                                        },
+                                        "prev_page_url": {
+                                            "type": "string",
+                                            "example": "null"
+                                        },
+                                        "to": {
+                                            "type": "integer",
+                                            "example": "3"
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": "3"
                                         }
                                     },
                                     "type": "object"
@@ -7155,9 +7190,13 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
+                                    "federation_type": {
+                                        "type": "string",
+                                        "example": "federation type"
+                                    },
                                     "auth_type": {
                                         "type": "string",
-                                        "example": "oauth"
+                                        "example": "bearer"
                                     },
                                     "auth_secret_key": {
                                         "type": "string",
@@ -7169,11 +7208,11 @@
                                     },
                                     "endpoint_datasets": {
                                         "type": "string",
-                                        "example": "/api/v1/noauth/datasets"
+                                        "example": "/api/v1/bearer/datasets"
                                     },
                                     "endpoint_dataset": {
                                         "type": "string",
-                                        "example": "/api/v1/noauth/datasets/{id}"
+                                        "example": "/api/v1/bearer/datasets/{id}"
                                     },
                                     "run_time_hour": {
                                         "type": "integer",
@@ -7301,89 +7340,72 @@
                                             "type": "string"
                                         },
                                         "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "integer",
-                                                        "example": "123"
-                                                    },
-                                                    "created_at": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
-                                                    },
-                                                    "updated_at": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11 12:00:00"
-                                                    },
-                                                    "deleted_at": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "null"
-                                                    },
-                                                    "enabled": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "name": {
-                                                        "type": "string",
-                                                        "example": "someName"
-                                                    },
-                                                    "allows_messaging": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "workflow_enabled": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "access_requests_management": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "uses_5_safes": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "is_admin": {
-                                                        "type": "boolean",
-                                                        "example": "1"
-                                                    },
-                                                    "member_of": {
-                                                        "type": "string",
-                                                        "example": "someOrg"
-                                                    },
-                                                    "contact_point": {
-                                                        "type": "string",
-                                                        "example": "someone@mail.com"
-                                                    },
-                                                    "application_form_updated_by": {
-                                                        "type": "integer",
-                                                        "example": "555"
-                                                    },
-                                                    "application_form_updated_on": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "2023-04-11"
-                                                    },
-                                                    "mdm_folder_id": {
-                                                        "type": "string",
-                                                        "format": "date-time",
-                                                        "example": "xxxxxxx"
-                                                    },
-                                                    "federation": {
-                                                        "type": "array",
-                                                        "items": {
-                                                            "type": "array",
-                                                            "items": {}
-                                                        },
-                                                        "example": "[]"
-                                                    }
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
                                                 },
-                                                "type": "object"
-                                            }
+                                                "federation_type": {
+                                                    "type": "string",
+                                                    "example": "federation-type-eqhbjcnl"
+                                                },
+                                                "auth_type": {
+                                                    "type": "string",
+                                                    "example": "api_key"
+                                                },
+                                                "auth_secret_key": {
+                                                    "type": "string",
+                                                    "example": "velit sapiente"
+                                                },
+                                                "endpoint_baseurl": {
+                                                    "type": "string",
+                                                    "example": "https:\\/\\/www.ortiz.com\\/enim-recusandae-aspernatur-quidem-cum-delectus-adipisci"
+                                                },
+                                                "endpoint_datasets": {
+                                                    "type": "string",
+                                                    "example": "\\/sed-aut-corrupti-quas-adipisci-aliquam-ad"
+                                                },
+                                                "endpoint_dataset": {
+                                                    "type": "string",
+                                                    "example": "\\/sed-aut-corrupti-quas-adipisci-aliquam-ad\\/{id}"
+                                                },
+                                                "run_time_hour": {
+                                                    "type": "integer",
+                                                    "example": "5"
+                                                },
+                                                "run_time_minute": {
+                                                    "type": "string",
+                                                    "example": "00"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "counter": {
+                                                    "type": "integer",
+                                                    "example": "34319"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "deleted_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-03 12:00:00"
+                                                },
+                                                "tested": {
+                                                    "type": "boolean",
+                                                    "example": "0"
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -7436,9 +7458,13 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
+                                    "federation_type": {
+                                        "type": "string",
+                                        "example": "federation type"
+                                    },
                                     "auth_type": {
                                         "type": "string",
-                                        "example": "oauth"
+                                        "example": "bearer"
                                     },
                                     "auth_secret_key": {
                                         "type": "string",
@@ -7450,11 +7476,11 @@
                                     },
                                     "endpoint_datasets": {
                                         "type": "string",
-                                        "example": "/api/v1/noauth/datasets"
+                                        "example": "/api/v1/bearer/datasets"
                                     },
                                     "endpoint_dataset": {
                                         "type": "string",
-                                        "example": "/api/v1/noauth/datasets/{id}"
+                                        "example": "/api/v1/bearer/datasets/{id}"
                                     },
                                     "run_time_hour": {
                                         "type": "integer",
@@ -7679,9 +7705,13 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
+                                    "federation_type": {
+                                        "type": "string",
+                                        "example": "federation type"
+                                    },
                                     "auth_type": {
                                         "type": "string",
-                                        "example": "oauth"
+                                        "example": "bearer"
                                     },
                                     "auth_secret_key": {
                                         "type": "string",
@@ -7693,11 +7723,11 @@
                                     },
                                     "endpoint_datasets": {
                                         "type": "string",
-                                        "example": "/api/v1/noauth/datasets"
+                                        "example": "/api/v1/bearer/datasets"
                                     },
                                     "endpoint_dataset": {
                                         "type": "string",
-                                        "example": "/api/v1/noauth/datasets/{id}"
+                                        "example": "/api/v1/bearer/datasets/{id}"
                                     },
                                     "run_time_hour": {
                                         "type": "integer",
@@ -15411,6 +15441,14 @@
     },
     "components": {
         "securitySchemes": {
+            "bearerAppAuth": {
+                "type": "http",
+                "description": "Authorise app using app id, client id, and client secret",
+                "name": "AppAuthorization",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            },
             "bearerAuth": {
                 "type": "http",
                 "description": "Login with email and password to get the authentication token",
