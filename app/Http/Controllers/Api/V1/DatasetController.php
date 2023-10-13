@@ -361,6 +361,8 @@ class DatasetController extends Controller
 
             Dataset::where('id', (int) $id)->delete();
 
+            MMC::deleteFromElastic($id);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
