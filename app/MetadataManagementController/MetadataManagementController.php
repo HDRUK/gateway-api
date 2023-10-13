@@ -220,7 +220,6 @@ class MetadataManagementController {
      */
     public function deleteFromElastic(string $id): void
     {
-        // Get named entities
         try {
 
             $params = [
