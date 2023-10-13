@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use MetadataManagementController AS MMC;
+use Mockery;
+
+use Elastic\Elasticsearch\ClientBuilder;
+use Elastic\Elasticsearch\Response\Elasticsearch;
+use Http\Mock\Client;
+use Nyholm\Psr7\Response;
+
 class DatasetIntegrationTest extends TestCase
 {
     use RefreshDatabase;
@@ -55,6 +63,23 @@ class DatasetIntegrationTest extends TestCase
         // Lengthy process, but a more consistent representation
         // of an incoming dataset
         $this->dataset = $this->getFakeDataset();
+
+        // Define mock client and fake response for elasticsearch service
+        $mock = new Client();
+
+        $client = ClientBuilder::create()
+            ->setHttpClient($mock)
+            ->build();
+
+        // This is a PSR-7 response
+        $response = new Response(
+            200, 
+            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
+            'This is the body!'
+        );
+        $mock->addResponse($response);
+
+        $this->testElasticClient = $client;
     }
 
     /**
@@ -98,6 +123,12 @@ class DatasetIntegrationTest extends TestCase
                 ['application/json']
             )
         ]);
+
+        // Mock the MMC getElasticClient method to return the mock client
+        // makePartial so other MMC methods are not mocked
+        MMC::shouldReceive('getElasticClient')->once()->andReturn($this->testElasticClient);
+        MMC::makePartial();
+
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -253,6 +284,12 @@ class DatasetIntegrationTest extends TestCase
                 ['application/json']
             )
         ]);
+
+        // Mock the MMC getElasticClient method to return the mock client
+        // makePartial so other MMC methods are not mocked
+        MMC::shouldReceive('getElasticClient')->once()->andReturn($this->testElasticClient);
+        MMC::makePartial();
+
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(

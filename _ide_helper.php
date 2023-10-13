@@ -4807,102 +4807,6 @@
             /**
      * 
      *
-     * @see \Illuminate\Encryption\Encrypter
-     */ 
-        class Crypt {
-                    /**
-         * Determine if the given key and cipher combination is valid.
-         *
-         * @param string $key
-         * @param string $cipher
-         * @return bool 
-         * @static 
-         */ 
-        public static function supported($key, $cipher)
-        {
-                        return \Illuminate\Encryption\Encrypter::supported($key, $cipher);
-        }
-                    /**
-         * Create a new encryption key for the given cipher.
-         *
-         * @param string $cipher
-         * @return string 
-         * @static 
-         */ 
-        public static function generateKey($cipher)
-        {
-                        return \Illuminate\Encryption\Encrypter::generateKey($cipher);
-        }
-                    /**
-         * Encrypt the given value.
-         *
-         * @param mixed $value
-         * @param bool $serialize
-         * @return string 
-         * @throws \Illuminate\Contracts\Encryption\EncryptException
-         * @static 
-         */ 
-        public static function encrypt($value, $serialize = true)
-        {
-                        /** @var \Illuminate\Encryption\Encrypter $instance */
-                        return $instance->encrypt($value, $serialize);
-        }
-                    /**
-         * Encrypt a string without serialization.
-         *
-         * @param string $value
-         * @return string 
-         * @throws \Illuminate\Contracts\Encryption\EncryptException
-         * @static 
-         */ 
-        public static function encryptString($value)
-        {
-                        /** @var \Illuminate\Encryption\Encrypter $instance */
-                        return $instance->encryptString($value);
-        }
-                    /**
-         * Decrypt the given value.
-         *
-         * @param string $payload
-         * @param bool $unserialize
-         * @return mixed 
-         * @throws \Illuminate\Contracts\Encryption\DecryptException
-         * @static 
-         */ 
-        public static function decrypt($payload, $unserialize = true)
-        {
-                        /** @var \Illuminate\Encryption\Encrypter $instance */
-                        return $instance->decrypt($payload, $unserialize);
-        }
-                    /**
-         * Decrypt the given string without unserialization.
-         *
-         * @param string $payload
-         * @return string 
-         * @throws \Illuminate\Contracts\Encryption\DecryptException
-         * @static 
-         */ 
-        public static function decryptString($payload)
-        {
-                        /** @var \Illuminate\Encryption\Encrypter $instance */
-                        return $instance->decryptString($payload);
-        }
-                    /**
-         * Get the encryption key that the encrypter is currently using.
-         *
-         * @return string 
-         * @static 
-         */ 
-        public static function getKey()
-        {
-                        /** @var \Illuminate\Encryption\Encrypter $instance */
-                        return $instance->getKey();
-        }
-         
-    }
-            /**
-     * 
-     *
      * @see https://carbon.nesbot.com/docs/
      * @see https://github.com/briannesbitt/Carbon/blob/master/src/Carbon/Factory.php
      * @method static \Illuminate\Support\Carbon create($year = 0, $month = 1, $day = 1, $hour = 0, $minute = 0, $second = 0, $tz = null)
@@ -18655,6 +18559,101 @@
      
 }
 
+    namespace App\MetadataManagementController { 
+            /**
+     * 
+     *
+     */ 
+        class MetadataManagementControllerFacade {
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function getElasticClient()
+        {
+                        /** @var \App\MetadataManagementController\MetadataManagementController $instance */
+                        return $instance->getElasticClient();
+        }
+                    /**
+         * Translates an incoming dataset payload via TRASER
+         * from $inputSchema and $inputVersion to $outputSchema and
+         * $outputVersion
+         *
+         * @param string $dataset The incoming dataset to validate
+         * @return array 
+         * @static 
+         */ 
+        public static function translateDataModelType($dataset, $outputSchema, $outputVersion, $inputSchema, $inputVersion)
+        {
+                        /** @var \App\MetadataManagementController\MetadataManagementController $instance */
+                        return $instance->translateDataModelType($dataset, $outputSchema, $outputVersion, $inputSchema, $inputVersion);
+        }
+                    /**
+         * Attempts to validate that the passed $dataset is in
+         * GWDM format
+         *
+         * @param string $dataset The incoming dataset to validate
+         * @param string $input_schema The schema to validate against
+         * @param string $input_version The schema version to validate against
+         * @return bool 
+         * @static 
+         */ 
+        public static function validateDataModelType($dataset, $input_schema, $input_version)
+        {
+                        /** @var \App\MetadataManagementController\MetadataManagementController $instance */
+                        return $instance->validateDataModelType($dataset, $input_schema, $input_version);
+        }
+                    /**
+         * Creates an instance of a dataset record within the database
+         *
+         * @param array $input The array object that makes up the metadata
+         *  to store
+         * @return \App\Models\Dataset 
+         * @static 
+         */ 
+        public static function createDataset($input)
+        {
+                        /** @var \App\MetadataManagementController\MetadataManagementController $instance */
+                        return $instance->createDataset($input);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function createMauroDataModel($user, $team, $input)
+        {
+                        /** @var \App\MetadataManagementController\MetadataManagementController $instance */
+                        return $instance->createMauroDataModel($user, $team, $input);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function validateTeamExistsInMauro($team)
+        {
+                        /** @var \App\MetadataManagementController\MetadataManagementController $instance */
+                        return $instance->validateTeamExistsInMauro($team);
+        }
+                    /**
+         * Calls a re-indexing of Elastic search when data changes in
+         * such a fashion that demands it
+         *
+         * @return void 
+         * @static 
+         */ 
+        public static function reindexElastic($dataset, $datasetId)
+        {
+                        /** @var \App\MetadataManagementController\MetadataManagementController $instance */
+                        $instance->reindexElastic($dataset, $datasetId);
+        }
+         
+    }
+     
+}
+
     namespace L5Swagger { 
             /**
      * 
@@ -19352,7 +19351,6 @@ namespace  {
             class Cache extends \Illuminate\Support\Facades\Cache {}
             class Config extends \Illuminate\Support\Facades\Config {}
             class Cookie extends \Illuminate\Support\Facades\Cookie {}
-            class Crypt extends \Illuminate\Support\Facades\Crypt {}
             class Date extends \Illuminate\Support\Facades\Date {}
             class DB extends \Illuminate\Support\Facades\DB {}
             class Eloquent extends \Illuminate\Database\Eloquent\Model {             
@@ -23269,6 +23267,7 @@ namespace  {
             class Vite extends \Illuminate\Support\Facades\Vite {}
             class Auditor extends \App\Auditor\AuditorFacade {}
             class Mauro extends \App\Mauro\MauroFacade {}
+            class MetadataManagementController extends \App\MetadataManagementController\MetadataManagementControllerFacade {}
             class L5Swagger extends \L5Swagger\L5SwaggerFacade {}
             class Socialite extends \Laravel\Socialite\Facades\Socialite {}
             class Flare extends \Spatie\LaravelIgnition\Facades\Flare {}

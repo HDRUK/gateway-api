@@ -12,7 +12,26 @@ use App\Exceptions\MMCException;
 
 use Illuminate\Support\Facades\Http;
 
+use Elastic\Elasticsearch\Client;
+use Elastic\Elasticsearch\ClientBuilder;
+
 class MetadataManagementController {
+
+    /**
+     * Configures and builds the client used to reindex ElasticSearch
+     * Note: this client is defined here in the MMC facade, making it convenient
+     * to mock during testing
+     * 
+     * @return Client
+     */
+    public function getElasticClient() {
+        return ClientBuilder::create()
+            ->setHosts(config('database.connections.elasticsearch.hosts'))
+            ->setSSLVerification(env('ELASTICSEARCH_VERIFY_SSL'))
+            ->setBasicAuthentication(env('ELASTICSEARCH_USER'), env('ELASTICSEARCH_PASS'))
+            ->build();
+    }
+    
     /**
      * Translates an incoming dataset payload via TRASER 
      * from $inputSchema and $inputVersion to $outputSchema and
@@ -144,13 +163,50 @@ class MetadataManagementController {
 
 
     /**
-     * Calls a re-indexing of Elastic search when data changes in
-     * such a fashion that demands it
+     * Calls a re-indexing of Elastic search when a dataset is created or updated
+     * 
+     * @param array $dataset The dataset being created or updated
+     * @param string $datasetId The dataset id from Mauro
      * 
      * @return void
      */
-    public function reindexElastic(): void
+    public function reindexElastic(array $dataset, string $datasetId): void
     {
-        // TODO
+        // Get named entities
+        try {
+
+            $datasetMatch = Dataset::where('datasetid', $datasetId)
+                ->with(['namedEntities'])
+                ->first()
+                ->toArray();
+
+            $namedEntities = array();
+            foreach ($datasetMatch['named_entities'] as $n) {
+                $namedEntities[] = $n['name'];
+            }
+
+            $toIndex = [
+                'abstract' => $dataset['summary']['abstract'],
+                'keywords' => $dataset['summary']['keywords'],
+                'description' => $dataset['summary']['description'],
+                'shortTitle' => $dataset['summary']['shortTitle'],
+                'title' => $dataset['summary']['title'],
+                'publisher_name' => $dataset['summary']['publisher']['publisherName'],
+                'named_entities' => $namedEntities
+            ];
+
+            $params = [
+                'index' => 'datasets',
+                'id' => $datasetMatch['id'],
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+            
+            $client = $this->getElasticClient();
+            $response = $client->index($params);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 }
