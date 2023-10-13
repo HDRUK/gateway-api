@@ -96,7 +96,7 @@ class FederationController extends Controller
         })->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         return response()->json(
-            $federations,
+            $federations
         );
     }
 
