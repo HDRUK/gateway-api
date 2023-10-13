@@ -85,8 +85,13 @@ class EditUser extends BaseFormRequest
                 'integer',
             ],
             'mongo_object_id' => [
-                'nullable', 'string',
+                'nullable', 
+                'string',
             ],
+            'terms' => [
+                'boolean',
+            ],
+
         ];
     }
 
