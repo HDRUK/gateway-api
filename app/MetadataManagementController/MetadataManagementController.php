@@ -12,7 +12,26 @@ use App\Exceptions\MMCException;
 
 use Illuminate\Support\Facades\Http;
 
+use Elastic\Elasticsearch\Client;
+use Elastic\Elasticsearch\ClientBuilder;
+
 class MetadataManagementController {
+
+    /**
+     * Configures and builds the client used to reindex ElasticSearch
+     * Note: this client is defined here in the MMC facade, making it convenient
+     * to mock during testing
+     * 
+     * @return Client
+     */
+    public function getElasticClient() {
+        return ClientBuilder::create()
+            ->setHosts(config('database.connections.elasticsearch.hosts'))
+            ->setSSLVerification(env('ELASTICSEARCH_VERIFY_SSL'))
+            ->setBasicAuthentication(env('ELASTICSEARCH_USER'), env('ELASTICSEARCH_PASS'))
+            ->build();
+    }
+    
     /**
      * Translates an incoming dataset payload via TRASER 
      * from $inputSchema and $inputVersion to $outputSchema and
@@ -144,8 +163,10 @@ class MetadataManagementController {
 
 
     /**
-     * Calls a re-indexing of Elastic search when data changes in
-     * such a fashion that demands it
+     * Calls a re-indexing of Elastic search when a dataset is created or updated
+     * 
+     * @param array $dataset The dataset being created or updated
+     * @param string $datasetId The dataset id from Mauro
      * 
      * @return void
      */
@@ -153,6 +174,7 @@ class MetadataManagementController {
     {
         // Get named entities
         try {
+
             $datasetMatch = Dataset::where('datasetid', $datasetId)
                 ->with(['namedEntities'])
                 ->first()
@@ -163,7 +185,7 @@ class MetadataManagementController {
                 $namedEntities[] = $n['name'];
             }
 
-            $toIndex = json_encode([
+            $toIndex = [
                 'abstract' => $dataset['summary']['abstract'],
                 'keywords' => $dataset['summary']['keywords'],
                 'description' => $dataset['summary']['description'],
@@ -171,17 +193,17 @@ class MetadataManagementController {
                 'title' => $dataset['summary']['title'],
                 'publisher_name' => $dataset['summary']['publisher']['publisherName'],
                 'named_entities' => $namedEntities
-            ]);
+            ];
 
-            $elasticUrl = sprintf("%s/datasets/_doc/%s",
-                env("ELASTIC_SERVICE_URL"),
-                $datasetMatch['id']
-            );
-
-            $response = Http::withoutVerifying()
-                ->withBody($toIndex, 'application/json')
-                ->withBasicAuth(env('ELASTIC_USER'), env('ELASTIC_PASSWORD'))
-                ->put($elasticUrl);
+            $params = [
+                'index' => 'datasets',
+                'id' => $datasetMatch['id'],
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+            
+            $client = $this->getElasticClient();
+            $response = $client->index($params);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

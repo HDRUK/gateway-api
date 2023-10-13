@@ -116,6 +116,13 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'elasticsearch' => [
+            'driver' => 'elasticsearch',
+            'hosts' => [
+                env('ELASTIC_SERVICE_URL')
+            ],
+        ],
+
     ],
 
     /*

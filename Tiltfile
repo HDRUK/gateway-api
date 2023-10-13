@@ -48,9 +48,6 @@ if cfg.get('traserEnabled'):
 if cfg.get('tedEnabled'):
     include(cfg.get('tedServiceRoot') + '/Tiltfile')
 
-if cfg.get('elasticsearchEnabled'):
-    include(cfg.get('elasticsearchServiceRoot') + '/Tiltfile')
-
 docker_build(
     ref='hdruk/' + cfg.get('name'),
     context='.',
