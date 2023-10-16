@@ -628,7 +628,7 @@ class Mauro {
         $tmpArray = [];
 
         foreach (Config('metadata') as $key => $path) {
-            $tmpArray[] = $this->makeMetadataElement($key, $this->rootStringToObjectMapping($path, $obj));
+            $tmpArray[] = $this->makeMetadataElement($key, $this->rootStringToObjectMapping($path, $obj['dataset']));
         }
 
         return $tmpArray;
@@ -728,7 +728,7 @@ class Mauro {
             return [
                 'namespace' => 'hdruk.profile', // TODO - This shouldn't be hardcoded fine while testing implementation
                 'key' => $key,
-                'value' => $value['title'],
+                'value' => $value,
             ];
         } catch (Exception $e) {
             throw new MauroServiceException($e->getMessage());
