@@ -115,8 +115,10 @@ class MauroTest extends TestCase
     public function test_it_can_create_and_delete_a_dataset(): void
     {
         // First read our test json metadata file
-        $payload = file_get_contents('tests/Unit/test_files/mauro_test_dataset_min.json');
-        $json = json_decode($payload, true);
+        $payload = file_get_contents('tests/Unit/test_files/gwdm_v1_dataset_min.json');
+        $json = [
+            'dataset' => json_decode($payload, true),
+        ];
 
         // Secondly create a new folder (publisher) for this data model (dataset)
         $teamName = 'Test Parent Folder ' . fake()->regexify('[A-Z]{5}[0-4]{1}');

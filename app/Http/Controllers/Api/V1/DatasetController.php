@@ -207,8 +207,10 @@ class DatasetController extends Controller
                 env('GWDM'),
                 env('GWDM_CURRENT_VERSION')
             );
+
             if ($validateDataModelType) {
                 $mauro = MMC::createMauroDataModel($user, $team, $input);
+
                 if (!empty($mauro)) {
                     $dataset = MMC::createDataset([
                         'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
