@@ -355,6 +355,70 @@ class Mauro {
     }
 
     /**
+     * Creates a new Data Model within Mauro Data Mapper underneath $parentFolderId, and mostly
+     * acts the same as the function above, but with a slight difference in that the type of
+     * this model is set to Data Standard to define a dynamic profile within mauro which
+     * maps to a particular schema shape
+     * 
+     * @param string $label             Represents the short text associated with this data model
+     * @param string $description       Represents the long text associated with this data model
+     * @param string $author            Represents the author name associated with this data model
+     * @param string $organisation      Represents the organisation associated with this author for this data model
+     * @param string $parentFolderId    Represents the parent folder id to create this data model under
+     * @param array $jsonObj            Represents the schema to be created for this data model
+     * 
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     */
+    public function createDataStandard(string $label, string $description, string $author, string $organisation, string $parentFolderId, array $jsonObj): array
+    {
+        $overallResponse = [];
+
+        $postUrl = env('MAURO_API_URL');
+        $postUrl .= '/folders/' . $parentFolderId . '/dataModels';
+
+        try {
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+            ->acceptJson()
+            ->post($postUrl, [
+                'label' => $label,
+                'description' => $description,
+                'author' => $author,
+                'organisation' => $organisation,
+                'type' => 'Data Standard',
+                'classifiers' => [],
+                'metadata' => $this->makeDataStandardMetadata($jsonObj),
+            ]);
+
+            $overallResponse['DataModel'] = [
+                'responseJson' => $response->json(),
+                'responseStatus' => $response->status(),
+            ];
+
+            if ($overallResponse['DataModel']['responseStatus'] === 201) {
+                // Successfully created the data model. Now create class and elements
+                $map = $this->makeDataStandardDataClassAndDataElementsMap($jsonObj);
+                $parentId = $overallResponse['DataModel']['responseJson']['id'];
+
+                foreach ($map as $class) {
+                    $responseClass = $this->createDataClass($parentId, $class['label'], $class['description']);
+                    foreach ($class['elements'] as $element) {
+                        if (isset($responseClass['id'])) {
+                            $this->createDataElement($parentId, $responseClass['id'], $element['label'], $element['description'], 'string');
+                        }
+                    }
+                }
+            }
+
+            return $overallResponse;
+
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
+    /**
      * Deletes an existing DataModel from Mauro
      * 
      * @param string $id                The ID of the DataModel to delete
@@ -571,6 +635,86 @@ class Mauro {
     }
 
     /**
+     * Returns an array defining the shape of the incoming schema, ready for importing
+     * as a DataStandard within Mauro. It should be noted that this is different
+     * from the function below, in that this defines the metadata paths for
+     * each element of the schema for Mauro to map and validate against
+     * 
+     * @param array $schema     The incoming metadata definition schema
+     * 
+     * @return array
+     */
+    private function makeDataStandardMetadata(array $schema): array
+    {
+        $tmpArray = [];
+        $forcedTitle = null;
+
+        foreach ($schema['$defs'] as $key => $shape) {
+            if (isset($shape['properties'])) {
+                foreach ($shape['properties'] as $element => $value) {
+                    if (!isset($value['title'])) {
+                        $forcedTitle = preg_replace('/(?<!\ )[A-Z]/', ' $0', $element);
+                    }
+                    
+                    $tmpArray[] = [
+                        'namespace' => 'hdruk.profile',
+                        'key' => sprintf('properties/%s/%s', strtolower($key), $element),
+                        'value' => (isset($value['title']) ? ucwords($value['title']) : ucwords($forcedTitle)),
+                    ];
+                }
+            }
+        }
+        
+        return $tmpArray;
+    }
+
+    /**
+     * Similar to the above, but this function returns the _entire_ shape of the schema as an
+     * importable array into Mauro. The main difference being that this function not only
+     * defines the classes to be built, but also the elements held underneath those
+     * classes.
+     * 
+     * @param array $schema     The incoming metadata definition schema
+     * 
+     * @return array
+     */
+    private function makeDataStandardDataClassAndDataElementsMap(array $schema): array
+    {
+        try {
+            $tmpArray = [];
+            $forcedTitle = null;
+
+            foreach ($schema['$defs'] as $key => $shape) {
+                if (isset($shape['properties'])) {
+                    $currentElement = [
+                        'label' => $key,
+                        'description' => $shape['title'],
+                        'dataType' => 'DataClass',
+                        'elements' => [],
+                    ];
+                    foreach ($shape['properties'] as $element => $value) {
+                        if (!isset($value['title'])) {
+                            $forcedTitle = preg_replace('/(?<!\ )[A-Z]/', ' $0', $element);
+                        }
+
+                        $currentElement['elements'][] = [
+                            'label' => (isset($value['title']) ? $value['title'] : $forcedTitle),
+                            'description' => (isset($value['description']) ? $value['description'] : ''),
+                            'dataType' => 'string',
+                        ];
+                    }
+
+                    $tmpArray[] = $currentElement;
+                }
+            }
+
+            return $tmpArray;
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
+    /**
      * Returns an array forming a Mauro metadata element
      * 
      * @param string $key       The key in which to save this value against
@@ -580,11 +724,15 @@ class Mauro {
      */
     private function makeMetadataElement(string $key, mixed $value): array
     {
-        return [
-            'namespace' => 'Testing.mauro', // TODO - This shouldn't be hardcoded fine while testing implementation
-            'key' => $key,
-            'value' => $value,
-        ];
+        try {
+            return [
+                'namespace' => 'hdruk.profile', // TODO - This shouldn't be hardcoded fine while testing implementation
+                'key' => $key,
+                'value' => $value['title'],
+            ];
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
     }
 
     /**
