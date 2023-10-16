@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
+use Spco\ROCrateParser\ROCrateParser;
 use Illuminate\Http\Request;
 use App\Models\DataUseRegister;
 use Illuminate\Http\JsonResponse;
@@ -210,16 +211,21 @@ class DataUseRegisterController extends Controller
         try {
             $input = $request->all();
 
-            $data_use_registers = DataUseRegister::create([
-                'dataset_id' => (int) $input['dataset_id'],
-                'enabled' => $input['enabled'] ?? null,
-                'user_id' => (int) $input['user_id'] ?? null,
-                'ro_crate' => $input['ro_crate'] ?? null,
-            ]);
+            // $ro = ROCrateParser();
+            // $document = ROCrateParser::print($input['ro_crate']);
+            $document = ROCrateParser::expand($input['ro_crate']);
+            // var_dump($document);
+            // var_dump($input['ro_crate']);
+            // $data_use_registers = DataUseRegister::create([
+            //     'dataset_id' => (int) $input['dataset_id'],
+            //     'enabled' => $input['enabled'] ?? null,
+            //     'user_id' => (int) $input['user_id'] ?? null,
+            //     'ro_crate' => $input['ro_crate'] ?? null,
+            // ]);
 
             return response()->json([
-                'message' => 'created',
-                'data' => $data_use_registers->id,
+                'message' => 'info',
+                'data' => $document,
             ], 201);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
