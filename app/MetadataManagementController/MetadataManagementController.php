@@ -209,4 +209,30 @@ class MetadataManagementController {
             throw new Exception($e->getMessage());
         }
     }
+
+    /**
+     * Calls a delete on the document in ElasticSearch index when a dataset is 
+     * deleted
+     * 
+     * @param string $id The id of the dataset to be deleted
+     * 
+     * @return void
+     */
+    public function deleteFromElastic(string $id): void
+    {
+        try {
+
+            $params = [
+                'index' => 'datasets',
+                'id' => $id,
+                'headers' => 'application/json'
+            ];
+            
+            $client = $this->getElasticClient();
+            $response = $client->delete($params);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 }

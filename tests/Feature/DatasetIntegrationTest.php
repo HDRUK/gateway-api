@@ -72,12 +72,19 @@ class DatasetIntegrationTest extends TestCase
             ->build();
 
         // This is a PSR-7 response
-        $response = new Response(
+        // Mock two responses, one for creating a dataset, another for deleting
+        $createResponse = new Response(
             200, 
             [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'This is the body!'
+            'Document created'
         );
-        $mock->addResponse($response);
+        $mock->addResponse($createResponse);
+        $deleteResponse = new Response(
+            200, 
+            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
+            'Document deleted'
+        );
+        $mock->addResponse($deleteResponse);
 
         $this->testElasticClient = $client;
     }
@@ -126,7 +133,7 @@ class DatasetIntegrationTest extends TestCase
 
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->once()->andReturn($this->testElasticClient);
+        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
         MMC::makePartial();
 
         // create team
@@ -287,7 +294,7 @@ class DatasetIntegrationTest extends TestCase
 
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->once()->andReturn($this->testElasticClient);
+        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
         MMC::makePartial();
 
         // create team
