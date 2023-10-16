@@ -48,6 +48,9 @@ if cfg.get('traserEnabled'):
 if cfg.get('tedEnabled'):
     include(cfg.get('tedServiceRoot') + '/Tiltfile')
 
+if cfg.get('fmaEnabled'):
+    include(cfg.get('fmaServiceRoot') + '/Tiltfile')
+
 docker_build(
     ref='hdruk/' + cfg.get('name'),
     context='.',
