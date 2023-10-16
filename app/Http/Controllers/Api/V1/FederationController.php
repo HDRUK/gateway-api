@@ -51,44 +51,53 @@ class FederationController extends Controller
      *       ),
      *    ),
      *    @OA\Response(
-     *       response=200,
-     *       description="Success",
+     *       response="200",
+     *       description="Success response",
      *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string"),
+     *          @OA\Property(property="current_page", type="integer", example="1"),
      *             @OA\Property(property="data", type="array",
-     *                @OA\Items(
+     *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer", example="123"),
-     *                   @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                   @OA\Property(property="deleted_at", type="datetime", example="null"),
+     *                   @OA\Property(property="federation_type", type="string", example="federation-type-eqhbjcnl"),
+     *                   @OA\Property(property="auth_type", type="string", example="api_key"),
+     *                   @OA\Property(property="auth_secret_key", type="string", example="velit sapiente"),
+     *                   @OA\Property(property="endpoint_baseurl", type="string", example="https:\/\/www.ortiz.com\/enim-recusandae-aspernatur-quidem-cum-delectus-adipisci"),
+     *                   @OA\Property(property="endpoint_datasets", type="string", example="\/sed-aut-corrupti-quas-adipisci-aliquam-ad"),
+     *                   @OA\Property(property="endpoint_dataset", type="string", example="\/sed-aut-corrupti-quas-adipisci-aliquam-ad\/{id}"),
+     *                   @OA\Property(property="run_time_hour", type="integer", example="5"),
+     *                   @OA\Property(property="run_time_minute", type="string", example="00"),
      *                   @OA\Property(property="enabled", type="boolean", example="1"),
-     *                   @OA\Property(property="name", type="string", example="someName"),
-     *                   @OA\Property(property="allows_messaging", type="boolean", example="1"),
-     *                   @OA\Property(property="workflow_enabled", type="boolean", example="1"),
-     *                   @OA\Property(property="access_requests_management", type="boolean", example="1"),
-     *                   @OA\Property(property="uses_5_safes", type="boolean", example="1"),
-     *                   @OA\Property(property="is_admin", type="boolean", example="1"),
-     *                   @OA\Property(property="member_of", type="string", example="someOrg"),
-     *                   @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
-     *                   @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                   @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
-     *                   @OA\Property(property="mdm_folder_id", type="datetime", example="xxxxxxx"), 
-     *                   @OA\Property(property="federation", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
-     *                )
-     *             )
-     *          )
-     *       )
+     *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                   @OA\Property(property="tested", type="boolean", example="0"),
+     *                ),
+     *             ),
+     *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations?page=1"),
+     *          @OA\Property(property="from", type="integer", example="1"),
+     *          @OA\Property(property="last_page", type="integer", example="1"),
+     *          @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations?page=1"),
+     *          @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *          @OA\Property(property="next_page_url", type="string", example="null"),
+     *          @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations"),
+     *          @OA\Property(property="per_page", type="integer", example="25"),
+     *          @OA\Property(property="prev_page_url", type="string", example="null"),
+     *          @OA\Property(property="to", type="integer", example="3"),
+     *          @OA\Property(property="total", type="integer", example="3"),
+     *          ),
+     *       ),
+     *    ),
      * )
      */
     public function index(GetAllFederation $request, int $teamId)
     {
-        $teamFederations = Team::where('id', $teamId)->with(['federation'])->get()->toArray();
+        $federations = Federation::whereHas('team', function ($query) use ($teamId) {
+            $query->where('id', $teamId);
+        })->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
-        $response = $this->getFederation($teamFederations);
-
-        return response()->json([
-            'data' => $response,
-        ]);
+        return response()->json(
+            $federations
+        );
     }
 
     /**
@@ -125,50 +134,37 @@ class FederationController extends Controller
      *        response=200,
      *        description="Success",
      *        @OA\JsonContent(
-     *            @OA\Property(property="message", type="string"),
-     *            @OA\Property(property="data", type="array",
-     *               @OA\Items(
-     *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                  @OA\Property(property="deleted_at", type="datetime", example="null"),
-     *                  @OA\Property(property="enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="name", type="string", example="someName"),
-     *                  @OA\Property(property="allows_messaging", type="boolean", example="1"),
-     *                  @OA\Property(property="workflow_enabled", type="boolean", example="1"),
-     *                  @OA\Property(property="access_requests_management", type="boolean", example="1"),
-     *                  @OA\Property(property="uses_5_safes", type="boolean", example="1"),
-     *                  @OA\Property(property="is_admin", type="boolean", example="1"),
-     *                  @OA\Property(property="member_of", type="string", example="someOrg"),
-     *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
-     *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
-     *                  @OA\Property(property="mdm_folder_id", type="datetime", example="xxxxxxx"), 
-     *                  @OA\Property(property="federation", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
-     *               )
-     *            )
-     *        )
-     *    )
+     *           @OA\Property(property="message", type="string"),
+     *           @OA\Property(property="data", type="object",
+     *              @OA\Property(property="id", type="integer", example="123"),
+     *              @OA\Property(property="federation_type", type="string", example="federation-type-eqhbjcnl"),
+     *              @OA\Property(property="auth_type", type="string", example="api_key"),
+     *              @OA\Property(property="auth_secret_key", type="string", example="velit sapiente"),
+     *              @OA\Property(property="endpoint_baseurl", type="string", example="https:\/\/www.ortiz.com\/enim-recusandae-aspernatur-quidem-cum-delectus-adipisci"),
+     *              @OA\Property(property="endpoint_datasets", type="string", example="\/sed-aut-corrupti-quas-adipisci-aliquam-ad"),
+     *              @OA\Property(property="endpoint_dataset", type="string", example="\/sed-aut-corrupti-quas-adipisci-aliquam-ad\/{id}"),
+     *              @OA\Property(property="run_time_hour", type="integer", example="5"),
+     *              @OA\Property(property="run_time_minute", type="string", example="00"),
+     *              @OA\Property(property="enabled", type="boolean", example="1"),
+     *              @OA\Property(property="counter", type="integer", example="34319"),
+     *              @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *              @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *              @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
+     *              @OA\Property(property="tested", type="boolean", example="0"),
+     *           ),
+     *        ),
+     *    ),
      * )
      */
     public function show(GetFederation $request, int $teamId, int $federationId)
     {
-        $existTeamFederation = TeamHasFederation::where([
-            'team_id' => $teamId,
-            'federation_id' => $federationId,
-        ])->first();
-
-        if (!$existTeamFederation) {
-            throw new NotFoundException(); 
-        }
-
-        $teamFederations = Team::where('id', $teamId)->with(['federation'])->get()->toArray();
-
-        $response = $this->getFederation($teamFederations, $federationId);
+        $federations = Federation::whereHas('team', function ($query) use ($teamId) {
+            $query->where('id', $teamId);
+        })->where('id', $federationId)->first()->toArray();
 
         return response()->json([
             'message' => 'success',
-            'data' => $response,
+            'data' => $federations,
         ], 200);
     }
 
