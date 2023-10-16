@@ -49,6 +49,17 @@ trait TeamTransformation
                     'created_at' => $user['created_at'],
                     'updated_at' => $user['updated_at'],
                     'deleted_at' => $user['deleted_at'],
+                    'sector_id' => $user['sector_id'],
+                    'organisation' => $user['organisation'],
+                    'bio' => $user['bio'],
+                    'domain' => $user['domain'],
+                    'link' => $user['link'],
+                    'orcid' => $user['orcid'],
+                    'contact_feedback' => $user['contact_feedback'],
+                    'contact_news' => $user['contact_news'],
+                    'mongo_id' => $user['mongo_id'],
+                    'mongo_object_id' => $user['mongo_object_id'],
+                    'terms' => $user['terms'],
                 ];
 
                 $teamHasUserId = (int) $user['pivot']['id'];

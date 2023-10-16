@@ -216,6 +216,7 @@ class UserController extends Controller
                 'contact_news' => $input['contact_news'],
                 'mongo_id' => $input['mongo_id'],
                 'mongo_object_id' => $input['mongo_object_id'],
+                'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
             ];
 
             // TODO - At this stage we may want to use the is_admin
@@ -345,16 +346,17 @@ class UserController extends Controller
                     'secondary_email' => array_key_exists('secondary_email', $input) ? $input['secondary_email'] : NULL,
                     'preferred_email' => array_key_exists('preferred_email', $input) ? $input['preferred_email'] : 'primary',
                     'provider' =>  Config::get('constants.provider.service'),
-                    "sector_id" => $input['sector_id'],
-                    "organisation" => $input['organisation'],
-                    "bio" => $input['bio'],
-                    "domain" => $input['domain'],
-                    "link" => $input['link'],
-                    "orcid" => $input['orcid'],
-                    "contact_feedback" => $input['contact_feedback'],
-                    "contact_news" => $input['contact_news'],  
-                    "mongo_id" => $input['mongo_id'], 
-                    "mongo_object_id" => $input['mongo_object_id'],                 
+                    'sector_id' => $input['sector_id'],
+                    'organisation' => $input['organisation'],
+                    'bio' => $input['bio'],
+                    'domain' => $input['domain'],
+                    'link' => $input['link'],
+                    'orcid' => $input['orcid'],
+                    'contact_feedback' => $input['contact_feedback'],
+                    'contact_news' => $input['contact_news'],  
+                    'mongo_id' => $input['mongo_id'], 
+                    'mongo_object_id' => $input['mongo_object_id'],
+                    'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,                
                 ];
 
                 $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
@@ -486,7 +488,8 @@ class UserController extends Controller
                 'contact_feedback',
                 'contact_news',
                 'mongo_id',
-                'mongo_object_id',                 
+                'mongo_object_id', 
+                'terms',                
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);

@@ -47,6 +47,7 @@ class User extends Authenticatable
         'mongo_id',
         'mongo_object_id',
         'is_admin',
+        'terms',
     ];
 
     /**
@@ -66,6 +67,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'preferred_email' => UserPreferredEmail::class,
+        'terms' => 'boolean',
     ];
 
     /**

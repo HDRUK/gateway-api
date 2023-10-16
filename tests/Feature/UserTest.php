@@ -73,6 +73,7 @@ class UserTest extends TestCase
                     'contact_news',
                     'mongo_id',
                     'mongo_object_id',
+                    'terms',
                     'notifications',
                     'roles',
                 ],
@@ -279,6 +280,7 @@ class UserTest extends TestCase
                 'contact_news' => 1,
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",
+                'terms' => true,
             ],
             $this->header
         );
@@ -311,6 +313,7 @@ class UserTest extends TestCase
                 'contact_news' => 0,
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",
+                'terms' => true,
             ],
             $this->header
         );
