@@ -222,6 +222,7 @@ class DatasetController extends Controller
                         'created' => now(),
                         'updated' => now(),
                         'submitted' => now(),
+                        'create_origin' => $input['create_origin'],
                     ]);
 
                     // Dispatch this potentially lengthy subset of data
@@ -271,6 +272,7 @@ class DatasetController extends Controller
                             'created' => now(),
                             'updated' => now(),
                             'submitted' => now(),
+                            'create_origin' => $input['create_origin'],
                         ]);
 
                         // Dispatch this potentially lengthy subset of data

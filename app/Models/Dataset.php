@@ -38,6 +38,7 @@ class Dataset extends Model
         'created',
         'updated',
         'submitted',
+        'create_origin',
     ];
 
     /**
