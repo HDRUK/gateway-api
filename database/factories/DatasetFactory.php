@@ -25,6 +25,7 @@ class DatasetFactory extends Factory
             'team_id' => $teamHasUser->team_id,
             'label' => fake()->words(fake()->randomDigit(), true),
             'short_description' => fake()->words(fake()->randomDigit(), true),
+            'create_origin' => fake()->randomElement(['MANUAL', 'API', 'FMA']),
         ];
     }
 }
