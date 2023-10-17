@@ -27,6 +27,7 @@ class ROCrateParser {
         }
 
         // Find the id of the source organization
+        $sourceOrganization = null;
         foreach ($myArray as $object) {
             if (isset($object["@type"]) && $object["@type"] == "Dataset" && isset($object["sourceOrganization"])) {
                 $sourceOrganization = $object["sourceOrganization"]["@id"];
@@ -34,6 +35,9 @@ class ROCrateParser {
         }
 
         // Find project_title, lay_summary and public_benefit_statement from the Project.
+        $project_title = null;
+        $lay_summary = null;
+        $public_benefit_statement = null;
         if (isset($myArray[$sourceOrganization]) && $myArray[$sourceOrganization]["@type"] == 'Project') {
             $project_title = $myArray[$sourceOrganization]["name"];
             // lay_summary = Dataset.sourceOrganization -> Project.description
@@ -62,12 +66,14 @@ class ROCrateParser {
         // Find organization_name = Dataset.mentions -> CreateAction.agent -> Person.affiliation -> Organization.name
 
         // Firstly, find Dataset.
+        $mentions = null;
         foreach ($myArray as $object) {
             if (isset($object["@type"]) && $object["@type"] == "Dataset" && isset($object["mentions"])) {
                 $mentions = $object["mentions"]["@id"];
             }
         }
 
+        $organization_name = null;
         if (isset($myArray[$mentions]) && $myArray[$mentions]["@type"] == 'CreateAction') {
             $createAction_agent_id = $myArray[$mentions]["agent"]["@id"];
             $agent = $myArray[$createAction_agent_id];
