@@ -26,23 +26,18 @@ class ROCrateParser {
             $myArray[$object["@id"]] = $object;
         }
 
-        // Find project_title, and if supplied, lay_summary and public_benefit_statement.
+        // Find the id of the source organization
         foreach ($myArray as $object) {
             if (isset($object["@type"]) && $object["@type"] == "Dataset" && isset($object["sourceOrganization"])) {
-                print "This is a Dataset\n";
-                var_dump($object);
-                print "\nwith sourceOrganization:\n";
                 $sourceOrganization = $object["sourceOrganization"]["@id"];
-                print $sourceOrganization . "\n";
             }
         }
-        print "This points to this Project:\n";
-        if (isset($myArray[$sourceOrganization]) && $myArray[$sourceOrganization]["@type"] == 'Project') {
-            var_dump($myArray[$sourceOrganization]);
-            print "Which has name:\n";
-            // $project_title = $myArray[$sourceOrganization]["name"];
-            var_dump($project_title = $myArray[$sourceOrganization]["name"]);
 
+        // Find project_title, lay_summary and public_benefit_statement from the Project.
+        if (isset($myArray[$sourceOrganization]) && $myArray[$sourceOrganization]["@type"] == 'Project') {
+            $project_title = $myArray[$sourceOrganization]["name"];
+            // lay_summary = Dataset.sourceOrganization -> Project.description
+            // (not guaranteed by 5 Safes RO-Crate spec at this time)
             if (isset($myArray[$sourceOrganization]["description"])) {
                 $lay_summary = $myArray[$sourceOrganization]["description"];
             }
@@ -50,6 +45,8 @@ class ROCrateParser {
                 $lay_summary = "Not provided";
             }
 
+            // public_benefit_statement = Dataset.sourceOrganization -> Project.publishingPrinciples -> CreativeWork.text 
+            // (not guaranteed by 5 Safes RO-Crate spec at this time)
             if (isset($myArray[$sourceOrganization]["publishingPrinciples"]) && 
             isset($myArray[$myArray[$sourceOrganization]["publishingPrinciples"]["@id"]]) &&
             isset($myArray[$myArray[$myArray[$sourceOrganization]["publishingPrinciples"]["@id"]]]["text"])) {
@@ -60,38 +57,33 @@ class ROCrateParser {
                 $public_benefit_statement = "Not provided";
             }
 
-
         }
 
-        // Find organization_name
+        // Find organization_name = Dataset.mentions -> CreateAction.agent -> Person.affiliation -> Organization.name
+
+        // Firstly, find Dataset.
         foreach ($myArray as $object) {
             if (isset($object["@type"]) && $object["@type"] == "Dataset" && isset($object["mentions"])) {
-                print "This is a Dataset\n";
-                var_dump($object);
-                print "\nwith mentions:\n";
                 $mentions = $object["mentions"]["@id"];
-                print $mentions . "\n";
             }
         }
-        print "This points to this CreateAction:\n";
+
         if (isset($myArray[$mentions]) && $myArray[$mentions]["@type"] == 'CreateAction') {
-            var_dump($myArray[$mentions]);
-            print "Which has agent:\n";
-            // $project_title = $myArray[$sourceOrganization]["name"];
-            var_dump($createAction_agent_id = $myArray[$mentions]["agent"]["@id"]);
-            var_dump($agent = $myArray[$createAction_agent_id]);
-            print "with affiliation:\n";
-            var_dump($affiliation_id = $myArray[$createAction_agent_id]["affiliation"]["@id"]);
-            var_dump($affiliation = $myArray[$affiliation_id]);
-            print "with Org name:\n";
-            var_dump($organization_name = $affiliation["name"]);
+            $createAction_agent_id = $myArray[$mentions]["agent"]["@id"];
+            $agent = $myArray[$createAction_agent_id];
+            
+            $affiliation_id = $myArray[$createAction_agent_id]["affiliation"]["@id"];
+            $affiliation = $myArray[$affiliation_id];
+            
+            $organization_name = $affiliation["name"];
         }
 
-        $return_array = array();
-        $return_array["organization_name"] = $organization_name;
-        $return_array["project_title"] = $project_title;
-        $return_array["lay_summary"] = $lay_summary;
-        $return_array["public_benefit_statement"] = $public_benefit_statement;
+        $return_array = [
+            "organization_name" => $organization_name,
+            "project_title" => $project_title,
+            "lay_summary" => $lay_summary,
+            "public_benefit_statement" => $public_benefit_statement,
+        ];
 
         return $return_array;
     }
