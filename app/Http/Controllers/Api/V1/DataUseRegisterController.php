@@ -211,21 +211,22 @@ class DataUseRegisterController extends Controller
         try {
             $input = $request->all();
 
-            // $ro = ROCrateParser();
-            // $document = ROCrateParser::print($input['ro_crate']);
-            $document = ROCrateParser::expand($input['ro_crate']);
-            // var_dump($document);
-            // var_dump($input['ro_crate']);
-            // $data_use_registers = DataUseRegister::create([
-            //     'dataset_id' => (int) $input['dataset_id'],
-            //     'enabled' => $input['enabled'] ?? null,
-            //     'user_id' => (int) $input['user_id'] ?? null,
-            //     'ro_crate' => $input['ro_crate'] ?? null,
-            // ]);
+            $dur_details = ROCrateParser::extract_dur_details($input['ro_crate']);
+            
+            $data_use_registers = DataUseRegister::create([
+                'dataset_id' => (int) $input['dataset_id'],
+                'enabled' => $input['enabled'] ?? null,
+                'user_id' => (int) $input['user_id'] ?? null,
+                'ro_crate' => json_encode($input['ro_crate']) ?? null,
+                'organization_name' => $dur_details['organization_name'],
+                'project_title' => $dur_details['project_title'],
+                'lay_summary' => $dur_details['lay_summary'],
+                'public_benefit_statement' => $dur_details['public_benefit_statement'],
+            ]);
 
             return response()->json([
                 'message' => 'info',
-                'data' => $document,
+                'data' => $data_use_registers->id,
             ], 201);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

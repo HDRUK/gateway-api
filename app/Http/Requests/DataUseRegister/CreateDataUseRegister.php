@@ -31,7 +31,7 @@ class CreateDataUseRegister extends BaseFormRequest
             ],
             'ro_crate' => [
                 'nullable',
-                'string',
+                // 'string',
             ],
         ];
     }
