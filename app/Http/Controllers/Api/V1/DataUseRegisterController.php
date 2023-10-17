@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-use Spco\ROCrateParser\ROCrateParser;
 use Illuminate\Http\Request;
 use App\Models\DataUseRegister;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +15,87 @@ use App\Http\Requests\DataUseRegister\GetDataUseRegister;
 use App\Http\Requests\DataUseRegister\CreateDataUseRegister;
 use App\Http\Requests\DataUseRegister\DeleteDataUseRegister;
 use App\Http\Requests\DataUseRegister\UpdateDataUseRegister;
+
+class ROCrateParser {
+    
+    public static function extract_dur_details(array $ro_crate) {
+
+        // Convert $ro_crate @graph entry to associative array with keys from @id fields.
+        $myArray = array();
+        foreach ($ro_crate["@graph"] as $object) {
+            $myArray[$object["@id"]] = $object;
+        }
+
+        // Find project_title, and if supplied, lay_summary and public_benefit_statement.
+        foreach ($myArray as $object) {
+            if (isset($object["@type"]) && $object["@type"] == "Dataset" && isset($object["sourceOrganization"])) {
+                print "This is a Dataset\n";
+                var_dump($object);
+                print "\nwith sourceOrganization:\n";
+                $sourceOrganization = $object["sourceOrganization"]["@id"];
+                print $sourceOrganization . "\n";
+            }
+        }
+        print "This points to this Project:\n";
+        if (isset($myArray[$sourceOrganization]) && $myArray[$sourceOrganization]["@type"] == 'Project') {
+            var_dump($myArray[$sourceOrganization]);
+            print "Which has name:\n";
+            // $project_title = $myArray[$sourceOrganization]["name"];
+            var_dump($project_title = $myArray[$sourceOrganization]["name"]);
+
+            if (isset($myArray[$sourceOrganization]["description"])) {
+                $lay_summary = $myArray[$sourceOrganization]["description"];
+            }
+            else {
+                $lay_summary = "Not provided";
+            }
+
+            if (isset($myArray[$sourceOrganization]["publishingPrinciples"]) && 
+            isset($myArray[$myArray[$sourceOrganization]["publishingPrinciples"]["@id"]]) &&
+            isset($myArray[$myArray[$myArray[$sourceOrganization]["publishingPrinciples"]["@id"]]]["text"])) {
+                $public_benefit_statement = $myArray[$myArray[$myArray[$sourceOrganization]["publishingPrinciples"]["@id"]]]["text"];
+            }
+            else
+            {
+                $public_benefit_statement = "Not provided";
+            }
+
+
+        }
+
+        // Find organization_name
+        foreach ($myArray as $object) {
+            if (isset($object["@type"]) && $object["@type"] == "Dataset" && isset($object["mentions"])) {
+                print "This is a Dataset\n";
+                var_dump($object);
+                print "\nwith mentions:\n";
+                $mentions = $object["mentions"]["@id"];
+                print $mentions . "\n";
+            }
+        }
+        print "This points to this CreateAction:\n";
+        if (isset($myArray[$mentions]) && $myArray[$mentions]["@type"] == 'CreateAction') {
+            var_dump($myArray[$mentions]);
+            print "Which has agent:\n";
+            // $project_title = $myArray[$sourceOrganization]["name"];
+            var_dump($createAction_agent_id = $myArray[$mentions]["agent"]["@id"]);
+            var_dump($agent = $myArray[$createAction_agent_id]);
+            print "with affiliation:\n";
+            var_dump($affiliation_id = $myArray[$createAction_agent_id]["affiliation"]["@id"]);
+            var_dump($affiliation = $myArray[$affiliation_id]);
+            print "with Org name:\n";
+            var_dump($organization_name = $affiliation["name"]);
+        }
+
+        $return_array = array();
+        $return_array["organization_name"] = $organization_name;
+        $return_array["project_title"] = $project_title;
+        $return_array["lay_summary"] = $lay_summary;
+        $return_array["public_benefit_statement"] = $public_benefit_statement;
+
+        return $return_array;
+    }
+}
 
 class DataUseRegisterController extends Controller
 {
