@@ -303,7 +303,7 @@ class DataUseRegisterController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'info',
+                'message' => 'created',
                 'data' => $data_use_registers->id,
             ], 201);
         } catch (Exception $e) {
