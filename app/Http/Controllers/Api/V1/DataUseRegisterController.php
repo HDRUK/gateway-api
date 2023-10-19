@@ -300,7 +300,7 @@ class DataUseRegisterController extends Controller
             $input = $request->all();
 
             $dur_details = self::extract_dur_details($input['ro_crate']);
-            var_dump($input['ro_crate']);
+
             $data_use_registers = DataUseRegister::create([
                 'dataset_id' => (int) $input['dataset_id'],
                 'enabled' => $input['enabled'] ?? null,
@@ -413,7 +413,7 @@ class DataUseRegisterController extends Controller
                 'dataset_id' => (int) $input['dataset_id'],
                 'enabled' => $input['enabled'] ?? null,
                 'user_id' => (int) $input['user_id'] ?? null,
-                'ro_crate' => $input['ro_crate'] ?? null,
+                'ro_crate' => json_encode($input['ro_crate']) ?? null,
                 'organization_name' => $input['organization_name'] ?? null,
                 'project_title' => $input['project_title'] ?? null,
                 'lay_summary' => $input['lay_summary'] ?? null,
