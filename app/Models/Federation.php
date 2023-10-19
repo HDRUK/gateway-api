@@ -57,7 +57,9 @@ class Federation extends Model
         'endpoint_datasets',
         'endpoint_dataset',
         'run_time_hour',
+        'notification',
         'enabled',
+        'tested',
     ];
 
     /**
@@ -65,6 +67,7 @@ class Federation extends Model
      */
     protected $casts = [
         'enabled' => 'boolean',
+        'tested' => 'boolean',
     ];
 
     public function team(): BelongsToMany
@@ -72,7 +75,7 @@ class Federation extends Model
         return $this->belongsToMany(Team::class, 'team_has_federations');
     }
 
-    public function notification(): BelongsToMany
+    public function notifications(): BelongsToMany
     {
         return $this->belongsToMany(Notification::class, 'federation_has_notifications');
     }

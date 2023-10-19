@@ -67,6 +67,9 @@ class EditFederation extends BaseFormRequest
             'notification.*' => [
                 'email',
             ],
+            'tested' => [
+                'boolean',
+            ],
         ];
     }
 

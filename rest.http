@@ -738,12 +738,12 @@ Authorization: Bearer {{accessToken}}
 
 ### Federation Team Notifications
 #### get all federations for team
-GET {{baseUrl}}/api/{{apiVersion}}/teams/19/federations HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/teams/13/federations HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get one federations for team
-GET {{baseUrl}}/api/{{apiVersion}}/teams/19/federations/13 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/teams/13/federations/51 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -755,7 +755,7 @@ Authorization: Bearer {{accessToken}}
 
 {
     "federation_type": "dataset",
-    "auth_type": "bearer",
+    "auth_type": "BEARER",
     "auth_secret_key": "path for secret key",
     "endpoint_baseurl": "https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app",
     "endpoint_datasets": "/api/v1/noauth/datasets",
@@ -766,7 +766,8 @@ Authorization: Bearer {{accessToken}}
         "t1@test.com",
         "t2@test.com",
         "t3@test.com"
-    ]
+    ],
+    "tested": true
 }
 
 #### update federation for team

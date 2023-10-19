@@ -75,6 +75,9 @@ class UpdateFederation extends BaseFormRequest
             'notification.*' => [
                 'email',
             ],
+            'tested' => [
+                'boolean',
+            ],
         ];
     }
 

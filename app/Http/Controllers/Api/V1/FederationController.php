@@ -4,16 +4,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-use App\Models\Team;
 use App\Models\Federation;
 use App\Models\Notification;
 use Illuminate\Http\Request;
 use App\Models\TeamHasFederation;
 use App\Http\Controllers\Controller;
-use App\Exceptions\NotFoundException;
 use App\Models\FederationHasNotification;
 use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\FederationTransformation;
 use App\Http\Requests\Federation\GetFederation;
 use App\Http\Requests\Federation\EditFederation;
 use App\Http\Requests\Federation\CreateFederation;
@@ -23,7 +20,6 @@ use App\Http\Requests\Federation\UpdateFederation;
 
 class FederationController extends Controller
 {
-    use FederationTransformation;
     use RequestTransformation;
 
     public function __construct()
@@ -71,6 +67,7 @@ class FederationController extends Controller
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="tested", type="boolean", example="0"),
+     *                   @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *                ),
      *             ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/teams\/19\/federations?page=1"),
@@ -93,7 +90,7 @@ class FederationController extends Controller
     {
         $federations = Federation::whereHas('team', function ($query) use ($teamId) {
             $query->where('id', $teamId);
-        })->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        })->with(['notifications'])->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         return response()->json(
             $federations
@@ -151,6 +148,7 @@ class FederationController extends Controller
      *              @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *              @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *              @OA\Property(property="tested", type="boolean", example="0"),
+     *              @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *           ),
      *        ),
      *    ),
@@ -160,7 +158,7 @@ class FederationController extends Controller
     {
         $federations = Federation::whereHas('team', function ($query) use ($teamId) {
             $query->where('id', $teamId);
-        })->where('id', $federationId)->first()->toArray();
+        })->where('id', $federationId)->with(['notifications'])->first()->toArray();
 
         return response()->json([
             'message' => 'success',
@@ -201,7 +199,8 @@ class FederationController extends Controller
      *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/bearer/datasets/{id}"),
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
-     *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
+     *             @OA\Property(property="notifications", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
+     *             @OA\Property(property="tested", type="boolean", example=true),
      *          )
      *       )
      *    ),
@@ -243,6 +242,7 @@ class FederationController extends Controller
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
                 'enabled' => $input['enabled'],
+                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
             ]);
 
             TeamHasFederation::create([
@@ -318,7 +318,8 @@ class FederationController extends Controller
      *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/bearer/datasets/{id}"),
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
-     *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
+     *             @OA\Property(property="notifications", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
+     *             @OA\Property(property="tested", type="boolean", example=true),
      *          )
      *       )
      *    ),
@@ -360,6 +361,7 @@ class FederationController extends Controller
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
                 'enabled' => $input['enabled'],
+                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
             ]);
 
             $federationNotifications = FederationHasNotification::where([
@@ -386,8 +388,9 @@ class FederationController extends Controller
                 ]);
             }
 
-            $teamFederations = Team::where('id', $teamId)->with(['federation'])->get()->toArray();
-            $response = $this->getFederation($teamFederations, $federationId);
+            $response = Federation::where('id', '=', $federationId)->whereHas('team', function ($query) use ($teamId) {
+                    $query->where('id', $teamId);
+                })->with(['notifications'])->first();
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -442,7 +445,8 @@ class FederationController extends Controller
      *             @OA\Property(property="endpoint_dataset", type="string", example="/api/v1/bearer/datasets/{id}"),
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
-     *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
+     *             @OA\Property(property="notifications", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
+     *             @OA\Property(property="tested", type="boolean", example=true),
      *          )
      *       )
      *    ),
@@ -485,6 +489,7 @@ class FederationController extends Controller
                 'endpoint_dataset',
                 'run_time_hour',
                 'enabled',
+                'tested',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -517,8 +522,9 @@ class FederationController extends Controller
                 }
             }
 
-            $teamFederations = Team::where('id', $teamId)->with(['federation'])->get()->toArray();
-            $response = $this->getFederation($teamFederations, $federationId);
+            $response = Federation::where('id', '=', $federationId)->whereHas('team', function ($query) use ($teamId) {
+                $query->where('id', $teamId);
+            })->with(['notifications'])->first();
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
