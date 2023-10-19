@@ -2036,6 +2036,21 @@ return [
     ],
     [
         'name' => 'datasets',
+        'method' => 'put',
+        'path' => '/datasets/{id}',
+        'methodController' => 'DatasetController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:permissions,datasets.create',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+    [
+        'name' => 'datasets',
         'method' => 'delete',
         'path' => '/datasets/{id}',
         'methodController' => 'DatasetController@destroy',

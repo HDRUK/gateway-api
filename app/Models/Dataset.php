@@ -38,6 +38,8 @@ class Dataset extends Model
         'created',
         'updated',
         'submitted',
+        'pid',
+        'version',
     ];
 
     /**

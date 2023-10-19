@@ -5808,6 +5808,119 @@
                     }
                 ]
             },
+            "put": {
+                "tags": [
+                    "Datasets"
+                ],
+                "summary": "DatasetController@update",
+                "description": "Update a dataset with a new dataset version",
+                "operationId": "update_datasets",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "dataset id",
+                        "required": true,
+                        "schema": {
+                            "description": "dataset id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Pass user credentials",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "3"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "example": "label dataset for test"
+                                    },
+                                    "short_description": {
+                                        "type": "string",
+                                        "example": "lorem ipsum"
+                                    },
+                                    "dataset": {
+                                        "type": "array",
+                                        "items": {}
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "delete": {
                 "tags": [
                     "Datasets"
@@ -7074,10 +7187,6 @@
                                                     "enabled": {
                                                         "type": "boolean",
                                                         "example": "1"
-                                                    },
-                                                    "counter": {
-                                                        "type": "integer",
-                                                        "example": "34319"
                                                     },
                                                     "created_at": {
                                                         "type": "string",
