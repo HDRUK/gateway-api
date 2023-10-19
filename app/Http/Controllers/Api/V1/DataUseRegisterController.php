@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Http\Requests\DataUseRegister\EditDataUseRegister;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Traits\RoCrateExtraction;
 use App\Http\Requests\DataUseRegister\GetDataUseRegister;
 use App\Http\Requests\DataUseRegister\CreateDataUseRegister;
 use App\Http\Requests\DataUseRegister\DeleteDataUseRegister;
@@ -19,83 +20,8 @@ use App\Http\Requests\DataUseRegister\UpdateDataUseRegister;
 
 class DataUseRegisterController extends Controller
 {
+    use RoCrateExtraction;
     use RequestTransformation;
-
-    public static function extractDurDetails(array $ro_crate) {
-
-        // Convert $ro_crate @graph entry to associative array with keys from @id fields.
-        $myArray = array();
-        foreach ($ro_crate["@graph"] as $object) {
-            $myArray[$object["@id"]] = $object;
-        }
-
-        // Find the id of the source organization
-        $sourceOrganization = null;
-        foreach ($myArray as $object) {
-            if (isset($object["@type"]) && $object["@type"] == "Dataset" && isset($object["sourceOrganization"])) {
-                $sourceOrganization = $object["sourceOrganization"]["@id"];
-            }
-        }
-
-        // Find project_title, lay_summary and public_benefit_statement from the Project.
-        $project_title = null;
-        $lay_summary = null;
-        $public_benefit_statement = null;
-        if (isset($myArray[$sourceOrganization]) && $myArray[$sourceOrganization]["@type"] == 'Project') {
-            $project_title = $myArray[$sourceOrganization]["name"];
-            // lay_summary = Dataset.sourceOrganization -> Project.description
-            // (not guaranteed by 5 Safes RO-Crate spec at this time)
-            if (isset($myArray[$sourceOrganization]["description"])) {
-                $lay_summary = $myArray[$sourceOrganization]["description"];
-            }
-            else {
-                $lay_summary = "Not provided";
-            }
-
-            // public_benefit_statement = Dataset.sourceOrganization -> Project.publishingPrinciples -> CreativeWork.text 
-            // (not guaranteed by 5 Safes RO-Crate spec at this time)
-            if (isset($myArray[$sourceOrganization]["publishingPrinciples"]) && 
-            isset($myArray[$myArray[$sourceOrganization]["publishingPrinciples"]["@id"]]) &&
-            isset($myArray[$myArray[$myArray[$sourceOrganization]["publishingPrinciples"]["@id"]]]["text"])) {
-                $public_benefit_statement = $myArray[$myArray[$myArray[$sourceOrganization]["publishingPrinciples"]["@id"]]]["text"];
-            }
-            else
-            {
-                $public_benefit_statement = "Not provided";
-            }
-
-        }
-
-        // Find organization_name = Dataset.mentions -> CreateAction.agent -> Person.affiliation -> Organization.name
-
-        // Firstly, find Dataset.
-        $mentions = null;
-        foreach ($myArray as $object) {
-            if (isset($object["@type"]) && $object["@type"] == "Dataset" && isset($object["mentions"])) {
-                $mentions = $object["mentions"]["@id"];
-            }
-        }
-
-        $organization_name = null;
-        if (isset($myArray[$mentions]) && $myArray[$mentions]["@type"] == 'CreateAction') {
-            $createAction_agent_id = $myArray[$mentions]["agent"]["@id"];
-            $agent = $myArray[$createAction_agent_id];
-            
-            $affiliation_id = $myArray[$createAction_agent_id]["affiliation"]["@id"];
-            $affiliation = $myArray[$affiliation_id];
-            
-            $organization_name = $affiliation["name"];
-        }
-
-        $return_array = [
-            "organization_name" => $organization_name,
-            "project_title" => $project_title,
-            "lay_summary" => $lay_summary,
-            "public_benefit_statement" => $public_benefit_statement,
-        ];
-
-        return $return_array;
-    }
 
     /**
      * @OA\Get(
