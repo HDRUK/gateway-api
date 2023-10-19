@@ -164,6 +164,7 @@ class DatasetController extends Controller
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="label", type="string", example="label dataset for test"),
      *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
+     *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
      *             @OA\Property(property="dataset", type="array", @OA\Items())
      *          )
      *       )
@@ -348,6 +349,7 @@ class DatasetController extends Controller
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="label", type="string", example="label dataset for test"),
      *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
+     *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
      *             @OA\Property(property="dataset", type="array", @OA\Items())
      *          )
      *       )
@@ -411,6 +413,7 @@ class DatasetController extends Controller
                     'updated' => now(),
                     'submitted' => now(),
                     'pid' => $currentPid,
+                    'create_origin' => $input['create_origin'],
                 ]);
                 $dId = $dataset->id;
 
@@ -468,6 +471,7 @@ class DatasetController extends Controller
                         'updated' => now(),
                         'submitted' => now(),
                         'pid' => $currentPid,
+                        'create_origin' => $input['create_origin'],
                     ]);
                     $dId = $dataset->id;
 
@@ -482,7 +486,7 @@ class DatasetController extends Controller
 
                     $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
                     Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['modelVersion']]);
-                    
+
                     Dataset::where('id', '=', $id)->delete();
                     MMC::deleteFromElastic($id);
 
