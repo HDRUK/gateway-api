@@ -2043,7 +2043,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,datasets.create',
+            'check.access:permissions,datasets.update',
         ],
         'constraint' => [
             'id', '[0-9]+'
