@@ -58,6 +58,10 @@ class DataUseRegisterIntegrationTest extends TestCase
                     'enabled',
                     'user_id',
                     'ro_crate',
+                    'organization_name',
+                    'project_title',
+                    'lay_summary',
+                    'public_benefit_statement',
                 ],
             ],
             'current_page',
@@ -96,6 +100,10 @@ class DataUseRegisterIntegrationTest extends TestCase
             "enabled" => fake()->boolean(),
             "user_id" => (int) $teamHasUser->user_id,
             "ro_crate" => $randomString,
+            "organization_name" => $randomString,
+            "project_title" => $randomString,
+            "lay_summary" => $randomString,
+            "public_benefit_statement" => $randomString,
         ];
 
         $response = $this->json(
@@ -129,6 +137,10 @@ class DataUseRegisterIntegrationTest extends TestCase
                     'enabled',
                     'user_id',
                     'ro_crate',
+                    'organization_name',
+                    'project_title',
+                    'lay_summary',
+                    'public_benefit_statement',
                 ]
             ]
         ]);
@@ -157,6 +169,10 @@ class DataUseRegisterIntegrationTest extends TestCase
             "enabled" => fake()->boolean(),
             "user_id" => (int) $teamHasUser->user_id,
             "ro_crate" => $randomString,
+            "organization_name" => $randomString,
+            "project_title" => $randomString,
+            "lay_summary" => $randomString,
+            "public_benefit_statement" => $randomString,
         ];
 
         $response = $this->json(
@@ -190,6 +206,10 @@ class DataUseRegisterIntegrationTest extends TestCase
             "enabled" => fake()->boolean(),
             "user_id" => $teamHasUser->user_id,
             "ro_crate" => $randomString,
+            "organization_name" => $randomString,
+            "project_title" => $randomString,
+            "lay_summary" => $randomString,
+            "public_benefit_statement" => $randomString,
         ];
         $responseIns = $this->json(
             'POST',
@@ -212,6 +232,11 @@ class DataUseRegisterIntegrationTest extends TestCase
             "enabled" => fake()->boolean(),
             "user_id" => $teamHasUser2->user_id,
             "ro_crate" => $randomString2,
+            "organization_name" => $randomString2,
+            "project_title" => $randomString2,
+            "lay_summary" => $randomString2,
+            "public_benefit_statement" => $randomString2,
+
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -226,6 +251,10 @@ class DataUseRegisterIntegrationTest extends TestCase
         $this->assertTrue($mockDataUpdate['enabled'] === $responseUpdate['data']['enabled']);
         $this->assertTrue($mockDataUpdate['user_id'] === $responseUpdate['data']['user_id']);
         $this->assertTrue($mockDataUpdate['ro_crate'] === $responseUpdate['data']['ro_crate']);
+        $this->assertTrue($mockDataUpdate['organization_name'] === $responseUpdate['data']['organization_name']);
+        $this->assertTrue($mockDataUpdate['project_title'] === $responseUpdate['data']['project_title']);
+        $this->assertTrue($mockDataUpdate['lay_summary'] === $responseUpdate['data']['lay_summary']);
+        $this->assertTrue($mockDataUpdate['public_benefit_statement'] === $responseUpdate['data']['public_benefit_statement']);
     }
 
     /**
@@ -250,6 +279,10 @@ class DataUseRegisterIntegrationTest extends TestCase
             "enabled" => fake()->boolean(),
             "user_id" => $teamHasUser->user_id,
             "ro_crate" => $randomString,
+            "organization_name" => $randomString,
+            "project_title" => $randomString,
+            "lay_summary" => $randomString,
+            "public_benefit_statement" => $randomString,
         ];
         $responseIns = $this->json(
             'POST',

@@ -35,6 +35,22 @@ class EditDataUseRegister extends BaseFormRequest
             ],
             'ro_crate' => [
                 'nullable',
+                'array',
+            ],
+            'organization_name' => [
+                'nullable',
+                'string',
+            ],
+            'project_title' => [
+                'nullable',
+                'string',
+            ],
+            'lay_summary' => [
+                'nullable',
+                'string',
+            ],
+            'public_benefit_statement' => [
+                'nullable',
                 'string',
             ],
         ];

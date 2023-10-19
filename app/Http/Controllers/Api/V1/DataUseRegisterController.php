@@ -133,7 +133,11 @@ class DataUseRegisterController extends Controller
      *                     @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
      *                     @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
      *                  ),
-     *                  @OA\Property(property="ro_crate", type="string", example="Sit quisquam est recusandae."),
+     *                  @OA\Property(property="ro_crate", type="array", example={["@context": "https://example.com/context", "@graph": [{}]]}),
+     *                  @OA\Property(property="organization_name", type="string", example="Sit quisquam est recusandae."),
+     *                  @OA\Property(property="project_title", type="string", example="Sit quisquam est recusandae."),
+     *                  @OA\Property(property="lay_summary", type="string", example="Sit quisquam est recusandae."),
+     *                  @OA\Property(property="public_benefit_statement", type="string", example="Sit quisquam est recusandae."),
      *               ),
      *            ),
      *         ),
@@ -195,7 +199,11 @@ class DataUseRegisterController extends Controller
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-11 12:00:00"),
      *               ),
-     *               @OA\Property(property="ro_crate", type="string", example="Sit quisquam est recusandae."),
+     *               @OA\Property(property="ro_crate", type="array", example={["@context": "https://example.com/context", "@graph": [{}]]}),
+     *               @OA\Property(property="organization_name", type="string", example="Sit quisquam est recusandae."),
+     *               @OA\Property(property="project_title", type="string", example="Sit quisquam est recusandae."),
+     *               @OA\Property(property="lay_summary", type="string", example="Sit quisquam est recusandae."),
+     *               @OA\Property(property="public_benefit_statement", type="string", example="Sit quisquam est recusandae."),
      *            ),
      *         ),
      *      ),
@@ -254,7 +262,11 @@ class DataUseRegisterController extends Controller
      *             @OA\Property(property="dataset_id", type="integer", example="1"),
      *             @OA\Property(property="enabled", type="boolean", example="false"),
      *             @OA\Property(property="user_id", type="integer", example="1"),
-     *             @OA\Property(property="ro_crate", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="ro_crate", type="array", example={["@context": "https://example.com/context", "@graph": [{}]]}),
+     *             @OA\Property(property="organization_name", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="project_title", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="lay_summary", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="public_benefit_statement", type="string", example="Sit quisquam est recusandae."),
      *          ),
      *       ),
      *    ),
@@ -288,7 +300,7 @@ class DataUseRegisterController extends Controller
             $input = $request->all();
 
             $dur_details = self::extract_dur_details($input['ro_crate']);
-            
+            var_dump($input['ro_crate']);
             $data_use_registers = DataUseRegister::create([
                 'dataset_id' => (int) $input['dataset_id'],
                 'enabled' => $input['enabled'] ?? null,
@@ -338,7 +350,11 @@ class DataUseRegisterController extends Controller
      *             @OA\Property(property="dataset_id", type="integer", example="1"),
      *             @OA\Property(property="enabled", type="boolean", example="false"),
      *             @OA\Property(property="user_id", type="integer", example="1"),
-     *             @OA\Property(property="ro_crate", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="ro_crate", type="array", example={["@context": "https://example.com/context", "@graph": [{}]]}),
+     *             @OA\Property(property="organization_name", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="project_title", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="lay_summary", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="public_benefit_statement", type="string", example="Sit quisquam est recusandae."),
      *          ),
      *       ),
      *    ),
@@ -398,6 +414,10 @@ class DataUseRegisterController extends Controller
                 'enabled' => $input['enabled'] ?? null,
                 'user_id' => (int) $input['user_id'] ?? null,
                 'ro_crate' => $input['ro_crate'] ?? null,
+                'organization_name' => $input['organization_name'] ?? null,
+                'project_title' => $input['project_title'] ?? null,
+                'lay_summary' => $input['lay_summary'] ?? null,
+                'public_benefit_statement' => $input['public_benefit_statement'] ?? null,
             ]);
 
             return response()->json([
@@ -438,7 +458,11 @@ class DataUseRegisterController extends Controller
      *             @OA\Property(property="dataset_id", type="integer", example="1"),
      *             @OA\Property(property="enabled", type="boolean", example="false"),
      *             @OA\Property(property="user_id", type="integer", example="1"),
-     *             @OA\Property(property="ro_crate", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="ro_crate", type="array", example={["@context": "https://example.com/context", "@graph": [{}]]}),
+     *             @OA\Property(property="organization_name", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="project_title", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="lay_summary", type="string", example="Sit quisquam est recusandae."),
+     *             @OA\Property(property="public_benefit_statement", type="string", example="Sit quisquam est recusandae."),
      *          ),
      *       ),
      *    ),
@@ -497,6 +521,10 @@ class DataUseRegisterController extends Controller
                 'enabled',
                 'user_id',
                 'ro_crate',
+                'organization_name',
+                'project_title',
+                'lay_summary',
+                'public_benefit_statement',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
