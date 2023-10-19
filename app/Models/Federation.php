@@ -74,7 +74,7 @@ class Federation extends Model
         return $this->belongsToMany(Team::class, 'team_has_federations');
     }
 
-    public function notification(): BelongsToMany
+    public function notifications(): BelongsToMany
     {
         return $this->belongsToMany(Notification::class, 'federation_has_notifications');
     }

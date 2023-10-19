@@ -143,6 +143,7 @@ class FederationTest extends TestCase
                     'updated_at',
                     'deleted_at',
                     'tested',
+                    'notifications',
                 ],
             ],
             'first_page_url',
@@ -277,6 +278,7 @@ class FederationTest extends TestCase
                 'updated_at',
                 'deleted_at',
                 'tested',
+                'notifications',
             ],
         ]);
 
@@ -399,6 +401,7 @@ class FederationTest extends TestCase
                 'updated_at',
                 'deleted_at',
                 'tested',
+                'notifications',
             ],
         ]);
 
@@ -540,6 +543,7 @@ class FederationTest extends TestCase
                 'updated_at',
                 'deleted_at',
                 'tested',
+                'notifications',
             ],
         ]);
 
@@ -729,6 +733,7 @@ class FederationTest extends TestCase
                 'updated_at',
                 'deleted_at',
                 'tested',
+                'notifications',
             ],
         ]);
 
@@ -969,6 +974,7 @@ class FederationTest extends TestCase
                 'updated_at',
                 'deleted_at',
                 'tested',
+                'notifications',
             ],
         ]);
 

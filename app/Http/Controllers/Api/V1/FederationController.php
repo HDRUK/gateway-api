@@ -94,7 +94,7 @@ class FederationController extends Controller
     {
         $federations = Federation::whereHas('team', function ($query) use ($teamId) {
             $query->where('id', $teamId);
-        })->with(['notification'])->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        })->with(['notifications'])->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         return response()->json(
             $federations
@@ -162,7 +162,7 @@ class FederationController extends Controller
     {
         $federations = Federation::whereHas('team', function ($query) use ($teamId) {
             $query->where('id', $teamId);
-        })->where('id', $federationId)->with(['notification'])->first()->toArray();
+        })->where('id', $federationId)->with(['notifications'])->first()->toArray();
 
         return response()->json([
             'message' => 'success',
@@ -392,8 +392,9 @@ class FederationController extends Controller
                 ]);
             }
 
-            $teamFederations = Team::where('id', $teamId)->with(['federation'])->get()->toArray();
-            $response = $this->getFederation($teamFederations, $federationId);
+            $response = Federation::where('id', '=', $federationId)->whereHas('team', function ($query) use ($teamId) {
+                    $query->where('id', $teamId);
+                })->with(['notifications'])->first();
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -524,8 +525,9 @@ class FederationController extends Controller
                 }
             }
 
-            $teamFederations = Team::where('id', $teamId)->with(['federation'])->get()->toArray();
-            $response = $this->getFederation($teamFederations, $federationId);
+            $response = Federation::where('id', '=', $federationId)->whereHas('team', function ($query) use ($teamId) {
+                $query->where('id', $teamId);
+            })->with(['notifications'])->first();
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
