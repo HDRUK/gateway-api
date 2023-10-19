@@ -237,7 +237,7 @@ class FederationController extends Controller
             $federation = Federation::create([
                 'federation_type' => $input['federation_type'],
                 'auth_type' => $input['auth_type'],
-                'auth_secret_key' => $input['auth_secret_key'],
+                'auth_secret_key' => ($input['auth_type'] !== 'NO_AUTH' ? $input['auth_secret_key'] : ''),
                 'endpoint_baseurl' => $input['endpoint_baseurl'],
                 'endpoint_datasets' => $input['endpoint_datasets'],
                 'endpoint_dataset' => $input['endpoint_dataset'],
@@ -354,7 +354,7 @@ class FederationController extends Controller
             Federation::where('id', $federationId)->update([
                 'federation_type' => $input['federation_type'],
                 'auth_type' => $input['auth_type'],
-                'auth_secret_key' => $input['auth_secret_key'],
+                'auth_secret_key' => ($input['auth_type'] !== 'NO_AUTH' ? $input['auth_secret_key'] : ''),
                 'endpoint_baseurl' => $input['endpoint_baseurl'],
                 'endpoint_datasets' => $input['endpoint_datasets'],
                 'endpoint_dataset' => $input['endpoint_dataset'],
