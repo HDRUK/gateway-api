@@ -21,7 +21,7 @@ class DataUseRegisterController extends Controller
 {
     use RequestTransformation;
 
-    public static function extract_dur_details(array $ro_crate) {
+    public static function extractDurDetails(array $ro_crate) {
 
         // Convert $ro_crate @graph entry to associative array with keys from @id fields.
         $myArray = array();
@@ -299,7 +299,7 @@ class DataUseRegisterController extends Controller
         try {
             $input = $request->all();
 
-            $dur_details = self::extract_dur_details($input['ro_crate']);
+            $dur_details = self::extractDurDetails($input['ro_crate']);
 
             $data_use_registers = DataUseRegister::create([
                 'dataset_id' => (int) $input['dataset_id'],
