@@ -132,35 +132,33 @@ class MetadataManagementController {
      */
     public function createDataset(array $input): Dataset
     {
-        $dataset = Dataset::create($input);
-        return $dataset;
+        return Dataset::create($input);
     }
 
     public function createMauroDataModel(array $user, array $team, array $input): array
     {
-        if ($this->validateTeamExistsInMauro($team)) {
-            return Mauro::createDataModel(
-                $input['label'],
-                $input['short_description'],
-                $user['name'],
-                $team['name'],
-                $team['mdm_folder_id'],
-                $input
-            );
-        }
-
-        return [];
+        return Mauro::createDataModel(
+            $input['label'],
+            $input['short_description'],
+            $user['name'],
+            $team['name'],
+            $team['mdm_folder_id'],
+            $input
+        );
     }
 
-    public function validateTeamExistsInMauro(array $team): bool
+    public function updateDataModel(array $user, array $team, array $input, string $dataModelId): array
     {
-        if (!empty($team['mdm_folder_id'])) {
-            return true;
-        }
-
-        return false;
+        return Mauro::updateDataModel(
+            $input['label'],
+            $input['short_description'],
+            $user['name'],
+            $team['name'],
+            $team['mdm_folder_id'],
+            $input,
+            $dataModelId
+        );
     }
-
 
     /**
      * Calls a re-indexing of Elastic search when a dataset is created or updated
@@ -229,6 +227,7 @@ class MetadataManagementController {
             ];
             
             $client = $this->getElasticClient();
+            
             $response = $client->delete($params);
 
         } catch (Exception $e) {

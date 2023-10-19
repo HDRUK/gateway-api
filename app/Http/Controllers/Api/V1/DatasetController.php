@@ -5,20 +5,21 @@ namespace App\Http\Controllers\Api\V1;
 use Mauro;
 use Config;
 use Exception;
-use MetadataManagementController AS MMC;
-
 use App\Models\Team;
+
 use App\Models\User;
 use App\Models\Dataset;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Http\Requests\Dataset\GetDataset;
-use App\Http\Requests\Dataset\CreateDataset;
-
 use App\Jobs\TechnicalObjectDataStore;
 use App\Models\DatasetHasNamedEntities;
+use MetadataManagementController AS MMC;
+use App\Http\Requests\Dataset\GetDataset;
+use App\Http\Requests\Dataset\CreateDataset;
+use App\Http\Requests\Dataset\UpdateDataset;
 
 class DatasetController extends Controller
 {
@@ -163,6 +164,7 @@ class DatasetController extends Controller
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="label", type="string", example="label dataset for test"),
      *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
+     *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
      *             @OA\Property(property="dataset", type="array", @OA\Items())
      *          )
      *       )
@@ -212,8 +214,9 @@ class DatasetController extends Controller
                 $mauro = MMC::createMauroDataModel($user, $team, $input);
 
                 if (!empty($mauro)) {
+                    $mauroDatasetId = (string) $mauro['DataModel']['responseJson']['id'];
                     $dataset = MMC::createDataset([
-                        'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
+                        'datasetid' => $mauroDatasetId,
                         'label' => $input['label'],
                         'short_description' => $input['short_description'],
                         'user_id' => $input['user_id'],
@@ -222,22 +225,27 @@ class DatasetController extends Controller
                         'created' => now(),
                         'updated' => now(),
                         'submitted' => now(),
+                        'pid' => (string) Str::uuid(),
                         'create_origin' => $input['create_origin'],
                     ]);
+                    $dId = $dataset->id;
 
                     // Dispatch this potentially lengthy subset of data
                     // to a technical object data store job - API doesn't
                     // care if it exists or not. We leave that determination to
                     // the service itself.
-
+                    // and not found `extracted_terms`
                     TechnicalObjectDataStore::dispatch(
-                        $mauro['DataModel']['responseJson']['id'],
+                        (string) $mauroDatasetId,
                         base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6))
                     );
-                    
+
+                    $versioning = Mauro::finaliseDataModel($mauroDatasetId);
+                    Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['documentationVersion']]);
+
                     return response()->json([
                         'message' => 'created',
-                        'data' => $dataset->id,
+                        'data' => $dId,
                     ], 201);
                 }
             } else {
@@ -258,10 +266,12 @@ class DatasetController extends Controller
                 );
 
                 if (!empty($response)) {
+                    $input['dataset'] = $response;
                     $mauro = MMC::createMauroDataModel($user, $team, $input);
                     if (!empty($mauro)) {
+                        $mauroDatasetId = (string) $mauro['DataModel']['responseJson']['id'];
                         $dataset = MMC::createDataset([
-                            'datasetid' => (string) $mauro['DataModel']['responseJson']['id'],
+                            'datasetid' => $mauroDatasetId,
                             'label' => $input['label'],
                             'short_description' => $input['short_description'],
                             'user_id' => $input['user_id'],
@@ -272,21 +282,27 @@ class DatasetController extends Controller
                             'created' => now(),
                             'updated' => now(),
                             'submitted' => now(),
+                            'pid' => (string) Str::uuid(),
                             'create_origin' => $input['create_origin'],
                         ]);
+                        $dId = $dataset->id;
 
                         // Dispatch this potentially lengthy subset of data
                         // to a technical object data store job - API doesn't
                         // care if it exists or not. We leave that determination to
                         // the service itself.
+                        // and not found `extracted_terms`
                         TechnicalObjectDataStore::dispatch(
-                            $mauro['DataModel']['responseJson']['id'],
+                            $mauroDatasetId,
                             base64_encode(gzcompress(gzencode(json_encode($response)), 6))
                         );
 
+                        $versioning = Mauro::finaliseDataModel($mauroDatasetId);
+                        Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['documentationVersion']]);
+
                         return response()->json([
                             'message' => 'created',
-                            'data' => $dataset->id,
+                            'data' => $dId,
                         ], 201);
                     }
                 }
@@ -304,9 +320,192 @@ class DatasetController extends Controller
         }
     }
 
-    public function update(Request $request, int $id)
+    /**
+     * @OA\Put(
+     *    path="/api/v1/datasets/{id}",
+     *    operationId="update_datasets",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@update",
+     *    description="Update a dataset with a new dataset version",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="dataset id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="dataset id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="team_id", type="integer", example="1"),
+     *             @OA\Property(property="user_id", type="integer", example="3"),
+     *             @OA\Property(property="label", type="string", example="label dataset for test"),
+     *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
+     *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
+     *             @OA\Property(property="dataset", type="array", @OA\Items())
+     *          )
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Created",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="integer", example="100")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function update(UpdateDataset $request, int $id)
     {
-        //
+        try {
+            $input = $request->all();
+
+            $user = User::where('id', (int) $input['user_id'])->first()->toArray();
+            $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
+            $currDataset = Dataset::where('id', $id)->first()->toArray();
+            $currentPid = $currDataset['pid'];
+            $currentDatasetId = $currDataset['datasetid'];
+
+            // First validate the incoming schema to ensure it's in GWDM format
+            // if not, attempt to translate prior to saving
+            $validateDataModelType = MMC::validateDataModelType(
+                json_encode($input['dataset']),
+                env('GWDM'),
+                env('GWDM_CURRENT_VERSION')
+            );
+
+            if ($validateDataModelType) {
+                $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
+                $newDatasetId = (string) $duplicateDataModel['id'];
+                MMC::updateDataModel($user, $team, $input, $newDatasetId);
+
+                $dataset = MMC::createDataset([
+                    'datasetid' => $newDatasetId,
+                    'label' => $input['label'],
+                    'short_description' => $input['short_description'],
+                    'user_id' => $input['user_id'],
+                    'team_id' => $input['team_id'],
+                    'dataset' => json_encode($input['dataset']),
+                    'created' => now(),
+                    'updated' => now(),
+                    'submitted' => now(),
+                    'pid' => $currentPid,
+                    'create_origin' => $input['create_origin'],
+                ]);
+                $dId = $dataset->id;
+
+                // Dispatch this potentially lengthy subset of data
+                // to a technical object data store job - API doesn't
+                // care if it exists or not. We leave that determination to
+                // the service itself.
+                TechnicalObjectDataStore::dispatch(
+                    $newDatasetId,
+                    base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6))
+                );
+
+                $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
+                Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['modelVersion']]);
+
+                Dataset::where('id', '=', $id)->delete();
+                MMC::deleteFromElastic($id);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => Dataset::where('id', '=', $dId)->first(),
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            } else {
+                // Incoming dataset is not in GWDM format, so at this point we
+                // need to translate it
+                $response = MMC::translateDataModelType(
+                    json_encode($input['dataset']),
+                    env('GWDM'),
+                    env('GWDM_CURRENT_VERSION'),
+                    env('HDRUK'),
+                    // TODO
+                    // 
+                    // The following is hardcoded for now - but needs to be
+                    // more intelligent in the future. Need a solution for
+                    // not working on assumptions. Theoretically, we can 
+                    // use the incoming version, but needs confirmation
+                    '2.1.2'
+                );
+
+                if (!empty($response)) {
+                    $input['dataset'] = $response;
+                    $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
+                    $newDatasetId = (string) $duplicateDataModel['id'];
+                    MMC::updateDataModel($user, $team, $input, $newDatasetId);
+                    $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
+
+                    $dataset = MMC::createDataset([
+                        'datasetid' => $newDatasetId,
+                        'label' => $input['label'],
+                        'short_description' => $input['short_description'],
+                        'user_id' => $input['user_id'],
+                        'team_id' => $input['team_id'],
+                        'dataset' => json_encode($response),
+                        'created' => now(),
+                        'updated' => now(),
+                        'submitted' => now(),
+                        'pid' => $currentPid,
+                        'create_origin' => $input['create_origin'],
+                    ]);
+                    $dId = $dataset->id;
+
+                    // Dispatch this potentially lengthy subset of data
+                    // to a technical object data store job - API doesn't
+                    // care if it exists or not. We leave that determination to
+                    // the service itself.
+                    TechnicalObjectDataStore::dispatch(
+                        $dId,
+                        base64_encode(gzcompress(gzencode(json_encode($response)), 6))
+                    );
+
+                    $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
+                    Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['modelVersion']]);
+
+                    Dataset::where('id', '=', $id)->delete();
+                    MMC::deleteFromElastic($id);
+
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_OK.message'),
+                        'data' => Dataset::where('id', '=', $dId)->first(),
+                    ], Config::get('statuscodes.STATUS_OK.code'));
+                }
+
+                // Fail
+                return response()->json([
+                    'message' => 'dataset is in an unknown format and cannot be processed',
+                ], 400);
+            }
+
+            throw new NotFoundException('Mauro Data Mapper folder id for team ' . $input['team_id'] . ' not found');
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     public function edit(Request $request, int $id)
@@ -365,6 +564,7 @@ class DatasetController extends Controller
 
             Dataset::where('id', (int) $id)->delete();
 
+            // error: The client noticed that the server is not Elasticsearch and we do not support this unknown product
             MMC::deleteFromElastic($id);
 
             return response()->json([

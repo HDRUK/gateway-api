@@ -28,6 +28,7 @@ class DatasetTest extends TestCase
     const TEST_URL_USER = 'api/v1/users';
 
     private $dataset = null;
+    private $datasetUpdate = null;
 
     protected $header = [];
     
@@ -52,6 +53,7 @@ class DatasetTest extends TestCase
         // Lengthy process, but a more consistent representation
         // of an incoming dataset
         $this->dataset = $this->getFakeDataset();
+        $this->datasetUpdate = $this->getFakeUpdateDataset();
 
         // Define mock client and fake response for elasticsearch service
         $mock = new Client();
@@ -200,13 +202,14 @@ class DatasetTest extends TestCase
         $userId = $contentCreateUser['data'];
 
         // create dataset
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseCreateDataset = $this->json(
             'POST',
             self::TEST_URL_DATASET,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'label' => $labelDataset,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => 'MANUAL',
@@ -267,6 +270,7 @@ class DatasetTest extends TestCase
         ]);
         $responseDeleteUser->assertStatus(200);
     }
+
 
     /**
      * Create new Dataset with success
@@ -362,13 +366,14 @@ class DatasetTest extends TestCase
         $userId = $contentCreateUser['data'];
 
         // create dataset
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseCreateDataset = $this->json(
             'POST',
             self::TEST_URL_DATASET,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'label' => $labelDataset,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => 'MANUAL',
@@ -551,6 +556,14 @@ class DatasetTest extends TestCase
     private function getFakeDataset()
     {
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
+        $json = json_decode($jsonFile, true);
+
+        return $json;
+    }
+
+    private function getFakeUpdateDataset()
+    {
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min_update.json', 0, null);
         $json = json_decode($jsonFile, true);
 
         return $json;

@@ -2,20 +2,24 @@
 
 namespace App\Http\Requests\Dataset;
 
-use App\Models\Dataset;
 use App\Http\Requests\BaseFormRequest;
 use App\Rules\CheckMauroFolderIdInTeam;
 
-class CreateDataset extends BaseFormRequest
+class UpdateDataset extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
+            'id' => [
+                'required',
+                'int',
+                'exists:datasets,id',
+            ],
             'team_id' => [
                 'int',
                 'required',
@@ -30,13 +34,6 @@ class CreateDataset extends BaseFormRequest
             'label' => [
                 'string',
                 'required',
-                function ($attribute, $value, $fail) {
-                    $exists = Dataset::where('label', '=', $value)->where('team_id', '=', $this->team_id)->exists();
-
-                    if ($exists) {
-                        $fail('The selected dataset label exists.');
-                    }
-                },
             ],
             'short_description' => [
                 'string',
@@ -51,5 +48,15 @@ class CreateDataset extends BaseFormRequest
                 'in:MANUAL,API,FMA',
             ],
         ];
+    }
+
+    /**
+     * Add Route parameters to the FormRequest.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge(['id' => $this->route('id')]);
     }
 }
