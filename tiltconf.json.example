@@ -5,7 +5,9 @@
 
     "traserServiceRoot": "/Users/lokisinclair/Development/HDRUK/traser",
     "tedServiceRoot": "/Users/lokisinclair/Development/HDRUK/term-extraction-director",
+    "fmaServiceRoot": "/Users/lokisinclair/Development/HDRUK/federated_metadata_mk2",
 
     "traserEnabled": true,
-    "tedEnabled": true
+    "tedEnabled": true,
+    "fmaEnabled": true
 }

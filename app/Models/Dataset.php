@@ -40,6 +40,7 @@ class Dataset extends Model
         'submitted',
         'pid',
         'version',
+        'create_origin',
     ];
 
     /**

@@ -97,7 +97,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -232,7 +232,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -354,7 +354,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -495,7 +495,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -568,7 +568,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations/' . $federationId,
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path/test',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -684,7 +684,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -757,7 +757,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations/' . $federationId,
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path/test',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -805,7 +805,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations/' . $federationId,
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path/test/update',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app/update',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -924,7 +924,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations',
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -997,7 +997,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations/' . $federationId,
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path/test',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
@@ -1045,7 +1045,7 @@ class FederationTest extends TestCase
             'api/v1/teams/' . $teamId . '/federations/' . $federationId,
             [
                 'federation_type' => 'federation type',
-                'auth_type' => 'bearer',
+                'auth_type' => 'BEARER',
                 'auth_secret_key' => 'secret/key/path/test/update',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app/update',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',

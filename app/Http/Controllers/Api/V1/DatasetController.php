@@ -225,6 +225,7 @@ class DatasetController extends Controller
                         'updated' => now(),
                         'submitted' => now(),
                         'pid' => (string) Str::uuid(),
+                        'create_origin' => $input['create_origin'],
                     ]);
                     $dId = $dataset->id;
 
@@ -281,6 +282,7 @@ class DatasetController extends Controller
                             'updated' => now(),
                             'submitted' => now(),
                             'pid' => (string) Str::uuid(),
+                            'create_origin' => $input['create_origin'],
                         ]);
                         $dId = $dataset->id;
 
