@@ -21,6 +21,8 @@ use App\Http\Requests\Federation\DeleteFederation;
 use App\Http\Requests\Federation\GetAllFederation;
 use App\Http\Requests\Federation\UpdateFederation;
 
+use Illuminate\Support\Facades\Http;
+
 class FederationController extends Controller
 {
     use FederationTransformation;
@@ -611,6 +613,50 @@ class FederationController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\POST(
+     *    path="/api/v1/teams/{teamId}/federations/test",
+     *    operationId="test_federation",
+     *    tags={"Team-Federations"},
+     *    summary="FederationController@testFederation",
+     *    description="Test federation configuration",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="boolean", example="false"),
+     *          @OA\Property(property="errors", type="string", example="request received HTTP 401 (Unauthorized)"),
+     *          @OA\Property(property="status", type="integer", example="401"),
+     *          @OA\Property(property="title", type="string", example="Test Unsuccessful"),
+     *       )
+     *    )
+     */
+    public function testFederation(Request $request)
+    {
+        $input = $request->all();
+        try {
+            $response = Http::withBody(
+                json_encode($input), 'application/json'
+            )->post(env('FMA_SERVICE_URL') . '/test');
+
+            return response()->json($response->json());
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
