@@ -42,6 +42,11 @@ class UpdateDataset extends BaseFormRequest
             'dataset' => [
                 'required',
             ],
+            'create_origin' => [
+                'string',
+                'required',
+                'in:MANUAL,API,FMA',
+            ],
         ];
     }
 

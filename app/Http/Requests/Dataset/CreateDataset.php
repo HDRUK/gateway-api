@@ -31,7 +31,7 @@ class CreateDataset extends BaseFormRequest
                 'string',
                 'required',
                 function ($attribute, $value, $fail) {
-                    $exists = Dataset::where('label', '=', $value)->exists();
+                    $exists = Dataset::where('label', '=', $value)->where('team_id', '=', $this->team_id)->exists();
 
                     if ($exists) {
                         $fail('The selected dataset label exists.');
