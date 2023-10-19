@@ -93,7 +93,7 @@ class FederationController extends Controller
     {
         $federations = Federation::whereHas('team', function ($query) use ($teamId) {
             $query->where('id', $teamId);
-        })->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        })->with(['notification'])->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         return response()->json(
             $federations
@@ -160,7 +160,7 @@ class FederationController extends Controller
     {
         $federations = Federation::whereHas('team', function ($query) use ($teamId) {
             $query->where('id', $teamId);
-        })->where('id', $federationId)->first()->toArray();
+        })->where('id', $federationId)->with(['notification'])->first()->toArray();
 
         return response()->json([
             'message' => 'success',
