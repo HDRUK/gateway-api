@@ -766,7 +766,8 @@ Authorization: Bearer {{accessToken}}
         "t1@test.com",
         "t2@test.com",
         "t3@test.com"
-    ]
+    ],
+    "tested": true
 }
 
 #### update federation for team

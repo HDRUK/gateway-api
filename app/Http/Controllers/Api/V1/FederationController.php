@@ -204,6 +204,7 @@ class FederationController extends Controller
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
      *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
+     *             @OA\Property(property="tested", type="boolean", example=true),
      *          )
      *       )
      *    ),
@@ -245,6 +246,7 @@ class FederationController extends Controller
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
                 'enabled' => $input['enabled'],
+                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
             ]);
 
             TeamHasFederation::create([
@@ -321,6 +323,7 @@ class FederationController extends Controller
      *             @OA\Property(property="run_time_hour", type="integer", example=11),
      *             @OA\Property(property="enabled", type="boolean", example=true),
      *             @OA\Property(property="notification", type="array", example="['t1@test.com','t2@test.com']", @OA\Items(type="array", @OA\Items())),
+     *             @OA\Property(property="tested", type="boolean", example=true),
      *          )
      *       )
      *    ),
@@ -362,6 +365,7 @@ class FederationController extends Controller
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
                 'enabled' => $input['enabled'],
+                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
             ]);
 
             $federationNotifications = FederationHasNotification::where([
@@ -487,6 +491,7 @@ class FederationController extends Controller
                 'endpoint_dataset',
                 'run_time_hour',
                 'enabled',
+                'tested',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);

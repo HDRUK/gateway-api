@@ -5652,6 +5652,10 @@
                                         "type": "string",
                                         "example": "lorem ipsum"
                                     },
+                                    "create_origin": {
+                                        "type": "string",
+                                        "example": "MANUAL"
+                                    },
                                     "dataset": {
                                         "type": "array",
                                         "items": {}
@@ -5850,6 +5854,10 @@
                                     "short_description": {
                                         "type": "string",
                                         "example": "lorem ipsum"
+                                    },
+                                    "create_origin": {
+                                        "type": "string",
+                                        "example": "MANUAL"
                                     },
                                     "dataset": {
                                         "type": "array",
@@ -7206,6 +7214,11 @@
                                                     "tested": {
                                                         "type": "boolean",
                                                         "example": "0"
+                                                    },
+                                                    "notification": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
                                                     }
                                                 },
                                                 "type": "object"
@@ -7512,6 +7525,11 @@
                                                 "tested": {
                                                     "type": "boolean",
                                                     "example": "0"
+                                                },
+                                                "notification": {
+                                                    "type": "array",
+                                                    "items": {},
+                                                    "example": "[]"
                                                 }
                                             },
                                             "type": "object"

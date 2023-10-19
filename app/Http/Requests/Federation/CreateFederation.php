@@ -59,6 +59,9 @@ class CreateFederation extends BaseFormRequest
             'notification.*' => [
                 'email',
             ],
+            'tested' => [
+                'boolean',
+            ],
         ];
     }
 

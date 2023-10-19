@@ -58,6 +58,7 @@ class Federation extends Model
         'endpoint_dataset',
         'run_time_hour',
         'enabled',
+        'tested',
     ];
 
     /**
@@ -65,6 +66,7 @@ class Federation extends Model
      */
     protected $casts = [
         'enabled' => 'boolean',
+        'tested' => 'boolean',
     ];
 
     public function team(): BelongsToMany
