@@ -75,6 +75,12 @@ class RoleSeeder extends Seeder
                 'permissions.update',
                 'custodians.create',
             ],
+            'hdruk.cohort.admin' => [
+                'cohort.create',
+                'cohort.read',
+                'cohort.update',
+                'cohort.delete',
+            ],
             'custodian.team.admin' => [
                 'applications.read',
                 'applications.create',
