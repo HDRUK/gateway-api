@@ -4919,6 +4919,24 @@
                                                         "type": "object"
                                                     },
                                                     "ro_crate": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "organization_name": {
+                                                        "type": "string",
+                                                        "example": "Sit quisquam est recusandae."
+                                                    },
+                                                    "project_title": {
+                                                        "type": "string",
+                                                        "example": "Sit quisquam est recusandae."
+                                                    },
+                                                    "lay_summary": {
+                                                        "type": "string",
+                                                        "example": "Sit quisquam est recusandae."
+                                                    },
+                                                    "public_benefit_statement": {
                                                         "type": "string",
                                                         "example": "Sit quisquam est recusandae."
                                                     }
@@ -4970,6 +4988,24 @@
                                         "example": "1"
                                     },
                                     "ro_crate": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "organization_name": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "project_title": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "lay_summary": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "public_benefit_statement": {
                                         "type": "string",
                                         "example": "Sit quisquam est recusandae."
                                     }
@@ -5141,6 +5177,24 @@
                                                         "type": "object"
                                                     },
                                                     "ro_crate": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "organization_name": {
+                                                        "type": "string",
+                                                        "example": "Sit quisquam est recusandae."
+                                                    },
+                                                    "project_title": {
+                                                        "type": "string",
+                                                        "example": "Sit quisquam est recusandae."
+                                                    },
+                                                    "lay_summary": {
+                                                        "type": "string",
+                                                        "example": "Sit quisquam est recusandae."
+                                                    },
+                                                    "public_benefit_statement": {
                                                         "type": "string",
                                                         "example": "Sit quisquam est recusandae."
                                                     }
@@ -5237,6 +5291,24 @@
                                         "example": "1"
                                     },
                                     "ro_crate": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "organization_name": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "project_title": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "lay_summary": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "public_benefit_statement": {
                                         "type": "string",
                                         "example": "Sit quisquam est recusandae."
                                     }
@@ -5386,6 +5458,24 @@
                                         "example": "1"
                                     },
                                     "ro_crate": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "organization_name": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "project_title": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "lay_summary": {
+                                        "type": "string",
+                                        "example": "Sit quisquam est recusandae."
+                                    },
+                                    "public_benefit_statement": {
                                         "type": "string",
                                         "example": "Sit quisquam est recusandae."
                                     }
