@@ -69,10 +69,10 @@ class UpdateFederation extends BaseFormRequest
                 'required',
                 'boolean',
             ],
-            'notification' => [
+            'notifications' => [
                 'array',
             ],
-            'notification.*' => [
+            'notifications.*' => [
                 'email',
             ],
             'tested' => [
