@@ -45,6 +45,8 @@ class UserSeeder extends Seeder
 
         $this->createUser('Dar', 'Reviewer', 'hdrreviewer@gmail.com', 'Gateway@123', false, ['dar.reviewer']);
 
+        $this->createUser('HDR', 'Cohort-Admin', 'hdrcohortadmin@gmail.com', 'Flood15?Voice', false, ['hdruk.cohort.admin']);
+
         User::factory(10)->create();
     }
 
