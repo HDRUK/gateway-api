@@ -26,6 +26,10 @@ class DataUseRegister extends Model
         'enabled',
         'user_id',
         'ro_crate',
+        'organization_name',
+        'project_title',
+        'lay_summary',
+        'public_benefit_statement',
     ];
 
     /**

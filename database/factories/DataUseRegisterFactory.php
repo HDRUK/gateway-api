@@ -24,11 +24,21 @@ class DataUseRegisterFactory extends Factory
 
         $randomString = fake()->words(fake()->randomDigit(), true);
 
+        $fakeROCrate = json_decode('{
+            "@context": "https://w3id.org/ro/crate/1.2-DRAFT/context",
+            "@graph": [
+            ]
+        }', true);
+
         return [
             'dataset_id' => $datasetId,
             'enabled' => fake()->boolean(),
             'user_id' => $teamHasUser->user_id,
-            'ro_crate' => $randomString,
+            'ro_crate' => json_encode($fakeROCrate),
+            'organization_name' => $randomString,
+            'project_title' => $randomString,
+            'lay_summary' => $randomString,
+            'public_benefit_statement' => $randomString,
         ];
     }
 }

@@ -58,6 +58,10 @@ class DataUseRegisterIntegrationTest extends TestCase
                     'enabled',
                     'user_id',
                     'ro_crate',
+                    'organization_name',
+                    'project_title',
+                    'lay_summary',
+                    'public_benefit_statement',
                 ],
             ],
             'current_page',
@@ -90,12 +94,21 @@ class DataUseRegisterIntegrationTest extends TestCase
         $randomString = fake()->words(fake()->randomDigitNot(0), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
+        $fakeROCrate = json_decode('{
+            "@context": "https://example.com/context",
+            "@graph": [
+            ]
+        }', true);
 
         $mockData = [
             "dataset_id" => (int) $dataset->id,
             "enabled" => fake()->boolean(),
             "user_id" => (int) $teamHasUser->user_id,
-            "ro_crate" => $randomString,
+            "ro_crate" => $fakeROCrate,
+            "organization_name" => $randomString,
+            "project_title" => $randomString,
+            "lay_summary" => $randomString,
+            "public_benefit_statement" => $randomString,
         ];
 
         $response = $this->json(
@@ -129,6 +142,10 @@ class DataUseRegisterIntegrationTest extends TestCase
                     'enabled',
                     'user_id',
                     'ro_crate',
+                    'organization_name',
+                    'project_title',
+                    'lay_summary',
+                    'public_benefit_statement',
                 ]
             ]
         ]);
@@ -151,12 +168,21 @@ class DataUseRegisterIntegrationTest extends TestCase
         $randomString = fake()->words(fake()->randomDigitNot(0), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
+        $fakeROCrate = json_decode('{
+            "@context": "https://example.com/context",
+            "@graph": [
+            ]
+        }', true);
 
         $mockData = [
             "dataset_id" => (int) $dataset->id,
             "enabled" => fake()->boolean(),
             "user_id" => (int) $teamHasUser->user_id,
-            "ro_crate" => $randomString,
+            "ro_crate" => $fakeROCrate,
+            "organization_name" => $randomString,
+            "project_title" => $randomString,
+            "lay_summary" => $randomString,
+            "public_benefit_statement" => $randomString,
         ];
 
         $response = $this->json(
@@ -183,13 +209,22 @@ class DataUseRegisterIntegrationTest extends TestCase
         $dataset = Dataset::all()->random();
         $randomString = fake()->words(fake()->numberBetween(1, 10), true);
         $randomWord = fake()->word();
+        $fakeROCrate = json_decode('{
+            "@context": "https://example.com/context",
+            "@graph": [
+            ]
+        }', true);
 
         // create new data_use_register
         $mockDataIns = [
             "dataset_id" => (int) $dataset->id,
             "enabled" => fake()->boolean(),
             "user_id" => $teamHasUser->user_id,
-            "ro_crate" => $randomString,
+            "ro_crate" => $fakeROCrate,
+            "organization_name" => $randomString,
+            "project_title" => $randomString,
+            "lay_summary" => $randomString,
+            "public_benefit_statement" => $randomString,
         ];
         $responseIns = $this->json(
             'POST',
@@ -205,13 +240,23 @@ class DataUseRegisterIntegrationTest extends TestCase
         $dataset2 = Dataset::all()->random();
         $randomString2 = fake()->words(fake()->numberBetween(1, 10), true);
         $randomWord2 = fake()->word();
+        $fakeROCrate2 = json_decode('{
+            "@context": "https://example2.com/context",
+            "@graph": [
+            ]
+        }', true);
 
         // update data_use_register
         $mockDataUpdate = [
             "dataset_id" => (int) $dataset2->id,
             "enabled" => fake()->boolean(),
             "user_id" => $teamHasUser2->user_id,
-            "ro_crate" => $randomString2,
+            "ro_crate" => $fakeROCrate2,
+            "organization_name" => $randomString2,
+            "project_title" => $randomString2,
+            "lay_summary" => $randomString2,
+            "public_benefit_statement" => $randomString2,
+
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -225,7 +270,11 @@ class DataUseRegisterIntegrationTest extends TestCase
         $this->assertTrue($mockDataUpdate['dataset_id'] === $responseUpdate['data']['dataset_id']);
         $this->assertTrue($mockDataUpdate['enabled'] === $responseUpdate['data']['enabled']);
         $this->assertTrue($mockDataUpdate['user_id'] === $responseUpdate['data']['user_id']);
-        $this->assertTrue($mockDataUpdate['ro_crate'] === $responseUpdate['data']['ro_crate']);
+        $this->assertTrue(json_encode($mockDataUpdate['ro_crate']) === $responseUpdate['data']['ro_crate']);
+        $this->assertTrue($mockDataUpdate['organization_name'] === $responseUpdate['data']['organization_name']);
+        $this->assertTrue($mockDataUpdate['project_title'] === $responseUpdate['data']['project_title']);
+        $this->assertTrue($mockDataUpdate['lay_summary'] === $responseUpdate['data']['lay_summary']);
+        $this->assertTrue($mockDataUpdate['public_benefit_statement'] === $responseUpdate['data']['public_benefit_statement']);
     }
 
     /**
@@ -243,13 +292,22 @@ class DataUseRegisterIntegrationTest extends TestCase
         $randomString = fake()->words(fake()->randomDigitNot(0), true);
         $shortRandomString = fake()->words(fake()->numberBetween(1, 4), true);
         $randomWord = fake()->word();
+        $fakeROCrate = json_decode('{
+            "@context": "https://example.com/context",
+            "@graph": [
+            ]
+        }', true);
 
         // create new data_use_register
         $mockDataIns = [
             "dataset_id" => (int) $dataset->id,
             "enabled" => fake()->boolean(),
             "user_id" => $teamHasUser->user_id,
-            "ro_crate" => $randomString,
+            "ro_crate" => $fakeROCrate,
+            "organization_name" => $randomString,
+            "project_title" => $randomString,
+            "lay_summary" => $randomString,
+            "public_benefit_statement" => $randomString,
         ];
         $responseIns = $this->json(
             'POST',
