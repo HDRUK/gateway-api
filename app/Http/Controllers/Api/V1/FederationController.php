@@ -653,6 +653,7 @@ class FederationController extends Controller
      *          @OA\Property(property="title", type="string", example="Test Unsuccessful"),
      *       )
      *    )
+     * )
      */
     public function testFederation(Request $request)
     {
