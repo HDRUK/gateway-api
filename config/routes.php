@@ -2252,5 +2252,18 @@ return [
             'federationId' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'team.federation',
+        'method' => 'post',
+        'path' => '/teams/{teamId}/federations/test',
+        'methodController' => 'FederationController@testFederation',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
 
 ];
