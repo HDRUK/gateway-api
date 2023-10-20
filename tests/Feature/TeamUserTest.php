@@ -261,6 +261,7 @@ class TeamUserTest extends TestCase
         ];
         $this->assertTrue( $dispatchedEmails ===  $expectedDispatchedEmails,'One email sent for removing developer');
 
+        $this->deleteTeam($teamId);
     }
 
 
