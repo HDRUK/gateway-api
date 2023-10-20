@@ -7305,7 +7305,7 @@
                                                         "type": "boolean",
                                                         "example": "0"
                                                     },
-                                                    "notification": {
+                                                    "notifications": {
                                                         "type": "array",
                                                         "items": {},
                                                         "example": "[]"
@@ -7434,13 +7434,17 @@
                                         "type": "boolean",
                                         "example": true
                                     },
-                                    "notification": {
+                                    "notifications": {
                                         "type": "array",
                                         "items": {
                                             "type": "array",
                                             "items": {}
                                         },
                                         "example": "['t1@test.com','t2@test.com']"
+                                    },
+                                    "tested": {
+                                        "type": "boolean",
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -7616,7 +7620,7 @@
                                                     "type": "boolean",
                                                     "example": "0"
                                                 },
-                                                "notification": {
+                                                "notifications": {
                                                     "type": "array",
                                                     "items": {},
                                                     "example": "[]"
@@ -7707,13 +7711,17 @@
                                         "type": "boolean",
                                         "example": true
                                     },
-                                    "notification": {
+                                    "notifications": {
                                         "type": "array",
                                         "items": {
                                             "type": "array",
                                             "items": {}
                                         },
                                         "example": "['t1@test.com','t2@test.com']"
+                                    },
+                                    "tested": {
+                                        "type": "boolean",
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -7954,13 +7962,17 @@
                                         "type": "boolean",
                                         "example": true
                                     },
-                                    "notification": {
+                                    "notifications": {
                                         "type": "array",
                                         "items": {
                                             "type": "array",
                                             "items": {}
                                         },
                                         "example": "['t1@test.com','t2@test.com']"
+                                    },
+                                    "tested": {
+                                        "type": "boolean",
+                                        "example": true
                                     }
                                 },
                                 "type": "object"
@@ -8014,6 +8026,64 @@
                                         "message": {
                                             "type": "string",
                                             "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/teams/{teamId}/federations/test": {
+            "post": {
+                "tags": [
+                    "Team-Federations"
+                ],
+                "summary": "FederationController@testFederation",
+                "description": "Test federation configuration",
+                "operationId": "test_federation",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "boolean",
+                                            "example": "false"
+                                        },
+                                        "errors": {
+                                            "type": "string",
+                                            "example": "request received HTTP 401 (Unauthorized)"
+                                        },
+                                        "status": {
+                                            "type": "integer",
+                                            "example": "401"
+                                        },
+                                        "title": {
+                                            "type": "string",
+                                            "example": "Test Unsuccessful"
                                         }
                                     },
                                     "type": "object"
