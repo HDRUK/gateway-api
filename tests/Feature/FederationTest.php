@@ -104,7 +104,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     't1@test.com',
                     't2@test.com',
                     't3@test.com'
@@ -240,7 +240,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     't1@test.com',
                     't2@test.com',
                     't3@test.com'
@@ -363,7 +363,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     't1@test.com',
                     't2@test.com',
                     't3@test.com'
@@ -505,7 +505,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     't1@test.com',
                     't2@test.com',
                     't3@test.com'
@@ -579,7 +579,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     'y1@test.com',
                     'y2@test.com',
                     'y3@test.com',
@@ -695,7 +695,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     't1@test.com',
                     't2@test.com',
                     't3@test.com'
@@ -769,7 +769,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     'y1@test.com',
                     'y2@test.com',
                     'y3@test.com',
@@ -817,7 +817,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     'y1@test.com',
                     'y2@test.com',
                 ]
@@ -936,7 +936,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     't1@test.com',
                     't2@test.com',
                     't3@test.com'
@@ -1010,7 +1010,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     'y1@test.com',
                     'y2@test.com',
                     'y3@test.com',
@@ -1058,7 +1058,7 @@ class FederationTest extends TestCase
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
-                'notification' => [
+                'notifications' => [
                     'y1@test.com',
                     'y2@test.com',
                 ]

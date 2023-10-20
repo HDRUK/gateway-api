@@ -252,7 +252,7 @@ class FederationController extends Controller
                 'team_id' => $teamId,
             ]);
 
-            foreach($input['notification'] as $email) {
+            foreach($input['notifications'] as $email) {
                 $notification = Notification::create([
                     'notification_type' => 'federation',
                     'message' => '',
@@ -375,7 +375,7 @@ class FederationController extends Controller
                 FederationHasNotification::where('notification_id', $federationNotification)->delete();
             }
 
-            foreach ($input['notification'] as $email) {
+            foreach ($input['notifications'] as $email) {
                 $notification = Notification::create([
                     'notification_type' => 'federation',
                     'message' => '',
@@ -498,7 +498,7 @@ class FederationController extends Controller
 
             Federation::where('id', $federationId)->update($array);
 
-            if (array_key_exists('notification', $input)) {
+            if (array_key_exists('notifications', $input)) {
                 $federationNotifications = FederationHasNotification::where([
                     'federation_id' => $federationId,
                 ])->pluck('notification_id');
@@ -508,7 +508,7 @@ class FederationController extends Controller
                     FederationHasNotification::where('notification_id', $federationNotification)->delete();
                 }
 
-                foreach ($input['notification'] as $email) {
+                foreach ($input['notifications'] as $email) {
                     $notification = Notification::create([
                         'notification_type' => 'federation',
                         'message' => '',

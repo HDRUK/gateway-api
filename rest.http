@@ -762,7 +762,7 @@ Authorization: Bearer {{accessToken}}
     "endpoint_dataset": "/api/v1/noauth/datasets/{id}",
     "run_time_hour": 11,
     "enabled": true,
-    "notification": [
+    "notifications": [
         "t1@test.com",
         "t2@test.com",
         "t3@test.com"
@@ -785,7 +785,7 @@ Authorization: Bearer {{accessToken}}
     "endpoint_dataset": "/api/v1/noauth/datasets/{id}",
     "run_time_hour": 11,
     "enabled": true,
-    "notification": [
+    "notifications": [
         "t1@test.com",
         "y2@test.com",
         "y3@test.com"
@@ -807,7 +807,7 @@ Authorization: Bearer {{accessToken}}
     "endpoint_dataset": "/api/v1/noauth/datasets/{id}",
     "run_time_hour": 11,
     "enabled": true,
-    "notification": [
+    "notifications": [
         "t1@test.com"
     ]
 }

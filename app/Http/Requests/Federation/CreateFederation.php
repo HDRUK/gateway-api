@@ -53,10 +53,10 @@ class CreateFederation extends BaseFormRequest
                 'required',
                 'boolean',
             ],
-            'notification' => [
+            'notifications' => [
                 'array',
             ],
-            'notification.*' => [
+            'notifications.*' => [
                 'email',
             ],
             'tested' => [

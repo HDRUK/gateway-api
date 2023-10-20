@@ -458,7 +458,6 @@ class DatasetController extends Controller
                     $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
                     $newDatasetId = (string) $duplicateDataModel['id'];
                     MMC::updateDataModel($user, $team, $input, $newDatasetId);
-                    $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
 
                     $dataset = MMC::createDataset([
                         'datasetid' => $newDatasetId,

@@ -57,7 +57,6 @@ class Federation extends Model
         'endpoint_datasets',
         'endpoint_dataset',
         'run_time_hour',
-        'notification',
         'enabled',
         'tested',
     ];
