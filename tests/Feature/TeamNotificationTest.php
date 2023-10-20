@@ -89,6 +89,20 @@ class TeamNotificationTest extends TestCase
         $teamNotifications = TeamHasNotification::where('team_id', $teamId)->get();
 
         $this->assertCount(1, $teamNotifications);
+
+        // delete the team created
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header,
+        );
+
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
+
     }
 
     public function test_update_notification_for_team_with_success()
@@ -174,6 +188,19 @@ class TeamNotificationTest extends TestCase
         $this->assertCount(1,
             $teamNotifications
         );
+
+        // delete the team created
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header,
+        );
+
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
     }
 
     public function test_delete_notification_for_team_with_success()
@@ -280,6 +307,19 @@ class TeamNotificationTest extends TestCase
             0,
             $teamNotifications
         );
+
+        // delete the team created
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/teams/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header,
+        );
+
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
     }
 
     public function updateTeamUserRoles(int $teamId, int $userId)
