@@ -23,13 +23,20 @@ class EditAuditLog extends BaseFormRequest
                 'integer',
                 'exists:users,id',
             ],
+            'team_id' => [
+                'integer',
+                'exists:teams,id',
+            ],
+            'action_type' => [
+                'string',
+                'max:50',
+            ],
+            'action_service' => [
+                'string',
+                'max:255',
+            ],
             'description' => [
                 'string',
-                'max:1024',
-            ],
-            'function' => [
-                'string',
-                'max:128',
             ],
         ];
     }

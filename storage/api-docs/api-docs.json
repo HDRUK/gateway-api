@@ -2707,21 +2707,82 @@
                                                         "format": "date-time",
                                                         "example": "2023-04-03 12:00:00"
                                                     },
+                                                    "deleted_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "null"
+                                                    },
                                                     "user_id": {
                                                         "type": "integer",
                                                         "example": "100"
                                                     },
+                                                    "team_id": {
+                                                        "type": "integer",
+                                                        "example": "100"
+                                                    },
+                                                    "action_type": {
+                                                        "type": "string",
+                                                        "example": "UPDATE"
+                                                    },
+                                                    "action_service": {
+                                                        "type": "string",
+                                                        "example": "Gateway API"
+                                                    },
                                                     "description": {
                                                         "type": "string",
-                                                        "example": "someType"
-                                                    },
-                                                    "function": {
-                                                        "type": "string",
-                                                        "example": "some value"
+                                                        "example": "beatae praesentium ut consequatur at ipsam facilis sit neque ut"
                                                     }
                                                 },
                                                 "type": "object"
                                             }
+                                        },
+                                        "first_page_url": {
+                                            "type": "string",
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/teams\\/19\\/federations?page=1"
+                                        },
+                                        "from": {
+                                            "type": "integer",
+                                            "example": "1"
+                                        },
+                                        "last_page": {
+                                            "type": "integer",
+                                            "example": "1"
+                                        },
+                                        "last_page_url": {
+                                            "type": "string",
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/teams\\/19\\/federations?page=1"
+                                        },
+                                        "links": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        },
+                                        "next_page_url": {
+                                            "type": "string",
+                                            "example": "null"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/teams\\/19\\/federations"
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "example": "25"
+                                        },
+                                        "prev_page_url": {
+                                            "type": "string",
+                                            "example": "null"
+                                        },
+                                        "to": {
+                                            "type": "integer",
+                                            "example": "3"
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": "3"
                                         }
                                     },
                                     "type": "object"
@@ -2865,17 +2926,30 @@
                                                     "format": "date-time",
                                                     "example": "2023-04-03 12:00:00"
                                                 },
+                                                "deleted_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "null"
+                                                },
                                                 "user_id": {
                                                     "type": "integer",
                                                     "example": "100"
                                                 },
+                                                "team_id": {
+                                                    "type": "integer",
+                                                    "example": "100"
+                                                },
+                                                "action_type": {
+                                                    "type": "string",
+                                                    "example": "UPDATE"
+                                                },
+                                                "action_service": {
+                                                    "type": "string",
+                                                    "example": "Gateway API"
+                                                },
                                                 "description": {
                                                     "type": "string",
-                                                    "example": "someType"
-                                                },
-                                                "function": {
-                                                    "type": "string",
-                                                    "example": "some value"
+                                                    "example": "beatae praesentium ut consequatur at ipsam facilis sit neque ut"
                                                 }
                                             },
                                             "type": "object"
@@ -2936,22 +3010,29 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "user_id",
-                                    "description",
-                                    "function"
+                                    "action_service",
+                                    "description"
                                 ],
                                 "properties": {
                                     "user_id": {
                                         "type": "integer",
                                         "example": "100"
                                     },
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "100"
+                                    },
+                                    "action_type": {
+                                        "type": "string",
+                                        "example": "UPDATE"
+                                    },
+                                    "action_service": {
+                                        "type": "string",
+                                        "example": "Gateway API"
+                                    },
                                     "description": {
                                         "type": "string",
-                                        "example": "someType"
-                                    },
-                                    "function": {
-                                        "type": "string",
-                                        "example": "some value"
+                                        "example": "beatae praesentium ut consequatur at ipsam facilis sit neque ut"
                                     }
                                 },
                                 "type": "object"
@@ -3006,13 +3087,21 @@
                                                     "type": "integer",
                                                     "example": "100"
                                                 },
+                                                "team_id": {
+                                                    "type": "integer",
+                                                    "example": "100"
+                                                },
+                                                "action_type": {
+                                                    "type": "string",
+                                                    "example": "UPDATE"
+                                                },
+                                                "action_service": {
+                                                    "type": "string",
+                                                    "example": "Gateway API"
+                                                },
                                                 "description": {
                                                     "type": "string",
-                                                    "example": "someType"
-                                                },
-                                                "function": {
-                                                    "type": "string",
-                                                    "example": "some value"
+                                                    "example": "beatae praesentium ut consequatur at ipsam facilis sit neque ut"
                                                 }
                                             },
                                             "type": "object"
@@ -3153,13 +3242,21 @@
                                         "type": "integer",
                                         "example": "100"
                                     },
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "100"
+                                    },
+                                    "action_type": {
+                                        "type": "string",
+                                        "example": "UPDATE"
+                                    },
+                                    "action_service": {
+                                        "type": "string",
+                                        "example": "Gateway API"
+                                    },
                                     "description": {
                                         "type": "string",
-                                        "example": "someType"
-                                    },
-                                    "function": {
-                                        "type": "string",
-                                        "example": "some value"
+                                        "example": "beatae praesentium ut consequatur at ipsam facilis sit neque ut"
                                     }
                                 },
                                 "type": "object"
@@ -3214,13 +3311,21 @@
                                                     "type": "integer",
                                                     "example": "100"
                                                 },
+                                                "team_id": {
+                                                    "type": "integer",
+                                                    "example": "100"
+                                                },
+                                                "action_type": {
+                                                    "type": "string",
+                                                    "example": "UPDATE"
+                                                },
+                                                "action_service": {
+                                                    "type": "string",
+                                                    "example": "Gateway API"
+                                                },
                                                 "description": {
                                                     "type": "string",
-                                                    "example": "someType"
-                                                },
-                                                "function": {
-                                                    "type": "string",
-                                                    "example": "some value"
+                                                    "example": "beatae praesentium ut consequatur at ipsam facilis sit neque ut"
                                                 }
                                             },
                                             "type": "object"
