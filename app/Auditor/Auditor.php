@@ -13,12 +13,14 @@ class Auditor {
      * 
      * @return void
      */
-    public function log(User $user, string $description, string $function): void
+    public function log(int $userId, int $teamId, string $actionType, string $actionService, string $description): void
     {
         AuditLog::create([
-            'user_id' => $user->id,
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'action_type' => $actionType,
+            'action_service' => $actionService,
             'description' => $description,
-            'function' => $function,
         ]);
     }
 }
