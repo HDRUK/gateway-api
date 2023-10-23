@@ -2738,7 +2738,7 @@
                                         },
                                         "first_page_url": {
                                             "type": "string",
-                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/teams\\/19\\/federations?page=1"
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/audit_logs?page=1"
                                         },
                                         "from": {
                                             "type": "integer",
@@ -2750,7 +2750,7 @@
                                         },
                                         "last_page_url": {
                                             "type": "string",
-                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/teams\\/19\\/federations?page=1"
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/audit_logs?page=1"
                                         },
                                         "links": {
                                             "type": "array",
@@ -2766,7 +2766,7 @@
                                         },
                                         "path": {
                                             "type": "string",
-                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/teams\\/19\\/federations"
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/audit_logs"
                                         },
                                         "per_page": {
                                             "type": "integer",

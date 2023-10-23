@@ -5,11 +5,12 @@ namespace App\Console\Commands;
 use Mauro;
 use Auditor;
 
+use App\Models\Team;
 use App\Models\User;
-use App\Models\SchemaProfileChecksum;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use App\Models\SchemaProfileChecksum;
 
 class SchemaToMauroProfileUpdater extends Command
 {
@@ -21,13 +22,10 @@ class SchemaToMauroProfileUpdater extends Command
      */
     private $tag = 'SchemaToMauroProfileUpdater';
 
-    /**
-     * The internal user for this command. Denotes an
-     * internal service and thus no 'real' user account
-     * 
-     * @var User
-     */
-    private $simulatedUser = null;
+    private $simulatedUserId = 2;
+    private $simulatedTeamId = -99;
+    private $actionType = 'UNKNOWN';
+    private $actionService = NULL;
 
     /**
      * The name and signature of the console command.
@@ -50,7 +48,7 @@ class SchemaToMauroProfileUpdater extends Command
      */
     public function handle(): int
     {
-        $this->simulatedUser = User::where('id', 2)->first();
+        $this->actionService = $this->tag;
 
         $checksums = SchemaProfileChecksum::first();
         // Should only ever be one, as it's indended to recycle
@@ -65,17 +63,21 @@ class SchemaToMauroProfileUpdater extends Command
 
                     // Update Mauro Profile with new version of schema
                     Auditor::log(
-                        $this->simulatedUser,
-                        'Updating mauro profile version, after detecting changes (old: ' . $checksums->checksum . ' / new: ' . $hash . ')',
-                        $this->tag
+                        $this->simulatedUserId,
+                        $this->simulatedTeamId,
+                        $this->actionType,
+                        $this->actionService,
+                        'Updating mauro profile version, after detecting changes (old: ' . $checksums->checksum . ' / new: ' . $hash . ')'
                     );
 
                     // TODO: Question here - are we intending to 'update' a profile, or just create anew?
                 } else {
                     Auditor::log(
-                        $this->simulatedUser,
-                        'No version change detected - aborting',
-                        $this->tag
+                        $this->simulatedUserId,
+                        $this->simulatedTeamId,
+                        $this->actionType,
+                        $this->actionService,
+                        'No version change detected - aborting'
                     );
 
                     return 0;
@@ -93,9 +95,11 @@ class SchemaToMauroProfileUpdater extends Command
 
                 // Update Mauro Profile with this new schema
                 Auditor::log(
-                    $this->simulatedUser,
-                    'Creating mauro profile version, no existing version detected with checksum ' . $hash,
-                    $this->tag
+                    $this->simulatedUserId,
+                    $this->simulatedTeamId,
+                    $this->actionType,
+                    $this->actionService,
+                    'Creating mauro profile version, no existing version detected with checksum ' . $hash
                 );
 
                 $mauroResponse = Mauro::createDataStandard('HDRUK Gateway Data Model', 
@@ -130,9 +134,11 @@ class SchemaToMauroProfileUpdater extends Command
         } 
 
         Auditor::log(
-            $this->simulatedUser->id,
-            'Unable to retrieve schema from GitHub',
-            $this->tag
+            $this->simulatedUserId,
+            $this->simulatedTeamId,
+            $this->actionType,
+            $this->actionService,
+            'Unable to retrieve schema from GitHub'
         );
 
         return '';
