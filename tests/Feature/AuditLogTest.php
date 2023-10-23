@@ -223,8 +223,10 @@ class AuditLogTest extends TestCase
             self::TEST_URL,
             [
                 'user_id' => 1,
+                'team_id' => 2,
+                'action_type' => 'CREATE',
+                'action_service' => 'Gateway API',
                 'description' => 'Test audit log description',
-                'function' => 'test_audit_log_creation',                
             ],
             $this->header,
         );
@@ -247,8 +249,10 @@ class AuditLogTest extends TestCase
             self::TEST_URL . '/' . $content['data'],
             [
                 'user_id' => 2,
+                'team_id' => 2,
+                'action_type' => 'CREATE',
+                'action_service' => 'Gateway API',
                 'description' => 'Updated test audit log description',
-                'function' => 'test_audit_log_update',
             ],
             $this->header,
         );
@@ -257,7 +261,6 @@ class AuditLogTest extends TestCase
         
         $this->assertEquals($content['data']['user_id'], 2);
         $this->assertEquals($content['data']['description'], 'Updated test audit log description');
-        $this->assertEquals($content['data']['function'], 'test_audit_log_update');
     }
 
     /**
