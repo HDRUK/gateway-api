@@ -4,11 +4,12 @@ namespace Tests\Unit;
 
 use Auditor;
 
-use App\Models\User;
-
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+
+use App\Models\Team;
+use App\Models\User;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AuditorTest extends TestCase
 {
@@ -23,16 +24,20 @@ class AuditorTest extends TestCase
 
     public function test_it_can_audit(): void
     {
-        $user = User::all()->random();
+        $userId = User::all()->random()->id;
+        $teamId = Team::all()->random()->id;
+        $actionType = 'CREATE';
+        $actionService = 'Gateway API';
         $description = 'testing auditor description';
-        $function = 'auditor_facade_test';
 
-        Auditor::log($user, $description, $function);
+        Auditor::log($userId, $teamId, $actionType, $actionService, $description);
 
         $this->assertDatabaseHas('audit_logs', [
-            'user_id' => $user->id,
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'action_type' => $actionType,
+            'action_service' =>  $actionService,
             'description' => $description,
-            'function' => $function,
         ]);
     }
 
