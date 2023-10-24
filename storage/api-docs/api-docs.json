@@ -2811,22 +2811,29 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "user_id",
-                                    "description",
-                                    "function"
+                                    "action_service",
+                                    "description"
                                 ],
                                 "properties": {
                                     "user_id": {
                                         "type": "integer",
                                         "example": "100"
                                     },
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "100"
+                                    },
+                                    "action_type": {
+                                        "type": "string",
+                                        "example": "UPDATE"
+                                    },
+                                    "action_service": {
+                                        "type": "string",
+                                        "example": "Gateway API"
+                                    },
                                     "description": {
                                         "type": "string",
-                                        "example": "someType"
-                                    },
-                                    "function": {
-                                        "type": "string",
-                                        "example": "some value"
+                                        "example": "beatae praesentium ut consequatur at ipsam facilis sit neque ut"
                                     }
                                 },
                                 "type": "object"

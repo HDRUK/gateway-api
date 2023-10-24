@@ -150,10 +150,12 @@ class AuditLogController extends Controller
      *          required=true,
      *          description="Filter definition",
      *          @OA\JsonContent(
-     *              required={"user_id", "description", "function"},
+     *              required={"action_service", "description"},
      *              @OA\Property(property="user_id", type="integer", example="100"),
-     *              @OA\Property(property="description", type="string", example="someType"),
-     *              @OA\Property(property="function", type="string", example="some value"),
+     *              @OA\Property(property="team_id", type="integer", example="100"),
+     *              @OA\Property(property="action_type", type="string", example="UPDATE"),
+     *              @OA\Property(property="action_service", type="string", example="Gateway API"),
+     *              @OA\Property(property="description", type="string", example="beatae praesentium ut consequatur at ipsam facilis sit neque ut"),
      *          ),
      *      ),
      *      @OA\Response(
