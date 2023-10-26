@@ -4,6 +4,10 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\SectorSeeder;
+use Database\Seeders\ApplicationSeeder;
 use App\Models\Application;
 use Tests\Traits\Authorization;
 use Illuminate\Support\Facades\Http;
@@ -42,7 +46,12 @@ class DatasetIntegrationTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            DatasetSeeder::class,
+            SectorSeeder::class,
+            ApplicationSeeder::class,
+        ]);
         $this->header = [
             'Accept' => 'application/json',
         ];

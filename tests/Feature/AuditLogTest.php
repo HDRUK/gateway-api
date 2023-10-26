@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use Config;
 
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\AuditLogSeeder;
 
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,7 +24,10 @@ class AuditLogTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            AuditLogSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

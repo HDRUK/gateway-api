@@ -6,6 +6,8 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\FilterSeeder;
 
 class FilterTest extends TestCase
 {
@@ -16,8 +18,13 @@ class FilterTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
-
+        $this->seed(
+            [
+            MinimalUserSeeder::class,
+            FilterSeeder::class,
+            ]
+        );
+              
         $response = $this->postJson('api/v1/auth', [
             'email' => 'developers@hdruk.ac.uk',
             'password' => 'Watch26Task?',

@@ -5,18 +5,10 @@ namespace Tests\Feature;
 use Config;
 
 use Tests\TestCase;
-use App\Models\ActivityLog;
-use Database\Seeders\ActivityLogSeeder;
+use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ActivityLogTypeSeeder;
 use Database\Seeders\ActivityLogUserTypeSeeder;
-use Database\Seeders\ActivityLogUserSeeder;
-use Database\Seeders\UserSeeder;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\TeamUserHasRoleSeeder;
-use Database\Seeders\RoleSeeder;
-use Database\Seeders\SectorSeeder;
-use Database\Seeders\PermissionSeeder;
+use Database\Seeders\ActivityLogSeeder;
 
 use Tests\Traits\Authorization;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -36,16 +28,10 @@ class ActivityLogTest extends TestCase
         parent::setUp();
 
         $this->seed([
-            TeamSeeder::class,
-            PermissionSeeder::class,
-            RoleSeeder::class,
-            UserSeeder::class,
-            TeamHasUserSeeder::class,
-            TeamUserHasRoleSeeder::class,
+            MinimalUserSeeder::class,
             ActivityLogTypeSeeder::class,
             ActivityLogUserTypeSeeder::class,
             ActivityLogSeeder::class,
-            SectorSeeder::class,
         ]);
 
         $this->authorisationUser();

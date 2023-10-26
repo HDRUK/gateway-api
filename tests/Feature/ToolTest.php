@@ -6,6 +6,9 @@ use Config;
 use ReflectionClass;
 
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\ToolSeeder;
+use Database\Seeders\TagSeeder;
 
 use App\Models\Tool;
 use App\Models\ToolHasTag;
@@ -34,7 +37,11 @@ class ToolTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            ToolSeeder::class,
+            TagSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

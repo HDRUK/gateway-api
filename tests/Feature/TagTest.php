@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Config;
 use App\Models\Tag;
 use Tests\TestCase;
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -26,7 +27,9 @@ class TagTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            TagSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

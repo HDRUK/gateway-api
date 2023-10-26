@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use Database\Seeders\FeatureSeeder;
 use Tests\Traits\Authorization;
 use App\Models\Feature as FeatureModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,7 +27,9 @@ class FeatureTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            FeatureSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

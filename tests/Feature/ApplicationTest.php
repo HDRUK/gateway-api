@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\ApplicationSeeder;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,7 +28,11 @@ class ApplicationTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            ApplicationSeeder::class,
+        ]);
+
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

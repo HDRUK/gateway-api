@@ -24,7 +24,7 @@ class ValidationTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

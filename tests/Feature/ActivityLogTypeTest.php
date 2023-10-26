@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use Config;
 
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\ActivityLogTypeSeeder;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -18,7 +20,10 @@ class ActivityLogTypeTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            ActivityLogTypeSeeder::class,
+        ]);
 
         $response = $this->postJson('api/v1/auth', [
             'email' => 'developers@hdruk.ac.uk',

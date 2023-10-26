@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DataUseRegisterSeeder;
 use App\Models\DataUseRegister;
 use App\Models\TeamHasUser;
 use App\Models\Dataset;
@@ -29,7 +32,11 @@ class DataUseRegisterTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            DatasetSeeder::class,
+            DataUseRegisterSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

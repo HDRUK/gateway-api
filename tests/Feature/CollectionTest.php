@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use Database\Seeders\CollectionSeeder;
 use App\Models\Collection;
 use Tests\Traits\Authorization;
 // use Illuminate\Foundation\Testing\WithFaker;
@@ -26,7 +27,9 @@ class CollectionTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            CollectionSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

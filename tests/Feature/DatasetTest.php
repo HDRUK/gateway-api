@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use Database\Seeders\SectorSeeder;
 use Tests\Traits\Authorization;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -42,7 +43,9 @@ class DatasetTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            SectorSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
