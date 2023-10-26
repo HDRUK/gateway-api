@@ -44,6 +44,7 @@ Route::get('/email', function (Request $reqest) {
 Route::get('/services/federations', [ServiceLayerController::class, 'getActiveFederationApplications']);
 Route::patch('/services/federations/{id}', [ServiceLayerController::class, 'setFederationInvalidRunState']);
 Route::post('/services/federations', [DatasetController::class, 'store']);
+Route::post('/services/audit', [ServiceLayerController::class, 'audit']);
 
 Route::get('/services/traser', function(Request $request) {
     MMC::validateDataModelType(
