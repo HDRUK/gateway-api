@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use Database\Seeders\TeamSeeder;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RoleSeeder;
 use App\Models\Role;
 use App\Models\RoleHasPermission;
 use Tests\Traits\Authorization;
@@ -27,7 +30,11 @@ class RoleTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            TeamSeeder::class,
+            PermissionSeeder::class,
+            RoleSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

@@ -6,6 +6,10 @@ use Config;
 use ReflectionClass;
 
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\ToolSeeder;
+use Database\Seeders\TagSeeder;
+use Database\Seeders\ApplicationSeeder;
 
 use App\Models\Application;
 use App\Models\Tool;
@@ -34,7 +38,12 @@ class ToolIntegrationTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            ToolSeeder::class,
+            TagSeeder::class,
+            ApplicationSeeder::class,
+        ]);
         $this->header = [
             'Accept' => 'application/json',
         ];

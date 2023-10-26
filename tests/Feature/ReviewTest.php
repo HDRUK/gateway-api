@@ -4,6 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Review;
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\TagSeeder;
+use Database\Seeders\ToolSeeder;
+use Database\Seeders\ReviewSeeder;
+use Database\Seeders\SectorSeeder;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,7 +32,13 @@ class ReviewTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            TagSeeder::class,
+            ToolSeeder::class,
+            ReviewSeeder::class,
+            SectorSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

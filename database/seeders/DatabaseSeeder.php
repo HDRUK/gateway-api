@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
             UserHasNotificationSeeder::class,
             EmailTemplatesSeeder::class,
             ReviewSeeder::class,
-            CollectionSeerder::class,
+            CollectionSeeder::class,
             AuditLogSeeder::class,
             DatasetSeeder::class,
             DataUseRegisterSeeder::class,

@@ -5,6 +5,10 @@ namespace Tests\Feature;
 use Config;
 
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\ActivityLogTypeSeeder;
+use Database\Seeders\ActivityLogUserTypeSeeder;
+use Database\Seeders\ActivityLogSeeder;
 
 use Tests\Traits\Authorization;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -23,7 +27,12 @@ class ActivityLogTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            ActivityLogTypeSeeder::class,
+            ActivityLogUserTypeSeeder::class,
+            ActivityLogSeeder::class,
+        ]);
 
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
@@ -34,7 +43,7 @@ class ActivityLogTest extends TestCase
     }
 
     /**
-     * List all ActicityLogs
+     * List all ActivityLogs
      * 
      * @return void
      */

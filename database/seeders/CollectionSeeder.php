@@ -6,7 +6,7 @@ use App\Models\Collection;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class CollectionSeerder extends Seeder
+class CollectionSeeder extends Seeder
 {
     /**
      * Run the database seeds.

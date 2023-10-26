@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Bus;
 
 use Tests\TestCase;
+use Database\Seeders\EmailTemplatesSeeder;
 
 class EmailServiceTest extends TestCase
 {
@@ -20,7 +21,9 @@ class EmailServiceTest extends TestCase
 
     public function setUp(): void
     {
-        parent::setUp();
+        parent::setUp([
+            EmailTemplatesSeeder::class,
+        ]);
         $this->seed();
 
         Bus::fake();

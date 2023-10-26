@@ -8,6 +8,7 @@ use Tests\TestCase;
 
 use App\Models\Team;
 use App\Models\User;
+use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -19,7 +20,9 @@ class AuditorTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+        ]);
     }
 
     public function test_it_can_audit(): void

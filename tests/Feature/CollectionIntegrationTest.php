@@ -3,6 +3,10 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\ApplicationSeeder;
+use Database\Seeders\CollectionSeeder;
+
 use App\Models\Application;
 use App\Models\Collection;
 // use Illuminate\Foundation\Testing\WithFaker;
@@ -25,7 +29,11 @@ class CollectionIntegrationTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            ApplicationSeeder::class,
+            CollectionSeeder::class,
+        ]);
         $this->header = [
             'Accept' => 'application/json',
         ];

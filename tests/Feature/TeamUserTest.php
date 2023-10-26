@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\SectorSeeder;
+use Database\Seeders\EmailTemplatesSeeder;
 use App\Models\Role;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
@@ -26,7 +29,11 @@ class TeamUserTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            SectorSeeder::class,
+            EmailTemplatesSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

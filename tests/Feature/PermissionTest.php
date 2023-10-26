@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Permission;
+use Database\Seeders\PermissionSeeder;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -26,7 +27,9 @@ class PermissionTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            PermissionSeeder::class
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [

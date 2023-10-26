@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Hash;
 use Config;
 use Tests\TestCase;
+use Database\Seeders\SectorSeeder;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -25,7 +26,9 @@ class RegisterTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            SectorSeeder::class,
+        ]);
 
         $this->user = [
             'name' => Config::get('constants.test.user.name'),
