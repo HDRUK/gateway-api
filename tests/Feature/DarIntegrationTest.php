@@ -22,8 +22,7 @@ class DarIntegrationTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             DarIntegrationSeeder::class,
-        ]
-    );
+        ]);
 
         $response = $this->postJson('api/v1/auth', [
             'email' => 'developers@hdruk.ac.uk',
