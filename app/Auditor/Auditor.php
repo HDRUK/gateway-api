@@ -11,16 +11,22 @@ class Auditor {
     /**
      * Logs an action to the audit trail
      * 
-     * @return void
+     * @return bool
      */
-    public function log(int $userId, int $teamId, string $actionType, string $actionService, string $description): void
+    public function log(int $userId, int $teamId, string $actionType, string $actionService, string $description): bool
     {
-        AuditLog::create([
+        $audit = AuditLog::create([
             'user_id' => $userId,
             'team_id' => $teamId,
             'action_type' => $actionType,
             'action_service' => $actionService,
             'description' => $description,
         ]);
+
+        if (!$audit) {
+            return false;
+        }
+
+        return true;
     }
 }

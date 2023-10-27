@@ -67,5 +67,6 @@ k8s_yaml('chart/' + cfg.get('name') + '/deployment.yaml')
 k8s_yaml('chart/' + cfg.get('name') + '/service.yaml')
 k8s_resource(
    cfg.get('name'),
-   port_forwards=8000
+   port_forwards=8000,
+   labels=["Service"]
 )
