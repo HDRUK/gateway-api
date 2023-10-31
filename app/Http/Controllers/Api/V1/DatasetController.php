@@ -244,6 +244,7 @@ class DatasetController extends Controller
                     //   e.g. revisions and versions? 
                     $input['dataset']['metadata']['required']['gatewayId'] = $dId;
                     
+                   
 
                     // Dispatch this potentially lengthy subset of data
                     // to a technical object data store job - API doesn't
@@ -256,6 +257,11 @@ class DatasetController extends Controller
                     );
 
                     $versioning = Mauro::finaliseDataModel($mauroDatasetId);
+
+                    return response()->json([
+                        'versioning' => $versioning
+                    ], 201);
+
                     Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['documentationVersion']]);
 
                     return response()->json([

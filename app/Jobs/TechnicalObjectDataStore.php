@@ -87,9 +87,11 @@ class TechnicalObjectDataStore implements ShouldQueue
     {
         try {
             $currDataClasses = Mauro::getAllDataClasses($this->datasetId);
-            foreach ($currDataClasses['items'] as $element) {
-                Mauro::deleteDataClass($element['id'], $this->datasetId);
-            }
+            //if (array_key_exists('items', $currDataClasses)) {
+                foreach ($currDataClasses['items'] as $element) {
+                    Mauro::deleteDataClass($element['id'], $this->datasetId);
+                }
+            //}
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
