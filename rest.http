@@ -9,10 +9,6 @@
 @uEmail = "john.doe.1234567890@example.com"
 @uEmail2 = "john.for.doe.1234567890@example.com"
 @uPassword = "passw@rdJ0hnD0e"
-
-
-@uEmail = "developers@hdruk.ac.uk"
-@uPassword = "Watch26Task?"
 # @accessToken=jwt....
 
 ### Login
@@ -166,7 +162,7 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "name": "Test Team Ltd 4", 
+    "name": "Test Team Ltd", 
     "enabled": 1,
     "allows_messaging": 1,
     "workflow_enabled": 1,
@@ -414,11 +410,11 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "team_id": 53,
+    "team_id": 1,
     "user_id": 3,
     "create_origin": "MANUAL",
     "label": "label dataset for test 1",
-    "short_description": "lorem ipsum assaasdas as 12",
+    "short_description": "lorem ipsum assaasdas as 1",
     "dataset": {
         "metadata": {
             "required": {
