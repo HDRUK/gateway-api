@@ -202,19 +202,27 @@ class DatasetController extends Controller
             $user = User::where('id', (int) $input['user_id'])->first()->toArray();
             $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
 
-            // First validate the incoming schema to ensure it's in GWDM format
-            // if not, attempt to translate prior to saving
-            $validateDataModelType = MMC::validateDataModelType(
+            //send the payload to traser
+            // - traser will return the input unchanged if the data is
+            //   already in the GWDM with GWDM_CURRENT_VERSION
+            // - if it is not, traser will try to work out what the metadata is
+            //   and translate it into the GWDM
+            // - otherwise traser will return a non-200 error 
+            $traserResponse = MMC::translateDataModelType(
                 json_encode($input['dataset']),
                 env('GWDM'),
-                env('GWDM_CURRENT_VERSION')
+                env('GWDM_CURRENT_VERSION'),
             );
 
-            if ($validateDataModelType) {
+            if($traserResponse['wasTranslated']){
+                $input['metadata']['original_metadata'] = $input['dataset']['metadata'];
+                $input['dataset']['metadata'] = $traserResponse['metadata'];
+
                 $mauro = MMC::createMauroDataModel($user, $team, $input);
 
                 if (!empty($mauro)) {
                     $mauroDatasetId = (string) $mauro['DataModel']['responseJson']['id'];
+
                     $dataset = MMC::createDataset([
                         'datasetid' => $mauroDatasetId,
                         'label' => $input['label'],
@@ -228,7 +236,14 @@ class DatasetController extends Controller
                         'pid' => (string) Str::uuid(),
                         'create_origin' => $input['create_origin'],
                     ]);
-                    $dId = $dataset->id;
+                    $dId = $dataset->id; 
+
+                    //overwrite whatever gatewayId has been set
+                    // - this logic could be put somewhere else?
+                    // - there may be some other logic/fields to be filled here?
+                    //   e.g. revisions and versions? 
+                    $input['dataset']['metadata']['required']['gatewayId'] = $dId;
+                    
 
                     // Dispatch this potentially lengthy subset of data
                     // to a technical object data store job - API doesn't
@@ -248,75 +263,16 @@ class DatasetController extends Controller
                         'data' => $dId,
                     ], 201);
                 }
-            } else {
-                // Incoming dataset is not in GWDM format, so at this point we
-                // need to translate it
-                $response = MMC::translateDataModelType(
-                    json_encode($input['dataset']),
-                    env('GWDM'),
-                    env('GWDM_CURRENT_VERSION'),
-                    env('HDRUK'),
-                    // TODO
-                    // 
-                    // The following is hardcoded for now - but needs to be
-                    // more intelligent in the future. Need a solution for
-                    // not working on assumptions. Theoretically, we can 
-                    // use the incoming version, but needs confirmation
-                    '2.1.2'
-                );
-
-                if (!empty($response)) {
-                    $input['dataset'] = $response;
-                    $mauro = MMC::createMauroDataModel($user, $team, $input);
-                    if (!empty($mauro)) {
-                        $mauroDatasetId = (string) $mauro['DataModel']['responseJson']['id'];
-                        $dataset = MMC::createDataset([
-                            'datasetid' => $mauroDatasetId,
-                            'label' => $input['label'],
-                            'short_description' => $input['short_description'],
-                            'user_id' => $input['user_id'],
-                            'team_id' => $input['team_id'],
-                            // The raw JSON response from Traser of the translated
-                            // dataset
-                            'dataset' => json_encode($response),
-                            'created' => now(),
-                            'updated' => now(),
-                            'submitted' => now(),
-                            'pid' => (string) Str::uuid(),
-                            'create_origin' => $input['create_origin'],
-                        ]);
-                        $dId = $dataset->id;
-
-                        // Dispatch this potentially lengthy subset of data
-                        // to a technical object data store job - API doesn't
-                        // care if it exists or not. We leave that determination to
-                        // the service itself.
-                        // and not found `extracted_terms`
-                        TechnicalObjectDataStore::dispatch(
-                            $mauroDatasetId,
-                            base64_encode(gzcompress(gzencode(json_encode($response)), 6))
-                        );
-
-                        $versioning = Mauro::finaliseDataModel($mauroDatasetId);
-                        Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['documentationVersion']]);
-
-                        return response()->json([
-                            'message' => 'created',
-                            'data' => $dId,
-                        ], 201);
-                    }
-                }
-
-                // Fail
+                throw new NotFoundException('Mauro Data Mapper folder id for team ' . $input['team_id'] . ' not found');
+            }
+            else{
                 return response()->json([
                     'message' => 'dataset is in an unknown format and cannot be processed',
+                    'details' => $traserResponse,
                 ], 400);
             }
-
-            throw new NotFoundException('Mauro Data Mapper folder id for team ' . $input['team_id'] . ' not found');
-
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+                throw new Exception($e->getMessage());
         }
     }
 

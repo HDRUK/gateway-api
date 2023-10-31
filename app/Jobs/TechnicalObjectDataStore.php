@@ -47,6 +47,11 @@ class TechnicalObjectDataStore implements ShouldQueue
 
         $this->deleteClassName();
 
+        //structuralMetadat might not be defined
+        if(!isset($data['structuralMetadata']) || empty($data['structuralMetadata'])){
+            return;
+        }
+
         foreach ($data['structuralMetadata'] as $class) {
             $mauroCreateResponse = Mauro::createDataClass($this->datasetId, $class['name'], $class['description']);
             foreach ($class['columns'] as $element) {
@@ -60,7 +65,10 @@ class TechnicalObjectDataStore implements ShouldQueue
             }
         }
 
-        $this->postToTermExtractionDirector(json_encode($data));
+        $tedUrl = env('TED_SERVICE_URL');
+        if (!empty($tedUrl)) {
+            $this->postToTermExtractionDirector(json_encode($data));
+        }
 
         MMC::reindexElastic($data, $this->datasetId);
 
