@@ -55,6 +55,7 @@ class DatasetController extends Controller
         } else {
             $datasets = Dataset::paginate(Config::get('constants.per_page'), ['*'], 'page');
         }
+        
 
         foreach ($datasets as $dataset) {
             if ($dataset->datasetid) {
@@ -88,6 +89,18 @@ class DatasetController extends Controller
      *          type="integer",
      *          description="dataset id",
      *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="schema_model",
+     *       in="query",
+     *       description="Alternative output schema model.",
+     *       @OA\Schema(type="string")
+     *    ),
+     *    @OA\Parameter(
+     *       name="schema_version",
+     *       in="query",
+     *       description="Alternative output schema version.",
+     *       @OA\Schema(type="string")
      *    ),
      *    @OA\Response(
      *       response="200",
@@ -134,13 +147,40 @@ class DatasetController extends Controller
                 $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
                 $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
             }
+
+            $outputSchemaModel = $request->query('schema_model');
+            $outputSchemaModelVersion = $request->query('schema_version');
+
+            if($outputSchemaModel && $outputSchemaModelVersion){
+                $translated = MMC::translateDataModelType(
+                    $dataset['dataset'],
+                    $outputSchemaModel,
+                    $outputSchemaModelVersion,
+                    env('GWDM'),
+                    env('GWDM_CURRENT_VERSION'),
+                );
+                if($translated['wasTranslated']){
+                    $dataset['dataset'] = json_encode($translated['metadata']);
+                }
+                else{
+                    return response()->json([
+                        'message' => 'failed to translate',
+                        'details' => $translated
+                    ], 400);
+                }
+            }
+            elseif($outputSchemaModel){
+                throw new Exception('You have given a schema_model but not a schema_version as well!');
+            }
+            else{
+                throw new Exception('You have given a schema_version but not schema_model');
+            }
             
             return response()->json([
                 'message' => 'success',
                 'data' => $dataset,
             ], 200);
 
-            throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -259,7 +299,7 @@ class DatasetController extends Controller
                     $versioning = Mauro::finaliseDataModel($mauroDatasetId);
 
                     return response()->json([
-                        'versioning' => $versioning
+                        'good' => 'yes'
                     ], 201);
 
                     Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['documentationVersion']]);

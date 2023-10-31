@@ -79,7 +79,6 @@ class MetadataManagementController {
                 $dataset, 'application/json'
             )->post($urlString);
 
-
             $wasTranslated =  $response->status() === 200;
             $metadata = null;
             $message = null;
