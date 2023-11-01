@@ -45,17 +45,24 @@ class MetadataManagementController {
         string $dataset,
         string $outputSchema,
         string $outputVersion,
-        string $inputSchema,
-        string $inputVersion): array
+        string $inputSchema = null,
+        string $inputVersion = null,
+        bool $validateInput = true,
+        bool $validateOutput = true,
+        ): array
     {
         try {
-            $urlString = sprintf("%s/translate?output_schema=%s&output_version=%s&input_schema=%s&input_version=%s",
-                env('TRASER_SERVICE_URL'),
-                $outputSchema,
-                $outputVersion,
-                $inputSchema,
-                $inputVersion
-            );
+            
+            $queryParams = [
+                'output_schema' => $outputSchema,
+                'output_version' => $outputVersion,
+                'input_schema' => $inputSchema,
+                'input_version' => $inputVersion,
+                'validate_input' => $validateInput ? "1" : 0 ,
+                'validate_output' => $validateOutput ? "1" : 0 ,
+            ];
+
+            $urlString = env('TRASER_SERVICE_URL') . '/translate?' . http_build_query($queryParams);
 
             // !! Dragons ahead !!
             // Suggest that no one change this, ever. Took hours
@@ -72,11 +79,24 @@ class MetadataManagementController {
                 $dataset, 'application/json'
             )->post($urlString);
 
-            if ($response->status() === 200) {
-                return $response->json();
+            $wasTranslated =  $response->status() === 200;
+            $metadata = null;
+            $message = null;
+            if($wasTranslated){
+                $metadata = $response->json();
+                $message = 'translation successful';
+            }
+            else{
+                $message = $response->json();
             }
 
-            return [];
+            return array(
+                'traser_message' => $message,
+                'wasTranslated' => $wasTranslated,
+                'metadata' => $metadata,
+                'statusCode' => $response->status(),
+            );
+
         } catch (Exception $e) {
             throw new MMCException($e->getMessage());
         }

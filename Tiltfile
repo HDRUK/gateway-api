@@ -42,6 +42,7 @@ cfg = read_json('tiltconf.json')
 include(cfg.get('gatewayWeb2Root') + '/Tiltfile')
 
 # Load our service layer for deployment - if enabled
+
 if cfg.get('traserEnabled'):
     include(cfg.get('traserServiceRoot') + '/Tiltfile')
 
@@ -54,6 +55,11 @@ if cfg.get('fmaEnabled'):
 docker_build(
     ref='hdruk/' + cfg.get('name'),
     context='.',
+    build_args={
+        'TRASER_ENABLED': '1' if cfg.get('traserEnabled') else '0',
+        'TED_ENABLED': '1' if cfg.get('tedEnabled') else '0',
+        'FMA_ENABLED': '1' if cfg.get('fmaEnabled') else '0',
+    },
     live_update=[
         sync('.', '/var/www'),
         run('composer install', trigger='./composer.lock'),
