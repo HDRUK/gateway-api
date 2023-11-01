@@ -56,8 +56,8 @@ RUN echo "FMA_ENABLED=$TRASER_ENABLED" >> /var/www/.env
 RUN composer install \
     && chmod -R 777 storage bootstrap/cache \
     && php artisan optimize:clear \
-    && php artisan config:clear \
     && php artisan optimize \
+    && php artisan config:clear \
     && composer dumpautoload
 
 # Generate Swagger
