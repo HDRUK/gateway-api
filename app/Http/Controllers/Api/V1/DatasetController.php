@@ -50,6 +50,7 @@ class DatasetController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+
         if ($request->has('withTrashed')) {
             $datasets = Dataset::withTrashed()->paginate(Config::get('constants.per_page'), ['*'], 'page')->withQueryString();
         } else {
@@ -173,9 +174,9 @@ class DatasetController extends Controller
                 throw new Exception('You have given a schema_model but not a schema_version as well!');
             }
             else{
-                throw new Exception('You have given a schema_version but not schema_model');
+                throw new Exception('You have given a schema_version but not a schema_model');
             }
-            
+
             return response()->json([
                 'message' => 'success',
                 'data' => $dataset,
@@ -235,6 +236,7 @@ class DatasetController extends Controller
      */
     public function store(CreateDataset $request): JsonResponse
     {
+
         try {
             $mauro = null;
             $input = $request->all();
@@ -297,11 +299,6 @@ class DatasetController extends Controller
                     );
 
                     $versioning = Mauro::finaliseDataModel($mauroDatasetId);
-
-                    return response()->json([
-                        'good' => 'yes'
-                    ], 201);
-
                     Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['documentationVersion']]);
 
                     return response()->json([
