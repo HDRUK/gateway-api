@@ -17,22 +17,6 @@ return [
 
     'default' => env('CACHE_DRIVER', 'file'),
 
-
-     /*
-    |--------------------------------------------------------------------------
-    | Cache if other services are enabled or not
-    |--------------------------------------------------------------------------
-    |
-    | This puts environmental variables (that are not in the .env file)
-    | into the cache so that they can be accessed from the rest of the applications
-    |
-    */
-    'externalservices' => [
-        'TED_ENABLED'=> getenv("TED_ENABLED"),
-        'TRASER_ENABLED'=> getenv("TRASER_ENABLED"),
-        'FMA_ENABLED'=> getenv("FMA_ENABLED"),
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Cache Stores
