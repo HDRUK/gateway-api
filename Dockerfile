@@ -10,7 +10,6 @@ ENV TED_ENABLED=$TED_ENABLED
 ENV TRASER_ENABLED=$TRASER_ENABLED
 ENV FMA_ENABLED=$FMA_ENABLED
 
-
 WORKDIR /var/www
 
 COPY composer.* /var/www/
@@ -47,13 +46,6 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 
 # Copy the application
 COPY . /var/www
-
-#add a new line to the end of the .env file
-RUN echo "" >> /var/www/.env
-#add in these extra variables to the .env file
-RUN echo "TED_ENABLED=$TED_ENABLED" >> /var/www/.env
-RUN echo "TRASER_ENABLED=$TRASER_ENABLED" >> /var/www/.env
-RUN echo "FMA_ENABLED=$TRASER_ENABLED" >> /var/www/.env
 
 # Composer & laravel
 RUN composer install \

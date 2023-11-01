@@ -31,6 +31,8 @@ return [
     |
     */
 
+    'test' => ['test'=> env("COMPOSER_PROCESS_TIMEOUT")],
+
     'stores' => [
 
         'apc' => [
