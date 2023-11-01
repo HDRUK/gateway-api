@@ -171,7 +171,7 @@ class DatasetController extends Controller
                 }
             }
             elseif($outputSchemaModel){
-                throw new Exception('You have given a schema_model but not a schema_version as well!');
+                throw new Exception('You have given a schema_model but not a schema_version');
             }
             elseif($outputSchemaModelVersion){
                 throw new Exception('You have given a schema_version but not schema_model');
