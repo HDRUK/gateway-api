@@ -91,6 +91,18 @@ class DatasetController extends Controller
      *          description="dataset id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="schema_model",
+     *       in="query",
+     *       description="Alternative output schema model.",
+     *       @OA\Schema(type="string")
+     *    ),
+     *    @OA\Parameter(
+     *       name="schema_version",
+     *       in="query",
+     *       description="Alternative output schema version.",
+     *       @OA\Schema(type="string")
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -137,6 +149,34 @@ class DatasetController extends Controller
                 $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
             }
 
+            $outputSchemaModel = $request->query('schema_model');
+            $outputSchemaModelVersion = $request->query('schema_version');
+
+            if($outputSchemaModel && $outputSchemaModelVersion){
+                $translated = MMC::translateDataModelType(
+                    $dataset['dataset'],
+                    $outputSchemaModel,
+                    $outputSchemaModelVersion,
+                    env('GWDM'),
+                    env('GWDM_CURRENT_VERSION'),
+                );
+                if($translated['wasTranslated']){
+                    $dataset['dataset'] = json_encode($translated['metadata']);
+                }
+                else{
+                    return response()->json([
+                        'message' => 'failed to translate',
+                        'details' => $translated
+                    ], 400);
+                }
+            }
+            elseif($outputSchemaModel){
+                throw new Exception('You have given a schema_model but not a schema_version');
+            }
+            elseif($outputSchemaModelVersion){
+                throw new Exception('You have given a schema_version but not schema_model');
+            }
+            
             return response()->json([
                 'message' => 'success',
                 'data' => $dataset,
