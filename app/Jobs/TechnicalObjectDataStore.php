@@ -66,9 +66,7 @@ class TechnicalObjectDataStore implements ShouldQueue
         }
 
         $tedUrl = env('TED_SERVICE_URL');
-        $tedEnabled = $_ENV;//env('TED_ENABLED');
-
-        throw new Exception('is ted enabled? ' . $tedEnabled);
+        $tedEnabled = env('TED_ENABLED');
 
         if (!empty($tedUrl) && $tedEnabled) {
             $this->postToTermExtractionDirector(json_encode($data));
