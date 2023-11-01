@@ -51,13 +51,6 @@ class DatasetController extends Controller
     public function index(Request $request): JsonResponse
     {
 
-        return response()->json([
-            'test' => env('COMPOSER_PROCESS_TIMEOUT'),
-            'test2' => config('cache.externalservices.TED_ENABLED')
-        ],200
-        );
-        
-
         if ($request->has('withTrashed')) {
             $datasets = Dataset::withTrashed()->paginate(Config::get('constants.per_page'), ['*'], 'page')->withQueryString();
         } else {
@@ -143,7 +136,7 @@ class DatasetController extends Controller
                 $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
                 $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
             }
-            
+
             return response()->json([
                 'message' => 'success',
                 'data' => $dataset,
@@ -203,7 +196,6 @@ class DatasetController extends Controller
      */
     public function store(CreateDataset $request): JsonResponse
     {
-
         try {
             $mauro = null;
             $input = $request->all();
@@ -220,7 +212,7 @@ class DatasetController extends Controller
             $traserResponse = MMC::translateDataModelType(
                 json_encode($input['dataset']),
                 env('GWDM'),
-                env('GWDM_CURRENT_VERSION'),
+                env('GWDM_CURRENT_VERSION')
             );
 
             if($traserResponse['wasTranslated']){
