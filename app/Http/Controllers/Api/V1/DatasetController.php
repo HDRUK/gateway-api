@@ -259,12 +259,6 @@ class DatasetController extends Controller
 
                     $versioning = Mauro::finaliseDataModel($mauroDatasetId);
 
-                    return response()->json([
-                        'message' => $versioning,
-                        'test' => config('cache.externalservices.TED_ENABLED'),
-                    ], 201);
-            
-
                     Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['documentationVersion']]);
 
                     return response()->json([
