@@ -34,6 +34,7 @@ class Team extends Model
         'application_form_updated_by',
         'application_form_updated_on',
         'mdm_folder_id',
+        'mongo_object_id',
     ];
 
     /**
@@ -138,6 +139,14 @@ class Team extends Model
      * @var string
      */
     private $application_form_updated_on = '';
+
+    /**
+     * Represents the migrated data id of a previous record to preserve internal
+     * linking
+     * 
+     * @var string
+     */
+    private $mongo_object_id = '';
 
     public function users(): BelongsToMany
     {

@@ -28,6 +28,7 @@ class TeamFactory extends Factory
             'contact_point' => fake()->email(),
             'application_form_updated_by' => fake()->words(2, true),
             'application_form_updated_on' => fake()->dateTime(),
+            'mongo_object_id' => null,
         ];
     }
 }

@@ -32,6 +32,7 @@ trait TeamTransformation
                 'contact_point' => $team['contact_point'],
                 'application_form_updated_by' => $team['application_form_updated_by'],
                 'application_form_updated_on' => $team['application_form_updated_on'],
+                'mongo_object_id' => $team['mongo_object_id'],
             ];
 
             $tmpUser = [];
