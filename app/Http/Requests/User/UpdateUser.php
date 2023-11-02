@@ -78,7 +78,8 @@ class UpdateUser extends BaseFormRequest
                 'string',
             ],
             'orcid' => [
-                'integer',
+                'nullable',
+                'string',
             ],
             'contact_feedback' => [
                 'required',
