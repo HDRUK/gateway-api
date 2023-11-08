@@ -72,12 +72,17 @@ class DatasetTest extends TestCase
             [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
             'Document created'
         );
-        $mock->addResponse($createResponse);
         $deleteResponse = new Response(
             200, 
             [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
             'Document deleted'
         );
+
+        // Stack the responses expected in the create/archive/delete dataset test
+        // create -> soft delete/archive -> unarchive -> permanent delete
+        $mock->addResponse($createResponse);
+        $mock->addResponse($deleteResponse);
+        $mock->addResponse($createResponse);
         $mock->addResponse($deleteResponse);
 
         $this->testElasticClient = $client;
@@ -276,11 +281,11 @@ class DatasetTest extends TestCase
 
 
     /**
-     * Create new Dataset with success
+     * Create/archive/unarchive Dataset with success
      * 
      * @return void
      */
-    public function test_create_delete_dataset_with_success(): void
+    public function test_create_archive_delete_dataset_with_success(): void
     {
         Http::fake([
             'ted*' => Http::response(
@@ -387,7 +392,31 @@ class DatasetTest extends TestCase
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];
 
-        // delete dataset
+        // archive dataset
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            [],
+            $this->header
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset->assertStatus(200);
+
+        // unarchive dataset
+        $responseUnarchiveDataset = $this->json(
+            'PATCH',
+            self::TEST_URL_DATASET . '/' . $datasetId . '?unarchive',
+            [],
+            $this->header
+        );
+        $responseUnarchiveDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseUnarchiveDataset->assertStatus(200);
+
+        // permanent delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',

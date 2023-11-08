@@ -238,7 +238,6 @@ class MetadataManagementController {
      */
     public function reindexElasticFromModel(array $mauroModel, string $datasetId): void
     {
-        // Get named entities
         try {
 
             $datasetMatch = Dataset::where('datasetid', $datasetId)
@@ -262,10 +261,7 @@ class MetadataManagementController {
             $toIndex = array();
             $toIndex['named_entities'] = $namedEntities;
 
-            $keys = array();
-
             foreach ($mauroModel['items'] as $i) {
-                $keys[] = $i['key'];
                 if (in_array($i['key'], $toIndexFields)) {
                     $exploded = explode("/", $i['key']);
                     $key = end($exploded);
