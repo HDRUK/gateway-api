@@ -1,13 +1,23 @@
 <?php
 
 return [
+    // Required
+    'properties/required/gatewayId'                                         => 'metadata/required/gatewayId',
+    'properties/required/gatewayPid'                                        => 'metadata/required/gatewayPid',
+    'properties/required/issued'                                            => 'metadata/required/issued',
+    'properties/required/modified'                                          => 'metadata/required/modified',
+    'properties/required/revisions'                                         => 'metadata/required/revisions',
+
     // Summary
     'properties/summary/title'                                              => 'metadata/summary/title',
+    'properties/summary/shortTitle'                                         => 'metadata/summary/shortTitle',
     'properties/summary/abstract'                                           => 'metadata/summary/abstract',
     'properties/summary/publisher/contactPoint'                             => 'metadata/summary/contactPoint',
     'properties/summary/keywords'                                           => 'metadata/summary/keywords',
-    'properties/summary/publisher/name'                                     => 'metadata/summary/publisher/name',
-    'properties/summary/publisher/memberOf'                                 => 'metadata/summary/publisher/memberOf',
+    'properties/summary/controlledKeywords'                                 => 'metadata/summary/controlledKeywords',
+    'properties/summary/datasetType'                                        => 'metadata/summary/datasetType',
+    'properties/summary/description'                                        => 'metadata/summary/description',
+    'properties/summary/publisher/publisherName'                            => 'metadata/summary/publisher/publisherName',
     'properties/summary/doiName'                                            => 'metadata/summary/doiName',
 
     // Documentation

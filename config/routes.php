@@ -2051,6 +2051,20 @@ return [
     ],
     [
         'name' => 'datasets',
+        'method' => 'patch',
+        'path' => '/datasets/{id}',
+        'methodController' => 'DatasetController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,datasets.update',
+        ],
+        'constraint' => [
+            'id', '[0-9]+'
+        ],
+    ],
+    [
+        'name' => 'datasets',
         'method' => 'delete',
         'path' => '/datasets/{id}',
         'methodController' => 'DatasetController@destroy',

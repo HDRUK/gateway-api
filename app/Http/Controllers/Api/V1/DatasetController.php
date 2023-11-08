@@ -283,7 +283,7 @@ class DatasetController extends Controller
                     // - this logic could be put somewhere else?
                     // - there may be some other logic/fields to be filled here?
                     //   e.g. revisions and versions? 
-                    $input['dataset']['metadata']['required']['gatewayId'] = $dId;
+                    $input['dataset']['metadata']['required']['gatewayId'] = strval($dId);
                     
                    
 
@@ -508,7 +508,33 @@ class DatasetController extends Controller
 
     public function edit(Request $request, int $id)
     {
-        //
+        try {
+            if ($request->has('unarchive')) {
+                $datasetModel = Dataset::withTrashed()
+                    ->where(['id' => $id])
+                    ->first();
+                $datasetModel->restore();
+                
+                $dataset = $datasetModel->toArray();
+                Mauro::restoreDataModel($dataset['datasetid']);
+
+                $mauroModel = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
+
+                MMC::reindexElasticFromModel($mauroModel, $dataset['datasetid']);
+
+            } else {
+                $dataset = Dataset::where(['id' => $id])->first()->toArray();
+            }
+
+            return response()->json([
+                'message' => 'dataset successfully unarchived'
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
+
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
