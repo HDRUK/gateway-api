@@ -6,7 +6,6 @@ return [
     'properties/required/gatewayPid'                                        => 'metadata/required/gatewayPid',
     'properties/required/issued'                                            => 'metadata/required/issued',
     'properties/required/modified'                                          => 'metadata/required/modified',
-    //'properties/required/revisions'                                         => 'metadata/required/revisions',
 
     // Summary
     'properties/summary/title'                                              => 'metadata/summary/title',
@@ -65,6 +64,8 @@ return [
     'properties/linkage/dataLinkage/linkedDatasets'                         => 'metadata/linkage/dataLinkage/isDerivedFrom',
     
 
+    // Required continued 
+    //'properties/required/revisions' => 'metadata/required/revisions',
     // Observations
     //'properties/summary/observations' => 'observations',
     /*
