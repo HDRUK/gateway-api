@@ -635,7 +635,7 @@ class DatasetController extends Controller
     }
 
     // integration dataset test
-    public function datasetTest(Request $request)
+    public function datasetTest(CreateDataset $request)
     {
         try {
             $input = $request->all();
