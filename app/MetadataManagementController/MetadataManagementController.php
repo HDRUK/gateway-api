@@ -229,6 +229,62 @@ class MetadataManagementController {
     }
 
     /**
+     * Calls a re-indexing of Elastic search when a dataset is unarchived
+     * 
+     * @param array $mauroModel The Mauro data model that has been restored
+     * @param string $datasetId The dataset id from Mauro
+     * 
+     * @return void
+     */
+    public function reindexElasticFromModel(array $mauroModel, string $datasetId): void
+    {
+        try {
+
+            $datasetMatch = Dataset::where('datasetid', $datasetId)
+                ->with(['namedEntities'])
+                ->first()
+                ->toArray();
+
+            $namedEntities = array();
+            foreach ($datasetMatch['named_entities'] as $n) {
+                $namedEntities[] = $n['name'];
+            }
+
+            $toIndexFields = [
+                'properties/summary/abstract',
+                'properties/summary/keywords',
+                'properties/summary/description',
+                'properties/summary/shortTitle',
+                'properties/summary/title',
+                'properties/summary/publisher/publisherName'
+            ];
+            $toIndex = array();
+            $toIndex['named_entities'] = $namedEntities;
+
+            foreach ($mauroModel['items'] as $i) {
+                if (in_array($i['key'], $toIndexFields)) {
+                    $exploded = explode("/", $i['key']);
+                    $key = end($exploded);
+                    $toIndex[$key] = $i['value'];
+                }
+            }
+
+            $params = [
+                'index' => 'datasets',
+                'id' => $datasetMatch['id'],
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+            
+            $client = $this->getElasticClient();
+            $response = $client->index($params);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * Calls a delete on the document in ElasticSearch index when a dataset is 
      * deleted
      * 

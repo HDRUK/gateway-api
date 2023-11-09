@@ -283,7 +283,7 @@ class DatasetController extends Controller
                     // - this logic could be put somewhere else?
                     // - there may be some other logic/fields to be filled here?
                     //   e.g. revisions and versions? 
-                    $input['dataset']['metadata']['required']['gatewayId'] = $dId;
+                    $input['dataset']['metadata']['required']['gatewayId'] = strval($dId);
                     
                    
 
@@ -506,9 +506,69 @@ class DatasetController extends Controller
         }
     }
 
+    /**
+     * @OA\Patch(
+     *    path="/api/v1/datasets/{id}",
+     *    operationId="patch_datasets",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@edit",
+     *    description="Patch dataset by id",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="unarchive",
+     *       in="query",
+     *       description="Unarchive a dataset",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="instruction to unarchive dataset",
+     *       ),
+     *    ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     *  )
+     */
     public function edit(Request $request, int $id)
     {
-        //
+        try {
+            if ($request->has('unarchive')) {
+                $datasetModel = Dataset::withTrashed()
+                    ->where(['id' => $id])
+                    ->first();
+                $datasetModel->restore();
+                
+                $dataset = $datasetModel->toArray();
+                Mauro::restoreDataModel($dataset['datasetid']);
+
+                $mauroModel = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
+
+                MMC::reindexElasticFromModel($mauroModel, $dataset['datasetid']);
+
+            } else {
+                $dataset = Dataset::where(['id' => $id])->first()->toArray();
+            }
+
+            // TODO remaining edit steps e.g. if dataset appears in the request 
+            // body validate, translate if needed, update Mauro data model, etc.
+
+            return response()->json([
+                'message' => 'success'
+            ], Config::get('statuscodes.STATUS_OK.code'));
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**

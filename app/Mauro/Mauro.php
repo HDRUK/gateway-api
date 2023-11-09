@@ -490,6 +490,32 @@ class Mauro {
     }
 
     /**
+     * Restores a soft deleted DataModel in Mauro
+     * 
+     * @param string $id                The ID of the DataModel to restore
+     * 
+     * @return bool                     Whether the operation completed successfully or not
+     */
+    public function restoreDataModel(string $id): bool
+    {
+        $url = env('MAURO_API_URL');
+        $url .= '/admin/dataModels/' . $id . '/undoSoftDelete';
+
+        try {
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+            ->acceptJson()
+            ->put($url);
+
+            return ($response->status() === 200);
+
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
+    /**
      * Creates a new DataClass object within Mauro to store structural metadata against a model
      * 
      * @param string $parentModelId     Represents the model which owns this new data class
