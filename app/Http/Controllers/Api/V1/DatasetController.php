@@ -12,6 +12,7 @@ use App\Models\Dataset;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\TestDataset;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Jobs\TechnicalObjectDataStore;
@@ -648,11 +649,8 @@ class DatasetController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="team_id", type="integer", example="1"),
-     *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="label", type="string", example="label dataset for test"),
      *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
-     *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
      *             @OA\Property(property="dataset", type="array", @OA\Items())
      *          )
      *       )
@@ -681,7 +679,7 @@ class DatasetController extends Controller
      *      )
      * )
      */
-    public function datasetTest(CreateDataset $request)
+    public function datasetTest(TestDataset $request)
     {
         try {
             $input = $request->all();
@@ -701,12 +699,14 @@ class DatasetController extends Controller
             if ($traserResponse['wasTranslated']) {
                 return response()->json([
                     'message' => 'success',
+                    'payload_received' => $input,
                 ], 200);
             }
 
             return response()->json([
                 'message' => 'dataset is in an unknown format and cannot be processed',
                 'details' => $traserResponse,
+                'payload_received' => $input,
             ], 400);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
