@@ -536,17 +536,15 @@ class DatasetController extends Controller
             $currentPid = $currDataset['pid'];
             $currentDatasetId = $currDataset['datasetid'];
 
-            $traserResponse = MMC::translateDataModelType(
+            // First validate the incoming schema to ensure it's in GWDM format
+            // if not, attempt to translate prior to saving
+            $validateDataModelType = MMC::validateDataModelType(
                 json_encode($input['dataset']),
                 env('GWDM'),
                 env('GWDM_CURRENT_VERSION')
             );
-    
-            if($traserResponse['wasTranslated']){
-                $input['metadata']['original_metadata'] = $input['dataset']['metadata'];
-                $input['dataset']['metadata'] = $traserResponse['metadata'];
 
-
+            if ($validateDataModelType) {
                 $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
                 $newDatasetId = (string) $duplicateDataModel['id'];
                 MMC::updateDataModel($user, $team, $input, $newDatasetId);
@@ -585,11 +583,68 @@ class DatasetController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                     'data' => Dataset::where('id', '=', $dId)->first(),
                 ], Config::get('statuscodes.STATUS_OK.code'));
-            } 
-            else{
+            } else {
+                // Incoming dataset is not in GWDM format, so at this point we
+                // need to translate it
+                $response = MMC::translateDataModelType(
+                    json_encode($input['dataset']),
+                    env('GWDM'),
+                    env('GWDM_CURRENT_VERSION'),
+                    env('HDRUK'),
+                    // TODO
+                    // 
+                    // The following is hardcoded for now - but needs to be
+                    // more intelligent in the future. Need a solution for
+                    // not working on assumptions. Theoretically, we can 
+                    // use the incoming version, but needs confirmation
+                    '2.1.2'
+                );
+
+                if (!empty($response)) {
+                    $input['dataset'] = $response;
+                    $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
+                    $newDatasetId = (string) $duplicateDataModel['id'];
+                    MMC::updateDataModel($user, $team, $input, $newDatasetId);
+
+                    $dataset = MMC::createDataset([
+                        'datasetid' => $newDatasetId,
+                        'label' => $input['label'],
+                        'short_description' => $input['short_description'],
+                        'user_id' => $input['user_id'],
+                        'team_id' => $input['team_id'],
+                        'dataset' => json_encode($response),
+                        'created' => now(),
+                        'updated' => now(),
+                        'submitted' => now(),
+                        'pid' => $currentPid,
+                        'create_origin' => $input['create_origin'],
+                    ]);
+                    $dId = $dataset->id;
+
+                    // Dispatch this potentially lengthy subset of data
+                    // to a technical object data store job - API doesn't
+                    // care if it exists or not. We leave that determination to
+                    // the service itself.
+                    TechnicalObjectDataStore::dispatch(
+                        $dId,
+                        base64_encode(gzcompress(gzencode(json_encode($response)), 6))
+                    );
+
+                    $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
+                    Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['modelVersion']]);
+
+                    Dataset::where('id', '=', $id)->delete();
+                    MMC::deleteFromElastic($id);
+
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_OK.message'),
+                        'data' => Dataset::where('id', '=', $dId)->first(),
+                    ], Config::get('statuscodes.STATUS_OK.code'));
+                }
+
+                // Fail
                 return response()->json([
                     'message' => 'dataset is in an unknown format and cannot be processed',
-                    'details' => $traserResponse,
                 ], 400);
             }
 
@@ -598,6 +653,7 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
 
     public function edit(Request $request, int $id)
     {
