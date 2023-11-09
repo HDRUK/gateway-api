@@ -20,6 +20,7 @@ use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
+use phpDocumentor\Reflection\PseudoTypes\False_;
 
 class DatasetController extends Controller
 {
@@ -237,6 +238,16 @@ class DatasetController extends Controller
      *          description="Sort direction",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="decode_metadata",
+     *       in="query",
+     *       description="Decode the 'dataset' metadata field (default: false)",
+     *       example="true",
+     *       @OA\Schema(
+     *          type="boolean",
+     *          description="Decode the 'dataset' metadata field",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -297,6 +308,12 @@ class DatasetController extends Controller
                     ->select($selectedFields)
                     ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
+        $decodeMetadata = $request->query('decode_metadata', false); 
+        if($decodeMetadata){
+            foreach ($datasets as $dataset) {
+                $dataset['dataset'] = json_decode($dataset['dataset'] );
+            }
+        }
         
         // is this needed.....?            
         /*
@@ -308,7 +325,7 @@ class DatasetController extends Controller
                 $dataset['mauro'] = [];
             }
         }
-        */  
+        */
     
         return response()->json(
             $datasets
