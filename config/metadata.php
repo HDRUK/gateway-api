@@ -1,19 +1,23 @@
 <?php
 
 return [
+    // Required
+    'properties/required/gatewayId'                                         => 'metadata/required/gatewayId',
+    'properties/required/gatewayPid'                                        => 'metadata/required/gatewayPid',
+    'properties/required/issued'                                            => 'metadata/required/issued',
+    'properties/required/modified'                                          => 'metadata/required/modified',
+
     // Summary
     'properties/summary/title'                                              => 'metadata/summary/title',
+    'properties/summary/shortTitle'                                         => 'metadata/summary/shortTitle',
     'properties/summary/abstract'                                           => 'metadata/summary/abstract',
     'properties/summary/publisher/contactPoint'                             => 'metadata/summary/contactPoint',
     'properties/summary/keywords'                                           => 'metadata/summary/keywords',
-    'properties/summary/publisher/name'                                     => 'metadata/summary/publisher/name',
-    'properties/summary/publisher/memberOf'                                 => 'metadata/summary/publisher/memberOf',
+    'properties/summary/controlledKeywords'                                 => 'metadata/summary/controlledKeywords',
+    'properties/summary/datasetType'                                        => 'metadata/summary/datasetType',
+    'properties/summary/description'                                        => 'metadata/summary/description',
+    'properties/summary/publisher/publisherName'                            => 'metadata/summary/publisher/publisherName',
     'properties/summary/doiName'                                            => 'metadata/summary/doiName',
-
-    // Documentation
-    'properties/documentation/description'                                  => 'metadata/documentation/description',
-    'properties/documentation/isPartOf'                                     => 'metadata/documentation/isPartOf',
-    'properties/documentation/associatedMedia'                              => 'metadata/documentation/associatedMedia',
 
     // Provenance
     'properties/provenance/temporal/accrualPeriodicity'                     => 'metadata/provenance/temporal/accrualPeriodicity',
@@ -35,14 +39,12 @@ return [
     // Accessibility
     'properties/accessibility/usage/dataUseLimitation'                      => 'metadata/accessibility/usage/dataUseLimitation',
     'properties/accessibility/access/deliveryLeadTime'                      => 'metadata/accessibility/access/deliveryLeadTime',
-    'properties/accessibility/usage/investigations'                         => 'metadata/accessibility/usage/investigations',
     'properties/accessibility/access/dataProcessor'                         => 'metadata/accessibility/access/dataProcessor',
     'properties/accessibility/formatAndStandards/vocabularyEncodingScheme'  => 'metadata/accessibility/formatAndStandards/vocabularyEncodingScheme',
-    'properties/accessibility/formatAndStandards/format'                    => 'metadata/accessibility/formatAndStandards/format',
+    'properties/accessibility/formatAndStandards/formats'                   => 'metadata/accessibility/formatAndStandards/formats',
     'properties/accessibility/formatAndStandards/conformsTo'                => 'metadata/accessibility/formatAndStandards/conformsTo',
     'properties/accessibility/access/dataController'                        => 'metadata/accessibility/access/dataController',
     'properties/accessibility/usage/dataUseRequirements'                    => 'metadata/accessibility/usage/dataUseRequirements',
-    'properties/accessibility/usage/isReferencedBy'                         => 'metadata/accessibility/usage/isReferencedBy',
     'properties/accessibility/access/accessRights'                          => 'metadata/accessibility/access/accessRights',
     'properties/accessibility/access/jurisdiction'                          => 'metadata/accessibility/access/jurisdiction',
     'properties/accessibility/access/accessRequestCost'                     => 'metadata/accessibility/access/accessRequestCost',
@@ -50,11 +52,20 @@ return [
     'properties/accessibility/formatAndStandards/language'                  => 'metadata/accessibility/formatAndStandards/language',
     'properties/accessibility/usage/resourceCreator'                        => 'metadata/accessibility/usage/resourceCreator',
 
-    // Enrichment and Linkage
-    'properties/enrichmentAndLinkage/derivation'                            => 'metadata/enrichmentAndLinkage/derivation',
-    'properties/enrichmentAndLinkage/qualifiedRelation'                     => 'metadata/enrichmentAndLinkage/qualifiedRelation',
-    'properties/enrichmentAndLinkage/tools'                                 => 'metadata/enrichmentAndLinkage/tools',
+    // Linkage
+    'properties/linkage/isGeneratedUsing'                                   => 'metadata/linkage/isGeneratedUsing',
+    'properties/linkage/dataUses'                                           => 'metadata/linkage/dataUses',
+    'properties/linkage/isReferenceIn'                                      => 'metadata/linkage/isReferenceIn',
+    'properties/linkage/tools'                                              => 'metadata/linkage/tools',
+    'properties/linkage/investigations'                                     => 'metadata/linkage/investigations',
+    'properties/linkage/dataLinkage/isDerivedFrom'                          => 'metadata/linkage/dataLinkage/isDerivedFrom',
+    'properties/linkage/dataLinkage/isPartOf'                               => 'metadata/linkage/dataLinkage/isDerivedFrom',
+    'properties/linkage/dataLinkage/isMemberOf'                             => 'metadata/linkage/dataLinkage/isDerivedFrom',
+    'properties/linkage/dataLinkage/linkedDatasets'                         => 'metadata/linkage/dataLinkage/isDerivedFrom',
+    
 
+    // Required continued 
+    //'properties/required/revisions' => 'metadata/required/revisions',
     // Observations
     //'properties/summary/observations' => 'observations',
     /*
