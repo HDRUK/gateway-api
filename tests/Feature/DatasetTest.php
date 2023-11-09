@@ -24,7 +24,6 @@ class DatasetTest extends TestCase
     use Authorization;
 
     const TEST_URL_DATASET = '/api/v1/datasets';
-    const TEST_URL_TEAM_DATASET = '/api/v1/datasets/teams';
     const TEST_URL_TEAM = 'api/v1/teams';
     const TEST_URL_NOTIFICATION = 'api/v1/notifications';
     const TEST_URL_USER = 'api/v1/users';
@@ -97,7 +96,6 @@ class DatasetTest extends TestCase
     public function test_get_all_datasets_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL_DATASET, [], $this->header);
-
         $response->assertJsonStructure([
             'current_page',
             'data',
@@ -245,9 +243,8 @@ class DatasetTest extends TestCase
         $responseCreateDataset->assertStatus(201);
 
 
-        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
-                                       '/' . 
-                                       $teamId,
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+                                       '/?team_id=' . $teamId,
                                        [], $this->header
                                     );
         $response->assertStatus(200);
@@ -271,9 +268,8 @@ class DatasetTest extends TestCase
         /* 
         * Test filtering just the id,label from the endpoint
         */
-        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
-                                       '/' . 
-                                       $teamId . 
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+                                       '/?tead_id=' . $teamId . 
                                        '?field=id,label',
                                        [], $this->header
         );
@@ -291,10 +287,9 @@ class DatasetTest extends TestCase
         /* 
         * Sort so that the newest dataset is first in the list
         */
-        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
-                                        '/' . 
-                                        $teamId . 
-                                        '?sort=created',
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+                                        '?team_id=' . $teamId . 
+                                        '&sort=created',
                                         [], $this->header
         );
         $this->assertTrue($response['data'][0]['created'] > $response['data'][1]['created']);
@@ -302,10 +297,9 @@ class DatasetTest extends TestCase
         /* 
         * reverse this sorting
         */
-        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
-                                        '/' . 
-                                        $teamId . 
-                                        '?sort=created&direction=asc',
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+                                        '?team_id=' . $teamId . 
+                                        '&sort=created&direction=asc',
                                         [], $this->header
         );
         $this->assertTrue($response['data'][0]['created'] < $response['data'][1]['created']);
@@ -313,10 +307,9 @@ class DatasetTest extends TestCase
         /* 
         * Sort A-Z on the dataset label
         */
-        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
-                                        '/' . 
-                                        $teamId . 
-                                        '?sort=label&direction=asc',
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+                                        '?team_id=' . $teamId . 
+                                        '&sort=label&direction=asc',
                                         [], $this->header
         );
         $this->assertTrue($response['data'][0]['label'] == $labelDataset2);
@@ -324,10 +317,9 @@ class DatasetTest extends TestCase
         /* 
         * Sort Z-A on the dataset label
         */
-        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
-                                        '/' . 
-                                        $teamId . 
-                                        '?sort=label',
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+                                        '?team_id=' . $teamId . 
+                                        '&sort=label',
                                         [], $this->header
         );
         $this->assertTrue($response['data'][0]['label'] == $labelDataset1);
@@ -337,19 +329,17 @@ class DatasetTest extends TestCase
         /* 
         * fail if a bad direction has been given for sorting
         */
-        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
-                                        '/' . 
-                                        $teamId . 
-                                        '?sort=created&direction=blah',
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+                                        '?team_id=' . $teamId . 
+                                        '&sort=created&direction=blah',
                                         [], $this->header
         );
         $response->assertStatus(400);
 
-        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
-                '/' . 
-                $teamId . 
-                '?decode_metadata=true',
-                [], $this->header
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+                                        '?team_id=' . $teamId . 
+                                        '&decode_metadata=true',
+                                        [], $this->header
         );
         $response->assertStatus(200);
         $response->assertJsonStructure([

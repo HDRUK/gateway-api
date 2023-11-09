@@ -107,10 +107,9 @@ class DatasetController extends Controller
 
         $sortField = $request->query('sort', 'created'); // Default to 'created'
         $sortDirection = $request->query('direction', 'desc'); // Default to do the most recent first
-
         $allFields = collect(Dataset::first())->keys()->toArray();
   
-        if(!in_array($sortField, $allFields)){
+        if(count($allFields) > 0 && !in_array($sortField, $allFields)){
             //if the field to be sorted is not a field in the model, then return a bad request
             return response()->json([
                     "message" => "Sort is not a valid field to sort on: " . 
