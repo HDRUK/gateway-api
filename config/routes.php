@@ -2063,7 +2063,22 @@ return [
             'id', '[0-9]+'
         ],
     ],
-
+    // team.datasets
+    [
+        'name' => 'datasets.team',
+        'method' => 'get',
+        'path' => '/datasets/teams/{teamId}',
+        'methodController' => 'DatasetController@getTeamDatasets',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,custodian.team.admin',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
     // datasets integrations
     [
         'name' => 'datasets.integrations',

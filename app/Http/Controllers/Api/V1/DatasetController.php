@@ -188,6 +188,135 @@ class DatasetController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *    path="/api/v1/teams/{teamId}/datasets",
+     *    operationId="get_datasets_team_id",
+     *    tags={"Team-Datasets"},
+     *    summary="DatasetController@getTeamDatasets",
+     *    description="Get datasets by team id",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *   @OA\Parameter(
+     *       name="fields",
+     *       in="query",
+     *       description="Comma-separated list of fields to include in the response",
+     *       example="label,created",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Comma-separated list of fields",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="sort",
+     *       in="query",
+     *       description="Field to sort by (default: 'created')",
+     *       example="created",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Field to sort by",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="direction",
+     *       in="query",
+     *       description="Sort direction ('asc' or 'desc', default: 'desc')",
+     *       example="desc",
+     *       @OA\Schema(
+     *          type="string",
+     *          enum={"asc", "desc"},
+     *          description="Sort direction",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          )
+     *       )
+     *    )
+     */
+    public function getTeamDatasets(Request $request, int $teamId)
+    {   
+
+        $selectedFields = explode(',', $request->query('fields', '*'));
+
+        $sortField = $request->query('sort', 'created'); // Default to 'created'
+        $sortDirection = $request->query('direction', 'desc'); // Default to do the most recent first
+
+        $allFields = collect(Dataset::first())->keys()->toArray();
+  
+        if(!in_array($sortField, $allFields)){
+            return response()->json([
+                    "message" => "Sort is not a valid field to sort on: " . 
+                                implode(',',$allFields) . 
+                                '. Not "' . $sortField .'"'
+                    ],400);                          
+        }
+        if ($selectedFields !== ['*']){
+            $invalidFields = array_diff($selectedFields, $allFields);
+            if (!empty($invalidFields)) {
+                // If selected fields are not equal to '*' and contain invalid fields
+                // throw an error
+                return response()->json([
+                        "message" => "Invalid fields requested: ".
+                                     implode(",",$invalidFields)
+                        ],400);
+                }
+    
+        }
+
+        $validDirections = ['desc', 'asc'];
+        if(!in_array($sortDirection, $validDirections)){
+            return response()->json([
+                    "message" => "Sort direction must be either: " . 
+                                implode(' OR ',$validDirections) . 
+                                '. Not "' . $sortDirection .'"'
+                    ],400);
+        }
+
+        $datasets = Dataset::where('team_id', '=', $teamId)
+                    ->orderBy($sortField, $sortDirection)
+                    ->select($selectedFields)
+                    ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+
+        
+        // is this needed.....?            
+        /*
+        foreach ($datasets as $dataset) {
+            if ($dataset->datasetid) {
+                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
+                $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
+            } else {
+                $dataset['mauro'] = [];
+            }
+        }
+        */  
+    
+        return response()->json(
+            $datasets
+        );
+    }
+
+
+    /**
      * @OA\Post(
      *    path="/api/v1/datasets",
      *    operationId="create_datasets",
@@ -388,15 +517,17 @@ class DatasetController extends Controller
             $currentPid = $currDataset['pid'];
             $currentDatasetId = $currDataset['datasetid'];
 
-            // First validate the incoming schema to ensure it's in GWDM format
-            // if not, attempt to translate prior to saving
-            $validateDataModelType = MMC::validateDataModelType(
+            $traserResponse = MMC::translateDataModelType(
                 json_encode($input['dataset']),
                 env('GWDM'),
                 env('GWDM_CURRENT_VERSION')
             );
+    
+            if($traserResponse['wasTranslated']){
+                $input['metadata']['original_metadata'] = $input['dataset']['metadata'];
+                $input['dataset']['metadata'] = $traserResponse['metadata'];
 
-            if ($validateDataModelType) {
+
                 $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
                 $newDatasetId = (string) $duplicateDataModel['id'];
                 MMC::updateDataModel($user, $team, $input, $newDatasetId);
@@ -435,68 +566,11 @@ class DatasetController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                     'data' => Dataset::where('id', '=', $dId)->first(),
                 ], Config::get('statuscodes.STATUS_OK.code'));
-            } else {
-                // Incoming dataset is not in GWDM format, so at this point we
-                // need to translate it
-                $response = MMC::translateDataModelType(
-                    json_encode($input['dataset']),
-                    env('GWDM'),
-                    env('GWDM_CURRENT_VERSION'),
-                    env('HDRUK'),
-                    // TODO
-                    // 
-                    // The following is hardcoded for now - but needs to be
-                    // more intelligent in the future. Need a solution for
-                    // not working on assumptions. Theoretically, we can 
-                    // use the incoming version, but needs confirmation
-                    '2.1.2'
-                );
-
-                if (!empty($response)) {
-                    $input['dataset'] = $response;
-                    $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
-                    $newDatasetId = (string) $duplicateDataModel['id'];
-                    MMC::updateDataModel($user, $team, $input, $newDatasetId);
-
-                    $dataset = MMC::createDataset([
-                        'datasetid' => $newDatasetId,
-                        'label' => $input['label'],
-                        'short_description' => $input['short_description'],
-                        'user_id' => $input['user_id'],
-                        'team_id' => $input['team_id'],
-                        'dataset' => json_encode($response),
-                        'created' => now(),
-                        'updated' => now(),
-                        'submitted' => now(),
-                        'pid' => $currentPid,
-                        'create_origin' => $input['create_origin'],
-                    ]);
-                    $dId = $dataset->id;
-
-                    // Dispatch this potentially lengthy subset of data
-                    // to a technical object data store job - API doesn't
-                    // care if it exists or not. We leave that determination to
-                    // the service itself.
-                    TechnicalObjectDataStore::dispatch(
-                        $dId,
-                        base64_encode(gzcompress(gzencode(json_encode($response)), 6))
-                    );
-
-                    $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
-                    Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['modelVersion']]);
-
-                    Dataset::where('id', '=', $id)->delete();
-                    MMC::deleteFromElastic($id);
-
-                    return response()->json([
-                        'message' => Config::get('statuscodes.STATUS_OK.message'),
-                        'data' => Dataset::where('id', '=', $dId)->first(),
-                    ], Config::get('statuscodes.STATUS_OK.code'));
-                }
-
-                // Fail
+            } 
+            else{
                 return response()->json([
                     'message' => 'dataset is in an unknown format and cannot be processed',
+                    'details' => $traserResponse,
                 ], 400);
             }
 
