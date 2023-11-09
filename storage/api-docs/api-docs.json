@@ -5948,6 +5948,22 @@
                             "type": "integer"
                         },
                         "example": "1"
+                    },
+                    {
+                        "name": "schema_model",
+                        "in": "query",
+                        "description": "Alternative output schema model.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "schema_version",
+                        "in": "query",
+                        "description": "Alternative output schema version.",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -6204,6 +6220,170 @@
                 "security": [
                     {
                         "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Datasets"
+                ],
+                "summary": "DatasetController@edit",
+                "description": "Patch dataset by id",
+                "operationId": "patch_datasets",
+                "parameters": [
+                    {
+                        "name": "unarchive",
+                        "in": "query",
+                        "description": "Unarchive a dataset",
+                        "schema": {
+                            "description": "instruction to unarchive dataset",
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/integrations/datasets/test": {
+            "post": {
+                "tags": [
+                    "Integrations datasets test"
+                ],
+                "summary": "DatasetController@datasetTest",
+                "description": "Integrations datasets test",
+                "operationId": "integrations_datasets_test",
+                "requestBody": {
+                    "description": "Pass datasets payload",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "1"
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "3"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "example": "label dataset for test"
+                                    },
+                                    "short_description": {
+                                        "type": "string",
+                                        "example": "lorem ipsum"
+                                    },
+                                    "create_origin": {
+                                        "type": "string",
+                                        "example": "MANUAL"
+                                    },
+                                    "dataset": {
+                                        "type": "array",
+                                        "items": {}
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAppAuth": []
                     }
                 ]
             }
@@ -15820,6 +16000,80 @@
                     },
                     "500": {
                         "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/services/audit": {
+            "post": {
+                "summary": "ServiceLayerController@audit",
+                "description": "",
+                "operationId": "audit",
+                "requestBody": {
+                    "description": "Payload to audit against the system",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    },
+                                    "team_id": {
+                                        "type": "integer",
+                                        "example": "0"
+                                    },
+                                    "action_type": {
+                                        "type": "string",
+                                        "example": "Action Type"
+                                    },
+                                    "action_service": {
+                                        "type": "string",
+                                        "example": "Action Service"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Description"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error Response",
                         "content": {
                             "application/json": {
                                 "schema": {
