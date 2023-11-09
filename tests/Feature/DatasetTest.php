@@ -24,6 +24,7 @@ class DatasetTest extends TestCase
     use Authorization;
 
     const TEST_URL_DATASET = '/api/v1/datasets';
+    const TEST_URL_TEAM_DATASET = '/api/v1/datasets/teams';
     const TEST_URL_TEAM = 'api/v1/teams';
     const TEST_URL_NOTIFICATION = 'api/v1/notifications';
     const TEST_URL_USER = 'api/v1/users';
@@ -109,6 +110,266 @@ class DatasetTest extends TestCase
         ]);
         $response->assertStatus(200);
     }
+
+    /**
+     * Get All Datasets for a given team with success
+     * 
+     * @return void
+     */
+    public function test_get_all_team_datasets_with_success(): void
+    {
+
+        Http::fake([
+            'ted*' => Http::response(
+                ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
+                201,
+                ['application/json']
+            )
+        ]);
+        
+        // Mock the MMC getElasticClient method to return the mock client
+        // makePartial so other MMC methods are not mocked
+        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
+        MMC::makePartial();
+
+        // create team
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => 'Some@email.com',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => $teamName,
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => 1001,
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        $teamId = $contentCreateTeam['data'];
+
+        // create user
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' =>" https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+        $responseCreateUser->assertStatus(201);
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        $userId = $contentCreateUser['data'];
+
+        // create dataset
+        $labelDataset1 = 'XYZ DATASET';
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'label' => $labelDataset1,
+                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                'dataset' => $this->dataset,
+                'create_origin' => 'MANUAL'
+            ],
+            $this->header,
+        );
+
+        //create a 2nd one
+        $labelDataset2 = 'ABC DATASET';
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'label' => $labelDataset2,
+                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                'dataset' => $this->dataset,
+                'create_origin' => 'MANUAL',
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(201);
+
+
+        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
+                                       '/' . 
+                                       $teamId,
+                                       [], $this->header
+                                    );
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'current_page',
+            'data',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+
+
+        /* 
+        * Test filtering just the id,label from the endpoint
+        */
+        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
+                                       '/' . 
+                                       $teamId . 
+                                       '?field=id,label',
+                                       [], $this->header
+        );
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                '*' => [
+                    'id',
+                    'label'
+                ]
+            ]
+        ]);
+
+
+        /* 
+        * Sort so that the newest dataset is first in the list
+        */
+        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
+                                        '/' . 
+                                        $teamId . 
+                                        '?sort=created',
+                                        [], $this->header
+        );
+        $this->assertTrue($response['data'][0]['created'] > $response['data'][1]['created']);
+
+        /* 
+        * reverse this sorting
+        */
+        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
+                                        '/' . 
+                                        $teamId . 
+                                        '?sort=created&direction=asc',
+                                        [], $this->header
+        );
+        $this->assertTrue($response['data'][0]['created'] < $response['data'][1]['created']);
+
+        /* 
+        * Sort A-Z on the dataset label
+        */
+        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
+                                        '/' . 
+                                        $teamId . 
+                                        '?sort=label&direction=asc',
+                                        [], $this->header
+        );
+        $this->assertTrue($response['data'][0]['label'] == $labelDataset2);
+
+        /* 
+        * Sort Z-A on the dataset label
+        */
+        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
+                                        '/' . 
+                                        $teamId . 
+                                        '?sort=label',
+                                        [], $this->header
+        );
+        $this->assertTrue($response['data'][0]['label'] == $labelDataset1);
+
+
+
+        /* 
+        * fail if a bad direction has been given for sorting
+        */
+        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
+                                        '/' . 
+                                        $teamId . 
+                                        '?sort=created&direction=blah',
+                                        [], $this->header
+        );
+        $response->assertStatus(400);
+
+        $response = $this->json('GET', self::TEST_URL_TEAM_DATASET . 
+                '/' . 
+                $teamId . 
+                '?decode_metadata=true',
+                [], $this->header
+        );
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                '*' => [
+                    'dataset' => [
+                        "metadata" => [
+                            "required",
+                            "summary",
+                            "coverage",
+                            "provenance",
+                            "accessibility",
+                            "linkage",
+                            "observations",
+                            "structuralMetadata"
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+
+        
+
+    }
+
 
     /**
      * Get Dataset by Id with success
