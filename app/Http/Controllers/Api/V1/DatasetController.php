@@ -633,4 +633,83 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    /**
+     * @OA\Post(
+     *    path="/api/v1/integrations/datasets/test",
+     *    operationId="integrations_datasets_test",
+     *    tags={"Integrations datasets test"},
+     *    summary="DatasetController@datasetTest",
+     *    description="Integrations datasets test",
+     *    security={{"bearerAppAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass datasets payload",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="team_id", type="integer", example="1"),
+     *             @OA\Property(property="user_id", type="integer", example="3"),
+     *             @OA\Property(property="label", type="string", example="label dataset for test"),
+     *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
+     *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
+     *             @OA\Property(property="dataset", type="array", @OA\Items())
+     *          )
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Created",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="success"),
+     *              @OA\Property(property="data", type="integer", example="100")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function datasetTest(CreateDataset $request)
+    {
+        try {
+            $input = $request->all();
+
+            //send the payload to traser
+            // - traser will return the input unchanged if the data is
+            //   already in the GWDM with GWDM_CURRENT_VERSION
+            // - if it is not, traser will try to work out what the metadata is
+            //   and translate it into the GWDM
+            // - otherwise traser will return a non-200 error 
+            $traserResponse = MMC::translateDataModelType(
+                json_encode($input['dataset']),
+                env('GWDM'),
+                env('GWDM_CURRENT_VERSION')
+            );
+
+            if ($traserResponse['wasTranslated']) {
+                return response()->json([
+                    'message' => 'success',
+                ], 200);
+            }
+
+            return response()->json([
+                'message' => 'dataset is in an unknown format and cannot be processed',
+                'details' => $traserResponse,
+            ], 400);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 }

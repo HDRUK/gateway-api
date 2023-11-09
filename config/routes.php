@@ -2128,6 +2128,18 @@ return [
             'id', '[0-9]+'
         ],
     ],
+    [
+        'name' => 'datasets.integrations.test',
+        'method' => 'post',
+        'path' => '/integrations/datasets/test',
+        'methodController' => 'DatasetController@datasetTest',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
 
     // team.notification
     [
