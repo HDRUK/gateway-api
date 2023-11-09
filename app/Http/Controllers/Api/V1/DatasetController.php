@@ -20,7 +20,6 @@ use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
-use phpDocumentor\Reflection\PseudoTypes\False_;
 
 class DatasetController extends Controller
 {
@@ -275,6 +274,7 @@ class DatasetController extends Controller
         $allFields = collect(Dataset::first())->keys()->toArray();
   
         if(!in_array($sortField, $allFields)){
+            //if the field to be sorted is not a field in the model, then return a bad request
             return response()->json([
                     "message" => "Sort is not a valid field to sort on: " . 
                                 implode(',',$allFields) . 
@@ -285,7 +285,7 @@ class DatasetController extends Controller
             $invalidFields = array_diff($selectedFields, $allFields);
             if (!empty($invalidFields)) {
                 // If selected fields are not equal to '*' and contain invalid fields
-                // throw an error
+                // return a bad request
                 return response()->json([
                         "message" => "Invalid fields requested: ".
                                      implode(",",$invalidFields)
@@ -296,6 +296,7 @@ class DatasetController extends Controller
 
         $validDirections = ['desc', 'asc'];
         if(!in_array($sortDirection, $validDirections)){
+            //if the sort direction is not desc or asc then return a bad request
             return response()->json([
                     "message" => "Sort direction must be either: " . 
                                 implode(' OR ',$validDirections) . 
@@ -310,6 +311,7 @@ class DatasetController extends Controller
 
         $decodeMetadata = $request->query('decode_metadata', false); 
         if($decodeMetadata){
+            //if the decoding of the metadata has been requested, perform this
             foreach ($datasets as $dataset) {
                 $dataset['dataset'] = json_decode($dataset['dataset'] );
             }
