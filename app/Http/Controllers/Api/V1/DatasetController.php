@@ -633,4 +633,37 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    // integration dataset test
+    public function datasetTest(Request $request)
+    {
+        try {
+            $input = $request->all();
+
+            //send the payload to traser
+            // - traser will return the input unchanged if the data is
+            //   already in the GWDM with GWDM_CURRENT_VERSION
+            // - if it is not, traser will try to work out what the metadata is
+            //   and translate it into the GWDM
+            // - otherwise traser will return a non-200 error 
+            $traserResponse = MMC::translateDataModelType(
+                json_encode($input['dataset']),
+                env('GWDM'),
+                env('GWDM_CURRENT_VERSION')
+            );
+
+            if ($traserResponse['wasTranslated']) {
+                return response()->json([
+                    'message' => 'success',
+                ], 200);
+            }
+
+            return response()->json([
+                'message' => 'dataset is in an unknown format and cannot be processed',
+                'details' => $traserResponse,
+            ], 400);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 }
