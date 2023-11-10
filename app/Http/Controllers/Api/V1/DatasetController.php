@@ -140,8 +140,9 @@ class DatasetController extends Controller
                     ],400);
         }
 
+      
 
-        $teamId = $request->query('fields',null);
+        $teamId = $request->query('team_id',null);
         $datasets = Dataset::when($teamId, 
                                     function ($query) use ($teamId){
                                         return $query->where('team_id', '=', $teamId);
@@ -153,7 +154,6 @@ class DatasetController extends Controller
                             ->orderBy($sortField, $sortDirection)
                             ->select($selectedFields)
                             ->paginate(Config::get('constants.per_page'), ['*'], 'page');
-                    
 
         $decodeMetadata = $request->query('decode_metadata', false); 
         if($decodeMetadata){
