@@ -53,17 +53,26 @@ class UserController extends Controller
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $users = User::getAll('id', $jwtUser)->with(
-            'roles',
-            'roles.permissions',
-            'teams',
-            'notifications'
-        )->get()->toArray();
-
-        $response = $this->getUsers($users);
-
+        $response = [];
+        if (count($jwtUser)) { //should really always be a jwtUser
+            $userIsAdmin = (bool) $jwtUser['is_admin'];
+            if($userIsAdmin){ // if it's the superadmin return a bunch of information
+                $users = User::with(
+                    'roles',
+                    'roles.permissions',
+                    'teams',
+                    'notifications'
+                )->get()->toArray();
+                $response = $this->getUsers($users);
+            }
+            else{ // otherwise, for now, just return the id and name
+                $response = User::select(
+                    'id','name'
+                )->get()->toArray();
+            }
+        }
         return response()->json([
-            'data' => $response
+            'data' => $response,
         ]);
     }
 
