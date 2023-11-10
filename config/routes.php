@@ -2077,7 +2077,6 @@ return [
             'id', '[0-9]+'
         ],
     ],
-
     // datasets integrations
     [
         'name' => 'datasets.integrations',

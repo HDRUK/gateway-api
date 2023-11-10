@@ -15,6 +15,7 @@ With Docker-desktop and Helm installed, you'll need an instance of mysql. Using 
 
  - To install the mysql repo: `helm repo add bitnami https://charts.bitnami.com/bitnami`
  - To install mysql container: `helm install mysql bitnami/mysql`
+    - alternatively you can use mariadb: `helm install mariadb oci://registry-1.docker.io/bitnamicharts/mariadb`
  - Provided everything went well, run the following to get the password for your mysql instance: `echo $(kubectl get secret --namespace default mysql -o jsonpath="{.data.mysql-root-password}" | base64 -d)` (make sure to keep a copy of this, and you'll need it for your `.env` file below)
 
  If you don't have a mysql client installed you can use the following to deploy a pod to k8s and act as your mysql client: ` kubectl run mysql-client --rm --tty -i --restart='Never' --image  docker.io/bitnami/mysql:8.0.31-debian-11-r30 --namespace default --env MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD --command -- bash`

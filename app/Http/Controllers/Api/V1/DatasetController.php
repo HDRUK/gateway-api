@@ -31,6 +31,58 @@ class DatasetController extends Controller
      *    summary="DatasetController@index",
      *    description="Get All Datasets",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="query",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *   @OA\Parameter(
+     *       name="fields",
+     *       in="query",
+     *       description="Comma-separated list of fields to include in the response",
+     *       example="label,created",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Comma-separated list of fields",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="sort",
+     *       in="query",
+     *       description="Field to sort by (default: 'created')",
+     *       example="created",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Field to sort by",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="direction",
+     *       in="query",
+     *       description="Sort direction ('asc' or 'desc', default: 'desc')",
+     *       example="desc",
+     *       @OA\Schema(
+     *          type="string",
+     *          enum={"asc", "desc"},
+     *          description="Sort direction",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="decode_metadata",
+     *       in="query",
+     *       description="Decode the 'dataset' metadata field (default: false)",
+     *       example="true",
+     *       @OA\Schema(
+     *          type="boolean",
+     *          description="Decode the 'dataset' metadata field",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -51,12 +103,65 @@ class DatasetController extends Controller
     public function index(Request $request): JsonResponse
     {
 
-        if ($request->has('withTrashed')) {
-            $datasets = Dataset::withTrashed()->paginate(Config::get('constants.per_page'), ['*'], 'page')->withQueryString();
-        } else {
-            $datasets = Dataset::paginate(Config::get('constants.per_page'), ['*'], 'page');
+        $selectedFields = explode(',', $request->query('fields', '*'));
+
+        $sortField = $request->query('sort', 'created'); // Default to 'created'
+        $sortDirection = $request->query('direction', 'desc'); // Default to do the most recent first
+        $allFields = collect(Dataset::first())->keys()->toArray();
+  
+        if(count($allFields) > 0 && !in_array($sortField, $allFields)){
+            //if the field to be sorted is not a field in the model, then return a bad request
+            return response()->json([
+                    "message" => "Sort is not a valid field to sort on: " . 
+                                implode(',',$allFields) . 
+                                '. Not "' . $sortField .'"'
+                    ],400);                          
         }
-        
+        if ($selectedFields !== ['*']){
+            $invalidFields = array_diff($selectedFields, $allFields);
+            if (!empty($invalidFields)) {
+                // If selected fields are not equal to '*' and contain invalid fields
+                // return a bad request
+                return response()->json([
+                        "message" => "Invalid fields requested: ".
+                                     implode(",",$invalidFields)
+                        ],400);
+                }
+    
+        }
+
+        $validDirections = ['desc', 'asc'];
+        if(!in_array($sortDirection, $validDirections)){
+            //if the sort direction is not desc or asc then return a bad request
+            return response()->json([
+                    "message" => "Sort direction must be either: " . 
+                                implode(' OR ',$validDirections) . 
+                                '. Not "' . $sortDirection .'"'
+                    ],400);
+        }
+
+      
+
+        $teamId = $request->query('team_id',null);
+        $datasets = Dataset::when($teamId, 
+                                    function ($query) use ($teamId){
+                                        return $query->where('team_id', '=', $teamId);
+                                    })
+                            ->when($request->has('withTrashed'), 
+                                    function ($query) {
+                                        return $query->withTrashed();
+                                     })
+                            ->orderBy($sortField, $sortDirection)
+                            ->select($selectedFields)
+                            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+
+        $decodeMetadata = $request->query('decode_metadata', false); 
+        if($decodeMetadata){
+            //if the decoding of the metadata has been requested, perform this
+            foreach ($datasets as $dataset) {
+                $dataset['dataset'] = json_decode($dataset['dataset'] );
+            }
+        }
 
         foreach ($datasets as $dataset) {
             if ($dataset->datasetid) {
