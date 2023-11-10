@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserHasRole;
 use Illuminate\Http\Request;
 use App\Http\Requests\User\GetUser;
+use App\Http\Requests\User\IndexUser;
 use App\Models\UserHasNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\EditUser;
@@ -59,7 +60,7 @@ class UserController extends Controller
      *    ),
      * )
      */
-    public function index(Request $request): mixed
+    public function index(IndexUser $request): mixed
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
