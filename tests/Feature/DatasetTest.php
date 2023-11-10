@@ -319,7 +319,7 @@ class DatasetTest extends TestCase
         * Test filtering just the id,label from the endpoint
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                       '/?team_id=' . $teamId . 
+                                       '?team_id=' . $teamId . 
                                        '&fields=id,label,team_id',
                                        [], $this->header
         );
