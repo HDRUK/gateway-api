@@ -15,7 +15,7 @@ class IndexUser extends BaseFormRequest
     {
         return [
             'filterNames' => [
-                'required',
+                'nullable',
                 'string',
                 'min:3',
             ],
