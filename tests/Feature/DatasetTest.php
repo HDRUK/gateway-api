@@ -270,7 +270,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
                                        '/?tead_id=' . $teamId . 
-                                       '?field=id,label',
+                                       '?fields=id,label',
                                        [], $this->header
         );
         $response->assertStatus(200);
