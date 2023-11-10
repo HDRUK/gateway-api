@@ -6297,14 +6297,6 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "team_id": {
-                                        "type": "integer",
-                                        "example": "1"
-                                    },
-                                    "user_id": {
-                                        "type": "integer",
-                                        "example": "3"
-                                    },
                                     "label": {
                                         "type": "string",
                                         "example": "label dataset for test"
@@ -6312,10 +6304,6 @@
                                     "short_description": {
                                         "type": "string",
                                         "example": "lorem ipsum"
-                                    },
-                                    "create_origin": {
-                                        "type": "string",
-                                        "example": "MANUAL"
                                     },
                                     "dataset": {
                                         "type": "array",
