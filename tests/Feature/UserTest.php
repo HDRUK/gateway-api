@@ -39,6 +39,12 @@ class UserTest extends TestCase
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
         ];
+        $this->authorisationUser(false);
+        $nonAdminJwt = $this->getAuthorisationJwt(false);
+        $this->headerNonAdmin = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $nonAdminJwt,
+        ];
     }
 
     /**
@@ -85,6 +91,57 @@ class UserTest extends TestCase
             ],   
         ]);
         $response->assertStatus(200);
+    }
+
+    /**
+     * Get All Users with success as non admin
+     * 
+     * @return void
+     */
+    public function test_non_admin_get_all_users_with_success(): void
+    {
+        // Create User with a highly unique name 
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'XXXXXXXXXX',
+                'lastname' => 'XXXXXXXXXX',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/12345678",
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",           
+            ],
+            $this->header
+        );
+        $responseUser->assertStatus(201);
+        $uniqueUserId = $responseUser->decodeResponseJson()['data'];
+
+        $response = $this->json('GET', self::TEST_URL, [], $this->headerNonAdmin);
+
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    'id',
+                    'name'
+                ],
+            ],   
+        ]);
+        $response->assertStatus(200);
+
+        $filterResponse = $this->json('GET', self::TEST_URL . '?filterNames=XXXXX', [], $this->headerNonAdmin);
+
+        // Check the user named XXXXXXXXX is the only match
+        $filterUsers = $filterResponse->decodeResponseJson()['data'];
+        $this->assertEquals($filterUsers[0]['id'], $uniqueUserId);
     }
 
     /**

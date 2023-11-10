@@ -32,6 +32,16 @@ class UserController extends Controller
      *    summary="UserController@index",
      *    description="Get All Users",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="filterNames",
+     *       in="query",
+     *       description="Three or more characters to filter users names by",
+     *       example="abc",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Three or more characters to filter users names by",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -64,16 +74,25 @@ class UserController extends Controller
                     'notifications'
                 )->get()->toArray();
                 $response = $this->getUsers($users);
-            }
-            else{ // otherwise, for now, just return the id and name
-                $response = User::select(
-                    'id','name'
-                )->get()->toArray();
+            } else { 
+                // otherwise, for now, just return the ids and names 
+                // (filtered if appropriate)
+                if ($request->has('filterNames')) {
+                    $chars = $request->query('filterNames');
+                    $response = User::where('name', 'like', '%' . $chars . '%')
+                        ->select(['id', 'name'])
+                        ->get()
+                        ->toArray();
+                } else {
+                    $response = User::select(
+                        'id','name'
+                    )->get()->toArray();
+                }
             }
         }
         return response()->json([
             'data' => $response,
-        ]);
+        ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**
