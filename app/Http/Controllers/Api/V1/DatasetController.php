@@ -163,7 +163,6 @@ class DatasetController extends Controller
             }
         }
 
-
         foreach ($datasets as $dataset) {
             if ($dataset->datasetid) {
                 $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);

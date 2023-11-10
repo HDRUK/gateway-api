@@ -183,6 +183,38 @@ class DatasetTest extends TestCase
         $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
         $teamId = $contentCreateTeam['data'];
 
+
+        //create a 2nd team
+        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => $teamName,
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => 1001,
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        $teamId2 = $contentCreateTeam['data'];
+
         // create user
         $responseCreateUser = $this->json(
             'POST',
@@ -243,11 +275,30 @@ class DatasetTest extends TestCase
         $responseCreateDataset->assertStatus(201);
 
 
-        $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                       '/?team_id=' . $teamId,
+
+        //create a 3rd one which is owned by the 2nd team
+        $labelDataset3 = 'Other Team DATASET';
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId2,
+                'user_id' => $userId,
+                'label' => $labelDataset3,
+                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                'dataset' => $this->dataset,
+                'create_origin' => 'MANUAL',
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(201);
+
+
+        $response = $this->json('GET', self::TEST_URL_DATASET,
                                        [], $this->header
                                     );
         $response->assertStatus(200);
+        $this->assertCount(3,$response['data']);
         $response->assertJsonStructure([
             'current_page',
             'data',
@@ -264,25 +315,34 @@ class DatasetTest extends TestCase
             'total',
         ]);
 
-
         /* 
         * Test filtering just the id,label from the endpoint
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                       '/?tead_id=' . $teamId . 
-                                       '?fields=id,label',
+                                       '/?team_id=' . $teamId . 
+                                       '&fields=id,label,team_id',
                                        [], $this->header
         );
         $response->assertStatus(200);
+
+        //should find the two datasets (remove the one dataset that is not teamId)
+        $this->assertCount(2,$response['data']);
+
+        $allTeamIds = array_unique(array_column($response['data'], 'team_id'));
+        //additionally check all teamIds are the same
+        $this->assertTrue(count($allTeamIds) === 1);
+        //additionally check this unique teamId is equal to the filtered teamId
+        $this->assertTrue($allTeamIds[0] === $teamId);
+
         $response->assertJsonStructure([
             'data' => [
                 '*' => [
                     'id',
-                    'label'
+                    'label',
+                    'team_id'
                 ]
             ]
         ]);
-
 
         /* 
         * Sort so that the newest dataset is first in the list
