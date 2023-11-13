@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserHasRole;
 use Illuminate\Http\Request;
 use App\Http\Requests\User\GetUser;
+use App\Http\Requests\User\IndexUser;
 use App\Models\UserHasNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\EditUser;
@@ -32,6 +33,16 @@ class UserController extends Controller
      *    summary="UserController@index",
      *    description="Get All Users",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="filterNames",
+     *       in="query",
+     *       description="Three or more characters to filter users names by",
+     *       example="abc",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Three or more characters to filter users names by",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -49,7 +60,7 @@ class UserController extends Controller
      *    ),
      * )
      */
-    public function index(Request $request): mixed
+    public function index(IndexUser $request): mixed
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -64,16 +75,25 @@ class UserController extends Controller
                     'notifications'
                 )->get()->toArray();
                 $response = $this->getUsers($users);
-            }
-            else{ // otherwise, for now, just return the id and name
-                $response = User::select(
-                    'id','name'
-                )->get()->toArray();
+            } else { 
+                // otherwise, for now, just return the ids and names 
+                // (filtered if appropriate)
+                if ($request->has('filterNames')) {
+                    $chars = $request->query('filterNames');
+                    $response = User::where('name', 'like', '%' . $chars . '%')
+                        ->select(['id', 'name'])
+                        ->get()
+                        ->toArray();
+                } else {
+                    $response = User::select(
+                        'id','name'
+                    )->get()->toArray();
+                }
             }
         }
         return response()->json([
             'data' => $response,
-        ]);
+        ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**
