@@ -32,7 +32,7 @@ class DatasetController extends Controller
      *    description="Get All Datasets",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="teamId",
+     *       name="team_id",
      *       in="query",
      *       description="team id",
      *       required=true,
