@@ -15884,6 +15884,18 @@
                 "summary": "UserController@index",
                 "description": "Get All Users",
                 "operationId": "fetch_all_users",
+                "parameters": [
+                    {
+                        "name": "filterNames",
+                        "in": "query",
+                        "description": "Three or more characters to filter users names by",
+                        "schema": {
+                            "description": "Three or more characters to filter users names by",
+                            "type": "string"
+                        },
+                        "example": "abc"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success response",

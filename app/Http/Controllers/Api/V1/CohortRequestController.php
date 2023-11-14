@@ -65,11 +65,66 @@ class CohortRequestController extends Controller
      *    ),
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $cohortRequests = CohortRequest::with(['user', 'logs', 'logs.user'])
-                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            $orderBy = [];
+            if ($request->has('orderBy')) {
+                foreach (explode(',', $request->query('orderBy', '')) as $item) {
+                    $tmp = explode(':', $item);
+                    $orderBy[$tmp[0]] = $tmp[1];
+                }
+            }
+
+            $query = CohortRequest::with(['user', 'logs', 'logs.user']);
+
+            // filter by users.email
+            if ($request->has('email')) {
+                $email = $request->query('email');
+                $query->whereHas('user', function ($q) use ($email) {
+                    $q->where('email', 'LIKE', '%' . $email . '%');
+                });
+            }
+
+            // filter by users.organisation
+            if ($request->has('organisation')) {
+                $organisation = $request->query('organisation');
+                $query->whereHas('user', function ($q) use ($organisation) {
+                    $q->where('organisation', 'LIKE', '%' . $organisation . '%');
+                });
+            }
+
+            // filter by users.name
+            if ($request->has('name')) {
+                $name = $request->query('name');
+                $query->whereHas('user', function ($q) use ($name) {
+                    $q->where('name', 'LIKE', '%' . $name . '%');
+                });
+            }
+
+            // filter by request_status
+            if ($request->has('status')) {
+                $query->where('request_status', strtoupper($request->query('status')));
+            }
+
+            $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
+
+            if ($orderBy) {
+                foreach($orderBy as $key => $value) {
+                    if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
+                        $query->orderBy('cohort_requests.' . $key, strtoupper($value));
+                    }
+
+                    if (in_array($key, ['name', 'organisation'])) {
+                        $query->orderBy('users.' . $key, strtoupper($value));
+                    }
+                    
+                }
+            }
+
+            $query->select('cohort_requests.*');
+
+            $cohortRequests = $query->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             return response()->json(
                 $cohortRequests
@@ -214,6 +269,7 @@ class CohortRequestController extends Controller
                     'request_status' => 'PENDING',
                     'cohort_status' => false,
                     'request_expire_at' => null,
+                    'created_at' => Carbon::today()->toDateTimeString(),0
                 ]);
             } else {
                 $cohortRequest = CohortRequest::create([

@@ -26,6 +26,7 @@ class CohortRequest extends Model
         'request_status',
         'cohort_status',
         'request_expire_at',
+        'created_at',
     ];
 
     protected $casts = [
