@@ -67,12 +67,16 @@ class CohortRequestController extends Controller
      */
     public function index(): JsonResponse
     {
-        $cohortRequests = CohortRequest::with(['user','logs','logs.user'])
-                            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        try {
+            $cohortRequests = CohortRequest::with(['user', 'logs', 'logs.user'])
+                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
-        return response()->json(
-            $cohortRequests
-        );
+            return response()->json(
+                $cohortRequests
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -128,16 +132,18 @@ class CohortRequestController extends Controller
      */
     public function show(GetCohortRequest $request, int $id): JsonResponse
     {
-        $cohortRequests = CohortRequest::where('id', $id)
-                            ->with(['user','logs','logs.user'])
-                            ->first()->toArray();
+        try {
+            $cohortRequests = CohortRequest::where('id', $id)
+                ->with(['user', 'logs', 'logs.user'])
+                ->first()->toArray();
 
-        // send email notification
-
-        return response()->json([
-            'message' => 'success',
-            'data' => $cohortRequests,
-        ], 200);
+            return response()->json([
+                'message' => 'success',
+                'data' => $cohortRequests,
+            ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
