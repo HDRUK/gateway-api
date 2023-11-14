@@ -2291,4 +2291,70 @@ return [
         ],
     ],
 
+    // cohort_requests
+    [
+        'name' => 'cohort_requests',
+        'method' => 'get',
+        'path' => '/cohort_requests',
+        'methodController' => 'CohortRequestController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'get',
+        'path' => '/cohort_requests/{id}',
+        'methodController' => 'CohortRequestController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'post',
+        'path' => '/cohort_requests',
+        'methodController' => 'CohortRequestController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'put',
+        'path' => '/cohort_requests/{id}',
+        'methodController' => 'CohortRequestController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'delete',
+        'path' => '/cohort_requests/{id}',
+        'methodController' => 'CohortRequestController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];

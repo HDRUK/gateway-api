@@ -379,6 +379,7 @@ Authorization: Bearer {{accessToken}}
 
 ### DATASETS
 #### get all datasets
+##### http://localhost:8000/api/v1/datasets?team_id=52&fields=id,label,short_description,created,dataset&sort=short_description&direction=asc&decode_metadata=true
 GET {{baseUrl}}/api/{{apiVersion}}/datasets HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
@@ -1187,5 +1188,40 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 
+### Cohort Requests
+#### get all cohort requests
+GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
+#### get cohort request by id
+GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests/23 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
 
+#### create cohort request
+POST {{baseUrl}}/api/{{apiVersion}}/cohort_requests HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "details": "ducimus suscipit sit dolores incidunt quis similique error ducimus et"
+}
+
+#### update cohort request
+PUT {{baseUrl}}/api/{{apiVersion}}/cohort_requests/24 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "request_status" : "APPROVED",
+    "details": "ducimus suscipit sit dolores incidunt quis similique error ducimus et - put"
+}
+
+#### delete cohort request by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/cohort_requests/24 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}

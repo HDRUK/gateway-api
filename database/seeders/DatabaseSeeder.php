@@ -50,6 +50,7 @@ class DatabaseSeeder extends Seeder
             TeamHasFederationSeeder::class,
             NamedEntitiesSeeder::class,
             DatasetHasNamedEntitiesSeeder::class,
+            CohortRequestSeed::class,
         ]);
     }
 }
