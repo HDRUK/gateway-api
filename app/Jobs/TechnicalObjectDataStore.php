@@ -45,7 +45,7 @@ class TechnicalObjectDataStore implements ShouldQueue
     {
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
 
-        $this->deleteClassName();
+        $this->deleteAllDataClasses();
 
         //structuralMetadat might not be defined
         if(!isset($data['structuralMetadata']) || empty($data['structuralMetadata'])){
@@ -85,7 +85,7 @@ class TechnicalObjectDataStore implements ShouldQueue
      * 
      * @return void
      */
-    public function deleteClassName(): void
+    public function deleteAllDataClasses(): void
     {
         try {
             $currDataClasses = Mauro::getAllDataClasses($this->datasetId);
