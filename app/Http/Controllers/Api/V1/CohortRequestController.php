@@ -122,7 +122,7 @@ class CohortRequestController extends Controller
             $orderBy = [];
             if ($request->has('orderBy')) {
                 foreach (explode(',', $request->query('orderBy', '')) as $item) {
-                    list($field, $name) = explode(":", $input . ":asc", 2);
+                    list($field, $name) = explode(":", $item . ":asc", 2);
                     $orderBy[$field] = $name;
                 }
             }
