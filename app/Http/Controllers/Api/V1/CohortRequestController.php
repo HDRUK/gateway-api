@@ -30,6 +30,57 @@ class CohortRequestController extends Controller
      *    tags={"Cohort Requests"},
      *    summary="CohortRequestController@index",
      *    description="Returns a list of cohort requests",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="orderBy",
+     *       in="query",
+     *       description="Comma-separated list of fields to include in the response",
+     *       example="orderBy=created_at:asc,updated_at:asc,organisation:desc,name:desc",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Comma-separated list of fields",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="status",
+     *       in="query",
+     *       description="filter by status",
+     *       example="test",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by status",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="name",
+     *       in="query",
+     *       description="filter by user name",
+     *       example="test",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by user name",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="organisation",
+     *       in="query",
+     *       description="filter by organisation name",
+     *       example="test",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by organisation name",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="email",
+     *       in="query",
+     *       description="filter by email",
+     *       example="test",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by email",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -71,8 +122,8 @@ class CohortRequestController extends Controller
             $orderBy = [];
             if ($request->has('orderBy')) {
                 foreach (explode(',', $request->query('orderBy', '')) as $item) {
-                    $tmp = explode(':', $item);
-                    $orderBy[$tmp[0]] = $tmp[1];
+                    list($field, $name) = explode(":", $input . ":asc", 2);
+                    $orderBy[$field] = $name;
                 }
             }
 
