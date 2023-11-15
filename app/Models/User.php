@@ -104,4 +104,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Role::class, 'user_has_roles');
     }
+
+    public function cohortRequests(): HasMany
+    {
+        return $this->hasMany(CohortRequest::class);
+    }
+    
 }

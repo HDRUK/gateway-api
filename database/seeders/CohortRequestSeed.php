@@ -29,7 +29,7 @@ class CohortRequestSeed extends Seeder
                     'user_id' => $userId,
                     'request_status' => 'PENDING',
                     'cohort_status' => false,
-                    'request_expire_at' => Carbon::now()->addSeconds(env('COHORT_REQUEST_EXPIRATION')),
+                    'request_expire_at' => null,
                 ]);
 
                 $cohortRequestLog = CohortRequestLog::create([

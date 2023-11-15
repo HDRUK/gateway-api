@@ -3433,6 +3433,58 @@
                 "summary": "CohortRequestController@index",
                 "description": "Returns a list of cohort requests",
                 "operationId": "fetch_all_cohort_requests",
+                "parameters": [
+                    {
+                        "name": "orderBy",
+                        "in": "query",
+                        "description": "Comma-separated list of fields to include in the response",
+                        "schema": {
+                            "description": "Comma-separated list of fields",
+                            "type": "string"
+                        },
+                        "example": "orderBy=created_at:asc,updated_at:asc,organisation:desc,name:desc"
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "filter by status",
+                        "schema": {
+                            "description": "filter by status",
+                            "type": "string"
+                        },
+                        "example": "test"
+                    },
+                    {
+                        "name": "name",
+                        "in": "query",
+                        "description": "filter by user name",
+                        "schema": {
+                            "description": "filter by user name",
+                            "type": "string"
+                        },
+                        "example": "test"
+                    },
+                    {
+                        "name": "organisation",
+                        "in": "query",
+                        "description": "filter by organisation name",
+                        "schema": {
+                            "description": "filter by organisation name",
+                            "type": "string"
+                        },
+                        "example": "test"
+                    },
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "filter by email",
+                        "schema": {
+                            "description": "filter by email",
+                            "type": "string"
+                        },
+                        "example": "test"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success response",
@@ -3552,7 +3604,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             },
             "post": {
                 "tags": [
@@ -15884,6 +15941,18 @@
                 "summary": "UserController@index",
                 "description": "Get All Users",
                 "operationId": "fetch_all_users",
+                "parameters": [
+                    {
+                        "name": "filterNames",
+                        "in": "query",
+                        "description": "Three or more characters to filter users names by",
+                        "schema": {
+                            "description": "Three or more characters to filter users names by",
+                            "type": "string"
+                        },
+                        "example": "abc"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Success response",
