@@ -121,9 +121,12 @@ class CohortRequestController extends Controller
         try {
             $orderBy = [];
             if ($request->has('orderBy')) {
-                foreach (explode(',', $request->query('orderBy', '')) as $item) {
-                    list($field, $name) = explode(":", $item . ":asc", 2);
-                    $orderBy[$field] = $name;
+                $orderByArray = explode(',', $request->query('orderBy', ''));
+                if (count($orderBy)) {
+                    foreach ($orderByArray as $item) {
+                        list($field, $name) = explode(":", $item . ":asc", 2);
+                        $orderBy[$field] = $name;
+                    }
                 }
             }
 
