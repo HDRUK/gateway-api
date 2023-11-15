@@ -35,6 +35,7 @@ class Team extends Model
         'application_form_updated_on',
         'mdm_folder_id',
         'mongo_object_id',
+        'notification',
     ];
 
     /**
@@ -47,6 +48,7 @@ class Team extends Model
         'access_requests_management' => 'boolean',
         'uses_5_safes' => 'boolean',
         'is_admin' => 'boolean',
+        'notification' => 'boolean',
     ];
 
     /**

@@ -38,4 +38,9 @@ class TeamHasUser extends Model
     {
         return $this->belongsToMany(Role::class, 'team_user_has_roles');
     }
+
+    public function notifications(): BelongsToMany
+    {
+        return $this->belongsToMany(Notification::class, 'team_user_has_notifications');
+    }
 }
