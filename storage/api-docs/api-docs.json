@@ -14566,13 +14566,152 @@
             }
         },
         "/api/v1/teams/{teamId}/notifications": {
+            "get": {
+                "tags": [
+                    "Team-Notifications"
+                ],
+                "summary": "TeamNotificationController@show",
+                "description": "Get Team & user - notifications & Team - notifications",
+                "operationId": "get_team_notification",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "someName"
+                                                },
+                                                "allows_messaging": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "workflow_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "access_requests_management": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "uses_5_safes": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "is_admin": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "member_of": {
+                                                    "type": "string",
+                                                    "example": "someOrg"
+                                                },
+                                                "contact_point": {
+                                                    "type": "string",
+                                                    "example": "someone@mail.com"
+                                                },
+                                                "application_form_updated_by": {
+                                                    "type": "integer",
+                                                    "example": "555"
+                                                },
+                                                "application_form_updated_on": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11"
+                                                },
+                                                "mdm_folder_id": {
+                                                    "type": "string",
+                                                    "example": "xxxx"
+                                                },
+                                                "user": {
+                                                    "type": "object",
+                                                    "example": "{}"
+                                                },
+                                                "notifications": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {}
+                                                    },
+                                                    "example": "[]"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
             "post": {
                 "tags": [
-                    "Team-Notification"
+                    "Team-Notifications"
                 ],
-                "summary": "TeamNotificationController@storeNotificationTeam",
-                "description": "Create a new team - notifications",
-                "operationId": "create_team_notification",
+                "summary": "TeamNotificationController@store",
+                "description": "Team & user - notifications & Team - notifications",
+                "operationId": "create_and_update_team_notification",
                 "parameters": [
                     {
                         "name": "teamId",
@@ -14593,25 +14732,20 @@
                         "application/json": {
                             "schema": {
                                 "properties": {
-                                    "notification_type": {
-                                        "type": "string",
-                                        "example": "applicationSubmitted"
-                                    },
-                                    "message": {
-                                        "type": "string",
-                                        "example": "lorem ipsum"
-                                    },
-                                    "opt_in": {
+                                    "user_notification_status": {
                                         "type": "boolean",
                                         "example": "true"
                                     },
-                                    "enabled": {
+                                    "team_notification_status": {
                                         "type": "boolean",
                                         "example": "true"
                                     },
-                                    "email": {
-                                        "type": "string",
-                                        "example": "joe@example.com"
+                                    "team_emails": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "djakubowski@example.org"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -14629,10 +14763,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "success"
-                                        },
-                                        "data": {
-                                            "type": "integer",
-                                            "example": "100"
                                         }
                                     },
                                     "type": "object"
@@ -14649,247 +14779,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "bad request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/api/v1/teams/{teamId}/notifications/{notificationId}": {
-            "put": {
-                "tags": [
-                    "Team-Notification"
-                ],
-                "summary": "TeamNotificationController@updateNotificationTeam",
-                "description": "Update team - notifications",
-                "operationId": "update_team_notification",
-                "parameters": [
-                    {
-                        "name": "teamId",
-                        "in": "path",
-                        "description": "team id",
-                        "required": true,
-                        "schema": {
-                            "description": "team id",
-                            "type": "integer"
-                        },
-                        "example": "1"
-                    },
-                    {
-                        "name": "notificationId",
-                        "in": "path",
-                        "description": "notification id",
-                        "required": true,
-                        "schema": {
-                            "description": "notification id",
-                            "type": "integer"
-                        },
-                        "example": "1"
-                    }
-                ],
-                "requestBody": {
-                    "description": "Pass user credentials",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "notification_type": {
-                                        "type": "string",
-                                        "example": "applicationSubmitted"
-                                    },
-                                    "message": {
-                                        "type": "string",
-                                        "example": "lorem ipsum"
-                                    },
-                                    "opt_in": {
-                                        "type": "boolean",
-                                        "example": "true"
-                                    },
-                                    "enabled": {
-                                        "type": "boolean",
-                                        "example": "true"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "example": "joe@example.com"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Created",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "success"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "bad request",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "bad request"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "error"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            },
-            "delete": {
-                "tags": [
-                    "Team-Notification"
-                ],
-                "summary": "TeamNotificationController@destroyNotificationTeam",
-                "description": "Delete team - notifications",
-                "operationId": "delete_team_notification",
-                "parameters": [
-                    {
-                        "name": "teamId",
-                        "in": "path",
-                        "description": "team id",
-                        "required": true,
-                        "schema": {
-                            "description": "team id",
-                            "type": "integer"
-                        },
-                        "example": "1"
-                    },
-                    {
-                        "name": "notificationId",
-                        "in": "path",
-                        "description": "notification id",
-                        "required": true,
-                        "schema": {
-                            "description": "notification id",
-                            "type": "integer"
-                        },
-                        "example": "1"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Resource deleted successfully."
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Error response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Resource not found"
                                         }
                                     },
                                     "type": "object"

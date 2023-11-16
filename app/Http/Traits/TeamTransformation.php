@@ -2,9 +2,11 @@
 
 namespace App\Http\Traits;
 
+use App\Models\User;
 use App\Models\TeamHasUser;
-use App\Models\TeamHasNotification;
 use App\Models\Notification;
+use App\Models\TeamHasNotification;
+use App\Models\TeamUserHasNotification;
 
 trait TeamTransformation
 {
@@ -33,6 +35,7 @@ trait TeamTransformation
                 'application_form_updated_by' => $team['application_form_updated_by'],
                 'application_form_updated_on' => $team['application_form_updated_on'],
                 'mongo_object_id' => $team['mongo_object_id'],
+                'notification_status' => $team['notification_status'],
             ];
 
             $tmpUser = [];
@@ -99,5 +102,33 @@ trait TeamTransformation
         }
 
         return $response[0];
+    }
+
+    public function getTeamNotifications($team, int $teamId, int $userId)
+    {
+        $response = $team;
+        $user = User::where('id', $userId)->first();
+        $user['notification_status'] = false;
+
+        $teamHasUser = TeamHasUser::where([
+            'team_id' => $teamId,
+            'user_id' => $userId,
+        ])->first();
+
+        if ($teamHasUser) {
+            $teamHasUserId = $teamHasUser->id;
+            $teamUserHasNotification = TeamUserHasNotification::where([
+                'team_has_user_id' => $teamHasUserId,
+            ])->first();
+            if ($teamUserHasNotification) {
+                $userNotification = Notification::where('id', $teamUserHasNotification->notification_id)->first();
+                $userNotificationStatus = $userNotification->enabled;
+                $user['notification_status'] = $userNotificationStatus;
+            }
+        }
+
+        $response->user = $user;
+
+        return $response;
     }
 }
