@@ -85,7 +85,6 @@ class TeamNotificationController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserId = $jwtUser['id'];
             
-            // code
             $team = Team::where('id', $teamId)->with(['notifications'])->first();
 
             return response()->json([
