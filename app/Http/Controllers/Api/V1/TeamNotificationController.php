@@ -91,7 +91,7 @@ class TeamNotificationController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $this->getTeamNotifications($team, $teamId, $jwtUserId)
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

@@ -32,7 +32,6 @@ class CreateTeamNotification extends BaseFormRequest
                 'array',
             ],
             'team_emails.*' => [
-                'required',
                 'string',
                 'email',
                 'distinct',
