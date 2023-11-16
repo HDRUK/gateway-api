@@ -972,6 +972,11 @@ Authorization: Bearer {{accessToken}}
 
 
 ### Team Notifications
+#### get team notifications by teamId and jwt token
+GET {{baseUrl}}/api/{{apiVersion}}/teams/1/notifications HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
 #### create notifications for team
 POST {{baseUrl}}/api/{{apiVersion}}/teams/1/notifications HTTP/1.1
 Content-Type: application/json
@@ -979,33 +984,15 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "notification_type": "applicationSubmitted",
-    "message": "Some message here applicationSubmitted",
-    "opt_in": true,
-    "enabled": true,
-    "email": "joe1@example.com"
+    "user_notification_status": true,
+    "team_notification_status": true,
+    "team_emails": [
+        "djakubowski@example.org",
+        "trohan.bla@example.net",
+        "willis.rice.bla@example.net",
+        "amir.swift.bla@example.org"
+    ]
 }
-
-#### update notifications for team
-PUT {{baseUrl}}/api/{{apiVersion}}/teams/1/notifications/200 HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "notification_type": "applicationSubmitted",
-    "message": "Some message here applicationSubmitted",
-    "opt_in": true,
-    "enabled": true,
-    "email": "joe2@example.com"
-}
-
-#### delete notifications for team
-DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/notifications/200 HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
 
 ### Federation Team Notifications
 #### get all federations for team

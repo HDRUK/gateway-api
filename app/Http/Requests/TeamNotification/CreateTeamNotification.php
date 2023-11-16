@@ -19,25 +19,23 @@ class CreateTeamNotification extends BaseFormRequest
                 'required',
                 'exists:teams,id',
             ],
-            'notification_type' => [
-                'required',
-                'string',
-            ],
-            'message' => [
-                'required',
-                'string',
-            ],
-            'opt_in' => [
+            'user_notification_status' => [
                 'required',
                 'boolean',
             ],
-            'enabled' => [
+            'team_notification_status' => [
                 'required',
                 'boolean',
             ],
-            'email' => [
+            'team_emails' => [
+                'present',
+                'array',
+            ],
+            'team_emails.*' => [
                 'required',
+                'string',
                 'email',
+                'distinct',
             ],
         ];
     }

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('teams', function (Blueprint $table) {
-            $table->boolean('notification')->default(0);
+            $table->boolean('notification_status')->default(0);
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('teams', function (Blueprint $table) {
-            $table->dropColumn('notification');
+            $table->dropColumn('notification_status');
         });
     }
 };

@@ -2143,51 +2143,34 @@ return [
     // team.notification
     [
         'name' => 'team.notification',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/notifications',
+        'methodController' => 'TeamNotificationController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            // 'check.access:roles,custodian.team.admin',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'team.notification',
         'method' => 'post',
         'path' => '/teams/{teamId}/notifications',
-        'methodController' => 'TeamNotificationController@storeTeamNotification',
+        'methodController' => 'TeamNotificationController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
-            'check.access:roles,custodian.team.admin',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'team.notification',
-        'method' => 'put',
-        'path' => '/teams/{teamId}/notifications/{notificationId}',
-        'methodController' => 'TeamNotificationController@updateTeamNotification',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
             'check.access:permissions,notifications.update',
+            // 'check.access:roles,custodian.team.admin',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
-            'notificationId' => '[0-9]+',
         ],
     ],
-    [
-        'name' => 'team.notification',
-        'method' => 'delete',
-        'path' => '/teams/{teamId}/notifications/{notificationId}',
-        'methodController' => 'TeamNotificationController@destroyTeamNotification',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:roles,custodian.team.admin',
-        ],
-        'constraint' => [
-            'teamId' => '[0-9]+',
-            'notificationId' => '[0-9]+',
-        ],
-    ],
-
+    
     // team.federation
     [
         'name' => 'team.federation',
