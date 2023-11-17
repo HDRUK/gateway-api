@@ -56,4 +56,12 @@ class Application extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    /**
+     * The notifications that belong to the team.
+     */
+    public function notifications(): BelongsToMany
+    {
+        return $this->belongsToMany(Notification::class, 'application_has_notifications');
+    }
 }
