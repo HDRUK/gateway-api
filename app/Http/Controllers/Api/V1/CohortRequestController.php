@@ -302,7 +302,7 @@ class CohortRequestController extends Controller
         try {
             $id = 0;
             $cohortRequest = null;
-            $notAllowUpdateRequest = ['PENDING'];
+            $notAllowUpdateRequest = ['PENDING', 'APPROVED', 'BANNED', 'SUSPENDED'];
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
