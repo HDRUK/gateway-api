@@ -336,7 +336,12 @@ Authorization: Bearer {{accessToken}}
     "description": "Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.",
     "team_id": 5,
     "user_id": 2,
-    "enabled": true
+    "enabled": true,
+    "notifications": [
+        "t1@test.com",
+        "t2@test.com",
+        "t3@test.com"
+    ]
 }
 
 #### update application
@@ -353,7 +358,12 @@ Authorization: Bearer {{accessToken}}
     "user_id": 3,
     "enabled": true,
     "tags": [1,2],
-    "permissions": [3,2]
+    "permissions": [3,2],
+    "notifications": [
+        "t1@test.com",
+        "t2@test.com",
+        "t3@test.com"
+    ]
 }
 
 #### edit application

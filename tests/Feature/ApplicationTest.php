@@ -68,6 +68,7 @@ class ApplicationTest extends TestCase
                     'permissions',
                     'team',
                     'user',
+                    'notifications',
                 ],
             ],
             'current_page',
@@ -102,6 +103,11 @@ class ApplicationTest extends TestCase
                 'permissions' => [
                     1,
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com",
+                    "t2@test.com",
+                    "t3@test.com"
                 ],
             ],
             $this->header,
@@ -147,6 +153,7 @@ class ApplicationTest extends TestCase
                 'permissions',
                 'team',
                 'user',
+                'notifications',
             ],
         ]);
         $responseGet->assertStatus(200);
@@ -167,6 +174,11 @@ class ApplicationTest extends TestCase
                 'permissions' => [
                     1,
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com",
+                    "t2@test.com",
+                    "t3@test.com"
                 ],
             ],
             $this->header,
@@ -201,6 +213,11 @@ class ApplicationTest extends TestCase
                 'permissions' => [
                     1,
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com",
+                    "t2@test.com",
+                    "t3@test.com"
                 ],
             ],
             $this->header,
@@ -266,6 +283,11 @@ class ApplicationTest extends TestCase
                     1,
                     2,
                 ],
+                "notifications" => [
+                    "t1@test.com",
+                    "t2@test.com",
+                    "t3@test.com"
+                ],
             ],
             $this->header,
         );
@@ -297,6 +319,9 @@ class ApplicationTest extends TestCase
                 'enabled' => false,
                 'permissions' => [
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com"
                 ],
             ],
             $this->header,
@@ -351,6 +376,11 @@ class ApplicationTest extends TestCase
                     1,
                     2,
                 ],
+                "notifications" => [
+                    "t1@test.com",
+                    "t2@test.com",
+                    "t3@test.com"
+                ],
             ],
             $this->header,
         );
@@ -382,6 +412,9 @@ class ApplicationTest extends TestCase
                 'enabled' => false,
                 'permissions' => [
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com",
                 ],
             ],
             $this->header,
