@@ -411,7 +411,10 @@ class DatasetController extends Controller
                     // otherwise, we assume the dataset is still being configured
                     if ($dataset->shouldFinalise()) {
                         $versioning = Mauro::finaliseDataModel($mauroDatasetId);
-                        $dataset->update(['version' => (string) $versioning['documentationVersion']]);
+                        $dataset->update([
+                            'version' => (string) $versioning['documentationVersion'],
+                            'status' => Dataset::STATUS_ACTIVE,
+                        ]);
                     }
 
                     return response()->json([
@@ -541,7 +544,10 @@ class DatasetController extends Controller
 
                 if ($dataset->shouldFinalise()) {
                     $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
-                    $dataset->update(['version' => (string) $versioning['modelVersion']]);
+                    $dataset->update([
+                        'version' => (string) $versioning['modelVersion'],
+                        'status' => Dataset::STATUS_ACTIVE,
+                    ]);
                 }
 
                 $dataset->delete();
@@ -601,7 +607,10 @@ class DatasetController extends Controller
 
                     if ($dataset->shouldFinalise()) {
                         $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
-                        $dataset->update(['version' => (string) $versioning['modelVersion']]);
+                        $dataset->update([
+                            'version' => (string) $versioning['modelVersion'],
+                            'status' => Dataset::STATUS_ACTIVE,
+                        ]);
                     }
 
                     $dataset->delete();
