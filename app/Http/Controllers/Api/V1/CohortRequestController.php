@@ -432,6 +432,10 @@ class CohortRequestController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $requestStatus = strtoupper($input['request_status']);
 
+            $currCohortRequest = CohortRequest::where('id', $id)->first();
+            $currRequestStatus = strtoupper($currCohortRequest['request_status']);
+            $checkRequestStatus = ($currRequestStatus === $requestStatus) ? 1 : 0;
+
             $cohortRequestLog = CohortRequestLog::create([
                 'user_id' => $jwtUser['id'],
                 'details' => $input['details'],
@@ -446,12 +450,14 @@ class CohortRequestController extends Controller
             // APPROVED / BANNED / SUSPENDED
             // PENDING - initial state
             // EXPIRED - must be an update using the chron
-            CohortRequest::where('id', $id)->update([
-                'user_id' => $jwtUser['id'],
-                'request_status' => $requestStatus,
-                'cohort_status' => true,
-                'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addSeconds(env('COHORT_REQUEST_EXPIRATION')),
-            ]);
+            if ($currRequestStatus !== $requestStatus) {
+                CohortRequest::where('id', $id)->update([
+                    'user_id' => $jwtUser['id'],
+                    'request_status' => $requestStatus,
+                    'cohort_status' => true,
+                    'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addSeconds(env('COHORT_REQUEST_EXPIRATION')),
+                ]);
+            }
             
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
