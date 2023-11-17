@@ -10,6 +10,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -382,6 +383,7 @@ class DatasetController extends Controller
                         'submitted' => now(),
                         'pid' => (string) Str::uuid(),
                         'create_origin' => $input['create_origin'],
+                        'status' => $input['status'],
                     ]);
                     $dId = $dataset->id; 
 
@@ -403,9 +405,14 @@ class DatasetController extends Controller
                         base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6))
                     );
 
-                    $versioning = Mauro::finaliseDataModel($mauroDatasetId);
-
-                    Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['documentationVersion']]);
+                    // Only finalise when:
+                    //      1. Dataset is onboarded via automation (Applications or Federation)
+                    //      2. Dataset is onboarded via manual form and status is ACTIVE
+                    // otherwise, we assume the dataset is still being configured
+                    if ($dataset->shouldFinalise()) {
+                        $versioning = Mauro::finaliseDataModel($mauroDatasetId);
+                        $dataset->update(['version' => (string) $versioning['documentationVersion']]);
+                    }
 
                     return response()->json([
                         'message' => 'created',
@@ -519,6 +526,7 @@ class DatasetController extends Controller
                     'submitted' => now(),
                     'pid' => $currentPid,
                     'create_origin' => $input['create_origin'],
+                    'status' => $input['status'],
                 ]);
                 $dId = $dataset->id;
 
@@ -531,10 +539,12 @@ class DatasetController extends Controller
                     base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6))
                 );
 
-                $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
-                Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['modelVersion']]);
+                if ($dataset->shouldFinalise()) {
+                    $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
+                    $dataset->update(['version' => (string) $versioning['modelVersion']]);
+                }
 
-                Dataset::where('id', '=', $id)->delete();
+                $dataset->delete();
                 MMC::deleteFromElastic($id);
 
                 return response()->json([
@@ -576,6 +586,7 @@ class DatasetController extends Controller
                         'submitted' => now(),
                         'pid' => $currentPid,
                         'create_origin' => $input['create_origin'],
+                        'status' => $input['status'],
                     ]);
                     $dId = $dataset->id;
 
@@ -588,10 +599,12 @@ class DatasetController extends Controller
                         base64_encode(gzcompress(gzencode(json_encode($response)), 6))
                     );
 
-                    $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
-                    Dataset::where('id', '=', $dId)->update(['version' => (string) $versioning['modelVersion']]);
+                    if ($dataset->shouldFinalise()) {
+                        $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
+                        $dataset->update(['version' => (string) $versioning['modelVersion']]);
+                    }
 
-                    Dataset::where('id', '=', $id)->delete();
+                    $dataset->delete();
                     MMC::deleteFromElastic($id);
 
                     return response()->json([
@@ -652,7 +665,9 @@ class DatasetController extends Controller
                 $datasetModel = Dataset::withTrashed()
                     ->where(['id' => $id])
                     ->first();
-                $datasetModel->restore();
+                $datasetModel->status = Dataset::STATUS_ACTIVE;
+                $datasetModel->deleted_at = null;
+                $datasetModel->save();
                 
                 $dataset = $datasetModel->toArray();
                 Mauro::restoreDataModel($dataset['datasetid']);
@@ -722,11 +737,15 @@ class DatasetController extends Controller
     public function destroy(Request $request, string $id) // softdelete
     {
         try {
-            $dataset = Dataset::where('id', (int) $id)->first()->toArray();
+            $dataset = Dataset::where('id', (int) $id)->first();
 
-            Mauro::deleteDataModel($dataset['datasetid']);
+            if (isset($dataset->datasetid)) {
+                Mauro::deleteDataModel($dataset->datasetid);
+            }
 
-            Dataset::where('id', (int) $id)->delete();
+            $dataset->deleted_at = Carbon::now();
+            $dataset->status = Dataset::STATUS_ARCHIVED;
+            $dataset->save();
 
             // error: The client noticed that the server is not Elasticsearch and we do not support this unknown product
             MMC::deleteFromElastic($id);
