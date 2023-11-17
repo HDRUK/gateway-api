@@ -14,6 +14,14 @@ class Dataset extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
 
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_DRAFT = 'DRAFT';
+    public const STATUS_ARCHIVED = 'ARCHIVED';
+
+    public const ORIGIN_MANUAL = 'MANUAL';
+    public const ORIGIN_API = 'API';
+    public const ORIGIN_FMA = 'FMA';
+
     /**
      * Table associated with this model
      * 
@@ -41,6 +49,7 @@ class Dataset extends Model
         'pid',
         'version',
         'create_origin',
+        'status',
     ];
 
     /**
@@ -49,5 +58,18 @@ class Dataset extends Model
     public function namedEntities(): BelongsToMany
     {
         return $this->belongsToMany(NamedEntities::class, 'dataset_has_named_entities');
+    }
+
+    public function shouldFinalise(): bool
+    {
+        if ($this->create_origin !== Dataset::ORIGIN_MANUAL) {
+            return true;
+        } else {
+            if ($this->status === Dataset::STATUS_ACTIVE) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

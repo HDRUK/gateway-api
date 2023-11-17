@@ -47,6 +47,11 @@ class UpdateDataset extends BaseFormRequest
                 'required',
                 'in:MANUAL,API,FMA',
             ],
+            'status' => [
+                'string',
+                'required',
+                'in:ACTIVE,ARCHIVED,DRAFT',
+            ],
         ];
     }
 

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Config;
+use App\Models\Dataset;
 use App\Models\TeamHasUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -20,12 +21,26 @@ class DatasetFactory extends Factory
     {
         $teamHasUser = TeamHasUser::all()->random();
 
+        $origin = fake()->randomElement([
+            Dataset::ORIGIN_MANUAL,
+            Dataset::ORIGIN_API,
+            Dataset::ORIGIN_FMA
+        ]);
+
         return [
             'user_id' => $teamHasUser->user_id,
             'team_id' => $teamHasUser->team_id,
             'label' => fake()->words(fake()->randomDigit(), true),
             'short_description' => fake()->words(fake()->randomDigit(), true),
-            'create_origin' => fake()->randomElement(['MANUAL', 'API', 'FMA']),
+            'create_origin' => $origin,
+            'status' => ($origin === Dataset::ORIGIN_MANUAL ? fake()->randomElement([
+                Dataset::STATUS_ACTIVE,
+                Dataset::STATUS_DRAFT,
+                Dataset::STATUS_ARCHIVED,
+            ]) : fake()->randomElement([
+                Dataset::STATUS_ACTIVE,
+                Dataset::STATUS_ARCHIVED,
+            ])),
         ];
     }
 }

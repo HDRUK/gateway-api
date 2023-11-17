@@ -9,6 +9,7 @@ use Database\Seeders\DatasetSeeder;
 use Database\Seeders\SectorSeeder;
 use Database\Seeders\ApplicationSeeder;
 use App\Models\Application;
+use App\Models\Dataset;
 use Tests\Traits\Authorization;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -230,7 +231,8 @@ class DatasetIntegrationTest extends TestCase
                     'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                     'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'dataset' => $this->dataset,
-                    'create_origin' => 'MANUAL',
+                    'create_origin' => Dataset::ORIGIN_MANUAL,
+                    'status' => Dataset::STATUS_ACTIVE,
                 ],
             ),
             $this->header,
@@ -259,6 +261,7 @@ class DatasetIntegrationTest extends TestCase
         $responseDeleteDataset->assertJsonStructure([
             'message'
         ]);
+
         $responseDeleteDataset->assertStatus(200);
 
         // delete team
@@ -392,7 +395,8 @@ class DatasetIntegrationTest extends TestCase
                     'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
                     'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'dataset' => $this->dataset,
-                    'create_origin' => 'MANUAL',
+                    'create_origin' => Dataset::ORIGIN_MANUAL,
+                    'status' => Dataset::STATUS_ACTIVE,
                 ],
             ),
             $this->header,

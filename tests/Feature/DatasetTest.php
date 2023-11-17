@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use App\Models\Dataset;
 use Database\Seeders\SectorSeeder;
 use Tests\Traits\Authorization;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -80,10 +82,13 @@ class DatasetTest extends TestCase
 
         // Stack the responses expected in the create/archive/delete dataset test
         // create -> soft delete/archive -> unarchive -> permanent delete
-        $mock->addResponse($createResponse);
-        $mock->addResponse($deleteResponse);
-        $mock->addResponse($createResponse);
-        $mock->addResponse($deleteResponse);
+        for ($i=0; $i < 100; $i++) {
+            $mock->addResponse($createResponse);
+        }
+
+        for ($i=0; $i < 100; $i++) {
+            $mock->addResponse($deleteResponse);
+        }
 
         $this->testElasticClient = $client;
     }
@@ -181,7 +186,7 @@ class DatasetTest extends TestCase
         ]);
 
         $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
-        $teamId = $contentCreateTeam['data'];
+        $teamId1 = $contentCreateTeam['data'];
 
 
         //create a 2nd team
@@ -247,15 +252,18 @@ class DatasetTest extends TestCase
             'POST',
             self::TEST_URL_DATASET,
             [
-                'team_id' => $teamId,
+                'team_id' => $teamId1,
                 'user_id' => $userId,
                 'label' => $labelDataset1,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
-                'create_origin' => 'MANUAL'
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
+        $responseCreateDataset->assertStatus(201);
+        $datasetId1 = $responseCreateDataset['data'];
 
         //create a 2nd one
         $labelDataset2 = 'ABC DATASET';
@@ -263,22 +271,22 @@ class DatasetTest extends TestCase
             'POST',
             self::TEST_URL_DATASET,
             [
-                'team_id' => $teamId,
+                'team_id' => $teamId1,
                 'user_id' => $userId,
                 'label' => $labelDataset2,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
-                'create_origin' => 'MANUAL',
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
         $responseCreateDataset->assertStatus(201);
-
-
+        $datasetId2 = $responseCreateDataset['data'];
 
         //create a 3rd one which is owned by the 2nd team
         $labelDataset3 = 'Other Team DATASET';
-        $responseCreateDataset = $this->json(
+        $responseCreateDataset3 = $this->json(
             'POST',
             self::TEST_URL_DATASET,
             [
@@ -287,11 +295,13 @@ class DatasetTest extends TestCase
                 'label' => $labelDataset3,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
-                'create_origin' => 'MANUAL',
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
         $responseCreateDataset->assertStatus(201);
+        $datasetId3 = $responseCreateDataset['data'];
 
 
         $response = $this->json('GET', self::TEST_URL_DATASET,
@@ -319,7 +329,7 @@ class DatasetTest extends TestCase
         * Test filtering just the id,label from the endpoint
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                       '?team_id=' . $teamId . 
+                                       '?team_id=' . $teamId1 . 
                                        '&fields=id,label,team_id',
                                        [], $this->header
         );
@@ -332,7 +342,7 @@ class DatasetTest extends TestCase
         //additionally check all teamIds are the same
         $this->assertTrue(count($allTeamIds) === 1);
         //additionally check this unique teamId is equal to the filtered teamId
-        $this->assertTrue($allTeamIds[0] === $teamId);
+        $this->assertTrue($allTeamIds[0] === $teamId1);
 
         $response->assertJsonStructure([
             'data' => [
@@ -348,41 +358,47 @@ class DatasetTest extends TestCase
         * Sort so that the newest dataset is first in the list
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId . 
+                                        '?team_id=' . $teamId1 . 
                                         '&sort=created',
                                         [], $this->header
         );
-        $this->assertTrue($response['data'][0]['created'] > $response['data'][1]['created']);
+        $first = Carbon::parse($response['data'][0]['created']);
+        $second = Carbon::parse($response['data'][1]['created']);
+
+        $this->assertTrue($first->gt($second));
 
         /* 
         * reverse this sorting
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId . 
+                                        '?team_id=' . $teamId1 . 
                                         '&sort=created&direction=asc',
                                         [], $this->header
         );
-        $this->assertTrue($response['data'][0]['created'] < $response['data'][1]['created']);
+        $first = Carbon::parse($response['data'][0]['created']);
+        $second = Carbon::parse($response['data'][1]['created']);
+
+        $this->assertTrue($first->lt($second));
 
         /* 
         * Sort A-Z on the dataset label
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId . 
+                                        '?team_id=' . $teamId1 . 
                                         '&sort=label&direction=asc',
                                         [], $this->header
         );
-        $this->assertTrue($response['data'][0]['label'] == $labelDataset2);
+        $this->assertTrue($response['data'][0]['label'] === $labelDataset2);
 
         /* 
         * Sort Z-A on the dataset label
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId . 
+                                        '?team_id=' . $teamId1 . 
                                         '&sort=label',
                                         [], $this->header
         );
-        $this->assertTrue($response['data'][0]['label'] == $labelDataset1);
+        $this->assertTrue($response['data'][0]['label'] === $labelDataset1);
 
 
 
@@ -390,14 +406,14 @@ class DatasetTest extends TestCase
         * fail if a bad direction has been given for sorting
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId . 
+                                        '?team_id=' . $teamId1 . 
                                         '&sort=created&direction=blah',
                                         [], $this->header
         );
         $response->assertStatus(400);
 
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId . 
+                                        '?team_id=' . $teamId1 . 
                                         '&decode_metadata=true',
                                         [], $this->header
         );
@@ -421,8 +437,33 @@ class DatasetTest extends TestCase
             ]
         ]);
 
-        
+        for ($i = 1; $i <= 3; $i++) {
+            // delete dataset
+            $responseDeleteDataset = $this->json(
+                'DELETE',
+                self::TEST_URL_DATASET . '/' . ${'datasetId' . $i} . '?deletePermanently=true',
+                [],
+                $this->header
+            );
+            $responseDeleteDataset->assertJsonStructure([
+                'message'
+            ]);
+        }
 
+        for ($i = 1; $i <= 2; $i++) {
+            // delete team
+            $responseDeleteTeam = $this->json(
+                'DELETE',
+                self::TEST_URL_TEAM . '/' . ${'teamId' . $i} . '?deletePermanently=true',
+                [],
+                $this->header
+            );
+
+            $responseDeleteTeam->assertJsonStructure([
+                'message'
+            ]);
+            $responseDeleteTeam->assertStatus(200);
+        }
     }
 
 
@@ -531,7 +572,8 @@ class DatasetTest extends TestCase
                 'label' => $labelDataset,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
-                'create_origin' => 'MANUAL',
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
@@ -695,7 +737,8 @@ class DatasetTest extends TestCase
                 'label' => $labelDataset,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
-                'create_origin' => 'MANUAL',
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
@@ -862,6 +905,7 @@ class DatasetTest extends TestCase
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => 'OPTION_DOESNT_EXIST',
+                'status' => Dataset::STATUS_ACTIVE,
             ],
             $this->header,
         );
