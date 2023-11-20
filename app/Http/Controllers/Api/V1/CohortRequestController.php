@@ -466,6 +466,7 @@ class CohortRequestController extends Controller
                 case 'REJECTED':
                 case 'SUSPENDED':
                     CohortRequestHasPermission::where('id', $id)->delete();
+                    break;
                 case 'APPROVED':
                     CohortRequestHasPermission::where('id', $id)->delete();
                     $permissions = Permission::where([
