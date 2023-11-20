@@ -44,4 +44,9 @@ class Permission extends Model
     {
         return $this->belongsToMany(TeamHasUser::class, 'role_has_permissions');
     }
+
+    public function cohortRequests(): BelongsToMany
+    {
+        return $this->belongsToMany(TeamHasUser::class, 'cohort_request_has_permissions');
+    }
 }

@@ -15,6 +15,8 @@ use App\Http\Requests\CohortRequest\GetCohortRequest;
 use App\Http\Requests\CohortRequest\CreateCohortRequest;
 use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
+use App\Models\CohortRequestHasPermission;
+use App\Models\Permission;
 
 class CohortRequestController extends Controller
 {
@@ -323,8 +325,9 @@ class CohortRequestController extends Controller
                     'request_status' => 'PENDING',
                     'cohort_status' => false,
                     'request_expire_at' => null,
-                    'created_at' => Carbon::today()->toDateTimeString(),0
+                    'created_at' => Carbon::today()->toDateTimeString(),
                 ]);
+                CohortRequestHasPermission::where('id', $id)->delete();
             } else {
                 $cohortRequest = CohortRequest::create([
                     'user_id' => $jwtUser['id'],
@@ -430,11 +433,10 @@ class CohortRequestController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $requestStatus = strtoupper($input['request_status']);
+            $requestStatus = strtoupper(trim($input['request_status']));
 
             $currCohortRequest = CohortRequest::where('id', $id)->first();
-            $currRequestStatus = strtoupper($currCohortRequest['request_status']);
-            $checkRequestStatus = ($currRequestStatus === $requestStatus) ? 1 : 0;
+            $currRequestStatus = strtoupper(trim($currCohortRequest['request_status']));
 
             $cohortRequestLog = CohortRequestLog::create([
                 'user_id' => $jwtUser['id'],
@@ -457,6 +459,37 @@ class CohortRequestController extends Controller
                     'cohort_status' => true,
                     'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addSeconds(env('COHORT_REQUEST_EXPIRATION')),
                 ]);
+            }
+
+            switch ($requestStatus) {
+                case 'PENDING':
+                case 'REJECTED':
+                case 'SUSPENDED':
+                    CohortRequestHasPermission::where('id', $id)->delete();
+                case 'APPROVED':
+                    CohortRequestHasPermission::where('id', $id)->delete();
+                    $permissions = Permission::where([
+                        'application' => 'cohort',
+                        'name' => 'GENERAL_ACCESS',
+                    ])->first();
+                    CohortRequestHasPermission::create([
+                        'cohort_request_id' => $id,
+                        'permission_id' => $permissions->id,
+                    ]);
+                    break;
+                case 'BANNED':
+                    CohortRequestHasPermission::where('id', $id)->delete();
+                    $permissions = Permission::where([
+                        'application' => 'cohort',
+                        'name' => 'BANNED',
+                    ])->first();
+                    CohortRequestHasPermission::create([
+                        'cohort_request_id' => $id,
+                        'permission_id' => $permissions->id,
+                    ]);
+                    break;
+                default:
+                    throw new Exception("A cohort request status received not accepted.");
             }
             
             return response()->json([
@@ -521,6 +554,7 @@ class CohortRequestController extends Controller
     {
         try {
             CohortRequest::where('id', $id)->delete();
+            CohortRequestHasPermission::where('id', $id)->delete();
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
