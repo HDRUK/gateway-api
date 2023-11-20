@@ -45,4 +45,12 @@ class CohortRequest extends Model
     {
         return $this->belongsToMany(CohortRequestLog::class, 'cohort_request_has_logs');
     }
+
+    /**
+     * The permissions that belong to the cohort request.
+     */
+    public function permissions(): BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class, 'cohort_request_has_permissions');
+    }
 }

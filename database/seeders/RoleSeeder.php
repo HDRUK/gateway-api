@@ -187,14 +187,19 @@ class RoleSeeder extends Seeder
                 $perm = null;
 
                 if ($p !== 'all') {
-                    $perm = Permission::where('name', $p)->first();
+                    $perm = Permission::where([
+                        'name' => $p,
+                        'application' => 'gateway',
+                    ])->first();
 
                     RoleHasPermission::create([
                         'role_id' => $role->id,
                         'permission_id' => $perm->id,
                     ]);
                 } else {
-                    $perm = Permission::all();
+                    $perm = Permission::where([
+                        'application' => 'gateway',
+                    ])->get();
                     foreach ($perm as $p) {
                         RoleHasPermission::create([
                             'role_id' => $role->id,
