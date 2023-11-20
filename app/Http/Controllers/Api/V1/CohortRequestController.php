@@ -491,6 +491,7 @@ class CohortRequestController extends Controller
                     break;
                 default:
                     throw new Exception("A cohort request status received not accepted.");
+                    break;
             }
             
             return response()->json([
