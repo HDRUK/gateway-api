@@ -197,18 +197,25 @@ class DatasetController extends Controller
             }
         }
 
+        // filtering by title
         $filterTitle = $request->query('filterTitle', null);
         if (!empty($filterTitle)) {
             $matches = array();
+            // iterate through mauro field of each dataset
             foreach ($datasets as $dataset) {
                 foreach ($dataset['mauro'] as $field) {
+                    // find the title field in mauro data
                     if ($field['key'] == 'properties/summary/title') {
+                        // if title matches filter, store the dataset id and mauro field
                         if (str_contains($field['value'], $filterTitle)) {
                             $matches[$dataset['id']] = $dataset['mauro'];
                         }
+                        break(1);
                     }
                 }
             }
+            // perform query for the matching datasets and reattach the mauro field
+            // rather than refetching it from mauro
             $filteredDatasets = Dataset::whereIn('id', array_keys($matches))
                 ->orderBy($sortField, $sortDirection)
                 ->select($selectedFields)
