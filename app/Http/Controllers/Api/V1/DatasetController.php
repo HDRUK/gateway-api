@@ -85,6 +85,26 @@ class DatasetController extends Controller
      *          description="Decode the 'dataset' metadata field",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="filterTitle",
+     *       in="query",
+     *       description="Three or more characters to filter dataset titles by",
+     *       example="hdr",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Three or more characters to filter dataset titles by",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="filterStatus",
+     *       in="query",
+     *       description="Dataset status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
+     *       example="ACTIVE",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Dataset status to filter by",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -142,17 +162,20 @@ class DatasetController extends Controller
                     ],400);
         }
 
-      
-
         $teamId = $request->query('team_id',null);
+        $filterStatus = $request->query('filterStatus', null);
         $datasets = Dataset::when($teamId, 
                                     function ($query) use ($teamId){
                                         return $query->where('team_id', '=', $teamId);
                                     })
-                            ->when($request->has('withTrashed'), 
+                            ->when($request->has('withTrashed') || $filterStatus == 'ARCHIVED', 
                                     function ($query) {
                                         return $query->withTrashed();
-                                     })
+                                    })
+                            ->when($filterStatus, 
+                                    function ($query) use ($filterStatus) {
+                                        return $query->where('status', '=', $filterStatus);
+                                    })
                             ->orderBy($sortField, $sortDirection)
                             ->select($selectedFields)
                             ->paginate(Config::get('constants.per_page'), ['*'], 'page');
@@ -172,6 +195,28 @@ class DatasetController extends Controller
             } else {
                 $dataset['mauro'] = [];
             }
+        }
+
+        $filterTitle = $request->query('filterTitle', null);
+        if (!empty($filterTitle)) {
+            $matches = array();
+            foreach ($datasets as $dataset) {
+                foreach ($dataset['mauro'] as $field) {
+                    if ($field['key'] == 'properties/summary/title') {
+                        if (str_contains($field['value'], $filterTitle)) {
+                            $matches[$dataset['id']] = $dataset['mauro'];
+                        }
+                    }
+                }
+            }
+            $filteredDatasets = Dataset::whereIn('id', array_keys($matches))
+                ->orderBy($sortField, $sortDirection)
+                ->select($selectedFields)
+                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            foreach ($filteredDatasets as $filteredDataset) {
+                $filteredDataset['mauro'] = $matches[$filteredDataset['id']];
+            }
+            return response()->json($filteredDatasets);
         }
 
         return response()->json(
