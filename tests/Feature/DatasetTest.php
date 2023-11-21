@@ -258,7 +258,7 @@ class DatasetTest extends TestCase
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
-                'status' => Dataset::STATUS_DRAFT,
+                'status' => Dataset::STATUS_ACTIVE,
             ],
             $this->header,
         );
@@ -353,6 +353,18 @@ class DatasetTest extends TestCase
                 ]
             ]
         ]);
+
+
+        /* 
+        * Test filtering by dataset title and status
+        */
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+            '?filterTitle=HDR&filterStatus=DRAFT',
+            [], $this->header
+        );
+        $response->assertStatus(200);
+        //should find the two draft datasets, whose titles both contain HDR
+        $this->assertCount(2,$response['data']);
 
         /* 
         * Sort so that the newest dataset is first in the list
