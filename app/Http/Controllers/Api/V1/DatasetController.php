@@ -168,7 +168,7 @@ class DatasetController extends Controller
                                     function ($query) use ($teamId){
                                         return $query->where('team_id', '=', $teamId);
                                     })
-                            ->when($request->has('withTrashed') || $filterStatus == 'ARCHIVED', 
+                            ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                                     function ($query) {
                                         return $query->withTrashed();
                                     })
@@ -205,7 +205,7 @@ class DatasetController extends Controller
             foreach ($datasets as $dataset) {
                 foreach ($dataset['mauro'] as $field) {
                     // find the title field in mauro data
-                    if ($field['key'] == 'properties/summary/title') {
+                    if ($field['key'] === 'properties/summary/title') {
                         // if title matches filter, store the dataset id and mauro field
                         if (str_contains($field['value'], $filterTitle)) {
                             $matches[$dataset['id']] = $dataset['mauro'];
