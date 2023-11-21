@@ -142,8 +142,6 @@ class DatasetController extends Controller
                     ],400);
         }
 
-      
-
         $teamId = $request->query('team_id',null);
         $datasets = Dataset::when($teamId, 
                                     function ($query) use ($teamId){
@@ -362,6 +360,7 @@ class DatasetController extends Controller
                 env('GWDM_CURRENT_VERSION')
             );
 
+
             if($traserResponse['wasTranslated']){
                 $input['metadata']['original_metadata'] = $input['dataset']['metadata'];
                 $input['dataset']['metadata'] = $traserResponse['metadata'];
@@ -369,6 +368,15 @@ class DatasetController extends Controller
                 $mauro = MMC::createMauroDataModel($user, $team, $input);
 
                 if (!empty($mauro)) {
+
+                    if($mauro['DataModel']['responseStatus'] != 201){
+
+                        return response()->json([
+                            'message' => 'Failed to create mauroDataModel',
+                            'details' => $mauro['DataModel']['responseJson'],
+                        ]);
+                    }
+
                     $mauroDatasetId = (string) $mauro['DataModel']['responseJson']['id'];
 
                     $dataset = MMC::createDataset([
@@ -385,6 +393,11 @@ class DatasetController extends Controller
                         'create_origin' => $input['create_origin'],
                         'status' => $input['status'],
                     ]);
+
+                    return response()->json([
+                        'all good' => $dataset,
+                    ]);
+
                     $dId = $dataset->id; 
 
                     //overwrite whatever gatewayId has been set
@@ -393,7 +406,7 @@ class DatasetController extends Controller
                     //   e.g. revisions and versions? 
                     $input['dataset']['metadata']['required']['gatewayId'] = strval($dId);
                     
-                   
+
 
                     // Dispatch this potentially lengthy subset of data
                     // to a technical object data store job - API doesn't
