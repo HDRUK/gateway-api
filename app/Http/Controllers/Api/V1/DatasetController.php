@@ -392,9 +392,7 @@ class DatasetController extends Controller
                         'pid' => (string) Str::uuid(),
                         'create_origin' => $input['create_origin'],
                         'status' => $input['status'],
-                    ]);
-
-                    
+                    ]);                    
                     $dId = $dataset->id; 
 
                     //overwrite whatever gatewayId has been set
