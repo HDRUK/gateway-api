@@ -394,10 +394,7 @@ class DatasetController extends Controller
                         'status' => $input['status'],
                     ]);
 
-                    return response()->json([
-                        'all good' => $dataset,
-                    ]);
-
+                    
                     $dId = $dataset->id; 
 
                     //overwrite whatever gatewayId has been set
