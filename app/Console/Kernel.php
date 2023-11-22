@@ -17,6 +17,8 @@ class Kernel extends ConsoleKernel
     {
         // Runs this command daily at midnight
         $schedule->command('app:schema-to-mauro-profile-updater')->daily();
+
+        $schedule->command('app:cohort-user-expiry')->dailyAt('02:00');
     }
 
     /**

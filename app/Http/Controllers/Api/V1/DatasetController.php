@@ -85,6 +85,26 @@ class DatasetController extends Controller
      *          description="Decode the 'dataset' metadata field",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="filterTitle",
+     *       in="query",
+     *       description="Three or more characters to filter dataset titles by",
+     *       example="hdr",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Three or more characters to filter dataset titles by",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="filterStatus",
+     *       in="query",
+     *       description="Dataset status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
+     *       example="ACTIVE",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Dataset status to filter by",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -143,14 +163,19 @@ class DatasetController extends Controller
         }
 
         $teamId = $request->query('team_id',null);
+        $filterStatus = $request->query('filterStatus', null);
         $datasets = Dataset::when($teamId, 
                                     function ($query) use ($teamId){
                                         return $query->where('team_id', '=', $teamId);
                                     })
-                            ->when($request->has('withTrashed'), 
+                            ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                                     function ($query) {
                                         return $query->withTrashed();
-                                     })
+                                    })
+                            ->when($filterStatus, 
+                                    function ($query) use ($filterStatus) {
+                                        return $query->where('status', '=', $filterStatus);
+                                    })
                             ->orderBy($sortField, $sortDirection)
                             ->select($selectedFields)
                             ->paginate(Config::get('constants.per_page'), ['*'], 'page');
@@ -170,6 +195,35 @@ class DatasetController extends Controller
             } else {
                 $dataset['mauro'] = [];
             }
+        }
+
+        // filtering by title
+        $filterTitle = $request->query('filterTitle', null);
+        if (!empty($filterTitle)) {
+            $matches = array();
+            // iterate through mauro field of each dataset
+            foreach ($datasets as $dataset) {
+                foreach ($dataset['mauro'] as $field) {
+                    // find the title field in mauro data
+                    if ($field['key'] === 'properties/summary/title') {
+                        // if title matches filter, store the dataset id and mauro field
+                        if (str_contains($field['value'], $filterTitle)) {
+                            $matches[$dataset['id']] = $dataset['mauro'];
+                        }
+                        break(1);
+                    }
+                }
+            }
+            // perform query for the matching datasets and reattach the mauro field
+            // rather than refetching it from mauro
+            $filteredDatasets = Dataset::whereIn('id', array_keys($matches))
+                ->orderBy($sortField, $sortDirection)
+                ->select($selectedFields)
+                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            foreach ($filteredDatasets as $filteredDataset) {
+                $filteredDataset['mauro'] = $matches[$filteredDataset['id']];
+            }
+            return response()->json($filteredDatasets);
         }
 
         return response()->json(

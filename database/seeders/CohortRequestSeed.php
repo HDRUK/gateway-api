@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Permission;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasLog;
+use App\Models\CohortRequestHasPermission;
 use App\Models\CohortRequestLog;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
@@ -24,18 +26,32 @@ class CohortRequestSeed extends Seeder
                 'user_id' => $userId,
             ])->first();
 
+            $status = fake()->randomElement(['PENDING', 'APPROVED']);
+
             if (!$checkRequestByUserId) {
                 $cohortRequest = CohortRequest::create([
+                    'created_at' => fake()->dateTimeBetween('-7 month', 'now'),
                     'user_id' => $userId,
-                    'request_status' => 'PENDING',
-                    'cohort_status' => false,
+                    'request_status' => $status,
+                    'cohort_status' => ($status === 'PENDING' ? false : true),
                     'request_expire_at' => null,
                 ]);
+
+                if ($status === 'APPROVED') {
+                    $permissions = Permission::where([
+                        'application' => 'cohort',
+                        'name' => 'GENERAL_ACCESS',
+                    ])->first();
+                    CohortRequestHasPermission::create([
+                        'cohort_request_id' => $cohortRequest->id,
+                        'permission_id' => $permissions->id,
+                    ]);
+                }
 
                 $cohortRequestLog = CohortRequestLog::create([
                     'user_id' => $userId,
                     'details' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'request_status' => 'PENDING',
+                    'request_status' => $status,
                 ]);
 
                 CohortRequestHasLog::create([
