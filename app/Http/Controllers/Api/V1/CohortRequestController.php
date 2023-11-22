@@ -121,14 +121,12 @@ class CohortRequestController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $orderBy = [];
-            if ($request->has('orderBy')) {
-                $orderByArray = explode(',', $request->query('orderBy', ''));
-                if (count($orderBy)) {
-                    foreach ($orderByArray as $item) {
-                        list($field, $name) = explode(":", $item . ":asc", 2);
-                        $orderBy[$field] = $name;
-                    }
+            $sort = [];
+            if ($request->has('sort')) {
+                $sortArray = explode(',', $request->query('sort', ''));
+                foreach ($sortArray as $item) {
+                    $tmp = explode(":", $item);
+                    $sort[$tmp[0]]= isset($tmp[1]) ? $tmp[1] : 'asc';
                 }
             }
 
@@ -159,14 +157,14 @@ class CohortRequestController extends Controller
             }
 
             // filter by request_status
-            if ($request->has('status')) {
+            if ($request->has('request_status')) {
                 $query->where('request_status', strtoupper($request->query('status')));
             }
 
             $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
 
-            if ($orderBy) {
-                foreach($orderBy as $key => $value) {
+            if ($sort) {
+                foreach($sort as $key => $value) {
                     if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
                         $query->orderBy('cohort_requests.' . $key, strtoupper($value));
                     }
@@ -174,7 +172,6 @@ class CohortRequestController extends Controller
                     if (in_array($key, ['name', 'organisation'])) {
                         $query->orderBy('users.' . $key, strtoupper($value));
                     }
-                    
                 }
             }
 
