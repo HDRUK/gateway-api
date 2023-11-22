@@ -44,7 +44,7 @@ class CohortRequestController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="status",
+     *       name="request_status",
      *       in="query",
      *       description="filter by status",
      *       example="test",
