@@ -126,7 +126,7 @@ class CohortRequestController extends Controller
                 $sortArray = explode(',', $request->query('sort', ''));
                 foreach ($sortArray as $item) {
                     $tmp = explode(":", $item);
-                    $sort[$tmp[0]]= isset($tmp[1]) ? $tmp[1] : 'asc';
+                    $sort[$tmp[0]]= array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
                 }
             }
 
