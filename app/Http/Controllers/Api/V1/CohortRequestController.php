@@ -122,12 +122,10 @@ class CohortRequestController extends Controller
     {
         try {
             $sort = [];
-            if ($request->has('sort')) {
-                $sortArray = explode(',', $request->query('sort', ''));
-                foreach ($sortArray as $item) {
-                    $tmp = explode(":", $item);
-                    $sort[$tmp[0]]= array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
-                }
+            $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
+            foreach ($sortArray as $item) {
+                $tmp = explode(":", $item);
+                $sort[$tmp[0]]= array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
             $query = CohortRequest::with(['user', 'logs', 'logs.user']);
@@ -163,15 +161,13 @@ class CohortRequestController extends Controller
 
             $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
 
-            if ($sort) {
-                foreach($sort as $key => $value) {
-                    if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
-                        $query->orderBy('cohort_requests.' . $key, strtoupper($value));
-                    }
+            foreach($sort as $key => $value) {
+                if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
+                    $query->orderBy('cohort_requests.' . $key, strtoupper($value));
+                }
 
-                    if (in_array($key, ['name', 'organisation'])) {
-                        $query->orderBy('users.' . $key, strtoupper($value));
-                    }
+                if (in_array($key, ['name', 'organisation'])) {
+                    $query->orderBy('users.' . $key, strtoupper($value));
                 }
             }
 
