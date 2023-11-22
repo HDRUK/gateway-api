@@ -158,7 +158,7 @@ class CohortRequestController extends Controller
 
             // filter by request_status
             if ($request->has('request_status')) {
-                $query->where('request_status', strtoupper($request->query('status')));
+                $query->where('request_status', strtoupper($request->query('request_status')));
             }
 
             $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
