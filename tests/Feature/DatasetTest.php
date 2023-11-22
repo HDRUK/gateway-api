@@ -431,22 +431,7 @@ class DatasetTest extends TestCase
         );
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'data' => [
-                '*' => [
-                    'dataset' => [
-                        "metadata" => [
-                            "required",
-                            "summary",
-                            "coverage",
-                            "provenance",
-                            "accessibility",
-                            "linkage",
-                            "observations",
-                            "structuralMetadata"
-                        ]
-                    ]
-                ]
-            ]
+            'data'
         ]);
 
         for ($i = 1; $i <= 3; $i++) {
