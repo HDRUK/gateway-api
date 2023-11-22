@@ -931,7 +931,7 @@ class DatasetTest extends TestCase
         );
         // $responseUpdateDataset->assertStatus(200);
         $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
-        var_dump('contentUpdateDataset', $contentUpdateDataset);
+
         // archive dataset
         // $responseDeleteDataset = $this->json(
         //     'DELETE',

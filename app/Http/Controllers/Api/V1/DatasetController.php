@@ -302,13 +302,10 @@ class DatasetController extends Controller
                 ->with(['namedEntities'])
                 ->first()
                 ->toArray();
-            var_dump($dataset);
+
             if ($dataset['datasetid']) {
                 $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
-                // var_dump($mauroDatasetIdMetadata);
                 $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
-                // var_dump('dataset[mauro]');
-                // var_dump($dataset['mauro']);
             }
 
             $outputSchemaModel = $request->query('schema_model');
@@ -422,10 +419,9 @@ class DatasetController extends Controller
                 $input['dataset']['metadata'] = $traserResponse['metadata'];
 
                 $mauro = MMC::createMauroDataModel($user, $team, $input);
-                var_dump($mauro);
+
                 if (!empty($mauro)) {
                     $mauroDatasetId = (string) $mauro['DataModel']['responseJson']['id'];
-                    var_dump($mauroDatasetId);
 
                     $dataset = MMC::createDataset([
                         'datasetid' => $mauroDatasetId,
@@ -442,7 +438,7 @@ class DatasetController extends Controller
                         'status' => $input['status'],
                     ]);
                     $dId = $dataset->id; 
-                    var_dump($dId);
+
                     //overwrite whatever gatewayId has been set
                     // - this logic could be put somewhere else?
                     // - there may be some other logic/fields to be filled here?
@@ -450,7 +446,6 @@ class DatasetController extends Controller
                     $input['dataset']['metadata']['required']['gatewayId'] = strval($dId);
                     
                    
-                    // var_dump("here1");
                     // Dispatch this potentially lengthy subset of data
                     // to a technical object data store job - API doesn't
                     // care if it exists or not. We leave that determination to
@@ -554,18 +549,15 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
-            // var_dump('get user and team');
 
             $user = User::where('id', (int) $input['user_id'])->first()->toArray();
             $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
-            // var_dump('got user and team');
-            // var_dump($id);
+
             $currDataset = Dataset::where('id', $id)->first()->toArray();
-            var_dump($currDataset);
-            //->first()->toArray();
+
             $currentPid = $currDataset['pid'];
             $currentDatasetId = $currDataset['datasetid'];
-            // var_dump("do we get here?");
+
             // First validate the incoming schema to ensure it's in GWDM format
             // if not, attempt to translate prior to saving
             $validateDataModelType = MMC::validateDataModelType(
@@ -575,14 +567,11 @@ class DatasetController extends Controller
             );
 
             if ($validateDataModelType) {
-                var_dump($currentDatasetId);
-                var_dump('Mauro duplicate');
                 $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
-                var_dump($duplicateDataModel);
                 $newDatasetId = (string) $duplicateDataModel['id'];
-                var_dump('MMC update');
+
                 MMC::updateDataModel($user, $team, $input, $newDatasetId);
-                var_dump('MMC create');
+
                 $dataset = MMC::createDataset([
                     'datasetid' => $newDatasetId,
                     'label' => $input['label'],
@@ -598,7 +587,7 @@ class DatasetController extends Controller
                     'status' => $input['status'],
                 ]);
                 $dId = $dataset->id;
-                var_dump('after MMC create');
+
                 // Dispatch this potentially lengthy subset of data
                 // to a technical object data store job - API doesn't
                 // care if it exists or not. We leave that determination to

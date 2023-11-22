@@ -45,10 +45,7 @@ class TechnicalObjectDataStore implements ShouldQueue
      */
     public function handle(): void
     {
-        var_dump("handle TechnicalObjectDataStore start");
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
-        var_dump($data);
-        var_dump('update?', $this->update);
         if (!$this->update) {
             $this->deleteAllDataClasses();
 
@@ -56,9 +53,8 @@ class TechnicalObjectDataStore implements ShouldQueue
             if(!isset($data['structuralMetadata']) || empty($data['structuralMetadata'])){
                 return;
             }
-            // var_dump("here3");
+
             foreach ($data['structuralMetadata'] as $class) {
-                // var_dump("here4", $class['name'], $class['description']);
                 $mauroCreateResponse = Mauro::createDataClass($this->datasetId, $class['name'], $class['description']);
                 foreach ($class['columns'] as $element) {
                     Mauro::createDataElement(
@@ -68,10 +64,8 @@ class TechnicalObjectDataStore implements ShouldQueue
                         $element['description'],
                         $element['dataType']
                     );
-                    // var_dump("here4a", $element);
                 }
             }
-            // var_dump("here5");
         }
         else {
             // Here we handle the case where it's an update rather than create. Need to inspect the current metadata,
@@ -90,65 +84,22 @@ class TechnicalObjectDataStore implements ShouldQueue
             // (3) Those which are not present in the request need to be deleted.
             // In (1), then we need to compare all data elements in the same way.
 
-            var_dump('getAllDataClasses');
             $mauroDataClassesResponse = Mauro::getAllDataClasses($this->datasetId);
-            // var_dump('$mauroDataClassesResponse', $mauroDataClassesResponse);
-            // $this->deleteAllDataClasses();
-            // var_dump($mauroDataClassesResponse['items']);
-            // foreach ($mauroDataClassesResponse['items'] as $class) {
-            //     // var_dump(["existing SM class", $class['label'], $class['description']]);
-            //     $mauroDataElementResponse = Mauro::getAllDataElements($this->datasetId, $class['id']);
-            //     // var_dump($mauroDataElementResponse);
-            //     foreach ($mauroDataElementResponse['items'] as $element) {
-            //         // var_dump(["existing SM element", $element['label'], $element['description'], $element['dataType']['label']]);
-
-            //     }
-            // }
-            // var_dump('$data[structuralMetadata]', $data['structuralMetadata']);
-            // foreach ($data['structuralMetadata'] as $class) {
-            //     // var_dump(["incoming SM class", $class['name'], $class['description']]);
-            //     // $mauroCreateResponse = Mauro::createDataClass($this->datasetId, $class['name'], $class['description']);
-            //     // foreach ($class['columns'] as $element) {
-            //         // var_dump(["incoming SM element", $element['name'], $element['description'], $element['dataType']]);
-            //         // Mauro::createDataElement(
-            //         //     $this->datasetId,
-            //         //     $mauroCreateResponse['id'],
-            //         //     $element['name'],
-            //         //     $element['description'],
-            //         //     $element['dataType']
-            //         // );
-            //         // var_dump("here4a", $element);
-            //     // }
-            // }
-
-            var_dump(array_column($mauroDataClassesResponse['items'], 'label'));
-            var_dump(array_column($data['structuralMetadata'], 'name'));
-            // foreach ($mauroDataClassesResponse['items'] as $class) {
-            // 
-            // }
 
             /*
             * Calculate the 3 categories of DataClasses to be handled
             */
-            var_dump('diff');
             $classesToDelete = array_diff(array_column($mauroDataClassesResponse['items'], 'label'), 
                                           array_column($data['structuralMetadata'], 'name'));
-            var_dump('classesToDelete', $classesToDelete);
-            // foreach ($classesToDelete as $className){
 
-            // }
             $classesToAdd = array_diff(array_column($data['structuralMetadata'], 'name'), 
                                        array_column($mauroDataClassesResponse['items'], 'label'));
-            var_dump('classesToAdd', $classesToAdd);
             
-
             // These dataClasses are present in both, so we need to apply any updates required 
             // - assume Mauro will handle this efficiently if we just ask for each to be updated 
             //   without ourselves doing a comparison.
             $classesToCheck = array_intersect(array_column($data['structuralMetadata'], 'name'), 
                                               array_column($mauroDataClassesResponse['items'], 'label'));
-            var_dump('classesToCheck', $classesToCheck);
-
 
             /*
             * Handle the 3 categories appropriately
@@ -158,35 +109,27 @@ class TechnicalObjectDataStore implements ShouldQueue
             * Handle the "delete" DataClasses which are not present in the incoming request but are in the existing Mauro DataModel.
             */
             foreach ($classesToDelete as $className){
-                $classesToDeleteContent = $this->getByLabel($className, $mauroDataClassesResponse['items']);
+                $classesToDeleteContent = $this->getByLabel($className, 
+                                                            $mauroDataClassesResponse['items']);
                 if ($classesToDeleteContent) {
-                    $mauroDeleteResponse = Mauro::deleteDataClass($classesToDeleteContent['id'], $this->datasetId);
+                    $mauroDeleteResponse = Mauro::deleteDataClass($classesToDeleteContent['id'], 
+                                                                  $this->datasetId);
                 }
             }
 
             /*
             * Handle the "add" DataClasses which are present in the incoming request but not in the existing Mauro DataModel.
             */
-            var_dump('getAllDataClasses2');
-            $mauroDataClassesResponse = Mauro::getAllDataClasses($this->datasetId);
-            // var_dump('$mauroDataClassesResponse', $mauroDataClassesResponse);
-            // $this->deleteAllDataClasses();
-            var_dump($mauroDataClassesResponse['items']);
             foreach ($classesToAdd as $className){
                 // Find the correct entry from the incoming request
-                $classesToAddContent = $this->getByName($className, $data['structuralMetadata']);
+                $classesToAddContent = $this->getByName($className, 
+                                                        $data['structuralMetadata']);
                 
-                var_dump('classesToAddContent', $classesToAddContent);
                 // Create the Mauro DataClass, and its child DataElements
                 if ($classesToAddContent) {
-                    $mauroCreateResponse = Mauro::createDataClass($this->datasetId, $classesToAddContent['name'], $classesToAddContent['description']);
-                    var_dump($mauroCreateResponse);
-                    var_dump('getAllDataClasses3');
-                    // TO DELETE: this is just for debug
-                    $mauroDataClassesResponse = Mauro::getAllDataClasses($this->datasetId);
-                    // var_dump('$mauroDataClassesResponse', $mauroDataClassesResponse);
-                    // $this->deleteAllDataClasses();
-                    var_dump($mauroDataClassesResponse['items']);
+                    $mauroCreateResponse = Mauro::createDataClass($this->datasetId, 
+                                                                  $classesToAddContent['name'], 
+                                                                  $classesToAddContent['description']);
 
                     foreach ($classesToAddContent['columns'] as $element) {
                         Mauro::createDataElement(
@@ -205,55 +148,46 @@ class TechnicalObjectDataStore implements ShouldQueue
             */
             foreach ($classesToCheck as $className){
                 // Get the appropriate entry from the incoming request
-                $classesToCheckContent = $this->getByName($className, $data['structuralMetadata']);
+                $classesToCheckContent = $this->getByName($className, 
+                                                          $data['structuralMetadata']);
 
                 // Get the appropriate entry from the Mauro list
-                $classToCheckContentMauro = $this->getByLabel($className, $mauroDataClassesResponse['items']);
+                $classToCheckContentMauro = $this->getByLabel($className, 
+                                                              $mauroDataClassesResponse['items']);
                 
-                var_dump('classesToCheckContent', $classesToCheckContent);
-                var_dump('classToCheckContentMauro', $classToCheckContentMauro);
                 if ($classesToCheckContent) {
-                    var_dump('processing elements from this class:', $classesToCheckContent['name']);
                     // Update the DataClass in Mauro - in case the details have been modified
-                    var_dump('we will update the following details:', $this->datasetId, $classesToCheckContent['name'], $classesToCheckContent['description'], $classToCheckContentMauro['id']);
-                    $mauroUpdateResponse = Mauro::updateDataClass($this->datasetId, $classesToCheckContent['name'], $classesToCheckContent['description'], $classToCheckContentMauro['id']);
-                    var_dump($mauroUpdateResponse);
-                    var_dump('getAllDataClasses4');
-
-                    // TO DELETE: this is just for debug
-                    $mauroDataClassesResponse = Mauro::getAllDataClasses($this->datasetId);
-                    // var_dump('$mauroDataClassesResponse', $mauroDataClassesResponse);
-                    // $this->deleteAllDataClasses();
-                    var_dump($mauroDataClassesResponse['items']);
-
-                    // TODO: rename
-                    $dataElementsContentMauro = Mauro::getAllDataElements($this->datasetId, $classToCheckContentMauro['id'])['items'];
+                    $mauroUpdateResponse = Mauro::updateDataClass($this->datasetId, 
+                                                                  $classesToCheckContent['name'], 
+                                                                  $classesToCheckContent['description'], 
+                                                                  $classToCheckContentMauro['id']);
+                    
+                    $dataElementsContentMauro = Mauro::getAllDataElements($this->datasetId, 
+                                                                          $classToCheckContentMauro['id'])['items'];
                     // Now that the dataClass has been updated, we need to check all child DataElements 
                     // against the request, to see which need deletion/creation/update.
+
                     /*
                     * Calculate the 3 categories of DataElements to be handled
                     */
                     $elementsToAdd = array_diff(array_column($classesToCheckContent['columns'], 'name'), 
                                                 array_column($dataElementsContentMauro, 'label'));
-                    var_dump('elementsToAdd', $elementsToAdd);
-                    // var_dump('calced1 from:', $classesToCheckContent, $dataElementsContentMauro);
-                    // var_dump('calced from', array_column($classesToCheckContent['columns'], 'name'), 'and', array_column($dataElementsContentMauro, 'label'));
+
                     $elementsToDelete = array_diff(array_column($dataElementsContentMauro, 'label'), 
                                                    array_column($classesToCheckContent['columns'], 'name'));
-                    var_dump('elementsToDelete', $elementsToDelete);
+
                     $elementsToCheck = array_intersect(array_column($dataElementsContentMauro, 'label'), 
                                                        array_column($classesToCheckContent['columns'], 'name'));
-                    var_dump('elementsToCheck', $elementsToCheck);
 
                     // Handle the "add" DataElements which are present in the incoming request but not in the existing Mauro DataClass.
                     foreach ($elementsToAdd as $elementName){
 
                         // Find the correct entry from the incoming request
-                        var_dump('to getbyname:', $className, $data['structuralMetadata']);
-                        var_dump('getbyname', $this->getByName($className, $data['structuralMetadata']));
-                        $elementToAddContent = $this->getByName($elementName, $this->getByName($className, $data['structuralMetadata'])['columns']);
+                        $elementToAddContent = $this->getByName($elementName, 
+                                                                $this->getByName($className, 
+                                                                                 $data['structuralMetadata'])['columns']
+                                                                );
                                                             
-                        var_dump('elementToAddContent', $elementToAddContent);
                         if ($elementToAddContent) {
                             $mauroCreateElementResponse = Mauro::createDataElement(
                                 $this->datasetId, 
@@ -267,46 +201,34 @@ class TechnicalObjectDataStore implements ShouldQueue
 
                     // Handle the "check" DataElements which are present in both the incoming request and the existing Mauro DataClass.
                     foreach ($elementsToCheck as $elementName){
-                        var_dump('hello');
-                        var_dump($this->getByName($className, $data['structuralMetadata']));
-                        var_dump($dataElementsContentMauro);
-                        var_dump($this->getByLabel($elementName, $dataElementsContentMauro));
+                        $elementToCheckContent = $this->getByName($elementName, 
+                                                                  $this->getByName($className, 
+                                                                                   $data['structuralMetadata'])['columns']
+                                                                  );
+                        $elementToCheckContentMauro = $this->getByLabel($elementName, 
+                                                                        $dataElementsContentMauro);
 
-                        $elementToCheckContent = $this->getByName($elementName, $this->getByName($className, $data['structuralMetadata'])['columns']);
-                        $elementToCheckContentMauro = $this->getByLabel($elementName, $dataElementsContentMauro);
-                        var_dump('elementToCheckContent', $elementToCheckContent);
                         if ($elementToCheckContent) {
-                            var_dump($this->datasetId, 
-                                $elementToCheckContent['name'], 
-                                $elementToCheckContent['description'], 
-                                $classToCheckContentMauro['id'], 
-                                $elementToCheckContentMauro['id']);
                             $mauroUpdateResponse = Mauro::updateDataElement($this->datasetId, 
                                                                             $elementToCheckContent['name'], 
                                                                             $elementToCheckContent['description'], 
                                                                             $classToCheckContentMauro['id'], 
                                                                             $elementToCheckContentMauro['id']);
-                            var_dump($mauroUpdateResponse);
                          }
-                         $allDataElements = Mauro::getAllDataElements($this->datasetId, $classToCheckContentMauro['id']);
-                         var_dump($allDataElements);
+
+                         $allDataElements = Mauro::getAllDataElements($this->datasetId, 
+                                                                      $classToCheckContentMauro['id']);
                     }
 
                     foreach ($elementsToDelete as $elementName){
+                        $elementToDeleteContent = $this->getByLabel($elementName, 
+                                                                    $dataElementsContentMauro);
 
-                        var_dump('dataElementsContentMauro', $dataElementsContentMauro);
-                        var_dump('labelled:', $this->getByLabel($elementName, $dataElementsContentMauro));
-                        $elementToDeleteContent = $this->getByLabel($elementName, $dataElementsContentMauro);
-
-                        var_dump('elementToDeleteContent', $elementToDeleteContent);
-                        var_dump("let's delete class", $classToCheckContentMauro['id'], "and element", $elementToDeleteContent['id']);
                         if ($elementToDeleteContent) {
                             $mauroDeleteResponse = Mauro::deleteDataElement($elementToDeleteContent['id'],
                                                                             $this->datasetId, 
                                                                             $classToCheckContentMauro['id']);
-                            var_dump($mauroDeleteResponse);
                         }
-                        var_dump('deletion completed');
                     }
                 }
             }
@@ -317,15 +239,13 @@ class TechnicalObjectDataStore implements ShouldQueue
         var_dump($hierarchyResponse);
         $tedUrl = env('TED_SERVICE_URL');
         $tedEnabled = env('TED_ENABLED');
-        var_dump("envs set");
 
         if (!empty($tedUrl) && $tedEnabled) {
             $this->postToTermExtractionDirector(json_encode($data));
         }
-        // var_dump("here7");
 
         MMC::reindexElastic($data, $this->datasetId);
-        // var_dump("here8");
+
         // Jobs aren't garbage collected, so free up
         // resources used before tear down
         unset($this->datasetId);
@@ -361,16 +281,14 @@ class TechnicalObjectDataStore implements ShouldQueue
     private function postToTermExtractionDirector(string $dataset): void
     {
         try {
-            // var_dump("herea0");
 
             $response = Http::withBody(
                 $dataset,
                 'application/json'
             )->post(env('TED_SERVICE_URL'));
-            // var_dump("herea1");
+
             if (array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $n) {
-                    // var_dump("herea2");
 
                     $named_entities = NamedEntities::create([
                         'name' => $n,
@@ -384,7 +302,6 @@ class TechnicalObjectDataStore implements ShouldQueue
                     ]);
                 }
             }
-            // var_dump("herea3");
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
