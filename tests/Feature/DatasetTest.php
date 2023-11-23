@@ -178,7 +178,6 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
             'message',
@@ -265,6 +264,11 @@ class DatasetTest extends TestCase
         $responseCreateDataset->assertStatus(201);
         $datasetId1 = $responseCreateDataset['data'];
 
+        var_dump('test1a');
+        $drJ = $responseCreateDataset->decodeResponseJson();
+        var_dump('$drJa');
+        var_dump($drJ);
+
         //create a 2nd one
         $labelDataset2 = 'ABC DATASET';
         $responseCreateDataset = $this->json(
@@ -281,6 +285,10 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
+        var_dump('test1b');
+        $drJ = $responseCreateDataset->decodeResponseJson();
+        var_dump('$drJb');
+        var_dump($drJ);
         $responseCreateDataset->assertStatus(201);
         $datasetId2 = $responseCreateDataset['data'];
 
@@ -804,7 +812,7 @@ class DatasetTest extends TestCase
     }
 
     /**
-     * Create/archive/unarchive Dataset with success
+     * Create/update/delete Dataset with success
      * 
      * @return void
      */
@@ -907,7 +915,8 @@ class DatasetTest extends TestCase
                 'label' => $labelDataset,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
-                'create_origin' => 'MANUAL',
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
             ],
             $this->header,
         );
@@ -925,36 +934,13 @@ class DatasetTest extends TestCase
                 'label' => $labelDataset,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->datasetUpdate,
-                'create_origin' => 'MANUAL',
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
-        // $responseUpdateDataset->assertStatus(200);
         $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
-
-        // archive dataset
-        // $responseDeleteDataset = $this->json(
-        //     'DELETE',
-        //     self::TEST_URL_DATASET . '/' . $datasetId,
-        //     [],
-        //     $this->header
-        // );
-        // $responseDeleteDataset->assertJsonStructure([
-        //     'message'
-        // ]);
-        // $responseDeleteDataset->assertStatus(200);
-
-        // // unarchive dataset
-        // $responseUnarchiveDataset = $this->json(
-        //     'PATCH',
-        //     self::TEST_URL_DATASET . '/' . $datasetId . '?unarchive',
-        //     [],
-        //     $this->header
-        // );
-        // $responseUnarchiveDataset->assertJsonStructure([
-        //     'message'
-        // ]);
-        // $responseUnarchiveDataset->assertStatus(200);
+        $responseUpdateDataset->assertStatus(200);
 
         // permanent delete dataset
         $responseDeleteDataset = $this->json(
