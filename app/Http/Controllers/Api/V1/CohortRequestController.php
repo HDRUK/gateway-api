@@ -44,7 +44,7 @@ class CohortRequestController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="status",
+     *       name="request_status",
      *       in="query",
      *       description="filter by status",
      *       example="test",
@@ -121,60 +121,38 @@ class CohortRequestController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $orderBy = [];
-            if ($request->has('orderBy')) {
-                $orderByArray = explode(',', $request->query('orderBy', ''));
-                if (count($orderBy)) {
-                    foreach ($orderByArray as $item) {
-                        list($field, $name) = explode(":", $item . ":asc", 2);
-                        $orderBy[$field] = $name;
-                    }
-                }
+            $sort = [];
+            $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
+            foreach ($sortArray as $item) {
+                $tmp = explode(":", $item);
+                $sort[$tmp[0]]= array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
             $query = CohortRequest::with(['user', 'logs', 'logs.user']);
 
             // filter by users.email
-            if ($request->has('email')) {
-                $email = $request->query('email');
-                $query->whereHas('user', function ($q) use ($email) {
-                    $q->where('email', 'LIKE', '%' . $email . '%');
-                });
-            }
+            $query->filterByEmail($request->has('email') ? $request->query('email') : '');
 
             // filter by users.organisation
-            if ($request->has('organisation')) {
-                $organisation = $request->query('organisation');
-                $query->whereHas('user', function ($q) use ($organisation) {
-                    $q->where('organisation', 'LIKE', '%' . $organisation . '%');
-                });
-            }
+            $query->filterByOrganisation($request->has('organisation') ? $request->query('organisation') : '');
 
             // filter by users.name
-            if ($request->has('name')) {
-                $name = $request->query('name');
-                $query->whereHas('user', function ($q) use ($name) {
-                    $q->where('name', 'LIKE', '%' . $name . '%');
-                });
-            }
+            $query->filterByUserName($request->has('name') ? $request->query('name') : '');
 
             // filter by request_status
-            if ($request->has('status')) {
-                $query->where('request_status', strtoupper($request->query('status')));
+            if ($request->has('request_status')) {
+                $query->where('request_status', strtoupper($request->query('request_status')));
             }
 
             $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
 
-            if ($orderBy) {
-                foreach($orderBy as $key => $value) {
-                    if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
-                        $query->orderBy('cohort_requests.' . $key, strtoupper($value));
-                    }
+            foreach($sort as $key => $value) {
+                if (in_array($key, ['created_at', 'updated_at', 'request_status'])) {
+                    $query->orderBy('cohort_requests.' . $key, strtoupper($value));
+                }
 
-                    if (in_array($key, ['name', 'organisation'])) {
-                        $query->orderBy('users.' . $key, strtoupper($value));
-                    }
-                    
+                if (in_array($key, ['name', 'organisation'])) {
+                    $query->orderBy('users.' . $key, strtoupper($value));
                 }
             }
 
