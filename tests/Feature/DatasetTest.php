@@ -264,11 +264,6 @@ class DatasetTest extends TestCase
         $responseCreateDataset->assertStatus(201);
         $datasetId1 = $responseCreateDataset['data'];
 
-        var_dump('test1a');
-        $drJ = $responseCreateDataset->decodeResponseJson();
-        var_dump('$drJa');
-        var_dump($drJ);
-
         //create a 2nd one
         $labelDataset2 = 'ABC DATASET';
         $responseCreateDataset = $this->json(
@@ -285,10 +280,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-        var_dump('test1b');
-        $drJ = $responseCreateDataset->decodeResponseJson();
-        var_dump('$drJb');
-        var_dump($drJ);
+
         $responseCreateDataset->assertStatus(201);
         $datasetId2 = $responseCreateDataset['data'];
 

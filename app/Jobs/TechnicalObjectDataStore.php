@@ -234,9 +234,6 @@ class TechnicalObjectDataStore implements ShouldQueue
             }
         }
 
-        var_dump('hierarchy:');
-        $hierarchyResponse = Mauro::getDataModelHierarchy($this->datasetId);
-        var_dump($hierarchyResponse);
         $tedUrl = env('TED_SERVICE_URL');
         $tedEnabled = env('TED_ENABLED');
 

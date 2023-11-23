@@ -398,11 +398,9 @@ class DatasetController extends Controller
         try {
             $mauro = null;
             $input = $request->all();
-            var_dump('here1');
             $user = User::where('id', (int) $input['user_id'])->first()->toArray();
-            var_dump($user);
             $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
-            var_dump($team);
+
             //send the payload to traser
             // - traser will return the input unchanged if the data is
             //   already in the GWDM with GWDM_CURRENT_VERSION
@@ -414,7 +412,7 @@ class DatasetController extends Controller
                 env('GWDM'),
                 env('GWDM_CURRENT_VERSION')
             );
-            var_dump('DS::store::here2');
+
             if($traserResponse['wasTranslated']){
                 $input['metadata']['original_metadata'] = $input['dataset']['metadata'];
                 $input['dataset']['metadata'] = $traserResponse['metadata'];
@@ -437,8 +435,6 @@ class DatasetController extends Controller
                         'create_origin' => $input['create_origin'],
                         'status' => $input['status'],
                     ]);
-                    var_dump('here2');
-                    var_dump($dataset);
                     $dId = $dataset->id; 
 
                     //overwrite whatever gatewayId has been set
