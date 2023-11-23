@@ -53,6 +53,14 @@ class Dataset extends Model
     ];
 
     /**
+     * Indicates if elements of the model should be hidden
+     * from returned payloads
+     */
+    protected $hidden = [
+        'dataset',
+    ];
+
+    /**
      * The named_entities that belong to the dataset.
      */
     public function namedEntities(): BelongsToMany
