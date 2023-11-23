@@ -55,6 +55,13 @@ class CohortRequest extends Model
         return $this->belongsToMany(Permission::class, 'cohort_request_has_permissions');
     }
 
+    /**
+     * Scope a query to only include cohort requests that have users with email with a specific value.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $value
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeFilterByEmail($query, $value): Builder
     {
         return $query->whereHas('user', function ($query) use ($value) {
@@ -62,6 +69,13 @@ class CohortRequest extends Model
         });
     }
 
+    /**
+     * Scope a query to only include cohort requests that have users with organisation with a specific value.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $value
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeFilterByOrganisation($query, $value): Builder
     {
         return $query->whereHas('user', function ($query) use ($value) {
@@ -69,6 +83,13 @@ class CohortRequest extends Model
         });
     }
 
+    /**
+     * Scope a query to only include cohort requests that have users with name with a specific value.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $value
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeFilterByUserName($query, $value): Builder
     {
         return $query->whereHas('user', function ($query) use ($value) {
