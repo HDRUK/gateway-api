@@ -62,7 +62,7 @@ class CohortRequest extends Model
      * @param string $value
      * @return Builder
      */
-    public function scopeFilterByEmail($query, $value): Builder
+    public function scopeFilterByEmail(Builder $query, string $value): Builder
     {
         return $query->whereHas('user', function ($query) use ($value) {
             $query->where('email', 'LIKE', '%' . $value . '%');
@@ -76,7 +76,7 @@ class CohortRequest extends Model
      * @param string $value
      * @return Builder
      */
-    public function scopeFilterByOrganisation($query, $value): Builder
+    public function scopeFilterByOrganisation(Builder $query, string $value): Builder
     {
         return $query->whereHas('user', function ($query) use ($value) {
             $query->where('organisation', 'LIKE', '%' . $value . '%');
@@ -90,7 +90,7 @@ class CohortRequest extends Model
      * @param string $value
      * @return Builder
      */
-    public function scopeFilterByUserName($query, $value): Builder
+    public function scopeFilterByUserName(Builder $query, string $value): Builder
     {
         return $query->whereHas('user', function ($query) use ($value) {
             $query->where('name', 'LIKE', '%' . $value . '%');
