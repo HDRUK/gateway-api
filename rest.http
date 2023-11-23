@@ -1194,7 +1194,7 @@ Authorization: Bearer {{accessToken}}
 #### get all cohort requests with query parameters
 # GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests?sort=created_at:asc,updated_at:asc,organisation:desc,name:desc&status=Approved&name=dan
 # GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests?sort=created_at:asc,updated_at:asc,organisation:desc,name:desc
-GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests?sort=created_at,updated_at:desc,organisation,name:desc HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests?sort=created_at,updated_at:desc,organisation,name:desc&organisation=por HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 

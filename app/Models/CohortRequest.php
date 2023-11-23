@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -52,5 +53,26 @@ class CohortRequest extends Model
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class, 'cohort_request_has_permissions');
+    }
+
+    public function scopeFilterByEmail($query, $value): Builder
+    {
+        return $query->whereHas('user', function ($query) use ($value) {
+            $query->where('email', 'LIKE', '%' . $value . '%');
+        });
+    }
+
+    public function scopeFilterByOrganisation($query, $value): Builder
+    {
+        return $query->whereHas('user', function ($query) use ($value) {
+            $query->where('organisation', 'LIKE', '%' . $value . '%');
+        });
+    }
+
+    public function scopeFilterByUserName($query, $value): Builder
+    {
+        return $query->whereHas('user', function ($query) use ($value) {
+            $query->where('name', 'LIKE', '%' . $value . '%');
+        });
     }
 }

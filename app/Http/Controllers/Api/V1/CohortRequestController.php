@@ -131,28 +131,13 @@ class CohortRequestController extends Controller
             $query = CohortRequest::with(['user', 'logs', 'logs.user']);
 
             // filter by users.email
-            if ($request->has('email')) {
-                $email = $request->query('email');
-                $query->whereHas('user', function ($q) use ($email) {
-                    $q->where('email', 'LIKE', '%' . $email . '%');
-                });
-            }
+            $query->filterByEmail($request->has('email') ? $request->query('email') : '');
 
             // filter by users.organisation
-            if ($request->has('organisation')) {
-                $organisation = $request->query('organisation');
-                $query->whereHas('user', function ($q) use ($organisation) {
-                    $q->where('organisation', 'LIKE', '%' . $organisation . '%');
-                });
-            }
+            $query->filterByOrganisation($request->has('organisation') ? $request->query('organisation') : '');
 
             // filter by users.name
-            if ($request->has('name')) {
-                $name = $request->query('name');
-                $query->whereHas('user', function ($q) use ($name) {
-                    $q->where('name', 'LIKE', '%' . $name . '%');
-                });
-            }
+            $query->filterByUserName($request->has('name') ? $request->query('name') : '');
 
             // filter by request_status
             if ($request->has('request_status')) {
