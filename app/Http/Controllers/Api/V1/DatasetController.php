@@ -108,18 +108,11 @@ class DatasetController extends Controller
         $teamId = $request->query('team_id',null);
         $filterStatus = $request->query('filterStatus', null);
 
-        $sort = $request->query('sort',"created:desc");         
-        $sortParts = explode(":", $sort, 2);
-
-        $sortField = null;
-        $sortDirection = null;
-        if (count($sortParts) === 2) {
-            list($sortField, $sortDirection) = $sortParts;
-        } else if(count($sortParts) === 1) {    
-            $sortField = $sortParts[0];
-            $sortDirection = 'asc';
-        }
-
+        $sort = $request->query('sort',"created:desc");   
+        
+        $tmp = explode(":", $sort);
+        $sortField = $tmp[0];
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
         $doSortFromMauro = str_contains($sortField,"properties/");
 
