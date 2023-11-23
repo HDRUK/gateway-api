@@ -111,6 +111,8 @@ class DatasetController extends Controller
         $sort = $request->query('sort',"created:desc");         
         $sortParts = explode(":", $sort, 2);
 
+        $sortField = null;
+        $sortDirection = null;
         if (count($sortParts) === 2) {
             list($sortField, $sortDirection) = $sortParts;
         } else if(count($sortParts) === 1) {    
