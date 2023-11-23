@@ -398,6 +398,7 @@ class DatasetController extends Controller
         try {
             $mauro = null;
             $input = $request->all();
+
             $user = User::where('id', (int) $input['user_id'])->first()->toArray();
             $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
 
@@ -418,6 +419,7 @@ class DatasetController extends Controller
                 $input['dataset']['metadata'] = $traserResponse['metadata'];
 
                 $mauro = MMC::createMauroDataModel($user, $team, $input);
+
                 if (!empty($mauro)) {
                     $mauroDatasetId = (string) $mauro['DataModel']['responseJson']['id'];
 
@@ -444,6 +446,7 @@ class DatasetController extends Controller
                     $input['dataset']['metadata']['required']['gatewayId'] = strval($dId);
                     
                    
+                    
                     // Dispatch this potentially lengthy subset of data
                     // to a technical object data store job - API doesn't
                     // care if it exists or not. We leave that determination to
@@ -550,9 +553,7 @@ class DatasetController extends Controller
 
             $user = User::where('id', (int) $input['user_id'])->first()->toArray();
             $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
-
             $currDataset = Dataset::where('id', $id)->first()->toArray();
-
             $currentPid = $currDataset['pid'];
             $currentDatasetId = $currDataset['datasetid'];
 
@@ -567,7 +568,6 @@ class DatasetController extends Controller
             if ($validateDataModelType) {
                 $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
                 $newDatasetId = (string) $duplicateDataModel['id'];
-
                 MMC::updateDataModel($user, $team, $input, $newDatasetId);
 
                 $dataset = MMC::createDataset([

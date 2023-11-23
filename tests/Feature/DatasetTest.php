@@ -178,7 +178,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-        
+
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
         ->assertJsonStructure([
             'message',
@@ -281,7 +281,6 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-
         $responseCreateDataset->assertStatus(201);
         $datasetId2 = $responseCreateDataset['data'];
 

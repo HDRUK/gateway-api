@@ -278,7 +278,6 @@ class TechnicalObjectDataStore implements ShouldQueue
     private function postToTermExtractionDirector(string $dataset): void
     {
         try {
-
             $response = Http::withBody(
                 $dataset,
                 'application/json'
@@ -286,7 +285,6 @@ class TechnicalObjectDataStore implements ShouldQueue
 
             if (array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $n) {
-
                     $named_entities = NamedEntities::create([
                         'name' => $n,
                     ]);

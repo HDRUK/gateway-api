@@ -167,7 +167,6 @@ class Mauro {
     public function getDatasetByIdMetadata(string $datasetId): array
     {
         $url = env('MAURO_API_URL');
-
         $url .= '/dataModels/' . $datasetId . '/metadata?max=1000';
 
         try {
@@ -813,7 +812,7 @@ class Mauro {
             ])
             ->acceptJson()
             ->put($url, $payload);
-            
+
             return $response->json();
 
         } catch (Exception $e) {
