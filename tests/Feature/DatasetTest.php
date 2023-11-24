@@ -329,13 +329,13 @@ class DatasetTest extends TestCase
         /* 
         * Test filtering by dataset title and status
         */
-        $response = $this->json('GET', self::TEST_URL_DATASET . 
-            '?filterTitle=HDR&filterStatus=DRAFT',
+        $responseStatus = $this->json('GET', self::TEST_URL_DATASET . 
+            '?filter_title=HDR&filter_status=DRAFT',
             [], $this->header
         );
-        $response->assertStatus(200);
+        $responseStatus->assertStatus(200);
         //should find the two draft datasets, whose titles both contain HDR
-        $this->assertCount(2,$response['data']);
+        $this->assertCount(2,$responseStatus['data']);
 
         /* 
         * Sort so that the newest dataset is first in the list
@@ -408,6 +408,12 @@ class DatasetTest extends TestCase
         $response->assertStatus(400);
 
 
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+            '?filter_title=HDR&filter_status=DRAFT',
+            [], $this->header
+        );
+
+
         for ($i = 1; $i <= 3; $i++) {
             // delete dataset
             $responseDeleteDataset = $this->json(
@@ -435,6 +441,7 @@ class DatasetTest extends TestCase
             ]);
             $responseDeleteTeam->assertStatus(200);
         }
+
     }
 
 
