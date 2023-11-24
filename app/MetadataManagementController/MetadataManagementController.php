@@ -209,7 +209,10 @@ class MetadataManagementController {
                 'description' => $dataset['summary']['description'],
                 'shortTitle' => $dataset['summary']['shortTitle'],
                 'title' => $dataset['summary']['title'],
-                'publisher_name' => $dataset['summary']['publisher']['publisherName'],
+                'publisherName' => $dataset['summary']['publisher']['publisherName'],
+                'startDate' => $dataset['provenance']['temporal']['startDate'],
+                'endDate' => $dataset['provenance']['temporal']['endDate'],
+                'physicalSampleAvailability' => $dataset['coverage']['physicalSampleAvailability'],
                 'named_entities' => $namedEntities
             ];
 
@@ -256,7 +259,10 @@ class MetadataManagementController {
                 'properties/summary/description',
                 'properties/summary/shortTitle',
                 'properties/summary/title',
-                'properties/summary/publisher/publisherName'
+                'properties/summary/publisher/publisherName',
+                'properties/provenance/temporal/startDate',
+                'properties/provenance/temporal/endDate',
+                'properties/coverage/physicalSampleAvailability'
             ];
             $toIndex = array();
             $toIndex['named_entities'] = $namedEntities;
