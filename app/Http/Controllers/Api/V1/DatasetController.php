@@ -34,7 +34,7 @@ class DatasetController extends Controller
      *    description="Get All Datasets",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="teamId",
+     *       name="team_id",
      *       in="query",
      *       description="team id",
      *       required=true,
@@ -66,7 +66,7 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="filterTitle",
+     *       name="filter_title",
      *       in="query",
      *       description="Three or more characters to filter dataset titles by",
      *       example="hdr",
@@ -76,7 +76,7 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="filterStatus",
+     *       name="filter_status",
      *       in="query",
      *       description="Dataset status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
      *       example="ACTIVE",
@@ -106,7 +106,7 @@ class DatasetController extends Controller
     {
 
         $teamId = $request->query('team_id',null);
-        $filterStatus = $request->query('filterStatus', null);
+        $filterStatus = $request->query('filter_status', null);
 
         $sort = $request->query('sort',"created:desc");   
         
@@ -169,7 +169,7 @@ class DatasetController extends Controller
 
 
         // filtering by title
-        $filterTitle = $request->query('filterTitle', null);
+        $filterTitle = $request->query('filter_title', null);
         if (!empty($filterTitle)) {
             $matches = array();
             // iterate through mauro field of each dataset
