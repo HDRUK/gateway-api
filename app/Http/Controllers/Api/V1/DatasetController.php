@@ -431,7 +431,7 @@ class DatasetController extends Controller
 
                 if (!empty($mauro)) {
 
-                    if($mauro['DataModel']['responseStatus'] != 201){
+                    if($mauro['DataModel']['responseStatus'] !== 201){
 
                         return response()->json([
                             'message' => 'Failed to create mauroDataModel',
