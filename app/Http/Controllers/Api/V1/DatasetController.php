@@ -446,7 +446,7 @@ class DatasetController extends Controller
                     $input['dataset']['metadata']['required']['gatewayId'] = strval($dId);
                     
                    
-                    
+
                     // Dispatch this potentially lengthy subset of data
                     // to a technical object data store job - API doesn't
                     // care if it exists or not. We leave that determination to

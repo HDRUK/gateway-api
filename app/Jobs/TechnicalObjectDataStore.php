@@ -91,38 +91,46 @@ class TechnicalObjectDataStore implements ShouldQueue
             /*
             * Calculate the 3 categories of DataClasses
             */
-            $classesToDelete = array_diff(array_column($mauroDataClasses, 'label'), 
-                                          array_column($data['structuralMetadata'], 'name'));
+            $classesToDelete = array_diff(
+                array_column($mauroDataClasses, 'label'), 
+                array_column($data['structuralMetadata'], 'name')
+            );
 
-            $classesToAdd = array_diff(array_column($data['structuralMetadata'], 'name'), 
-                                       array_column($mauroDataClasses, 'label'));
+            $classesToAdd = array_diff(
+                array_column($data['structuralMetadata'], 'name'), 
+                array_column($mauroDataClasses, 'label')
+            );
             
-            $classesToCheck = array_intersect(array_column($data['structuralMetadata'], 'name'), 
-                                              array_column($mauroDataClasses, 'label'));
+            $classesToCheck = array_intersect(
+                array_column($data['structuralMetadata'], 'name'), 
+                array_column($mauroDataClasses, 'label')
+            );
 
             /*
             * Handle the 3 categories appropriately
             */
 
             foreach ($classesToDelete as $className){
-                $classesToDeleteContent = $this->getByLabel($className, 
-                                                            $mauroDataClasses);
+                $classesToDeleteContent = $this->getBy($className, $mauroDataClasses, 'label');
                 if ($classesToDeleteContent) {
-                    $mauroDeleteResponse = Mauro::deleteDataClass($classesToDeleteContent['id'], 
-                                                                  $this->datasetId);
+                    $mauroDeleteResponse = Mauro::deleteDataClass(
+                        $classesToDeleteContent['id'], 
+                        $this->datasetId
+                    );
                 }
             }
 
             foreach ($classesToAdd as $className){
                 // Find the correct entry from the incoming request
-                $classesToAddContent = $this->getByName($className, 
-                                                        $data['structuralMetadata']);
+                $classesToAddContent = $this->getBy($className, $data['structuralMetadata'], 'name');
                 
                 // Create the Mauro DataClass, and its child DataElements
                 if ($classesToAddContent) {
-                    $mauroCreateResponse = Mauro::createDataClass($this->datasetId, 
-                                                                  $classesToAddContent['name'], 
-                                                                  $classesToAddContent['description']);
+                    $mauroCreateResponse = Mauro::createDataClass(
+                        $this->datasetId, 
+                        $classesToAddContent['name'], 
+                        $classesToAddContent['description']
+                    );
 
                     foreach ($classesToAddContent['columns'] as $element) {
                         Mauro::createDataElement(
@@ -138,40 +146,50 @@ class TechnicalObjectDataStore implements ShouldQueue
 
             foreach ($classesToCheck as $className){
                 // Get the appropriate entry from the incoming request
-                $classToCheckContent = $this->getByName($className, 
-                                                        $data['structuralMetadata']);
+                $classToCheckContent = $this->getBy($className, $data['structuralMetadata'], 'name');
 
                 // Get the appropriate entry from the Mauro list
-                $mauroClassId = $this->getByLabel($className, $mauroDataClasses)['id'];
+                $mauroClassId = $this->getBy($className, $mauroDataClasses, 'label')['id'];
                 
                 if ($classToCheckContent) {
                     // Update the DataClass in Mauro - in case the details have been modified
-                    $mauroUpdateResponse = Mauro::updateDataClass($this->datasetId, 
-                                                                  $classToCheckContent['name'], 
-                                                                  $classToCheckContent['description'], 
-                                                                  $mauroClassId);
+                    $mauroUpdateResponse = Mauro::updateDataClass(
+                        $this->datasetId, 
+                        $classToCheckContent['name'], 
+                        $classToCheckContent['description'], 
+                        $mauroClassId
+                    );
                     
-                    $mauroDataElements = Mauro::getAllDataElements($this->datasetId, 
-                                                                   $mauroClassId)['items'];
+                    $mauroDataElements = Mauro::getAllDataElements(
+                        $this->datasetId, 
+                        $mauroClassId
+                    )['items'];
 
                     /*
                     * Calculate the 3 categories of DataElements to be handled
                     */
-                    $elementsToAdd = array_diff(array_column($classToCheckContent['columns'], 'name'), 
-                                                array_column($mauroDataElements, 'label'));
+                    $elementsToAdd = array_diff(
+                        array_column($classToCheckContent['columns'], 'name'), 
+                        array_column($mauroDataElements, 'label')
+                    );
 
-                    $elementsToDelete = array_diff(array_column($mauroDataElements, 'label'), 
-                                                   array_column($classToCheckContent['columns'], 'name'));
+                    $elementsToDelete = array_diff(
+                        array_column($mauroDataElements, 'label'), 
+                        array_column($classToCheckContent['columns'], 'name')
+                    );
 
-                    $elementsToCheck = array_intersect(array_column($mauroDataElements, 'label'), 
-                                                       array_column($classToCheckContent['columns'], 'name'));
+                    $elementsToCheck = array_intersect(
+                        array_column($mauroDataElements, 'label'), 
+                        array_column($classToCheckContent['columns'], 'name')
+                    );
 
                     foreach ($elementsToAdd as $elementName){
                         // Find the correct entry from the incoming request
-                        $elementToAddContent = $this->getByName($elementName, 
-                                                                $this->getByName($className, 
-                                                                                 $data['structuralMetadata'])['columns']
-                                                                );
+                        $elementToAddContent = $this->getBy(
+                            $elementName, 
+                            $this->getBy($className, $data['structuralMetadata'], 'name')['columns'],
+                            'name'
+                        );
                                                             
                         if ($elementToAddContent) {
                             $mauroCreateElementResponse = Mauro::createDataElement(
@@ -186,33 +204,36 @@ class TechnicalObjectDataStore implements ShouldQueue
 
                     // Handle the "check" DataElements which are present in both the incoming request and the existing Mauro DataClass.
                     foreach ($elementsToCheck as $elementName){
-                        $elementToCheckContent = $this->getByName($elementName, 
-                                                                  $this->getByName($className, 
-                                                                                   $data['structuralMetadata'])['columns']
-                                                                  );
-                        $mauroElementId = $this->getByLabel($elementName, $mauroDataElements)['id'];
+                        $elementToCheckContent = $this->getBy(
+                            $elementName, 
+                            $this->getBy($className, $data['structuralMetadata'], 'name')['columns'],
+                            'name'
+                        );
+                        $mauroElementId = $this->getBy($elementName, $mauroDataElements, 'label')['id'];
 
                         if ($elementToCheckContent) {
-                            $mauroUpdateResponse = Mauro::updateDataElement($this->datasetId, 
-                                                                            $elementToCheckContent['name'], 
-                                                                            $elementToCheckContent['description'], 
-                                                                            $mauroClassId, 
-                                                                            $mauroElementId);
+                            $mauroUpdateResponse = Mauro::updateDataElement(
+                                $this->datasetId, 
+                                $elementToCheckContent['name'], 
+                                $elementToCheckContent['description'], 
+                                $mauroClassId, 
+                                $mauroElementId
+                            );
                          }
 
-                         $allDataElements = Mauro::getAllDataElements($this->datasetId, 
-                                                                      $mauroClassId);
+                         $allDataElements = Mauro::getAllDataElements($this->datasetId, $mauroClassId);
                     }
 
                     // Handle the "delete" DataElements which are present in the existing Mauro DataClass but not in the incoming request.
                     foreach ($elementsToDelete as $elementName){
-                        $elementToDeleteContent = $this->getByLabel($elementName, 
-                                                                    $mauroDataElements);
+                        $elementToDeleteContent = $this->getBy($elementName, $mauroDataElements, 'label');
 
                         if ($elementToDeleteContent) {
-                            $mauroDeleteResponse = Mauro::deleteDataElement($elementToDeleteContent['id'],
-                                                                            $this->datasetId, 
-                                                                            $mauroClassId);
+                            $mauroDeleteResponse = Mauro::deleteDataElement(
+                                $elementToDeleteContent['id'],
+                                $this->datasetId, 
+                                $mauroClassId
+                            );
                         }
                     }
                 }
@@ -290,43 +311,24 @@ class TechnicalObjectDataStore implements ShouldQueue
     }
 
     /*
-    * Returns whether the supplied $array contains the supplied $name in the element 'name'
+    * Returns the first element of $array where $array[element][$key] === $className.
+    * Returns null if not found.
     */
-    private function containsName(string $name, array $array) {
-        if (!array_key_exists('name', $array)) {
-            return false;
-        }
-        return $array['name'] == $name;
-    }
-
-    private function getByName(string $className, array $array) {
+    private function getBy(string $className, array $array, string $key): ?array {
         // Get the appropriate entry from the Mauro list
         foreach ($array as $value) {
-            if ($this->containsName($className, $value)) {
+            if ($this->contains($value, $key, $className)) {
                 return $value;
             }
         }
         return null;
     }
 
-     /*
-    * Returns whether the supplied $array contains the supplied $name in the element 'name'
+    /*
+    * Returns whether the supplied array satisfies ($array[$key] === $value)
     */
-    private function containsLabel(string $label, array $array) {
-        if (!array_key_exists('label', $array)) {
-            return false;
-        }
-        return $array['label'] == $label;
-    }
-
-    private function getByLabel(string $className, array $array) {
-        // Get the appropriate entry from the Mauro list
-        foreach ($array as $value) {
-            if ($this->containsLabel($className, $value)) {
-                return $value;
-            }
-        }
-        return null;
+    private function contains(array $array, string $key, string $value): bool {
+        return array_key_exists($key, $array) ? ($array[$key] === $value) : false;
     }
 
 }
