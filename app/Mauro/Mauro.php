@@ -551,9 +551,10 @@ class Mauro {
     /**
      * Update a DataClass object within Mauro to store structural metadata against a model
      * 
-     * @param string $parentModelId     Represents the model which owns this new data class
+     * @param string $parentModelId     Represents the model which owns this data class
      * @param string $name              Represents the name of this data class
      * @param string $description       Represents the description of this data class
+     * @param string $dataClassId       Represents the data class to update
      * 
      * @return array                    Returns entire response from Mauro Data Mapper as an array
      */
@@ -610,7 +611,7 @@ class Mauro {
      * @param string $id            The ID of the DataClass to be deleted
      * @param string $parentModelId The ID of the parent DataModel to delete this DataClass from
      * 
-     * @return bool                Returns entire response from Mauro Data Mapper as an boolean value
+     * @return bool                 Returns whether Mauro Data Mapper deleted an element as a boolean value
      */
     public function deleteDataClass(string $id, string $parentModelId): bool
     {
@@ -668,6 +669,39 @@ class Mauro {
         }
     }
 
+     /**
+     * Update a DataElement object within Mauro to store structural metadata against a model
+     * 
+     * @param string $parentModelId     Represents the model which owns this new data class
+     * @param string $name              Represents the name of this data class
+     * @param string $description       Represents the description of this data class
+     * @param string $dataClassId       Represents the data class which owns this data element
+     * @param string $dataElementId     Represents the data element to update
+     * 
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     */
+    public function updateDataElement(string $parentModelId, string $name, string $description, string $dataClassId, string $dataElementId): array
+    {
+        try {
+            $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses/' . $dataClassId . '/dataElements/' . $dataElementId;
+
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+                ->acceptJson()
+                ->put($url, [
+                    'label' => $name,
+                    'description' => $description,
+                    'model' => $parentModelId,
+                    'dataClass' => $dataClassId,
+                    'domainType' => 'DataElement',
+                ]);
+
+            return $response->json();
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
     /**
      * Get All DataElements object within Mauro against an existing model and data class
      * 
@@ -700,9 +734,9 @@ class Mauro {
      * @param string $parentModelId         The ID of the parent DataModel to delete this DataElement from
      * @param string $parentDataClassId     The ID of the parent DataClass to delete this DataElement from
      * 
-     * @return array                        Returns entire response from Mauro Data Mapper as an array
+     * @return bool                         Returns whether Mauro Data Mapper deleted an element as a bool
      */
-    public function deleteDataElement(string $id, string $parentModelId, string $parentDataClassId): array
+    public function deleteDataElement(string $id, string $parentModelId, string $parentDataClassId): bool
     {
        $postUrl = env('MAURO_API_URL');
        $postUrl .= '/dataModels/' . $parentModelId . '/dataClasses/' . $parentDataClassId . '/dataElements/' . $id;
@@ -712,13 +746,38 @@ class Mauro {
                 'apiKey' => env('MAURO_APP_KEY'),
             ])
             ->acceptJson()
-            ->post($postUrl);
+            ->delete($postUrl);
 
-            return $response->json();
+            return ($response->status() === 204);
 
        } catch (Exception $e) {
             throw new MauroServiceException($e->getMessage());
        }
+    }
+
+    /**
+     * Get All DataClasses and DataElements object within a DataModel
+     * 
+     * @param string $dataModelId       Represents the data model to query
+     * 
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     */
+    public function getDataModelHierarchy(string $dataModelId): array
+    {
+        try {
+            $url = env('MAURO_API_URL') . '/dataModels/' . $dataModelId . '/hierarchy';
+
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+            ->acceptJson()
+            ->get($url);
+
+            return $response->json();
+
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
     }
 
     /**
