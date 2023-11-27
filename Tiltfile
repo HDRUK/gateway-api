@@ -66,6 +66,7 @@ docker_build(
         run('php artisan route:clear'),
         run('php artisan cache:clear'),
         run('php artisan config:clear', trigger='./.env'),
+        run('php artisan l5-swagger:generate'),
     ]
 )
 
