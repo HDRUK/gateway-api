@@ -436,7 +436,7 @@ class TeamUserController extends Controller
             }
             $userAdminsString.= '<ul>';
             $replacements = [
-                '[[USER_FIRST_NAME]]' => $user['firstname'],
+                '[[USER_FIRSTNAME]]' => $user['firstname'],
                 '[[ASSIGNER_NAME]]' => $jwtUser['name'],
                 '[[TEAM_NAME]]' => $team['name'],
                 '[[CURRENT_YEAR]]' => date("Y"),
