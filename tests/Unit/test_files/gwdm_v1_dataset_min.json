@@ -106,11 +106,29 @@
         "structuralMetadata": [
             {
                 "name": "table1",
-                "description": "this is table 1",
+                "description": "this is table 1 - description to be changed",
                 "columns": [
                     {
-                        "name": "column1",
-                        "description": "this is column1",
+                        "name": "column1-1",
+                        "description": "this is column1-1 - description to be changed",
+                        "dataType": "String",
+                        "sensitive": false
+                    },
+                    {
+                        "name": "column1-2",
+                        "description": "this is column1-2 - to be deleted",
+                        "dataType": "String",
+                        "sensitive": false
+                    }
+                ]
+            },
+            {
+                "name": "table2",
+                "description": "this is table 2 - to be deleted",
+                "columns": [
+                    {
+                        "name": "column2-1",
+                        "description": "this is column2-1 - to be automatically deleted",
                         "dataType": "String",
                         "sensitive": false
                     }

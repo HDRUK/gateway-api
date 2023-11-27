@@ -784,6 +784,173 @@ class DatasetTest extends TestCase
         $responseDeleteUser->assertStatus(200);
     }
 
+    /**
+     * Create/update/delete Dataset with success
+     * 
+     * @return void
+     */
+    public function test_create_update_delete_dataset_with_success(): void
+    {
+        Http::fake([
+            'ted*' => Http::response(
+                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
+                201,
+                ['application/json']
+            )
+        ]);
+        
+        // Mock the MMC getElasticClient method to return the mock client
+        // makePartial so other MMC methods are not mocked
+        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
+        MMC::makePartial();
+
+        // create team
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => 'some@email.com',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => 1001,
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();  
+        $teamId = $contentCreateTeam['data'];
+
+        // create user
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+        $responseCreateUser->assertStatus(201);
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        $userId = $contentCreateUser['data'];
+
+        // create dataset
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'label' => $labelDataset,
+                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                'dataset' => $this->dataset,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(201);
+        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
+        $datasetId = $contentCreateDataset['data'];
+
+        // update dataset
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET . '/' . $datasetId ,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'label' => $labelDataset,
+                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                'dataset' => $this->datasetUpdate,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header,
+        );
+        $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
+        $responseUpdateDataset->assertStatus(200);
+
+        // permanent delete dataset
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset->assertStatus(200);
+
+        // delete team
+        $responseDeleteTeam = $this->json('DELETE',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteTeam->assertStatus(200);
+
+        // delete user
+        $responseDeleteUser = $this->json(
+            'DELETE',
+            self::TEST_URL_USER . '/' . $userId,
+            [],
+            $this->header
+        );
+        $responseDeleteUser->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteUser->assertStatus(200);
+    }
+
     public function test_create_dataset_fails_with_invalid_origin(): void
     {
         Http::fake([

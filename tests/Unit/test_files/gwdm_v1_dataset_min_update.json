@@ -106,41 +106,29 @@
         "structuralMetadata": [
             {
                 "name": "table1",
-                "description": "this is table 1",
+                "description": "this is table 1 - with a changed description",
                 "columns": [
                     {
-                        "name": "column11",
-                        "description": "this is column11",
+                        "name": "column1-1",
+                        "description": "this is column1-1 - with a changed description",
                         "dataType": "String",
                         "sensitive": false
                     },
                     {
-                        "name": "column21",
-                        "description": "this is column21",
+                        "name": "column1-3",
+                        "description": "this is column1-3 - to be added",
                         "dataType": "String",
                         "sensitive": false
                     }
                 ]
             },
             {
-                "name": "table2",
-                "description": "this is table 2",
+                "name": "table3",
+                "description": "this is table 3 - to be added",
                 "columns": [
                     {
-                        "name": "column21",
-                        "description": "this is column21",
-                        "dataType": "String",
-                        "sensitive": false
-                    },
-                    {
-                        "name": "column22",
-                        "description": "this is column22",
-                        "dataType": "String",
-                        "sensitive": false
-                    },
-                    {
-                        "name": "column23",
-                        "description": "this is column23",
+                        "name": "column3-1",
+                        "description": "this is column3-1 - to be added",
                         "dataType": "String",
                         "sensitive": false
                     }

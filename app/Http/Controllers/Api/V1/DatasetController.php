@@ -472,7 +472,8 @@ class DatasetController extends Controller
                     // and not found `extracted_terms`
                     TechnicalObjectDataStore::dispatch(
                         (string) $mauroDatasetId,
-                        base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6))
+                        base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6)),
+                        false
                     );
 
                     // Only finalise when:
@@ -609,7 +610,8 @@ class DatasetController extends Controller
                 // the service itself.
                 TechnicalObjectDataStore::dispatch(
                     $newDatasetId,
-                    base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6))
+                    base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6)),
+                    true
                 );
 
                 if ($dataset->shouldFinalise()) {
@@ -672,7 +674,8 @@ class DatasetController extends Controller
                     // the service itself.
                     TechnicalObjectDataStore::dispatch(
                         $dId,
-                        base64_encode(gzcompress(gzencode(json_encode($response)), 6))
+                        base64_encode(gzcompress(gzencode(json_encode($response)), 6)),
+                        true
                     );
 
                     if ($dataset->shouldFinalise()) {
