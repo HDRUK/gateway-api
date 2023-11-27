@@ -112,24 +112,20 @@ class EmailTemplatesSeeder extends Seeder
                             Dear [[USER_FIRSTNAME]],
                         </mj-text>
                         <mj-text line-height="20px">
-                        
-                        [[ASSIGNER_NAME]] has granted you Team Administrator permissions for [[TEAM_NAME]] on the Gateway. 
-                    </mj-text>
-                    
-                    <mj-text>
-                            You can now:
-                            <ul>
-                                <li style="line-height:20px;height:auto;">
-                                Add, remove and change the roles of other members of [[TEAM_NAME]].
-                                </li>
-                                <li style="line-height:20px;height:auto;">
-                                Manage team notification preferences.
-                            </li>
-                            </ul>
+                            [[ASSIGNER_NAME]] has granted you Team Administrator permissions for [[TEAM_NAME]] on the Gateway. 
                         </mj-text>
-                        
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">Manage team</mj-button>
-                        
+                        <mj-text>
+                                You can now:
+                                <ul>
+                                    <li style="line-height:20px;height:auto;">
+                                        Add, remove and change the roles of other members of [[TEAM_NAME]].
+                                    </li>
+                                    <li style="line-height:20px;height:auto;">
+                                        Manage team notification preferences.
+                                    </li>
+                                </ul>
+                            </mj-text>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">Manage team</mj-button>
                     </mj-column>
                 </mj-section>
 
