@@ -349,10 +349,10 @@ class EmailTemplatesSeeder extends Seeder
                                         Manage enquiries and data access requests through the Gateway.
                                     </li>
                                     <li style="line-height:20px;height:auto;">
-                                        You can create and assign workflows, process applications, and communicate with applicants through the Gateway.
+                                        Create and assign workflows, process applications, and communicate with applicants through the Gateway.
                                     </li>
                                     <li style="line-height:20px;height:auto;">
-                                        You can add and remove Data Access Request Managers and Data Access Request Reviewer permissions to other existing team members.
+                                       Add and remove Data Access Request Managers and Data Access Request Reviewer permissions to other existing team members.
                                     </li>
                                 </ul>
                             </mj-text>
