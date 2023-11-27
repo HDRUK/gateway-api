@@ -267,7 +267,7 @@ class DatasetTest extends TestCase
 
         //create a 2nd one
         $labelDataset2 = 'ABC DATASET';
-        $responseCreateDataset = $this->json(
+        $responseCreateDataset2 = $this->json(
             'POST',
             self::TEST_URL_DATASET,
             [
@@ -281,8 +281,8 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-        $responseCreateDataset->assertStatus(201);
-        $datasetId2 = $responseCreateDataset['data'];
+        $responseCreateDataset2->assertStatus(201);
+        $datasetId2 = $responseCreateDataset2['data'];
 
         //create a 3rd one which is owned by the 2nd team
         $labelDataset3 = 'Other Team DATASET';
@@ -300,8 +300,8 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-        $responseCreateDataset->assertStatus(201);
-        $datasetId3 = $responseCreateDataset['data'];
+        $responseCreateDataset3->assertStatus(201);
+        $datasetId3 = $responseCreateDataset3['data'];
 
 
         $response = $this->json('GET', self::TEST_URL_DATASET,
@@ -325,53 +325,24 @@ class DatasetTest extends TestCase
             'total',
         ]);
 
-        /* 
-        * Test filtering just the id,label from the endpoint
-        */
-        $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                       '?team_id=' . $teamId1 . 
-                                       '&fields=id,label,team_id',
-                                       [], $this->header
-        );
-        $response->assertStatus(200);
-
-        //should find the two datasets (remove the one dataset that is not teamId)
-        $this->assertCount(2,$response['data']);
-
-        $allTeamIds = array_unique(array_column($response['data'], 'team_id'));
-        //additionally check all teamIds are the same
-        $this->assertTrue(count($allTeamIds) === 1);
-        //additionally check this unique teamId is equal to the filtered teamId
-        $this->assertTrue($allTeamIds[0] === $teamId1);
-
-        $response->assertJsonStructure([
-            'data' => [
-                '*' => [
-                    'id',
-                    'label',
-                    'team_id'
-                ]
-            ]
-        ]);
-
 
         /* 
         * Test filtering by dataset title and status
         */
-        $response = $this->json('GET', self::TEST_URL_DATASET . 
-            '?filterTitle=HDR&filterStatus=DRAFT',
+        $responseStatus = $this->json('GET', self::TEST_URL_DATASET . 
+            '?filter_title=HDR&filter_status=DRAFT',
             [], $this->header
         );
-        $response->assertStatus(200);
+        $responseStatus->assertStatus(200);
         //should find the two draft datasets, whose titles both contain HDR
-        $this->assertCount(2,$response['data']);
+        $this->assertCount(2,$responseStatus['data']);
 
         /* 
         * Sort so that the newest dataset is first in the list
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
                                         '?team_id=' . $teamId1 . 
-                                        '&sort=created',
+                                        '&sort=created:desc',
                                         [], $this->header
         );
         $first = Carbon::parse($response['data'][0]['created']);
@@ -384,7 +355,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
                                         '?team_id=' . $teamId1 . 
-                                        '&sort=created&direction=asc',
+                                        '&sort=created:asc',
                                         [], $this->header
         );
         $first = Carbon::parse($response['data'][0]['created']);
@@ -397,7 +368,7 @@ class DatasetTest extends TestCase
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
                                         '?team_id=' . $teamId1 . 
-                                        '&sort=label&direction=asc',
+                                        '&sort=label:asc',
                                         [], $this->header
         );
         $this->assertTrue($response['data'][0]['label'] === $labelDataset2);
@@ -407,10 +378,22 @@ class DatasetTest extends TestCase
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
                                         '?team_id=' . $teamId1 . 
-                                        '&sort=label',
+                                        '&sort=label:desc',
                                         [], $this->header
         );
         $this->assertTrue($response['data'][0]['label'] === $labelDataset1);
+
+
+        /* 
+        * Sort Z-A on the metadata title
+        */
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+                                        '?team_id=' . $teamId1 . 
+                                        '&sort=properties/summary/title:desc',
+                                        [], $this->header
+        );
+        $this->assertTrue($response['data'][0]['label'] === $labelDataset1);
+
 
 
 
@@ -419,20 +402,17 @@ class DatasetTest extends TestCase
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
                                         '?team_id=' . $teamId1 . 
-                                        '&sort=created&direction=blah',
+                                        '&sort=created:blah',
                                         [], $this->header
         );
         $response->assertStatus(400);
 
+
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId1 . 
-                                        '&decode_metadata=true',
-                                        [], $this->header
+            '?filter_title=HDR&filter_status=DRAFT',
+            [], $this->header
         );
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'data'
-        ]);
+
 
         for ($i = 1; $i <= 3; $i++) {
             // delete dataset
@@ -461,6 +441,7 @@ class DatasetTest extends TestCase
             ]);
             $responseDeleteTeam->assertStatus(200);
         }
+
     }
 
 

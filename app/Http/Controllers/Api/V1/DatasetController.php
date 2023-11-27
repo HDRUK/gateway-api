@@ -34,7 +34,7 @@ class DatasetController extends Controller
      *    description="Get All Datasets",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="teamId",
+     *       name="team_id",
      *       in="query",
      *       description="team id",
      *       required=true,
@@ -42,16 +42,6 @@ class DatasetController extends Controller
      *       @OA\Schema(
      *          type="integer",
      *          description="team id",
-     *       ),
-     *    ),
-     *   @OA\Parameter(
-     *       name="fields",
-     *       in="query",
-     *       description="Comma-separated list of fields to include in the response",
-     *       example="label,created",
-     *       @OA\Schema(
-     *          type="string",
-     *          description="Comma-separated list of fields",
      *       ),
      *    ),
      *    @OA\Parameter(
@@ -76,17 +66,7 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="decode_metadata",
-     *       in="query",
-     *       description="Decode the 'dataset' metadata field (default: false)",
-     *       example="true",
-     *       @OA\Schema(
-     *          type="boolean",
-     *          description="Decode the 'dataset' metadata field",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="filterTitle",
+     *       name="filter_title",
      *       in="query",
      *       description="Three or more characters to filter dataset titles by",
      *       example="hdr",
@@ -96,7 +76,7 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="filterStatus",
+     *       name="filter_status",
      *       in="query",
      *       description="Dataset status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
      *       example="ACTIVE",
@@ -125,34 +105,29 @@ class DatasetController extends Controller
     public function index(Request $request): JsonResponse
     {
 
-        $selectedFields = explode(',', $request->query('fields', '*'));
+        $teamId = $request->query('team_id',null);
+        $filterStatus = $request->query('filter_status', null);
 
-        $sortField = $request->query('sort', 'created'); // Default to 'created'
-        $sortDirection = $request->query('direction', 'desc'); // Default to do the most recent first
-        $allFields = collect(Dataset::first())->keys()->toArray();
-  
-        if(count($allFields) > 0 && !in_array($sortField, $allFields)){
-            //if the field to be sorted is not a field in the model, then return a bad request
-            return response()->json([
-                    "message" => "Sort is not a valid field to sort on: " . 
-                                implode(',',$allFields) . 
-                                '. Not "' . $sortField .'"'
-                    ],400);                          
-        }
-        if ($selectedFields !== ['*']){
-            $invalidFields = array_diff($selectedFields, $allFields);
-            if (!empty($invalidFields)) {
-                // If selected fields are not equal to '*' and contain invalid fields
-                // return a bad request
+        $sort = $request->query('sort',"created:desc");   
+        
+        $tmp = explode(":", $sort);
+        $sortField = $tmp[0];
+        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+        $doSortFromMauro = str_contains($sortField,"properties/");
+
+        if( $doSortFromMauro === false) {
+            $allFields = collect(Dataset::first())->keys()->toArray();
+            if(count($allFields) > 0 && !in_array($sortField, $allFields)){
+                //if the field to be sorted is not a field in the model, then return a bad request
                 return response()->json([
-                        "message" => "Invalid fields requested: ".
-                                     implode(",",$invalidFields)
-                        ],400);
-                }
-    
+                        "message" => "Sorting on '".$sortField."' is not a valid field to sort on" 
+                        ],400);                          
+            }
         }
 
         $validDirections = ['desc', 'asc'];
+
         if(!in_array($sortDirection, $validDirections)){
             //if the sort direction is not desc or asc then return a bad request
             return response()->json([
@@ -162,9 +137,10 @@ class DatasetController extends Controller
                     ],400);
         }
 
-        $teamId = $request->query('team_id',null);
-        $filterStatus = $request->query('filterStatus', null);
-        $datasets = Dataset::when($teamId, 
+        
+
+        //apply any initial filters to get initial datasets 
+        $initialDatasets = Dataset::when($teamId, 
                                     function ($query) use ($teamId){
                                         return $query->where('team_id', '=', $teamId);
                                     })
@@ -176,54 +152,86 @@ class DatasetController extends Controller
                                     function ($query) use ($filterStatus) {
                                         return $query->where('status', '=', $filterStatus);
                                     })
-                            ->orderBy($sortField, $sortDirection)
-                            ->select($selectedFields)
-                            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+                            ->select(['id','datasetid','updated'])->get();
 
-        $decodeMetadata = $request->query('decode_metadata', false); 
-        if($decodeMetadata){
-            //if the decoding of the metadata has been requested, perform this
-            foreach ($datasets as $dataset) {
-                $dataset['dataset'] = json_decode($dataset['dataset'] );
+
+        $mauro = [];
+        foreach ($initialDatasets as $dataset) {
+            if($dataset->datasetid){
+                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset->datasetid);
+                $mauro[$dataset->id] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
+            }
+            else{
+                $mauro[$dataset->id] = [];
             }
         }
 
-        foreach ($datasets as $dataset) {
-            if ($dataset->datasetid) {
-                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
-                $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
-            } else {
-                $dataset['mauro'] = [];
-            }
-        }
+
 
         // filtering by title
-        $filterTitle = $request->query('filterTitle', null);
+        $filterTitle = $request->query('filter_title', null);
         if (!empty($filterTitle)) {
             $matches = array();
             // iterate through mauro field of each dataset
-            foreach ($datasets as $dataset) {
-                foreach ($dataset['mauro'] as $field) {
+            foreach ($initialDatasets as $dataset) {
+                foreach ($mauro[$dataset->id] as $field) {
                     // find the title field in mauro data
                     if ($field['key'] === 'properties/summary/title') {
                         // if title matches filter, store the dataset id and mauro field
                         if (str_contains($field['value'], $filterTitle)) {
-                            $matches[$dataset['id']] = $dataset['mauro'];
+                            //$matches[$dataset['id']] = $dataset['mauro'];
+                            $matches[] = $dataset->id;
                         }
                         break(1);
                     }
                 }
             }
-            // perform query for the matching datasets and reattach the mauro field
-            // rather than refetching it from mauro
-            $filteredDatasets = Dataset::whereIn('id', array_keys($matches))
-                ->orderBy($sortField, $sortDirection)
-                ->select($selectedFields)
+        }
+        else{
+            //otherwise select all the IDs originals fetched
+            $matches = array_column($initialDatasets->toArray(),'id');
+        }
+
+
+        // perform query for the matching datasets and reattach the mauro field
+        // rather than refetching it from mauro
+        // can now do ordering and pagination
+        $datasets = Dataset::whereIn('id', $matches)
+                ->when($doSortFromMauro===false,
+                        function ($query) use ($sortField, $sortDirection) {
+                            return $query->orderBy($sortField, $sortDirection);
+                        })
                 ->paginate(Config::get('constants.per_page'), ['*'], 'page');
-            foreach ($filteredDatasets as $filteredDataset) {
-                $filteredDataset['mauro'] = $matches[$filteredDataset['id']];
+
+        foreach ($datasets as $dataset) {
+            $dataset['mauro'] = $mauro[$dataset->id];
+        }
+           
+
+        if($doSortFromMauro) {
+            //do sorting on mauro fields 
+            $callBackSort = function ($dataset) use ($sortField) {
+                $title = '';
+                foreach ($dataset['mauro'] as $item) {
+                    if ($item['key'] === $sortField) {
+                        $title = $item['value'];
+                        break;
+                    }
+                }
+                return $title;
+            };
+
+            if($sortDirection === 'asc'){
+                $sortedDatasets = $datasets->sortBy($callBackSort);
             }
-            return response()->json($filteredDatasets);
+            else{
+                $sortedDatasets = $datasets->sortByDesc($callBackSort);
+            }
+            $sortedDatasets = $sortedDatasets->makeHidden(['dataset'])->values();
+
+            //https://stackoverflow.com/questions/53384956/how-to-paginate-and-sort-results-in-laravel
+            $datasets->setCollection($sortedDatasets);
+
         }
 
         return response()->json(
@@ -414,6 +422,7 @@ class DatasetController extends Controller
                 env('GWDM_CURRENT_VERSION')
             );
 
+
             if($traserResponse['wasTranslated']){
                 $input['metadata']['original_metadata'] = $input['dataset']['metadata'];
                 $input['dataset']['metadata'] = $traserResponse['metadata'];
@@ -421,6 +430,15 @@ class DatasetController extends Controller
                 $mauro = MMC::createMauroDataModel($user, $team, $input);
 
                 if (!empty($mauro)) {
+
+                    if($mauro['DataModel']['responseStatus'] !== 201){
+
+                        return response()->json([
+                            'message' => 'Failed to create mauroDataModel',
+                            'details' => $mauro['DataModel']['responseJson'],
+                        ]);
+                    }
+
                     $mauroDatasetId = (string) $mauro['DataModel']['responseJson']['id'];
 
                     $dataset = MMC::createDataset([
@@ -436,7 +454,7 @@ class DatasetController extends Controller
                         'pid' => (string) Str::uuid(),
                         'create_origin' => $input['create_origin'],
                         'status' => $input['status'],
-                    ]);
+                    ]);                    
                     $dId = $dataset->id; 
 
                     //overwrite whatever gatewayId has been set
@@ -445,7 +463,7 @@ class DatasetController extends Controller
                     //   e.g. revisions and versions? 
                     $input['dataset']['metadata']['required']['gatewayId'] = strval($dId);
                     
-                   
+
 
                     // Dispatch this potentially lengthy subset of data
                     // to a technical object data store job - API doesn't
