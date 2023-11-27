@@ -210,6 +210,13 @@ class TeamController extends Controller
                 env('MAURO_PARENT_FOLDER_ID')
             );
 
+            if(!array_key_exists('id', $mauroResponse)){
+                return response()->json([
+                    'message' => 'error creating folder in Mauro',
+                    'details' => $mauroResponse,
+                ], 400);
+            }
+
             $arrayTeam['mdm_folder_id'] = $mauroResponse['id'];
             $team = Team::create($arrayTeam);
 

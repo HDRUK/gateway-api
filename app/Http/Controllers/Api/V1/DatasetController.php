@@ -171,6 +171,7 @@ class DatasetController extends Controller
         // filtering by title
         $filterTitle = $request->query('filter_title', null);
         if (!empty($filterTitle)) {
+            $filterTitle = mb_strtolower($filterTitle);
             $matches = array();
             // iterate through mauro field of each dataset
             foreach ($initialDatasets as $dataset) {
@@ -178,7 +179,7 @@ class DatasetController extends Controller
                     // find the title field in mauro data
                     if ($field['key'] === 'properties/summary/title') {
                         // if title matches filter, store the dataset id and mauro field
-                        if (str_contains($field['value'], $filterTitle)) {
+                        if (str_contains(mb_strtolower($field['value']), $filterTitle)) {
                             //$matches[$dataset['id']] = $dataset['mauro'];
                             $matches[] = $dataset->id;
                         }
