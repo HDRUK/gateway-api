@@ -101,9 +101,7 @@ class EmailTemplatesSeeder extends Seeder
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
                         <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                        
-                        Congratulations! You’ve been granted the Team Administrator permissions for
-    [[TEAM_NAME]]>.
+                        Congratulations! You’ve been granted the Team Administrator permissions for [[TEAM_NAME]].
                     </mj-text>
                     </mj-column>
                 </mj-section>
@@ -179,15 +177,15 @@ class EmailTemplatesSeeder extends Seeder
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
                         <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                        Your Team Administrator permissions for [[TEAM_NAME]] have been removed.
-                    </mj-text>
+                            Your Team Administrator permissions for [[TEAM_NAME]] have been removed.
+                         </mj-text>
                     </mj-column>
                 </mj-section>
 
                 <mj-section>
                     <mj-column width="100%">
                         <mj-text  line-height="20px">
-                        Dear [[USER_FIRSTNAME]],
+                            Dear [[USER_FIRSTNAME]],
                         </mj-text>
                         <mj-text>
                             You have been removed as Team Administrator for [[TEAM_NAME]] on the Gateway.
@@ -197,11 +195,10 @@ class EmailTemplatesSeeder extends Seeder
                             <ul>
                                 <li style="line-height:20px;height:auto;">
                                     Add, remove and change the roles of other members of [[TEAM_NAME]]
-                            </li>
+                                </li>
                                 <li style="line-height:20px;height:auto;">
                                     Manage team notification preferences.
-                            </li>
-                            
+                                </li>
                             </ul>
                         </mj-text>
                         <mj-text line-height="20px">
@@ -255,10 +252,8 @@ class EmailTemplatesSeeder extends Seeder
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
                         <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                    
-                        Congratulations! You’ve been granted the Data Access Request Manager permissions for [[TEAM_NAME]].
-                    
-                    </mj-text>
+                            Congratulations! You’ve been granted the Data Access Request Manager permissions for [[TEAM_NAME]].
+                        </mj-text>
                     </mj-column>
                 </mj-section>
 
@@ -268,18 +263,23 @@ class EmailTemplatesSeeder extends Seeder
                             Dear [[USER_FIRSTNAME]],
                         </mj-text>
                         <mj-text>
-                        
-                        [[ASSIGNER_NAME]] has granted you Data Access Request (DAR) Manager permissions for [[TEAM_NAME]] on the Gateway. 
+                            [[ASSIGNER_NAME]] has granted you Data Access Request (DAR) Manager permissions for [[TEAM_NAME]] on the Gateway. 
                         </mj-text>
                         <mj-text>
                             You can now:
                             <ul>
-                                <li style="line-height:20px;height:auto;">Manage enquiries and data access requests through the Gateway.</li>
-                                <li style="line-height:20px;height:auto;">You can create and assign workflows, process applications, and communicate with applicants through the Gateway.</li>
-                                <li style="line-height:20px;height:auto;">You can add and remove Data Access Request Managers and Data Access Request Reviewer permissions to other existing team members.</li>
+                                <li style="line-height:20px;height:auto;">
+                                    Manage enquiries and data access requests through the Gateway.
+                                </li>
+                                <li style="line-height:20px;height:auto;">
+                                    You can create and assign workflows, process applications, and communicate with applicants through the Gateway.
+                                </li>
+                                <li style="line-height:20px;height:auto;">
+                                    You can add and remove Data Access Request Managers and Data Access Request Reviewer permissions to other existing team members.
+                                </li>
                             </ul>
                         </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">View enquiries</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View enquiries</mj-button>
                         <mj-button css-class="main-section" background-color="#00ACCA" href="#">View data access requests</mj-button>
                     </mj-column>
                 </mj-section>
@@ -329,9 +329,7 @@ class EmailTemplatesSeeder extends Seeder
                     <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                         <mj-column width="100%">
                             <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                            
-                            Your Data Access Request Manager permissions for [[TEAM_USER]] have been removed.
-                            
+                                Your Data Access Request Manager permissions for [[TEAM_NAME]] have been removed.
                             </mj-text>
                         </mj-column>
                     </mj-section>
@@ -342,16 +340,20 @@ class EmailTemplatesSeeder extends Seeder
                                 Dear [[USER_FIRSTNAME]],
                             </mj-text>
                             <mj-text>
-                            
-                You have been removed as Data Access Request (DAR) Manager for [[TEAM_USER]] on the Gateway.
-                            
+                                You have been removed as Data Access Request (DAR) Manager for [[TEAM_NAME]] on the Gateway.
                             </mj-text>
                             <mj-text>
                                 You can no longer:
                                 <ul>
-                                    <li style="line-height:20px;height:auto;">Manage enquiries and data access requests through the Gateway.</li>
-                                    <li style="line-height:20px;height:auto;">You can create and assign workflows, process applications, and communicate with applicants through the Gateway.</li>
-                                    <li style="line-height:20px;height:auto;">You can add and remove Data Access Request Managers and Data Access Request Reviewer permissions to other existing team members.</li>
+                                    <li style="line-height:20px;height:auto;">
+                                        Manage enquiries and data access requests through the Gateway.
+                                    </li>
+                                    <li style="line-height:20px;height:auto;">
+                                        You can create and assign workflows, process applications, and communicate with applicants through the Gateway.
+                                    </li>
+                                    <li style="line-height:20px;height:auto;">
+                                        You can add and remove Data Access Request Managers and Data Access Request Reviewer permissions to other existing team members.
+                                    </li>
                                 </ul>
                             </mj-text>
                             <mj-text line-height="20px">
@@ -371,7 +373,6 @@ class EmailTemplatesSeeder extends Seeder
                             </mj-text>
                         </mj-column>
                     </mj-section>
-
                 </mj-body>
             </mjml>',
         ]);
@@ -405,8 +406,7 @@ class EmailTemplatesSeeder extends Seeder
                     <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                         <mj-column width="100%">
                             <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                            
-                            Congratulations! You’ve been granted the Data Access Request Reviewer permissions for [[TEAM_NAME]].
+                                Congratulations! You’ve been granted the Data Access Request Reviewer permissions for [[TEAM_NAME]].
                         </mj-text>
                             
                         </mj-column>
@@ -477,8 +477,8 @@ class EmailTemplatesSeeder extends Seeder
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
                         <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                        
-                        Your Data Access Request Reviewer permissions for [[TEAM_NAME]] have been removed.</mj-text>
+                            Your Data Access Request Reviewer permissions for [[TEAM_NAME]] have been removed.
+                        </mj-text>
                     </mj-column>
                 </mj-section>
 
@@ -488,12 +488,14 @@ class EmailTemplatesSeeder extends Seeder
                             Dear [[USER_FIRSTNAME]],
                         </mj-text>
                         <mj-text>
-                        You have been removed as Data Access Request (DAR) Reviewer Manager for [[TEAM_NAME]] on the Gateway.
+                            You have been removed as Data Access Request (DAR) Reviewer Manager for [[TEAM_NAME]] on the Gateway.
                         </mj-text>
                         <mj-text>
                             You can no longer:
                             <ul>
-                                <li style="line-height:20px;height:auto;">Review sections of a data access request assigned to you for [[TEAM_NAME]].</li>
+                                <li style="line-height:20px;height:auto;">
+                                    Review sections of a data access request assigned to you for [[TEAM_NAME]].
+                                </li>
                             </ul>
                         </mj-text>
                         <mj-text line-height="20px">
@@ -547,9 +549,8 @@ class EmailTemplatesSeeder extends Seeder
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
                         <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
-                    
-                        Congratulations! You’ve been granted the Developer permissions for [[TEAM_USER]].
-                    </mj-text>
+                            Congratulations! You’ve been granted the Developer permissions for [[TEAM_NAME]].
+                        </mj-text>
                     </mj-column>
                 </mj-section>
 
@@ -559,11 +560,14 @@ class EmailTemplatesSeeder extends Seeder
                             Dear [[USER_FIRSTNAME]],
                         </mj-text>
                         <mj-text line-height="20px">
-                        [[ASSIGNER_NAME]] has granted you Developer permissions for [[TEAM_NAME]] on the Gateway.  </mj-text>
-                    <mj-text>
+                            [[ASSIGNER_NAME]] has granted you Developer permissions for [[TEAM_NAME]] on the Gateway.  
+                        </mj-text>
+                        <mj-text>
                         You can now:
                         <ul>
-                            <li style="line-height:20px;height:auto;">Perform technical functions such as creating and managing api-keys and automated integrations.</li>
+                            <li style="line-height:20px;height:auto;">
+                                Perform technical functions such as creating and managing api-keys and automated integrations.
+                            </li>
                         </ul>
                     </mj-text>
                     <mj-button css-class="main-section" background-color="#00ACCA" href="#">Manage Apps</mj-button>
@@ -622,19 +626,18 @@ class EmailTemplatesSeeder extends Seeder
                     <mj-column width="100%">
                         <mj-text line-height="20px">
                             Dear [[USER_FIRSTNAME]],
-                            </mj-text>
-                        <mj-text line-height="20px">
-                            
-                    You have been removed as Developer for [[TEAM_NAME]] on the Gateway.
-                        
                         </mj-text>
                         <mj-text line-height="20px">
-                                                You can no longer:
-                        <ul>
-                            <li style="line-height:20px;height:auto;">
-                                Perform technical functions such as creating and managing api-keys and automated integrations.
-                            </li>
-                        </ul>
+                            You have been removed as Developer for [[TEAM_NAME]] on the Gateway.
+                        </mj-text>
+                        <mj-text line-height="20px">
+                            You can no longer:
+                            <ul>
+                                <li style="line-height:20px;height:auto;">
+                                    Perform technical functions such as creating and managing api-keys and automated integrations.
+                                </li>
+                            </ul>
+                        </mj-text>
                         <mj-text line-height="20px">
                             For more information, please contact a Team Admin for your team:<br>
                             [[LIST_TEAM_ADMINS]]
@@ -685,8 +688,9 @@ class EmailTemplatesSeeder extends Seeder
 
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! You’ve been granted the Metadata Editor permissions for
-    [[TEAM_NAME]].</mj-text>
+                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                            Congratulations! You’ve been granted the Metadata Editor permissions for [[TEAM_NAME]].
+                        </mj-text>
                     </mj-column>
                 </mj-section>
 
@@ -701,7 +705,9 @@ class EmailTemplatesSeeder extends Seeder
                         <mj-text>
                             You can now:
                             <ul>
-                                <li style="line-height:20px;height:auto;">Manually on-board and manage information about [[TEAM_NAME]] datasets.</li>
+                                <li style="line-height:20px;height:auto;">
+                                    Manually on-board and manage information about [[TEAM_NAME]] datasets.
+                                </li>
                             </ul>
                         </mj-text>
                         <mj-button css-class="main-section" background-color="#00ACCA" href="#">View datasets</mj-button>
@@ -751,7 +757,9 @@ class EmailTemplatesSeeder extends Seeder
 
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Your Metadata Editor permissions for [[TEAM_NAME]] have been removed.</mj-text>
+                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                            Your Metadata Editor permissions for [[TEAM_NAME]] have been removed.
+                        </mj-text>
                     </mj-column>
                 </mj-section>
 
@@ -766,8 +774,10 @@ class EmailTemplatesSeeder extends Seeder
                         <mj-text line-height="20px">
                             You can no longer:
                             <ul>
-                            <li style="line-height:20px;height:auto;">Manually on-board and manage information about [[TEAM_NAME]] datasets.</li>
-                        </ul>
+                                <li style="line-height:20px;height:auto;">
+                                    Manually on-board and manage information about [[TEAM_NAME]] datasets.
+                                </li>
+                            </ul>
                         </mj-text>
                         <mj-text line-height="20px">
                             For more information, please contact a Team Admin for your team:<br>
@@ -819,29 +829,28 @@ class EmailTemplatesSeeder extends Seeder
 
                     <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                         <mj-column width="100%">
-                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! You’ve been granted the Metadata Manager permissions for
-    [[TEAM_NAME]] </mj-text>
+                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                                Congratulations! You’ve been granted the Metadata Manager permissions for [[TEAM_NAME]] 
+                            </mj-text>
                         </mj-column>
                     </mj-section>
-
                     <mj-section>
                         <mj-column width="100%">
                             <mj-text line-height="20px">
                                 Dear [[USER_FIRSTNAME]],
-                                </mj-text>
+                            </mj-text>
                             <mj-text>
-
                                 [[ASSIGNER_NAME]]has granted you Metadata Manager permissions for [[TEAM_NAME]] on the Gateway. 
-                                
                             </mj-text>
                             <mj-text>
                                 You can now:
                                 <ul>
                                     <li style="line-height:20px;height:auto;">
-                                    Manually on-board and manage information about [[TEAM_NAME]] datasets. 
+                                        Manually on-board and manage information about [[TEAM_NAME]] datasets. 
                                     </li>
                                     <li style="line-height:20px;height:auto;">
-                                        Add and remove other team members with metadata editor permissions.</li>
+                                        Add and remove other team members with metadata editor permissions.
+                                    </li>
                                 </ul>
                             </mj-text>
                             <mj-button css-class="main-section" background-color="#00ACCA" href="#">View datasets</mj-button>
@@ -891,9 +900,9 @@ class EmailTemplatesSeeder extends Seeder
 
                     <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                         <mj-column width="100%">
-                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Your Metadata Manager permissions for
-    [[TEAM_NAME]]
-    have been removed.</mj-text>
+                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                                Your Metadata Manager permissions for [[TEAM_NAME]] have been removed.
+                            </mj-text>
                         </mj-column>
                     </mj-section>
 
@@ -903,14 +912,17 @@ class EmailTemplatesSeeder extends Seeder
                                 Dear [[USER_FIRSTNAME]],
                             </mj-text>
                             <mj-text>
-                            
                                 You have been removed as a Metadata Manager for [[TEAM_NAME]] on the Gateway.
                             </mj-text>
                             <mj-text>
                                 You can no longer:
                                 <ul>
-                                    <li style="line-height:20px;height:auto;">Manually onboard and manage information about [[TEAM_NAME]] datasets.</li>
-                                    <li style="line-height:20px;height:auto;">Add and remove other team members with editor permissions.</li>
+                                    <li style="line-height:20px;height:auto;">
+                                        Manually onboard and manage information about [[TEAM_NAME]] datasets.
+                                    </li>
+                                    <li style="line-height:20px;height:auto;">
+                                        Add and remove other team members with editor permissions.
+                                    </li>
                                 </ul>
                             </mj-text>
                             <mj-text line-height="20px">
