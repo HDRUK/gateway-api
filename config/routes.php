@@ -2340,4 +2340,15 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'get',
+        'path' => '/cohort_requests/export',
+        'methodController' => 'CohortRequestController@export',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
 ];

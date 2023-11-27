@@ -9,6 +9,7 @@ use App\Models\CohortRequest;
 use Illuminate\Support\Carbon;
 use App\Models\CohortRequestLog;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
@@ -539,6 +540,56 @@ class CohortRequestController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /*
+    *
+    */
+    public function export(Request $request): StreamedResponse
+    {
+        try {
+            $allCohortRequest = $this->index($request);
+            $allContent = json_decode($allCohortRequest->getContent(), true);
+
+            // callback function that writes to php://output
+            $response = new StreamedResponse(
+                function() use ($allContent) {
+
+                    // Open output stream
+                    $handle = fopen('php://output', 'w');
+                    
+                    $headerRow = ['User ID', 'Name', 'Email address', 'Organisation', 'Status', 'Date Requested', 'Date Actioned'];
+
+                    // Add CSV headers
+                    fputcsv($handle, $headerRow);
+            
+                    // add the given number of rows to the file.
+                    foreach ($allContent["data"] as $rowDetails) { 
+                        $row = [
+                            (string) $rowDetails['user']['id'],
+                            (string) $rowDetails['user']['name'],
+                            (string) $rowDetails['user']['email'],
+                            (string) $rowDetails['user']['organisation'],
+                            (string) $rowDetails['request_status'],
+                            (string) $rowDetails['created_at'],
+                            (string) $rowDetails['updated_at'],
+                        ];
+                        fputcsv($handle, $row);
+                    }
+                    
+                    // Close the output stream
+                    fclose($handle);
+                }
+            );
+
+            $response->headers->set('Content-Type', 'text\csv');
+            $response->headers->set('Content-Disposition', 'attachment;filename="Cohort_Discovery_Admin.csv"');
+            $response->headers->set('Cache-Control','max-age=0');
+            return $response;
+
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

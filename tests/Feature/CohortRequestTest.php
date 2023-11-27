@@ -205,6 +205,65 @@ class CohortRequestTest extends TestCase
 
         $responseGetOne->assertStatus(200);
     }
+
+
+    /**
+     * Update Cohort Request with success
+     * 
+     * @return void
+     */
+    public function test_download_cohort_request_with_success(): void
+    {
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
+            ],
+            $this->header,
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals(
+            $contentCreate['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+
+        $id = $contentCreate['data'];
+
+        // download
+        $responseDownload = $this->json(
+            'GET',
+            self::TEST_URL . '/export',
+            [],
+            $this->header,
+        );
+
+        $content = $responseDownload->streamedContent();
+        // var_dump($responseDownload->decodeResponseJson());
+        // $responseDownload->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        // ->assertJsonStructure([
+        //     'message',
+        //     'data',
+        // ]);
+
+        // get one
+        $responseGetOne = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
+
+        $responseGetOne->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseGetOne->assertStatus(200);
+    }
     
 
     /**
