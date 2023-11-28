@@ -250,17 +250,6 @@ class DatasetController extends Controller
      *    description="Get Counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="team_id",
-     *       in="query",
-     *       description="team id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="team id",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
      *       name="field",
      *       in="path",
      *       description="name of the field to perform a count on",
@@ -269,6 +258,17 @@ class DatasetController extends Controller
      *       @OA\Schema(
      *          type="string",
      *          description="status field",
+     *       ),
+     *    ),
+    *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
      *       ),
      *    ),
      *    @OA\Response(
