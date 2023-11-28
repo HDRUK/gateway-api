@@ -66,7 +66,7 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="filter_title",
+     *       name="title",
      *       in="query",
      *       description="Three or more characters to filter dataset titles by",
      *       example="hdr",
@@ -76,7 +76,7 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="filter_status",
+     *       name="status",
      *       in="query",
      *       description="Dataset status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
      *       example="ACTIVE",
@@ -106,7 +106,7 @@ class DatasetController extends Controller
     {
 
         $teamId = $request->query('team_id',null);
-        $filterStatus = $request->query('filter_status', null);
+        $filterStatus = $request->query('status', null);
 
         $sort = $request->query('sort',"created:desc");   
         
@@ -169,7 +169,7 @@ class DatasetController extends Controller
 
 
         // filtering by title
-        $filterTitle = $request->query('filter_title', null);
+        $filterTitle = $request->query('title', null);
         if (!empty($filterTitle)) {
             $filterTitle = mb_strtolower($filterTitle);
             $matches = array();
