@@ -240,6 +240,75 @@ class DatasetController extends Controller
         );
     }
 
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/datasets/count",
+     *    operationId="count_unique_fields",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@count",
+     *    description="Get All Datasets",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="query",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="status field",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(Request $request): JsonResponse
+    {
+        $teamId = $request->query('team_id',null);
+        $field = $request->query('field',null);
+       
+        $counts = Dataset::when($teamId, 
+                                    function ($query) use ($teamId){
+                                        return $query->where('team_id', '=', $teamId);
+                                    })
+                            ->withTrashed()
+                            ->select($field)
+                            ->get()
+                            ->groupBy($field)
+                            ->map->count();
+
+        return response()->json([
+            "data" => $counts
+            ]
+        );
+    }
+
     /**
      * @OA\Get(
      *    path="/api/v1/datasets/{id}",
