@@ -277,12 +277,7 @@ class DatasetController extends Controller
      *       @OA\JsonContent(
      *          @OA\Property(
      *             property="data",
-     *             type="array",
-     *             example="[]",
-     *             @OA\Items(
-     *                type="array",
-     *                @OA\Items()
-     *             )
+     *             type="object",
      *          )
      *       )
      *    )
