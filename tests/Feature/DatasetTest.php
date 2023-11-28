@@ -330,7 +330,7 @@ class DatasetTest extends TestCase
         * Test filtering by dataset title and status
         */
         $responseStatus = $this->json('GET', self::TEST_URL_DATASET . 
-            '?filter_title=HDR&filter_status=DRAFT',
+            '?title=HDR&status=DRAFT',
             [], $this->header
         );
         $responseStatus->assertStatus(200);
@@ -350,6 +350,18 @@ class DatasetTest extends TestCase
 
         $this->assertTrue($first->gt($second));
 
+
+        $responseCount = $this->json('GET', self::TEST_URL_DATASET . 
+                                            '/count?team_id=' . $teamId1 .
+                                            '&field=status',
+                                            [], $this->header
+        );
+        $responseCount->assertStatus(200);
+        $countActive = $responseCount['data']['ACTIVE'];
+        $countDraft = $responseCount['data']['DRAFT'];
+        $this->assertTrue($countActive===1);
+        $this->assertTrue($countDraft===1);
+        
         /* 
         * reverse this sorting
         */
@@ -395,8 +407,6 @@ class DatasetTest extends TestCase
         $this->assertTrue($response['data'][0]['label'] === $labelDataset1);
 
 
-
-
         /* 
         * fail if a bad direction has been given for sorting
         */
@@ -409,7 +419,7 @@ class DatasetTest extends TestCase
 
 
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-            '?filter_title=HDR&filter_status=DRAFT',
+            '?title=HDR&status=DRAFT',
             [], $this->header
         );
 
