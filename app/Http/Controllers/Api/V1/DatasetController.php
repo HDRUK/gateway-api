@@ -243,11 +243,11 @@ class DatasetController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v1/datasets/count",
+     *    path="/api/v1/datasets/count/{field}",
      *    operationId="count_unique_fields",
      *    tags={"Datasets"},
      *    summary="DatasetController@count",
-     *    description="Get All Datasets",
+     *    description="Get Counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
      *       name="team_id",
@@ -262,7 +262,7 @@ class DatasetController extends Controller
      *    ),
      *    @OA\Parameter(
      *       name="field",
-     *       in="query",
+     *       in="path",
      *       description="name of the field to perform a count on",
      *       required=true,
      *       example="status",
@@ -288,11 +288,9 @@ class DatasetController extends Controller
      *    )
      * )
      */
-    public function count(Request $request): JsonResponse
+    public function count(Request $request, string $field): JsonResponse
     {
         $teamId = $request->query('team_id',null);
-        $field = $request->query('field',null);
-       
         $counts = Dataset::when($teamId, 
                                     function ($query) use ($teamId){
                                         return $query->where('team_id', '=', $teamId);

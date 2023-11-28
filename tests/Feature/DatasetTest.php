@@ -350,10 +350,11 @@ class DatasetTest extends TestCase
 
         $this->assertTrue($first->gt($second));
 
-
+        /*
+        * use the endpoint /api/v1/datasets/count to found unique values of the field 'status'
+        */
         $responseCount = $this->json('GET', self::TEST_URL_DATASET . 
-                                            '/count?team_id=' . $teamId1 .
-                                            '&field=status',
+                                            '/count/status?team_id=' . $teamId1 ,
                                             [], $this->header
         );
         $responseCount->assertStatus(200);

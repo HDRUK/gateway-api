@@ -2011,9 +2011,9 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'datasets-count',
+        'name' => 'datasets-count-field',
         'method' => 'get',
-        'path' => '/datasets/count',
+        'path' => '/datasets/count/{field}',
         'methodController' => 'DatasetController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
