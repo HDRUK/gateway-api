@@ -551,12 +551,35 @@ class CohortRequestController extends Controller
     public function export(Request $request): StreamedResponse
     {
         try {
-            $allCohortRequest = $this->index($request);
-            $allContent = json_decode($allCohortRequest->getContent(), true);
+            $query = CohortRequest::with(['user', 'logs', 'logs.user']);
 
+            // filter by users.organisation
+            if ($request->has('organisation')) {
+                $organisationArray = explode(',', $request->query('organisation', ''));
+                $organisationArrayUpper = array_map('strtoupper', $organisationArray);
+                $query->filterByMultiRequestStatus($organisationArrayUpper);
+            }
+
+            // filter by request_status. Convert to uppercase for comparison.
+            if ($request->has('request_status')) {
+                $requestStatusArray = explode(',', $request->query('request_status', ''));
+                $requestStatusArrayUpper = array_map('strtoupper', $requestStatusArray);
+                $query->filterByMultiRequestStatus($requestStatusArrayUpper);
+            }
+
+            // filter by provided date range
+            $fromDate = date('Y-m-d', strtotime($request->query('from')));
+            // add one day to get inclusive behaviour on $toDate
+            $toDate = date('Y-m-d', strtotime($request->query('to') . ' + 1 day'));
+            $query->filterBetween($fromDate, $toDate);
+
+            $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
+            $query->orderBy('cohort_requests.created_at', 'asc');
+            $result = $query->select('cohort_requests.*')->get();
+           
             // callback function that writes to php://output
             $response = new StreamedResponse(
-                function() use ($allContent) {
+                function() use ($result) {
 
                     // Open output stream
                     $handle = fopen('php://output', 'w');
@@ -567,7 +590,7 @@ class CohortRequestController extends Controller
                     fputcsv($handle, $headerRow);
             
                     // add the given number of rows to the file.
-                    foreach ($allContent["data"] as $rowDetails) { 
+                    foreach ($result as $rowDetails) { 
                         $row = [
                             (string) $rowDetails['user']['id'],
                             (string) $rowDetails['user']['name'],
