@@ -198,6 +198,10 @@ class DatasetController extends Controller
         // rather than refetching it from mauro
         // can now do ordering and pagination
         $datasets = Dataset::whereIn('id', $matches)
+                ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
+                    function ($query) {
+                        return $query->withTrashed();
+                    })
                 ->when($doSortFromMauro===false,
                         function ($query) use ($sortField, $sortDirection) {
                             return $query->orderBy($sortField, $sortDirection);
@@ -207,8 +211,8 @@ class DatasetController extends Controller
         foreach ($datasets as $dataset) {
             $dataset['mauro'] = $mauro[$dataset->id];
         }
-           
-
+        
+        
         if($doSortFromMauro) {
             //do sorting on mauro fields 
             $callBackSort = function ($dataset) use ($sortField) {
