@@ -2016,7 +2016,7 @@ return [
         'path' => '/datasets/count/{field}',
         'methodController' => 'DatasetController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
+        'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
     [
