@@ -127,7 +127,7 @@ class ApplicationController extends Controller
             }
         }
         
-        $perPage = request('perPage', Config::get('constants.per_page'));
+        $perPage = request('per_page', Config::get('constants.per_page'));
         $applications = $applications->paginate($perPage, ['*'], 'page');
 
         $applications->getCollection()->each(function ($application) {

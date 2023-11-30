@@ -90,7 +90,7 @@ class FederationController extends Controller
      */
     public function index(GetAllFederation $request, int $teamId)
     {
-        $perPage = request('perPage', Config::get('constants.per_page'));
+        $perPage = request('per_page', Config::get('constants.per_page'));
         $federations = Federation::whereHas('team', function ($query) use ($teamId) {
             $query->where('id', $teamId);
         })->with(['notifications'])->paginate($perPage, ['*'], 'page');
