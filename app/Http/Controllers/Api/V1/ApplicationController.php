@@ -127,7 +127,8 @@ class ApplicationController extends Controller
             }
         }
         
-        $applications = $applications->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        $perPage = request('per_page', Config::get('constants.per_page'));
+        $applications = $applications->paginate($perPage, ['*'], 'page');
 
         $applications->getCollection()->each(function ($application) {
             $application->makeHidden(['client_secret']);
