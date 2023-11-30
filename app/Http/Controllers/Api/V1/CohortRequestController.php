@@ -545,9 +545,76 @@ class CohortRequestController extends Controller
         }
     }
 
-    /*
-    *
-    */
+    /**
+     * @OA\Get(
+     *    path="/api/v1/cohort_requests/export",
+     *    operationId="export_cohort_requests",
+     *    tags={"Cohort Requests"},
+     *    summary="CohortRequestController@export",
+     *    description="Export a CSV file of the cohort request admin dashboard",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="request_status",
+     *       in="query",
+     *       description="filter by multiple statuses",
+     *       example="pending,approved",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by multiple statuses",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="organisation",
+     *       in="query",
+     *       description="filter by multiple organisation names",
+     *       example="Org%201,Organisation%20B",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by multiple organisation names",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="from",
+     *       in="query",
+     *       required=true,
+     *       description="filter by date range - earliest date",
+     *       example="2022-12-31",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by date range - earliest date",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="to",
+     *       in="query",
+     *       required=true,
+     *       description="filter by date range - latest date",
+     *       example="2022-12-31",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by date range - latest date",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="CSV file",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema(
+     *             type="string",
+     *             example="""User ID"",Name,""Email address"",Organisation,Status,""Date Requested"",""Date Actioned""\n13,""Jackson Graham"",wmoen@example.com,""UK Health"",PENDING,""2023-09-17 13:31:25"",""2023-11-17 16:02:36""",
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       )
+     *    )
+     * )
+     */
     public function export(Request $request): StreamedResponse
     {
         try {

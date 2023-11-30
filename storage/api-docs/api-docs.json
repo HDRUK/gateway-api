@@ -1920,6 +1920,11 @@
                                                         "items": {},
                                                         "example": "[]"
                                                     },
+                                                    "notifications": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
                                                     "created_at": {
                                                         "type": "string",
                                                         "format": "date-time",
@@ -1986,6 +1991,11 @@
                                         "example": "false"
                                     },
                                     "permissions": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "notifications": {
                                         "type": "array",
                                         "items": {},
                                         "example": "[]"
@@ -2062,6 +2072,11 @@
                                                         "example": "[]"
                                                     },
                                                     "user": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "notifications": {
                                                         "type": "array",
                                                         "items": {},
                                                         "example": "[]"
@@ -2298,6 +2313,11 @@
                                         "example": "false"
                                     },
                                     "permissions": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "notifications": {
                                         "type": "array",
                                         "items": {},
                                         "example": "[]"
@@ -2552,6 +2572,11 @@
                                         "example": "false"
                                     },
                                     "permissions": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "notifications": {
                                         "type": "array",
                                         "items": {},
                                         "example": "[]"
@@ -3445,7 +3470,7 @@
                         "example": "orderBy=created_at:asc,updated_at:asc,organisation:desc,name:desc"
                     },
                     {
-                        "name": "status",
+                        "name": "request_status",
                         "in": "query",
                         "description": "filter by status",
                         "schema": {
@@ -3980,6 +4005,94 @@
                                         "message": {
                                             "type": "string",
                                             "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/cohort_requests/export": {
+            "get": {
+                "tags": [
+                    "Cohort Requests"
+                ],
+                "summary": "CohortRequestController@export",
+                "description": "Export a CSV file of the cohort request admin dashboard",
+                "operationId": "export_cohort_requests",
+                "parameters": [
+                    {
+                        "name": "request_status",
+                        "in": "query",
+                        "description": "filter by multiple statuses",
+                        "schema": {
+                            "description": "filter by multiple statuses",
+                            "type": "string"
+                        },
+                        "example": "pending,approved"
+                    },
+                    {
+                        "name": "organisation",
+                        "in": "query",
+                        "description": "filter by multiple organisation names",
+                        "schema": {
+                            "description": "filter by multiple organisation names",
+                            "type": "string"
+                        },
+                        "example": "Org%201,Organisation%20B"
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "filter by date range - earliest date",
+                        "required": true,
+                        "schema": {
+                            "description": "filter by date range - earliest date",
+                            "type": "string"
+                        },
+                        "example": "2022-12-31"
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "filter by date range - latest date",
+                        "required": true,
+                        "schema": {
+                            "description": "filter by date range - latest date",
+                            "type": "string"
+                        },
+                        "example": "2022-12-31"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "CSV file",
+                        "content": {
+                            "text/csv": {
+                                "schema": {
+                                    "type": "string",
+                                    "example": "\"User ID\",Name,\"Email address\",Organisation,Status,\"Date Requested\",\"Date Actioned\"\\n13,\"Jackson Graham\",wmoen@example.com,\"UK Health\",PENDING,\"2023-09-17 13:31:25\",\"2023-11-17 16:02:36\""
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
                                         }
                                     },
                                     "type": "object"
@@ -6421,6 +6534,26 @@
                             "type": "boolean"
                         },
                         "example": "true"
+                    },
+                    {
+                        "name": "filterTitle",
+                        "in": "query",
+                        "description": "Three or more characters to filter dataset titles by",
+                        "schema": {
+                            "description": "Three or more characters to filter dataset titles by",
+                            "type": "string"
+                        },
+                        "example": "hdr"
+                    },
+                    {
+                        "name": "filterStatus",
+                        "in": "query",
+                        "description": "Dataset status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
+                        "schema": {
+                            "description": "Dataset status to filter by",
+                            "type": "string"
+                        },
+                        "example": "ACTIVE"
                     }
                 ],
                 "responses": {
