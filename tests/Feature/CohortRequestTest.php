@@ -205,8 +205,29 @@ class CohortRequestTest extends TestCase
 
         $responseGetOne->assertStatus(200);
     }
-    
 
+    /**
+     * Download Cohort Request Admin dashboard export with success
+     * 
+     * @return void
+     */
+    public function test_download_cohort_request_dashboard_with_success(): void
+    {
+        $responseDownload = $this->json(
+            'GET',
+            self::TEST_URL . '/export',
+            [],
+            $this->header,
+        );
+
+        $content = $responseDownload->streamedContent();
+        $responseDownload->assertHeader('Content-Disposition', 'attachment;filename="Cohort_Discovery_Admin.csv"');
+        $this->assertEquals(
+            substr($content, 0, 9),
+            "\"User ID\""
+        );
+    }
+    
     /**
      * Delete Cohort Request with success
      * 
