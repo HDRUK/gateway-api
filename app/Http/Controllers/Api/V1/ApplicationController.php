@@ -378,6 +378,7 @@ class ApplicationController extends Controller
      */
     public function update(UpdateApplication $request, int $id): JsonResponse
     {
+        
         try {
             $input = $request->all();
 
@@ -398,6 +399,7 @@ class ApplicationController extends Controller
             if (array_key_exists('permissions', $input)) {
                 $this->applicationHasPermissions((int) $id, $input['permissions']);
             }
+
 
             if (array_key_exists('notifications', $input)) {
                 $this->applicationHasNotifications((int) $id, $input['notifications']);
@@ -614,20 +616,23 @@ class ApplicationController extends Controller
     private function applicationHasNotifications(int $applicationId, array $notifications): mixed
     {
         try {
+
             $applicationHasNotificationIds = ApplicationHasNotification::where('application_id', $applicationId)->pluck('notification_id');
 
             foreach ($applicationHasNotificationIds as $applicationHasNotificationId) {
+               
                 Notification::where('id', $applicationHasNotificationId)->delete();
                 ApplicationHasNotification::where('notification_id', $applicationHasNotificationId)->delete();
             }
 
             foreach ($notifications as $notification) {
+
                 $notification = Notification::create([
                     'notification_type' => 'application',
                     'message' => '',
                     'opt_in' => 0,
                     'enabled' => 1,
-                    'email' => $notification,
+                    'email' => $notification['email'],
                 ]);
 
                 ApplicationHasNotification::create([
