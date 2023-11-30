@@ -2011,6 +2011,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'datasets-count-field',
+        'method' => 'get',
+        'path' => '/datasets/count/{field}',
+        'methodController' => 'DatasetController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+    [
         'name' => 'datasets',
         'method' => 'get',
         'path' => '/datasets/{id}',

@@ -66,7 +66,7 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="filter_title",
+     *       name="title",
      *       in="query",
      *       description="Three or more characters to filter dataset titles by",
      *       example="hdr",
@@ -76,7 +76,7 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
-     *       name="filter_status",
+     *       name="status",
      *       in="query",
      *       description="Dataset status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
      *       example="ACTIVE",
@@ -106,7 +106,7 @@ class DatasetController extends Controller
     {
 
         $teamId = $request->query('team_id',null);
-        $filterStatus = $request->query('filter_status', null);
+        $filterStatus = $request->query('status', null);
 
         $sort = $request->query('sort',"created:desc");   
         
@@ -169,8 +169,9 @@ class DatasetController extends Controller
 
 
         // filtering by title
-        $filterTitle = $request->query('filter_title', null);
+        $filterTitle = $request->query('title', null);
         if (!empty($filterTitle)) {
+            $filterTitle = mb_strtolower($filterTitle);
             $matches = array();
             // iterate through mauro field of each dataset
             foreach ($initialDatasets as $dataset) {
@@ -178,7 +179,7 @@ class DatasetController extends Controller
                     // find the title field in mauro data
                     if ($field['key'] === 'properties/summary/title') {
                         // if title matches filter, store the dataset id and mauro field
-                        if (str_contains($field['value'], $filterTitle)) {
+                        if (str_contains(mb_strtolower($field['value']), $filterTitle)) {
                             //$matches[$dataset['id']] = $dataset['mauro'];
                             $matches[] = $dataset->id;
                         }
@@ -197,6 +198,10 @@ class DatasetController extends Controller
         // rather than refetching it from mauro
         // can now do ordering and pagination
         $datasets = Dataset::whereIn('id', $matches)
+                ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
+                    function ($query) {
+                        return $query->withTrashed();
+                    })
                 ->when($doSortFromMauro===false,
                         function ($query) use ($sortField, $sortDirection) {
                             return $query->orderBy($sortField, $sortDirection);
@@ -206,8 +211,8 @@ class DatasetController extends Controller
         foreach ($datasets as $dataset) {
             $dataset['mauro'] = $mauro[$dataset->id];
         }
-           
-
+        
+        
         if($doSortFromMauro) {
             //do sorting on mauro fields 
             $callBackSort = function ($dataset) use ($sortField) {
@@ -236,6 +241,68 @@ class DatasetController extends Controller
 
         return response()->json(
             $datasets
+        );
+    }
+
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/datasets/count/{field}",
+     *    operationId="count_unique_fields",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@count",
+     *    description="Get Counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="status field",
+     *       ),
+     *    ),
+    *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(Request $request, string $field): JsonResponse
+    {
+        $teamId = $request->query('team_id',null);
+        $counts = Dataset::when($teamId, 
+                                    function ($query) use ($teamId){
+                                        return $query->where('team_id', '=', $teamId);
+                                    })
+                            ->withTrashed()
+                            ->select($field)
+                            ->get()
+                            ->groupBy($field)
+                            ->map->count();
+
+        return response()->json([
+            "data" => $counts
+            ]
         );
     }
 
