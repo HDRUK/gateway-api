@@ -635,9 +635,9 @@ class CohortRequestController extends Controller
             }
 
             // filter by provided date range
-            $fromDate = date('Y-m-d', strtotime($request->query('from')));
+            $fromDate = Carbon::parse($request->query('from'));
             // add one day to get inclusive behaviour on $toDate
-            $toDate = date('Y-m-d', strtotime($request->query('to') . ' + 1 day'));
+            $toDate = Carbon::parse($request->query('to'))->addDays(1);
             $query->filterBetween($fromDate, $toDate);
 
             $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
