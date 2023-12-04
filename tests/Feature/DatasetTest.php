@@ -751,7 +751,9 @@ class DatasetTest extends TestCase
         $responseUnarchiveDataset = $this->json(
             'PATCH',
             self::TEST_URL_DATASET . '/' . $datasetId . '?unarchive',
-            [],
+            [
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
             $this->header
         );
         $responseUnarchiveDataset->assertJsonStructure([
