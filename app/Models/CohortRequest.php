@@ -83,6 +83,31 @@ class CohortRequest extends Model
         });
     }
 
+    public function scopeFilterByMultiOrganisation(Builder $query, array $values): Builder
+    {
+        if (empty($values)) {
+            return $query;
+        }
+        return $query->whereHas('user', function ($query) use ($values) {
+            $query->whereIn('organisation', $values);
+        });
+    }
+
+    public function scopeFilterByMultiRequestStatus(Builder $query, array $values): Builder
+    {
+        if (empty($values)) {
+            return $query;
+        }
+        return $query->whereHas('user', function ($query) use ($values) {
+            $query->whereIn('request_status', $values);
+        });
+    }
+
+    public function scopeFilterBetween(Builder $query, string $fromDate, string $toDate): Builder
+    {
+        return $query->whereBetween('cohort_requests.created_at', [$fromDate, $toDate]);
+    }
+
     /**
      * Scope a query to only include cohort requests that have users with name with a specific value.
      *

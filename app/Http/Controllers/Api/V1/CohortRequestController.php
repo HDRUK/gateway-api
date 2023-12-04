@@ -9,6 +9,7 @@ use App\Models\CohortRequest;
 use Illuminate\Support\Carbon;
 use App\Models\CohortRequestLog;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
@@ -539,6 +540,146 @@ class CohortRequestController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/cohort_requests/export",
+     *    operationId="export_cohort_requests",
+     *    tags={"Cohort Requests"},
+     *    summary="CohortRequestController@export",
+     *    description="Export a CSV file of the cohort request admin dashboard",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="request_status",
+     *       in="query",
+     *       description="filter by multiple statuses",
+     *       example="pending,approved",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by multiple statuses",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="organisation",
+     *       in="query",
+     *       description="filter by multiple organisation names",
+     *       example="Org%201,Organisation%20B",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by multiple organisation names",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="from",
+     *       in="query",
+     *       required=true,
+     *       description="filter by date range - earliest date",
+     *       example="2022-12-31",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by date range - earliest date",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="to",
+     *       in="query",
+     *       required=true,
+     *       description="filter by date range - latest date",
+     *       example="2022-12-31",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by date range - latest date",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="CSV file",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema(
+     *             type="string",
+     *             example="""User ID"",Name,""Email address"",Organisation,Status,""Date Requested"",""Date Actioned""\n13,""Jackson Graham"",wmoen@example.com,""UK Health"",PENDING,""2023-09-17 13:31:25"",""2023-11-17 16:02:36""",
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       )
+     *    )
+     * )
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        try {
+            $query = CohortRequest::with(['user', 'logs', 'logs.user']);
+
+            // filter by users.organisation
+            if ($request->has('organisation')) {
+                $organisationArray = explode(',', $request->query('organisation', ''));
+                $organisationArrayUpper = array_map('strtoupper', $organisationArray);
+                $query->filterByMultiRequestStatus($organisationArrayUpper);
+            }
+
+            // filter by request_status. Convert to uppercase for comparison.
+            if ($request->has('request_status')) {
+                $requestStatusArray = explode(',', $request->query('request_status', ''));
+                $requestStatusArrayUpper = array_map('strtoupper', $requestStatusArray);
+                $query->filterByMultiRequestStatus($requestStatusArrayUpper);
+            }
+
+            // filter by provided date range
+            $fromDate = Carbon::parse($request->query('from'));
+            // add one day to get inclusive behaviour on $toDate
+            $toDate = Carbon::parse($request->query('to'))->addDays(1);
+            $query->filterBetween($fromDate, $toDate);
+
+            $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
+            $query->orderBy('cohort_requests.created_at', 'asc');
+            $result = $query->select('cohort_requests.*')->get();
+           
+            // callback function that writes to php://output
+            $response = new StreamedResponse(
+                function() use ($result) {
+
+                    // Open output stream
+                    $handle = fopen('php://output', 'w');
+                    
+                    $headerRow = ['User ID', 'Name', 'Email address', 'Organisation', 'Status', 'Date Requested', 'Date Actioned'];
+
+                    // Add CSV headers
+                    fputcsv($handle, $headerRow);
+            
+                    // add the given number of rows to the file.
+                    foreach ($result as $rowDetails) { 
+                        $row = [
+                            (string) $rowDetails['user']['id'],
+                            (string) $rowDetails['user']['name'],
+                            (string) $rowDetails['user']['email'],
+                            (string) $rowDetails['user']['organisation'],
+                            (string) $rowDetails['request_status'],
+                            (string) $rowDetails['created_at'],
+                            (string) $rowDetails['updated_at'],
+                        ];
+                        fputcsv($handle, $row);
+                    }
+                    
+                    // Close the output stream
+                    fclose($handle);
+                }
+            );
+
+            $response->headers->set('Content-Type', 'text\csv');
+            $response->headers->set('Content-Disposition', 'attachment;filename="Cohort_Discovery_Admin.csv"');
+            $response->headers->set('Cache-Control','max-age=0');
+            return $response;
+
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
