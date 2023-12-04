@@ -814,15 +814,15 @@ class DatasetController extends Controller
                 $datasetModel = Dataset::withTrashed()
                     ->where(['id' => $id])
                     ->first();
-                    if ($request['status'] === 'ACTIVE') {
-                        $datasetModel->status = Dataset::STATUS_ACTIVE;
-                    }
-                    elseif ($request['status'] === 'DRAFT') {
-                        $datasetModel->status = Dataset::STATUS_DRAFT;
-                    }
-                    else {
-                        throw new Exception('You have supplied an unsupported value for "status"');
-                    }
+                if ($request['status'] === 'ACTIVE') {
+                    $datasetModel->status = Dataset::STATUS_ACTIVE;
+                }
+                elseif ($request['status'] === 'DRAFT') {
+                    $datasetModel->status = Dataset::STATUS_DRAFT;
+                }
+                else {
+                    throw new Exception('You have supplied an unsupported value for "status"');
+                }
 
                 $datasetModel->deleted_at = null;
                 $datasetModel->save();
