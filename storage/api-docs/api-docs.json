@@ -1920,6 +1920,11 @@
                                                         "items": {},
                                                         "example": "[]"
                                                     },
+                                                    "notifications": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
                                                     "created_at": {
                                                         "type": "string",
                                                         "format": "date-time",
@@ -1986,6 +1991,11 @@
                                         "example": "false"
                                     },
                                     "permissions": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "notifications": {
                                         "type": "array",
                                         "items": {},
                                         "example": "[]"
@@ -2062,6 +2072,11 @@
                                                         "example": "[]"
                                                     },
                                                     "user": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "notifications": {
                                                         "type": "array",
                                                         "items": {},
                                                         "example": "[]"
@@ -2298,6 +2313,11 @@
                                         "example": "false"
                                     },
                                     "permissions": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "notifications": {
                                         "type": "array",
                                         "items": {},
                                         "example": "[]"
@@ -2552,6 +2572,11 @@
                                         "example": "false"
                                     },
                                     "permissions": {
+                                        "type": "array",
+                                        "items": {},
+                                        "example": "[]"
+                                    },
+                                    "notifications": {
                                         "type": "array",
                                         "items": {},
                                         "example": "[]"
@@ -3445,7 +3470,7 @@
                         "example": "orderBy=created_at:asc,updated_at:asc,organisation:desc,name:desc"
                     },
                     {
-                        "name": "status",
+                        "name": "request_status",
                         "in": "query",
                         "description": "filter by status",
                         "schema": {
@@ -6368,7 +6393,7 @@
                 "operationId": "fetch_all_datasets",
                 "parameters": [
                     {
-                        "name": "teamId",
+                        "name": "team_id",
                         "in": "query",
                         "description": "team id",
                         "required": true,
@@ -6377,16 +6402,6 @@
                             "type": "integer"
                         },
                         "example": "1"
-                    },
-                    {
-                        "name": "fields",
-                        "in": "query",
-                        "description": "Comma-separated list of fields to include in the response",
-                        "schema": {
-                            "description": "Comma-separated list of fields",
-                            "type": "string"
-                        },
-                        "example": "label,created"
                     },
                     {
                         "name": "sort",
@@ -6413,14 +6428,24 @@
                         "example": "desc"
                     },
                     {
-                        "name": "decode_metadata",
+                        "name": "title",
                         "in": "query",
-                        "description": "Decode the 'dataset' metadata field (default: false)",
+                        "description": "Three or more characters to filter dataset titles by",
                         "schema": {
-                            "description": "Decode the 'dataset' metadata field",
-                            "type": "boolean"
+                            "description": "Three or more characters to filter dataset titles by",
+                            "type": "string"
                         },
-                        "example": "true"
+                        "example": "hdr"
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Dataset status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
+                        "schema": {
+                            "description": "Dataset status to filter by",
+                            "type": "string"
+                        },
+                        "example": "ACTIVE"
                     }
                 ],
                 "responses": {
@@ -6541,6 +6566,62 @@
                                         "message": {
                                             "type": "string",
                                             "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/datasets/count/{field}": {
+            "get": {
+                "tags": [
+                    "Datasets"
+                ],
+                "summary": "DatasetController@count",
+                "description": "Get Counts for distinct entries of a field in the model",
+                "operationId": "count_unique_fields",
+                "parameters": [
+                    {
+                        "name": "field",
+                        "in": "path",
+                        "description": "name of the field to perform a count on",
+                        "required": true,
+                        "schema": {
+                            "description": "status field",
+                            "type": "string"
+                        },
+                        "example": "status"
+                    },
+                    {
+                        "name": "team_id",
+                        "in": "query",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -15135,6 +15216,157 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Resource not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "unauthorized"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/teams/{teamId}/roles": {
+            "patch": {
+                "tags": [
+                    "Team-User-Role"
+                ],
+                "operationId": "update_team_user_roles_bulk",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "userId": {
+                                            "type": "integer",
+                                            "example": 21
+                                        },
+                                        "roles": {
+                                            "properties": {
+                                                "custodian.metadata.manager": {
+                                                    "type": "boolean"
+                                                },
+                                                "metadata.editor": {
+                                                    "type": "boolean"
+                                                },
+                                                "dar.reviewer": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success response description",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "userId": {
+                                                        "type": "integer",
+                                                        "example": 21
+                                                    },
+                                                    "roles": {
+                                                        "properties": {
+                                                            "custodian.metadata.manager": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "metadata.editor": {
+                                                                "type": "boolean"
+                                                            },
+                                                            "dar.reviewer": {
+                                                                "type": "boolean"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "bad request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "bad request"
                                         }
                                     },
                                     "type": "object"

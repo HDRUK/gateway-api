@@ -151,7 +151,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get one team by id
-GET {{baseUrl}}/api/{{apiVersion}}/teams/1 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/teams/50 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -917,6 +917,30 @@ Authorization: Bearer {{accessToken}}
         "dar.reviewer": true
     }
 }
+
+#### update bulk team - user - role
+PATCH {{baseUrl}}/api/{{apiVersion}}/teams/50/roles HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+[
+    {
+        "userId": 20,
+        "roles" : {
+            "custodian.metadata.manager": true,
+            "metadata.editor": true,
+            "dar.reviewer": true
+        }
+    },
+    {
+        "userId": 21,
+        "roles" : {
+            "metadata.editor": true,
+            "dar.reviewer": true
+        }
+    }
+]
 
 #### delete team - user - role
 DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/12 HTTP/1.1
