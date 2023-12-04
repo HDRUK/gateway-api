@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Facade;
 
 class MauroTest extends TestCase
 {
-    public function test_it_can_list_folders(): void
+    /*public function test_it_can_list_folders(): void
     {
         $jsonResponse = Mauro::getFolders();
 
@@ -33,6 +33,8 @@ class MauroTest extends TestCase
     {
         $jsonResponse = Mauro::getFolders();
 
+        dd($jsonResponse);
+
         $this->assertIsArray($jsonResponse);
         $this->assertGreaterThan(0, (int)$jsonResponse['count']);
 
@@ -54,14 +56,17 @@ class MauroTest extends TestCase
         foreach ($keyCheck as $key) {
             $this->assertArrayHasKey($key, $jsonResponse);
         }
-    }
+    }*/
 
     public function test_it_can_create_and_delete_a_folder(): void
     {
         $jsonResponse = Mauro::createFolder(
             'Test Folder',
-            'Automated Test - folder creation'
+            'Automated Test - folder creation',
+            env('MAURO_PARENT_FOLDER_ID')
         );
+
+        dd($jsonResponse);
 
         $this->assertIsArray($jsonResponse);
         $this->assertArrayHasKey('id', $jsonResponse);

@@ -8,6 +8,8 @@ use App\Models\EmailTemplate;
 use Tests\TestCase;
 use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+
 
 class EmailServiceTest extends TestCase
 {
@@ -46,12 +48,29 @@ class EmailServiceTest extends TestCase
         ];
 
         $email = new Email($template, $replacements);
+
+        Http::fake([
+            env('MJML_RENDER_URL') => Http::response([
+                    "html" => $this->mockedEmailContent($template,$replacements)
+            ], 200),
+        ]);
+
         $html = $email->mjmlToHtml();
 
         foreach ($replacements as $k => $v) {
             $this->assertStringContainsString($v, $html);
         }
     }
+
+    private function mockedEmailContent(string $template, array $replacements): string
+    {
+        foreach ($replacements as $placeholder => $replacement) {
+            $template = str_replace($placeholder, $replacement, $template);
+        }
+
+        return $template;
+    }
+
 }
 
 ?>
