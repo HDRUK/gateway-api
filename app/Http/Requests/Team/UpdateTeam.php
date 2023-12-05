@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Team;
 
+use Illuminate\Validation\Rule;
+use App\Http\Enums\TeamMemberOf;
 use App\Http\Requests\BaseFormRequest;
 
 class UpdateTeam extends BaseFormRequest
@@ -49,7 +51,12 @@ class UpdateTeam extends BaseFormRequest
             ],
             'member_of' => [
                 'required',
-                'integer',
+                'string',
+                Rule::in([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
             ],
             'contact_point' => [
                 'nullable',
