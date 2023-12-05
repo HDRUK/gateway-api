@@ -641,6 +641,7 @@ class DatasetController extends Controller
             $currDataset = Dataset::where('id', $id)->first()->toArray();
             $currentPid = $currDataset['pid'];
             $currentDatasetId = $currDataset['datasetid'];
+
             // First validate the incoming schema to ensure it's in GWDM format
             // if not, attempt to translate prior to saving
             $validateDataModelType = MMC::validateDataModelType(
@@ -653,8 +654,7 @@ class DatasetController extends Controller
                 $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
                 $newDatasetId = (string) $duplicateDataModel['id'];
                 MMC::updateDataModel($user, $team, $input, $newDatasetId);
-                
-               
+
                 $dataset = MMC::createDataset([
                     'datasetid' => $newDatasetId,
                     'label' => $input['label'],
@@ -680,7 +680,6 @@ class DatasetController extends Controller
                     base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6)),
                     true
                 );
-
 
                 if ($dataset->shouldFinalise()) {
                     $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
