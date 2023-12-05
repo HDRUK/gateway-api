@@ -199,7 +199,6 @@ class TeamTest extends TestCase
                 'Authorization' => 'bearer ' . $this->accessToken,
             ],
         );
-        dd($response);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
