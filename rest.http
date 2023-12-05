@@ -169,7 +169,7 @@ Authorization: Bearer {{accessToken}}
     "access_requests_management": 1,
     "uses_5_safes": 1,
     "is_admin": 1,
-    "member_of": 1001,
+    "member_of": "HUB",
     "contact_point": "dinos345@mail.com",
     "application_form_updated_by": "Someone Somewhere",
     "application_form_updated_on": "2023-04-06 15:44:41",
