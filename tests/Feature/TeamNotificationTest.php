@@ -9,6 +9,10 @@ use App\Models\TeamHasNotification;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+
+use Mauro;
+use Tests\Unit\MauroTest;
+
 class TeamNotificationTest extends TestCase
 {
     use RefreshDatabase;
@@ -32,6 +36,14 @@ class TeamNotificationTest extends TestCase
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
         ];
+
+        Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
+            return MauroTest::mockedMauroCreateFolderResponse(...$args);
+        });
+    
+        Mauro::shouldReceive('deleteFolder')->andReturn(true);
+        Mauro::makePartial();
+
     }
 
     public function test_create_notification_for_team_with_success() 

@@ -69,7 +69,7 @@ class MauroTest extends TestCase
         return $result;
     }
 
-    public static function mockedMauroCreateFolderResponse(string $label, string $description,string $parentFolderId): array
+    public static function mockedMauroCreateFolderResponse(string $label, string $description,string $parentFolderId=''): array
     {
         return [
             "id" => fake()->uuid(),
@@ -158,6 +158,50 @@ class MauroTest extends TestCase
         ];
 
     }
+
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->mauro_store = [];
+        $this->folders_store = [];
+
+        Mauro::shouldReceive('createFolder')->andReturnUsing(function (string $label, string $description, string $parentFolderId=''){
+            $folder = MauroTest::mockedMauroCreateFolderResponse($label,$description, $parentFolderId);
+            $this->folders_store[$parentFolderId][] = $folder;
+            return $folder;
+        });
+        Mauro::shouldReceive('createDataModel')->andReturnUsing(function (...$args){
+            $mauro = MauroTest::mockedMauroCreateDatasetResponse(...$args);
+            $jsonObj = $args[count($args)-1];
+            $id = $mauro["DataModel"]["responseJson"]["id"];
+            
+            $mauro_metadata = MauroTest::mockCreateMauroData($jsonObj['dataset']['metadata']);
+            $this->mauro_store[$id] = $mauro_metadata;
+
+            return $mauro;
+        });
+
+        Mauro::shouldReceive('getDatasetByIdMetadata')->andReturnUsing(function (string $datasetId){
+            $mauro_metadata = $this->mauro_store[$datasetId];
+            return ["items" => $mauro_metadata];
+        });
+
+        Mauro::shouldReceive('getAllDataClasses')->andReturnUsing(function (string $datasetId){
+            return ["items" => $this->mauro_store[$datasetId]];
+        });
+
+        Mauro::shouldReceive('deleteFolder')->andReturn(true);
+        Mauro::shouldReceive('deleteDataModel')->andReturn(true);
+
+        Mauro::shouldReceive('getFoldersByParentId')->andReturnUsing(function ($parentId){
+            $res = $this->folders_store[$parentId];
+            return ["items"=>$res,"count"=>count($res)];
+        });
+
+        Mauro::makePartial();
+
+    }
     public function test_it_can_create_and_delete_a_folder(): void
     {
 
@@ -168,10 +212,6 @@ class MauroTest extends TestCase
         $label = 'Test Folder';
         $description = 'Automated Test - folder creation';
        
-        Http::fake([
-            $postUrl => Http::response($this->mockedMauroCreateFolderResponse($label,$description,$parentFolderId)
-            , 200),
-        ]);
 
         $jsonResponse = Mauro::createFolder(
             $label,
@@ -186,14 +226,6 @@ class MauroTest extends TestCase
         $this->assertEquals('Automated Test - folder creation', $jsonResponse['description']);
 
         $createdFolderId = $jsonResponse['id'];
-
-        $postUrl = env('MAURO_API_URL');
-        $postUrl .= '/folders/' . $parentFolderId . '/folders/' . $createdFolderId . '?permanent=true';
-
-        Http::fake([
-            $postUrl => Http::response(true, 204),
-        ]);
-
         $jsonResponse = Mauro::deleteFolder($createdFolderId, 'true', $parentFolderId);
         $this->assertEquals($jsonResponse, true);
 
@@ -208,11 +240,6 @@ class MauroTest extends TestCase
 
         $label = 'Test Folder ';
         $description = 'Automated Test - folder creation';
-       
-        Http::fake([
-            $postUrl => Http::response($this->mockedMauroCreateFolderResponse($label,$description,$parentFolderId)
-            , 200),
-        ]);
 
         $jsonResponse = Mauro::createFolder(
             $label,
@@ -224,24 +251,7 @@ class MauroTest extends TestCase
         $this->assertArrayHasKey('id', $jsonResponse);
 
         $parentFolderId = $jsonResponse['id'];
-
-        $postUrl = env('MAURO_API_URL');
-        $postUrl .= '/folders/' . $parentFolderId . '/folders';
-        
         $label =  'Test Child Folder';
-
-
-        Http::fake([
-            $postUrl => 
-                function (Request $request) use($label,$description,$parentFolderId) {
-                    if ($request->method() == 'GET') {
-                        return  Http::response($this->mockedMauroGetFoldersByParentId($label,$description,$parentFolderId),200);         
-                    }
-                    if ($request->method() == 'POST') {
-                        return Http::response($this->mockedMauroCreateFolderResponse($label,$description,$parentFolderId),200);
-                    }
-                }
-        ]);
 
         $jsonResponse = Mauro::createFolder(
             $label,
@@ -252,8 +262,6 @@ class MauroTest extends TestCase
         $this->assertIsArray($jsonResponse);
         $this->assertArrayHasKey('id', $jsonResponse);
     
-        $getUrl = env('MAURO_API_URL');
-        $getUrl .= '/folders/' . $parentFolderId . '/folders';
 
         $jsonResponse = Mauro::getFoldersByParentId($parentFolderId);
 
@@ -263,14 +271,6 @@ class MauroTest extends TestCase
         $this->assertEquals($jsonResponse['items'][0]['label'], 'Test Child Folder');
 
         $createdFolderId = $jsonResponse['items'][0]['id'];
-        $deleteUrlChild = $postUrl . '/' . $createdFolderId . '?permanent=true';
-        $deleteUrlParent = env('MAURO_API_URL') .'/folders/'.  $createdFolderId . '?permanent=true';
-
-        Http::fake([
-            $deleteUrlChild => Http::response(true, 204),
-            $deleteUrlParent => Http::response(true, 204),
-        ]);
-
 
         $jsonResponse = Mauro::deleteFolder($createdFolderId, 'true', $parentFolderId);
         $this->assertEquals($jsonResponse, true);

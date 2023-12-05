@@ -13,6 +13,11 @@ use App\Models\TeamUserHasRole;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use Illuminate\Support\Facades\Http;
+
+use Mauro;
+use Tests\Unit\MauroTest;
+
 class TeamUserTest extends TestCase
 {
     use RefreshDatabase;
@@ -40,6 +45,24 @@ class TeamUserTest extends TestCase
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
         ];
+
+        Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
+            return MauroTest::mockedMauroCreateFolderResponse(...$args);
+        });
+    
+        Mauro::shouldReceive('deleteFolder')->andReturn(true);
+        Mauro::makePartial();
+
+        
+        Http::fake([
+            'api.mjml.io*' => Http::response(
+                ["html"=>"<html>content </html>"], 
+                201,
+                ['application/json']
+            )
+        ]);
+
+
    }
 
     /**
@@ -66,6 +89,7 @@ class TeamUserTest extends TestCase
         $response->assertJsonStructure([
             'message'
         ]);
+
         $response->assertStatus(201);
 
         $getTeamHasUsers = $this->getTeamHasUsers($teamId, $userId);

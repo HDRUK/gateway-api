@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Config;
+use Mauro;
 use Tests\TestCase;
 use App\Models\Federation;
 use Tests\Traits\Authorization;
@@ -10,6 +11,8 @@ use App\Models\TeamHasFederation;
 use App\Models\FederationHasNotification;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+
+use Tests\Unit\MauroTest;
 
 class FederationTest extends TestCase
 {
@@ -35,6 +38,13 @@ class FederationTest extends TestCase
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
         ];
+
+        Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
+            return MauroTest::mockedMauroCreateFolderResponse(...$args);
+        });
+
+        Mauro::shouldReceive('deleteFolder')->andReturn(true);
+
     }
 
     /**

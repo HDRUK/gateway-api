@@ -8,6 +8,10 @@ use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use Mauro;
+use Tests\Unit\MauroTest;
+
+
 class TeamTest extends TestCase
 {
     use RefreshDatabase;
@@ -29,7 +33,14 @@ class TeamTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         $content = $response->decodeResponseJson();  
-        $this->accessToken = $content['access_token'];      
+        $this->accessToken = $content['access_token'];  
+        
+        Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
+            return MauroTest::mockedMauroCreateFolderResponse(...$args);
+        });
+    
+        Mauro::shouldReceive('deleteFolder')->andReturn(true);
+        Mauro::makePartial();
     }
 
     /**
