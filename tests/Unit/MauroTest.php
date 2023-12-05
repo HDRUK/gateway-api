@@ -205,10 +205,7 @@ class MauroTest extends TestCase
     public function test_it_can_create_and_delete_a_folder(): void
     {
 
-        $postUrl = env('MAURO_API_URL');
         $parentFolderId = env('MAURO_PARENT_FOLDER_ID');
-        $postUrl .= '/folders/' . $parentFolderId . '/folders';
-
         $label = 'Test Folder';
         $description = 'Automated Test - folder creation';
        
@@ -234,10 +231,8 @@ class MauroTest extends TestCase
     public function test_it_can_create_and_delete_a_folder_under_a_parent(): void
     {
 
-        $postUrl = env('MAURO_API_URL');
         $parentFolderId = env('MAURO_PARENT_FOLDER_ID');
-        $postUrl .= '/folders/' . $parentFolderId . '/folders';
-
+        
         $label = 'Test Folder ';
         $description = 'Automated Test - folder creation';
 
