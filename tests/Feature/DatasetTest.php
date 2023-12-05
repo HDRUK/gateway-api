@@ -5,189 +5,36 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Dataset;
-use Database\Seeders\SectorSeeder;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Foundation\Testing\WithFaker;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
-use App\Jobs\TechnicalObjectDataStore;
-
-use MetadataManagementController AS MMC;
-use Mauro;
-use Mockery;
-
-use Elastic\Elasticsearch\ClientBuilder;
-use Elastic\Elasticsearch\Response\Elasticsearch;
-use Http\Mock\Client;
-use Nyholm\Psr7\Response;
-
-
-use Tests\Unit\MauroTest;
-
 
 class DatasetTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL_DATASET = '/api/v1/datasets';
     const TEST_URL_TEAM = 'api/v1/teams';
     const TEST_URL_NOTIFICATION = 'api/v1/notifications';
     const TEST_URL_USER = 'api/v1/users';
 
-    private $dataset = null;
-    private $datasetUpdate = null;
-
-    protected $header = [];
-
-
-    /**
-     * Set up the database
-     *
-     * @return void
-     */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed([
-            SectorSeeder::class,
-        ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-
-        // Lengthy process, but a more consistent representation
-        // of an incoming dataset
         $this->dataset = $this->getFakeDataset();
         $this->datasetAlt = $this->dataset;
         $this->datasetAlt['metadata']['summary']['title'] = 'ABC title';
 
         $this->datasetUpdate = $this->getFakeUpdateDataset();
-
-        // Define mock client and fake response for elasticsearch service
-        $mockElastic = new Client();
-
-        $elasticClient = ClientBuilder::create()
-            ->setHttpClient($mockElastic)
-            ->build();
-
-        // This is a PSR-7 response
-        // Mock two responses, one for creating a dataset, another for deleting
-        $createResponse = new Response(
-            200, 
-            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'Document created'
-        );
-        $deleteResponse = new Response(
-            200, 
-            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'Document deleted'
-        );
-
-        // Stack the responses expected in the create/archive/delete dataset test
-        // create -> soft delete/archive -> unarchive -> permanent delete
-        for ($i=0; $i < 100; $i++) {
-            $mockElastic->addResponse($createResponse);
-        }
-
-        for ($i=0; $i < 100; $i++) {
-            $mockElastic->addResponse($deleteResponse);
-        }
-
-        $this->testElasticClient = $elasticClient;
-
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::shouldReceive("translateDataModelType")->andReturnUsing(function(string $metadata){
-            return [
-                "traser_message" => "",
-                "wasTranslated" => true,
-                "metadata" => json_decode($metadata,true)["metadata"],
-                "statusCode" => "200",
-            ];
-        });
-        MMC::shouldReceive("validateDataModelType")->andReturn(true);
-        MMC::makePartial();
-
-
-        $this->dataset_store = [];
-        $this->mauro_store = [];
-
-
-        Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
-            return MauroTest::mockedMauroCreateFolderResponse(...$args);
-        });
-        Mauro::shouldReceive('createDataModel')->andReturnUsing(function (...$args){
-            $mauro = MauroTest::mockedMauroCreateDatasetResponse(...$args);
-            $jsonObj = $args[count($args)-1];
-            $id = $mauro["DataModel"]["responseJson"]["id"];
-            
-            $mauro_metadata = MauroTest::mockCreateMauroData($jsonObj['dataset']['metadata']);
-            $this->mauro_store[$id] = $mauro_metadata;
-
-            return $mauro;
-        });
-        Mauro::shouldReceive('updateDataModel')->andReturnUsing(function (...$args){
-            $mauro = MauroTest::mockedMauroCreateDatasetResponse(...$args);
-            $jsonObj = $args[count($args)-2];
-            $id = $args[count($args)-1];
-            $mauro_metadata = MauroTest::mockCreateMauroData($jsonObj['dataset']['metadata']);
-            $this->mauro_store[$id] = $mauro_metadata;
-    
-            return $mauro;
-        });
-        Mauro::shouldReceive('finaliseDataModel')->andReturnUsing(function (string $datasetId){
-            return MauroTest::mockedFinaliseDataModel($datasetId);
-        });
-
-        Mauro::shouldReceive('getDatasetByIdMetadata')->andReturnUsing(function (string $datasetId){
-            $mauro_metadata = $this->mauro_store[$datasetId];
-            return ["items" => $mauro_metadata];
-        });
-
-        Mauro::shouldReceive('getAllDataClasses')->andReturnUsing(function (string $datasetId){
-            return ["items" => $this->mauro_store[$datasetId]];
-        });
-
-        Mauro::shouldReceive('deleteFolder')->andReturn(true);
-        Mauro::shouldReceive('deleteDataModel')->andReturn(true);
-        Mauro::shouldReceive('deleteDataClass')->andReturn(true);
-        Mauro::shouldReceive('restoreDataModel')->andReturn(true);
-       
-
-        Mauro::shouldReceive('createDataClass')->andReturnUsing(function (...$args){
-            return MauroTest::mockCreateDataClass(...$args);
-        });
-
-        Mauro::shouldReceive('createDataElement')->andReturnUsing(function (...$args){
-            return MauroTest::mockCreateDataElement(...$args);
-        });
-
-        Mauro::shouldReceive('duplicateDataModel')->andReturnUsing(function (string $datasetId){
-            return ["id"=>fake()->uuid()];
-        });
-
-       
-
-        Mauro::makePartial();
-
-
     }
+
 
     /**
      * Get All Datasets with success
@@ -1130,21 +977,5 @@ class DatasetTest extends TestCase
             'message'
         ]);
         $responseDeleteUser->assertStatus(200);
-    }
-
-    private function getFakeDataset()
-    {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
-        $json = json_decode($jsonFile, true);
-
-        return $json;
-    }
-
-    private function getFakeUpdateDataset()
-    {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min_update.json', 0, null);
-        $json = json_decode($jsonFile, true);
-
-        return $json;
     }
 }
