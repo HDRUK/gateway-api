@@ -3,25 +3,26 @@
 namespace Tests\Feature;
 
 use Config;
-use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\SectorSeeder;
-use Database\Seeders\ApplicationSeeder;
-use App\Models\Application;
-use App\Models\Dataset;
-use Tests\Traits\Authorization;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-use MetadataManagementController AS MMC;
 use Mockery;
+use Tests\TestCase;
+use Http\Mock\Client;
+use App\Models\Dataset;
+use Nyholm\Psr7\Response;
+use App\Models\Application;
+use Tests\Traits\Authorization;
+use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\SectorSeeder;
+use Database\Seeders\DatasetSeeder;
+use Illuminate\Support\Facades\Http;
+
+use Database\Seeders\ApplicationSeeder;
+use Database\Seeders\MinimalUserSeeder;
 
 use Elastic\Elasticsearch\ClientBuilder;
+use MetadataManagementController AS MMC;
+use Illuminate\Foundation\Testing\WithFaker;
 use Elastic\Elasticsearch\Response\Elasticsearch;
-use Http\Mock\Client;
-use Nyholm\Psr7\Response;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetIntegrationTest extends TestCase
 {
@@ -175,7 +176,11 @@ class DatasetIntegrationTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
@@ -339,7 +344,11 @@ class DatasetIntegrationTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',

@@ -119,7 +119,7 @@ class Team extends Model
      * 
      * @var int
      */
-    private $member_of = 0;
+    private $member_of = '';
 
     /**
      * Represents the contact point for the team
