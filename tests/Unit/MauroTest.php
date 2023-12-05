@@ -25,47 +25,26 @@ class MauroTest extends TestCase
     public static function mockCreateDataElement(string $parentModelId, string $parentDataClassId, string $name, string $description, string $type)
     {
         return [
-            "id" => "d2c07927-437e-44f0-8090-1f25cec68770",
+            "id" => fake()->uuid(),
             "domainType" => "DataElement",
             "label" => $name,
-            "model" => "392aad98-0a2b-47af-be72-93f484260f63",
-            "breadcrumbs" => [
-                0 => [
-                    "id" => "392aad98-0a2b-47af-be72-93f484260f63",
-                    "label" => "XYZ DATASET",
-                    "domainType" => "DataModel",
-                    "finalised" => false,
-                ],
-                1 => [
-                    "id" => "c48d47dc-a4f9-4381-997c-7039f3066ba0",
-                    "label" => "table1",
-                    "domainType" => "DataClass",
-                ]
-            ],
+            "model" => $parentModelId,
             "description" => $description,
             "availableActions" => [
-            0 => "comment",
-            1 => "delete",
-            2 => "editDescription",
-            3 => "save",
-            4 => "show",
-            5 => "update",
+                0 => "comment",
+                1 => "delete",
+                2 => "editDescription",
+                3 => "save",
+                4 => "show",
+                5 => "update",
             ],
-            "lastUpdated" => "2023-12-05T14:17:53.297Z",
+            "lastUpdated" => fake()->iso8601(),
             "dataClass" => $parentDataClassId,
             "dataType" => [
-                "id" => "26ed82fa-06b9-4749-8c9c-a7460c9aa8e8",
+                "id" => fake()->uuid(),
                 "domainType" => "PrimitiveType",
                 "label" => "String",
-                "model" => "392aad98-0a2b-47af-be72-93f484260f63",
-                "breadcrumbs" => [
-                    0 => [
-                    "id" => "392aad98-0a2b-47af-be72-93f484260f63",
-                    "label" => "XYZ DATASET",
-                    "domainType" => "DataModel",
-                    "finalised" => false,
-                    ]
-                ]
+                "model" => $parentDataClassId
             ]
         ];
     }

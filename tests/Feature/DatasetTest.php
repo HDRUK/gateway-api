@@ -102,7 +102,90 @@ class DatasetTest extends TestCase
 
         $this->testElasticClient = $elasticClient;
 
+        Http::fake([
+            'ted*' => Http::response(
+                ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
+                201,
+                ['application/json']
+            )
+        ]);
+        
+        // Mock the MMC getElasticClient method to return the mock client
+        // makePartial so other MMC methods are not mocked
+        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
+        MMC::shouldReceive("translateDataModelType")->andReturnUsing(function(string $metadata){
+            return [
+                "traser_message" => "",
+                "wasTranslated" => true,
+                "metadata" => json_decode($metadata,true)["metadata"],
+                "statusCode" => "200",
+            ];
+        });
+        MMC::shouldReceive("validateDataModelType")->andReturn(true);
+        MMC::makePartial();
+
+
+        $this->dataset_store = [];
         $this->mauro_store = [];
+
+
+        Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
+            return MauroTest::mockedMauroCreateFolderResponse(...$args);
+        });
+        Mauro::shouldReceive('createDataModel')->andReturnUsing(function (...$args){
+            $mauro = MauroTest::mockedMauroCreateDatasetResponse(...$args);
+            $jsonObj = $args[count($args)-1];
+            $id = $mauro["DataModel"]["responseJson"]["id"];
+            
+            $mauro_metadata = MauroTest::mockCreateMauroData($jsonObj['dataset']['metadata']);
+            $this->mauro_store[$id] = $mauro_metadata;
+
+            return $mauro;
+        });
+        Mauro::shouldReceive('updateDataModel')->andReturnUsing(function (...$args){
+            $mauro = MauroTest::mockedMauroCreateDatasetResponse(...$args);
+            $jsonObj = $args[count($args)-2];
+            $id = $args[count($args)-1];
+            $mauro_metadata = MauroTest::mockCreateMauroData($jsonObj['dataset']['metadata']);
+            $this->mauro_store[$id] = $mauro_metadata;
+    
+            return $mauro;
+        });
+        Mauro::shouldReceive('finaliseDataModel')->andReturnUsing(function (string $datasetId){
+            return MauroTest::mockedFinaliseDataModel($datasetId);
+        });
+
+        Mauro::shouldReceive('getDatasetByIdMetadata')->andReturnUsing(function (string $datasetId){
+            $mauro_metadata = $this->mauro_store[$datasetId];
+            return ["items" => $mauro_metadata];
+        });
+
+        Mauro::shouldReceive('getAllDataClasses')->andReturnUsing(function (string $datasetId){
+            return ["items" => $this->mauro_store[$datasetId]];
+        });
+
+        Mauro::shouldReceive('deleteFolder')->andReturn(true);
+        Mauro::shouldReceive('deleteDataModel')->andReturn(true);
+        Mauro::shouldReceive('deleteDataClass')->andReturn(true);
+        Mauro::shouldReceive('restoreDataModel')->andReturn(true);
+
+        Mauro::shouldReceive('createDataClass')->andReturnUsing(function (...$args){
+            return MauroTest::mockCreateDataClass(...$args);
+        });
+
+        Mauro::shouldReceive('createDataElement')->andReturnUsing(function (...$args){
+            return MauroTest::mockCreateDataElement(...$args);
+        });
+
+        Mauro::shouldReceive('duplicateDataModel')->andReturnUsing(function (string $datasetId){
+            return ["id"=>fake()->uuid()];
+        });
+
+       
+
+        Mauro::makePartial();
+
+
     }
 
     /**
@@ -138,28 +221,6 @@ class DatasetTest extends TestCase
      */
     public function test_get_all_team_datasets_with_success(): void
     {
-
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::shouldReceive("translateDataModelType")->andReturnUsing(function(string $metadata){
-            return [
-                "traser_message" => "",
-                "wasTranslated" => true,
-                "metadata" => json_decode($metadata,true)["metadata"],
-                "statusCode" => "200",
-            ];
-        });
-        MMC::makePartial();
-
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -180,47 +241,6 @@ class DatasetTest extends TestCase
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         
-        Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
-            return MauroTest::mockedMauroCreateFolderResponse(...$args);
-        });
-        Mauro::shouldReceive('createDataModel')->andReturnUsing(function (...$args){
-            $mauro = MauroTest::mockedMauroCreateDatasetResponse(...$args);
-            $jsonObj = $args[count($args)-1];
-            $id = $mauro["DataModel"]["responseJson"]["id"];
-            
-            $mauro_metadata = MauroTest::mockCreateMauroData($jsonObj['dataset']['metadata']);
-            $this->mauro_store[$id] = $mauro_metadata;
-
-            return $mauro;
-        });
-        Mauro::shouldReceive('finaliseDataModel')->andReturnUsing(function (string $datasetId){
-            return MauroTest::mockedFinaliseDataModel($datasetId);
-        });
-
-        Mauro::shouldReceive('getDatasetByIdMetadata')->andReturnUsing(function (string $datasetId){
-            $mauro_metadata = $this->mauro_store[$datasetId];
-            return ["items" => $mauro_metadata];
-        });
-
-        Mauro::shouldReceive('getAllDataClasses')->andReturnUsing(function (string $datasetId){
-            return $this->mauro_store[$datasetId];
-        });
-
-        Mauro::shouldReceive('deleteFolder')->andReturnUsing(function (...$args){
-            return true;
-        });
-
-        Mauro::shouldReceive('createDataClass')->andReturnUsing(function (...$args){
-            return MauroTest::mockCreateDataClass(...$args);
-        });
-
-        Mauro::shouldReceive('createDataElement')->andReturnUsing(function (...$args){
-            return MauroTest::mockCreateDataElement(...$args);
-        });
-
-        Mauro::shouldReceive('deleteDataClass')->andReturn(true);
-
-        Mauro::makePartial();
 
         $responseCreateTeam = $this->json(
             'POST',
@@ -529,19 +549,6 @@ class DatasetTest extends TestCase
      */
     public function test_get_one_dataset_by_id_with_success(): void
     {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
-
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -695,18 +702,6 @@ class DatasetTest extends TestCase
      */
     public function test_create_archive_delete_dataset_with_success(): void
     {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
 
         // create team
         // First create a notification to be used by the new team
@@ -868,19 +863,6 @@ class DatasetTest extends TestCase
      */
     public function test_create_update_delete_dataset_with_success(): void
     {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
-
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -1030,19 +1012,6 @@ class DatasetTest extends TestCase
 
     public function test_create_dataset_fails_with_invalid_origin(): void
     {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
-
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(

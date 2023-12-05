@@ -46,6 +46,7 @@ class TechnicalObjectDataStore implements ShouldQueue
     public function handle(): void
     {
         $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
+
         if (!$this->update) {
             $this->deleteAllDataClasses();
 
@@ -86,6 +87,7 @@ class TechnicalObjectDataStore implements ShouldQueue
             // (3) Those which are not present in the request need to be deleted.
 
             $mauroDataClassesResponse = Mauro::getAllDataClasses($this->datasetId);
+
             $mauroDataClasses = $mauroDataClassesResponse['items'];
 
             /*
