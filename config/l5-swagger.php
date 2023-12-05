@@ -139,7 +139,28 @@ return [
              * @note This option overwrites `paths.excludes`
              * @see \OpenApi\scan
             */
-            'exclude' => [],
+            'exclude' => [                
+                'Http/Controllers/Api/V1/AuditLogController',
+                'Http/Controllers/Api/V1/FilterController',
+                'Http/Controllers/Api/V1/PermissionController',
+                'Http/Controllers/Api/V1/RoleController',
+                'Http/Controllers/Api/V1/SectorController',
+                'Http/Controllers/Api/V1/SocialLoginController',
+                'Http/Controllers/Api/V1/EmailController',
+                'Http/Controllers/Api/V1/EmailTemplateController',
+                'Http/Controllers/Api/V1/TagController',
+                'Http/Controllers/Api/V1/ActivityLogController',
+                'Http/Controllers/Api/V1/ActivityLogTypeController',
+                'Http/Controllers/Api/V1/ActivityLogUserTypeController',
+                'Http/Controllers/Api/V1/CohortRequestController',
+                'Http/Controllers/Api/V1/FeatureController',
+                'Http/Controllers/Api/V1/TeamController',
+                'Http/Controllers/Api/V1/TeamNotificationController',
+                'Http/Controllers/Api/V1/TeamUserController',
+                'Http/Controllers/ApiAvailabilityController',
+                'Http/Controllers/JwtController',
+                'Http/Controllers/ServiceLayerControler',
+            ],
 
             /*
              * Allows to generate specs either for OpenAPI 3.0.0 or OpenAPI 3.1.0.
