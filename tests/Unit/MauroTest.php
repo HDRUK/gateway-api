@@ -13,6 +13,25 @@ use Illuminate\Support\Facades\Http;
 
 class MauroTest extends TestCase
 {
+
+    public static function mockCreateMauroData($json, $prefix = 'properties/') {
+        $result = [];
+    
+        foreach ($json as $key => $value) {
+            if (is_array($value)) {
+                $result = array_merge($result, self::mockCreateMauroData($value, $prefix . $key . '/'));
+            } else {
+                $result[] = [
+                    'key' => $prefix . $key,
+                    'value' => $value,
+                    'id' => fake()->uuid(),
+                ];
+            }
+        }
+    
+        return $result;
+    }
+
     public static function mockedMauroCreateFolderResponse(string $label, string $description,string $parentFolderId): array
     {
         return [

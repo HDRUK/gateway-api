@@ -99,6 +99,8 @@ class DatasetTest extends TestCase
         }
 
         $this->testElasticClient = $elasticClient;
+
+        $this->mauro_store = [];
     }
 
     /**
@@ -176,18 +178,28 @@ class DatasetTest extends TestCase
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
 
-        Mauro::shouldReceive('createFolder')->andReturnUsing(function ($label,$description,$parentFolderId){
-            return MauroTest::mockedMauroCreateFolderResponse($label,$description,$parentFolderId);
+        Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
+            return MauroTest::mockedMauroCreateFolderResponse(...$args);
         });
-        Mauro::shouldReceive('createDataModel')->andReturnUsing(function (string $label, string $description, string $author, string $organisation, string $parentFolderId, array $jsonObj){
-            return MauroTest::mockedMauroCreateDatasetResponse($label,  $description,  $author,  $organisation,  $parentFolderId, $jsonObj);
+        Mauro::shouldReceive('createDataModel')->andReturnUsing(function (...$args){
+            $mauro = MauroTest::mockedMauroCreateDatasetResponse(...$args);
+            $jsonObj = $args[count($args)-1];
+            $id = $mauro["DataModel"]["responseJson"]["id"];
+            
+            $mauro_metadata = MauroTest::mockCreateMauroData($jsonObj['dataset']['metadata']);
+            $this->mauro_store[$id] = $mauro_metadata;
+
+            return $mauro;
         });
         Mauro::shouldReceive('finaliseDataModel')->andReturnUsing(function (string $datasetId){
             return MauroTest::mockedFinaliseDataModel($datasetId);
         });
         Mauro::shouldReceive('getDatasetByIdMetadata')->andReturnUsing(function (string $datasetId){
-            //dd($datasetId);
-            return [];
+            $mauro_metadata = $this->mauro_store[$datasetId];
+            return ["items" => $mauro_metadata];
+        });
+        Mauro::shouldReceive('deleteFolder')->andReturnUsing(function (...$args){
+            return true;
         });
         
         Mauro::makePartial();
@@ -361,7 +373,7 @@ class DatasetTest extends TestCase
         ]);
 
         /* 
-        * Test filtering by dataset title and status
+        * Test filtering by dataset title being ABC (datasetAlt)
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
             '?title=ABC',
@@ -369,10 +381,8 @@ class DatasetTest extends TestCase
         );
         $response->assertStatus(200);
 
-        dd($response);
-
         //should find the two draft datasets, whose titles both contain HDR
-        $this->assertCount(2,$response['data']);
+        $this->assertCount(1,$response['data']);
 
         /* 
         * Sort so that the newest dataset is first in the list
@@ -454,12 +464,6 @@ class DatasetTest extends TestCase
                                         [], $this->header
         );
         $response->assertStatus(400);
-
-
-        $response = $this->json('GET', self::TEST_URL_DATASET . 
-            '?title=HDR&status=DRAFT',
-            [], $this->header
-        );
 
 
         for ($i = 1; $i <= 3; $i++) {

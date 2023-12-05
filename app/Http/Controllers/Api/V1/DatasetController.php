@@ -166,8 +166,6 @@ class DatasetController extends Controller
             }
         }
 
-
-
         // filtering by title
         $filterTitle = $request->query('title', null);
         if (!empty($filterTitle)) {
