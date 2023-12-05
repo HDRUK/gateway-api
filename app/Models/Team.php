@@ -117,7 +117,7 @@ class Team extends Model
     /**
      * Indicates the organisation the team is a member of
      * 
-     * @var int
+     * @var string
      */
     private $member_of = '';
 
