@@ -52,6 +52,9 @@ if cfg.get('tedEnabled'):
 if cfg.get('fmaEnabled'):
     include(cfg.get('fmaServiceRoot') + '/Tiltfile')
 
+if cfg.get('searchEnabled'):
+    include(cfg.get('searchServiceRoot') + '/Tiltfile')
+
 docker_build(
     ref='hdruk/' + cfg.get('name'),
     context='.',
@@ -59,6 +62,7 @@ docker_build(
         'TRASER_ENABLED': '1' if cfg.get('traserEnabled') else '0',
         'TED_ENABLED': '1' if cfg.get('tedEnabled') else '0',
         'FMA_ENABLED': '1' if cfg.get('fmaEnabled') else '0',
+        'SEARCH_ENABLED': '1' if cfg.get('searchEnabled') else '0',
     },
     live_update=[
         sync('.', '/var/www'),
