@@ -4,13 +4,14 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SectorSeeder;
-use Database\Seeders\EmailTemplatesSeeder;
 use App\Models\Role;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use Tests\Traits\Authorization;
+use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\SectorSeeder;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use Illuminate\Support\Facades\Http;
@@ -340,7 +341,11 @@ class TeamUserTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => now(),

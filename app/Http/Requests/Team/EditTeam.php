@@ -3,6 +3,8 @@
 namespace App\Http\Requests\Team;
 
 use App\Models\Team;
+use Illuminate\Validation\Rule;
+use App\Http\Enums\TeamMemberOf;
 use App\Http\Requests\BaseFormRequest;
 
 class EditTeam extends BaseFormRequest
@@ -49,7 +51,12 @@ class EditTeam extends BaseFormRequest
                 'boolean',
             ],
             'member_of' => [
-                'integer',
+                'string',
+                Rule::in([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
             ],
             'contact_point' => [
                 'string',
