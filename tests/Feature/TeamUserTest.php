@@ -16,12 +16,16 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 
 use Mauro;
+use Tests\Traits\MockExternalApis;
 use Tests\Unit\MauroTest;
 
 class TeamUserTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis{
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
 
@@ -32,36 +36,14 @@ class TeamUserTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             SectorSeeder::class,
             EmailTemplatesSeeder::class,
         ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-
-        Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
-            return MauroTest::mockedMauroCreateFolderResponse(...$args);
-        });
-    
-        Mauro::shouldReceive('deleteFolder')->andReturn(true);
-        Mauro::makePartial();
-
-        
-        Http::fake([
-            'api.mjml.io*' => Http::response(
-                ["html"=>"<html>content </html>"], 
-                201,
-                ['application/json']
-            )
-        ]);
-
 
    }
 

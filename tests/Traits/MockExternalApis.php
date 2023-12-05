@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Http;
 use MetadataManagementController AS MMC;
 use Mauro;
 
+use Tests\Traits\Authorization;
+
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use Http\Mock\Client;
@@ -19,6 +21,7 @@ use Tests\Unit\MauroTest;
 trait MockExternalApis
 {
 
+    use Authorization;
     private $dataset = null;
     private $datasetUpdate = null;
     protected $header = [];
@@ -168,6 +171,13 @@ trait MockExternalApis
 
         Mauro::makePartial();
 
+        Http::fake([
+            env('MJML_RENDER_URL') => Http::response(
+                ["html"=>"<html>content</html>"], 
+                201,
+                ['application/json']
+            )
+        ]);
 
     }
 

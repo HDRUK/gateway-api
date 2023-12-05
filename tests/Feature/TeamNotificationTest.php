@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 use App\Models\TeamHasNotification;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,34 +18,11 @@ class TeamNotificationTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis;
 
     protected $header = [];
 
-    /**
-     * Set up the database
-     *
-     * @return void
-     */
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->seed([]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-
-        Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
-            return MauroTest::mockedMauroCreateFolderResponse(...$args);
-        });
-    
-        Mauro::shouldReceive('deleteFolder')->andReturn(true);
-        Mauro::makePartial();
-
-    }
+   
 
     public function test_create_notification_for_team_with_success() 
     {
