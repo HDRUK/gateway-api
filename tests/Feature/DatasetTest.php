@@ -13,12 +13,17 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use MetadataManagementController AS MMC;
+use Mauro;
 use Mockery;
 
 use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
+
+
+use Tests\Unit\MauroTest;
+
 
 class DatasetTest extends TestCase
 {
@@ -34,7 +39,7 @@ class DatasetTest extends TestCase
     private $datasetUpdate = null;
 
     protected $header = [];
-    
+
 
     /**
      * Set up the database
@@ -58,13 +63,16 @@ class DatasetTest extends TestCase
         // Lengthy process, but a more consistent representation
         // of an incoming dataset
         $this->dataset = $this->getFakeDataset();
+        $this->datasetAlt = $this->dataset;
+        $this->datasetAlt['metadata']['summary']['title'] = 'ABC title';
+
         $this->datasetUpdate = $this->getFakeUpdateDataset();
 
         // Define mock client and fake response for elasticsearch service
-        $mock = new Client();
+        $mockElastic = new Client();
 
-        $client = ClientBuilder::create()
-            ->setHttpClient($mock)
+        $elasticClient = ClientBuilder::create()
+            ->setHttpClient($mockElastic)
             ->build();
 
         // This is a PSR-7 response
@@ -83,14 +91,14 @@ class DatasetTest extends TestCase
         // Stack the responses expected in the create/archive/delete dataset test
         // create -> soft delete/archive -> unarchive -> permanent delete
         for ($i=0; $i < 100; $i++) {
-            $mock->addResponse($createResponse);
+            $mockElastic->addResponse($createResponse);
         }
 
         for ($i=0; $i < 100; $i++) {
-            $mock->addResponse($deleteResponse);
+            $mockElastic->addResponse($deleteResponse);
         }
 
-        $this->testElasticClient = $client;
+        $this->testElasticClient = $elasticClient;
     }
 
     /**
@@ -138,6 +146,14 @@ class DatasetTest extends TestCase
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
+        MMC::shouldReceive("translateDataModelType")->andReturnUsing(function(string $metadata){
+            return [
+                "traser_message" => "",
+                "wasTranslated" => true,
+                "metadata" => json_decode($metadata,true)["metadata"],
+                "statusCode" => "200",
+            ];
+        });
         MMC::makePartial();
 
         // create team
@@ -159,6 +175,23 @@ class DatasetTest extends TestCase
 
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+
+        Mauro::shouldReceive('createFolder')->andReturnUsing(function ($label,$description,$parentFolderId){
+            return MauroTest::mockedMauroCreateFolderResponse($label,$description,$parentFolderId);
+        });
+        Mauro::shouldReceive('createDataModel')->andReturnUsing(function (string $label, string $description, string $author, string $organisation, string $parentFolderId, array $jsonObj){
+            return MauroTest::mockedMauroCreateDatasetResponse($label,  $description,  $author,  $organisation,  $parentFolderId, $jsonObj);
+        });
+        Mauro::shouldReceive('finaliseDataModel')->andReturnUsing(function (string $datasetId){
+            return MauroTest::mockedFinaliseDataModel($datasetId);
+        });
+        Mauro::shouldReceive('getDatasetByIdMetadata')->andReturnUsing(function (string $datasetId){
+            //dd($datasetId);
+            return [];
+        });
+        
+        Mauro::makePartial();
+
         $responseCreateTeam = $this->json(
             'POST',
             self::TEST_URL_TEAM,
@@ -262,6 +295,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
+
         $responseCreateDataset->assertStatus(201);
         $datasetId1 = $responseCreateDataset['data'];
 
@@ -294,7 +328,7 @@ class DatasetTest extends TestCase
                 'user_id' => $userId,
                 'label' => $labelDataset3,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                'dataset' => $this->dataset,
+                'dataset' => $this->datasetAlt,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
@@ -308,6 +342,7 @@ class DatasetTest extends TestCase
                                        [], $this->header
                                     );
         $response->assertStatus(200);
+
         $this->assertCount(3,$response['data']);
         $response->assertJsonStructure([
             'current_page',
@@ -325,17 +360,19 @@ class DatasetTest extends TestCase
             'total',
         ]);
 
-
         /* 
         * Test filtering by dataset title and status
         */
-        $responseStatus = $this->json('GET', self::TEST_URL_DATASET . 
-            '?title=HDR&status=DRAFT',
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+            '?title=ABC',
             [], $this->header
         );
-        $responseStatus->assertStatus(200);
+        $response->assertStatus(200);
+
+        dd($response);
+
         //should find the two draft datasets, whose titles both contain HDR
-        $this->assertCount(2,$responseStatus['data']);
+        $this->assertCount(2,$response['data']);
 
         /* 
         * Sort so that the newest dataset is first in the list

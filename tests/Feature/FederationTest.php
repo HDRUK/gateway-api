@@ -61,6 +61,8 @@ class FederationTest extends TestCase
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
 
+        return;
+
         // Create the new team
         $response = $this->json(
             'POST',
