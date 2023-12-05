@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use App\Jobs\TechnicalObjectDataStore;
+
 use MetadataManagementController AS MMC;
 use Mauro;
 use Mockery;
@@ -177,7 +179,7 @@ class DatasetTest extends TestCase
 
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
-
+        
         Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
             return MauroTest::mockedMauroCreateFolderResponse(...$args);
         });
@@ -194,14 +196,30 @@ class DatasetTest extends TestCase
         Mauro::shouldReceive('finaliseDataModel')->andReturnUsing(function (string $datasetId){
             return MauroTest::mockedFinaliseDataModel($datasetId);
         });
+
         Mauro::shouldReceive('getDatasetByIdMetadata')->andReturnUsing(function (string $datasetId){
             $mauro_metadata = $this->mauro_store[$datasetId];
             return ["items" => $mauro_metadata];
         });
+
+        Mauro::shouldReceive('getAllDataClasses')->andReturnUsing(function (string $datasetId){
+            return $this->mauro_store[$datasetId];
+        });
+
         Mauro::shouldReceive('deleteFolder')->andReturnUsing(function (...$args){
             return true;
         });
-        
+
+        Mauro::shouldReceive('createDataClass')->andReturnUsing(function (...$args){
+            return MauroTest::mockCreateDataClass(...$args);
+        });
+
+        Mauro::shouldReceive('createDataElement')->andReturnUsing(function (...$args){
+            return MauroTest::mockCreateDataElement(...$args);
+        });
+
+        Mauro::shouldReceive('deleteDataClass')->andReturn(true);
+
         Mauro::makePartial();
 
         $responseCreateTeam = $this->json(
@@ -291,6 +309,9 @@ class DatasetTest extends TestCase
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
         $userId = $contentCreateUser['data'];
 
+        $specificTime = Carbon::parse('2023-01-01 00:00:00');
+        Carbon::setTestNow($specificTime);
+
         // create dataset
         $labelDataset1 = 'XYZ DATASET';
         $responseCreateDataset = $this->json(
@@ -312,6 +333,8 @@ class DatasetTest extends TestCase
         $datasetId1 = $responseCreateDataset['data'];
 
         //create a 2nd one
+        $specificTime = Carbon::parse('2023-02-01 00:00:00');
+        Carbon::setTestNow($specificTime);
         $labelDataset2 = 'ABC DATASET';
         $responseCreateDataset2 = $this->json(
             'POST',
@@ -331,6 +354,8 @@ class DatasetTest extends TestCase
         $datasetId2 = $responseCreateDataset2['data'];
 
         //create a 3rd one which is owned by the 2nd team
+        $specificTime = Carbon::parse('2023-03-01 00:00:00');
+        Carbon::setTestNow($specificTime);
         $labelDataset3 = 'Other Team DATASET';
         $responseCreateDataset3 = $this->json(
             'POST',
