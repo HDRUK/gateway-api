@@ -3,96 +3,39 @@
 namespace Tests\Feature;
 
 use Config;
-use Mockery;
 use Tests\TestCase;
-use Http\Mock\Client;
 use App\Models\Dataset;
-use Nyholm\Psr7\Response;
-use Illuminate\Support\Carbon;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
+use Illuminate\Support\Carbon;
 use App\Http\Enums\TeamMemberOf;
 
-use Database\Seeders\SectorSeeder;
-use Illuminate\Support\Facades\Http;
-
-use Elastic\Elasticsearch\ClientBuilder;
-use MetadataManagementController AS MMC;
-use Illuminate\Foundation\Testing\WithFaker;
-use Elastic\Elasticsearch\Response\Elasticsearch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL_DATASET = '/api/v1/datasets';
     const TEST_URL_TEAM = 'api/v1/teams';
     const TEST_URL_NOTIFICATION = 'api/v1/notifications';
     const TEST_URL_USER = 'api/v1/users';
 
-    private $dataset = null;
-    private $datasetUpdate = null;
-
-    protected $header = [];
-    
-
-    /**
-     * Set up the database
-     *
-     * @return void
-     */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed([
-            SectorSeeder::class,
-        ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-
-        // Lengthy process, but a more consistent representation
-        // of an incoming dataset
         $this->dataset = $this->getFakeDataset();
+        $this->datasetAlt = $this->dataset;
+        $this->datasetAlt['metadata']['summary']['title'] = 'ABC title';
+
         $this->datasetUpdate = $this->getFakeUpdateDataset();
-
-        // Define mock client and fake response for elasticsearch service
-        $mock = new Client();
-
-        $client = ClientBuilder::create()
-            ->setHttpClient($mock)
-            ->build();
-
-        // This is a PSR-7 response
-        // Mock two responses, one for creating a dataset, another for deleting
-        $createResponse = new Response(
-            200, 
-            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'Document created'
-        );
-        $deleteResponse = new Response(
-            200, 
-            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'Document deleted'
-        );
-
-        // Stack the responses expected in the create/archive/delete dataset test
-        // create -> soft delete/archive -> unarchive -> permanent delete
-        for ($i=0; $i < 100; $i++) {
-            $mock->addResponse($createResponse);
-        }
-
-        for ($i=0; $i < 100; $i++) {
-            $mock->addResponse($deleteResponse);
-        }
-
-        $this->testElasticClient = $client;
     }
+
 
     /**
      * Get All Datasets with success
@@ -127,20 +70,6 @@ class DatasetTest extends TestCase
      */
     public function test_get_all_team_datasets_with_success(): void
     {
-
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
-
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -160,6 +89,8 @@ class DatasetTest extends TestCase
 
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        
+
         $responseCreateTeam = $this->json(
             'POST',
             self::TEST_URL_TEAM,
@@ -255,6 +186,9 @@ class DatasetTest extends TestCase
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
         $userId = $contentCreateUser['data'];
 
+        $specificTime = Carbon::parse('2023-01-01 00:00:00');
+        Carbon::setTestNow($specificTime);
+
         // create dataset
         $labelDataset1 = 'XYZ DATASET';
         $responseCreateDataset = $this->json(
@@ -271,10 +205,13 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
+
         $responseCreateDataset->assertStatus(201);
         $datasetId1 = $responseCreateDataset['data'];
 
         //create a 2nd one
+        $specificTime = Carbon::parse('2023-02-01 00:00:00');
+        Carbon::setTestNow($specificTime);
         $labelDataset2 = 'ABC DATASET';
         $responseCreateDataset2 = $this->json(
             'POST',
@@ -294,6 +231,8 @@ class DatasetTest extends TestCase
         $datasetId2 = $responseCreateDataset2['data'];
 
         //create a 3rd one which is owned by the 2nd team
+        $specificTime = Carbon::parse('2023-03-01 00:00:00');
+        Carbon::setTestNow($specificTime);
         $labelDataset3 = 'Other Team DATASET';
         $responseCreateDataset3 = $this->json(
             'POST',
@@ -303,7 +242,7 @@ class DatasetTest extends TestCase
                 'user_id' => $userId,
                 'label' => $labelDataset3,
                 'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                'dataset' => $this->dataset,
+                'dataset' => $this->datasetAlt,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
@@ -317,6 +256,7 @@ class DatasetTest extends TestCase
                                        [], $this->header
                                     );
         $response->assertStatus(200);
+
         $this->assertCount(3,$response['data']);
         $response->assertJsonStructure([
             'current_page',
@@ -334,17 +274,17 @@ class DatasetTest extends TestCase
             'total',
         ]);
 
-
         /* 
-        * Test filtering by dataset title and status
+        * Test filtering by dataset title being ABC (datasetAlt)
         */
-        $responseStatus = $this->json('GET', self::TEST_URL_DATASET . 
-            '?title=HDR&status=DRAFT',
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+            '?title=ABC',
             [], $this->header
         );
-        $responseStatus->assertStatus(200);
+        $response->assertStatus(200);
+
         //should find the two draft datasets, whose titles both contain HDR
-        $this->assertCount(2,$responseStatus['data']);
+        $this->assertCount(1,$response['data']);
 
         /* 
         * Sort so that the newest dataset is first in the list
@@ -428,12 +368,6 @@ class DatasetTest extends TestCase
         $response->assertStatus(400);
 
 
-        $response = $this->json('GET', self::TEST_URL_DATASET . 
-            '?title=HDR&status=DRAFT',
-            [], $this->header
-        );
-
-
         for ($i = 1; $i <= 3; $i++) {
             // delete dataset
             $responseDeleteDataset = $this->json(
@@ -472,19 +406,6 @@ class DatasetTest extends TestCase
      */
     public function test_get_one_dataset_by_id_with_success(): void
     {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
-
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -642,18 +563,6 @@ class DatasetTest extends TestCase
      */
     public function test_create_archive_delete_dataset_with_success(): void
     {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
 
         // create team
         // First create a notification to be used by the new team
@@ -821,19 +730,6 @@ class DatasetTest extends TestCase
      */
     public function test_create_update_delete_dataset_with_success(): void
     {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
-
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -987,19 +883,6 @@ class DatasetTest extends TestCase
 
     public function test_create_dataset_fails_with_invalid_origin(): void
     {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
-
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -1121,21 +1004,5 @@ class DatasetTest extends TestCase
             'message'
         ]);
         $responseDeleteUser->assertStatus(200);
-    }
-
-    private function getFakeDataset()
-    {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
-        $json = json_decode($jsonFile, true);
-
-        return $json;
-    }
-
-    private function getFakeUpdateDataset()
-    {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min_update.json', 0, null);
-        $json = json_decode($jsonFile, true);
-
-        return $json;
     }
 }

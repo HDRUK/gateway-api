@@ -14,10 +14,19 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
+use Illuminate\Support\Facades\Http;
+
+use Mauro;
+use Tests\Traits\MockExternalApis;
+use Tests\Unit\MauroTest;
+
 class TeamUserTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis{
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
 
@@ -28,19 +37,15 @@ class TeamUserTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             SectorSeeder::class,
             EmailTemplatesSeeder::class,
         ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
+
    }
 
     /**
@@ -67,6 +72,7 @@ class TeamUserTest extends TestCase
         $response->assertJsonStructure([
             'message'
         ]);
+
         $response->assertStatus(201);
 
         $getTeamHasUsers = $this->getTeamHasUsers($teamId, $userId);

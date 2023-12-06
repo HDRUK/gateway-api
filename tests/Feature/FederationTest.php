@@ -6,37 +6,21 @@ use Config;
 use Tests\TestCase;
 use App\Models\Federation;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 use App\Http\Enums\TeamMemberOf;
 use App\Models\TeamHasFederation;
 use App\Models\FederationHasNotification;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class FederationTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis;
 
     protected $header = [];
     protected $accessToken = null;
 
-    /**
-     * Set up the database
-     *
-     * @return void
-     */
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->seed([]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-    }
 
     /**
      * Get All Federations By Team ID with success
