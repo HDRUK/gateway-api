@@ -60,7 +60,22 @@ class SearchController extends Controller
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="array",
      *                  @OA\Items(
-     *                      @OA\Property(property="datasets", type="array", @OA\Items()),
+     *                      @OA\Property(property="datasets", type="array", 
+     *                          @OA\Items(
+     *                              @OA\Property(property="_source", type="array",
+     *                                  @OA\Items(
+     *                                      @OA\Property(property="abstract", type="string"),
+     *                                      @OA\Property(property="description", type="string"),
+     *                                      @OA\Property(property="keywords", type="string"),
+     *                                      @OA\Property(property="named_entities", type="array", @OA\Items()),
+     *                                      @OA\Property(property="publisherName", type="string"),
+     *                                      @OA\Property(property="shortTitle", type="string"),
+     *                                      @OA\Property(property="title", type="string"),
+     *                                      @OA\Property(property="created_at", type="string")
+     *                                  )
+     *                              )
+     *                          )
+     *                      ),
      *                      @OA\Property(property="tools", type="array", @OA\Items()),
      *                      @OA\Property(property="collections", type="array", @OA\Items()),
      *                  )
