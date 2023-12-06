@@ -96,6 +96,78 @@ trait MockExternalApis
                 ['application/json']
             )
         ]);
+
+        // Mock the search service
+        Http::fake([
+            'search-service*' => Http::response(
+                [
+                    'collections' => [],
+                    'tools' => [],
+                    'datasets' => [
+                        'took' => 1000,
+                        'timed_out' => false,
+                        '_shards' => [],
+                        'hits' => [
+                            'hits' => [
+                                0 => [
+                                    '_explanation' => [],
+                                    '_id' => '1',
+                                    '_index' => 'datasets',
+                                    '_node' => 'abcd-123-efgh',
+                                    '_score' => 20.0,
+                                    '_shard' => '[datasets][0]',
+                                    '_source' => [
+                                        'abstract' => '',
+                                        'description' => '',
+                                        'keywords' => '',
+                                        'named_entities' => [],
+                                        'publisher_name' => '',
+                                        'shortTitle' => 'Asthma dataset',
+                                        'title' => 'Asthma dataset'
+                                    ]
+                                ],
+                                1 => [
+                                    '_explanation' => [],
+                                    '_id' => '2',
+                                    '_index' => 'datasets',
+                                    '_node' => 'abcd-123-efgh',
+                                    '_score' => 18.0,
+                                    '_shard' => '[datasets][0]',
+                                    '_source' => [
+                                        'abstract' => '',
+                                        'description' => '',
+                                        'keywords' => '',
+                                        'named_entities' => [],
+                                        'publisher_name' => '',
+                                        'shortTitle' => 'Another asthma dataset',
+                                        'title' => 'Another asthma dataset'
+                                    ],
+                                ],
+                                2 => [
+                                    '_explanation' => [],
+                                    '_id' => '3',
+                                    '_index' => 'datasets',
+                                    '_node' => 'abcd-123-efgh',
+                                    '_score' => 16.0,
+                                    '_shard' => '[datasets][0]',
+                                    '_source' => [
+                                        'abstract' => '',
+                                        'description' => '',
+                                        'keywords' => '',
+                                        'named_entities' => [],
+                                        'publisher_name' => '',
+                                        'shortTitle' => 'Third asthma dataset',
+                                        'title' => 'Third asthma dataset'
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
         
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
