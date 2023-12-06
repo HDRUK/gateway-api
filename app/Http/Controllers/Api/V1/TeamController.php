@@ -33,42 +33,87 @@ class TeamController extends Controller
      *      description="Returns a list of teams enabled on the system",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
-     *          response=200,
-     *          description="Success",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                      @OA\Property(property="name", type="string", example="someName"),
-     *                      @OA\Property(property="allows_messaging", type="boolean", example="1"),
-     *                      @OA\Property(property="workflow_enabled", type="boolean", example="1"),
-     *                      @OA\Property(property="access_requests_management", type="boolean", example="1"),
-     *                      @OA\Property(property="uses_5_safes", type="boolean", example="1"),
-     *                      @OA\Property(property="is_admin", type="boolean", example="1"),
-     *                      @OA\Property(property="member_of", type="string", example="someOrg"),
-     *                      @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
-     *                      @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                      @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
-     *                      @OA\Property(property="mdm_folder_id", type="datetime", example="xxxxxxx"), 
-     *                  )
-     *              )
-     *          )
-     *      )
+     *         response="200",
+     *         description="Success response",
+     *         @OA\JsonContent(
+     *            @OA\Property(property="current_page", type="integer", example="1"),
+     *               @OA\Property(property="data", type="array",
+     *                  @OA\Items(type="object",
+     *                    @OA\Property(property="id", type="integer", example="123"),
+     *                    @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                    @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                    @OA\Property(property="enabled", type="boolean", example="1"),
+     *                    @OA\Property(property="name", type="string", example="someName"),
+     *                    @OA\Property(property="allows_messaging", type="boolean", example="1"),
+     *                    @OA\Property(property="workflow_enabled", type="boolean", example="1"),
+     *                    @OA\Property(property="access_requests_management", type="boolean", example="1"),
+     *                    @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *                    @OA\Property(property="is_admin", type="boolean", example="1"),
+     *                    @OA\Property(property="member_of", type="string", example="someOrg"),
+     *                    @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
+     *                    @OA\Property(property="application_form_updated_by", type="integer", example="555"),
+     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
+     *                    @OA\Property(property="mdm_folder_id", type="datetime", example="xxxxxxx"), 
+     *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()), 
+     *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()), 
+     *                ),
+     *             ),
+     *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
+     *             @OA\Property(property="from", type="integer", example="1"),
+     *             @OA\Property(property="last_page", type="integer", example="1"),
+     *             @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
+     *             @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *             @OA\Property(property="next_page_url", type="string", example="null"),
+     *             @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests"),
+     *             @OA\Property(property="per_page", type="integer", example="25"),
+     *             @OA\Property(property="prev_page_url", type="string", example="null"),
+     *             @OA\Property(property="to", type="integer", example="3"),
+     *             @OA\Property(property="total", type="integer", example="3"),
+     *          ),
+     *       ),
+     *    ),
      * )
      */
     public function index(Request $request): JsonResponse
     {
-        $teams = Team::where('enabled', 1)->with('users')->get()->toArray();
+        try {
+            $sort = [];
+            $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
+            foreach ($sortArray as $item) {
+                $tmp = explode(":", $item);
+                $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+            }
 
-        $response = $this->getTeams($teams);
+            $query = Team::where('enabled', 1);
 
-        return response()->json([
-            'data' => $response,
-        ]);
+            if ($request->has('uses_5_safes')) {
+                $query->where('teams.uses_5_safes', $request->query('uses_5_safes'));
+            }
+
+            foreach ($sort as $key => $value) {
+                if ($key === 'created_at') {
+                    $query->orderBy('teams.' . $key, strtoupper($value));
+                }
+
+                if ($key === 'data_provider') {
+                    $query->orderBy('teams.member_of', strtoupper($value));
+                    $query->orderBy('teams.name', strtoupper($value));
+                }
+            }
+
+            $teams = $query
+                ->with('users')
+                ->paginate(Config::get('constants.per_page'), ['*'], 'page')
+                ->toArray();
+
+            $teams['data'] = $this->getTeams($teams['data']);
+
+            return response()->json(
+                $teams
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -125,17 +170,16 @@ class TeamController extends Controller
      */
     public function show(GetTeam $request, int $teamId): JsonResponse
     {
-        $team = Team::with('notifications')->where('id', $teamId)->firstOrFail();
-
-        if ($team) {
+        try {
             $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
+
             return response()->json([
                 'message' => 'success',
                 'data' => $this->getTeams($userTeam),
             ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new NotFoundException();
     }
 
     /**
