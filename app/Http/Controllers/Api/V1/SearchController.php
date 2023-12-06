@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use Exception;
 
+use App\Models\Dataset;
+
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -30,6 +32,27 @@ class SearchController extends Controller
      *              )
      *          )
      *      ),
+     *      @OA\Parameter(
+     *          name="sort",
+     *          in="query",
+     *          description="Field to sort by (default: 'score')",
+     *          example="created",
+     *          @OA\Schema(
+     *              type="string",
+     *              description="Field to sort by (score, created_at, title)",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="direction",
+     *          in="query",
+     *          description="Sort direction ('asc' or 'desc', default: 'desc')",
+     *          example="desc",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum={"asc", "desc"},
+     *              description="Sort direction",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -49,19 +72,65 @@ class SearchController extends Controller
     public function search(Request $request): JsonResponse
     {
         try {
+            $sort = $request->query('sort',"score:desc");   
+        
+            $tmp = explode(":", $sort);
+            $sortInput = $tmp[0];
+            $sortField = ($sortInput === 'title') ? 'shortTitle' : $sortInput;
+            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
             $urlString = env('SEARCH_SERVICE_URL') . '/search';
 
             $response = Http::withBody(
                 $request->getContent(), 'application/json'
             )->get($urlString);
 
+            $datasetsArray = $response['datasets']['hits']['hits'];
+            // join to created at from DB
+            foreach (array_values($datasetsArray) as $i => $d) {
+                $datasetModel = Dataset::where(['id' => $d['_id']])->first()->toArray();
+                $datasetsArray[$i]['_source']['created_at'] = $datasetModel['created_at'];
+            }
+
+            if ($sortField === 'score') {
+                return response()->json([
+                    'message' => 'success',
+                    'data' => [
+                        'datasets' => $datasetsArray,
+                        'tools' => $response['tools'],
+                        'collections' => $response['collections']
+                    ]
+                ], 200);
+            }
+
+            if ($sortDirection === 'asc') { 
+                usort(
+                    $datasetsArray, 
+                    function($a, $b) use ($sortField) {
+                        return $a['_source'][$sortField] <=> $b['_source'][$sortField];
+                    }
+                );
+            } else {
+                usort(
+                    $datasetsArray, 
+                    function($a, $b) use ($sortField) {
+                        return -1 * ($a['_source'][$sortField] <=> $b['_source'][$sortField]);
+                    }
+                );
+            }
+
             return response()->json([
                 'message' => 'success',
-                'data' => $response->json()
+                'data' => [
+                    'datasets' => $datasetsArray,
+                    'tools' => $response['tools'],
+                    'collections' => $response['collections']
+                ]
             ], 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
+
 }
