@@ -93,10 +93,11 @@ class SearchController extends Controller
             }
 
             if ($sortField === 'score') {
+                $datasetsArraySorted = $sortDirection === 'desc' ? $datasetsArray : array_reverse($datasetsArray);
                 return response()->json([
                     'message' => 'success',
                     'data' => [
-                        'datasets' => $datasetsArray,
+                        'datasets' => $datasetsArraySorted,
                         'tools' => $response['tools'],
                         'collections' => $response['collections']
                     ]
