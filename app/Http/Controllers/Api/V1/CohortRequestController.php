@@ -145,6 +145,11 @@ class CohortRequestController extends Controller
                 $query->where('request_status', strtoupper($request->query('request_status')));
             }
 
+            // filter by users.organisation or users.name
+            if ($request->has('text')) {
+                $query->filterByOrganisationOrName($request->query('text'));
+            }
+
             $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
 
             foreach($sort as $key => $value) {

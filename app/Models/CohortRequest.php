@@ -83,6 +83,21 @@ class CohortRequest extends Model
         });
     }
 
+    /**
+     * Scope a query to only include cohort requests that have users with organisation or name with a specific value.
+     *
+     * @param Builder $query
+     * @param string $value
+     * @return Builder
+     */
+    public function scopeFilterByOrganisationOrName(Builder $query, string $value): Builder
+    {
+        return $query->whereHas('user', function ($query) use ($value) {
+            $query->where('organisation', 'LIKE', '%' . $value . '%')
+                  ->orWhere('name', 'LIKE', '%' . $value . '%');
+        });
+    }
+
     public function scopeFilterByMultiOrganisation(Builder $query, array $values): Builder
     {
         if (empty($values)) {
