@@ -691,7 +691,7 @@ class CohortRequestController extends Controller
                 }
             );
 
-            $response->headers->set('Content-Type', 'text\csv');
+            $response->headers->set('Content-Type', 'text/csv');
             $response->headers->set('Content-Disposition', 'attachment;filename="Cohort_Discovery_Admin.csv"');
             $response->headers->set('Cache-Control','max-age=0');
             return $response;
