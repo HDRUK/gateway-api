@@ -212,7 +212,9 @@ class MetadataManagementController {
                 'publisherName' => $dataset['summary']['publisher']['publisherName'],
                 'startDate' => $dataset['provenance']['temporal']['startDate'],
                 'endDate' => $dataset['provenance']['temporal']['endDate'],
-                'physicalSampleAvailability' => $dataset['coverage']['physicalSampleAvailability'],
+                'physicalSampleAvailability' => explode(',', $dataset['coverage']['physicalSampleAvailability']),
+                'conformsTo' => explode(',', $dataset['accessibility']['formatAndStandards']['conformsTo']),
+                'hasTechnicalMetadata' => (bool) $datasetMatch['has_technical_details'],
                 'named_entities' => $namedEntities
             ];
 
@@ -262,16 +264,27 @@ class MetadataManagementController {
                 'properties/summary/publisher/publisherName',
                 'properties/provenance/temporal/startDate',
                 'properties/provenance/temporal/endDate',
-                'properties/coverage/physicalSampleAvailability'
+                'properties/coverage/physicalSampleAvailability',
+                'properties/accessibility/formatAndStandards/conformsTo'
+            ];
+            // Fields that are comma delimited strings need to be arrays of strings
+            $toSplitFields = [
+                'properties/coverage/physicalSampleAvailability',
+                'properties/accessibility/formatAndStandards/conformsTo'
             ];
             $toIndex = array();
             $toIndex['named_entities'] = $namedEntities;
+            $toIndex['hasTechnicalMetadata'] = (bool) $datasetMatch['has_technical_details'];
 
             foreach ($mauroModel['items'] as $i) {
                 if (in_array($i['key'], $toIndexFields)) {
                     $exploded = explode("/", $i['key']);
                     $key = end($exploded);
-                    $toIndex[$key] = $i['value'];
+                    if (in_array($i['key'], $toSplitFields)) {
+                        $toIndex[$key] = explode(',', $i['value']);
+                    } else {
+                        $toIndex[$key] = $i['value'];
+                    }
                 }
             }
 
