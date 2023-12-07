@@ -84,6 +84,16 @@ class CohortRequestController extends Controller
      *          description="filter by email",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="text",
+     *       in="query",
+     *       description="filter by organisation or user name",
+     *       example="test",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by organisation or user name",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
