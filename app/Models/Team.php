@@ -144,7 +144,7 @@ class Team extends Model
     private $application_form_updated_on = '';
 
     /**
-     * Indicates whether the team uses 5 safes
+     * Indicates whether the team uses question bank
      * 
      * @var bool
      */
