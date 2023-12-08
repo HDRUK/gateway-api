@@ -239,7 +239,13 @@ class CohortRequestController extends Controller
     {
         try {
             $cohortRequests = CohortRequest::where('id', $id)
-                ->with(['user', 'logs', 'logs.user'])
+                ->with([
+                    'user', 
+                    'logs' => function ($q) {
+                        $q->orderBy('id', 'desc');
+                    }, 
+                    'logs.user',
+                    ])
                 ->first()->toArray();
 
             return response()->json([
