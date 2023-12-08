@@ -34,6 +34,7 @@ class TeamFactory extends Factory
             'application_form_updated_by' => fake()->words(2, true),
             'application_form_updated_on' => fake()->dateTime(),
             'mongo_object_id' => null,
+            'is_question_bank' => fake()->boolean(),
         ];
     }
 }

@@ -75,7 +75,10 @@ class CreateTeam extends BaseFormRequest
             'mongo_object_id' => [
                 'nullable',
                 'string',
-            ]
+            ],
+            'is_question_bank' => [
+                'boolean',
+            ],
         ];
     }
 }
