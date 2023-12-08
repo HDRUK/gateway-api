@@ -67,6 +67,7 @@ class TeamTest extends TestCase
                         'application_form_updated_on',
                         'users',
                         'notifications',
+                        'is_question_bank',
                     ],
                 ],               
             ]);
@@ -118,6 +119,7 @@ class TeamTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 1,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -208,6 +210,7 @@ class TeamTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 0,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -286,6 +289,7 @@ class TeamTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 0,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -320,6 +324,7 @@ class TeamTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:45:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 1,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -400,6 +405,7 @@ class TeamTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 1,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -438,6 +444,7 @@ class TeamTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:45:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 0,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -565,7 +572,7 @@ class TeamTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
-                
+                'is_question_bank' => 0,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

@@ -6558,6 +6558,32 @@
                 "summary": "Search@search",
                 "description": "Returns gateway entities related to the provided query term(s)",
                 "operationId": "7abc881cbaca3aae0b1c62c2d39e7dcb",
+                "parameters": [
+                    {
+                        "name": "sort",
+                        "in": "query",
+                        "description": "Field to sort by (default: 'score')",
+                        "schema": {
+                            "description": "Field to sort by (score, created_at, title)",
+                            "type": "string"
+                        },
+                        "example": "created"
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "Sort direction ('asc' or 'desc', default: 'desc')",
+                        "schema": {
+                            "description": "Sort direction",
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        },
+                        "example": "desc"
+                    }
+                ],
                 "requestBody": {
                     "description": "Submit search query",
                     "required": true,
@@ -6591,7 +6617,44 @@
                                                 "properties": {
                                                     "datasets": {
                                                         "type": "array",
-                                                        "items": {}
+                                                        "items": {
+                                                            "properties": {
+                                                                "_source": {
+                                                                    "type": "array",
+                                                                    "items": {
+                                                                        "properties": {
+                                                                            "abstract": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "description": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "keywords": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "named_entities": {
+                                                                                "type": "array",
+                                                                                "items": {}
+                                                                            },
+                                                                            "publisherName": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "shortTitle": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "title": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "created_at": {
+                                                                                "type": "string"
+                                                                            }
+                                                                        },
+                                                                        "type": "object"
+                                                                    }
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
                                                     },
                                                     "tools": {
                                                         "type": "array",
@@ -6604,6 +6667,983 @@
                                                 },
                                                 "type": "object"
                                             }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/teams": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "List of teams",
+                "description": "Returns a list of teams enabled on the system",
+                "operationId": "f4c6fb002db8850c2c1a742012fb7fa5",
+                "responses": {
+                    "200": {
+                        "description": "Success response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "current_page": {
+                                            "type": "integer",
+                                            "example": "1"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": "123"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11 12:00:00"
+                                                    },
+                                                    "enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "someName"
+                                                    },
+                                                    "allows_messaging": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "workflow_enabled": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "access_requests_management": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "uses_5_safes": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "is_admin": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    },
+                                                    "member_of": {
+                                                        "type": "string",
+                                                        "example": "someOrg"
+                                                    },
+                                                    "contact_point": {
+                                                        "type": "string",
+                                                        "example": "someone@mail.com"
+                                                    },
+                                                    "application_form_updated_by": {
+                                                        "type": "integer",
+                                                        "example": "555"
+                                                    },
+                                                    "application_form_updated_on": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2023-04-11"
+                                                    },
+                                                    "mdm_folder_id": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "xxxxxxx"
+                                                    },
+                                                    "users": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "notifications": {
+                                                        "type": "array",
+                                                        "items": {},
+                                                        "example": "[]"
+                                                    },
+                                                    "is_question_bank": {
+                                                        "type": "boolean",
+                                                        "example": "1"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "first_page_url": {
+                                            "type": "string",
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/cohort_requests?page=1"
+                                        },
+                                        "from": {
+                                            "type": "integer",
+                                            "example": "1"
+                                        },
+                                        "last_page": {
+                                            "type": "integer",
+                                            "example": "1"
+                                        },
+                                        "last_page_url": {
+                                            "type": "string",
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/cohort_requests?page=1"
+                                        },
+                                        "links": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "array",
+                                                "items": {}
+                                            },
+                                            "example": "[]"
+                                        },
+                                        "next_page_url": {
+                                            "type": "string",
+                                            "example": "null"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "http:\\/\\/localhost:8000\\/api\\/v1\\/cohort_requests"
+                                        },
+                                        "per_page": {
+                                            "type": "integer",
+                                            "example": "25"
+                                        },
+                                        "prev_page_url": {
+                                            "type": "string",
+                                            "example": "null"
+                                        },
+                                        "to": {
+                                            "type": "integer",
+                                            "example": "3"
+                                        },
+                                        "total": {
+                                            "type": "integer",
+                                            "example": "3"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Create a new team",
+                "description": "Creates a new team",
+                "operationId": "c8670c5229acb08c5a0551b8bd118189",
+                "requestBody": {
+                    "description": "Team details",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "enabled",
+                                    "allows_messaging",
+                                    "workflow_enabled",
+                                    "access_requests_management",
+                                    "uses_5_safes",
+                                    "is_admin",
+                                    "member_of",
+                                    "contact_point",
+                                    "application_form_updated_by",
+                                    "application_form_updated_on",
+                                    "notifications"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "someName"
+                                    },
+                                    "allows_messaging": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "workflow_enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "access_requests_management": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "uses_5_safes": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "is_admin": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "member_of": {
+                                        "type": "string",
+                                        "example": "someOrg"
+                                    },
+                                    "contact_point": {
+                                        "type": "string",
+                                        "example": "someone@mail.com"
+                                    },
+                                    "application_form_updated_by": {
+                                        "type": "integer",
+                                        "example": "555"
+                                    },
+                                    "application_form_updated_on": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11"
+                                    },
+                                    "mdm_folder_id": {
+                                        "type": "string",
+                                        "example": "xxxx"
+                                    },
+                                    "notifications": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "example": "[111, 222]"
+                                    },
+                                    "is_question_bank": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "type": "integer",
+                                            "example": "100"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/v1/teams/{teamId}": {
+            "get": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Return a single team",
+                "description": "Return a single team",
+                "operationId": "8b83251e6674751e28f624900b7f4a49",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "someName"
+                                                },
+                                                "allows_messaging": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "workflow_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "access_requests_management": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "uses_5_safes": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "is_admin": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "member_of": {
+                                                    "type": "string",
+                                                    "example": "someOrg"
+                                                },
+                                                "contact_point": {
+                                                    "type": "string",
+                                                    "example": "someone@mail.com"
+                                                },
+                                                "application_form_updated_by": {
+                                                    "type": "integer",
+                                                    "example": "555"
+                                                },
+                                                "application_form_updated_on": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11"
+                                                },
+                                                "mdm_folder_id": {
+                                                    "type": "string",
+                                                    "example": "xxxx"
+                                                },
+                                                "notifications": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {}
+                                                    },
+                                                    "example": "[]"
+                                                },
+                                                "is_question_bank": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Update a team",
+                "description": "Update a team",
+                "operationId": "8412a49d8a4b788faf88695bcd41e278",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Team definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "enabled",
+                                    "allows_messaging",
+                                    "workflow_enabled",
+                                    "access_requests_management",
+                                    "uses_5_safes",
+                                    "is_admin",
+                                    "member_of",
+                                    "contact_point",
+                                    "application_form_updated_by",
+                                    "application_form_updated_on",
+                                    "notifications"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "someName"
+                                    },
+                                    "allows_messaging": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "workflow_enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "access_requests_management": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "uses_5_safes": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "is_admin": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "member_of": {
+                                        "type": "string",
+                                        "example": "someOrg"
+                                    },
+                                    "contact_point": {
+                                        "type": "string",
+                                        "example": "someone@mail.com"
+                                    },
+                                    "application_form_updated_by": {
+                                        "type": "integer",
+                                        "example": "555"
+                                    },
+                                    "application_form_updated_on": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11"
+                                    },
+                                    "mdm_folder_id": {
+                                        "type": "string",
+                                        "example": "xxx"
+                                    },
+                                    "notifications": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "example": "[111, 222]"
+                                    },
+                                    "is_question_bank": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "someName"
+                                                },
+                                                "allows_messaging": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "workflow_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "access_requests_management": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "uses_5_safes": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "is_admin": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "member_of": {
+                                                    "type": "string",
+                                                    "example": "someOrg"
+                                                },
+                                                "contact_point": {
+                                                    "type": "string",
+                                                    "example": "someone@mail.com"
+                                                },
+                                                "application_form_updated_by": {
+                                                    "type": "integer",
+                                                    "example": "555"
+                                                },
+                                                "application_form_updated_on": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11"
+                                                },
+                                                "mdm_folder_id": {
+                                                    "type": "string",
+                                                    "example": "xxxx"
+                                                },
+                                                "notifications": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {}
+                                                    },
+                                                    "example": "[111, 222]"
+                                                },
+                                                "is_question_bank": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Delete a team",
+                "description": "Delete a team",
+                "operationId": "90b012c01fa5d1dbe356f723fd0d6a2d",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Teams"
+                ],
+                "summary": "Edit a team",
+                "description": "Edit a team",
+                "operationId": "56b140ffba409f5efa5a17d1e5d26b9d",
+                "parameters": [
+                    {
+                        "name": "teamId",
+                        "in": "path",
+                        "description": "team id",
+                        "required": true,
+                        "schema": {
+                            "description": "team id",
+                            "type": "integer"
+                        },
+                        "example": "1"
+                    }
+                ],
+                "requestBody": {
+                    "description": "Team definition",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "someName"
+                                    },
+                                    "allows_messaging": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "workflow_enabled": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "access_requests_management": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "uses_5_safes": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "is_admin": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    },
+                                    "member_of": {
+                                        "type": "string",
+                                        "example": "someOrg"
+                                    },
+                                    "contact_point": {
+                                        "type": "string",
+                                        "example": "someone@mail.com"
+                                    },
+                                    "application_form_updated_by": {
+                                        "type": "integer",
+                                        "example": "555"
+                                    },
+                                    "application_form_updated_on": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2023-04-11"
+                                    },
+                                    "mdm_folder_id": {
+                                        "type": "string",
+                                        "example": "xxxxx"
+                                    },
+                                    "notifications": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "example": "[111, 222]"
+                                    },
+                                    "is_question_bank": {
+                                        "type": "boolean",
+                                        "example": "1"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "404": {
+                        "description": "Not found response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "success"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": "123"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11 12:00:00"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "someName"
+                                                },
+                                                "allows_messaging": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "workflow_enabled": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "access_requests_management": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "uses_5_safes": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "is_admin": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                },
+                                                "member_of": {
+                                                    "type": "string",
+                                                    "example": "someOrg"
+                                                },
+                                                "contact_point": {
+                                                    "type": "string",
+                                                    "example": "someone@mail.com"
+                                                },
+                                                "application_form_updated_by": {
+                                                    "type": "integer",
+                                                    "example": "555"
+                                                },
+                                                "application_form_updated_on": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2023-04-11"
+                                                },
+                                                "mdm_folder_id": {
+                                                    "type": "string",
+                                                    "example": "xxxxx"
+                                                },
+                                                "notifications": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "array",
+                                                        "items": {}
+                                                    },
+                                                    "example": "[111, 222]"
+                                                },
+                                                "is_question_bank": {
+                                                    "type": "boolean",
+                                                    "example": "1"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "error"
                                         }
                                     },
                                     "type": "object"

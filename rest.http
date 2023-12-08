@@ -147,7 +147,7 @@ Authorization: Bearer {{accessToken}}
 ### TEAMS
 #### get teams - filter and sort
 # GET {{baseUrl}}/api/{{apiVersion}}/teams?sort=updated_at:asc,data_provider:desc&uses_5_safes=true
-GET {{baseUrl}}/api/{{apiVersion}}/teams?sort=data_provider:asc&uses_5_safes=true HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/teams?sort=data_provider:asc&is_question_bank=true HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 

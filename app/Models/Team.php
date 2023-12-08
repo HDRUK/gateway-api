@@ -49,6 +49,7 @@ class Team extends Model
         'uses_5_safes' => 'boolean',
         'is_admin' => 'boolean',
         'notification_status' => 'boolean',
+        'is_question_bank' => 'boolean',
     ];
 
     /**
@@ -141,6 +142,13 @@ class Team extends Model
      * @var string
      */
     private $application_form_updated_on = '';
+
+    /**
+     * Indicates whether the team uses 5 safes
+     * 
+     * @var bool
+     */
+    private $is_question_bank = false;
 
     /**
      * Represents the migrated data id of a previous record to preserve internal

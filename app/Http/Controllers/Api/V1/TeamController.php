@@ -56,6 +56,7 @@ class TeamController extends Controller
      *                    @OA\Property(property="mdm_folder_id", type="datetime", example="xxxxxxx"), 
      *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()), 
      *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()), 
+     *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                ),
      *             ),
      *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -88,6 +89,10 @@ class TeamController extends Controller
 
             if ($request->has('uses_5_safes')) {
                 $query->where('teams.uses_5_safes', $request->query('uses_5_safes'));
+            }
+
+            if ($request->has('is_question_bank')) {
+                $query->where('teams.is_question_bank', $request->query('is_question_bank'));
             }
 
             foreach ($sort as $key => $value) {
@@ -156,6 +161,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *                  @OA\Property(property="mdm_folder_id", type="string", example="xxxx"),
      *                  @OA\Property(property="notifications", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              )
      *          ),
      *      ),
@@ -219,6 +225,7 @@ class TeamController extends Controller
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *              @OA\Property(property="mdm_folder_id", type="string", example="xxxx"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -326,6 +333,7 @@ class TeamController extends Controller
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *              @OA\Property(property="mdm_folder_id", type="string", example="xxx"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -356,6 +364,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *                  @OA\Property(property="mdm_folder_id", type="string", example="xxxx"),
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              )
      *          ),
      *      ),
@@ -383,6 +392,7 @@ class TeamController extends Controller
         $team->contact_point = $body['contact_point'];
         $team->application_form_updated_by = $body['application_form_updated_by'];
         $team->application_form_updated_on = $body['application_form_updated_on'];
+        $team->is_question_bank = array_key_exists('is_question_bank', $body) ? $body['is_question_bank'] : false;
 
         if (array_key_exists('mdm_folder_id', $body)) {
             $team->mdm_folder_id = $body['mdm_folder_id'];
@@ -445,6 +455,7 @@ class TeamController extends Controller
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *              @OA\Property(property="mdm_folder_id", type="string", example="xxxxx"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -475,6 +486,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *                  @OA\Property(property="mdm_folder_id", type="string", example="xxxxx"),
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              )
      *          ),
      *      ),
@@ -504,6 +516,7 @@ class TeamController extends Controller
                 'application_form_updated_by',
                 'application_form_updated_on',
                 'mdm_folder_id',
+                'is_question_bank',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
