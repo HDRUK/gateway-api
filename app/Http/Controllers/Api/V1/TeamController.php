@@ -92,7 +92,7 @@ class TeamController extends Controller
             }
 
             if ($request->has('is_question_bank')) {
-                $query->where('teams.is_question_bank', $request->query('is_question_bank'));
+                $query->where('teams.is_question_bank', $request->boolean('is_question_bank'));
             }
 
             foreach ($sort as $key => $value) {
