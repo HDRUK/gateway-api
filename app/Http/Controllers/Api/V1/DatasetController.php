@@ -22,6 +22,7 @@ use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
+use App\Http\Requests\Dataset\EditDataset;
 
 class DatasetController extends Controller
 {
@@ -807,23 +808,31 @@ class DatasetController extends Controller
      *      )
      *  )
      */
-    public function edit(Request $request, int $id)
+    public function edit(EditDataset $request, int $id)
     {
         try {
             if ($request->has('unarchive')) {
                 $datasetModel = Dataset::withTrashed()
                     ->where(['id' => $id])
                     ->first();
-                $datasetModel->status = Dataset::STATUS_ACTIVE;
+                if ($request['status'] === 'ACTIVE') {
+                    $datasetModel->status = Dataset::STATUS_ACTIVE;
+                }
+                elseif ($request['status'] === 'DRAFT') {
+                    $datasetModel->status = Dataset::STATUS_DRAFT;
+                }
+
                 $datasetModel->deleted_at = null;
                 $datasetModel->save();
                 
                 $dataset = $datasetModel->toArray();
                 Mauro::restoreDataModel($dataset['datasetid']);
 
-                $mauroModel = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
+                if ($request['status'] === 'ACTIVE') {
+                    $mauroModel = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
 
-                MMC::reindexElasticFromModel($mauroModel, $dataset['datasetid']);
+                    MMC::reindexElasticFromModel($mauroModel, $dataset['datasetid']);
+                }
 
             } else {
                 $dataset = Dataset::where(['id' => $id])->first()->toArray();

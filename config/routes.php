@@ -2375,4 +2375,15 @@ return [
         ],
         'constraint' => [],
     ],
+
+    // search
+    [
+        'name' => 'search',
+        'method' => 'get',
+        'path' => '/search',
+        'methodController' => 'SearchController@search',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
 ];

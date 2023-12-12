@@ -5,34 +5,20 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
+use App\Http\Enums\TeamMemberOf;
 use App\Models\TeamHasNotification;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TeamNotificationTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis;
 
     protected $header = [];
 
-    /**
-     * Set up the database
-     *
-     * @return void
-     */
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->seed([]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-    }
+   
 
     public function test_create_notification_for_team_with_success() 
     {
@@ -48,7 +34,11 @@ class TeamNotificationTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
@@ -121,7 +111,11 @@ class TeamNotificationTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',

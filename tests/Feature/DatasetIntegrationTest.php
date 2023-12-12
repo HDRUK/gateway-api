@@ -3,30 +3,30 @@
 namespace Tests\Feature;
 
 use Config;
+
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\SectorSeeder;
-use Database\Seeders\ApplicationSeeder;
-use App\Models\Application;
+
 use App\Models\Dataset;
+use App\Models\Application;
 use Tests\Traits\Authorization;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Foundation\Testing\WithFaker;
+use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\SectorSeeder;
+use Database\Seeders\DatasetSeeder;
+
+use Database\Seeders\ApplicationSeeder;
+use Database\Seeders\MinimalUserSeeder;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-use MetadataManagementController AS MMC;
-use Mockery;
-
-use Elastic\Elasticsearch\ClientBuilder;
-use Elastic\Elasticsearch\Response\Elasticsearch;
-use Http\Mock\Client;
-use Nyholm\Psr7\Response;
+use Tests\Traits\MockExternalApis;
 
 class DatasetIntegrationTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL_DATASET = '/api/v1/integrations/datasets';
     const TEST_URL_TEAM = 'api/v1/teams';
@@ -45,25 +45,15 @@ class DatasetIntegrationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
-
+        $this->commonSetUp();
+        
         $this->seed([
             MinimalUserSeeder::class,
             DatasetSeeder::class,
             SectorSeeder::class,
             ApplicationSeeder::class,
         ]);
-        $this->header = [
-            'Accept' => 'application/json',
-        ];
-
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->userHeader = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-
+        
         $this->integration = Application::find(1)->first();
         $this->body = [
             "app_id" => $this->integration['app_id'], 
@@ -74,29 +64,6 @@ class DatasetIntegrationTest extends TestCase
         // of an incoming dataset
         $this->dataset = $this->getFakeDataset();
 
-        // Define mock client and fake response for elasticsearch service
-        $mock = new Client();
-
-        $client = ClientBuilder::create()
-            ->setHttpClient($mock)
-            ->build();
-
-        // This is a PSR-7 response
-        // Mock two responses, one for creating a dataset, another for deleting
-        $createResponse = new Response(
-            200, 
-            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'Document created'
-        );
-        $mock->addResponse($createResponse);
-        $deleteResponse = new Response(
-            200, 
-            [Elasticsearch::HEADER_CHECK => Elasticsearch::PRODUCT_NAME],
-            'Document deleted'
-        );
-        $mock->addResponse($deleteResponse);
-
-        $this->testElasticClient = $client;
     }
 
     /**
@@ -133,18 +100,6 @@ class DatasetIntegrationTest extends TestCase
      */
     public function test_get_one_dataset_by_id_with_success(): void
     {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
 
         // create team
         // First create a notification to be used by the new team
@@ -158,7 +113,7 @@ class DatasetIntegrationTest extends TestCase
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
-            $this->userHeader,
+            $this->header,
         );
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
@@ -175,13 +130,17 @@ class DatasetIntegrationTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
             ],
-            $this->userHeader,
+            $this->header,
         );
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -213,7 +172,7 @@ class DatasetIntegrationTest extends TestCase
                 'mongo_id' => 1234566,
                 'mongo_object_id' => "12345abcde",
             ],
-            $this->userHeader,
+            $this->header,
         );
         $responseCreateUser->assertStatus(201);
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
@@ -269,7 +228,7 @@ class DatasetIntegrationTest extends TestCase
             'DELETE',
             self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
-            $this->userHeader
+            $this->header
         );
         $responseDeleteTeam->assertJsonStructure([
             'message'
@@ -282,7 +241,7 @@ class DatasetIntegrationTest extends TestCase
             'DELETE',
             self::TEST_URL_USER . '/' . $userId,
             [],
-            $this->userHeader
+            $this->header
         );
         $responseDeleteUser->assertJsonStructure([
             'message'
@@ -297,18 +256,7 @@ class DatasetIntegrationTest extends TestCase
      */
     public function test_create_delete_dataset_with_success(): void
     {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
 
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
 
         // create team
         // First create a notification to be used by the new team
@@ -322,7 +270,7 @@ class DatasetIntegrationTest extends TestCase
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
-            $this->userHeader,
+            $this->header,
         );
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
@@ -339,13 +287,17 @@ class DatasetIntegrationTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
             ],
-            $this->userHeader,
+            $this->header,
         );
 
         $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -377,7 +329,7 @@ class DatasetIntegrationTest extends TestCase
                 'mongo_id' => 1234566,
                 'mongo_object_id' => "12345abcde",
             ],
-            $this->userHeader,
+            $this->header,
         );
         $responseCreateUser->assertStatus(201);
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
@@ -421,7 +373,7 @@ class DatasetIntegrationTest extends TestCase
         $responseDeleteTeam = $this->json('DELETE',
             self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
-            $this->userHeader
+            $this->header
         );
         $responseDeleteTeam->assertJsonStructure([
             'message'
@@ -433,7 +385,7 @@ class DatasetIntegrationTest extends TestCase
             'DELETE',
             self::TEST_URL_USER . '/' . $userId,
             [],
-            $this->userHeader
+            $this->header
         );
         $responseDeleteUser->assertJsonStructure([
             'message'
@@ -441,11 +393,4 @@ class DatasetIntegrationTest extends TestCase
         $responseDeleteUser->assertStatus(200);
     }
 
-    private function getFakeDataset()
-    {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
-        $json = json_decode($jsonFile, true);
-
-        return $json;
-    }
 }

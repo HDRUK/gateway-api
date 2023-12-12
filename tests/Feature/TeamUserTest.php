@@ -4,19 +4,29 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SectorSeeder;
-use Database\Seeders\EmailTemplatesSeeder;
 use App\Models\Role;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use Tests\Traits\Authorization;
+use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\SectorSeeder;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+
+use Illuminate\Support\Facades\Http;
+
+use Mauro;
+use Tests\Traits\MockExternalApis;
+use Tests\Unit\MauroTest;
 
 class TeamUserTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis{
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
 
@@ -27,20 +37,15 @@ class TeamUserTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             SectorSeeder::class,
             EmailTemplatesSeeder::class,
         ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-    }
+   }
 
     /**
      * Create Team-User-Roles with success
@@ -66,6 +71,7 @@ class TeamUserTest extends TestCase
         $response->assertJsonStructure([
             'message'
         ]);
+
         $response->assertStatus(201);
 
         $getTeamHasUsers = $this->getTeamHasUsers($teamId, $userId);
@@ -392,7 +398,11 @@ class TeamUserTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => now(),

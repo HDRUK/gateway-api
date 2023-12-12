@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Team;
 
+use App\Http\Enums\TeamMemberOf;
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rule;
 
 class CreateTeam extends BaseFormRequest
 {
@@ -44,7 +46,12 @@ class CreateTeam extends BaseFormRequest
             ],
             'member_of' => [
                 'required',
-                'integer',
+                'string',
+                Rule::in([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
             ],
             'contact_point' => [
                 'nullable',
@@ -68,7 +75,10 @@ class CreateTeam extends BaseFormRequest
             'mongo_object_id' => [
                 'nullable',
                 'string',
-            ]
+            ],
+            'is_question_bank' => [
+                'boolean',
+            ],
         ];
     }
 }

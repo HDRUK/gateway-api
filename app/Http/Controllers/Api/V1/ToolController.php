@@ -388,7 +388,7 @@ class ToolController extends Controller
      * @OA\Delete(
      *    path="/api/v1/tools/{id}",
      *    operationId="delete_tools",
-     *    tags={"Tags"},
+     *    tags={"Tools"},
      *    summary="ToolController@destroy",
      *    description="Delete tool by id",
      *    security={{"bearerAuth":{}}},

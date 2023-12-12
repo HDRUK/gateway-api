@@ -84,6 +84,16 @@ class CohortRequestController extends Controller
      *          description="filter by email",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="text",
+     *       in="query",
+     *       description="filter by organisation or user name",
+     *       example="test",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="filter by organisation or user name",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -143,6 +153,11 @@ class CohortRequestController extends Controller
             // filter by request_status
             if ($request->has('request_status')) {
                 $query->where('request_status', strtoupper($request->query('request_status')));
+            }
+
+            // filter by users.organisation or users.name
+            if ($request->has('text')) {
+                $query->filterByOrganisationOrName($request->query('text'));
             }
 
             $query->join('users', 'cohort_requests.user_id', '=', 'users.id');
@@ -224,7 +239,13 @@ class CohortRequestController extends Controller
     {
         try {
             $cohortRequests = CohortRequest::where('id', $id)
-                ->with(['user', 'logs', 'logs.user'])
+                ->with([
+                    'user', 
+                    'logs' => function ($q) {
+                        $q->orderBy('id', 'desc');
+                    }, 
+                    'logs.user',
+                    ])
                 ->first()->toArray();
 
             return response()->json([
@@ -417,15 +438,16 @@ class CohortRequestController extends Controller
             $currCohortRequest = CohortRequest::where('id', $id)->first();
             $currRequestStatus = strtoupper(trim($currCohortRequest['request_status']));
 
-            $cohortRequestLog = CohortRequestLog::create([
+            $cohortRequestLog = new CohortRequestLog([
                 'user_id' => $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => $requestStatus,
             ]);
+            $cohortRequestLog->save();
 
             CohortRequestHasLog::create([
                 'cohort_request_id' => $id,
-                'cohort_request_log_id' => $cohortRequestLog->id,
+                'cohort_request_log_id' => $cohortRequestLog->getKey(),
             ]);
 
             // APPROVED / BANNED / SUSPENDED
@@ -444,10 +466,10 @@ class CohortRequestController extends Controller
                 case 'PENDING':
                 case 'REJECTED':
                 case 'SUSPENDED':
-                    CohortRequestHasPermission::where('id', $id)->delete();
+                    CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
                     break;
                 case 'APPROVED':
-                    CohortRequestHasPermission::where('id', $id)->delete();
+                    CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
                     $permissions = Permission::where([
                         'application' => 'cohort',
                         'name' => 'GENERAL_ACCESS',
@@ -458,7 +480,7 @@ class CohortRequestController extends Controller
                     ]);
                     break;
                 case 'BANNED':
-                    CohortRequestHasPermission::where('id', $id)->delete();
+                    CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
                     $permissions = Permission::where([
                         'application' => 'cohort',
                         'name' => 'BANNED',
@@ -675,7 +697,7 @@ class CohortRequestController extends Controller
                 }
             );
 
-            $response->headers->set('Content-Type', 'text\csv');
+            $response->headers->set('Content-Type', 'text/csv');
             $response->headers->set('Content-Disposition', 'attachment;filename="Cohort_Discovery_Admin.csv"');
             $response->headers->set('Cache-Control','max-age=0');
             return $response;

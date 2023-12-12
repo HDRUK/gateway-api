@@ -5,62 +5,215 @@ namespace Tests\Unit;
 use Mauro;
 
 use Tests\TestCase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Facade;
+use Illuminate\Support\Facades\Http;
+
+
 
 class MauroTest extends TestCase
 {
-    public function test_it_can_list_folders(): void
-    {
-        $jsonResponse = Mauro::getFolders();
 
-        $this->assertIsArray($jsonResponse);
-        $this->assertGreaterThan(0, (int)$jsonResponse['count']);
-        
-        $keyCheck = [
-            'id',
-            'label',
-            'lastUpdated',
-            'domainType',
-            'hasChildFolders',
+    public static function mockCreateDataClass(string $parentModelId, string $name, string $description){
+        return [ 
+            "path" => "/api/dataModels/".$parentModelId."/dataClasses",
+            "resource" => "DataModel",
+            "id" => fake()->uuid(),
         ];
-
-        foreach ($keyCheck as $key) {
-            $this->assertArrayHasKey($key, $jsonResponse['items'][0]);
-        }
     }
 
-    public function test_it_can_list_folders_by_id(): void
+    public static function mockCreateDataElement(string $parentModelId, string $parentDataClassId, string $name, string $description, string $type)
     {
-        $jsonResponse = Mauro::getFolders();
-
-        $this->assertIsArray($jsonResponse);
-        $this->assertGreaterThan(0, (int)$jsonResponse['count']);
-
-        $jsonResponse = Mauro::getFolderById($jsonResponse['items'][0]['id']);
-
-        $this->assertIsArray($jsonResponse);
-
-        $keyCheck = [
-            'id',
-            'label',
-            'lastUpdated',
-            'domainType',
-            'hasChildFolders',
-            'readableByEveryone',
-            'readableByAuthenticatedUsers',
-            'availableActions',
+        return [
+            "id" => fake()->uuid(),
+            "domainType" => "DataElement",
+            "label" => $name,
+            "model" => $parentModelId,
+            "description" => $description,
+            "availableActions" => [
+                0 => "comment",
+                1 => "delete",
+                2 => "editDescription",
+                3 => "save",
+                4 => "show",
+                5 => "update",
+            ],
+            "lastUpdated" => fake()->iso8601(),
+            "dataClass" => $parentDataClassId,
+            "dataType" => [
+                "id" => fake()->uuid(),
+                "domainType" => "PrimitiveType",
+                "label" => "String",
+                "model" => $parentDataClassId
+            ]
         ];
+    }
+      
 
-        foreach ($keyCheck as $key) {
-            $this->assertArrayHasKey($key, $jsonResponse);
+
+    public static function mockCreateMauroData($json, $prefix = 'properties/') {
+        $result = [];
+    
+        foreach ($json as $key => $value) {
+            if (is_array($value)) {
+                $result = array_merge($result, self::mockCreateMauroData($value, $prefix . $key . '/'));
+            } else {
+                $result[] = [
+                    'key' => $prefix . $key,
+                    'value' => $value,
+                    'id' => fake()->uuid(),
+                ];
+            }
         }
+    
+        return $result;
     }
 
+    public static function mockedMauroCreateFolderResponse(string $label, string $description,string $parentFolderId=''): array
+    {
+        return [
+            "id" => fake()->uuid(),
+            "label" => $label,
+            "lastUpdated" => fake()->iso8601(),
+            "domainType" => "Folder",
+            "hasChildFolders" => false,
+            "readableByEveryone" => false,
+            "readableByAuthenticatedUsers" => true,
+            "availableActions" => [
+                "comment",
+                "delete",
+                "editDescription",
+                "save",
+                "show",
+                "softDelete",
+                "update"
+            ],
+            "description" => $description
+        ];
+    }
+
+    public static function mockedMauroCreateDatasetResponse(string $label, string $description, string $author, string $organisation, string $parentFolderId, array $jsonObj): array
+    {
+        $responseJson = [
+                "id" => fake()->uuid(),
+                "domainType" => "DataModel",
+                "label" => $label,
+                "description" => $description,
+                "availableActions" => [
+                    0 => "comment",
+                    1 => "delete",
+                    2 => "editDescription",
+                    3 => "finalise",
+                    4 => "save",
+                    5 => "show",
+                    6 => "softDelete",
+                    7 => "update",
+                ],
+                "lastUpdated" => fake()->iso8601(),
+                "type" => "Data Asset",
+                "branchName" => "main",
+                "documentationVersion" => "1.0.0",
+                "finalised" => false,
+                "readableByEveryone" => false,
+                "readableByAuthenticatedUsers" => false,
+                "author" => $author,
+                "organisation" => $organisation,
+                "authority" => [
+                    "id" => fake()->uuid(),
+                    "url" => fake()->url(),
+                    "label" => "Mauro",
+                    "defaultAuthority" => true,
+                ]
+        ];
+    
+        return [
+                'DataModel' => [
+                    'responseJson' => $responseJson,
+                    'responseStatus' => 201,
+                ]
+            ];
+    }
+
+    public static function mockedFinaliseDataModel(string $datasetId){
+        return [
+            'id' => $datasetId,
+            'documentationVersion' => fake()->randomNumber(1, 10),
+        ];
+    }
+
+    private function mockedMauroGetFoldersByParentId(string $label,string $description, string $parentFolderId): array
+    {
+        return [
+            "count" => 1,
+            "items" => [
+                [
+                    "id" => $parentFolderId,
+                    "label" => $label,
+                    "description" => $description,
+                    "lastUpdated" => fake()->iso8601(),
+                    "domainType" => "Folder",
+                    "hasChildFolders" => false,
+                ]
+            ]
+        ];
+
+    }
+
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->mauro_store = [];
+        $this->folders_store = [];
+
+        Mauro::shouldReceive('createFolder')->andReturnUsing(function (string $label, string $description, string $parentFolderId=''){
+            $folder = MauroTest::mockedMauroCreateFolderResponse($label,$description, $parentFolderId);
+            $this->folders_store[$parentFolderId][] = $folder;
+            return $folder;
+        });
+        Mauro::shouldReceive('createDataModel')->andReturnUsing(function (...$args){
+            $mauro = MauroTest::mockedMauroCreateDatasetResponse(...$args);
+            $jsonObj = $args[count($args)-1];
+            $id = $mauro["DataModel"]["responseJson"]["id"];
+            
+            $mauro_metadata = MauroTest::mockCreateMauroData($jsonObj['dataset']['metadata']);
+            $this->mauro_store[$id] = $mauro_metadata;
+
+            return $mauro;
+        });
+
+        Mauro::shouldReceive('getDatasetByIdMetadata')->andReturnUsing(function (string $datasetId){
+            $mauro_metadata = $this->mauro_store[$datasetId];
+            return ["items" => $mauro_metadata];
+        });
+
+        Mauro::shouldReceive('getAllDataClasses')->andReturnUsing(function (string $datasetId){
+            return ["items" => $this->mauro_store[$datasetId]];
+        });
+
+        Mauro::shouldReceive('deleteFolder')->andReturn(true);
+        Mauro::shouldReceive('deleteDataModel')->andReturn(true);
+
+        Mauro::shouldReceive('getFoldersByParentId')->andReturnUsing(function ($parentId){
+            $res = $this->folders_store[$parentId];
+            return ["items"=>$res,"count"=>count($res)];
+        });
+
+        Mauro::makePartial();
+
+    }
     public function test_it_can_create_and_delete_a_folder(): void
     {
+
+        $parentFolderId = env('MAURO_PARENT_FOLDER_ID');
+        $label = 'Test Folder';
+        $description = 'Automated Test - folder creation';
+       
+
         $jsonResponse = Mauro::createFolder(
-            'Test Folder',
-            'Automated Test - folder creation'
+            $label,
+            $description,
+            $parentFolderId,
         );
 
         $this->assertIsArray($jsonResponse);
@@ -70,42 +223,51 @@ class MauroTest extends TestCase
         $this->assertEquals('Automated Test - folder creation', $jsonResponse['description']);
 
         $createdFolderId = $jsonResponse['id'];
-
-        $jsonResponse = Mauro::deleteFolder($createdFolderId, 'true', '');
+        $jsonResponse = Mauro::deleteFolder($createdFolderId, 'true', $parentFolderId);
         $this->assertEquals($jsonResponse, true);
 
     }
 
     public function test_it_can_create_and_delete_a_folder_under_a_parent(): void
     {
-        $jsonResponse = Mauro::createFolder(
-            'Test Parent Folder',
-            'Automated Test - Parent folder creation'
-        );
 
+        $parentFolderId = env('MAURO_PARENT_FOLDER_ID');
+        
+        $label = 'Test Folder ';
+        $description = 'Automated Test - folder creation';
+
+        $jsonResponse = Mauro::createFolder(
+            $label,
+            $description,
+            $parentFolderId
+        );
+       
         $this->assertIsArray($jsonResponse);
         $this->assertArrayHasKey('id', $jsonResponse);
 
         $parentFolderId = $jsonResponse['id'];
+        $label =  'Test Child Folder';
 
         $jsonResponse = Mauro::createFolder(
-            'Test Child Folder',
-            'Automated Test - Child folder creation',
+            $label,
+            $description,
             $parentFolderId
         );
-
+        
         $this->assertIsArray($jsonResponse);
         $this->assertArrayHasKey('id', $jsonResponse);
-
-        $childFolderId = $jsonResponse['id'];
+    
 
         $jsonResponse = Mauro::getFoldersByParentId($parentFolderId);
+
         
         $this->assertIsArray($jsonResponse);
         $this->assertEquals($jsonResponse['count'], 1);
         $this->assertEquals($jsonResponse['items'][0]['label'], 'Test Child Folder');
 
-        $jsonResponse = Mauro::deleteFolder($jsonResponse['items'][0]['id'], 'true', $parentFolderId);
+        $createdFolderId = $jsonResponse['items'][0]['id'];
+
+        $jsonResponse = Mauro::deleteFolder($createdFolderId, 'true', $parentFolderId);
         $this->assertEquals($jsonResponse, true);
 
         $jsonResponse = Mauro::deleteFolder($parentFolderId);

@@ -233,7 +233,7 @@ class UserController extends Controller
                 'email' => $input['email'],
                 'secondary_email' => array_key_exists('secondary_email', $input) ? $input['secondary_email'] : NULL,
                 'preferred_email' => array_key_exists('preferred_email', $input) ? $input['preferred_email'] : 'primary',
-                'provider' =>  Config::get('constants.provider.service'),
+                'provider' =>  array_key_exists('provider', $input) ? $input['provider'] : Config::get('constants.provider.service'),
                 'password' => Hash::make($input['password']),
                 'sector_id' => $input['sector_id'],
                 'organisation' => $input['organisation'],
