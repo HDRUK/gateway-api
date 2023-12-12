@@ -3,7 +3,7 @@
 /public/hot
 /public/storage
 /storage/*.key
-/storage/api-docs/*.json
+/storage/api-docs/api-docs.json
 /vendor
 .env
 .env.backup
