@@ -185,6 +185,9 @@ class TeamNotificationController extends Controller
     private function teamUserNotification(array $input, int $teamId)
     {
         try {
+            if (!$input['user_notification_status']) {
+                return true;
+            }
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserId = $jwtUser['id'];
 
@@ -256,8 +259,8 @@ class TeamNotificationController extends Controller
             ]);
             foreach ($input['team_emails'] as $item) {
                 $notification = Notification::create([
-                    'notification_type' => 'team_user_notification',
-                    'message' => 'team_user_notification',
+                    'notification_type' => 'team_notification',
+                    'message' => 'team_notification',
                     'opt_in' => true,
                     'enabled' => true,
                     'email' => $item,
