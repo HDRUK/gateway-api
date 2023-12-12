@@ -252,7 +252,7 @@ class TeamController extends Controller
             $arrayTeam = array_filter($input, function ($key) {
                 return $key !== 'notifications';
             }, ARRAY_FILTER_USE_KEY);
-            $arrayTeamNotification = $input['notifications'];
+            $arrayTeamNotification = $request->has('notifications') ? $input['notifications'] : [];
 
             // create subfolder in mauro
             $mauroResponse = Mauro::createFolder(
