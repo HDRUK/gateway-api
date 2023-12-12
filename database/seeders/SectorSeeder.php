@@ -15,7 +15,6 @@ class SectorSeeder extends Seeder
     public function run(): void
     {
         $sectors = [
-            'Please Select...',
             'NHS',
             'Industry',
             'Academia',
