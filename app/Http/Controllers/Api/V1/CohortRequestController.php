@@ -646,7 +646,7 @@ class CohortRequestController extends Controller
             if ($request->has('organisation')) {
                 $organisationArray = explode(',', $request->query('organisation', ''));
                 $organisationArrayUpper = array_map('strtoupper', $organisationArray);
-                $query->filterByMultiRequestStatus($organisationArrayUpper);
+                $query->filterByMultiOrganisation($organisationArrayUpper);
             }
 
             // filter by request_status. Convert to uppercase for comparison.

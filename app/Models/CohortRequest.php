@@ -104,6 +104,20 @@ class CohortRequest extends Model
             return $query;
         }
         return $query->whereHas('user', function ($query) use ($values) {
+            $query->where(function ($query) use ($values) {
+                foreach ($values as $value) {
+                    $query->orWhere('organisation', 'LIKE', '%' . $value . '%');
+                }
+            });        
+        });
+    }
+
+    public function scopeFilterByMultiOrganisationExact(Builder $query, array $values): Builder
+    {
+        if (empty($values)) {
+            return $query;
+        }
+        return $query->whereHas('user', function ($query) use ($values) {
             $query->whereIn('organisation', $values);
         });
     }
