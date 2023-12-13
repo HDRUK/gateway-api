@@ -1958,6 +1958,20 @@ return [
         ],
     ],
     [
+        'name' => 'team.user.role.bulk',
+        'method' => 'patch',
+        'path' => '/teams/{teamId}/roles',
+        'methodController' => 'TeamUserController@updateBulk',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,permissions.update',
+        ],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
         'name' => 'team.user.role',
         'method' => 'delete',
         'path' => '/teams/{teamId}/users/{userId}',

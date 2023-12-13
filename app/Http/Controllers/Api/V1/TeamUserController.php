@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Config;
 use Exception;
 use App\Models\Role;
 use App\Models\Team;
@@ -18,6 +19,7 @@ use App\Exceptions\UnauthorizedException;
 use App\Http\Requests\TeamUser\CreateTeamUser;
 use App\Http\Requests\TeamUser\DeleteTeamUser;
 use App\Http\Requests\TeamUser\UpdateTeamUser;
+use App\Http\Requests\TeamUser\UpdateBulkTeamUser;
 
 class TeamUserController extends Controller
 {
@@ -200,13 +202,124 @@ class TeamUserController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $res = $this->teamUserRoles($teamId, $userId, $input);
+            $res = $this->teamUserRoles($teamId, $userId, $input, $jwtUser);
 
             return response()->json([
                 'message' => 'success',
                 'data' => $res,
             ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Patch(
+     *    path="/api/v1/teams/{teamId}/roles",
+     *    operationId="update_team_user_roles_bulk",
+     *    tags={"Team-User-Role"},
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="path",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *        required=true,
+     *        @OA\MediaType(
+     *            mediaType="application/json",
+     *            @OA\Schema(
+     *                type="array",
+     *                @OA\Items(
+     *                    type="object",
+     *                    @OA\Property(property="userId", type="integer", example=21),
+     *                    @OA\Property(
+     *                        property="roles",
+     *                        type="object",
+     *                        @OA\Property(property="custodian.metadata.manager", type="boolean"),
+     *                        @OA\Property(property="metadata.editor", type="boolean"),
+     *                        @OA\Property(property="dar.reviewer", type="boolean")
+     *                    ),
+     *                ),
+     *            ),
+     *        ),
+     *    ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success response description",
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 type="object",
+     *                 @OA\Property(property="message", type="string", example="success"),
+     *                 @OA\Property(
+     *                     property="data",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="object",
+     *                         @OA\Property(property="userId", type="integer", example=21),
+     *                         @OA\Property(
+     *                             property="roles",
+     *                             type="object",
+     *                             @OA\Property(property="custodian.metadata.manager", type="boolean"),
+     *                             @OA\Property(property="metadata.editor", type="boolean"),
+     *                             @OA\Property(property="dar.reviewer", type="boolean")
+     *                         )
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *    @OA\Response(
+     *        response=400,
+     *        description="bad request",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="bad request"),
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
+     * )
+     */
+    public function updateBulk(UpdateBulkTeamUser $request, int $teamId): JsonResponse
+    {
+        try {
+            $input = $request->all();
+
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $response = [];
+
+            foreach ($input['payload_data'] as $item) {
+                $response[] = [
+                    'userId' => $item['userId'],
+                    'roles' => $this->teamUserRoles($teamId, $item['userId'], $item, $jwtUser),
+                ];
+            }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $response,
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -363,9 +476,10 @@ class TeamUserController extends Controller
      * @param integer $teamId
      * @param integer $userId
      * @param array $input
+     * @param array $jwtUser
      * @return mixed
      */
-    private function teamUserRoles(int $teamId, int $userId, array $input): mixed
+    private function teamUserRoles(int $teamId, int $userId, array $input, array $jwtUser): mixed
     {
         try {
             $teamHasUsers = TeamHasUser::where([
@@ -373,23 +487,15 @@ class TeamUserController extends Controller
                 'user_id' => $userId,
             ])->first();
 
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $updatesMade = [];
             foreach ($input['roles'] as $roleName => $action) {
                 $roles = Role::where('name', $roleName)->first();
 
-                $notifyChange = false;                
                 if ($action) {
-                    $teamUser = TeamUserHasRole::updateOrCreate([
+                    TeamUserHasRole::updateOrCreate([
                         'team_has_user_id' => $teamHasUsers->id,
                         'role_id' => $roles->id,
                     ]);
-                    //need to make sure the values were actually changed (or created)
-                    // before sending an email.. otherwise email will be sent even when not changed
-                    if($teamUser->wasRecentlyCreated ||  $teamUser->wasChanged()){
-                        $notifyChange = true;
-                    }
-
                 } else {
                     if ($roleName === $this->roleAdmin && count($this->listOfAdmin($teamId)) === 1) {
                         throw new UnauthorizedException('You cannot remove last team admin role');
@@ -397,14 +503,12 @@ class TeamUserController extends Controller
                     TeamUserHasRole::where('team_has_user_id', $teamHasUsers->id)
                         ->where('role_id', $roles->id)
                         ->delete();
-                    $notifyChange = true;
                 }
 
-                if($notifyChange){
-                    $this->sendEmail($roleName, $action, $teamId, $userId, $jwtUser);
-                    $updatesMade[$roleName] = $action ? 'assign' : 'remove';
-                }
+                $this->sendEmail($roleName, $action, $teamId, $userId, $jwtUser);
+                $updatesMade[$roleName] = $action ? true : false;
             }
+
             return $updatesMade;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -434,7 +538,7 @@ class TeamUserController extends Controller
                     $userAdminsString.= '<li>' . $userAdmin . '</li>';
                 }
             }
-            $userAdminsString.= '<ul>';
+            $userAdminsString.= '</ul>';
             $replacements = [
                 '[[USER_FIRSTNAME]]' => $user['firstname'],
                 '[[ASSIGNER_NAME]]' => $jwtUser['name'],
