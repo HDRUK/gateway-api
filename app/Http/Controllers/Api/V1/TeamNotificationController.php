@@ -185,9 +185,6 @@ class TeamNotificationController extends Controller
     private function teamUserNotification(array $input, int $teamId)
     {
         try {
-            if (!$input['user_notification_status']) {
-                return true;
-            }
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserId = $jwtUser['id'];
 

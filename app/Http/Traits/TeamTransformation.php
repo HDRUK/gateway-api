@@ -37,6 +37,7 @@ trait TeamTransformation
                 'mongo_object_id' => $team['mongo_object_id'],
                 'notification_status' => $team['notification_status'],
                 'is_question_bank' => $team['is_question_bank'],
+                'notification_status' => $team['notification_status'],
             ];
 
             $tmpUser = [];
