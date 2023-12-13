@@ -106,9 +106,11 @@ class TeamController extends Controller
                 }
             }
 
+            $itemsPerPage = $request->has('per_page') ? $request->query('per_page') : Config::get('constants.per_page');
+
             $teams = $query
                 ->with('users')
-                ->paginate(Config::get('constants.per_page'), ['*'], 'page')
+                ->paginate($itemsPerPage, ['*'], 'page')
                 ->toArray();
 
             $teams['data'] = $this->getTeams($teams['data']);
