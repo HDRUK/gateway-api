@@ -438,14 +438,13 @@ class CohortRequestController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $requestStatus = strtoupper(trim($input['request_status']));
 
             $currCohortRequest = CohortRequest::where('id', $id)->first();
             $currRequestStatus = strtoupper(trim($currCohortRequest['request_status']));
 
             $cohortRequestLog = new CohortRequestLog([
-                'user_id' => $jwtUser['id'],
+                'user_id' => $currCohortRequest['user_id'],
                 'details' => $input['details'],
                 'request_status' => $requestStatus,
             ]);
@@ -461,7 +460,7 @@ class CohortRequestController extends Controller
             // EXPIRED - must be an update using the chron
             if ($currRequestStatus !== $requestStatus) {
                 CohortRequest::where('id', $id)->update([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => $currCohortRequest['user_id'],
                     'request_status' => $requestStatus,
                     'cohort_status' => true,
                     'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addSeconds(env('COHORT_REQUEST_EXPIRATION')),
