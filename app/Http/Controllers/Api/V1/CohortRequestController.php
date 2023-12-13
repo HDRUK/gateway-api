@@ -455,7 +455,6 @@ class CohortRequestController extends Controller
             // EXPIRED - must be an update using the chron
             if ($currRequestStatus !== $requestStatus) {
                 CohortRequest::where('id', $id)->update([
-                    'user_id' => $jwtUser['id'],
                     'request_status' => $requestStatus,
                     'cohort_status' => true,
                     'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addSeconds(env('COHORT_REQUEST_EXPIRATION')),
