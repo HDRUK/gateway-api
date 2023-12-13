@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Jobs\TechnicalObjectDataStore;
@@ -915,6 +916,186 @@ class DatasetController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/datasets/export",
+     *    operationId="export_datasets",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@index",
+     *    description="Get All Datasets",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="query",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="CSV file",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema(
+     *             type="string",
+     *             example="""User ID"",Name,""Email address"",Organisation,Status,""Date Requested"",""Date Actioned""\n13,""Jackson Graham"",wmoen@example.com,""UK Health"",PENDING,""2023-09-17 13:31:25"",""2023-11-17 16:02:36""",
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       )
+     *    )
+     * )
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $selectedFields = explode(',', $request->query('fields', '*'));
+
+        $sortField = 'created';
+        $sortDirection = 'asc';
+        $allFields = collect(Dataset::first())->keys()->toArray();
+  
+        if(count($allFields) > 0 && !in_array($sortField, $allFields)){
+            //if the field to be sorted is not a field in the model, then return a bad request
+            return response()->json([
+                    "message" => "Sort is not a valid field to sort on: " . 
+                                implode(',',$allFields) . 
+                                '. Not "' . $sortField .'"'
+                    ],400);                          
+        }
+        if ($selectedFields !== ['*']){
+            $invalidFields = array_diff($selectedFields, $allFields);
+            if (!empty($invalidFields)) {
+                // If selected fields are not equal to '*' and contain invalid fields
+                // return a bad request
+                return response()->json([
+                        "message" => "Invalid fields requested: ".
+                                     implode(",",$invalidFields)
+                        ],400);
+                }
+    
+        }
+
+        $validDirections = ['desc', 'asc'];
+        if(!in_array($sortDirection, $validDirections)){
+            //if the sort direction is not desc or asc then return a bad request
+            return response()->json([
+                    "message" => "Sort direction must be either: " . 
+                                implode(' OR ',$validDirections) . 
+                                '. Not "' . $sortDirection .'"'
+                    ],400);
+        }
+
+        $teamId = $request->query('team_id',null);
+        $datasets = Dataset::when($teamId, 
+                                    function ($query) use ($teamId){
+                                        return $query->where('team_id', '=', $teamId);
+                                    })
+                            ->orderBy($sortField, $sortDirection);
+                            // ->select($selectedFields)
+                            // ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+
+        $results = $datasets->select('datasets.*')->get();
+
+        // $decodeMetadata = $request->query('decode_metadata', false); 
+        // if($decodeMetadata){
+        //     //if the decoding of the metadata has been requested, perform this
+        //     foreach ($datasets as $dataset) {
+        //         $dataset['dataset'] = json_decode($dataset['dataset'] );
+        //     }
+        // }
+        // var_dump($results);
+        // var_dump(json_decode($datasets));
+        foreach ($results as $dataset) {
+            if ($dataset->datasetid) {
+                // var_dump('yes');
+                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
+                // var_dump($mauroDatasetIdMetadata);
+                $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
+                // var_dump($dataset['mauro']);
+            } else {
+                // var_dump('no');
+                $dataset['mauro'] = [];
+                // var_dump('NA');
+            }
+        }
+        // var_dump($datasets);
+        // // filtering by title
+        // $filterTitle = $request->query('filterTitle', null);
+        // if (!empty($filterTitle)) {
+        //     $matches = array();
+        //     // iterate through mauro field of each dataset
+        //     foreach ($datasets as $dataset) {
+        //         foreach ($dataset['mauro'] as $field) {
+        //             // find the title field in mauro data
+        //             if ($field['key'] === 'properties/summary/title') {
+        //                 // if title matches filter, store the dataset id and mauro field
+        //                 if (str_contains($field['value'], $filterTitle)) {
+        //                     $matches[$dataset['id']] = $dataset['mauro'];
+        //                 }
+        //                 break(1);
+        //             }
+        //         }
+        //     }
+        //     // perform query for the matching datasets and reattach the mauro field
+        //     // rather than refetching it from mauro
+        //     $filteredDatasets = Dataset::whereIn('id', array_keys($matches))
+        //         ->orderBy($sortField, $sortDirection)
+        //         ->select($selectedFields)
+        //         ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        //     foreach ($filteredDatasets as $filteredDataset) {
+        //         $filteredDataset['mauro'] = $matches[$filteredDataset['id']];
+        //     }
+        //     return response()->json($filteredDatasets);
+        // }
+
+        // callback function that writes to php://output
+        $response = new StreamedResponse(
+            function() use ($results) {
+
+                // Open output stream
+                $handle = fopen('php://output', 'w');
+                
+                $headerRow = ['Title', 'Publisher name', 'Version', 'Last Activity', 'Method of dataset creation', 'Status', 'Metadata detail?'];
+
+                // Add CSV headers
+                fputcsv($handle, $headerRow);
+        
+                // add the given number of rows to the file.
+                foreach ($results as $rowDetails) { 
+                    $row = [
+                        '',
+                        '',
+                        '',
+                        '',
+                        '',
+                        (string) $rowDetails['status'],
+                        '',
+                    ];
+                    fputcsv($handle, $row);
+                }
+                
+                // Close the output stream
+                fclose($handle);
+            }
+        );
+
+        // var_dump($response);
+        $response->headers->set('Content-Type', 'text\csv');
+        $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
+        $response->headers->set('Cache-Control','max-age=0');
+        return $response;
+
     }
 
     /**
