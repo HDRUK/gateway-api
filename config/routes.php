@@ -2086,6 +2086,17 @@ return [
             'id', '[0-9]+'
         ],
     ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/export',
+        'methodController' => 'DatasetController@export',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
     // datasets integrations
     [
         'name' => 'datasets.integrations',
