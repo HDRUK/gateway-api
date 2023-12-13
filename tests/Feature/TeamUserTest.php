@@ -45,14 +45,7 @@ class TeamUserTest extends TestCase
             SectorSeeder::class,
             EmailTemplatesSeeder::class,
         ]);
-
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
-    }
+   }
 
     /**
      * Create Team-User-Roles with success
@@ -307,8 +300,11 @@ class TeamUserTest extends TestCase
         $this->assertTrue($expectedRoles === $userRoles,'User now has 3 roles');
 
         $expectedDispatchedEmails = [
-            "custodian.dar.manager" => "assign",
+            "developer" => true,
+            "dar.reviewer" => true,
+            "custodian.dar.manager" => true,
         ];
+
         $dispatchedEmails = $responsePost['data'];
         $this->assertTrue( $dispatchedEmails ===  $expectedDispatchedEmails,'One email sent for assigning custodian.dar.manager');
         
@@ -322,19 +318,20 @@ class TeamUserTest extends TestCase
         ];
 
         $expectedRoles = ["dar.reviewer", "custodian.dar.manager"];  
-        $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
-        $responsePost->assertJsonStructure([
+        $responsePut = $this->json('PUT', $urlPut, $payloadPut, $this->header);
+        $responsePut->assertJsonStructure([
             'message'
         ]);
-        $responsePost->assertStatus(200);
+        $responsePut->assertStatus(200);
         $userRoles = $this->getUserRoles($teamId, $userId);
         sort($userRoles);
         sort($expectedRoles);
         $this->assertTrue($expectedRoles === $userRoles,'Developer role should no longer be present');
-
-        $dispatchedEmails = $responsePost['data'];
+        $dispatchedEmails = $responsePut['data'];
         $expectedDispatchedEmails = [
-            "developer" => "remove",
+            "developer" => false,
+            "dar.reviewer" => true,
+            "custodian.dar.manager" => true,
         ];
         $this->assertTrue( $dispatchedEmails ===  $expectedDispatchedEmails,'One email sent for removing developer');
 
