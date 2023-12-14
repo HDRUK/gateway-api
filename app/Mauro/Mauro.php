@@ -119,7 +119,7 @@ class Mauro {
     public function getDatasetById (string $datasetId): array
     {
         $url = env('MAURO_API_URL');
-        $url .= '/dataModels/' . $datasetId . '/metadata';
+        $url .= '/dataModels/' . $datasetId;
 
         try {
             $response = Http::withHeaders([
