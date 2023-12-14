@@ -959,35 +959,11 @@ class DatasetController extends Controller
      */
     public function export(Request $request): StreamedResponse
     {
-        $sortField = 'created';
-        $sortDirection = 'asc';
-        $allFields = collect(Dataset::first())->keys()->toArray();
-  
-        if(count($allFields) > 0 && !in_array($sortField, $allFields)){
-            //if the field to be sorted is not a field in the model, then return a bad request
-            return response()->json([
-                    "message" => "Sort is not a valid field to sort on: " . 
-                                implode(',',$allFields) . 
-                                '. Not "' . $sortField .'"'
-                    ],400);                          
-        }
-
-        $validDirections = ['desc', 'asc'];
-        if(!in_array($sortDirection, $validDirections)){
-            //if the sort direction is not desc or asc then return a bad request
-            return response()->json([
-                    "message" => "Sort direction must be either: " . 
-                                implode(' OR ',$validDirections) . 
-                                '. Not "' . $sortDirection .'"'
-                    ],400);
-        }
-
         $teamId = $request->query('team_id',null);
         $datasets = Dataset::when($teamId, 
                                     function ($query) use ($teamId){
                                         return $query->where('team_id', '=', $teamId);
-                                    })
-                            ->orderBy($sortField, $sortDirection);
+                                    });
 
         $results = $datasets->select('datasets.*')->get();
 
