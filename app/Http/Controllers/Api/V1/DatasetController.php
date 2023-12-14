@@ -1026,7 +1026,7 @@ class DatasetController extends Controller
                     $row = [
                         $rowDetails['mauroSummary'] !== null ? (string) $rowDetails['mauroSummary']['properties/summary/title']['value'] : '',
                         $rowDetails['mauroSummary'] !== null ? (string) $rowDetails['mauroSummary']['properties/summary/publisher/publisherName']['value'] : '',
-                        $rowDetails['mauro'] !== null ? (string) $rowDetails['mauro']['modelVersion'] : '',
+                        $rowDetails['mauro'] !== null ? (array_key_exists('modelVersion', $rowDetails['mauro']) ? (string) $rowDetails['mauro']['modelVersion'] : '') : '',
                         $rowDetails['mauro'] !== null ? (string) $rowDetails['mauro']['lastUpdated'] : '',
                         (string) $rowDetails['create_origin'],
                         (string) $rowDetails['status'],
