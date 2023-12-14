@@ -270,10 +270,12 @@ class ApplicationController extends Controller
             // which is cryptographically secure. Increasing the length of the string
             // returned, increases security further still
             $appId = Str::random(40);
-            $combinedAppId = $appId . env('APP_AUTH_PRIVATE_SALT');
             $clientId = Str::random(40);
-            $combinedClientId = $clientId . env('APP_AUTH_PRIVATE_SALT_2');
-            $clientSecret = Hash::make($combinedAppId . ':' . $combinedClientId);
+            $clientSecret = Hash::make($appId . 
+                ':' . $clientId . 
+                ':' . env('APP_AUTH_PRIVATE_SALT') . 
+                ':' . env('APP_AUTH_PRIVATE_SALT_2')
+            );
 
             $array = [
                 'name' => $input['name'],
