@@ -1001,8 +1001,9 @@ class DatasetController extends Controller
                     $reindexedmauroDatasetIdMetadata[$item['key']] = $item;
                 }
                 $dataset['mauroSummary'] = $reindexedmauroDatasetIdMetadata;
-                $mauroDatasetDetails = Mauro::getDatasetById($dataset['datasetid']);
-                $dataset['mauro'] = $mauroDatasetDetails;
+                $mauroDatasetResponse = Mauro::getDatasetById($dataset['datasetid']);
+                // handle when there is no corresponding Mauro entry
+                $dataset['mauro'] = ($mauroDatasetResponse['DataModel']['responseStatus'] === 200) ? $mauroDatasetResponse['DataModel']['responseJson'] : null;
             } else {
                 $dataset['mauro'] = null;
                 $dataset['mauroSummary'] = null;
