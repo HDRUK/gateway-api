@@ -266,9 +266,14 @@ class ApplicationController extends Controller
         try {
             $input = $request->all();
 
-            $appId = Str::random(32);
-            $clientId = Str::random(32);
-            $clientSecret = Hash::make($appId . ':' . $clientId);
+            // While it seems weak, random uses openssl_random_pseudo_bytes under the hood
+            // which is cryptographically secure. Increasing the length of the string
+            // returned, increases security further still
+            $appId = Str::random(40);
+            $combinedAppId = $appId . env('APP_AUTH_PRIVATE_SALT');
+            $clientId = Str::random(40);
+            $combinedClientId = $clientId . env('APP_AUTH_PRIVATE_SALT_2');
+            $clientSecret = Hash::make($combinedAppId . ':' . $combinedClientId);
 
             $array = [
                 'name' => $input['name'],

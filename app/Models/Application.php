@@ -31,6 +31,7 @@ class Application extends Model
         'name',
         'app_id',
         'client_id',
+        'client_secret',
         'image_link',
         'description',
         'team_id',
@@ -40,6 +41,10 @@ class Application extends Model
 
     protected $casts = [
         'enabled' => 'boolean',
+    ];
+
+    protected $hidden = [
+        'client_secret',
     ];
 
     public function permissions(): BelongsToMany
