@@ -923,11 +923,11 @@ class DatasetController extends Controller
      *    path="/api/v1/datasets/export",
      *    operationId="export_datasets",
      *    tags={"Datasets"},
-     *    summary="DatasetController@index",
-     *    description="Get All Datasets",
+     *    summary="DatasetController@export",
+     *    description="Export CSV Of All Datasets",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
-     *       name="teamId",
+     *       name="team_id",
      *       in="query",
      *       description="team id",
      *       required=true,
@@ -944,7 +944,7 @@ class DatasetController extends Controller
      *          mediaType="text/csv",
      *          @OA\Schema(
      *             type="string",
-     *             example="""User ID"",Name,""Email address"",Organisation,Status,""Date Requested"",""Date Actioned""\n13,""Jackson Graham"",wmoen@example.com,""UK Health"",PENDING,""2023-09-17 13:31:25"",""2023-11-17 16:02:36""",
+     *             example="Title,""Publisher name"",Version,""Last Activity"",""Method of dataset creation"",Status,""Metadata detail""\n""Publications mentioning HDRUK"",""Health Data Research UK"",2.0.0,""2023-04-21T11:31:00.000Z"",MANUAL,ACTIVE,""{""properties\/accessibility\/usage\/dataUseRequirements"":{""id"":""95c37b03-54c4-468b-bda4-4f53f9aaaadd"",""namespace"":""hdruk.profile"",""key"":""properties\/accessibility\/usage\/dataUseRequirements"",""value"":""N\/A"",""lastUpdated"":""2023-12-14T11:31:11.312Z""},""properties\/required\/gatewayId"":{""id"":""8214d549-db98-453f-93e8-d88c6195ad93"",""namespace"":""hdruk.profile"",""key"":""properties\/required\/gatewayId"",""value"":""1234"",""lastUpdated"":""2023-12-14T11:31:11.311Z""}""",
      *          )
      *       )
      *    ),
@@ -959,8 +959,6 @@ class DatasetController extends Controller
      */
     public function export(Request $request): StreamedResponse
     {
-        $selectedFields = explode(',', $request->query('fields', '*'));
-
         $sortField = 'created';
         $sortDirection = 'asc';
         $allFields = collect(Dataset::first())->keys()->toArray();
@@ -972,18 +970,6 @@ class DatasetController extends Controller
                                 implode(',',$allFields) . 
                                 '. Not "' . $sortField .'"'
                     ],400);                          
-        }
-        if ($selectedFields !== ['*']){
-            $invalidFields = array_diff($selectedFields, $allFields);
-            if (!empty($invalidFields)) {
-                // If selected fields are not equal to '*' and contain invalid fields
-                // return a bad request
-                return response()->json([
-                        "message" => "Invalid fields requested: ".
-                                     implode(",",$invalidFields)
-                        ],400);
-                }
-    
         }
 
         $validDirections = ['desc', 'asc'];
@@ -1002,62 +988,26 @@ class DatasetController extends Controller
                                         return $query->where('team_id', '=', $teamId);
                                     })
                             ->orderBy($sortField, $sortDirection);
-                            // ->select($selectedFields)
-                            // ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         $results = $datasets->select('datasets.*')->get();
 
-        // $decodeMetadata = $request->query('decode_metadata', false); 
-        // if($decodeMetadata){
-        //     //if the decoding of the metadata has been requested, perform this
-        //     foreach ($datasets as $dataset) {
-        //         $dataset['dataset'] = json_decode($dataset['dataset'] );
-        //     }
-        // }
-        // var_dump($results);
-        // var_dump(json_decode($datasets));
+        // collect all the required information
         foreach ($results as $dataset) {
             if ($dataset->datasetid) {
-                // var_dump('yes');
                 $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
-                // var_dump($mauroDatasetIdMetadata);
-                $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
-                // var_dump($dataset['mauro']);
+                //refactor array for easier indexing later
+                $reindexedmauroDatasetIdMetadata = array();
+                foreach ($mauroDatasetIdMetadata['items'] as $item) {
+                    $reindexedmauroDatasetIdMetadata[$item['key']] = $item;
+                }
+                $dataset['mauroSummary'] = $reindexedmauroDatasetIdMetadata;
+                $mauroDatasetDetails = Mauro::getDatasetById($dataset['datasetid']);
+                $dataset['mauro'] = $mauroDatasetDetails;
             } else {
-                // var_dump('no');
-                $dataset['mauro'] = [];
-                // var_dump('NA');
+                $dataset['mauro'] = null;
+                $dataset['mauroSummary'] = null;
             }
         }
-        // var_dump($datasets);
-        // // filtering by title
-        // $filterTitle = $request->query('filterTitle', null);
-        // if (!empty($filterTitle)) {
-        //     $matches = array();
-        //     // iterate through mauro field of each dataset
-        //     foreach ($datasets as $dataset) {
-        //         foreach ($dataset['mauro'] as $field) {
-        //             // find the title field in mauro data
-        //             if ($field['key'] === 'properties/summary/title') {
-        //                 // if title matches filter, store the dataset id and mauro field
-        //                 if (str_contains($field['value'], $filterTitle)) {
-        //                     $matches[$dataset['id']] = $dataset['mauro'];
-        //                 }
-        //                 break(1);
-        //             }
-        //         }
-        //     }
-        //     // perform query for the matching datasets and reattach the mauro field
-        //     // rather than refetching it from mauro
-        //     $filteredDatasets = Dataset::whereIn('id', array_keys($matches))
-        //         ->orderBy($sortField, $sortDirection)
-        //         ->select($selectedFields)
-        //         ->paginate(Config::get('constants.per_page'), ['*'], 'page');
-        //     foreach ($filteredDatasets as $filteredDataset) {
-        //         $filteredDataset['mauro'] = $matches[$filteredDataset['id']];
-        //     }
-        //     return response()->json($filteredDatasets);
-        // }
 
         // callback function that writes to php://output
         $response = new StreamedResponse(
@@ -1066,7 +1016,7 @@ class DatasetController extends Controller
                 // Open output stream
                 $handle = fopen('php://output', 'w');
                 
-                $headerRow = ['Title', 'Publisher name', 'Version', 'Last Activity', 'Method of dataset creation', 'Status', 'Metadata detail?'];
+                $headerRow = ['Title', 'Publisher name', 'Version', 'Last Activity', 'Method of dataset creation', 'Status', 'Metadata detail'];
 
                 // Add CSV headers
                 fputcsv($handle, $headerRow);
@@ -1074,13 +1024,13 @@ class DatasetController extends Controller
                 // add the given number of rows to the file.
                 foreach ($results as $rowDetails) { 
                     $row = [
-                        '',
-                        '',
-                        '',
-                        '',
-                        '',
+                        $rowDetails['mauroSummary'] !== null ? (string) $rowDetails['mauroSummary']['properties/summary/title']['value'] : '',
+                        $rowDetails['mauroSummary'] !== null ? (string) $rowDetails['mauroSummary']['properties/summary/publisher/publisherName']['value'] : '',
+                        $rowDetails['mauro'] !== null ? (string) $rowDetails['mauro']['modelVersion'] : '',
+                        $rowDetails['mauro'] !== null ? (string) $rowDetails['mauro']['lastUpdated'] : '',
+                        (string) $rowDetails['create_origin'],
                         (string) $rowDetails['status'],
-                        '',
+                        $rowDetails['mauroSummary'] !== null ? (string) json_encode($rowDetails['mauroSummary']) : '',
                     ];
                     fputcsv($handle, $row);
                 }
@@ -1090,7 +1040,6 @@ class DatasetController extends Controller
             }
         );
 
-        // var_dump($response);
         $response->headers->set('Content-Type', 'text\csv');
         $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
         $response->headers->set('Cache-Control','max-age=0');
