@@ -1012,20 +1012,7 @@ class DatasetTest extends TestCase
      * @return void
      */
     public function test_download_dataset_table_with_success(): void
-    {
-        Http::fake([
-            'ted*' => Http::response(
-                ['id' => 1111, 'extracted_terms' => ['test', 'fake']], 
-                201,
-                ['application/json']
-            )
-        ]);
-        
-        // Mock the MMC getElasticClient method to return the mock client
-        // makePartial so other MMC methods are not mocked
-        MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::makePartial();
-
+    {        
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -1055,7 +1042,11 @@ class DatasetTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
@@ -1167,21 +1158,7 @@ class DatasetTest extends TestCase
             'message'
         ]);
         $responseDeleteUser->assertStatus(200);
+        
     }
 
-    private function getFakeDataset()
-    {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
-        $json = json_decode($jsonFile, true);
-
-        return $json;
-    }
-
-    private function getFakeUpdateDataset()
-    {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min_update.json', 0, null);
-        $json = json_decode($jsonFile, true);
-
-        return $json;
-    }
 }
