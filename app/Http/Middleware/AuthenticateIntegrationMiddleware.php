@@ -41,7 +41,10 @@ class AuthenticateIntegrationMiddleware
         # Check that the app id and client id both match, and check the client secret. Throw an exception if not matching.
         $clientId = $app->client_id;
         $clientSecret = $app->client_secret;
-        if (!($clientId == $request['client_id'] && Hash::check($appId . ':' . $clientId, $clientSecret))) {
+        if (!($clientId == $request['client_id'] && Hash::check(
+            $appId . ':' . $clientId . ':' . env('APP_AUTH_PRIVATE_SALT') . ':' . env('APP_AUTH_PRIVATE_SALT_2'),
+            $clientSecret))
+        ) {
             throw new UnauthorizedException();
         }
 
