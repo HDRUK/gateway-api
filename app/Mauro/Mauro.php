@@ -119,7 +119,8 @@ class Mauro {
     public function getDatasetById (string $datasetId): array
     {
         $url = env('MAURO_API_URL');
-        $url .= '/dataModels/' . $datasetId . '/metadata';
+        $url .= '/dataModels/' . $datasetId;
+        $overallResponse = [];
 
         try {
             $response = Http::withHeaders([
@@ -128,7 +129,12 @@ class Mauro {
                 ->acceptJson()
                 ->get($url);
 
-            return $response->json();
+            $overallResponse['DataModel'] = [
+                'responseJson' => $response->json(),
+                'responseStatus' => $response->status(),
+            ];
+            return $overallResponse;
+            
         } catch (Exception $e) {
             throw new MauroServiceException($e->getMessage());
         }

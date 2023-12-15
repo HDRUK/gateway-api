@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Jobs\TechnicalObjectDataStore;
@@ -915,6 +916,112 @@ class DatasetController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/datasets/export",
+     *    operationId="export_datasets",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@export",
+     *    description="Export CSV Of All Datasets",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="CSV file",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema(
+     *             type="string",
+     *             example="Title,""Publisher name"",Version,""Last Activity"",""Method of dataset creation"",Status,""Metadata detail""\n""Publications mentioning HDRUK"",""Health Data Research UK"",2.0.0,""2023-04-21T11:31:00.000Z"",MANUAL,ACTIVE,""{""properties\/accessibility\/usage\/dataUseRequirements"":{""id"":""95c37b03-54c4-468b-bda4-4f53f9aaaadd"",""namespace"":""hdruk.profile"",""key"":""properties\/accessibility\/usage\/dataUseRequirements"",""value"":""N\/A"",""lastUpdated"":""2023-12-14T11:31:11.312Z""},""properties\/required\/gatewayId"":{""id"":""8214d549-db98-453f-93e8-d88c6195ad93"",""namespace"":""hdruk.profile"",""key"":""properties\/required\/gatewayId"",""value"":""1234"",""lastUpdated"":""2023-12-14T11:31:11.311Z""}""",
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       )
+     *    )
+     * )
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $teamId = $request->query('team_id',null);
+        $datasets = Dataset::when($teamId, 
+                                    function ($query) use ($teamId){
+                                        return $query->where('team_id', '=', $teamId);
+                                    });
+
+        $results = $datasets->select('datasets.*')->get();
+
+        // collect all the required information
+        foreach ($results as $dataset) {
+            if ($dataset->datasetid) {
+                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
+                //refactor array for easier indexing later
+                $reindexedmauroDatasetIdMetadata = array();
+                foreach ($mauroDatasetIdMetadata['items'] as $item) {
+                    $reindexedmauroDatasetIdMetadata[$item['key']] = $item;
+                }
+                $dataset['mauroSummary'] = $reindexedmauroDatasetIdMetadata;
+                $mauroDatasetResponse = Mauro::getDatasetById($dataset['datasetid']);
+                // handle when there is no corresponding Mauro entry
+                $dataset['mauro'] = ($mauroDatasetResponse['DataModel']['responseStatus'] === 200) ? $mauroDatasetResponse['DataModel']['responseJson'] : null;
+            } else {
+                $dataset['mauro'] = null;
+                $dataset['mauroSummary'] = null;
+            }
+        }
+
+        // callback function that writes to php://output
+        $response = new StreamedResponse(
+            function() use ($results) {
+
+                // Open output stream
+                $handle = fopen('php://output', 'w');
+                
+                $headerRow = ['Title', 'Publisher name', 'Version', 'Last Activity', 'Method of dataset creation', 'Status', 'Metadata detail'];
+
+                // Add CSV headers
+                fputcsv($handle, $headerRow);
+        
+                // add the given number of rows to the file.
+                foreach ($results as $rowDetails) { 
+                    $row = [
+                        $rowDetails['mauroSummary'] !== null ? (string) $rowDetails['mauroSummary']['properties/summary/title']['value'] : '',
+                        $rowDetails['mauroSummary'] !== null ? (string) $rowDetails['mauroSummary']['properties/summary/publisher/publisherName']['value'] : '',
+                        $rowDetails['mauro'] !== null ? (array_key_exists('modelVersion', $rowDetails['mauro']) ? (string) $rowDetails['mauro']['modelVersion'] : '') : '',
+                        $rowDetails['mauro'] !== null ? (string) $rowDetails['mauro']['lastUpdated'] : '',
+                        (string) $rowDetails['create_origin'],
+                        (string) $rowDetails['status'],
+                        $rowDetails['mauroSummary'] !== null ? (string) json_encode($rowDetails['mauroSummary']) : '',
+                    ];
+                    fputcsv($handle, $row);
+                }
+                
+                // Close the output stream
+                fclose($handle);
+            }
+        );
+
+        $response->headers->set('Content-Type', 'text\csv');
+        $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
+        $response->headers->set('Cache-Control','max-age=0');
+        return $response;
+
     }
 
     /**
