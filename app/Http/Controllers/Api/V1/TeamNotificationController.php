@@ -62,7 +62,6 @@ class TeamNotificationController extends Controller
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                  @OA\Property(property="mdm_folder_id", type="string", example="xxxx"),
      *                  @OA\Property(property="user", type="object", example="{}"),
      *                  @OA\Property(property="notifications", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *              )

@@ -70,9 +70,6 @@ class EditTeam extends BaseFormRequest
             'notifications' => [
                 'array',
             ],
-            'mdm_folder_id' => [
-                'string',
-            ],
             'mongo_object_id' => [
                 'nullable',
                 'string',

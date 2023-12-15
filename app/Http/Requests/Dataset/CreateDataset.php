@@ -4,7 +4,6 @@ namespace App\Http\Requests\Dataset;
 
 use App\Models\Dataset;
 use App\Http\Requests\BaseFormRequest;
-use App\Rules\CheckMauroFolderIdInTeam;
 
 class CreateDataset extends BaseFormRequest
 {
@@ -20,7 +19,6 @@ class CreateDataset extends BaseFormRequest
                 'int',
                 'required',
                 'exists:teams,id',
-                new CheckMauroFolderIdInTeam,
             ],
             'user_id' => [
                 'int',
