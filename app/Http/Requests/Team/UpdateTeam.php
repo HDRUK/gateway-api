@@ -74,9 +74,6 @@ class UpdateTeam extends BaseFormRequest
                 'required',
                 'array',
             ],
-            'mdm_folder_id' => [
-                'string',
-            ],
             'mongo_object_id' => [
                 'nullable',
                 'string',

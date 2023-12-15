@@ -33,7 +33,6 @@ class Team extends Model
         'contact_point',
         'application_form_updated_by',
         'application_form_updated_on',
-        'mdm_folder_id',
         'mongo_object_id',
         'notification_status',
     ];

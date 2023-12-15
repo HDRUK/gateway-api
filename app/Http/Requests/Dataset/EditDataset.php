@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Dataset;
 
 use App\Http\Requests\BaseFormRequest;
-use App\Rules\CheckMauroFolderIdInTeam;
 
 class EditDataset extends BaseFormRequest
 {

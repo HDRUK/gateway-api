@@ -53,7 +53,6 @@ class TeamController extends Controller
      *                    @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                    @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
-     *                    @OA\Property(property="mdm_folder_id", type="datetime", example="xxxxxxx"), 
      *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()), 
      *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()), 
      *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
@@ -159,7 +158,6 @@ class TeamController extends Controller
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                  @OA\Property(property="mdm_folder_id", type="string", example="xxxx"),
      *                  @OA\Property(property="notifications", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              )
@@ -223,7 +221,6 @@ class TeamController extends Controller
      *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *              @OA\Property(property="mdm_folder_id", type="string", example="xxxx"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
@@ -254,14 +251,6 @@ class TeamController extends Controller
             }, ARRAY_FILTER_USE_KEY);
             $arrayTeamNotification = $input['notifications'];
 
-            // create subfolder in mauro
-            $mauroResponse = Mauro::createFolder(
-                $input['name'],
-                $input['name'],
-                env('MAURO_PARENT_FOLDER_ID')
-            );
-
-            $arrayTeam['mdm_folder_id'] = $mauroResponse['id'];
             $team = Team::create($arrayTeam);
 
             if ($team) {
@@ -331,7 +320,6 @@ class TeamController extends Controller
      *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *              @OA\Property(property="mdm_folder_id", type="string", example="xxx"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
@@ -362,7 +350,6 @@ class TeamController extends Controller
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                  @OA\Property(property="mdm_folder_id", type="string", example="xxxx"),
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              )
@@ -393,10 +380,6 @@ class TeamController extends Controller
         $team->application_form_updated_by = $body['application_form_updated_by'];
         $team->application_form_updated_on = $body['application_form_updated_on'];
         $team->is_question_bank = array_key_exists('is_question_bank', $body) ? $body['is_question_bank'] : false;
-
-        if (array_key_exists('mdm_folder_id', $body)) {
-            $team->mdm_folder_id = $body['mdm_folder_id'];
-        }
 
         $arrayTeamNotification = $body['notifications'];
         TeamHasNotification::where('team_id', $teamId)->delete();
@@ -453,7 +436,6 @@ class TeamController extends Controller
      *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *              @OA\Property(property="mdm_folder_id", type="string", example="xxxxx"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
@@ -484,7 +466,6 @@ class TeamController extends Controller
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                  @OA\Property(property="mdm_folder_id", type="string", example="xxxxx"),
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              )
@@ -515,7 +496,6 @@ class TeamController extends Controller
                 'contact_point',
                 'application_form_updated_by',
                 'application_form_updated_on',
-                'mdm_folder_id',
                 'is_question_bank',
             ];
 
@@ -593,17 +573,6 @@ class TeamController extends Controller
                 $deletePermanently = false;
                 if ($request->has('deletePermanently')) {
                     $deletePermanently = (bool) $request->query('deletePermanently');
-                }
-
-                // soft delete subfolder in mauro
-                $result = Mauro::deleteFolder(
-                    $team['mdm_folder_id'],
-                    $deletePermanently,
-                    env('MAURO_PARENT_FOLDER_ID')
-                );
-
-                if (!$result) {
-                    throw new Exception('Mauro team deletion failed for id ' . $team['mdm_folder_id']);
                 }
 
                 $team->delete();
