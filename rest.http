@@ -6,9 +6,11 @@
 @apiVersion = v1
 @uFirstName = "John"
 @uLastName = "Doe"
-@uEmail = "john.doe.1234567890@example.com"
+@uEmail = "developers@hdruk.ac.uk"
+# @uEmail = "john.doe.1234567890@example.com"
 @uEmail2 = "john.for.doe.1234567890@example.com"
-@uPassword = "passw@rdJ0hnD0e"
+@uPassword = "Watch26Task?"
+# @uPassword = "passw@rdJ0hnD0e"
 # @accessToken=jwt....
 
 ### Login
@@ -430,6 +432,7 @@ Authorization: Bearer {{accessToken}}
     "team_id": 1,
     "user_id": 3,
     "create_origin": "MANUAL",
+    "status": "ACTIVE",
     "label": "label dataset for test 1",
     "short_description": "lorem ipsum assaasdas as 1",
     "dataset": {
@@ -459,7 +462,7 @@ Authorization: Bearer {{accessToken}}
                 ]
             },
             "summary": {
-                "abstract": "xPublications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
+                "abstract": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
                 "contactPoint": "susheel.varma@hdruk.ac.uk",
                 "keywords": "Preprints,Papers,HDR UK",
                 "controlledKeywords": "",
@@ -540,11 +543,29 @@ Authorization: Bearer {{accessToken}}
             "structuralMetadata": [
                 {
                     "name": "table1",
-                    "description": "this is table 1",
+                    "description": "this is table 1 - description to be changed",
                     "columns": [
                         {
-                            "name": "column1",
-                            "description": "this is column1",
+                            "name": "column1-1",
+                            "description": "this is column1-1 - description to be changed",
+                            "dataType": "String",
+                            "sensitive": false
+                        },
+                        {
+                            "name": "column1-2",
+                            "description": "this is column1-2 - to be deleted",
+                            "dataType": "String",
+                            "sensitive": false
+                        }
+                    ]
+                },
+                {
+                    "name": "table2",
+                    "description": "this is table 2 - to be deleted",
+                    "columns": [
+                        {
+                            "name": "column2-1",
+                            "description": "this is column2-1 - to be automatically deleted",
                             "dataType": "String",
                             "sensitive": false
                         }

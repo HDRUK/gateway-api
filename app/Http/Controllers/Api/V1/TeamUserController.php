@@ -102,12 +102,13 @@ class TeamUserController extends Controller
 
             $userId = $input['userId'];
             $permissions = $input['roles'];
+            $sendEmail = $request->has('email') ? $request->boolean('email') : true;
 
             $teamHasUsers = $this->teamHasUser($teamId, $userId);
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             
-            $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser);
+            $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser, $sendEmail);
 
             return response()->json([
                 'message' => 'success',
@@ -447,9 +448,10 @@ class TeamUserController extends Controller
      *
      * @param array $teamHasUsers
      * @param array $roles
+     * @param bool $email
      * @return void
      */
-    private function teamUsersHasRoles(array $teamHasUsers, array $roles, int $teamId, int $userId, array $jwtUser): void
+    private function teamUsersHasRoles(array $teamHasUsers, array $roles, int $teamId, int $userId, array $jwtUser, bool $email): void
     {
         try {
             foreach ($roles as $roleName) {
@@ -463,7 +465,9 @@ class TeamUserController extends Controller
                 ]);
 
                 // send email - add roles
-                $this->sendEmail($roleName, true, $teamId, $userId, $jwtUser);
+                if ($email) {
+                    $this->sendEmail($roleName, true, $teamId, $userId, $jwtUser);
+                }
             }
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

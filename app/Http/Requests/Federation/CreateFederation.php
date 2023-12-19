@@ -29,6 +29,7 @@ class CreateFederation extends BaseFormRequest
                 'in:API_KEY,BEARER,NO_AUTH',
             ],
             'auth_secret_key' => [
+                'nullable',
                 'string',
             ],
             'endpoint_baseurl' => [
