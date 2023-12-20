@@ -21,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        $table->string('bio', 500)->nullable()->change();
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('bio', 500)->nullable()->change();
+        });
     }
 };

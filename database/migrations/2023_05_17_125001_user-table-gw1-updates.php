@@ -29,14 +29,16 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('sector_id');
-            $table->dropColumn('organisation');
-            $table->dropColumn('bio');
-            $table->dropColumn('domain');
-            $table->dropColumn('link');
-            $table->dropColumn('orcid');
-            $table->dropColumn('contact_feedback');
-            $table->dropColumn('contact_news');
+            $table->dropColumn([
+                'sector_id',
+                'organisation',
+                'bio',
+                'domain',
+                'link',
+                'orcid',
+                'contact_feedback',
+                'contact_news',
+            ]);
         });
     }
 };

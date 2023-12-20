@@ -14,14 +14,6 @@ class TestDataset extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'label' => [
-                'string',
-                'required',
-            ],
-            'short_description' => [
-                'string',
-                'required',
-            ],
             'dataset' => [
                 'required',
             ],
