@@ -29,14 +29,6 @@ class UpdateDataset extends BaseFormRequest
                 'required',
                 'exists:users,id',
             ],
-            'label' => [
-                'string',
-                'required',
-            ],
-            'short_description' => [
-                'string',
-                'required',
-            ],
             'dataset' => [
                 'required',
             ],

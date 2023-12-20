@@ -28,10 +28,12 @@ return new class extends Migration
     {
         if (Schema::hasTable('data_use_registers')) {
             Schema::table('data_use_registers', function (Blueprint $table) {
-                $table->dropColumn('organization_name');
-                $table->dropColumn('project_title');
-                $table->dropColumn('lay_summary');
-                $table->dropColumn('public_benefit_statement');
+                $table->dropColumn([
+                    'organization_name',
+                    'project_title',
+                    'lay_summary',
+                    'public_benefit_statement',
+                ]);
             });
         }
     }

@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('dataset_versions', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->bigInteger('dataset_id')->unsigned();
-            $table->text('metadata_json');
-            $table->string('version');
+            $table->json('metadata');
+            $table->integer('version');
 
             $table->foreign('dataset_id')->references('id')->on('datasets');
         });

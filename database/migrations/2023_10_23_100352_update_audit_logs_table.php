@@ -26,9 +26,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('audit_logs', function (Blueprint $table) {
-            $table->dropColumn('team_id');
-            $table->dropColumn('action_type');
-            $table->dropColumn('action_service');
+            $table->dropColumn([
+                'team_id',
+                'action_type',
+                'action_service',
+            ]);
         });
     }
 };

@@ -46,7 +46,7 @@ class SearchTest extends TestCase
      */
     public function test_search_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL_SEARCH, ["query" => "asthma"], $this->header);   
+        $response = $this->json('GET', self::TEST_URL_SEARCH, ["query" => "asthma"], $this->header);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',

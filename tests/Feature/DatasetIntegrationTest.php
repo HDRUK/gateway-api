@@ -187,8 +187,6 @@ class DatasetIntegrationTest extends TestCase
                 [
                     'team_id' => $teamId,
                     'user_id' => $userId,
-                    'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                    'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'dataset' => $this->dataset,
                     'create_origin' => Dataset::ORIGIN_MANUAL,
                     'status' => Dataset::STATUS_ACTIVE,
@@ -344,8 +342,6 @@ class DatasetIntegrationTest extends TestCase
                 [
                     'team_id' => $teamId,
                     'user_id' => $userId,
-                    'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                    'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'dataset' => $this->dataset,
                     'create_origin' => Dataset::ORIGIN_MANUAL,
                     'status' => Dataset::STATUS_ACTIVE,

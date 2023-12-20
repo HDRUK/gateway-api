@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->string('email')->default('')->nullable();
+        Schema::table('datasets', function (Blueprint $table) {
+            $table->dropColumn([
+                'version',
+                'dataset',
+                'datasetv2',
+            ]);
         });
     }
 
@@ -21,12 +25,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->dropColumn([
-                'team_id',
-                'user_id',
-                'email',
-            ]);
+        Schema::table('datasets', function (Blueprint $table) {
+            $table->json('dataset')->nullable();
+            $table->char('version', 10)->nullable();
         });
     }
 };

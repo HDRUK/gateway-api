@@ -30,8 +30,6 @@ class DatasetFactory extends Factory
         return [
             'user_id' => $teamHasUser->user_id,
             'team_id' => $teamHasUser->team_id,
-            'label' => fake()->words(fake()->randomDigit(), true),
-            'short_description' => fake()->words(fake()->randomDigit(), true),
             'create_origin' => $origin,
             'status' => ($origin === Dataset::ORIGIN_MANUAL ? fake()->randomElement([
                 Dataset::STATUS_ACTIVE,

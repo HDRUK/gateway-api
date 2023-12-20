@@ -23,8 +23,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('permissions', function (Blueprint $table) {
-            $table->dropColumn('allowed_from_apps');
-            $table->dropColumn('description');
+            $table->dropColumn([
+                'allowed_from_apps',
+                'description',
+            ]);
         });
     }
 };
