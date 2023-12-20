@@ -671,16 +671,27 @@ class DatasetController extends Controller
                 $datasetModel = Dataset::withTrashed()
                     ->where(['id' => $id])
                     ->first();
-                if ($request['status'] === 'ACTIVE') {
-                    $datasetModel->status = Dataset::STATUS_ACTIVE;
-                }
-                elseif ($request['status'] === 'DRAFT') {
-                    $datasetModel->status = Dataset::STATUS_DRAFT;
-                }
 
-                $datasetModel->deleted_at = null;
-                $datasetModel->save();
+                if ($request['status'] !== Dataset::STATUS_ARCHIVED) {
+                    if (in_array($request['status'], [
+                        Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT
+                    ])) {
+                        $datasetModel->status = $request['status'];
+                        $datasetModel->deleted_at = null;
+                        $datasetModel->save();
 
+                        $metadata = $datasetModel->latestMetadata();
+
+                        if ($request['status'] === Dataset::STATUS_ACTIVE) {
+                            MMC::reindexElastic(
+                                json_decode($metadata['metadata'], true),
+                                $id
+                            );
+                        }
+                    } else {
+                        throw new Exception('unknown status type');
+                    }
+                }
             } else {
                 // TODO remaining edit steps e.g. if dataset appears in the request 
                 // body validate, translate if needed, update Mauro data model, etc.   
