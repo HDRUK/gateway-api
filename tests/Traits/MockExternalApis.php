@@ -7,7 +7,6 @@ use Database\Seeders\SectorSeeder;
 use Illuminate\Support\Facades\Http;
 
 use MetadataManagementController AS MMC;
-// use Mauro;
 
 use Tests\Traits\Authorization;
 
@@ -15,8 +14,6 @@ use Elastic\Elasticsearch\ClientBuilder;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
-
-// use Tests\Unit\MauroTest;
 
 trait MockExternalApis
 {
@@ -184,65 +181,7 @@ trait MockExternalApis
         MMC::shouldReceive("validateDataModelType")->andReturn(true);
         MMC::makePartial();
 
-
         $this->dataset_store = [];
-        $this->mauro_store = [];
-
-
-        // Mauro::shouldReceive('createFolder')->andReturnUsing(function (...$args){
-        //     return MauroTest::mockedMauroCreateFolderResponse(...$args);
-        // });
-        // Mauro::shouldReceive('createDataModel')->andReturnUsing(function (...$args){
-        //     $mauro = MauroTest::mockedMauroCreateDatasetResponse(...$args);
-        //     $jsonObj = $args[count($args)-1];
-        //     $id = $mauro["DataModel"]["responseJson"]["id"];
-            
-        //     $mauro_metadata = MauroTest::mockCreateMauroData($jsonObj['dataset']['metadata']);
-        //     $this->mauro_store[$id] = $mauro_metadata;
-
-        //     return $mauro;
-        // });
-        // Mauro::shouldReceive('updateDataModel')->andReturnUsing(function (...$args){
-        //     $mauro = MauroTest::mockedMauroCreateDatasetResponse(...$args);
-        //     $jsonObj = $args[count($args)-2];
-        //     $id = $args[count($args)-1];
-        //     $mauro_metadata = MauroTest::mockCreateMauroData($jsonObj['dataset']['metadata']);
-        //     $this->mauro_store[$id] = $mauro_metadata;
-    
-        //     return $mauro;
-        // });
-        // Mauro::shouldReceive('finaliseDataModel')->andReturnUsing(function (string $datasetId){
-        //     return MauroTest::mockedFinaliseDataModel($datasetId);
-        // });
-
-        // Mauro::shouldReceive('getDatasetByIdMetadata')->andReturnUsing(function (string $datasetId){
-        //     $mauro_metadata = $this->mauro_store[$datasetId];
-        //     return ["items" => $mauro_metadata];
-        // });
-
-        // Mauro::shouldReceive('getAllDataClasses')->andReturnUsing(function (string $datasetId){
-        //     return ["items" => $this->mauro_store[$datasetId]];
-        // });
-
-        // Mauro::shouldReceive('deleteFolder')->andReturn(true);
-        // Mauro::shouldReceive('deleteDataModel')->andReturn(true);
-        // Mauro::shouldReceive('deleteDataClass')->andReturn(true);
-        // Mauro::shouldReceive('restoreDataModel')->andReturn(true);
-       
-
-        // Mauro::shouldReceive('createDataClass')->andReturnUsing(function (...$args){
-        //     return MauroTest::mockCreateDataClass(...$args);
-        // });
-
-        // Mauro::shouldReceive('createDataElement')->andReturnUsing(function (...$args){
-        //     return MauroTest::mockCreateDataElement(...$args);
-        // });
-
-        // Mauro::shouldReceive('duplicateDataModel')->andReturnUsing(function (string $datasetId){
-        //     return ["id"=>fake()->uuid()];
-        // });
-
-        // Mauro::makePartial();
 
         Http::fake([
             env('MJML_RENDER_URL') => Http::response(
