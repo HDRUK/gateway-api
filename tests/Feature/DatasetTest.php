@@ -21,9 +21,9 @@ class DatasetTest extends TestCase
     }
 
     const TEST_URL_DATASET = '/api/v1/datasets';
-    const TEST_URL_TEAM = 'api/v1/teams';
-    const TEST_URL_NOTIFICATION = 'api/v1/notifications';
-    const TEST_URL_USER = 'api/v1/users';
+    const TEST_URL_TEAM = '/api/v1/teams';
+    const TEST_URL_NOTIFICATION = '/api/v1/notifications';
+    const TEST_URL_USER = '/api/v1/users';
 
     public function setUp(): void
     {
@@ -70,7 +70,6 @@ class DatasetTest extends TestCase
      */
     public function test_get_all_team_datasets_with_success(): void
     {
-        // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
@@ -84,6 +83,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
+        
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
 
@@ -299,7 +299,7 @@ class DatasetTest extends TestCase
         $this->assertTrue($first->gt($second));
 
         /*
-        * use the endpoint /api/v1/datasets/count to found unique values of the field 'status'
+        * use the endpoint /api/v1/datasets/count to find unique values of the field 'status'
         */
         $responseCount = $this->json('GET', self::TEST_URL_DATASET . 
             '/count/status?team_id=' . $teamId1 ,
