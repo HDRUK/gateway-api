@@ -172,10 +172,15 @@ class MetadataManagementController {
     public function deleteDataset(string $id): void
     {
         try {
-            $dataset = Dataset::where('id', (int)$id)->first();
+            $dataset = Dataset::with('metadata')->where('id', (int)$id)->first();
             $dataset->deleted_at = Carbon::now();
             $dataset->status = Dataset::STATUS_ARCHIVED;
             $dataset->save();
+
+            foreach ($dataset->metadata as $metadata) {
+                $metadata->deleted_at = Carbon::now();
+                $metadata->save();
+            }
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
