@@ -299,6 +299,12 @@ class DatasetVersionTest extends TestCase
 
         $responseDeleteDataset->assertStatus(200);
 
+        // Confirm DatasetVersions associated with this Dataset have also been (soft) deleted
+        $versions = DatasetVersion::withTrashed()->where('dataset_id', $datasetId);
+        foreach ($versions as $v) {
+            $this->assertTrue($v->deleted_at !== null);
+        }
+
         $responseDeleteTeam = $this->json(
             'DELETE',
             self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',

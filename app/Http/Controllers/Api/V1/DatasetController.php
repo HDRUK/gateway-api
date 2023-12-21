@@ -680,7 +680,10 @@ class DatasetController extends Controller
                         $datasetModel->deleted_at = null;
                         $datasetModel->save();
 
-                        $metadata = $datasetModel->latestMetadata();
+                        $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)
+                            ->latest()->first();
+                        $metadata->deleted_at = null;
+                        $metadata->save();
 
                         if ($request['status'] === Dataset::STATUS_ACTIVE) {
                             MMC::reindexElastic(
@@ -811,21 +814,18 @@ class DatasetController extends Controller
 
         // collect all the required information
         foreach ($results as $dataset) {
-            if ($dataset->datasetid) {
-                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
-                //refactor array for easier indexing later
-                $reindexedmauroDatasetIdMetadata = array();
-                foreach ($mauroDatasetIdMetadata['items'] as $item) {
-                    $reindexedmauroDatasetIdMetadata[$item['key']] = $item;
-                }
-                $dataset['mauroSummary'] = $reindexedmauroDatasetIdMetadata;
-                $mauroDatasetResponse = Mauro::getDatasetById($dataset['datasetid']);
-                // handle when there is no corresponding Mauro entry
-                $dataset['mauro'] = ($mauroDatasetResponse['DataModel']['responseStatus'] === 200) ? $mauroDatasetResponse['DataModel']['responseJson'] : null;
-            } else {
-                $dataset['mauro'] = null;
-                $dataset['mauroSummary'] = null;
-            }
+            $dataset['metadata'] = $dataset->latestVersion();
+
+            // $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
+            // //refactor array for easier indexing later
+            // $reindexedmauroDatasetIdMetadata = array();
+            // foreach ($mauroDatasetIdMetadata['items'] as $item) {
+            //     $reindexedmauroDatasetIdMetadata[$item['key']] = $item;
+            // }
+            // $dataset['mauroSummary'] = $reindexedmauroDatasetIdMetadata;
+            // $mauroDatasetResponse = Mauro::getDatasetById($dataset['datasetid']);
+            // // handle when there is no corresponding Mauro entry
+            // $dataset['mauro'] = ($mauroDatasetResponse['DataModel']['responseStatus'] === 200) ? $mauroDatasetResponse['DataModel']['responseJson'] : null;
         }
 
         // callback function that writes to php://output
@@ -835,21 +835,21 @@ class DatasetController extends Controller
                 // Open output stream
                 $handle = fopen('php://output', 'w');
                 
-                $headerRow = ['Title', 'Publisher name', 'Version', 'Last Activity', 'Method of dataset creation', 'Status', 'Metadata detail'];
+                $headerRow = ['Title', 'Publisher name', 'Last Activity', 'Method of dataset creation', 'Status', 'Metadata detail'];
 
                 // Add CSV headers
                 fputcsv($handle, $headerRow);
         
                 // add the given number of rows to the file.
-                foreach ($results as $rowDetails) { 
+                foreach ($results as $rowDetails) {
+                    $metadata = json_decode($rowDetails['metadata']['metadata'], true);
                     $row = [
-                        $rowDetails['mauroSummary'] !== null ? (string) $rowDetails['mauroSummary']['properties/summary/title']['value'] : '',
-                        $rowDetails['mauroSummary'] !== null ? (string) $rowDetails['mauroSummary']['properties/summary/publisher/publisherName']['value'] : '',
-                        $rowDetails['mauro'] !== null ? (array_key_exists('modelVersion', $rowDetails['mauro']) ? (string) $rowDetails['mauro']['modelVersion'] : '') : '',
-                        $rowDetails['mauro'] !== null ? (string) $rowDetails['mauro']['lastUpdated'] : '',
-                        (string) $rowDetails['create_origin'],
-                        (string) $rowDetails['status'],
-                        $rowDetails['mauroSummary'] !== null ? (string) json_encode($rowDetails['mauroSummary']) : '',
+                        $metadata['metadata']['summary']['title'] !== null ? $metadata['metadata']['summary']['title'] : '',
+                        $metadata['metadata']['summary']['publisher']['publisherName'] !== null ? $metadata['metadata']['summary']['publisher']['publisherName'] : '',
+                        $rowDetails['metadata']['updated_at'] !== null ? $rowDetails['metadata']['updated_at'] : '',
+                        (string)strtoupper($rowDetails['create_origin']),
+                        (string)strtoupper($rowDetails['status']),
+                        $metadata['metadata'] !== null ? (string)json_encode($metadata['metadata']) : '',
                     ];
                     fputcsv($handle, $row);
                 }

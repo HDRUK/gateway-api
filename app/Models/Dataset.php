@@ -95,6 +95,12 @@ class Dataset extends Model
             ->latest('version')->select('metadata')->first();
     }
 
+    public function latestVersion(): DatasetVersion
+    {
+        return DatasetVersion::where('dataset_id', $this->id)
+            ->latest('version')->first();
+    }
+
     public function lastMetadataVersionNumber(): DatasetVersion
     {
         return DatasetVersion::where('dataset_id', $this->id)
