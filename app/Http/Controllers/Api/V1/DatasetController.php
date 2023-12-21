@@ -17,7 +17,6 @@ use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Jobs\TechnicalObjectDataStore;
 use App\Models\DatasetHasNamedEntities;
 use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
@@ -615,7 +614,7 @@ class DatasetController extends Controller
 
                     return response()->json([
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
-                        'data' => Dataset::where('id', '=', $dId)->first(),
+                        'data' => Dataset::where('id', '=', $currDataset->id)->first(),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
 
