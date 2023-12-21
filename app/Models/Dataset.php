@@ -76,6 +76,9 @@ class Dataset extends Model
         return $this->hasMany(DatasetVersion::class, 'dataset_id');
     }
 
+    /**
+     * Helper function to use JSON functions to search by title within metadata.
+     */
     public function searchByTitle(string $title): DatasetVersion
     {
         return DatasetVersion::where('dataset_id', $this->id)
@@ -87,7 +90,7 @@ class Dataset extends Model
     }
 
     /**
-     * The very latest version of metadata that responds to this dataset.
+     * The very latest version of only the metadata that corresponds to this dataset.
      */
     public function latestMetadata(): DatasetVersion
     {
@@ -95,12 +98,18 @@ class Dataset extends Model
             ->latest('version')->select('metadata')->first();
     }
 
+    /**
+     * The very latest version of a DatasetVersion object that corresponds to this dataset.
+     */
     public function latestVersion(): DatasetVersion
     {
         return DatasetVersion::where('dataset_id', $this->id)
             ->latest('version')->first();
     }
 
+    /**
+     * The very latest version number that corresponds to this dataset.
+     */
     public function lastMetadataVersionNumber(): DatasetVersion
     {
         return DatasetVersion::where('dataset_id', $this->id)
