@@ -815,17 +815,6 @@ class DatasetController extends Controller
         // collect all the required information
         foreach ($results as $dataset) {
             $dataset['metadata'] = $dataset->latestVersion();
-
-            // $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
-            // //refactor array for easier indexing later
-            // $reindexedmauroDatasetIdMetadata = array();
-            // foreach ($mauroDatasetIdMetadata['items'] as $item) {
-            //     $reindexedmauroDatasetIdMetadata[$item['key']] = $item;
-            // }
-            // $dataset['mauroSummary'] = $reindexedmauroDatasetIdMetadata;
-            // $mauroDatasetResponse = Mauro::getDatasetById($dataset['datasetid']);
-            // // handle when there is no corresponding Mauro entry
-            // $dataset['mauro'] = ($mauroDatasetResponse['DataModel']['responseStatus'] === 200) ? $mauroDatasetResponse['DataModel']['responseJson'] : null;
         }
 
         // callback function that writes to php://output
