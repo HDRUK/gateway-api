@@ -168,8 +168,6 @@ class DatasetController extends Controller
             }
         }
 
-
-
         // filtering by title
         $filterTitle = $request->query('title', null);
         if (!empty($filterTitle)) {
@@ -195,7 +193,6 @@ class DatasetController extends Controller
             $matches = array_column($initialDatasets->toArray(),'id');
         }
 
-
         // perform query for the matching datasets and reattach the mauro field
         // rather than refetching it from mauro
         // can now do ordering and pagination
@@ -213,7 +210,6 @@ class DatasetController extends Controller
         foreach ($datasets as $dataset) {
             $dataset['mauro'] = $mauro[$dataset->id];
         }
-        
         
         if($doSortFromMauro) {
             //do sorting on mauro fields 
@@ -245,7 +241,6 @@ class DatasetController extends Controller
             $datasets
         );
     }
-
 
     /**
      * @OA\Get(

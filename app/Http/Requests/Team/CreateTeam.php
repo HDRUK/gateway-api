@@ -81,4 +81,14 @@ class CreateTeam extends BaseFormRequest
             ],
         ];
     }
+
+    /**
+     * Add Route parameters to the FormRequest.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge(['member_of' => strtoupper($this->input('member_of'))]);
+    }
 }

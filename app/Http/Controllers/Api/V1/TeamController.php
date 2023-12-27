@@ -106,9 +106,11 @@ class TeamController extends Controller
                 }
             }
 
+            $itemsPerPage = $request->has('per_page') ? $request->query('per_page') : Config::get('constants.per_page');
+
             $teams = $query
                 ->with('users')
-                ->paginate(Config::get('constants.per_page'), ['*'], 'page')
+                ->paginate($itemsPerPage, ['*'], 'page')
                 ->toArray();
 
             $teams['data'] = $this->getTeams($teams['data']);
@@ -252,7 +254,7 @@ class TeamController extends Controller
             $arrayTeam = array_filter($input, function ($key) {
                 return $key !== 'notifications';
             }, ARRAY_FILTER_USE_KEY);
-            $arrayTeamNotification = $input['notifications'];
+            $arrayTeamNotification = $request->has('notifications') ? $input['notifications'] : [];
 
             // create subfolder in mauro
             $mauroResponse = Mauro::createFolder(

@@ -91,5 +91,6 @@ class EditTeam extends BaseFormRequest
     protected function prepareForValidation()
     {
         $this->merge(['teamId' => $this->route('teamId')]);
+        $this->merge(['member_of' => strtoupper($this->input('member_of'))]);
     }
 }
