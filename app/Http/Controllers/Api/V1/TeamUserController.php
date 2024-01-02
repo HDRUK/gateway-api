@@ -48,6 +48,13 @@ class TeamUserController extends Controller
      *       example="1",
      *       @OA\Schema( type="integer", description="team id" ),
      *    ),
+     *    @OA\Parameter(
+     *       name="email",
+     *       in="query",
+     *       description="if the value is false be will not send email",
+     *       required=false,
+     *       @OA\Schema(type="boolean")
+     *    ),
      *    @OA\RequestBody(
      *       required=true,
      *       description="Pass user credentials",
