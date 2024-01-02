@@ -26,6 +26,10 @@ class DatasetVersion extends Model
      */
     public $timestamps = true;
 
+    protected $casts = [
+        'metadata' => 'object',
+    ];
+
     protected $fillable = [
         'dataset_id',
         'metadata',

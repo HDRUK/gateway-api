@@ -71,7 +71,7 @@ class Dataset extends Model
     /**
      * The version history of metadata that respond to this dataset.
      */
-    public function metadata(): HasMany
+    public function versions(): HasMany
     {
         return $this->hasMany(DatasetVersion::class, 'dataset_id');
     }

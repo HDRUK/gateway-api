@@ -253,9 +253,9 @@ class DatasetVersionTest extends TestCase
         $responseCreateDataset->assertStatus(201);
         $datasetId = $responseCreateDataset['data'];
 
-        $dataset1 = Dataset::with('metadata')->where('id', $datasetId)->first();
+        $dataset1 = Dataset::with('versions')->where('id', $datasetId)->first();
         
-        $this->assertTrue((count($dataset1->metadata)) === 1);
+        $this->assertTrue((count($dataset1->versions)) === 1);
 
         $this->datasetUpdate['metadata']['summary']['title'] = 'Updated Metadata Title 123';
 

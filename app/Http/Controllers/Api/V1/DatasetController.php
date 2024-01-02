@@ -179,7 +179,7 @@ class DatasetController extends Controller
         }
 
         // perform query for the matching datasets with ordering and pagination
-        $datasets = Dataset::with('metadata')->whereIn('id', $matches)
+        $datasets = Dataset::with('versions')->whereIn('id', $matches)
             ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                 function ($query) {
                     return $query->withTrashed();
@@ -328,7 +328,7 @@ class DatasetController extends Controller
             // Return the latest metadata for this dataset
             $version = $dataset->latestMetadata()->metadata;
             if ($version) {
-                $dataset->metadata = json_decode($version, true);
+                $dataset->versions = json_decode($version, true);
             }
 
             $outputSchemaModel = $request->query('schema_model');
@@ -344,7 +344,7 @@ class DatasetController extends Controller
                 );
 
                 if ($translated['wasTranslated']) {
-                    $dataset->metadata = json_encode($translated['metadata']);
+                    $dataset->versions = json_encode($translated['metadata']);
                 }
                 else {
                     return response()->json([
@@ -573,7 +573,7 @@ class DatasetController extends Controller
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => Dataset::with('metadata')->where('id', '=', $currDataset->id)->first(),
+                    'data' => Dataset::with('versions')->where('id', '=', $currDataset->id)->first(),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             } else {
                 // Incoming dataset is not in GWDM format, so at this point we
