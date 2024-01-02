@@ -26,13 +26,25 @@ class DatasetVersion extends Model
      */
     public $timestamps = true;
 
-    protected $casts = [
-        'metadata' => 'object',
-    ];
-
     protected $fillable = [
         'dataset_id',
         'metadata',
         'version',
     ];
+
+    /**
+     * Accessor for the metadata field to convert json string to 
+     * php array for inclusion in json response object. Weirdly
+     * the $casts of metadata to object was failing. Possibly due
+     * to the encoding of the string being added to the db field.
+     * Needs further investigation as this is just a workaround.
+     * 
+     * @param $value The original value prior to pre-processing
+     * 
+     * @return array The json metadata string as an array
+     */
+    public function getMetadataAttribute($value): array
+    {
+        return json_decode(json_decode($value, true), true);
+    }
 }
