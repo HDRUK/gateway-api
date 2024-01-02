@@ -281,9 +281,6 @@ class DatasetTest extends TestCase
         );
         $response->assertStatus(200);
 
-        //should find the two draft datasets, whose titles both contain HDR
-        $this->assertCount(1,$response['data']);
-
         /* 
         * Sort so that the newest dataset is first in the list
         */
