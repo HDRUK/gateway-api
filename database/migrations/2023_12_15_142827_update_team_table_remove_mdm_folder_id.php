@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->string('email')->default('')->nullable();
+        Schema::table('teams', function (Blueprint $table) {
+            $table->dropColumn('mdm_folder_id');
         });
     }
 
@@ -21,12 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->dropColumn([
-                'team_id',
-                'user_id',
-                'email',
-            ]);
+        Schema::table('teams', function (Blueprint $table) {
+            $table->char('mdm_folder_id')->nullable();
         });
     }
 };

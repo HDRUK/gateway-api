@@ -23,8 +23,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('federations', function (Blueprint $table) {
-            $table->dropColumn('federation_type');
-            $table->dropColumn('run_time_minute');
+            $table->dropColumn([
+                'federation_type',
+                'run_time_minute',
+            ]);
         });
     }
 };

@@ -9,6 +9,7 @@ use App\Models\Team;
 
 use App\Models\User;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
@@ -16,7 +17,6 @@ use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Jobs\TechnicalObjectDataStore;
 use App\Models\DatasetHasNamedEntities;
 use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
@@ -106,7 +106,7 @@ class DatasetController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-
+        $matches = [];
         $teamId = $request->query('team_id',null);
         $filterStatus = $request->query('status', null);
 
@@ -116,130 +116,79 @@ class DatasetController extends Controller
         $sortField = $tmp[0];
         $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-        $doSortFromMauro = str_contains($sortField,"properties/");
-
-        if( $doSortFromMauro === false) {
-            $allFields = collect(Dataset::first())->keys()->toArray();
-            if(count($allFields) > 0 && !in_array($sortField, $allFields)){
-                //if the field to be sorted is not a field in the model, then return a bad request
-                return response()->json([
-                        "message" => "Sorting on '".$sortField."' is not a valid field to sort on" 
-                        ],400);                          
-            }
+        $allFields = collect(Dataset::first())->keys()->toArray();
+        if (count($allFields) > 0 && !in_array($sortField, $allFields)) {
+            return response()->json([
+                'message' => '\"' . $sortField .'\" is not a valid field to sort on'
+            ], 400);
         }
 
         $validDirections = ['desc', 'asc'];
 
-        if(!in_array($sortDirection, $validDirections)){
+        if (!in_array($sortDirection, $validDirections)) {
             //if the sort direction is not desc or asc then return a bad request
             return response()->json([
-                    "message" => "Sort direction must be either: " . 
-                                implode(' OR ',$validDirections) . 
-                                '. Not "' . $sortDirection .'"'
-                    ],400);
+                "message" => "Sort direction must be either: " . 
+                    implode(' OR ',$validDirections) . 
+                    '. Not "' . $sortDirection .'"'
+                ], 400);
         }
 
-        
-
-        //apply any initial filters to get initial datasets 
-        $initialDatasets = Dataset::when($teamId, 
-                                    function ($query) use ($teamId){
-                                        return $query->where('team_id', '=', $teamId);
-                                    })
-                            ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
-                                    function ($query) {
-                                        return $query->withTrashed();
-                                    })
-                            ->when($filterStatus, 
-                                    function ($query) use ($filterStatus) {
-                                        return $query->where('status', '=', $filterStatus);
-                                    })
-                            ->select(['id','datasetid','updated'])->get();
-
-
-        $mauro = [];
-        foreach ($initialDatasets as $dataset) {
-            if($dataset->datasetid){
-                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset->datasetid);
-                $mauro[$dataset->id] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
-            }
-            else{
-                $mauro[$dataset->id] = [];
-            }
-        }
-
-
-
-        // filtering by title
+        // apply any initial filters to get initial datasets 
         $filterTitle = $request->query('title', null);
+
+        $initialDatasets = Dataset::when($teamId, function ($query) use ($teamId) {
+            return $query->where('team_id', '=', $teamId);
+        })->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
+            function ($query) {
+                return $query->withTrashed();
+        })->when($filterStatus, 
+            function ($query) use ($filterStatus) {
+                return $query->where('status', '=', $filterStatus);
+        })->select(['id', 'updated'])->get();
+
+        // Map initially found datasets to just ids.
+        foreach ($initialDatasets as $ds) {
+            $matches[] = $ds->id;
+        }
+
         if (!empty($filterTitle)) {
-            $filterTitle = mb_strtolower($filterTitle);
-            $matches = array();
-            // iterate through mauro field of each dataset
-            foreach ($initialDatasets as $dataset) {
-                foreach ($mauro[$dataset->id] as $field) {
-                    // find the title field in mauro data
-                    if ($field['key'] === 'properties/summary/title') {
-                        // if title matches filter, store the dataset id and mauro field
-                        if (str_contains(mb_strtolower($field['value']), $filterTitle)) {
-                            //$matches[$dataset['id']] = $dataset['mauro'];
-                            $matches[] = $dataset->id;
-                        }
-                        break(1);
-                    }
+            // If we've received a 'title' for the search, then only return
+            // datasets that match that title
+            $titleMatches = [];
+            
+            // For each of the initially found datasets matching previous
+            // filters and refine further on textual based matches.
+            foreach ($matches as $m) {
+                $version = DatasetVersion::where('dataset_id', $m)
+                ->whereRaw(
+                    "
+                    LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$filterTitle%')
+                    "
+                )->latest('version')->select('dataset_id')->first();
+
+                if ($version) {
+                    $titleMatches[] = $version->dataset_id;
                 }
             }
-        }
-        else{
-            //otherwise select all the IDs originals fetched
-            $matches = array_column($initialDatasets->toArray(),'id');
+
+            // Finally intersect our two arrays to find commonality between all
+            // filtering methods. This will return a much slimmer array of returned
+            // items
+            $matches = array_intersect($matches, $titleMatches);            
         }
 
-
-        // perform query for the matching datasets and reattach the mauro field
-        // rather than refetching it from mauro
-        // can now do ordering and pagination
-        $datasets = Dataset::whereIn('id', $matches)
-                ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
-                    function ($query) {
-                        return $query->withTrashed();
+        // perform query for the matching datasets with ordering and pagination
+        $datasets = Dataset::with('metadata')->whereIn('id', $matches)
+            ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
+                function ($query) {
+                    return $query->withTrashed();
+                })
+            ->when(true,
+                    function ($query) use ($sortField, $sortDirection) {
+                        return $query->orderBy($sortField, $sortDirection);
                     })
-                ->when($doSortFromMauro===false,
-                        function ($query) use ($sortField, $sortDirection) {
-                            return $query->orderBy($sortField, $sortDirection);
-                        })
-                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
-
-        foreach ($datasets as $dataset) {
-            $dataset['mauro'] = $mauro[$dataset->id];
-        }
-        
-        
-        if($doSortFromMauro) {
-            //do sorting on mauro fields 
-            $callBackSort = function ($dataset) use ($sortField) {
-                $title = '';
-                foreach ($dataset['mauro'] as $item) {
-                    if ($item['key'] === $sortField) {
-                        $title = $item['value'];
-                        break;
-                    }
-                }
-                return $title;
-            };
-
-            if($sortDirection === 'asc'){
-                $sortedDatasets = $datasets->sortBy($callBackSort);
-            }
-            else{
-                $sortedDatasets = $datasets->sortByDesc($callBackSort);
-            }
-            $sortedDatasets = $sortedDatasets->makeHidden(['dataset'])->values();
-
-            //https://stackoverflow.com/questions/53384956/how-to-paginate-and-sort-results-in-laravel
-            $datasets->setCollection($sortedDatasets);
-
-        }
+            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         return response()->json(
             $datasets
@@ -292,20 +241,17 @@ class DatasetController extends Controller
     public function count(Request $request, string $field): JsonResponse
     {
         $teamId = $request->query('team_id',null);
-        $counts = Dataset::when($teamId, 
-                                    function ($query) use ($teamId){
-                                        return $query->where('team_id', '=', $teamId);
-                                    })
-                            ->withTrashed()
-                            ->select($field)
-                            ->get()
-                            ->groupBy($field)
-                            ->map->count();
+        $counts = Dataset::when($teamId, function ($query) use ($teamId) {
+            return $query->where('team_id', '=', $teamId);
+        })->withTrashed()
+            ->select($field)
+            ->get()
+            ->groupBy($field)
+            ->map->count();
 
         return response()->json([
             "data" => $counts
-            ]
-        );
+        ]);
     }
 
     /**
@@ -377,18 +323,18 @@ class DatasetController extends Controller
         try {
             $dataset = Dataset::where(['id' => $id])
                 ->with(['namedEntities'])
-                ->first()
-                ->toArray();
+                ->first();
 
-            if ($dataset['datasetid']) {
-                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
-                $dataset['mauro'] = array_key_exists('items', $mauroDatasetIdMetadata) ? $mauroDatasetIdMetadata['items'] : [];
+            // Return the latest metadata for this dataset
+            $version = $dataset->latestMetadata()->metadata;
+            if ($version) {
+                $dataset->metadata = json_decode($version, true);
             }
 
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
-            if($outputSchemaModel && $outputSchemaModelVersion){
+            if ($outputSchemaModel && $outputSchemaModelVersion) {
                 $translated = MMC::translateDataModelType(
                     $dataset['dataset'],
                     $outputSchemaModel,
@@ -396,20 +342,21 @@ class DatasetController extends Controller
                     env('GWDM'),
                     env('GWDM_CURRENT_VERSION'),
                 );
-                if($translated['wasTranslated']){
-                    $dataset['dataset'] = json_encode($translated['metadata']);
+
+                if ($translated['wasTranslated']) {
+                    $dataset->metadata = json_encode($translated['metadata']);
                 }
-                else{
+                else {
                     return response()->json([
                         'message' => 'failed to translate',
                         'details' => $translated
                     ], 400);
                 }
             }
-            elseif($outputSchemaModel){
+            elseif ($outputSchemaModel) {
                 throw new Exception('You have given a schema_model but not a schema_version');
             }
-            elseif($outputSchemaModelVersion){
+            elseif ($outputSchemaModelVersion) {
                 throw new Exception('You have given a schema_version but not schema_model');
             }
             
@@ -439,8 +386,6 @@ class DatasetController extends Controller
      *          @OA\Schema(
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
-     *             @OA\Property(property="label", type="string", example="label dataset for test"),
-     *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
      *             @OA\Property(property="dataset", type="array", @OA\Items())
      *          )
@@ -491,80 +436,34 @@ class DatasetController extends Controller
                 env('GWDM_CURRENT_VERSION')
             );
 
-
-            if($traserResponse['wasTranslated']){
+            if ($traserResponse['wasTranslated']) {
                 $input['metadata']['original_metadata'] = $input['dataset']['metadata'];
                 $input['dataset']['metadata'] = $traserResponse['metadata'];
 
-                $mauro = MMC::createMauroDataModel($user, $team, $input);
+                $dataset = MMC::createDataset([
+                    'user_id' => $input['user_id'],
+                    'team_id' => $input['team_id'],
+                    'created' => now(),
+                    'updated' => now(),
+                    'submitted' => now(),
+                    'pid' => (string) Str::uuid(),
+                    'create_origin' => $input['create_origin'],
+                    'status' => $input['status'],
+                ]);
 
-                if (!empty($mauro)) {
+                $version = MMC::createDatasetVersion([
+                    'dataset_id' => $dataset->id,
+                    'metadata' => json_encode($input['dataset']),
+                    'version' => 1,
+                ]);
 
-                    if($mauro['DataModel']['responseStatus'] !== 201){
-
-                        return response()->json([
-                            'message' => 'Failed to create mauroDataModel',
-                            'details' => $mauro['DataModel']['responseJson'],
-                        ]);
-                    }
-
-                    $mauroDatasetId = (string) $mauro['DataModel']['responseJson']['id'];
-
-                    $dataset = MMC::createDataset([
-                        'datasetid' => $mauroDatasetId,
-                        'label' => $input['label'],
-                        'short_description' => $input['short_description'],
-                        'user_id' => $input['user_id'],
-                        'team_id' => $input['team_id'],
-                        'dataset' => json_encode($input['dataset']),
-                        'created' => now(),
-                        'updated' => now(),
-                        'submitted' => now(),
-                        'pid' => (string) Str::uuid(),
-                        'create_origin' => $input['create_origin'],
-                        'status' => $input['status'],
-                    ]);                    
-                    $dId = $dataset->id; 
-
-                    //overwrite whatever gatewayId has been set
-                    // - this logic could be put somewhere else?
-                    // - there may be some other logic/fields to be filled here?
-                    //   e.g. revisions and versions? 
-                    $input['dataset']['metadata']['required']['gatewayId'] = strval($dId);
-                    
-
-
-                    // Dispatch this potentially lengthy subset of data
-                    // to a technical object data store job - API doesn't
-                    // care if it exists or not. We leave that determination to
-                    // the service itself.
-                    // and not found `extracted_terms`
-                    TechnicalObjectDataStore::dispatch(
-                        (string) $mauroDatasetId,
-                        base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6)),
-                        false
-                    );
-
-                    // Only finalise when:
-                    //      1. Dataset is onboarded via automation (Applications or Federation)
-                    //      2. Dataset is onboarded via manual form and status is ACTIVE
-                    // otherwise, we assume the dataset is still being configured
-                    if ($dataset->shouldFinalise()) {
-                        $versioning = Mauro::finaliseDataModel($mauroDatasetId);
-                        $dataset->update([
-                            'version' => (string) $versioning['documentationVersion'],
-                            'status' => Dataset::STATUS_ACTIVE,
-                        ]);
-                    }
-
-                    return response()->json([
-                        'message' => 'created',
-                        'data' => $dId,
-                    ], 201);
-                }
-                throw new NotFoundException('Mauro Data Mapper folder id for team ' . $input['team_id'] . ' not found');
+                return response()->json([
+                    'message' => 'created',
+                    'data' => $dataset->id,
+                    'version' => $version->id,
+                ], 201);
             }
-            else{
+            else {
                 return response()->json([
                     'message' => 'dataset is in an unknown format and cannot be processed',
                     'details' => $traserResponse,
@@ -602,8 +501,6 @@ class DatasetController extends Controller
      *          @OA\Schema(
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
-     *             @OA\Property(property="label", type="string", example="label dataset for test"),
-     *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
      *             @OA\Property(property="dataset", type="array", @OA\Items())
      *          )
@@ -638,11 +535,10 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
 
-            $user = User::where('id', (int) $input['user_id'])->first()->toArray();
-            $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
-            $currDataset = Dataset::where('id', $id)->first()->toArray();
-            $currentPid = $currDataset['pid'];
-            $currentDatasetId = $currDataset['datasetid'];
+            $user = User::where('id', (int) $input['user_id'])->first();
+            $team = Team::where('id', (int) $input['team_id'])->first();
+            $currDataset = Dataset::where('id', $id)->first();
+            $currentPid = $currDataset->pid;
 
             // First validate the incoming schema to ensure it's in GWDM format
             // if not, attempt to translate prior to saving
@@ -653,50 +549,31 @@ class DatasetController extends Controller
             );
 
             if ($validateDataModelType) {
-                $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
-                $newDatasetId = (string) $duplicateDataModel['id'];
-                MMC::updateDataModel($user, $team, $input, $newDatasetId);
-
-                $dataset = MMC::createDataset([
-                    'datasetid' => $newDatasetId,
-                    'label' => $input['label'],
-                    'short_description' => $input['short_description'],
+                // Update the existing dataset parent record with incoming data
+                $updatedDataset = $currDataset->update([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
-                    'dataset' => json_encode($input['dataset']),
-                    'created' => now(),
                     'updated' => now(),
-                    'submitted' => now(),
                     'pid' => $currentPid,
                     'create_origin' => $input['create_origin'],
                     'status' => $input['status'],
                 ]);
-                $dId = $dataset->id;
 
-                // Dispatch this potentially lengthy subset of data
-                // to a technical object data store job - API doesn't
-                // care if it exists or not. We leave that determination to
-                // the service itself.
-                TechnicalObjectDataStore::dispatch(
-                    $newDatasetId,
-                    base64_encode(gzcompress(gzencode(json_encode($input['dataset']['metadata'])), 6)),
-                    true
-                );
+                // Determine the last version of metadata
+                $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
+                
+                // Create new metadata version for this dataset
+                $version = DatasetVersion::create([
+                    'dataset_id' => $currDataset->id,
+                    'metadata' => json_encode($input['dataset']),
+                    'version' => ($lastVersionNumber + 1),
+                ]);
 
-                if ($dataset->shouldFinalise()) {
-                    $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
-                    $dataset->update([
-                        'version' => (string) $versioning['modelVersion'],
-                        'status' => Dataset::STATUS_ACTIVE,
-                    ]);
-                }
-
-                $dataset->delete();
-                MMC::deleteFromElastic($id);
+                MMC::reindexElastic($input['dataset'], $currDataset->id);
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => Dataset::where('id', '=', $dId)->first(),
+                    'data' => Dataset::with('metadata')->where('id', '=', $currDataset->id)->first(),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             } else {
                 // Incoming dataset is not in GWDM format, so at this point we
@@ -716,51 +593,28 @@ class DatasetController extends Controller
                 );
 
                 if (!empty($response)) {
-                    $input['dataset'] = $response;
-                    $duplicateDataModel = Mauro::duplicateDataModel($currentDatasetId);
-                    $newDatasetId = (string) $duplicateDataModel['id'];
-                    MMC::updateDataModel($user, $team, $input, $newDatasetId);
-
-                    $dataset = MMC::createDataset([
-                        'datasetid' => $newDatasetId,
-                        'label' => $input['label'],
-                        'short_description' => $input['short_description'],
+                    $currDataset->update([
                         'user_id' => $input['user_id'],
                         'team_id' => $input['team_id'],
-                        'dataset' => json_encode($response),
-                        'created' => now(),
                         'updated' => now(),
-                        'submitted' => now(),
                         'pid' => $currentPid,
                         'create_origin' => $input['create_origin'],
                         'status' => $input['status'],
                     ]);
-                    $dId = $dataset->id;
 
-                    // Dispatch this potentially lengthy subset of data
-                    // to a technical object data store job - API doesn't
-                    // care if it exists or not. We leave that determination to
-                    // the service itself.
-                    TechnicalObjectDataStore::dispatch(
-                        $dId,
-                        base64_encode(gzcompress(gzencode(json_encode($response)), 6)),
-                        true
-                    );
+                    $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
 
-                    if ($dataset->shouldFinalise()) {
-                        $versioning = Mauro::finaliseDataModel($newDatasetId, 'minor');
-                        $dataset->update([
-                            'version' => (string) $versioning['modelVersion'],
-                            'status' => Dataset::STATUS_ACTIVE,
-                        ]);
-                    }
+                    $version = DatasetVersion::create([
+                        'dataset_id' => $currDataset->id,
+                        'metadata' => json_encode($response),
+                        'version' => ($lastVersionNumber + 1),
+                    ]);
 
-                    $dataset->delete();
-                    MMC::deleteFromElastic($id);
+                    MMC::reindexElastic(json_decode($input['dataset'], true), $currDataset->id);
 
                     return response()->json([
                         'message' => Config::get('statuscodes.STATUS_OK.message'),
-                        'data' => Dataset::where('id', '=', $dId)->first(),
+                        'data' => Dataset::where('id', '=', $currDataset->id)->first(),
                     ], Config::get('statuscodes.STATUS_OK.code'));
                 }
 
@@ -816,36 +670,38 @@ class DatasetController extends Controller
                 $datasetModel = Dataset::withTrashed()
                     ->where(['id' => $id])
                     ->first();
-                if ($request['status'] === 'ACTIVE') {
-                    $datasetModel->status = Dataset::STATUS_ACTIVE;
+
+                if ($request['status'] !== Dataset::STATUS_ARCHIVED) {
+                    if (in_array($request['status'], [
+                        Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT
+                    ])) {
+                        $datasetModel->status = $request['status'];
+                        $datasetModel->deleted_at = null;
+                        $datasetModel->save();
+
+                        $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)
+                            ->latest()->first();
+                        $metadata->deleted_at = null;
+                        $metadata->save();
+
+                        if ($request['status'] === Dataset::STATUS_ACTIVE) {
+                            MMC::reindexElastic(
+                                json_decode($metadata['metadata'], true),
+                                $id
+                            );
+                        }
+                    } else {
+                        throw new Exception('unknown status type');
+                    }
                 }
-                elseif ($request['status'] === 'DRAFT') {
-                    $datasetModel->status = Dataset::STATUS_DRAFT;
-                }
-
-                $datasetModel->deleted_at = null;
-                $datasetModel->save();
-                
-                $dataset = $datasetModel->toArray();
-                Mauro::restoreDataModel($dataset['datasetid']);
-
-                if ($request['status'] === 'ACTIVE') {
-                    $mauroModel = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
-
-                    MMC::reindexElasticFromModel($mauroModel, $dataset['datasetid']);
-                }
-
             } else {
-                $dataset = Dataset::where(['id' => $id])->first()->toArray();
+                // TODO remaining edit steps e.g. if dataset appears in the request 
+                // body validate, translate if needed, update Mauro data model, etc.   
             }
-
-            // TODO remaining edit steps e.g. if dataset appears in the request 
-            // body validate, translate if needed, update Mauro data model, etc.
 
             return response()->json([
                 'message' => 'success'
             ], Config::get('statuscodes.STATUS_OK.code'));
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -896,23 +752,12 @@ class DatasetController extends Controller
     public function destroy(Request $request, string $id) // softdelete
     {
         try {
-            $dataset = Dataset::where('id', (int) $id)->first();
-
-            if (isset($dataset->datasetid)) {
-                Mauro::deleteDataModel($dataset->datasetid);
-            }
-
-            $dataset->deleted_at = Carbon::now();
-            $dataset->status = Dataset::STATUS_ARCHIVED;
-            $dataset->save();
-
-            // error: The client noticed that the server is not Elasticsearch and we do not support this unknown product
+            MMC::deleteDataset($id);
             MMC::deleteFromElastic($id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -960,30 +805,15 @@ class DatasetController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $teamId = $request->query('team_id',null);
-        $datasets = Dataset::when($teamId, 
-                                    function ($query) use ($teamId){
-                                        return $query->where('team_id', '=', $teamId);
-                                    });
+        $datasets = Dataset::when($teamId, function ($query) use ($teamId){
+            return $query->where('team_id', '=', $teamId);
+        });
 
         $results = $datasets->select('datasets.*')->get();
 
         // collect all the required information
         foreach ($results as $dataset) {
-            if ($dataset->datasetid) {
-                $mauroDatasetIdMetadata = Mauro::getDatasetByIdMetadata($dataset['datasetid']);
-                //refactor array for easier indexing later
-                $reindexedmauroDatasetIdMetadata = array();
-                foreach ($mauroDatasetIdMetadata['items'] as $item) {
-                    $reindexedmauroDatasetIdMetadata[$item['key']] = $item;
-                }
-                $dataset['mauroSummary'] = $reindexedmauroDatasetIdMetadata;
-                $mauroDatasetResponse = Mauro::getDatasetById($dataset['datasetid']);
-                // handle when there is no corresponding Mauro entry
-                $dataset['mauro'] = ($mauroDatasetResponse['DataModel']['responseStatus'] === 200) ? $mauroDatasetResponse['DataModel']['responseJson'] : null;
-            } else {
-                $dataset['mauro'] = null;
-                $dataset['mauroSummary'] = null;
-            }
+            $dataset['metadata'] = $dataset->latestVersion();
         }
 
         // callback function that writes to php://output
@@ -993,21 +823,21 @@ class DatasetController extends Controller
                 // Open output stream
                 $handle = fopen('php://output', 'w');
                 
-                $headerRow = ['Title', 'Publisher name', 'Version', 'Last Activity', 'Method of dataset creation', 'Status', 'Metadata detail'];
+                $headerRow = ['Title', 'Publisher name', 'Last Activity', 'Method of dataset creation', 'Status', 'Metadata detail'];
 
                 // Add CSV headers
                 fputcsv($handle, $headerRow);
         
                 // add the given number of rows to the file.
-                foreach ($results as $rowDetails) { 
+                foreach ($results as $rowDetails) {
+                    $metadata = json_decode($rowDetails['metadata']['metadata'], true);
                     $row = [
-                        $rowDetails['mauroSummary'] !== null ? (string) $rowDetails['mauroSummary']['properties/summary/title']['value'] : '',
-                        $rowDetails['mauroSummary'] !== null ? (string) $rowDetails['mauroSummary']['properties/summary/publisher/publisherName']['value'] : '',
-                        $rowDetails['mauro'] !== null ? (array_key_exists('modelVersion', $rowDetails['mauro']) ? (string) $rowDetails['mauro']['modelVersion'] : '') : '',
-                        $rowDetails['mauro'] !== null ? (string) $rowDetails['mauro']['lastUpdated'] : '',
-                        (string) $rowDetails['create_origin'],
-                        (string) $rowDetails['status'],
-                        $rowDetails['mauroSummary'] !== null ? (string) json_encode($rowDetails['mauroSummary']) : '',
+                        $metadata['metadata']['summary']['title'] !== null ? $metadata['metadata']['summary']['title'] : '',
+                        $metadata['metadata']['summary']['publisher']['publisherName'] !== null ? $metadata['metadata']['summary']['publisher']['publisherName'] : '',
+                        $rowDetails['metadata']['updated_at'] !== null ? $rowDetails['metadata']['updated_at'] : '',
+                        (string)strtoupper($rowDetails['create_origin']),
+                        (string)strtoupper($rowDetails['status']),
+                        $metadata['metadata'] !== null ? (string)json_encode($metadata['metadata']) : '',
                     ];
                     fputcsv($handle, $row);
                 }
@@ -1020,8 +850,8 @@ class DatasetController extends Controller
         $response->headers->set('Content-Type', 'text\csv');
         $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
         $response->headers->set('Cache-Control','max-age=0');
+        
         return $response;
-
     }
 
     /**
@@ -1038,8 +868,6 @@ class DatasetController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="label", type="string", example="label dataset for test"),
-     *             @OA\Property(property="short_description", type="string", example="lorem ipsum"),
      *             @OA\Property(property="dataset", type="array", @OA\Items())
      *          )
      *       )

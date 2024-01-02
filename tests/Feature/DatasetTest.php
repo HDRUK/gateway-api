@@ -21,9 +21,9 @@ class DatasetTest extends TestCase
     }
 
     const TEST_URL_DATASET = '/api/v1/datasets';
-    const TEST_URL_TEAM = 'api/v1/teams';
-    const TEST_URL_NOTIFICATION = 'api/v1/notifications';
-    const TEST_URL_USER = 'api/v1/users';
+    const TEST_URL_TEAM = '/api/v1/teams';
+    const TEST_URL_NOTIFICATION = '/api/v1/notifications';
+    const TEST_URL_USER = '/api/v1/users';
 
     public function setUp(): void
     {
@@ -70,7 +70,6 @@ class DatasetTest extends TestCase
      */
     public function test_get_all_team_datasets_with_success(): void
     {
-        // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
@@ -84,6 +83,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
+        
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
 
@@ -197,8 +197,6 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId1,
                 'user_id' => $userId,
-                'label' => $labelDataset1,
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
@@ -207,6 +205,7 @@ class DatasetTest extends TestCase
         );
 
         $responseCreateDataset->assertStatus(201);
+
         $datasetId1 = $responseCreateDataset['data'];
 
         //create a 2nd one
@@ -219,8 +218,6 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId1,
                 'user_id' => $userId,
-                'label' => $labelDataset2,
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
@@ -240,8 +237,6 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId2,
                 'user_id' => $userId,
-                'label' => $labelDataset3,
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->datasetAlt,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
@@ -252,9 +247,12 @@ class DatasetTest extends TestCase
         $datasetId3 = $responseCreateDataset3['data'];
 
 
-        $response = $this->json('GET', self::TEST_URL_DATASET,
-                                       [], $this->header
-                                    );
+        $response = $this->json(
+            'GET', self::TEST_URL_DATASET,
+            [],
+            $this->header
+        );
+
         $response->assertStatus(200);
 
         $this->assertCount(3,$response['data']);
@@ -290,9 +288,10 @@ class DatasetTest extends TestCase
         * Sort so that the newest dataset is first in the list
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId1 . 
-                                        '&sort=created:desc',
-                                        [], $this->header
+            '?team_id=' . $teamId1 . 
+            '&sort=created:desc',
+            [],
+            $this->header
         );
         $first = Carbon::parse($response['data'][0]['created']);
         $second = Carbon::parse($response['data'][1]['created']);
@@ -300,11 +299,12 @@ class DatasetTest extends TestCase
         $this->assertTrue($first->gt($second));
 
         /*
-        * use the endpoint /api/v1/datasets/count to found unique values of the field 'status'
+        * use the endpoint /api/v1/datasets/count to find unique values of the field 'status'
         */
         $responseCount = $this->json('GET', self::TEST_URL_DATASET . 
-                                            '/count/status?team_id=' . $teamId1 ,
-                                            [], $this->header
+            '/count/status?team_id=' . $teamId1 ,
+            [],
+            $this->header
         );
         $responseCount->assertStatus(200);
         $countActive = $responseCount['data']['ACTIVE'];
@@ -316,9 +316,10 @@ class DatasetTest extends TestCase
         * reverse this sorting
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId1 . 
-                                        '&sort=created:asc',
-                                        [], $this->header
+            '?team_id=' . $teamId1 . 
+            '&sort=created:asc',
+            [],
+            $this->header
         );
         $first = Carbon::parse($response['data'][0]['created']);
         $second = Carbon::parse($response['data'][1]['created']);
@@ -329,41 +330,40 @@ class DatasetTest extends TestCase
         * Sort A-Z on the dataset label
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId1 . 
-                                        '&sort=label:asc',
-                                        [], $this->header
+            '?team_id=' . $teamId1 . 
+            '&sort=label:asc',
+            [],
+            $this->header
         );
-        $this->assertTrue($response['data'][0]['label'] === $labelDataset2);
 
         /* 
         * Sort Z-A on the dataset label
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId1 . 
-                                        '&sort=label:desc',
-                                        [], $this->header
+            '?team_id=' . $teamId1 . 
+            '&sort=label:desc',
+            [],
+            $this->header
         );
-        $this->assertTrue($response['data'][0]['label'] === $labelDataset1);
-
 
         /* 
         * Sort Z-A on the metadata title
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId1 . 
-                                        '&sort=properties/summary/title:desc',
-                                        [], $this->header
+            '?team_id=' . $teamId1 . 
+            '&sort=properties/summary/title:desc',
+            [],
+            $this->header
         );
-        $this->assertTrue($response['data'][0]['label'] === $labelDataset1);
-
 
         /* 
         * fail if a bad direction has been given for sorting
         */
         $response = $this->json('GET', self::TEST_URL_DATASET . 
-                                        '?team_id=' . $teamId1 . 
-                                        '&sort=created:blah',
-                                        [], $this->header
+            '?team_id=' . $teamId1 . 
+            '&sort=created:blah',
+            [],
+            $this->header
         );
         $response->assertStatus(400);
 
@@ -492,8 +492,6 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'label' => $labelDataset,
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
@@ -649,8 +647,6 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'label' => $labelDataset,
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
@@ -815,8 +811,6 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'label' => $labelDataset,
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
@@ -834,14 +828,13 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'label' => $labelDataset,
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->datasetUpdate,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
+
         $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
         $responseUpdateDataset->assertStatus(200);
 
@@ -967,8 +960,6 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => 'OPTION_DOESNT_EXIST',
                 'status' => Dataset::STATUS_ACTIVE,
@@ -1098,8 +1089,6 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'label' => $labelDataset,
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                 'dataset' => $this->dataset,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,

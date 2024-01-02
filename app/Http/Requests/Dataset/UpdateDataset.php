@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Dataset;
 
 use App\Http\Requests\BaseFormRequest;
-use App\Rules\CheckMauroFolderIdInTeam;
 
 class UpdateDataset extends BaseFormRequest
 {
@@ -24,20 +23,11 @@ class UpdateDataset extends BaseFormRequest
                 'int',
                 'required',
                 'exists:teams,id',
-                new CheckMauroFolderIdInTeam,
             ],
             'user_id' => [
                 'int',
                 'required',
                 'exists:users,id',
-            ],
-            'label' => [
-                'string',
-                'required',
-            ],
-            'short_description' => [
-                'string',
-                'required',
             ],
             'dataset' => [
                 'required',

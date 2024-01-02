@@ -3,24 +3,17 @@
 namespace Tests\Feature;
 
 use Config;
-
 use Tests\TestCase;
-
 use App\Models\Dataset;
-use App\Models\Application;
+use App\Models\DatasetVersion;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
+use Illuminate\Support\Carbon;
 use App\Http\Enums\TeamMemberOf;
-use Database\Seeders\SectorSeeder;
-use Database\Seeders\DatasetSeeder;
-
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\MinimalUserSeeder;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-use Tests\Traits\MockExternalApis;
-
-class DatasetIntegrationTest extends TestCase
+class DatasetVersionTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
@@ -28,80 +21,21 @@ class DatasetIntegrationTest extends TestCase
         setUp as commonSetUp;
     }
 
-    const TEST_URL_DATASET = '/api/v1/integrations/datasets';
-    const TEST_URL_TEAM = 'api/v1/teams';
-    const TEST_URL_NOTIFICATION = 'api/v1/notifications';
-    const TEST_URL_USER = 'api/v1/users';
+    const TEST_URL_DATASET = '/api/v1/datasets';
+    const TEST_URL_TEAM = '/api/v1/teams';
+    const TEST_URL_NOTIFICATION = '/api/v1/notifications';
+    const TEST_URL_USER = '/api/v1/users';
 
-    private $dataset = null;
-
-    protected $header = [];
-    
-
-    /**
-     * Set up the database
-     *
-     * @return void
-     */
     public function setUp(): void
     {
         $this->commonSetUp();
-        
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class,
-            SectorSeeder::class,
-            ApplicationSeeder::class,
-        ]);
-        
-        $this->integration = Application::find(1)->first();
-        $this->body = [
-            "app_id" => $this->integration['app_id'], 
-            "client_id" => $this->integration['client_id']
-        ];
-        
-        // Lengthy process, but a more consistent representation
-        // of an incoming dataset
+
         $this->dataset = $this->getFakeDataset();
-
+        $this->datasetUpdate = $this->getFakeUpdateDataset();
     }
-
-    /**
-     * Get All Datasets with success
-     * 
-     * @return void
-     */
-    public function test_get_all_datasets_with_success(): void
+ 
+    public function test_a_dataset_version_is_created_on_new_dataset_created(): void
     {
-        $response = $this->json('GET', self::TEST_URL_DATASET, $this->body, $this->header);
-
-        $response->assertJsonStructure([
-            'current_page',
-            'data',
-            'first_page_url',
-            'from',
-            'last_page',
-            'last_page_url',
-            'links',
-            'next_page_url',
-            'path',
-            'per_page',
-            'prev_page_url',
-            'to',
-            'total',
-        ]);
-        $response->assertStatus(200);
-    }
-
-    /**
-     * Get Dataset by Id with success
-     * 
-     * @return void
-     */
-    public function test_get_one_dataset_by_id_with_success(): void
-    {
-
-        // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
@@ -115,15 +49,15 @@ class DatasetIntegrationTest extends TestCase
             ],
             $this->header,
         );
+
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
 
-        // Create the new team
         $responseCreateTeam = $this->json(
             'POST',
             self::TEST_URL_TEAM,
             [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'name' => 'Test Team 1',
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -166,7 +100,7 @@ class DatasetIntegrationTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => "https://orcid.org/75697342",
+                'orcid' =>" https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234566,
@@ -178,85 +112,55 @@ class DatasetIntegrationTest extends TestCase
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
         $userId = $contentCreateUser['data'];
 
-        // create dataset
         $responseCreateDataset = $this->json(
             'POST',
             self::TEST_URL_DATASET,
-            array_merge(
-                $this->body,
-                [
-                    'team_id' => $teamId,
-                    'user_id' => $userId,
-                    'dataset' => $this->dataset,
-                    'create_origin' => Dataset::ORIGIN_MANUAL,
-                    'status' => Dataset::STATUS_ACTIVE,
-                ],
-            ),
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'dataset' => $this->dataset,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
             $this->header,
         );
 
         $responseCreateDataset->assertStatus(201);
-        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
-        $datasetId = $contentCreateDataset['data'];
+        $datasetId = $responseCreateDataset['data'];
 
-        // get one dataset
-        $responseGetOne = $this->json('GET', self::TEST_URL_DATASET . '/' . $datasetId, $this->body, $this->header);
+        $version = DatasetVersion::where('dataset_id', $datasetId)->get();
+        $this->assertTrue((count($version)) === 1);
 
-        $responseGetOne->assertJsonStructure([
-            'message',
-            'data'
-        ]);
-        $responseGetOne->assertStatus(200);
-
-        // delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
-            $this->body,
+            [],
             $this->header
         );
-        $responseDeleteDataset->assertJsonStructure([
-            'message'
-        ]);
 
         $responseDeleteDataset->assertStatus(200);
 
-        // delete team
         $responseDeleteTeam = $this->json(
             'DELETE',
             self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
             $this->header
         );
-        $responseDeleteTeam->assertJsonStructure([
-            'message'
-        ]);
 
         $responseDeleteTeam->assertStatus(200);
 
-        // delete user
         $responseDeleteUser = $this->json(
             'DELETE',
             self::TEST_URL_USER . '/' . $userId,
             [],
             $this->header
         );
-        $responseDeleteUser->assertJsonStructure([
-            'message'
-        ]);
+
         $responseDeleteUser->assertStatus(200);
     }
 
-    /**
-     * Create new Dataset with success
-     * 
-     * @return void
-     */
-    public function test_create_delete_dataset_with_success(): void
+    public function test_a_dataset_version_is_created_on_dataset_update(): void
     {
-
-
-        // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
             'POST',
@@ -264,21 +168,21 @@ class DatasetIntegrationTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
-                'email' => 'some@email.com',
+                'email' => 'Some@email.com',
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
             $this->header,
         );
+
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
 
-        // Create the new team
         $responseCreateTeam = $this->json(
             'POST',
             self::TEST_URL_TEAM,
             [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'name' => 'Test Team 1',
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
@@ -304,7 +208,7 @@ class DatasetIntegrationTest extends TestCase
             'data',
         ]);
 
-        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();  
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
         $teamId = $contentCreateTeam['data'];
 
         // create user
@@ -321,7 +225,7 @@ class DatasetIntegrationTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => "https://orcid.org/75697342",
+                'orcid' =>" https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234566,
@@ -333,60 +237,90 @@ class DatasetIntegrationTest extends TestCase
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
         $userId = $contentCreateUser['data'];
 
-        // create dataset
         $responseCreateDataset = $this->json(
             'POST',
             self::TEST_URL_DATASET,
-            array_merge(
-                $this->body, 
-                [
-                    'team_id' => $teamId,
-                    'user_id' => $userId,
-                    'dataset' => $this->dataset,
-                    'create_origin' => Dataset::ORIGIN_MANUAL,
-                    'status' => Dataset::STATUS_ACTIVE,
-                ],
-            ),
-            $this->header,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'dataset' => $this->dataset,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
         );
-        $responseCreateDataset->assertStatus(201);
-        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
-        $datasetId = $contentCreateDataset['data'];
 
-        // delete dataset
+        $responseCreateDataset->assertStatus(201);
+        $datasetId = $responseCreateDataset['data'];
+
+        $dataset1 = Dataset::with('metadata')->where('id', $datasetId)->first();
+        
+        $this->assertTrue((count($dataset1->metadata)) === 1);
+
+        $this->datasetUpdate['metadata']['summary']['title'] = 'Updated Metadata Title 123';
+
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'dataset' => $this->datasetUpdate,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+
+        $responseUpdateDataset->assertStatus(200);
+        
+        $version = DatasetVersion::where('dataset_id', $datasetId)->get();
+
+        $this->assertTrue((count($version)) === 2);
+        
+        $this->assertEquals($version[0]->version, 1);
+        $this->assertEquals($version[1]->version, 2);
+
+        $this->assertEquals(
+            json_decode($version[0]->metadata, true)['metadata']['summary']['title'],
+            $this->dataset['metadata']['summary']['title']
+        );
+        $this->assertEquals(
+            json_decode($version[1]->metadata, true)['metadata']['summary']['title'],
+            'Updated Metadata Title 123'
+        );
+
         $responseDeleteDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
-            $this->body,
+            [],
             $this->header
         );
-        $responseDeleteDataset->assertJsonStructure([
-            'message'
-        ]);
+
         $responseDeleteDataset->assertStatus(200);
 
-        // delete team
-        $responseDeleteTeam = $this->json('DELETE',
+        // Confirm DatasetVersions associated with this Dataset have also been (soft) deleted
+        $versions = DatasetVersion::withTrashed()->where('dataset_id', $datasetId);
+        foreach ($versions as $v) {
+            $this->assertTrue($v->deleted_at !== null);
+        }
+
+        $responseDeleteTeam = $this->json(
+            'DELETE',
             self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
             [],
             $this->header
         );
-        $responseDeleteTeam->assertJsonStructure([
-            'message'
-        ]);
+
         $responseDeleteTeam->assertStatus(200);
 
-        // delete user
         $responseDeleteUser = $this->json(
             'DELETE',
             self::TEST_URL_USER . '/' . $userId,
             [],
             $this->header
         );
-        $responseDeleteUser->assertJsonStructure([
-            'message'
-        ]);
+
         $responseDeleteUser->assertStatus(200);
     }
-
 }

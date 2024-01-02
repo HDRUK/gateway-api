@@ -7,10 +7,12 @@ use Mauro;
 use Exception;
 
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 
 use App\Exceptions\MMCException;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Carbon;
 
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
@@ -155,29 +157,33 @@ class MetadataManagementController {
         return Dataset::create($input);
     }
 
-    public function createMauroDataModel(array $user, array $team, array $input): array
+    public function createDatasetVersion(array $input): DatasetVersion
     {
-        return Mauro::createDataModel(
-            $input['label'],
-            $input['short_description'],
-            $user['name'],
-            $team['name'],
-            $team['mdm_folder_id'],
-            $input
-        );
+        return DatasetVersion::create($input);
     }
 
-    public function updateDataModel(array $user, array $team, array $input, string $dataModelId): array
+    /**
+     * (Soft) Deletes a dataset from the system by $id
+     * 
+     * @param string $id The dataset to delete
+     * 
+     * @return void
+     */
+    public function deleteDataset(string $id): void
     {
-        return Mauro::updateDataModel(
-            $input['label'],
-            $input['short_description'],
-            $user['name'],
-            $team['name'],
-            $team['mdm_folder_id'],
-            $input,
-            $dataModelId
-        );
+        try {
+            $dataset = Dataset::with('metadata')->where('id', (int)$id)->first();
+            $dataset->deleted_at = Carbon::now();
+            $dataset->status = Dataset::STATUS_ARCHIVED;
+            $dataset->save();
+
+            foreach ($dataset->metadata as $metadata) {
+                $metadata->deleted_at = Carbon::now();
+                $metadata->save();
+            }
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -193,7 +199,7 @@ class MetadataManagementController {
         // Get named entities
         try {
 
-            $datasetMatch = Dataset::where('datasetid', $datasetId)
+            $datasetMatch = Dataset::where('id', $datasetId)
                 ->with(['namedEntities'])
                 ->first()
                 ->toArray();
@@ -204,89 +210,19 @@ class MetadataManagementController {
             }
 
             $toIndex = [
-                'abstract' => $dataset['summary']['abstract'],
-                'keywords' => $dataset['summary']['keywords'],
-                'description' => $dataset['summary']['description'],
-                'shortTitle' => $dataset['summary']['shortTitle'],
-                'title' => $dataset['summary']['title'],
-                'publisherName' => $dataset['summary']['publisher']['publisherName'],
-                'startDate' => $dataset['provenance']['temporal']['startDate'],
-                'endDate' => $dataset['provenance']['temporal']['endDate'],
-                'physicalSampleAvailability' => explode(',', $dataset['coverage']['physicalSampleAvailability']),
-                'conformsTo' => explode(',', $dataset['accessibility']['formatAndStandards']['conformsTo']),
+                'abstract' => $dataset['metadata']['summary']['abstract'],
+                'keywords' => $dataset['metadata']['summary']['keywords'],
+                'description' => $dataset['metadata']['summary']['description'],
+                'shortTitle' => $dataset['metadata']['summary']['shortTitle'],
+                'title' => $dataset['metadata']['summary']['title'],
+                'publisherName' => $dataset['metadata']['summary']['publisher']['publisherName'],
+                'startDate' => $dataset['metadata']['provenance']['temporal']['startDate'],
+                'endDate' => $dataset['metadata']['provenance']['temporal']['endDate'],
+                'physicalSampleAvailability' => explode(',', $dataset['metadata']['coverage']['physicalSampleAvailability']),
+                'conformsTo' => explode(',', $dataset['metadata']['accessibility']['formatAndStandards']['conformsTo']),
                 'hasTechnicalMetadata' => (bool) $datasetMatch['has_technical_details'],
                 'named_entities' => $namedEntities
             ];
-
-            $params = [
-                'index' => 'datasets',
-                'id' => $datasetMatch['id'],
-                'body' => $toIndex,
-                'headers' => 'application/json'
-            ];
-            
-            $client = $this->getElasticClient();
-            $response = $client->index($params);
-
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * Calls a re-indexing of Elastic search when a dataset is unarchived
-     * 
-     * @param array $mauroModel The Mauro data model that has been restored
-     * @param string $datasetId The dataset id from Mauro
-     * 
-     * @return void
-     */
-    public function reindexElasticFromModel(array $mauroModel, string $datasetId): void
-    {
-        try {
-
-            $datasetMatch = Dataset::where('datasetid', $datasetId)
-                ->with(['namedEntities'])
-                ->first()
-                ->toArray();
-
-            $namedEntities = array();
-            foreach ($datasetMatch['named_entities'] as $n) {
-                $namedEntities[] = $n['name'];
-            }
-
-            $toIndexFields = [
-                'properties/summary/abstract',
-                'properties/summary/keywords',
-                'properties/summary/description',
-                'properties/summary/shortTitle',
-                'properties/summary/title',
-                'properties/summary/publisher/publisherName',
-                'properties/provenance/temporal/startDate',
-                'properties/provenance/temporal/endDate',
-                'properties/coverage/physicalSampleAvailability',
-                'properties/accessibility/formatAndStandards/conformsTo'
-            ];
-            // Fields that are comma delimited strings need to be arrays of strings
-            $toSplitFields = [
-                'properties/coverage/physicalSampleAvailability',
-                'properties/accessibility/formatAndStandards/conformsTo'
-            ];
-            $toIndex = array();
-            $toIndex['named_entities'] = $namedEntities;
-            $toIndex['hasTechnicalMetadata'] = (bool) $datasetMatch['has_technical_details'];
-
-            foreach ($mauroModel['items'] as $i) {
-                if (in_array($i['key'], $toIndexFields)) {
-                    $exploded = explode("/", $i['key']);
-                    $key = end($exploded);
-                    if (in_array($i['key'], $toSplitFields)) {
-                        $toIndex[$key] = explode(',', $i['value']);
-                    } else {
-                        $toIndex[$key] = $i['value'];
-                    }
-                }
-            }
 
             $params = [
                 'index' => 'datasets',
@@ -322,7 +258,6 @@ class MetadataManagementController {
             ];
             
             $client = $this->getElasticClient();
-            
             $response = $client->delete($params);
 
         } catch (Exception $e) {
