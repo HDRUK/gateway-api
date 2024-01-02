@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\Demo;
 
+use App\Models\Team;
 use Illuminate\Database\Seeder;
 use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
@@ -91,6 +92,10 @@ class DatasetDemo extends Seeder
             $dataset['metadata']['summary']['title'] = $item['title'];
             $dataset['metadata']['summary']['abstract'] = $item['short_description'];
             $dataset['metadata']['documentation']['description'] = $item['description'];
+
+            $team = Team::where('id', $item['team_id'])->first();
+            $dataset['metadata']['summary']['publisher']['name'] = $team->name;
+            $dataset['metadata']['summary']['publisher']['memberOf'] = $team->member_of;
 
             $payload = [
                 'team_id' => $item['team_id'],
