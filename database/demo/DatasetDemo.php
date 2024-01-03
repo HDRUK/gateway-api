@@ -2,6 +2,7 @@
 
 namespace Database\Demo;
 
+use Exception;
 use App\Models\Team;
 use Illuminate\Database\Seeder;
 use App\Models\AuthorisationCode;
@@ -88,26 +89,29 @@ class DatasetDemo extends Seeder
         $progressBar->start();
 
         foreach ($items as $item) {
-            $team = Team::where('id', $item['team_id'])->first();
+            $team = Team::find($item['team_id']);
 
-            $dataset = $this->getFakeDataset($item['title'], $item['short_description'], $item['description'], $team->name, $team->member_of);
+            if ($team) {
+                $dataset = $this->getFakeDataset($item['title'], $item['short_description'], $item['description'], $team->name, $team->member_of);
 
-            $payload = [
-                'team_id' => $item['team_id'],
-                'user_id' => $item['user_id'],
-                'label' => $item['title'],
-                'short_description' => $item['short_description'],
-                'dataset' => $dataset,
-                'create_origin' => $item['create_origin'],
-                'status' => $item['status'],
-            ];
+                $payload = [
+                    'team_id' => $item['team_id'],
+                    'user_id' => $item['user_id'],
+                    'label' => $item['title'],
+                    'short_description' => $item['short_description'],
+                    'dataset' => $dataset,
+                    'create_origin' => $item['create_origin'],
+                    'status' => $item['status'],
+                ];
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $authorisation->jwt,
-                'Content-Type' => 'application/json', // Adjust content type as needed
-            ])->post($url, $payload);
+                Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $authorisation->jwt,
+                    'Content-Type' => 'application/json', // Adjust content type as needed
+                ])->post($url, $payload);
+            } else {
+                throw new Exception("Team with id : " . $item['team_id'] . " not found");
+            }
 
-            // print_r(json_encode($response->json()) . '\n');
             $progressBar->advance();
         }
 
