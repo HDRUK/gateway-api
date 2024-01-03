@@ -326,7 +326,7 @@ class DatasetController extends Controller
                 ->first();
 
             // Return the latest metadata for this dataset
-            $version = $dataset->latestMetadata()->metadata;
+            $version = $dataset->latestVersion();
             if ($version) {
                 $dataset->versions = $version;
             }

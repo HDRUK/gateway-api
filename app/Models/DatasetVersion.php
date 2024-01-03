@@ -54,6 +54,7 @@ class DatasetVersion extends Model
         if (gettype($normalised) === 'array') {
             $normalised = json_encode($normalised);
         }
+
         return json_decode(json_decode($normalised, true), true);
     }
 }
