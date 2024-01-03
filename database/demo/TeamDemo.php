@@ -68,12 +68,10 @@ class TeamDemo extends Seeder
 
         foreach ($teams as $team) {
             try {
-                $response = Http::withHeaders([
+                Http::withHeaders([
                     'Authorization' => 'Bearer ' . $authorisation->jwt,
                     'Content-Type' => 'application/json',
                 ])->post($url, $team);
-
-                print_r(json_encode($response->json()) . "\n");
             } catch (Exception $exception) {
                 throw new Exception($exception->getMessage());
             }
