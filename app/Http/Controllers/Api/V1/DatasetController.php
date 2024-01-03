@@ -328,7 +328,7 @@ class DatasetController extends Controller
             // Return the latest metadata for this dataset
             $version = $dataset->latestMetadata()->metadata;
             if ($version) {
-                $dataset->versions = json_decode($version, true);
+                $dataset->versions = $version;
             }
 
             $outputSchemaModel = $request->query('schema_model');
@@ -686,7 +686,7 @@ class DatasetController extends Controller
 
                         if ($request['status'] === Dataset::STATUS_ACTIVE) {
                             MMC::reindexElastic(
-                                json_decode($metadata['metadata'], true),
+                                $metadata['metadata'],
                                 $id
                             );
                         }
@@ -830,7 +830,7 @@ class DatasetController extends Controller
         
                 // add the given number of rows to the file.
                 foreach ($results as $rowDetails) {
-                    $metadata = json_decode($rowDetails['metadata']['metadata'], true);
+                    $metadata = $rowDetails['metadata']['metadata'];
                     $row = [
                         $metadata['metadata']['summary']['title'] !== null ? $metadata['metadata']['summary']['title'] : '',
                         $metadata['metadata']['summary']['publisher']['publisherName'] !== null ? $metadata['metadata']['summary']['publisher']['publisherName'] : '',

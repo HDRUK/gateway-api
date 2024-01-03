@@ -282,11 +282,11 @@ class DatasetVersionTest extends TestCase
         $this->assertEquals($version[1]->version, 2);
 
         $this->assertEquals(
-            json_decode($version[0]->metadata, true)['metadata']['summary']['title'],
+            $version[0]->metadata['metadata']['summary']['title'],
             $this->dataset['metadata']['summary']['title']
         );
         $this->assertEquals(
-            json_decode($version[1]->metadata, true)['metadata']['summary']['title'],
+            $version[1]->metadata['metadata']['summary']['title'],
             'Updated Metadata Title 123'
         );
 
