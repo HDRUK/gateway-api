@@ -2,6 +2,7 @@
 
 namespace Database\Demo;
 
+use Exception;
 use App\Models\CohortRequest;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
@@ -87,9 +88,14 @@ class CohortRequestDemo extends Seeder
             'request_status' => 'APPROVED',
             'details' => 'As the designated approver for BCP request application access, I am responsible for verifying that individuals seeking access adhere to our security policies. This includes confirming their role in business continuity planning and ensuring that granting access aligns with the principle of least privilege.',
         ];
-        Http::withHeaders([
-            'Authorization' => 'Bearer ' . $authorisation->jwt,
-            'Content-Type' => 'application/json',
-        ])->put($url, $payload);
+
+        try {
+            Http::withHeaders([
+                'Authorization' => 'Bearer ' . $authorisation->jwt,
+                'Content-Type' => 'application/json',
+            ])->put($url, $payload);
+        } catch (Exception $exception) {
+            throw new Exception($exception->getMessage());
+        }
     }
 }

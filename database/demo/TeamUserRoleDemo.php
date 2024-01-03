@@ -2,6 +2,7 @@
 
 namespace Database\Demo;
 
+use Exception;
 use Illuminate\Database\Seeder;
 use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
@@ -86,15 +87,19 @@ class TeamUserRoleDemo extends Seeder
 
         foreach ($userTeams as $teamId => $users) {
             foreach ($users as $user) {
-                $payload = [
-                    'userId' => $user['user_id'],
-                    'roles' => $user['roles'],
-                ];
-                $url = env('APP_URL') . '/api/v1/teams/' . $teamId . '/users?email=false';
-                Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $authorisation->jwt,
-                    'Content-Type' => 'application/json',
-                ])->post($url, $payload);
+                try {
+                    $payload = [
+                        'userId' => $user['user_id'],
+                        'roles' => $user['roles'],
+                    ];
+                    $url = env('APP_URL') . '/api/v1/teams/' . $teamId . '/users?email=false';
+                    Http::withHeaders([
+                        'Authorization' => 'Bearer ' . $authorisation->jwt,
+                        'Content-Type' => 'application/json',
+                    ])->post($url, $payload);
+                } catch (Exception $exception) {
+                    throw new Exception($exception->getMessage());
+                }
             }
         }
     }

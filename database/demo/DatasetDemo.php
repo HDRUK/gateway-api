@@ -80,43 +80,37 @@ class DatasetDemo extends Seeder
             ],
         ];
 
-        $output = new ConsoleOutput();
-
         $url = env('APP_URL') . '/api/v1/datasets';
         $authorisation = AuthorisationCode::first();
 
-        $progressBar = new ProgressBar($output, count($items));
-        $progressBar->start();
-
         foreach ($items as $item) {
-            $team = Team::find($item['team_id']);
+            try {
+                $team = Team::find($item['team_id']);
 
-            if ($team) {
-                $dataset = $this->getFakeDataset($item['title'], $item['short_description'], $item['description'], $team->name, $team->member_of);
+                if ($team) {
+                    $dataset = $this->getFakeDataset($item['title'], $item['short_description'], $item['description'], $team->name, $team->member_of);
 
-                $payload = [
-                    'team_id' => $item['team_id'],
-                    'user_id' => $item['user_id'],
-                    'label' => $item['title'],
-                    'short_description' => $item['short_description'],
-                    'dataset' => $dataset,
-                    'create_origin' => $item['create_origin'],
-                    'status' => $item['status'],
-                ];
+                    $payload = [
+                        'team_id' => $item['team_id'],
+                        'user_id' => $item['user_id'],
+                        'label' => $item['title'],
+                        'short_description' => $item['short_description'],
+                        'dataset' => $dataset,
+                        'create_origin' => $item['create_origin'],
+                        'status' => $item['status'],
+                    ];
 
-                Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $authorisation->jwt,
-                    'Content-Type' => 'application/json', // Adjust content type as needed
-                ])->post($url, $payload);
-            } else {
-                throw new Exception("Team with id : " . $item['team_id'] . " not found");
+                    Http::withHeaders([
+                        'Authorization' => 'Bearer ' . $authorisation->jwt,
+                        'Content-Type' => 'application/json', // Adjust content type as needed
+                    ])->post($url, $payload);
+                } else {
+                    throw new Exception("Team with id : " . $item['team_id'] . " not found");
+                }
+            } catch (Exception $exception) {
+                throw new Exception($exception->getMessage());
             }
-
-            $progressBar->advance();
         }
-
-        $progressBar->finish();
-        $output->write('   seed DatasetDemo Finnished', true);
     }
 
     private function getFakeDataset($title, $shortDescription, $description, $teamName, $teamMemberOf)

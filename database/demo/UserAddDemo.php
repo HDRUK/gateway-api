@@ -2,11 +2,10 @@
 
 namespace Database\Demo;
 
+use Exception;
 use Illuminate\Database\Seeder;
 use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
-use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class UserAddDemo extends Seeder
@@ -16,8 +15,6 @@ class UserAddDemo extends Seeder
      */
     public function run(): void
     {
-        $output = new ConsoleOutput();
-
         $usersMongoId = [
             // HEALTH DATA RESEARC
             '64805ed24fb6ec2d8ae95c03',
@@ -41,41 +38,38 @@ class UserAddDemo extends Seeder
         $url = env('APP_URL') . '/api/v1/users';
         $authorisation = AuthorisationCode::first();
 
-        $progressBar = new ProgressBar($output, 12);
-        $progressBar->start();
-
         for ($i = 0; $i < 12; $i++) {
-            $firstName = fake()->firstName();
-            $lastName = fake()->lastName();
-            $payload = [
-                'provider' => 'google',
-                'firstname' => $firstName,
-                'lastname' => $lastName,
-                'email' => "{$firstName}.{$lastName}@example.com",
-                'password' => 'H@r@pA1b',
-                'organisation' => fake()->company(),
-                'sector_id' => 1,
-                'contact_feedback' => 1,
-                'contact_news' => 1,
-                'bio' => fake()->word(),
-                'domain' => fake()->word(),
-                'link' => fake()->url(),
-                'orcid' => 'https://orcid.org/' . fake()->randomNumber(8, true),
-                'mongo_id' => fake()->randomNumber(8, true),
-                'mongo_object_id' => $usersMongoId[$i],
-                'is_admin' => false,
-                'terms' => fake()->numberBetween(0, 1),
-            ];
+            try {
+                $firstName = fake()->firstName();
+                $lastName = fake()->lastName();
+                $payload = [
+                    'provider' => 'google',
+                    'firstname' => $firstName,
+                    'lastname' => $lastName,
+                    'email' => "{$firstName}.{$lastName}@example.com",
+                    'password' => 'H@r@pA1b',
+                    'organisation' => fake()->company(),
+                    'sector_id' => 1,
+                    'contact_feedback' => 1,
+                    'contact_news' => 1,
+                    'bio' => fake()->word(),
+                    'domain' => fake()->word(),
+                    'link' => fake()->url(),
+                    'orcid' => 'https://orcid.org/' . fake()->randomNumber(8, true),
+                    'mongo_id' => fake()->randomNumber(8, true),
+                    'mongo_object_id' => $usersMongoId[$i],
+                    'is_admin' => false,
+                    'terms' => fake()->numberBetween(0, 1),
+                ];
 
-            Http::withHeaders([
-                'Authorization' => 'Bearer ' . $authorisation->jwt,
-                'Content-Type' => 'application/json',
-            ])->post($url, $payload);
+                Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $authorisation->jwt,
+                    'Content-Type' => 'application/json',
+                ])->post($url, $payload);
+            } catch (Exception $exception) {
+                throw new Exception($exception->getMessage());
+            }
 
-            $progressBar->advance();
         }
-
-        $progressBar->finish();
-        $output->write('   seed UserAddDemo Finnished', true);
     }
 }

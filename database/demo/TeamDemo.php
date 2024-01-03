@@ -2,11 +2,10 @@
 
 namespace Database\Demo;
 
+use Exception;
 use Illuminate\Database\Seeder;
 use App\Models\AuthorisationCode;
 use Illuminate\Support\Facades\Http;
-use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class TeamDemo extends Seeder
@@ -16,8 +15,6 @@ class TeamDemo extends Seeder
      */
     public function run(): void
     {
-        $output = new ConsoleOutput();
-
         $teams = [
             [
                 'name' => 'HEALTH DATA RESEARCH',
@@ -69,19 +66,17 @@ class TeamDemo extends Seeder
         $url = env('APP_URL') . '/api/v1/teams';
         $authorisation = AuthorisationCode::first();
 
-        $progressBar = new ProgressBar($output, count($teams));
-        $progressBar->start();
-
         foreach ($teams as $team) {
-            Http::withHeaders([
-                'Authorization' => 'Bearer ' . $authorisation->jwt,
-                'Content-Type' => 'application/json',
-            ])->post($url, $team);
+            try {
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $authorisation->jwt,
+                    'Content-Type' => 'application/json',
+                ])->post($url, $team);
 
-            $progressBar->advance();
+                print_r(json_encode($response->json()) . "\n");
+            } catch (Exception $exception) {
+                throw new Exception($exception->getMessage());
+            }
         }
-
-        $progressBar->finish();
-        $output->write('   seed TeamDemo Finnished', true);
     }
 }
