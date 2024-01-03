@@ -88,14 +88,9 @@ class DatasetDemo extends Seeder
         $progressBar->start();
 
         foreach ($items as $item) {
-            $dataset = $this->getFakeDataset();
-            $dataset['metadata']['summary']['title'] = $item['title'];
-            $dataset['metadata']['summary']['abstract'] = $item['short_description'];
-            $dataset['metadata']['documentation']['description'] = $item['description'];
-
             $team = Team::where('id', $item['team_id'])->first();
-            $dataset['metadata']['summary']['publisher']['name'] = $team->name;
-            $dataset['metadata']['summary']['publisher']['memberOf'] = $team->member_of;
+
+            $dataset = $this->getFakeDataset($item['title'], $item['short_description'], $item['description'], $team->name, $team->member_of);
 
             $payload = [
                 'team_id' => $item['team_id'],
@@ -107,13 +102,12 @@ class DatasetDemo extends Seeder
                 'status' => $item['status'],
             ];
 
-            // print_r(json_encode($payload) . '\n');
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $authorisation->jwt,
                 'Content-Type' => 'application/json', // Adjust content type as needed
             ])->post($url, $payload);
 
-            print_r(json_encode($response->json()) . '\n');
+            // print_r(json_encode($response->json()) . '\n');
             $progressBar->advance();
         }
 
@@ -121,7 +115,7 @@ class DatasetDemo extends Seeder
         $output->write('   seed DatasetDemo Finnished', true);
     }
 
-    private function getFakeDataset()
+    private function getFakeDataset($title, $shortDescription, $description, $teamName, $teamMemberOf)
     {
         return [
             'extra' => [
@@ -142,12 +136,12 @@ class DatasetDemo extends Seeder
                 'identifier' => 'https://web.www.healthdatagateway.org/dataset/a7ddefbd-31d9-4703-a738-256e4689f76a',
                 'version' => '2.0.0',
                 'summary' => [
-                    'title' => 'HDR UK Papers & Preprints',
+                    'title' => $title,
                     'doiName' => '10.1093/ije/dyx196',
-                    'abstract' => 'Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations',
+                    'abstract' => $shortDescription,
                     'publisher' => [
-                        'name' => 'HEALTH DATA RESEARCH UK',
-                        'memberOf' => 'OTHER',
+                        'name' => $teamName,
+                        'memberOf' => $teamMemberOf,
                         'contactPoint' => 'susheel.varma@hdruk.ac.uk'
                     ],
                     'contactPoint' => 'susheel.varma@hdruk.ac.uk',
@@ -158,7 +152,7 @@ class DatasetDemo extends Seeder
                     ]
                 ],
                 'documentation' => [
-                    'description' => 'Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations\n\nThis will include:\n- Papers\n- COVID-19 Papers\n- COVID-19 Preprint',
+                    'description' => $description,
                     'associatedMedia' => [
                         'https://github.com/HDRUK/papers'
                     ],
