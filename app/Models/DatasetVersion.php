@@ -19,6 +19,10 @@ class DatasetVersion extends Model
      */
     protected $table = 'dataset_versions';
 
+    protected $casts = [
+        'metadata' => 'array',
+    ];
+
     /**
      * Indicates if the model should be timestamped
      * 
@@ -35,7 +39,7 @@ class DatasetVersion extends Model
     /**
      * Accessor for the metadata field to convert json string to 
      * php array for inclusion in json response object. Weirdly
-     * the $casts of metadata to object was failing. Possibly due
+     * the $casts of metadata to array _was_ failing. Possibly due
      * to the encoding of the string being added to the db field.
      * Needs further investigation as this is just a workaround.
      * 
@@ -45,6 +49,11 @@ class DatasetVersion extends Model
      */
     public function getMetadataAttribute($value): array
     {
-        return json_decode(json_decode($value, true), true);
+        $normalised = $value;
+
+        if (gettype($normalised) === 'array') {
+            $normalised = json_encode($normalised);
+        }
+        return json_decode(json_decode($normalised, true), true);
     }
 }
