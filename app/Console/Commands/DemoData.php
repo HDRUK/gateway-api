@@ -33,49 +33,49 @@ class DemoData extends Command
         Artisan::call('migrate:fresh');
 
         $this->info("Running seed SectorDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\SectorDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\SectorDemo"]);
 
         $this->info("Running seed PermissionDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\PermissionDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\PermissionDemo"]);
 
         $this->info("Running seed RoleDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\RoleDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\RoleDemo"]);
 
         $this->info("Running seed UserStartDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\UserStartDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\UserStartDemo"]);
 
         $this->info("Running authorisation");
         $this->createAuthorization();
 
         $this->info("Running seed FeatureDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\FeatureDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\FeatureDemo"]);
 
         $this->info("Running seed FilterDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\FilterDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\FilterDemo"]);
 
         $this->info("Running seed UserAddDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\UserAddDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\UserAddDemo"]);
 
         $this->info("Running seed TeamDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\TeamDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\TeamDemo"]);
 
         $this->info("Running seed TeamUserRoleDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\TeamUserRoleDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\TeamUserRoleDemo"]);
 
         $this->info("Running seed CohortRequestDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\CohortRequestDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\CohortRequestDemo"]);
 
         $this->info("Running seed ApplicationDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\ApplicationDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\ApplicationDemo"]);
 
         $this->info("Running seed FederationDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\FederationDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\FederationDemo"]);
 
         $this->info("Running seed DatasetDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\DatasetDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\DatasetDemo"]);
 
         $this->info("Running seed EmailTemplatesDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\EmailTemplatesDemo"]);
+        Artisan::call('db:seed', ['--class' => "Database\Demo\EmailTemplatesDemo"]);
 
         $this->info("Completed...");
     }
