@@ -74,6 +74,9 @@ class DemoData extends Command
         $this->info("Running seed DatasetDemo");
         Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\DatasetDemo"]);
 
+        $this->info("Running seed EmailTemplatesDemo");
+        Artisan::call('db:seed', ['--class' => "Database\Seeders\Demo\EmailTemplatesDemo"]);
+
         $this->info("Completed...");
     }
 
