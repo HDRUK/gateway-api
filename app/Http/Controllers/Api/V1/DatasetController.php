@@ -478,7 +478,7 @@ class DatasetController extends Controller
                     'modified' => $dataset->updated,
                     'revisions' => [],
                 ];
-                $input['dataset']['metadata']['required'] = $required;
+                $input['metadata']['metadata']['required'] = $required;
 
                 $version = MMC::createDatasetVersion([
                     'dataset_id' => $dataset->id,
@@ -577,8 +577,8 @@ class DatasetController extends Controller
             );
 
             if ($traserResponse['wasTranslated']) {
-                $input['metadata']['original_metadata'] = $input['dataset']['metadata'];
-                $input['dataset']['metadata'] = $traserResponse['metadata'];
+                $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
+                $input['metadata']['metadata'] = $traserResponse['metadata'];
 
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
@@ -595,10 +595,10 @@ class DatasetController extends Controller
                 $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
      
                 //update the GWDM modified date
-                $input['dataset']['metadata']['required']['modified'] = $updateTime;
+                $input['metadata']['metadata']['required']['modified'] = $updateTime;
 
                 //update the GWDM revisions
-                $input['dataset']['metadata']['required']['revisions'][] = [
+                $input['metadata']['metadata']['required']['revisions'][] = [
                     "url"=>"https://placeholder.blah/".$currentPid."?version=".$lastVersionNumber, //NOTE: this will need to be fixed/updated
                     "version"=>$lastVersionNumber
                 ];
@@ -619,7 +619,7 @@ class DatasetController extends Controller
             } 
             else {
                 return response()->json([
-                    'message' => 'dataset is in an unknown format and cannot be processed',
+                    'message' => 'metadata is in an unknown format and cannot be processed',
                     'details' => $traserResponse,
                 ], 400);
             }
