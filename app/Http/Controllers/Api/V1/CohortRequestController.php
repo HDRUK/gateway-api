@@ -719,7 +719,7 @@ class CohortRequestController extends Controller
             $cohortRequestStatus = $cohort['request_status'];
             $cohortRequestUserId = $cohort['user_id'];
             $user = User::where('id', $cohortRequestUserId)->first();
-            $userEmail = ($user['preferred_email'] === primary) ? $user['email'] : $user['secondary_email'];
+            $userEmail = ($user['preferred_email'] === 'primary') ? $user['email'] : $user['secondary_email'];
             $template = null;
             switch ($cohortRequestStatus) {
                 case 'PENDING': // submitted

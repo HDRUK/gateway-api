@@ -2,17 +2,18 @@
 
 namespace App\Console\Commands;
 
-use COnfig;
-use App\Models\User;
+use Config;
+use Exception;
 use App\Jobs\SendEmailJob;
-use App\Models\Permission;
 use App\Models\CohortRequest;
-use App\Models\EmailTemplate;
-use Illuminate\Support\Carbon;
-use Illuminate\Console\Command;
 use App\Models\CohortRequestLog;
 use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
+use App\Models\EmailTemplate;
+use App\Models\Permission;
+use App\Models\User;
+use Illuminate\Support\Carbon;
+use Illuminate\Console\Command;
 
 class CohortUserExpiry extends Command
 {
@@ -94,7 +95,7 @@ class CohortUserExpiry extends Command
             $cohort = CohortRequest::where('id', $cohortId)->first();
             $cohortRequestUserId = $cohort['user_id'];
             $user = User::where('id', $cohortRequestUserId)->first();
-            $userEmail = ($user['preferred_email'] === primary) ? $user['email'] : $user['secondary_email'];
+            $userEmail = ($user['preferred_email'] === 'primary') ? $user['email'] : $user['secondary_email'];
             $template = null;
             switch ($cohortRequestStatus) {
                 case 'WILL_EXPIRE': // submitted
