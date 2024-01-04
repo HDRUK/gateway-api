@@ -179,7 +179,13 @@ class DatasetController extends Controller
         }
 
         // perform query for the matching datasets with ordering and pagination
-        $datasets = Dataset::with('versions')->whereIn('id', $matches)
+        // - versions should be ordered so the latest version appears first
+        $datasets = Dataset::with([
+                'versions' => function ($query) {
+                        $query->orderBy('version', 'desc');
+                    }
+            ])
+            ->whereIn('id', $matches)
             ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                 function ($query) {
                     return $query->withTrashed();
