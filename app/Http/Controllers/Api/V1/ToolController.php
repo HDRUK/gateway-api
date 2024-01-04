@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
+use App\Models\Category;
+use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
 use Illuminate\Http\Request;
@@ -15,6 +17,8 @@ use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
 use App\Http\Traits\RequestTransformation;
+
+use MetadataManagementController AS MMC;
 
 class ToolController extends Controller
 {
@@ -131,6 +135,7 @@ class ToolController extends Controller
      *             @OA\Property( property="description", type="string", example="Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel." ),
      *             @OA\Property( property="license", type="string", example="Inventore omnis aut laudantium vel alias." ),
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
+     *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
@@ -180,11 +185,14 @@ class ToolController extends Controller
                 'description' => $input['description'],
                 'license' => $input['license'],
                 'tech_stack' =>  $input['tech_stack'],
+                'category_id' => $input['category_id'],
                 'user_id' => $input['user_id'],
                 'enabled' => $input['enabled'],
             ]);
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
+
+            $this->indexElasticTools($input, (int) $tool->id);
 
             return response()->json([
                 'message' => 'created',
@@ -222,6 +230,7 @@ class ToolController extends Controller
      *             @OA\Property( property="description", type="string", example="Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel." ),
      *             @OA\Property( property="license", type="string", example="Inventore omnis aut laudantium vel alias." ),
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
+     *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
@@ -271,6 +280,7 @@ class ToolController extends Controller
                 'description' => $input['description'],
                 'license' => $input['license'],
                 'tech_stack' =>  $input['tech_stack'],
+                'category_id' => $input['category_id'],
                 'user_id' => $input['user_id'],
                 'enabled' => $input['enabled'],
             ]);
@@ -314,6 +324,7 @@ class ToolController extends Controller
      *             @OA\Property( property="description", type="string", example="Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel." ),
      *             @OA\Property( property="license", type="string", example="Inventore omnis aut laudantium vel alias." ),
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
+     *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
@@ -362,6 +373,7 @@ class ToolController extends Controller
                 'description',
                 'license',
                 'tech_stack',
+                'category_id',
                 'user_id',
                 'enabled',
             ];
@@ -465,6 +477,46 @@ class ToolController extends Controller
             }
 
             return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert tool document into elastic index
+     *
+     * @param array $input
+     * @param integer $toolId
+     * @return void
+     */
+    private function indexElasticTools(array $input, int $toolId): void 
+    {
+        try {
+
+            $tags = Tag::whereIn('id', $input['tag'])->get()->toArray();
+            $tagsDescription = array();
+            foreach ($tags as $t) {
+                $tagsDescription[] = $t['description'];
+            }
+
+            $category = Category::where('id', $input['category_id'])->first()->toArray();
+
+            $toIndex = [
+                'name' => $input['name'],
+                'description' => $input['description'],
+                'category' => $category['name'],
+                'tags' => $tagsDescription
+            ];
+            $params = [
+                'index' => 'tools',
+                'id' => $toolId,
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+
+            $client = MMC::getElasticClient();
+            $client->index($params);
+
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
