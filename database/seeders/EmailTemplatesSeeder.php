@@ -44,10 +44,11 @@ class EmailTemplatesSeeder extends Seeder
               </mj-raw>
               <mj-section background-color="#fafafa">
                 <mj-column width="400px">
-                  <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">Heading</mj-text>
+                  <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">[[SUBHEADING_TEXT]]</mj-text>
                   <mj-text color="#525252">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rutrum enim eget magna efficitur, eu semper augue semper. Aliquam erat volutpat. Cras id dui lectus. Vestibulum sed finibus lectus, sit amet suscipit nibh. Proin nec commodo purus.
                     Sed eget nulla elit. Nulla aliquet mollis faucibus.</mj-text>
-                  <mj-button background-color="#F45E43" href="[[BUTTON_1_URL]]">[[button_text]]</mj-button>
+                  <mj-button background-color="#F45E43" href="[[BUTTON_1_URL]]">Button 1 Text</mj-button>
+                  <mj-button background-color="#F45E43" href="[[BUTTON_2_URL]]">Button 2 Text</mj-button>
                 </mj-column>
               </mj-section>
               <mj-raw>
@@ -64,12 +65,26 @@ class EmailTemplatesSeeder extends Seeder
                   <!-- right paragraph -->
                 </mj-raw>
                 <mj-column>
-                  <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">[[subheading_text]]</mj-text>
+                  <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">[[SUBHEADING_TEXT]]</mj-text>
                   <mj-text color="#525252">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rutrum enim eget magna efficitur, eu semper augue semper. Aliquam erat volutpat. Cras id dui lectus. Vestibulum sed finibus lectus.</mj-text>
                 </mj-column>
               </mj-section>
             </mj-body>
           </mjml>',
+          'buttons' => '
+          {
+            "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "https://test.com/something1"
+                    },
+                    {
+                        "placeholder": "[[BUTTON_2_URL]]",
+                        "actual": "https://test.com/something2"
+                    }
+                ]
+            }
+          ',
         ]);
 
       // custodian.team.admin - assign
@@ -125,7 +140,7 @@ class EmailTemplatesSeeder extends Seeder
                                     </li>
                                 </ul>
                             </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[button_1_url]]">Manage team</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">Manage team</mj-button>
                     </mj-column>
                 </mj-section>
 
@@ -275,8 +290,8 @@ class EmailTemplatesSeeder extends Seeder
                                 </li>
                             </ul>
                         </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[button_1_url]]">View enquiries</mj-button>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[button_2_url]]">View data access requests</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View enquiries</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_2_URL]]">View data access requests</mj-button>
                     </mj-column>
                 </mj-section>
 
@@ -293,6 +308,20 @@ class EmailTemplatesSeeder extends Seeder
 
             </mj-body>
         </mjml>
+          ',
+          'buttons' => '
+                {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "https://someurl.com/path/to/something"
+                    },
+                    {
+                        "placeholder": "[[BUTTON_2_URL]]",
+                        "actual": "https://someurl2.com/path/to/something"
+                    }
+                    ]
+                }
           ',
       ]);
 
@@ -425,7 +454,7 @@ class EmailTemplatesSeeder extends Seeder
                                 </li>
                                 </ul>
                             </mj-text>
-                            <mj-button css-class="main-section" background-color="#00ACCA" href="[[button_1_url]]">View data access requests</mj-button>
+                            <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View data access requests</mj-button>
                         </mj-column>
                     </mj-section>
 
@@ -566,7 +595,7 @@ class EmailTemplatesSeeder extends Seeder
                             </li>
                         </ul>
                     </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[button_1_url]]">Manage Apps</mj-button>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">Manage Apps</mj-button>
                     </mj-column>
                 </mj-section>
 
@@ -706,7 +735,7 @@ class EmailTemplatesSeeder extends Seeder
                                 </li>
                             </ul>
                         </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[button_1_url]]">View datasets</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View datasets</mj-button>
                     </mj-column>
                 </mj-section>
 
@@ -849,7 +878,7 @@ class EmailTemplatesSeeder extends Seeder
                                     </li>
                                 </ul>
                             </mj-text>
-                            <mj-button css-class="main-section" background-color="#00ACCA" href="[[button_1_url]]">View datasets</mj-button>
+                            <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View datasets</mj-button>
                         </mj-column>
                     </mj-section>
 

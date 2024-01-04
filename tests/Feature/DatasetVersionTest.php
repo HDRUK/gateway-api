@@ -30,8 +30,8 @@ class DatasetVersionTest extends TestCase
     {
         $this->commonSetUp();
 
-        $this->dataset = $this->getFakeDataset();
-        $this->datasetUpdate = $this->getFakeUpdateDataset();
+        $this->metadata = $this->getFakeDataset();
+        $this->metadataUpdate = $this->getFakeUpdateDataset();
     }
  
     public function test_a_dataset_version_is_created_on_new_dataset_created(): void
@@ -118,7 +118,7 @@ class DatasetVersionTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'dataset' => $this->dataset,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],
@@ -243,7 +243,7 @@ class DatasetVersionTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'dataset' => $this->dataset,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],
@@ -257,7 +257,7 @@ class DatasetVersionTest extends TestCase
         
         $this->assertTrue((count($dataset1->versions)) === 1);
 
-        $this->datasetUpdate['metadata']['summary']['title'] = 'Updated Metadata Title 123';
+        $this->metadataUpdate['metadata']['summary']['title'] = 'Updated Metadata Title 123';
 
         $responseUpdateDataset = $this->json(
             'PUT',
@@ -265,7 +265,7 @@ class DatasetVersionTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'dataset' => $this->datasetUpdate,
+                'metadata' => $this->metadataUpdate,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],
@@ -283,7 +283,7 @@ class DatasetVersionTest extends TestCase
 
         $this->assertEquals(
             $version[0]->metadata['metadata']['summary']['title'],
-            $this->dataset['metadata']['summary']['title']
+            $this->metadata['metadata']['summary']['title']
         );
         $this->assertEquals(
             $version[1]->metadata['metadata']['summary']['title'],
