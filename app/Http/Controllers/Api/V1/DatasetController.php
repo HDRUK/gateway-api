@@ -163,7 +163,7 @@ class DatasetController extends Controller
                 $version = DatasetVersion::where('dataset_id', $m)
                 ->whereRaw(
                     "
-                    LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$filterTitle%')
+                    LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) LIKE LOWER('%$filterTitle%')
                     "
                 )->latest('version')->select('dataset_id')->first();
 
