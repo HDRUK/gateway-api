@@ -14,7 +14,7 @@ class TestDataset extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'dataset' => [
+            'metadata' => [
                 'required',
             ],
         ];

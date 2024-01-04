@@ -33,7 +33,7 @@ class DatasetIntegrationTest extends TestCase
     const TEST_URL_NOTIFICATION = 'api/v1/notifications';
     const TEST_URL_USER = 'api/v1/users';
 
-    private $dataset = null;
+    private $metadata = null;
 
     protected $header = [];
     
@@ -62,7 +62,7 @@ class DatasetIntegrationTest extends TestCase
         
         // Lengthy process, but a more consistent representation
         // of an incoming dataset
-        $this->dataset = $this->getFakeDataset();
+        $this->metadata = $this->getFakeDataset();
 
     }
 
@@ -187,7 +187,7 @@ class DatasetIntegrationTest extends TestCase
                 [
                     'team_id' => $teamId,
                     'user_id' => $userId,
-                    'dataset' => $this->dataset,
+                    'metadata' => $this->metadata,
                     'create_origin' => Dataset::ORIGIN_MANUAL,
                     'status' => Dataset::STATUS_ACTIVE,
                 ],
@@ -342,7 +342,7 @@ class DatasetIntegrationTest extends TestCase
                 [
                     'team_id' => $teamId,
                     'user_id' => $userId,
-                    'dataset' => $this->dataset,
+                    'metadata' => $this->metadata,
                     'create_origin' => Dataset::ORIGIN_MANUAL,
                     'status' => Dataset::STATUS_ACTIVE,
                 ],

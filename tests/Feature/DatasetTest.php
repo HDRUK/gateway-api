@@ -29,11 +29,11 @@ class DatasetTest extends TestCase
     {
         $this->commonSetUp();
 
-        $this->dataset = $this->getFakeDataset();
-        $this->datasetAlt = $this->dataset;
-        $this->datasetAlt['metadata']['summary']['title'] = 'ABC title';
+        $this->metadata = $this->getFakeDataset();
+        $this->metadataAlt = $this->dataset;
+        $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
 
-        $this->datasetUpdate = $this->getFakeUpdateDataset();
+        $this->metadataUpdate = $this->getFakeUpdateDataset();
     }
 
 
@@ -197,7 +197,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId1,
                 'user_id' => $userId,
-                'dataset' => $this->dataset,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],
@@ -218,7 +218,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId1,
                 'user_id' => $userId,
-                'dataset' => $this->dataset,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
@@ -237,7 +237,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId2,
                 'user_id' => $userId,
-                'dataset' => $this->datasetAlt,
+                'metadata' => $this->metadataAlt,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
@@ -489,7 +489,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'dataset' => $this->dataset,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
@@ -644,7 +644,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'dataset' => $this->dataset,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
@@ -808,7 +808,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'dataset' => $this->dataset,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],
@@ -825,7 +825,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'dataset' => $this->datasetUpdate,
+                'metadata' => $this->metadataUpdate,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
@@ -957,7 +957,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'dataset' => $this->dataset,
+                'metadata' => $this->metadata,
                 'create_origin' => 'OPTION_DOESNT_EXIST',
                 'status' => Dataset::STATUS_ACTIVE,
             ],
@@ -1086,7 +1086,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'dataset' => $this->dataset,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],

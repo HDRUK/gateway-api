@@ -42,16 +42,17 @@ class EmailServiceTest extends TestCase
         $template = EmailTemplate::where('identifier', '=', 'example_template')->first();
 
         $replacements = [
-            '[[header_text]]' => 'Health Data Research UK',
-            '[[button_text]]' => 'Click me!',
-            '[[subheading_text]]' => 'Sub Heading Something or other',
+            '[[HEADER_TEXT]]' => 'Health Data Research UK',
+            '[[SUBHEADING_TEXT]]' => 'Sub Heading Something or other',
+            '[[BUTTON_1_URL]]' => 'https://test.com/something1',
+            '[[BUTTON_2_URL]]' => 'https://test.com/something2',
         ];
 
         $email = new Email($template, $replacements);
 
         Http::fake([
             env('MJML_RENDER_URL') => Http::response([
-                    "html" => $this->mockedEmailContent($template,$replacements)
+                    "html" => $this->mockedEmailContent($template, $replacements)
             ], 200),
         ]);
 
@@ -60,6 +61,11 @@ class EmailServiceTest extends TestCase
         foreach ($replacements as $k => $v) {
             $this->assertStringContainsString($v, $html);
         }
+
+        $this->assertStringNotContainsString('[[HEADER_TEXT]]', $html);
+        $this->assertStringNotContainsString('[[SUBHEADING_TEXT]]', $html);
+        $this->assertStringNotContainsString('[[BUTTON_1_URL]]', $html);
+        $this->assertStringNotContainsString('[[BUTTON_2_URL]]', $html);
     }
 
     private function mockedEmailContent(string $template, array $replacements): string

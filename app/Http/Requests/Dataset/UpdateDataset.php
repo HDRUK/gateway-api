@@ -29,7 +29,7 @@ class UpdateDataset extends BaseFormRequest
                 'required',
                 'exists:users,id',
             ],
-            'dataset' => [
+            'metadata' => [
                 'required',
             ],
             'create_origin' => [
