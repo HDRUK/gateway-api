@@ -4,20 +4,23 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
+use App\Models\User;
+use App\Jobs\SendEmailJob;
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use App\Models\CohortRequest;
+use App\Models\EmailTemplate;
 use Illuminate\Support\Carbon;
 use App\Models\CohortRequestLog;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
+use App\Models\CohortRequestHasPermission;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Requests\CohortRequest\CreateCohortRequest;
 use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
-use App\Models\CohortRequestHasPermission;
-use App\Models\Permission;
 
 class CohortRequestController extends Controller
 {
@@ -348,6 +351,7 @@ class CohortRequestController extends Controller
             ]);
 
             // send email notification
+            $this->sendEmail($cohortRequest->id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
@@ -457,7 +461,7 @@ class CohortRequestController extends Controller
                 CohortRequest::where('id', $id)->update([
                     'request_status' => $requestStatus,
                     'cohort_status' => true,
-                    'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addSeconds(env('COHORT_REQUEST_EXPIRATION')),
+                    'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days')),
                 ]);
             }
 
@@ -493,6 +497,8 @@ class CohortRequestController extends Controller
                     throw new Exception("A cohort request status received not accepted.");
                     break;
             }
+
+            $this->sendEmail($id);
             
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -703,6 +709,51 @@ class CohortRequestController extends Controller
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
+        }
+    }
+
+    private function sendEmail($cohortId)
+    {
+        try {
+            $cohort = CohortRequest::where('id', $cohortId)->first();
+            $cohortRequestStatus = $cohort['request_status'];
+            $cohortRequestUserId = $cohort['user_id'];
+            $user = User::where('id', $cohortRequestUserId)->first();
+            $userEmail = ($user['preferred_email'] === primary) ? $user['email'] : $user['secondary_email'];
+            $template = null;
+            switch ($cohortRequestStatus) {
+                case 'PENDING': // submitted
+                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.submitted')->first();
+                    break;
+                case 'REJECTED':
+                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.rejected')->first();
+                    break;
+                case 'APPROVED':
+                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.approved')->first();
+                    break;
+            }
+
+            $to = [
+                'to' => [
+                    'email' => $userEmail,
+                    'name' => $user['name'],
+                ],
+            ];
+
+            $replacements = [
+                '[[USER_FIRSTNAME]]' => $user['firstname'],
+                '[[EXPIRE_DATE]]' => $cohort['request_expire_at'],
+                '[[CURRENT_YEAR]]' => date("Y"),
+                '[[USER_EMAIL]]' => $userEmail,
+                '[[COHORT_DISCOVERY_ACCESS_URL]]' => Config::get('cohort.cohort_discovery_access_url'),
+                '[[COHORT_DISCOVERY_USING_URL]]' => Config::get('cohort.cohort_discovery_using_url'),
+                '[[COHORT_DISCOVERY_RENEW_URL]]' => Config::get('cohort.cohort_discovery_renew_url'),
+            ];
+
+            SendEmailJob::dispatch($to, $template, $replacements);
+
+        } catch (Exception $exception) {
+            throw new Exception("Cohort Request send email :: " . $exception->getMessage());
         }
     }
 }
