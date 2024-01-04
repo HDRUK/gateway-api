@@ -41,7 +41,7 @@ class CohortUserExpiry extends Command
             if (count($u->cohortRequests) > 0) {
                 foreach ($u->cohortRequests as $r) {
                     $now = Carbon::now();
-                    $diff = $r->created_at->diffInDays($now);
+                    $diff = $r->updated_at->diffInDays($now);
 
                     if ($diff >= Config::get('cohort.cohort_access_expiry_warning_time_in_days')) {
                         if ($r->request_status === 'APPROVED') {
