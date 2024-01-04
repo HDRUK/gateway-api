@@ -430,8 +430,18 @@ class DatasetController extends Controller
             // - if it is not, traser will try to work out what the metadata is
             //   and translate it into the GWDM
             // - otherwise traser will return a non-200 error 
+
+            $payload = $input['dataset'];
+            $payload['extra'] = [
+                "id"=>"placeholder",
+                "pid"=>"placeholder",
+                "datasetType"=>"Healthdata",
+                "publisherId"=>$team['id'],
+                "publisherName"=>$team['name'],
+            ];
+
             $traserResponse = MMC::translateDataModelType(
-                json_encode($input['dataset']),
+                json_encode($payload),
                 env('GWDM'),
                 env('GWDM_CURRENT_VERSION')
             );
@@ -450,6 +460,17 @@ class DatasetController extends Controller
                     'create_origin' => $input['create_origin'],
                     'status' => $input['status'],
                 ]);
+
+                //create a new 'required' section for the metadata to be saved
+                // - otherwise this section is filled with placeholders by all translations to GWDM
+                $required = [
+                    'gatewayId' => $dataset->id,
+                    'gatewayPid' => $dataset->pid,
+                    'issued' => $dataset->created,
+                    'modified' => $dataset->updated,
+                    'revisions' => [],
+                ];
+                $input['dataset']['metadata']['required'] = $required;
 
                 $version = MMC::createDatasetVersion([
                     'dataset_id' => $dataset->id,
