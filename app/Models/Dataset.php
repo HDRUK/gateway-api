@@ -42,7 +42,7 @@ class Dataset extends Model
         'user_id',
         'team_id',
         'datasetid',
-        'dataset',
+        'metadata',
         'created',
         'updated',
         'submitted',
@@ -50,14 +50,6 @@ class Dataset extends Model
         'version',
         'create_origin',
         'status',
-    ];
-
-    /**
-     * Indicates if elements of the model should be hidden
-     * from returned payloads
-     */
-    protected $hidden = [
-        'dataset',
     ];
 
     /**

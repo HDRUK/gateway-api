@@ -331,18 +331,22 @@ class DatasetController extends Controller
                 ->with(['namedEntities'])
                 ->first();
 
-            // Return the latest metadata for this dataset
-            $version = $dataset->latestVersion();
-            if ($version) {
-                $dataset->versions = $version;
-            }
-
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
+            // Return the latest metadata for this dataset
+            if (!($outputSchemaModel && $outputSchemaModelVersion)) {
+                $version = $dataset->latestVersion();
+                if ($version) {
+                    $dataset->versions[] = $version;
+                }
+            }            
+
             if ($outputSchemaModel && $outputSchemaModelVersion) {
+                $version = $dataset->latestVersion();
+
                 $translated = MMC::translateDataModelType(
-                    $dataset['dataset'],
+                    $version->metadata,
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
                     env('GWDM'),
@@ -350,7 +354,8 @@ class DatasetController extends Controller
                 );
 
                 if ($translated['wasTranslated']) {
-                    $dataset->versions = json_encode($translated['metadata']);
+                    $version->metadata = json_decode(json_encode($translated['metadata]']));
+                    $dataset->versions[] = $version;
                 }
                 else {
                     return response()->json([
@@ -393,7 +398,7 @@ class DatasetController extends Controller
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="dataset", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="array", @OA\Items())
      *          )
      *       )
      *    ),
@@ -434,7 +439,7 @@ class DatasetController extends Controller
             //   and translate it into the GWDM
             // - otherwise traser will return a non-200 error 
 
-            $payload = $input['dataset'];
+            $payload = $input['metadata'];
             $payload['extra'] = [
                 "id"=>"placeholder",
                 "pid"=>"placeholder",
@@ -450,8 +455,8 @@ class DatasetController extends Controller
             );
 
             if ($traserResponse['wasTranslated']) {
-                $input['metadata']['original_metadata'] = $input['dataset']['metadata'];
-                $input['dataset']['metadata'] = $traserResponse['metadata'];
+                $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
+                $input['metadata']['metadata'] = $traserResponse['metadata'];
 
                 $dataset = MMC::createDataset([
                     'user_id' => $input['user_id'],
@@ -477,7 +482,7 @@ class DatasetController extends Controller
 
                 $version = MMC::createDatasetVersion([
                     'dataset_id' => $dataset->id,
-                    'metadata' => json_encode($input['dataset']),
+                    'metadata' => json_encode($input['metadata']),
                     'version' => 1,
                 ]);
 
@@ -526,7 +531,7 @@ class DatasetController extends Controller
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="dataset", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="array", @OA\Items())
      *          )
      *       )
      *    ),
@@ -564,9 +569,9 @@ class DatasetController extends Controller
             $currDataset = Dataset::where('id', $id)->first();
             $currentPid = $currDataset->pid;
 
-           
+
             $traserResponse = MMC::translateDataModelType(
-                json_encode($input['dataset']),
+                json_encode($input['metadata']),
                 env('GWDM'),
                 env('GWDM_CURRENT_VERSION')
             );
@@ -601,11 +606,11 @@ class DatasetController extends Controller
                 // Create new metadata version for this dataset
                 $version = DatasetVersion::create([
                     'dataset_id' => $currDataset->id,
-                    'metadata' => json_encode($input['dataset']),
+                    'metadata' => json_encode($input['metadata']),
                     'version' => ($lastVersionNumber + 1),
                 ]);
 
-                MMC::reindexElastic($input['dataset'], $currDataset->id);
+                MMC::reindexElastic($input['metadata'], $currDataset->id);
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -861,7 +866,7 @@ class DatasetController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="dataset", type="array", @OA\Items())
+     *             @OA\Property(property="metadata", type="array", @OA\Items())
      *          )
      *       )
      *    ),
@@ -901,7 +906,7 @@ class DatasetController extends Controller
             //   and translate it into the GWDM
             // - otherwise traser will return a non-200 error 
             $traserResponse = MMC::translateDataModelType(
-                json_encode($input['dataset']),
+                json_encode($input['metadata']),
                 env('GWDM'),
                 env('GWDM_CURRENT_VERSION')
             );
@@ -914,7 +919,7 @@ class DatasetController extends Controller
             }
 
             return response()->json([
-                'message' => 'dataset is in an unknown format and cannot be processed',
+                'message' => 'metadata is in an unknown format and cannot be processed',
                 'details' => $traserResponse,
                 'payload_received' => $input,
             ], 400);

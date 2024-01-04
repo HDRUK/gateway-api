@@ -14,6 +14,7 @@ class EmailTemplatesSeeder extends Seeder
      */
     public function run(): void
     {
+        EmailTemplate::truncate();
         // Seeds the default email templates used throughout the system
 
         // Template Example
@@ -36,7 +37,7 @@ class EmailTemplatesSeeder extends Seeder
               </mj-raw>
               <mj-section background-url="https://place-hold.it/600x100/000000/ffffff/grey.png" background-size="cover" background-repeat="no-repeat">
                 <mj-column width="600px">
-                  <mj-text align="center" color="#fff" font-size="40px" font-family="Helvetica Neue">[[header_text]]</mj-text>
+                  <mj-text align="center" color="#fff" font-size="40px" font-family="Helvetica Neue">[[HEADER_TEXT]]</mj-text>
                 </mj-column>
               </mj-section>
               <mj-raw>
@@ -44,10 +45,11 @@ class EmailTemplatesSeeder extends Seeder
               </mj-raw>
               <mj-section background-color="#fafafa">
                 <mj-column width="400px">
-                  <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">Heading</mj-text>
+                  <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">[[SUBHEADING_TEXT]]</mj-text>
                   <mj-text color="#525252">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rutrum enim eget magna efficitur, eu semper augue semper. Aliquam erat volutpat. Cras id dui lectus. Vestibulum sed finibus lectus, sit amet suscipit nibh. Proin nec commodo purus.
                     Sed eget nulla elit. Nulla aliquet mollis faucibus.</mj-text>
-                  <mj-button background-color="#F45E43" href="#">[[button_text]]</mj-button>
+                  <mj-button background-color="#F45E43" href="[[BUTTON_1_URL]]">Button 1 Text</mj-button>
+                  <mj-button background-color="#F45E43" href="[[BUTTON_2_URL]]">Button 2 Text</mj-button>
                 </mj-column>
               </mj-section>
               <mj-raw>
@@ -64,12 +66,26 @@ class EmailTemplatesSeeder extends Seeder
                   <!-- right paragraph -->
                 </mj-raw>
                 <mj-column>
-                  <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">[[subheading_text]]</mj-text>
+                  <mj-text font-style="italic" font-size="20px" font-family="Helvetica Neue" color="#626262">[[SUBHEADING_TEXT]]</mj-text>
                   <mj-text color="#525252">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin rutrum enim eget magna efficitur, eu semper augue semper. Aliquam erat volutpat. Cras id dui lectus. Vestibulum sed finibus lectus.</mj-text>
                 </mj-column>
               </mj-section>
             </mj-body>
           </mjml>',
+          'buttons' => '
+          {
+            "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "https://test.com/something1"
+                    },
+                    {
+                        "placeholder": "[[BUTTON_2_URL]]",
+                        "actual": "https://test.com/something2"
+                    }
+                ]
+            }
+          ',
         ]);
 
       // custodian.team.admin - assign
@@ -125,7 +141,7 @@ class EmailTemplatesSeeder extends Seeder
                                     </li>
                                 </ul>
                             </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">Manage team</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">Manage team</mj-button>
                     </mj-column>
                 </mj-section>
 
@@ -275,8 +291,8 @@ class EmailTemplatesSeeder extends Seeder
                                 </li>
                             </ul>
                         </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View enquiries</mj-button>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View data access requests</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View enquiries</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_2_URL]]">View data access requests</mj-button>
                     </mj-column>
                 </mj-section>
 
@@ -293,6 +309,20 @@ class EmailTemplatesSeeder extends Seeder
 
             </mj-body>
         </mjml>
+          ',
+          'buttons' => '
+                {
+                "replacements": [
+                    {
+                        "placeholder": "[[BUTTON_1_URL]]",
+                        "actual": "https://someurl.com/path/to/something"
+                    },
+                    {
+                        "placeholder": "[[BUTTON_2_URL]]",
+                        "actual": "https://someurl2.com/path/to/something"
+                    }
+                    ]
+                }
           ',
       ]);
 
@@ -425,7 +455,7 @@ class EmailTemplatesSeeder extends Seeder
                                 </li>
                                 </ul>
                             </mj-text>
-                            <mj-button css-class="main-section" background-color="#00ACCA" href="#">View data access requests</mj-button>
+                            <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View data access requests</mj-button>
                         </mj-column>
                     </mj-section>
 
@@ -566,7 +596,7 @@ class EmailTemplatesSeeder extends Seeder
                             </li>
                         </ul>
                     </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">Manage Apps</mj-button>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">Manage Apps</mj-button>
                     </mj-column>
                 </mj-section>
 
@@ -706,7 +736,7 @@ class EmailTemplatesSeeder extends Seeder
                                 </li>
                             </ul>
                         </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View datasets</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View datasets</mj-button>
                     </mj-column>
                 </mj-section>
 
@@ -849,7 +879,7 @@ class EmailTemplatesSeeder extends Seeder
                                     </li>
                                 </ul>
                             </mj-text>
-                            <mj-button css-class="main-section" background-color="#00ACCA" href="#">View datasets</mj-button>
+                            <mj-button css-class="main-section" background-color="#00ACCA" href="[[BUTTON_1_URL]]">View datasets</mj-button>
                         </mj-column>
                     </mj-section>
 
@@ -1293,5 +1323,351 @@ class EmailTemplatesSeeder extends Seeder
                 </mjml>
           ',
         ]);
+
+        // Cohort Discovery access has expired
+        EmailTemplate::create([
+            'identifier' => 'cohort.discovery.access.expired',
+            'subject' => 'Your Cohort Discovery access has expired',
+            'body' => '
+                <mjml>
+                    <mj-head>
+                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                        <mj-style inline="inline">
+                            .main-button {
+                                padding:10px;
+                                width:auto;
+                                -webkit-border-radius:5px;
+                                -moz-border-radius:5px;
+                                border-radius:5px;
+                                color:#FFFFFF;
+                            }
+                        </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                                Your Cohort Discovery access has expired.
+                            </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column width="100%">
+                                <mj-text  line-height="20px">
+                                    Dear [[USER_FIRSTNAME]],
+                                </mj-text>
+                                <mj-text line-height="30px">
+                                    Your Cohort Discovery account has expired. Use the button below to renew your access. 
+                                </mj-text>
+                                <mj-text>
+                                    <mj-text>
+                                        Regards,<br/>
+                                        Gateway Cohort Discovery admin.
+                                    </mj-text>
+                                </mj-text>
+                                <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_RENEW_URL]]">Renew Cohort Discovery access</mj-button>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+          ',
+        ]);
+
+        // Cohort Discovery access will soon expire
+        EmailTemplate::create([
+            'identifier' => 'cohort.discovery.access.will.expire',
+            'subject' => 'Your Cohort Discovery access will soon expire',
+            'body' => '
+                <mjml>
+                    <mj-head>
+                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                        <mj-style inline="inline">
+                            .main-button {
+                                padding:10px;
+                                width:auto;
+                                -webkit-border-radius:5px;
+                                -moz-border-radius:5px;
+                                border-radius:5px;
+                                color:#FFFFFF;
+                            }
+                        </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                                Your Cohort Discovery access will soon expire.
+                            </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column width="100%">
+                                <mj-text  line-height="20px">
+                                    Dear [[USER_FIRSTNAME]],
+                                </mj-text>
+                                <mj-text line-height="30px">
+                                    Your Cohort Discovery account will expire [[EXPIRE_DATE]]. Use the button below to renew your access.
+                                </mj-text>
+                                <mj-text>
+                                    <mj-text>
+                                        Regards,<br/>
+                                        Gateway Cohort Discovery admin.
+                                    </mj-text>
+                                </mj-text>
+                                <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_RENEW_URL]]">Renew Cohort Discovery access</mj-button>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+            ',
+        ]);
+
+        // Cohort Discovery access approved
+        EmailTemplate::create([
+            'identifier' => 'cohort.discovery.access.approved',
+            'subject' => 'Congratulations! Your Cohort Discovery registration has been approved.',
+            'body' => '
+                <mjml>
+                    <mj-head>
+                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                        <mj-style inline="inline">
+                            .main-button {
+                                padding:10px;
+                                width:auto;
+                                -webkit-border-radius:5px;
+                                -moz-border-radius:5px;
+                                border-radius:5px;
+                                color:#FFFFFF;
+                            }
+                        </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                                Congratulations! Your Cohort Discovery registration has been approved.
+                            </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column width="100%">
+                                <mj-text  line-height="20px">
+                                    Dear [[USER_FIRSTNAME]],
+                                </mj-text>
+                                <mj-text line-height="30px">
+                                    You have been granted access for Cohort Discovery under [[USER_EMAIL]]. Please use buttons below to access Cohort Discovery and watch video on how to use the tool.<br/>Your Cohort Discovery access is valid for a 6-month period after which you will need to re-new your access.<br/>If you require furthersupport raise a support ticket on the HDR UK Innovation Gateway.
+                                </mj-text>
+                                <mj-text>
+                                    <mj-text>
+                                        Regards,<br/>
+                                        Gateway Cohort Discovery admin.
+                                    </mj-text>
+                                </mj-text>
+                                <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_ACCESS_URL]]">Access Cohort Discovery</mj-button>
+                                <mj-button css-class="main-section" background-color="#00ACCA" href="[[COHORT_DISCOVERY_USING_URL]]">Using Cohort Discovery</mj-button>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+            ',
+        ]);
+
+        // Cohort Discovery access rejected
+        EmailTemplate::create([
+            'identifier' => 'cohort.discovery.access.rejected',
+            'subject' => 'Your Cohort Discovery Registration has been Rejected.',
+            'body' => '
+                <mjml>
+                    <mj-head>
+                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                        <mj-style inline="inline">
+                            .main-button {
+                                padding:10px;
+                                width:auto;
+                                -webkit-border-radius:5px;
+                                -moz-border-radius:5px;
+                                border-radius:5px;
+                                color:#FFFFFF;
+                            }
+                        </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                                Your Cohort Discovery Registration has been Rejected.
+                            </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column width="100%">
+                                <mj-text line-height="20px">
+                                    Dear [[USER_FIRSTNAME]],
+                                </mj-text>
+                                <mj-text line-height="30px">
+                                    Thank you for your patience whilst we reviewed your request to the Cohort Discovery Tool.<br/>Unfortunately, your registration for access has been rejected at this time. Your request does not meet our access criteria, which includes the following:
+                                    <ul>
+                                        <li>Registering a user profile on the Gateway</li>
+                                        <li>Providing information outlining your role and institution information</li>
+                                        <li>Providing justification for using the tool for public benefit</li>
+                                    </ul>
+                                    If you have any questions on the above decision, raise a support ticket on the HDR UK Innovation Gateway.
+                                </mj-text>
+                                <mj-text>
+                                <mj-text>
+                                    Regards,<br/>
+                                    Gateway Cohort Discovery admin.
+                                </mj-text>
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+            ',
+        ]);
+
+        // Cohort Discovery registration form has been submitted
+        EmailTemplate::create([
+            'identifier' => 'cohort.discovery.access.submitted',
+            'subject' => 'Your Cohort Discovery registration form has been submitted.',
+            'body' => '
+                <mjml>
+                    <mj-head>
+                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                        <mj-style inline="inline">
+                            .main-button {
+                                padding:10px;
+                                width:auto;
+                                -webkit-border-radius:5px;
+                                -moz-border-radius:5px;
+                                border-radius:5px;
+                                color:#FFFFFF;
+                            }
+                        </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                                Your Cohort Discovery registration form has been submitted.
+                            </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column width="100%">
+                                <mj-text line-height="20px">
+                                    Dear [[USER_FIRSTNAME]],
+                                </mj-text>
+                                <mj-text line-height="30px">
+                                    Your Cohort Discovery registration has been received by Gateway Cohort Discovery admin. This will be reviewed and you will receive a notification via your Gateway email address when a decision is made.<br/>We aim to get back within 5 business days of your original request.
+                                </mj-text>
+                                <mj-text>
+                                <mj-text>
+                                    Regards,<br/>
+                                    Gateway Cohort Discovery admin.
+                                </mj-text>
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+            ',
+        ]);
+
     }
 }
