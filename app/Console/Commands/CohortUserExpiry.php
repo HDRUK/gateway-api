@@ -4,14 +4,15 @@ namespace App\Console\Commands;
 
 use COnfig;
 use App\Models\User;
+use App\Jobs\SendEmailJob;
 use App\Models\Permission;
 use App\Models\CohortRequest;
 use App\Models\EmailTemplate;
+use Illuminate\Support\Carbon;
+use Illuminate\Console\Command;
 use App\Models\CohortRequestLog;
 use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
-use Illuminate\Support\Carbon;
-use Illuminate\Console\Command;
 
 class CohortUserExpiry extends Command
 {
