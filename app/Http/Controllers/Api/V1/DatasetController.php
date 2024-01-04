@@ -337,8 +337,10 @@ class DatasetController extends Controller
             }            
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
+                $version = $dataset->latestVersion();
+
                 $translated = MMC::translateDataModelType(
-                    $dataset['metadata'],
+                    $version->metadata,
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
                     env('GWDM'),
@@ -346,7 +348,8 @@ class DatasetController extends Controller
                 );
 
                 if ($translated['wasTranslated']) {
-                    $dataset->versions[] = json_encode($translated['metadata']);
+                    $version->metadata = json_decode(json_encode($translated['metadata]']));
+                    $dataset->versions[] = $version;
                 }
                 else {
                     return response()->json([
