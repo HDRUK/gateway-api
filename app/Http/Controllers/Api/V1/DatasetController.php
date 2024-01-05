@@ -852,7 +852,7 @@ class DatasetController extends Controller
             }
         );
 
-        $response->headers->set('Content-Type', 'text\csv');
+        $response->headers->set('Content-Type', 'text/csv');
         $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
         $response->headers->set('Cache-Control','max-age=0');
         
