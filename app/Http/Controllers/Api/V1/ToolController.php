@@ -499,12 +499,9 @@ class ToolController extends Controller
                 $tagsDescription[] = $t['description'];
             }
 
-            $category = Category::where('id', $input['category_id'])->first()->toArray();
-
             $toIndex = [
                 'name' => $input['name'],
                 'description' => $input['description'],
-                'category' => $category['name'],
                 'tags' => $tagsDescription
             ];
             $params = [
