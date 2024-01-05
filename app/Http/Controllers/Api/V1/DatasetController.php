@@ -159,28 +159,10 @@ class DatasetController extends Controller
             
             // For each of the initially found datasets matching previous
             // filters and refine further on textual based matches.
-
-            // LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) LIKE LOWER('%$filterTitle%')
-            //LOWER(REPLACE(SUBSTR(metadata, INSTR(metadata, '$.metadata.summary.title') + LENGTH('$.metadata.summary.title')+1), '\"', ''))
-            //SUBSTR(metadata, INSTR(metadata, '\"title\":') + LENGTH('\"title\":')+1)
-
-            $test = DatasetVersion::selectRaw(
-                    "
-                    JSON_EXTRACT(metadata,'$.metadata')
-                    ")->first();
-
-            return response()->json(
-                $test
-            );
-
-
             foreach ($matches as $m) {
                 $version = DatasetVersion::where('dataset_id', $m)
-                ->whereRaw(
-                    "
-                    LOWER(REPLACE(SUBSTR(metadata, INSTR(metadata, '$.metadata.summary.title') + LENGTH('$.metadata.summary.title')+1), '\"', ''))  LIKE LOWER('%$filterTitle%')
-                    "
-                )->latest('version')->select('dataset_id')->first();
+                ->filterTitle($filterTitle)
+                ->latest('version')->select('dataset_id')->first();
 
                 if ($version) {
                     $titleMatches[] = $version->dataset_id;

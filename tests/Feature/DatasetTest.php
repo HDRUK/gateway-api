@@ -280,8 +280,9 @@ class DatasetTest extends TestCase
             [], $this->header
         );
         
-        dd($response);
+        //dd($response);
         $response->assertStatus(200);
+        $this->assertCount(1,$response['data']);
 
         /* 
         * Sort so that the newest dataset is first in the list
