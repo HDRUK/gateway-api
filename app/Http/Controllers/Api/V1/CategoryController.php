@@ -42,7 +42,8 @@ class CategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $categories = Category::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        $perPage = request('perPage', Config::get('constants.per_page'));
+        $categories = Category::where('enabled', 1)->paginate($perPage);
         return response()->json(
             $categories
         );
@@ -92,17 +93,16 @@ class CategoryController extends Controller
      */
     public function show(Request $request, int $id): JsonResponse
     {
-        $category = Category::findOrFail($id);
-        if ($category) {
+        try {
+            $category = Category::where(['id' => $id,])->get();
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $category,
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**

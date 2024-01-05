@@ -103,11 +103,13 @@ class CategoryTest extends TestCase
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
-                    'id',
-                    'created_at',
-                    'updated_at',
-                    'name',
-                    'enabled',
+                    0 => [
+                        'id',
+                        'created_at',
+                        'updated_at',
+                        'name',
+                        'enabled',
+                    ]
                 ],
             ]);
 
