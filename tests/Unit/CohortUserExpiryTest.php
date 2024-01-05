@@ -6,17 +6,21 @@ use Tests\TestCase;
 
 use App\Models\Permission;
 use App\Models\CohortRequest;
-use App\Models\CohortRequestHasPermission;
-
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\MinimalUserSeeder;
-
 use Illuminate\Support\Carbon;
+use Database\Seeders\EmailTemplatesSeeder;
+use Tests\Traits\MockExternalApis;
+use Database\Seeders\PermissionSeeder;
+
+use Database\Seeders\MinimalUserSeeder;
+use App\Models\CohortRequestHasPermission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CohortUserExpiryTest extends TestCase
 {
     use RefreshDatabase;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public function setUp(): void
     {
@@ -25,6 +29,7 @@ class CohortUserExpiryTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             PermissionSeeder::class,
+            EmailTemplatesSeeder::class,
         ]);
     }
 
@@ -42,6 +47,10 @@ class CohortUserExpiryTest extends TestCase
             'request_expire_at' => null,
             'created_at' => Carbon::now()->subDays(181),
         ]);
+
+        $cr = CohortRequest::find($req->id);
+        $cr->updated_at = Carbon::now()->subDays(181);
+        $cr->save();
 
         $perms = Permission::where([
             'application' => 'cohort',
@@ -82,6 +91,9 @@ class CohortUserExpiryTest extends TestCase
             'request_expire_at' => null,
             'created_at' => Carbon::now()->subDays(100),
         ]);
+        $cr = CohortRequest::find($req->id);
+        $cr->updated_at = Carbon::now()->subDays(100);
+        $cr->save();
 
         $perms = Permission::where([
             'application' => 'cohort',

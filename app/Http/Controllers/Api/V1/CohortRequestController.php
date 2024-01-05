@@ -336,6 +336,7 @@ class CohortRequestController extends Controller
                     'user_id' => $jwtUser['id'],
                     'request_status' => 'PENDING',
                     'cohort_status' => false,
+                    'created_at' => Carbon::now(),
                 ]);
             }
 
