@@ -66,7 +66,6 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'preferred_email' => UserPreferredEmail::class,
         'terms' => 'boolean',
     ];
 

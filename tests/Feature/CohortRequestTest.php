@@ -8,8 +8,10 @@ use App\Models\CohortRequest;
 use Tests\Traits\Authorization;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\SectorSeeder;
+use Tests\Traits\MockExternalApis;
 use Database\Seeders\CohortRequestSeed;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -17,6 +19,9 @@ class CohortRequestTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL = '/api/v1/cohort_requests';
 
@@ -35,6 +40,7 @@ class CohortRequestTest extends TestCase
             MinimalUserSeeder::class,
             SectorSeeder::class,
             CohortRequestSeed::class,
+            EmailTemplatesSeeder::class,
         ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
