@@ -750,7 +750,9 @@ class CohortRequestController extends Controller
                 '[[COHORT_DISCOVERY_RENEW_URL]]' => Config::get('cohort.cohort_discovery_renew_url'),
             ];
 
-            SendEmailJob::dispatch($to, $template, $replacements);
+            if ($template) {
+                SendEmailJob::dispatch($to, $template, $replacements);
+            }
 
         } catch (Exception $exception) {
             throw new Exception("Cohort Request send email :: " . $exception->getMessage());

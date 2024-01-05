@@ -8,6 +8,7 @@ use App\Models\CohortRequest;
 use Tests\Traits\Authorization;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\SectorSeeder;
+use Database\Seeders\EmailTemplateSeeder;
 use Database\Seeders\CohortRequestSeed;
 use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -35,6 +36,7 @@ class CohortRequestTest extends TestCase
             MinimalUserSeeder::class,
             SectorSeeder::class,
             CohortRequestSeed::class,
+            EmailTemplateSeeder::class,
         ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
