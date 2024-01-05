@@ -715,15 +715,6 @@ class DatasetController extends Controller
                     $previousDatasetStatus = $datasetModel->status;
                     $datasetModel->status = $request['status'];
                     $datasetModel->save();
-
-                    if (($previousDatasetStatus === Dataset::STATUS_DRAFT) && 
-                        ($request['status'] === Dataset::STATUS_ACTIVE))
-                    {
-                        MMC::reindexElastic(
-                            $metadata['metadata'],
-                            $id
-                        );
-                    }
                 } else {
                     throw new Exception('unknown status type');
                 }
