@@ -63,7 +63,7 @@ class DatasetVersion extends Model
      * Scope a query to filter on metadata summary title
      *
      * @param Builder $query
-     * @param string $value
+     * @param string $filterTitle
      * @return Builder
      */
     public function scopeFilterTitle(Builder $query, string $filterTitle): Builder
