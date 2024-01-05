@@ -700,6 +700,34 @@ class DatasetController extends Controller
                     }
                 }
             } else {
+                $datasetModel = Dataset::where(['id' => $id])
+                    ->first();
+
+                if ($datasetModel['status'] === Dataset::STATUS_ARCHIVED) {
+                    return response()->json([
+                        'message' => 'status of an archived Dataset cannot be modified',
+                    ], 400);
+                }
+
+                if (in_array($request['status'], [
+                    Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT
+                ])) {
+                    $previousDatasetStatus = $datasetModel->status;
+                    $datasetModel->status = $request['status'];
+                    $datasetModel->save();
+
+                    if (($previousDatasetStatus === Dataset::STATUS_DRAFT) && 
+                        ($request['status'] === Dataset::STATUS_ACTIVE))
+                    {
+                        MMC::reindexElastic(
+                            $metadata['metadata'],
+                            $id
+                        );
+                    }
+                } else {
+                    throw new Exception('unknown status type');
+                }
+
                 // TODO remaining edit steps e.g. if dataset appears in the request 
                 // body validate, translate if needed, update Mauro data model, etc.   
             }

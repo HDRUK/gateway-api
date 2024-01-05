@@ -290,6 +290,34 @@ class DatasetVersionTest extends TestCase
             'Updated Metadata Title 123'
         );
 
+        // assert that changing the status does not create a new version
+        $responseChangeStatusDataset = $this->json(
+            'PATCH',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            [
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header
+        );
+
+        $responseChangeStatusDataset->assertStatus(200);
+        
+        $version = DatasetVersion::where('dataset_id', $datasetId)->get();
+
+        $this->assertTrue((count($version)) === 2);
+        
+        $this->assertEquals($version[0]->version, 1);
+        $this->assertEquals($version[1]->version, 2);
+
+        $this->assertEquals(
+            $version[0]->metadata['metadata']['summary']['title'],
+            $this->metadata['metadata']['summary']['title']
+        );
+        $this->assertEquals(
+            $version[1]->metadata['metadata']['summary']['title'],
+            'Updated Metadata Title 123'
+        );
+
         $responseDeleteDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
