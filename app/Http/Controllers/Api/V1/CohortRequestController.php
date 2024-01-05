@@ -499,7 +499,7 @@ class CohortRequestController extends Controller
             }
 
             $this->sendEmail($id);
-            
+ 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => CohortRequest::where('id', $id)->first()
