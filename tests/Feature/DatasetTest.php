@@ -275,10 +275,12 @@ class DatasetTest extends TestCase
         /* 
         * Test filtering by dataset title being ABC (datasetAlt)
         */
-        $response = $this->json('GET', self::TEST_URL_DATASET . 
+        $response = $this->json('GET', self::TEST_URL_DATASET .
             '?title=ABC',
             [], $this->header
         );
+        
+        dd($response);
         $response->assertStatus(200);
 
         /* 
