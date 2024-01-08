@@ -6,6 +6,8 @@ use Config;
 use ReflectionClass;
 
 use Tests\TestCase;
+use Tests\Traits\MockExternalApis;
+use Database\Seeders\CategorySeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ToolSeeder;
 use Database\Seeders\TagSeeder;
@@ -22,6 +24,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class ToolIntegrationTest extends TestCase
 {
     use RefreshDatabase;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL = '/api/v1/integrations/tools';
 
@@ -36,10 +41,11 @@ class ToolIntegrationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
+            CategorySeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
             ApplicationSeeder::class,
@@ -148,6 +154,7 @@ class ToolIntegrationTest extends TestCase
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
             "license" => "Inventore omnis aut laudantium vel alias.",
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
             "enabled" => 1,
@@ -220,6 +227,7 @@ class ToolIntegrationTest extends TestCase
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
             "license" => "Inventore omnis aut laudantium vel alias.",
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1),
             "enabled" => 1,
@@ -256,6 +264,7 @@ class ToolIntegrationTest extends TestCase
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
             "license" => "Modi tenetur et et perferendis.",
             "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
             "enabled" => 1,
@@ -304,6 +313,7 @@ class ToolIntegrationTest extends TestCase
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
             "license" => "Inventore omnis aut laudantium vel alias.",
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1),
             "enabled" => 1,
@@ -340,6 +350,7 @@ class ToolIntegrationTest extends TestCase
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
             "license" => "Modi tenetur et et perferendis.",
             "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
             "enabled" => 1,
@@ -363,6 +374,7 @@ class ToolIntegrationTest extends TestCase
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
         $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
+        $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
         $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
         $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
 
@@ -433,6 +445,7 @@ class ToolIntegrationTest extends TestCase
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
             "license" => "Inventore omnis aut laudantium vel alias.",
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
             "enabled" => 1,
