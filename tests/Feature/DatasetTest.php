@@ -690,6 +690,20 @@ class DatasetTest extends TestCase
         ]);
         $responseUnarchiveDataset->assertStatus(200);
 
+        // change dataset status
+        $responseChangeStatusDataset = $this->json(
+            'PATCH',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            [
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header
+        );
+        $responseChangeStatusDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseChangeStatusDataset->assertStatus(200);
+
         // permanent delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
