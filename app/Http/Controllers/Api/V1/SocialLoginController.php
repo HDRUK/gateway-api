@@ -50,6 +50,17 @@ class SocialLoginController extends Controller
      *          description="provider",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="redirect",
+     *       in="redirect",
+     *       description="url to redirect to",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="redirect",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response=302,
      *       description="redirect to main page",
@@ -71,8 +82,14 @@ class SocialLoginController extends Controller
         if ($provider === 'linkedin') {
             $provider = 'linkedin-openid';
         }
+        $redirectUrl = env('GATEWAY_URL');
+        if($request->has("redirect")){
+            $redirectUrl = $redirectUrl . $request->query('redirect');
+        }
 
-        return Socialite::driver($provider)->redirect();
+        session(['redirectUrl' => $redirectUrl]);
+        return Socialite::driver($provider)
+                ->redirect();
     }
 
     /**
@@ -116,7 +133,6 @@ class SocialLoginController extends Controller
             if ($provider === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
-
             $socialUser = Socialite::driver($provider)->user();
 
             $socialUserDetails = [];
@@ -150,7 +166,8 @@ class SocialLoginController extends Controller
             $cookies = [
                 Cookie::make('token', $jwt),
             ];
-            return redirect()->away(env('GATEWAY_URL'))->withCookies($cookies);
+            $redirectUrl = session('redirectUrl');
+            return redirect()->away($redirectUrl)->withCookies($cookies);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
