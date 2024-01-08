@@ -2397,4 +2397,83 @@ return [
         'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
+
+    // keywords
+    [
+        'name' => 'keywords.get',
+        'method' => 'get',
+        'path' => '/keywords',
+        'methodController' => 'KeywordController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'keywords.get.id',
+        'method' => 'get',
+        'path' => '/keywords/{id}',
+        'methodController' => 'KeywordController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'keywords.post',
+        'method' => 'post',
+        'path' => '/keywords',
+        'methodController' => 'KeywordController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'keywords.put.id',
+        'method' => 'put',
+        'path' => '/keywords/{id}',
+        'methodController' => 'KeywordController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'keywords.patch.id',
+        'method' => 'patch',
+        'path' => '/keywords/{id}',
+        'methodController' => 'KeywordController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'keywords.delete.id',
+        'method' => 'delete',
+        'path' => '/keywords/{id}',
+        'methodController' => 'KeywordController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
 ];

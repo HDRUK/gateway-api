@@ -1445,3 +1445,56 @@ DELETE {{baseUrl}}/api/{{apiVersion}}/cohort_requests/24 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+### Keywords
+#### get all
+# GET {{baseUrl}}/api/{{apiVersion}}/keywords?perPage=5 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/keywords HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get by id
+GET {{baseUrl}}/api/{{apiVersion}}/keywords/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create resource
+POST {{baseUrl}}/api/{{apiVersion}}/keywords HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Ducimus suscipit",
+    "enabled": 1
+}
+
+#### update resource
+PUT {{baseUrl}}/api/{{apiVersion}}/keywords/55 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Ducimus suscipit update",
+    "enabled": 0
+}
+
+#### edit resource
+PATCH {{baseUrl}}/api/{{apiVersion}}/keywords/55 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "enabled": 1
+}
+
+#### delete resource
+DELETE {{baseUrl}}/api/{{apiVersion}}/keywords/55 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+
