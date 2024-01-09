@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
+use App\Jobs\TermExtraction;
 use App\Models\DatasetHasNamedEntities;
 use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
@@ -491,6 +492,13 @@ class DatasetController extends Controller
                     'metadata' => json_encode($input['metadata']),
                     'version' => 1,
                 ]);
+
+                // Dispatch term extraction to a subprocess as it may take some time
+                TermExtraction::dispatch(
+                    $dataset->id,
+                    $input['metadata'],
+                    false
+                );
 
                 return response()->json([
                     'message' => 'created',
