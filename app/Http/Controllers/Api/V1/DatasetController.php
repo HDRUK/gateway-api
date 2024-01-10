@@ -700,6 +700,25 @@ class DatasetController extends Controller
                     }
                 }
             } else {
+                $datasetModel = Dataset::where(['id' => $id])
+                    ->first();
+
+                if ($datasetModel['status'] === Dataset::STATUS_ARCHIVED) {
+                    return response()->json([
+                        'message' => 'status of an archived Dataset cannot be modified',
+                    ], 400);
+                }
+
+                if (in_array($request['status'], [
+                    Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT
+                ])) {
+                    $previousDatasetStatus = $datasetModel->status;
+                    $datasetModel->status = $request['status'];
+                    $datasetModel->save();
+                } else {
+                    throw new Exception('unknown status type');
+                }
+
                 // TODO remaining edit steps e.g. if dataset appears in the request 
                 // body validate, translate if needed, update Mauro data model, etc.   
             }
@@ -852,7 +871,7 @@ class DatasetController extends Controller
             }
         );
 
-        $response->headers->set('Content-Type', 'text\csv');
+        $response->headers->set('Content-Type', 'text/csv');
         $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
         $response->headers->set('Cache-Control','max-age=0');
         

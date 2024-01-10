@@ -56,6 +56,8 @@ class DatabaseSeeder extends Seeder
             KeywordSeeder::class,
             CollectionHasKeywordSeeder::class,
             CollectionHasDatasetSeeder::class,
+            SavedSearchSeeder::class,
+            SavedSearchHasFilterSeeder::class,
         ]);
     }
 }

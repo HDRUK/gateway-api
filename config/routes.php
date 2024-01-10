@@ -2395,6 +2395,164 @@ return [
         'constraint' => [],
     ],
 
+// categories
+    [
+        'name' => 'categories',
+        'method' => 'get',
+        'path' => '/categories',
+        'methodController' => 'CategoryController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'categories',
+        'method' => 'get',
+        'path' => '/categories/{id}',
+        'methodController' => 'CategoryController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'categories',
+        'method' => 'post',
+        'path' => '/categories',
+        'methodController' => 'CategoryController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'categories',
+        'method' => 'put',
+        'path' => '/categories/{id}',
+        'methodController' => 'CategoryController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'categories',
+        'method' => 'patch',
+        'path' => '/categories/{id}',
+        'methodController' => 'CategoryController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'categories',
+        'method' => 'delete',
+        'path' => '/categories/{id}',
+        'methodController' => 'CategoryController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // saved searches
+    [
+        'name' => 'saved_searches',
+        'method' => 'get',
+        'path' => '/saved_searches',
+        'methodController' => 'SavedSearchController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'saved_searches',
+        'method' => 'get',
+        'path' => '/saved_searches/{id}',
+        'methodController' => 'SavedSearchController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'saved_searches',
+        'method' => 'post',
+        'path' => '/saved_searches',
+        'methodController' => 'SavedSearchController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'saved_searches',
+        'method' => 'put',
+        'path' => '/saved_searches/{id}',
+        'methodController' => 'SavedSearchController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'saved_searches',
+        'method' => 'patch',
+        'path' => '/saved_searches/{id}',
+        'methodController' => 'SavedSearchController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'saved_searches',
+        'method' => 'delete',
+        'path' => '/saved_searches/{id}',
+        'methodController' => 'SavedSearchController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // keywords
     [
         'name' => 'keywords.get',
