@@ -16,7 +16,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
             $table->string('name', 255);
-            $table->string('search_term', 255);
+            $table->text('search_term', 255);
             $table->boolean('enabled');
         });
     }

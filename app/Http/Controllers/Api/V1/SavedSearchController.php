@@ -24,6 +24,12 @@ class SavedSearchController extends Controller
      *      tags={"SavedSearch"},
      *      summary="SavedSearch@index",
      *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *          name="perPage",
+     *          in="query",
+     *          description="Specify number of results per page",
+     *          @OA\Schema(type="integer")
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
