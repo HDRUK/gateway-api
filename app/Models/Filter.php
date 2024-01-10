@@ -74,7 +74,7 @@ class Filter extends Model
     /**
      * The saved searches that belong to the filter.
      */
-    public function saved_searches(): BelongsToMany
+    public function savedSearches(): BelongsToMany
     {
         return $this->belongsToMany(SavedSearch::class, 'saved_search_has_filters');
     }
