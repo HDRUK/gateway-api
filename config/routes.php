@@ -2476,4 +2476,83 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // saved searches
+    [
+        'name' => 'saved_searches',
+        'method' => 'get',
+        'path' => '/saved_searches',
+        'methodController' => 'SavedSearchController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'saved_searches',
+        'method' => 'get',
+        'path' => '/saved_searches/{id}',
+        'methodController' => 'SavedSearchController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'saved_searches',
+        'method' => 'post',
+        'path' => '/saved_searches',
+        'methodController' => 'SavedSearchController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'saved_searches',
+        'method' => 'put',
+        'path' => '/saved_searches/{id}',
+        'methodController' => 'SavedSearchController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'saved_searches',
+        'method' => 'patch',
+        'path' => '/saved_searches/{id}',
+        'methodController' => 'SavedSearchController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'saved_searches',
+        'method' => 'delete',
+        'path' => '/saved_searches/{id}',
+        'methodController' => 'SavedSearchController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
