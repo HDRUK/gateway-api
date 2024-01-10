@@ -244,10 +244,10 @@ class CollectionController extends Controller
             $collection = Collection::create($array);
 
             $datasets = $input['datasets'];
-            $this->datasets($datasets, $collection->id, $userId, $appId);
+            $this->addDatasets($datasets, $collection->id, $userId, $appId);
 
             $keywords = $input['keywords'];
-            $this->keywords($keywords, $collection->id);
+            $this->addKeywords($keywords, $collection->id);
 
             return response()->json([
                 'message' => 'created',
@@ -357,11 +357,11 @@ class CollectionController extends Controller
 
             $datasets = $input['datasets'];
             $this->clearDatasets($datasets, $id);
-            $this->datasets($datasets, $id, $userId, $appId);
+            $this->addDatasets($datasets, $id, $userId, $appId);
 
             $keywords = $input['keywords'];
             $this->clearKeywords($keywords, $id);
-            $this->keywords($keywords, $id);
+            $this->addKeywords($keywords, $id);
 
             return response()->json([
                 'message' => 'success',
@@ -481,13 +481,13 @@ class CollectionController extends Controller
             if (array_key_exists('datasets', $input)) {
                 $datasets = $input['datasets'];
                 $this->clearDatasets($datasets, $id);
-                $this->datasets($datasets, $id, $userId, $appId);
+                $this->addDatasets($datasets, $id, $userId, $appId);
             }
 
             if (array_key_exists('keywords', $input)) {
                 $keywords = $input['keywords'];
                 $this->clearKeywords($keywords, $id);
-                $this->keywords($keywords, $id);
+                $this->addKeywords($keywords, $id);
             }
 
             return response()->json([
@@ -565,7 +565,7 @@ class CollectionController extends Controller
         }
     }
 
-    private function datasets(array $datasets, int $collectionId, $userId, $appId)
+    private function addDatasets(array $datasets, int $collectionId, $userId, $appId)
     {
         try {
             foreach ($datasets as $dataset) {
@@ -588,7 +588,7 @@ class CollectionController extends Controller
         }
     }
 
-    private function keywords(array $keywords, int $collectionId)
+    private function addKeywords(array $keywords, int $collectionId)
     {
         try {
             foreach ($keywords as $keyword) {
