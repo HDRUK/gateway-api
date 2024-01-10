@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
+use App\Exceptions\NotFoundException;
+use App\Http\Controllers\Controller;
+use App\Http\Traits\RequestTransformation;
 use App\Models\SavedSearch;
 use App\Models\SavedSearchHasFilter;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
-use App\Http\Traits\RequestTransformation;
 
 class SavedSearchController extends Controller
 {
