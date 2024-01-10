@@ -1296,7 +1296,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
+            // 'sanitize.input',
             'check.access:permissions,collections.create',
         ],
         'constraint' => [],
@@ -1379,7 +1379,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -1391,7 +1390,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1405,7 +1403,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
