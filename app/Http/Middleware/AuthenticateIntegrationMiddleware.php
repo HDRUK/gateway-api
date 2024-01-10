@@ -34,6 +34,7 @@ class AuthenticateIntegrationMiddleware
         # Check that the app id is in the app table
         $appId = $request['app_id'];
         $app = Application::where('app_id', $appId)->first();
+        $userId = $app->user_id;
         if (!$app) {
             throw new NotFoundException('App not found.');
         }
@@ -47,6 +48,14 @@ class AuthenticateIntegrationMiddleware
         ) {
             throw new UnauthorizedException();
         }
+
+        $request->merge(
+            [
+                'app' => [
+                    'id' => (int) $appId,
+                ]
+            ]
+        );
 
         # Otherwise, it's all successful, so pass the request on
         return $next($request);

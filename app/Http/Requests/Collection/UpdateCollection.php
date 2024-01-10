@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Collection;
 
+use App\Models\Keyword;
 use App\Models\Collection;
 use App\Http\Requests\BaseFormRequest;
 
@@ -45,17 +46,45 @@ class UpdateCollection extends BaseFormRequest
                 'required',
                 'boolean',
             ],
-            'keywords' => [
-                'string',
-                'required',
-            ],
             'public' => [
                 'required',
                 'boolean',
             ],
-            'counter' => [
+            'datasets' => [
+                'array',
+            ],
+            'datasets.*'  => [
                 'integer',
-                'required',
+                'distinct',
+                'exists:datasets,id',
+            ],
+            'keywords' => [
+                'array',
+            ],
+            'keywords.*' => [
+                'string',
+                'distinct',
+                function ($attribute, $value, $fail) {
+                    $keywords = Keyword::where(['name' => $value, 'enabled' => 1])->first();
+
+                    if (!$keywords) {
+                        $fail('The selected keyword is invalid, not found. - ' . $value);
+                    }
+                }
+            ],
+            'userId' => [
+                'integer',
+                'exists:users,id',
+            ],
+            'counter' => [
+                'integer'
+            ],
+            'mongo_id' => [
+                'integer',
+            ],
+            'mongo_object_id' => [
+                'nullable',
+                'string',
             ],
         ];
     }

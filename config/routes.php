@@ -1296,7 +1296,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
+            // 'sanitize.input',
             'check.access:permissions,collections.create',
         ],
         'constraint' => [],
@@ -1379,7 +1379,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
-            'sanitize.input',
         ],
         'constraint' => [],
     ],
@@ -1391,7 +1390,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1405,7 +1403,6 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
-            'sanitize.input',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2398,7 +2395,7 @@ return [
         'constraint' => [],
     ],
 
-    // categories
+// categories
     [
         'name' => 'categories',
         'method' => 'get',
@@ -2555,4 +2552,83 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // keywords
+    [
+        'name' => 'keywords.get',
+        'method' => 'get',
+        'path' => '/keywords',
+        'methodController' => 'KeywordController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'keywords.get.id',
+        'method' => 'get',
+        'path' => '/keywords/{id}',
+        'methodController' => 'KeywordController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'keywords.post',
+        'method' => 'post',
+        'path' => '/keywords',
+        'methodController' => 'KeywordController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'keywords.put.id',
+        'method' => 'put',
+        'path' => '/keywords/{id}',
+        'methodController' => 'KeywordController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'keywords.patch.id',
+        'method' => 'patch',
+        'path' => '/keywords/{id}',
+        'methodController' => 'KeywordController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'keywords.delete.id',
+        'method' => 'delete',
+        'path' => '/keywords/{id}',
+        'methodController' => 'KeywordController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
 ];

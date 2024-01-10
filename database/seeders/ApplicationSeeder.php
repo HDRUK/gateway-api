@@ -15,7 +15,7 @@ class ApplicationSeeder extends Seeder
      */
     public function run(): void
     {
-        Application::factory(50)->create();
+        Application::factory(10)->create();
 
         $applications = Application::all();
         
