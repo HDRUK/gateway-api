@@ -647,5 +647,4 @@ class CollectionController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
 }
