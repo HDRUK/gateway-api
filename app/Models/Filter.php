@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\SavedSearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Filter extends Model
 {
@@ -68,5 +70,13 @@ class Filter extends Model
      * @var bool
      */
     private $enabled = false;
+
+    /**
+     * The saved searches that belong to the filter.
+     */
+    public function saved_searches(): BelongsToMany
+    {
+        return $this->belongsToMany(SavedSearch::class, 'saved_search_has_filters');
+    }
 
 }
