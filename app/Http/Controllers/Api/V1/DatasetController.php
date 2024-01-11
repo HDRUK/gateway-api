@@ -175,6 +175,8 @@ class DatasetController extends Controller
             $matches = array_intersect($matches, $titleMatches);            
         }
 
+        $perPage = request('per_page', Config::get('constants.per_page'));
+
         // perform query for the matching datasets with ordering and pagination
         // - versions should be ordered so the latest version appears first
         $datasets = Dataset::with([
@@ -191,7 +193,7 @@ class DatasetController extends Controller
                     function ($query) use ($sortField, $sortDirection) {
                         return $query->orderBy($sortField, $sortDirection);
                     })
-            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            ->paginate($perPage, ['*'], 'page');
 
         return response()->json(
             $datasets
@@ -395,6 +397,10 @@ class DatasetController extends Controller
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
+     *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
+     *             @OA\Property(property="mongo_id", type="string", example="456"),
+     *             @OA\Property(property="mongo_pid", type="string", example="def789"),
+     *             @OA\Property(property="datasetid", type="string", example="xyz1011"),
      *             @OA\Property(property="metadata", type="array", @OA\Items())
      *          )
      *       )
@@ -455,9 +461,18 @@ class DatasetController extends Controller
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
                 $input['metadata']['metadata'] = $traserResponse['metadata'];
 
+                $mongo_object_id = array_key_exists('mongo_object_id', $input) ? $input['mongo_object_id'] : null;
+                $mongo_id = array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null;
+                $mongo_pid = array_key_exists('mongo_pid', $input) ? $input['mongo_pid'] : null;
+                $datasetid = array_key_exists('datasetid', $input) ? $input['datasetid'] : null;
+
                 $dataset = MMC::createDataset([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
+                    'mongo_object_id' => $mongo_object_id,
+                    'mongo_id' => $mongo_id,
+                    'mongo_pid' => $mongo_pid,
+                    'datasetid' => $datasetid,
                     'created' => now(),
                     'updated' => now(),
                     'submitted' => now(),
