@@ -178,13 +178,7 @@ class DatasetController extends Controller
         $perPage = request('per_page', Config::get('constants.per_page'));
 
         // perform query for the matching datasets with ordering and pagination
-        // - versions should be ordered so the latest version appears first
-        $datasets = Dataset::with([
-                'versions' => function ($query) {
-                        $query->orderBy('version', 'desc');
-                    }
-            ])
-            ->whereIn('id', $matches)
+        $datasets = Dataset::with('versions')->whereIn('id', $matches)
             ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                 function ($query) {
                     return $query->withTrashed();
@@ -610,8 +604,11 @@ class DatasetController extends Controller
                 $input['metadata']['metadata']['required']['modified'] = $updateTime;
 
                 //update the GWDM revisions
+                // NOTE: Calum 12/1/24
+                //       - url set with a placeholder right now, should be revised before production
+                //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $input['metadata']['metadata']['required']['revisions'][] = [
-                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$lastVersionNumber, //NOTE: this will need to be fixed/updated
+                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$lastVersionNumber, 
                     "version"=>$lastVersionNumber
                 ];
 
