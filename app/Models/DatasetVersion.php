@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -57,4 +58,20 @@ class DatasetVersion extends Model
 
         return json_decode(json_decode($normalised, true), true);
     }
+
+     /**
+     * Scope a query to filter on metadata summary title
+     *
+     * @param Builder $query
+     * @param string $filterTitle
+     * @return Builder
+     */
+    public function scopeFilterTitle(Builder $query, string $filterTitle): Builder
+    {
+        return $query->whereRaw(
+            "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) LIKE LOWER(?)",
+            ["%$filterTitle%"]
+        );
+    }
+
 }

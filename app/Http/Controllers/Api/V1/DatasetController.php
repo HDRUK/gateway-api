@@ -161,11 +161,8 @@ class DatasetController extends Controller
             // filters and refine further on textual based matches.
             foreach ($matches as $m) {
                 $version = DatasetVersion::where('dataset_id', $m)
-                ->whereRaw(
-                    "
-                    LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$filterTitle%')
-                    "
-                )->latest('version')->select('dataset_id')->first();
+                ->filterTitle($filterTitle)
+                ->latest('version')->select('dataset_id')->first();
 
                 if ($version) {
                     $titleMatches[] = $version->dataset_id;
@@ -178,6 +175,8 @@ class DatasetController extends Controller
             $matches = array_intersect($matches, $titleMatches);            
         }
 
+        $perPage = request('per_page', Config::get('constants.per_page'));
+
         // perform query for the matching datasets with ordering and pagination
         $datasets = Dataset::with('versions')->whereIn('id', $matches)
             ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
@@ -188,7 +187,7 @@ class DatasetController extends Controller
                     function ($query) use ($sortField, $sortDirection) {
                         return $query->orderBy($sortField, $sortDirection);
                     })
-            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            ->paginate($perPage, ['*'], 'page');
 
         return response()->json(
             $datasets
@@ -392,6 +391,10 @@ class DatasetController extends Controller
      *             @OA\Property(property="team_id", type="integer", example="1"),
      *             @OA\Property(property="user_id", type="integer", example="3"),
      *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
+     *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
+     *             @OA\Property(property="mongo_id", type="string", example="456"),
+     *             @OA\Property(property="mongo_pid", type="string", example="def789"),
+     *             @OA\Property(property="datasetid", type="string", example="xyz1011"),
      *             @OA\Property(property="metadata", type="array", @OA\Items())
      *          )
      *       )
@@ -423,10 +426,7 @@ class DatasetController extends Controller
     public function store(CreateDataset $request): JsonResponse
     {
         try {
-            $mauro = null;
             $input = $request->all();
-
-            $user = User::where('id', (int) $input['user_id'])->first()->toArray();
             $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
 
             //send the payload to traser
@@ -435,8 +435,18 @@ class DatasetController extends Controller
             // - if it is not, traser will try to work out what the metadata is
             //   and translate it into the GWDM
             // - otherwise traser will return a non-200 error 
+
+            $payload = $input['metadata'];
+            $payload['extra'] = [
+                "id"=>"placeholder",
+                "pid"=>"placeholder",
+                "datasetType"=>"Healthdata",
+                "publisherId"=>$team['id'],
+                "publisherName"=>$team['name'],
+            ];
+
             $traserResponse = MMC::translateDataModelType(
-                json_encode($input['metadata']),
+                json_encode($payload),
                 env('GWDM'),
                 env('GWDM_CURRENT_VERSION')
             );
@@ -445,9 +455,18 @@ class DatasetController extends Controller
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
                 $input['metadata']['metadata'] = $traserResponse['metadata'];
 
+                $mongo_object_id = array_key_exists('mongo_object_id', $input) ? $input['mongo_object_id'] : null;
+                $mongo_id = array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null;
+                $mongo_pid = array_key_exists('mongo_pid', $input) ? $input['mongo_pid'] : null;
+                $datasetid = array_key_exists('datasetid', $input) ? $input['datasetid'] : null;
+
                 $dataset = MMC::createDataset([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
+                    'mongo_object_id' => $mongo_object_id,
+                    'mongo_id' => $mongo_id,
+                    'mongo_pid' => $mongo_pid,
+                    'datasetid' => $datasetid,
                     'created' => now(),
                     'updated' => now(),
                     'submitted' => now(),
@@ -455,6 +474,17 @@ class DatasetController extends Controller
                     'create_origin' => $input['create_origin'],
                     'status' => $input['status'],
                 ]);
+
+                //create a new 'required' section for the metadata to be saved
+                // - otherwise this section is filled with placeholders by all translations to GWDM
+                $required = [
+                    'gatewayId' => $dataset->id,
+                    'gatewayPid' => $dataset->pid,
+                    'issued' => $dataset->created,
+                    'modified' => $dataset->updated,
+                    'revisions' => [],
+                ];
+                $input['metadata']['metadata']['required'] = $required;
 
                 $version = MMC::createDatasetVersion([
                     'dataset_id' => $dataset->id,
@@ -545,20 +575,23 @@ class DatasetController extends Controller
             $currDataset = Dataset::where('id', $id)->first();
             $currentPid = $currDataset->pid;
 
-            // First validate the incoming schema to ensure it's in GWDM format
-            // if not, attempt to translate prior to saving
-            $validateDataModelType = MMC::validateDataModelType(
+
+            $traserResponse = MMC::translateDataModelType(
                 json_encode($input['metadata']),
                 env('GWDM'),
                 env('GWDM_CURRENT_VERSION')
             );
 
-            if ($validateDataModelType) {
+            if ($traserResponse['wasTranslated']) {
+                $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
+                $input['metadata']['metadata'] = $traserResponse['metadata'];
+
                 // Update the existing dataset parent record with incoming data
+                $updateTime = now();
                 $updatedDataset = $currDataset->update([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
-                    'updated' => now(),
+                    'updated' => $updateTime,
                     'pid' => $currentPid,
                     'create_origin' => $input['create_origin'],
                     'status' => $input['status'],
@@ -566,7 +599,19 @@ class DatasetController extends Controller
 
                 // Determine the last version of metadata
                 $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
-                
+     
+                //update the GWDM modified date
+                $input['metadata']['metadata']['required']['modified'] = $updateTime;
+
+                //update the GWDM revisions
+                // NOTE: Calum 12/1/24
+                //       - url set with a placeholder right now, should be revised before production
+                //       - https://hdruk.atlassian.net/browse/GAT-3392
+                $input['metadata']['metadata']['required']['revisions'][] = [
+                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$lastVersionNumber, 
+                    "version"=>$lastVersionNumber
+                ];
+
                 // Create new metadata version for this dataset
                 $version = DatasetVersion::create([
                     'dataset_id' => $currDataset->id,
@@ -580,56 +625,13 @@ class DatasetController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                     'data' => Dataset::with('versions')->where('id', '=', $currDataset->id)->first(),
                 ], Config::get('statuscodes.STATUS_OK.code'));
-            } else {
-                // Incoming dataset is not in GWDM format, so at this point we
-                // need to translate it
-                $response = MMC::translateDataModelType(
-                    json_encode($input['metadata']),
-                    env('GWDM'),
-                    env('GWDM_CURRENT_VERSION'),
-                    env('HDRUK'),
-                    // TODO
-                    // 
-                    // The following is hardcoded for now - but needs to be
-                    // more intelligent in the future. Need a solution for
-                    // not working on assumptions. Theoretically, we can 
-                    // use the incoming version, but needs confirmation
-                    '2.1.2'
-                );
-
-                if (!empty($response)) {
-                    $currDataset->update([
-                        'user_id' => $input['user_id'],
-                        'team_id' => $input['team_id'],
-                        'updated' => now(),
-                        'pid' => $currentPid,
-                        'create_origin' => $input['create_origin'],
-                        'status' => $input['status'],
-                    ]);
-
-                    $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
-
-                    $version = DatasetVersion::create([
-                        'dataset_id' => $currDataset->id,
-                        'metadata' => json_encode($response),
-                        'version' => ($lastVersionNumber + 1),
-                    ]);
-
-                    MMC::reindexElastic(json_decode($input['metadata'], true), $currDataset->id);
-
-                    return response()->json([
-                        'message' => Config::get('statuscodes.STATUS_OK.message'),
-                        'data' => Dataset::where('id', '=', $currDataset->id)->first(),
-                    ], Config::get('statuscodes.STATUS_OK.code'));
-                }
-
-                // Fail
+            } 
+            else {
                 return response()->json([
                     'message' => 'metadata is in an unknown format and cannot be processed',
+                    'details' => $traserResponse,
                 ], 400);
             }
-
-            throw new NotFoundException('Mauro Data Mapper folder id for team ' . $input['team_id'] . ' not found');
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
