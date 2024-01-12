@@ -279,8 +279,12 @@ class DatasetTest extends TestCase
         
 
         /* NOTE -  Calum 5/1/2024
-            Test is currently turned off because the model is calling raw SQL function JSON_UNQUOTE
-            which is not known to SQLite and therefore the test will fail
+                Test is currently turned off because the model is calling raw SQL function JSON_UNQUOTE
+                which is not known to SQLite and therefore the test will fail
+           NOTE -  Calum 10/1/2024
+                Loki has been investigating this and coming up with a solution
+                There may be some other things not quite right due to sqlite/MySQL differences
+                This is know about and is being resolved... 
         */
         /*
         $response = $this->json('GET', self::TEST_URL_DATASET .
