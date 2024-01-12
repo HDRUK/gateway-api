@@ -524,7 +524,6 @@ class DatasetTest extends TestCase
         $responseGetOne->assertStatus(200);
         
         $respArray = $responseGetOne->decodeResponseJson();
-        dd($respArray);
         $this->assertArrayHasKey('named_entities', $respArray['data']);
         $this->assertNotEmpty($respArray['data']['named_entities']);
 

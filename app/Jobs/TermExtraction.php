@@ -40,21 +40,14 @@ class TermExtraction implements ShouldQueue
      */
     public function handle(): void
     {
-        $datasetModel = Dataset::where('datasetid', $this->datasetId)->first();
+        $datasetModel = Dataset::where('id', $this->datasetId)->first();
 
         $tedUrl = env('TED_SERVICE_URL');
         $tedEnabled = env('TED_ENABLED');
 
-        if (!empty($tedUrl) && $tedEnabled) {
-            $this->postToTermExtractionDirector(json_encode($this->data));
-        }
+        $this->postToTermExtractionDirector(json_encode($this->data['metadata']), $this->datasetId);
 
         MMC::reindexElastic($this->data, $this->datasetId);
-
-        // Jobs aren't garbage collected, so free up
-        // resources used before tear down
-        unset($this->datasetId);
-        unset($this->data);
     }
 
     /**
@@ -64,7 +57,7 @@ class TermExtraction implements ShouldQueue
      * 
      * @return void
      */
-    private function postToTermExtractionDirector(string $dataset): void
+    private function postToTermExtractionDirector(string $dataset, string $datasetId): void
     {
         try {
             $response = Http::withBody(
@@ -77,11 +70,8 @@ class TermExtraction implements ShouldQueue
                     $named_entities = NamedEntities::create([
                         'name' => $n,
                     ]);
-                    $datasetPrimary = Dataset::where('datasetid', $this->datasetId)
-                        ->first()
-                        ->id;
                     DatasetHasNamedEntities::updateOrCreate([
-                        'dataset_id' => $datasetPrimary,
+                        'dataset_id' => $datasetId,
                         'named_entities_id' => $named_entities->id
                     ]);
                 }

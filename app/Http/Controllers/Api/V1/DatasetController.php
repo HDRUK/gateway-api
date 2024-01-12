@@ -9,6 +9,7 @@ use App\Models\Team;
 
 use App\Models\User;
 use App\Models\Dataset;
+use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
@@ -18,13 +19,14 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Jobs\TermExtraction;
-use App\Models\DatasetHasNamedEntities;
 use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
 use App\Http\Requests\Dataset\EditDataset;
+
+use Illuminate\Support\Facades\Http;
 
 class DatasetController extends Controller
 {
@@ -496,8 +498,7 @@ class DatasetController extends Controller
                 // Dispatch term extraction to a subprocess as it may take some time
                 TermExtraction::dispatch(
                     $dataset->id,
-                    $input['metadata'],
-                    false
+                    $input['metadata']
                 );
 
                 return response()->json([
@@ -963,4 +964,5 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
 }
