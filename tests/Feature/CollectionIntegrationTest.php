@@ -3,13 +3,19 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\ApplicationSeeder;
-use Database\Seeders\CollectionSeeder;
+use App\Models\Dataset;
+use App\Models\Keyword;
+use App\Models\Collection;
 
 use App\Models\Application;
-use App\Models\Collection;
+use Database\Seeders\DatasetSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
+use Database\Seeders\KeywordSeeder;
+use Database\Seeders\CollectionSeeder;
+use Database\Seeders\ApplicationSeeder;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\CollectionHasKeywordSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CollectionIntegrationTest extends TestCase
@@ -33,7 +39,12 @@ class CollectionIntegrationTest extends TestCase
             MinimalUserSeeder::class,
             ApplicationSeeder::class,
             CollectionSeeder::class,
+            DatasetSeeder::class,
+            KeywordSeeder::class,
+            CollectionHasKeywordSeeder::class,
+            CollectionHasDatasetSeeder::class,
         ]);
+        // $this->seed();
         $this->header = [
             'Accept' => 'application/json',
         ];
@@ -49,7 +60,7 @@ class CollectionIntegrationTest extends TestCase
      * 
      * @return void
      */
-    public function test_get_all_collections_with_success(): void
+    public function test_get_all_integration_collections_with_success(): void
     {
         $countCollection = Collection::count();
         $response = $this->json('GET', self::TEST_URL, $this->body, $this->header);
@@ -63,12 +74,17 @@ class CollectionIntegrationTest extends TestCase
                     'description',
                     'image_link',
                     'enabled',
-                    'keywords',
                     'public',
                     'counter',
                     'created_at',
                     'updated_at',
                     'deleted_at',
+                    'datasets',
+                    'keywords',
+                    'users',
+                    'applications',
+                    'mongo_object_id',
+                    'mongo_id',
                 ],
             ],
             'current_page',
@@ -92,7 +108,7 @@ class CollectionIntegrationTest extends TestCase
      * 
      * @return void
      */
-    public function test_get_collection_by_id_with_success(): void
+    public function test_get_integration_collection_by_id_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL . '/1', $this->body, $this->header);
 
@@ -105,12 +121,17 @@ class CollectionIntegrationTest extends TestCase
                     'description',
                     'image_link',
                     'enabled',
-                    'keywords',
                     'public',
                     'counter',
                     'created_at',
                     'updated_at',
                     'deleted_at',
+                    'mongo_object_id',
+                    'mongo_id',
+                    'datasets',
+                    'keywords',
+                    'users',
+                    'applications',
                 ]
             ]
         ]);
@@ -122,17 +143,18 @@ class CollectionIntegrationTest extends TestCase
      * 
      * @return void
      */
-    public function test_add_new_collection_with_success(): void
+    public function test_add_new_integration_collection_with_success(): void
     {
-        $countBefore = Collection::withTrashed()->count();
+        $countBefore = Collection::count();
         $mockData = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
             "enabled" => true,
-            "keywords" => "key words",
             "public" => true,
-            "counter" => 123
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "keywords" => $this->generateKeywords(),
         ];
 
         $response = $this->json(
@@ -142,7 +164,7 @@ class CollectionIntegrationTest extends TestCase
             $this->header
         );
 
-        $countAfter = Collection::withTrashed()->count();
+        $countAfter = Collection::count();
         $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
@@ -154,7 +176,7 @@ class CollectionIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_update_collection_with_success(): void 
+    public function test_update_integration_collection_with_success(): void 
     {
         // create new collection
         $mockDataIns = [
@@ -162,9 +184,10 @@ class CollectionIntegrationTest extends TestCase
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
             "enabled" => true,
-            "keywords" => "key words",
             "public" => true,
-            "counter" => 123
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "keywords" => $this->generateKeywords(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -178,13 +201,14 @@ class CollectionIntegrationTest extends TestCase
 
         // update collection
         $mockDataUpdate = [
-            "name" => "covid 2",
-            "description" => "Suscipit vitae mollitia molestias qui.",
+            "name" => "covid update",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
-            "enabled" => false,
-            "keywords" => "key words",
-            "public" => false,
-            "counter" => 125
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "keywords" => $this->generateKeywords(),
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -205,7 +229,7 @@ class CollectionIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_edit_collection_with_success(): void
+    public function test_edit_integration_collection_with_success(): void
     {
         // create new collection
         $mockDataIns = [
@@ -213,9 +237,10 @@ class CollectionIntegrationTest extends TestCase
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
             "enabled" => true,
-            "keywords" => "key words",
             "public" => true,
-            "counter" => 123
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "keywords" => $this->generateKeywords(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -229,13 +254,14 @@ class CollectionIntegrationTest extends TestCase
 
         // update collection
         $mockDataUpdate = [
-            "name" => "covid 2",
-            "description" => "Suscipit vitae mollitia molestias qui.",
+            "name" => "covid update",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
-            "enabled" => false,
-            "keywords" => "key words",
-            "public" => false,
-            "counter" => 125
+            "enabled" => true,
+            "public" => true,
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "keywords" => $this->generateKeywords(),
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -289,7 +315,7 @@ class CollectionIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_soft_delete_collection_with_success(): void
+    public function test_soft_delete_integration_collection_with_success(): void
     {
         $countBefore = Collection::count();
         $countTrashedBefore = Collection::onlyTrashed()->count();
@@ -299,9 +325,10 @@ class CollectionIntegrationTest extends TestCase
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
             "enabled" => true,
-            "keywords" => "key words",
             "public" => true,
-            "counter" => 123
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "keywords" => $this->generateKeywords(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -321,5 +348,29 @@ class CollectionIntegrationTest extends TestCase
         $response->assertStatus(200);
         $countTrasherAfter = Collection::onlyTrashed()->count();
         $this->assertTrue((bool) ($countTrasherAfter - $countTrashedBefore), 'Response was successfully');
+    }
+
+    private function generateKeywords()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $return[] = Keyword::where(['enabled' => 1])->get()->random()->name;
+        }
+
+        return array_unique($return);
+    }
+
+    private function generateDatasets()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $return[] = Dataset::all()->random()->id;
+        }
+
+        return array_unique($return);
     }
 }

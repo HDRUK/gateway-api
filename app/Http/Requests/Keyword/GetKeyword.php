@@ -1,29 +1,23 @@
 <?php
 
-namespace App\Http\Requests\Collection;
+namespace App\Http\Requests\Keyword;
 
-use App\Models\Collection;
 use App\Http\Requests\BaseFormRequest;
 
-class DeleteCollection extends BaseFormRequest
+class GetKeyword extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
             'id' => [
                 'required',
-                function ($attribute, $value, $fail) {
-                    $exists = Collection::where('id', $value)->exists();
-
-                    if (!$exists) {
-                        $fail('The selected collection does not exists.');
-                    }
-                },
+                'int',
+                'exists:keywords,id',
             ],
         ];
     }

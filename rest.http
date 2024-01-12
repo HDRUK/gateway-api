@@ -227,55 +227,6 @@ Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
-### Collections 
-#### get all collections
-GET {{baseUrl}}/api/{{apiVersion}}/collections HTTP/1.1
-Content-Type: application/json
-Authorization: Bearer {{accessToken}}
-
-#### get collection by id
-GET {{baseUrl}}/api/{{apiVersion}}/collections/1 HTTP/1.1
-Content-Type: application/json
-Authorization: Bearer {{accessToken}}
-
-#### add new collection
-POST {{baseUrl}}/api/{{apiVersion}}/collections HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "name": "covid",
-    "description" : "Dolorem voluptas consequatur nihil illum et sunt libero.",
-    "image_link" : "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
-    "enabled": true,
-    "keywords": "key words",
-    "public": true,
-    "counter": 123
-}
-
-#### update collection
-PUT {{baseUrl}}/api/{{apiVersion}}/collections/12 HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "name": "covid 2",
-    "description" : "Dolorem voluptas consequatur nihil illum et sunt libero.",
-    "image_link" : "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
-    "enabled": true,
-    "keywords": "key words",
-    "public": true,
-    "counter": 123
-}
-
-#### delete collection
-DELETE {{baseUrl}}/api/{{apiVersion}}/collections/11 HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
 
 ### TAGS
 #### get all tags
@@ -1442,6 +1393,123 @@ Authorization: Bearer {{accessToken}}
 
 #### delete cohort request by id
 DELETE {{baseUrl}}/api/{{apiVersion}}/cohort_requests/24 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+### Keywords
+#### get all
+# GET {{baseUrl}}/api/{{apiVersion}}/keywords?perPage=5 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/keywords HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get by id
+GET {{baseUrl}}/api/{{apiVersion}}/keywords/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create resource
+POST {{baseUrl}}/api/{{apiVersion}}/keywords HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Ducimus suscipit",
+    "enabled": 1
+}
+
+#### update resource
+PUT {{baseUrl}}/api/{{apiVersion}}/keywords/55 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Ducimus suscipit update",
+    "enabled": 0
+}
+
+#### edit resource
+PATCH {{baseUrl}}/api/{{apiVersion}}/keywords/55 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "enabled": 1
+}
+
+#### delete resource
+DELETE {{baseUrl}}/api/{{apiVersion}}/keywords/55 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### Collections 
+#### get all
+GET {{baseUrl}}/api/{{apiVersion}}/collections HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get collection by id
+GET {{baseUrl}}/api/{{apiVersion}}/collections/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### add new collection
+POST {{baseUrl}}/api/{{apiVersion}}/collections HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "covid 3423423",
+    "description" : "Dolorem voluptas consequatur nihil illum et sunt libero.",
+    "image_link" : "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+    "enabled": true,
+    "public": true,
+    "datasets": [1,3],
+    "keywords": ["Anxiety"]
+}
+
+#### update collection
+PUT {{baseUrl}}/api/{{apiVersion}}/collections/11 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "covid sasasdsa",
+    "description" : "Dolorem voluptas consequatur nihil illum et sunt libero. asdsad",
+    "image_link" : "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+    "enabled": true,
+    "public": true,
+    "datasets": [1,2,3],
+    "keywords": ["Biobank", "Bladder Cancer", "Cancer", "Cervical Cancer"]
+}
+
+// optional: userId (int), mongo_object_id (string), mongo_id (string), counter (int)
+
+#### update collection
+PATCH {{baseUrl}}/api/{{apiVersion}}/collections/11 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "covid patch",
+    "description" : "Dolorem voluptas consequatur nihil illum et sunt libero. patch",
+    "image_link" : "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+    "enabled": false
+}
+
+// optional: userId (int), mongo_object_id (string), mongo_id (string), counter (int)
+
+#### delete collection
+DELETE {{baseUrl}}/api/{{apiVersion}}/collections/11 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
