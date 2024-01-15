@@ -177,8 +177,10 @@ class DatasetController extends Controller
 
         $perPage = request('per_page', Config::get('constants.per_page'));
 
-        // perform query for the matching datasets with ordering and pagination
-        $datasets = Dataset::with(['versions' => fn($version) => $version->withTrashed()])->whereIn('id', $matches)
+        // perform query for the matching datasets with ordering and pagination. 
+        // Include soft-deleted versions.
+        $datasets = Dataset::with(['versions' => fn($version) => $version->withTrashed()])
+            ->whereIn('id', $matches)
             ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                 function ($query) {
                     return $query->withTrashed();
