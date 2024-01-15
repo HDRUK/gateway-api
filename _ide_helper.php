@@ -4807,102 +4807,6 @@
             /**
      * 
      *
-     * @see \Illuminate\Encryption\Encrypter
-     */ 
-        class Crypt {
-                    /**
-         * Determine if the given key and cipher combination is valid.
-         *
-         * @param string $key
-         * @param string $cipher
-         * @return bool 
-         * @static 
-         */ 
-        public static function supported($key, $cipher)
-        {
-                        return \Illuminate\Encryption\Encrypter::supported($key, $cipher);
-        }
-                    /**
-         * Create a new encryption key for the given cipher.
-         *
-         * @param string $cipher
-         * @return string 
-         * @static 
-         */ 
-        public static function generateKey($cipher)
-        {
-                        return \Illuminate\Encryption\Encrypter::generateKey($cipher);
-        }
-                    /**
-         * Encrypt the given value.
-         *
-         * @param mixed $value
-         * @param bool $serialize
-         * @return string 
-         * @throws \Illuminate\Contracts\Encryption\EncryptException
-         * @static 
-         */ 
-        public static function encrypt($value, $serialize = true)
-        {
-                        /** @var \Illuminate\Encryption\Encrypter $instance */
-                        return $instance->encrypt($value, $serialize);
-        }
-                    /**
-         * Encrypt a string without serialization.
-         *
-         * @param string $value
-         * @return string 
-         * @throws \Illuminate\Contracts\Encryption\EncryptException
-         * @static 
-         */ 
-        public static function encryptString($value)
-        {
-                        /** @var \Illuminate\Encryption\Encrypter $instance */
-                        return $instance->encryptString($value);
-        }
-                    /**
-         * Decrypt the given value.
-         *
-         * @param string $payload
-         * @param bool $unserialize
-         * @return mixed 
-         * @throws \Illuminate\Contracts\Encryption\DecryptException
-         * @static 
-         */ 
-        public static function decrypt($payload, $unserialize = true)
-        {
-                        /** @var \Illuminate\Encryption\Encrypter $instance */
-                        return $instance->decrypt($payload, $unserialize);
-        }
-                    /**
-         * Decrypt the given string without unserialization.
-         *
-         * @param string $payload
-         * @return string 
-         * @throws \Illuminate\Contracts\Encryption\DecryptException
-         * @static 
-         */ 
-        public static function decryptString($payload)
-        {
-                        /** @var \Illuminate\Encryption\Encrypter $instance */
-                        return $instance->decryptString($payload);
-        }
-                    /**
-         * Get the encryption key that the encrypter is currently using.
-         *
-         * @return string 
-         * @static 
-         */ 
-        public static function getKey()
-        {
-                        /** @var \Illuminate\Encryption\Encrypter $instance */
-                        return $instance->getKey();
-        }
-         
-    }
-            /**
-     * 
-     *
      * @see https://carbon.nesbot.com/docs/
      * @see https://github.com/briannesbitt/Carbon/blob/master/src/Carbon/Factory.php
      * @method static \Illuminate\Support\Carbon create($year = 0, $month = 1, $day = 1, $hour = 0, $minute = 0, $second = 0, $tz = null)
@@ -18407,258 +18311,13 @@
                     /**
          * Logs an action to the audit trail
          *
-         * @return void 
+         * @return bool 
          * @static 
          */ 
-        public static function log($user, $description, $function)
+        public static function log($userId, $teamId, $actionType, $actionService, $description)
         {
                         /** @var \App\Auditor\Auditor $instance */
-                        $instance->log($user, $description, $function);
-        }
-         
-    }
-     
-}
-
-    namespace App\Mauro { 
-            /**
-     * 
-     *
-     */ 
-        class MauroFacade {
-                    /**
-         * Returns all folders as JSON from Mauro
-         *
-         * @return array 
-         * @static 
-         */ 
-        public static function getFolders()
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->getFolders();
-        }
-                    /**
-         * Returns folder by ID from Mauro
-         *
-         * @param string $id The ID of the folder to return
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function getFolderById($id)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->getFolderById($id);
-        }
-                    /**
-         * Returns a list of folders underneath the $parentId from Mauro
-         *
-         * @param string $parentId The ID of the parent to list Folders from
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function getFoldersByParentId($parentId)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->getFoldersByParentId($parentId);
-        }
-                    /**
-         * Returns a list of DataModels (datasets) from Mauro
-         *
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function getDatasets()
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->getDatasets();
-        }
-                    /**
-         * Returns a list of DataModels (datasets) from Mauro by Id
-         *
-         * @param string $datasetId The dataset ID to return dataset
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function getDatasetById($datasetId)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->getDatasetById($datasetId);
-        }
-                    /**
-         * Returns a list of DataModels (datasets) from Mauro by Id and Profile
-         *
-         * @param string $datasetId The dataset ID to return dataset
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function getDatasetByIdProfile($datasetId)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->getDatasetByIdProfile($datasetId);
-        }
-                    /**
-         * Returns a list of DataModel (dataset) from Mauro by Id with metadata and with max 1000 items
-         *
-         * @param string $datasetId The dataset ID to return dataset
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function getDatasetByIdMetadata($datasetId)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->getDatasetByIdMetadata($datasetId);
-        }
-                    /**
-         * Returns a list of DataModels (datasets) from Mauro by parent ID
-         *
-         * @param string $parentId The parent ID to return datasets from
-         * @return array 
-         * @static 
-         */ 
-        public static function getDatasetsByFolder($parentId)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->getDatasetsByFolder($parentId);
-        }
-                    /**
-         * Creates a folder (Publisher) within Mauro Data Mapper underneath our internal Publisher folder
-         *
-         * @param string $label Represents the short name for this folder
-         * @param string $description Represents the long description for this folder
-         * @param string $parentFolderId If set, this new folder will be created underneath this parent folder
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function createFolder($label, $description, $parentFolderId = '')
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->createFolder($label, $description, $parentFolderId);
-        }
-                    /**
-         * Deletes a folder held within Mauro Data Mapper underneath our internal Publisher folder
-         *
-         * @param string $id Represents the ID of the folder to be deleted
-         * @param string $permanentDeletion Whether to hard or soft delete this folder, defaults to hard deletion
-         * @param string $parentFolderId Represents the parent folder id housing this folder
-         * @return bool Returns true on successful deletion, false otherwise
-         * @static 
-         */ 
-        public static function deleteFolder($id, $permanentDeletion = 'true', $parentFolderId = '')
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->deleteFolder($id, $permanentDeletion, $parentFolderId);
-        }
-                    /**
-         * Creates a new Data Model within Mauro Data Mapper underneath $parentFolderId
-         *
-         * @param string $label Represents the short text associated with this data model
-         * @param string $description Represents the long text associated with this data model
-         * @param string $author Represents the Author name associated with this data model
-         * @param string $organisation Represents the Organisation associated with this author for this data model
-         * @param string $parentFolderId Represents the parent folder id to create this data model under
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function createDataModel($label, $description, $author, $organisation, $parentFolderId, $jsonObj)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->createDataModel($label, $description, $author, $organisation, $parentFolderId, $jsonObj);
-        }
-                    /**
-         * 
-         *
-         * @static 
-         */ 
-        public static function finalizeDataModel($datasetId, $versionType, $customVersion)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->finalizeDataModel($datasetId, $versionType, $customVersion);
-        }
-                    /**
-         * Deletes an existing DataModel from Mauro
-         *
-         * @param string $id The ID of the DataModel to delete
-         * @param string $permanentDeletion Whether or not this model is deleted permanently
-         * @return bool Whether the operation completed successfully or not
-         * @static 
-         */ 
-        public static function deleteDataModel($id, $permanentDeletion = 'false')
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->deleteDataModel($id, $permanentDeletion);
-        }
-                    /**
-         * Creates a new DataClass object within Mauro to store structural metadata against a model
-         *
-         * @param string $parentModelId Represents the model which owns this new data class
-         * @param string $name Represents the name of this data class
-         * @param string $description Represents the description of this data class
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function createDataClass($parentModelId, $name, $description)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->createDataClass($parentModelId, $name, $description);
-        }
-                    /**
-         * Deletes a DataClass object within Mauro
-         *
-         * @param string $id The ID of the DataClass to be deleted
-         * @param string $parentModelId The ID of the parent DataModel to delete this DataClass from
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function deleteDataClass($id, $parentModelId)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->deleteDataClass($id, $parentModelId);
-        }
-                    /**
-         * Creates a new DataElement object within Mauro against an existing model and data class
-         *
-         * @param string $parentModelId Represents the parent model which owns this data element
-         * @param string $parentDataClassId Represents the parent data class which owns this data element
-         * @param string $name Represents the name of this data element
-         * @param string $description Represents the description of this data element
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function createDataElement($parentModelId, $parentDataClassId, $name, $description, $type)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->createDataElement($parentModelId, $parentDataClassId, $name, $description, $type);
-        }
-                    /**
-         * Deletes an existing DataElement from Mauro under $parentModelId and $parentDataClassId
-         *
-         * @param string $id The ID of the DataElement to delete
-         * @param string $parentModelId The ID of the parent DataModel to delete this DataElement from
-         * @param string $parentDataClassId The ID of the parent DataClass to delete this DataElement from
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function deleteDataElement($id, $parentModelId, $parentDataClassId)
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->deleteDataElement($id, $parentModelId, $parentDataClassId);
-        }
-                    /**
-         * Finalises and makes ready a pre-existing DataModel within Mauro
-         *
-         * @param string $id The ID of the DataModel to finalise
-         * @param string $semverChange The version change string, can be either Major, Minor or Patch
-         * @param string $semverVersion The semver version string to set, in the form of Major.Minor.Patch
-         *          It is possible to send a $semverChange of 'Custom' and provide a $semverVersion that goes
-         *          against traditional semver formatting of Major.Minor.Patch. This allows formats such as
-         *          A.B.C.Z if you so wish
-         * @return array Returns entire response from Mauro Data Mapper as an array
-         * @static 
-         */ 
-        public static function finaliseDataModel($id, $semverChange = '', $semverVersion = '')
-        {
-                        /** @var \App\Mauro\Mauro $instance */
-                        return $instance->finaliseDataModel($id, $semverChange, $semverVersion);
+                        return $instance->log($userId, $teamId, $actionType, $actionService, $description);
         }
          
     }
@@ -18676,7 +18335,7 @@
          * Note: this client is defined here in the MMC facade, making it convenient
          * to mock during testing
          *
-         * @return \Elastic\Elasticsearch\Client 
+         * @return \Client 
          * @static 
          */ 
         public static function getElasticClient()
@@ -18693,10 +18352,10 @@
          * @return array 
          * @static 
          */ 
-        public static function translateDataModelType($dataset, $outputSchema, $outputVersion, $inputSchema, $inputVersion)
+        public static function translateDataModelType($dataset, $outputSchema, $outputVersion, $inputSchema = null, $inputVersion = null, $validateInput = true, $validateOutput = true)
         {
                         /** @var \App\MetadataManagementController\MetadataManagementController $instance */
-                        return $instance->translateDataModelType($dataset, $outputSchema, $outputVersion, $inputSchema, $inputVersion);
+                        return $instance->translateDataModelType($dataset, $outputSchema, $outputVersion, $inputSchema, $inputVersion, $validateInput, $validateOutput);
         }
                     /**
          * Attempts to validate that the passed $dataset is in
@@ -18731,20 +18390,22 @@
          *
          * @static 
          */ 
-        public static function createMauroDataModel($user, $team, $input)
+        public static function createDatasetVersion($input)
         {
                         /** @var \App\MetadataManagementController\MetadataManagementController $instance */
-                        return $instance->createMauroDataModel($user, $team, $input);
+                        return $instance->createDatasetVersion($input);
         }
                     /**
-         * 
+         * (Soft) Deletes a dataset from the system by $id
          *
+         * @param string $id The dataset to delete
+         * @return void 
          * @static 
          */ 
-        public static function validateTeamExistsInMauro($team)
+        public static function deleteDataset($id)
         {
                         /** @var \App\MetadataManagementController\MetadataManagementController $instance */
-                        return $instance->validateTeamExistsInMauro($team);
+                        $instance->deleteDataset($id);
         }
                     /**
          * Calls a re-indexing of Elastic search when a dataset is created or updated
@@ -18758,6 +18419,19 @@
         {
                         /** @var \App\MetadataManagementController\MetadataManagementController $instance */
                         $instance->reindexElastic($dataset, $datasetId);
+        }
+                    /**
+         * Calls a delete on the document in ElasticSearch index when a dataset is
+         * deleted
+         *
+         * @param string $id The id of the dataset to be deleted
+         * @return void 
+         * @static 
+         */ 
+        public static function deleteFromElastic($id)
+        {
+                        /** @var \App\MetadataManagementController\MetadataManagementController $instance */
+                        $instance->deleteFromElastic($id);
         }
          
     }
@@ -19327,6 +19001,106 @@
      
 }
 
+    namespace Webklex\IMAP\Facades { 
+            /**
+     * Class Client
+     *
+     * @package Webklex\IMAP\Facades
+     */ 
+        class Client {
+                    /**
+         * Safely create a new client instance which is not listed in accounts
+         *
+         * @param array $config
+         * @return \Client 
+         * @throws Exceptions\MaskNotFoundException
+         * @static 
+         */ 
+        public static function make($config)
+        {
+                        /** @var \Webklex\PHPIMAP\ClientManager $instance */
+                        return $instance->make($config);
+        }
+                    /**
+         * Get a dotted config parameter
+         *
+         * @param string $key
+         * @param null $default
+         * @return mixed|null 
+         * @static 
+         */ 
+        public static function get($key, $default = null)
+        {
+                        return \Webklex\PHPIMAP\ClientManager::get($key, $default);
+        }
+                    /**
+         * Get the mask for a given section
+         *
+         * @param string $section section name such as "message" or "attachment"
+         * @return string|null 
+         * @static 
+         */ 
+        public static function getMask($section)
+        {
+                        return \Webklex\PHPIMAP\ClientManager::getMask($section);
+        }
+                    /**
+         * Resolve a account instance.
+         *
+         * @param string|null $name
+         * @return \Client 
+         * @throws Exceptions\MaskNotFoundException
+         * @static 
+         */ 
+        public static function account($name = null)
+        {
+                        /** @var \Webklex\PHPIMAP\ClientManager $instance */
+                        return $instance->account($name);
+        }
+                    /**
+         * Get the name of the default account.
+         *
+         * @return string 
+         * @static 
+         */ 
+        public static function getDefaultAccount()
+        {
+                        /** @var \Webklex\PHPIMAP\ClientManager $instance */
+                        return $instance->getDefaultAccount();
+        }
+                    /**
+         * Set the name of the default account.
+         *
+         * @param string $name
+         * @return void 
+         * @static 
+         */ 
+        public static function setDefaultAccount($name)
+        {
+                        /** @var \Webklex\PHPIMAP\ClientManager $instance */
+                        $instance->setDefaultAccount($name);
+        }
+                    /**
+         * Merge the vendor settings with the local config
+         * 
+         * The default account identifier will be used as default for any missing account parameters.
+         * If however the default account is missing a parameter the package default account parameter will be used.
+         * This can be disabled by setting imap.default in your config file to 'false'
+         *
+         * @param array|string $config
+         * @return \Webklex\PHPIMAP\ClientManager 
+         * @static 
+         */ 
+        public static function setConfig($config)
+        {
+                        /** @var \Webklex\PHPIMAP\ClientManager $instance */
+                        return $instance->setConfig($config);
+        }
+         
+    }
+     
+}
+
     namespace Illuminate\Http { 
             /**
      * 
@@ -19461,7 +19235,6 @@ namespace  {
             class Cache extends \Illuminate\Support\Facades\Cache {}
             class Config extends \Illuminate\Support\Facades\Config {}
             class Cookie extends \Illuminate\Support\Facades\Cookie {}
-            class Crypt extends \Illuminate\Support\Facades\Crypt {}
             class Date extends \Illuminate\Support\Facades\Date {}
             class DB extends \Illuminate\Support\Facades\DB {}
             class Eloquent extends \Illuminate\Database\Eloquent\Model {             
@@ -23409,11 +23182,11 @@ namespace  {
             class View extends \Illuminate\Support\Facades\View {}
             class Vite extends \Illuminate\Support\Facades\Vite {}
             class Auditor extends \App\Auditor\AuditorFacade {}
-            class Mauro extends \App\Mauro\MauroFacade {}
             class MetadataManagementController extends \App\MetadataManagementController\MetadataManagementControllerFacade {}
             class L5Swagger extends \L5Swagger\L5SwaggerFacade {}
             class Socialite extends \Laravel\Socialite\Facades\Socialite {}
             class Flare extends \Spatie\LaravelIgnition\Facades\Flare {}
+            class Client extends \Webklex\IMAP\Facades\Client {}
      
 }
 
