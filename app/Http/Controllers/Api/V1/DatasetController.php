@@ -109,6 +109,7 @@ class DatasetController extends Controller
         $matches = [];
         $teamId = $request->query('team_id',null);
         $filterStatus = $request->query('status', null);
+        $mongoPId = $request->query('status', null);
 
         $sort = $request->query('sort',"created:desc");   
         
@@ -139,6 +140,8 @@ class DatasetController extends Controller
 
         $initialDatasets = Dataset::when($teamId, function ($query) use ($teamId) {
             return $query->where('team_id', '=', $teamId);
+        })->when($mongoPId, function ($query) use ($mongoPId) {
+                return $query->where('mongo_pid', '=', $mongoPId);
         })->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
             function ($query) {
                 return $query->withTrashed();

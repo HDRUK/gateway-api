@@ -346,8 +346,8 @@ Authorization: Bearer {{accessToken}}
 
 ### DATASETS
 #### get all datasets
-##### http://localhost:8000/api/v1/datasets?team_id=52&fields=id,label,short_description,created,dataset&sort=short_description&direction=asc&decode_metadata=true
-GET {{baseUrl}}/api/{{apiVersion}}/datasets HTTP/1.1
+# GET {{baseUrl}}/api/{{apiVersion}}/datasets?team_id=12 HTTP/1.1
+GET http://localhost:8000/api/v1/datasets?mongo_pid=alpha HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -961,10 +961,20 @@ Authorization: Bearer {{accessToken}}
 
 
 #### delete dateset by id
-DELETE {{baseUrl}}/api/{{apiVersion}}/datasets/13 HTTP/1.1
+DELETE {{baseUrl}}/api/{{apiVersion}}/datasets/10 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+#### unarchived dateset by id
+PATCH {{baseUrl}}/api/{{apiVersion}}/datasets/10?unarchive HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "status": "ACTIVE"
+}
 
 
 ### ROLES
