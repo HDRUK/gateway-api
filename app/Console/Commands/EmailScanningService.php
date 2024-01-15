@@ -10,6 +10,9 @@ use App\Models\EnquiryThread;
 use Webklex\PHPIMAP\ClientManager;
 use Webklex\PHPIMAP\Client;
 
+use Illuminate\Support\Facades\Crypt;
+
+
 class EmailScanningService extends Command
 {
     /**
@@ -51,6 +54,18 @@ class EmailScanningService extends Command
             if(!$seen){
                 $this->processUnreadMessage($message);
             }
+
+            $id = '12asraras3';
+            // Encrypt the ID
+            $encryptedId = Crypt::encryptString($id);
+
+            // Decrypt the ID later
+            $decryptedId = 1;//Crypt::decryptString($encryptedId);
+
+            echo $id ." ".$encryptedId." ".$decryptedId." \n";
+
+            //EnquiryThread::
+
             ///
 
             //echo 'Attachments: '.$message->getAttachments()->count().'<br />';
