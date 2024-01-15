@@ -109,7 +109,7 @@ class DatasetController extends Controller
         $matches = [];
         $teamId = $request->query('team_id',null);
         $filterStatus = $request->query('status', null);
-        $mongoPId = $request->query('status', null);
+        $mongoPId = $request->query('mongo_pid', null);
 
         $sort = $request->query('sort',"created:desc");   
         
