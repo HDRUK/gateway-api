@@ -9,6 +9,7 @@ use App\Models\Team;
 
 use App\Models\User;
 use App\Models\Dataset;
+use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
@@ -17,13 +18,15 @@ use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Models\DatasetHasNamedEntities;
+use App\Jobs\TermExtraction;
 use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
 use App\Http\Requests\Dataset\EditDataset;
+
+use Illuminate\Support\Facades\Http;
 
 class DatasetController extends Controller
 {
@@ -109,6 +112,7 @@ class DatasetController extends Controller
         $matches = [];
         $teamId = $request->query('team_id',null);
         $filterStatus = $request->query('status', null);
+        $datasetId = $request->query('dataset_id', null);
 
         $sort = $request->query('sort',"created:desc");   
         
@@ -139,6 +143,8 @@ class DatasetController extends Controller
 
         $initialDatasets = Dataset::when($teamId, function ($query) use ($teamId) {
             return $query->where('team_id', '=', $teamId);
+        })->when($datasetId, function ($query) use ($datasetId) {
+                return $query->where('datasetid', '=', $datasetId);
         })->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
             function ($query) {
                 return $query->withTrashed();
@@ -177,8 +183,10 @@ class DatasetController extends Controller
 
         $perPage = request('per_page', Config::get('constants.per_page'));
 
-        // perform query for the matching datasets with ordering and pagination
-        $datasets = Dataset::with('versions')->whereIn('id', $matches)
+        // perform query for the matching datasets with ordering and pagination. 
+        // Include soft-deleted versions.
+        $datasets = Dataset::with(['versions' => fn($version) => $version->withTrashed()->latest()->first()])
+            ->whereIn('id', $matches)
             ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                 function ($query) {
                     return $query->withTrashed();
@@ -478,7 +486,7 @@ class DatasetController extends Controller
                 //create a new 'required' section for the metadata to be saved
                 // - otherwise this section is filled with placeholders by all translations to GWDM
                 $required = [
-                    'gatewayId' => $dataset->id,
+                    'gatewayId' => strval($dataset->id),
                     'gatewayPid' => $dataset->pid,
                     'issued' => $dataset->created,
                     'modified' => $dataset->updated,
@@ -491,6 +499,12 @@ class DatasetController extends Controller
                     'metadata' => json_encode($input['metadata']),
                     'version' => 1,
                 ]);
+
+                // Dispatch term extraction to a subprocess as it may take some time
+                TermExtraction::dispatch(
+                    $dataset->id,
+                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
+                );
 
                 return response()->json([
                     'message' => 'created',
@@ -955,4 +969,5 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
 }
