@@ -732,6 +732,12 @@ class CohortRequestController extends Controller
                 case 'APPROVED':
                     $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.approved')->first();
                     break;
+                case 'BANNED':
+                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.banned')->first();
+                    break;
+                case 'SUSPENDED':
+                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.suspended')->first();
+                    break;
             }
 
             $to = [
