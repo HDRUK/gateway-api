@@ -588,16 +588,25 @@ class CollectionController extends Controller
     {
         try {
             foreach ($keywords as $keyword) {
+                $keywordId = 0;
                 $keywordDB = Keyword::where(['enabled' => 1, 'name' => $keyword])->first();
+                if (!$keywordDB) {
+                    $keywordDB = Keyword::create([
+                        'name' => $keyword,
+                        'enabled' => 1,
+                    ]);
+                }
+                $keywordId = $keywordDB->id;
+
                 $checkKeywordInCollection = CollectionHasKeyword::where([
                     'collection_id' => $collectionId,
-                    'keyword_id' => $keywordDB->id,
+                    'keyword_id' => $keywordId,
                 ])->first();
 
                 if (!$checkKeywordInCollection) {
                     CollectionHasKeyword::create([
                         'collection_id' => $collectionId,
-                        'keyword_id' => $keywordDB->id,
+                        'keyword_id' => $keywordId,
                     ]);
                 }
             }
