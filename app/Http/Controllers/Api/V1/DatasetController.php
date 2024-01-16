@@ -9,6 +9,7 @@ use App\Models\Team;
 
 use App\Models\User;
 use App\Models\Dataset;
+use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
@@ -17,13 +18,15 @@ use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
-use App\Models\DatasetHasNamedEntities;
+use App\Jobs\TermExtraction;
 use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
 use App\Http\Requests\Dataset\EditDataset;
+
+use Illuminate\Support\Facades\Http;
 
 class DatasetController extends Controller
 {
@@ -483,7 +486,7 @@ class DatasetController extends Controller
                 //create a new 'required' section for the metadata to be saved
                 // - otherwise this section is filled with placeholders by all translations to GWDM
                 $required = [
-                    'gatewayId' => $dataset->id,
+                    'gatewayId' => strval($dataset->id),
                     'gatewayPid' => $dataset->pid,
                     'issued' => $dataset->created,
                     'modified' => $dataset->updated,
@@ -496,6 +499,12 @@ class DatasetController extends Controller
                     'metadata' => json_encode($input['metadata']),
                     'version' => 1,
                 ]);
+
+                // Dispatch term extraction to a subprocess as it may take some time
+                TermExtraction::dispatch(
+                    $dataset->id,
+                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
+                );
 
                 return response()->json([
                     'message' => 'created',
@@ -960,4 +969,5 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
 }

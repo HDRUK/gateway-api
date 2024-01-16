@@ -31,7 +31,7 @@ class DatasetTest extends TestCase
         $this->commonSetUp();
 
         $this->metadata = $this->getFakeDataset();
-        $this->metadataAlt = $this->dataset;
+        $this->metadataAlt = $this->metadata;
         $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
 
         $this->metadataUpdate = $this->getFakeUpdateDataset();
@@ -525,6 +525,7 @@ class DatasetTest extends TestCase
         
         $respArray = $responseGetOne->decodeResponseJson();
         $this->assertArrayHasKey('named_entities', $respArray['data']);
+        $this->assertNotEmpty($respArray['data']['named_entities']);
 
         // delete dataset
         $responseDeleteDataset = $this->json(
