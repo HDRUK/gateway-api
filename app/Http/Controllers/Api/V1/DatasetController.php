@@ -481,7 +481,7 @@ class DatasetController extends Controller
                 //create a new 'required' section for the metadata to be saved
                 // - otherwise this section is filled with placeholders by all translations to GWDM
                 $required = [
-                    'gatewayId' => $dataset->id,
+                    'gatewayId' => strval($dataset->id),
                     'gatewayPid' => $dataset->pid,
                     'issued' => $dataset->created,
                     'modified' => $dataset->updated,
@@ -498,7 +498,7 @@ class DatasetController extends Controller
                 // Dispatch term extraction to a subprocess as it may take some time
                 TermExtraction::dispatch(
                     $dataset->id,
-                    $input['metadata']
+                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
                 );
 
                 return response()->json([

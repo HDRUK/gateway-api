@@ -22,12 +22,12 @@ class TermExtraction implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     private string $datasetId = '';
-    private array $data = array();
+    private string $data = '';
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, array $data)
+    public function __construct(string $datasetId, string $data)
     {
         $this->datasetId = $datasetId;
         $this->data = $data;
@@ -40,14 +40,15 @@ class TermExtraction implements ShouldQueue
      */
     public function handle(): void
     {
+        $data = json_decode(gzdecode(gzuncompress(base64_decode($this->data))), true);
         $datasetModel = Dataset::where('id', $this->datasetId)->first();
 
         $tedUrl = env('TED_SERVICE_URL');
         $tedEnabled = env('TED_ENABLED');
 
-        $this->postToTermExtractionDirector(json_encode($this->data['metadata']), $this->datasetId);
+        $this->postToTermExtractionDirector(json_encode($data['metadata']), $this->datasetId);
 
-        MMC::reindexElastic($this->data, $this->datasetId);
+        MMC::reindexElastic($data, $this->datasetId);
     }
 
     /**
