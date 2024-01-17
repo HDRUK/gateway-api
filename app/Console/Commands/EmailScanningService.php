@@ -52,7 +52,7 @@ class EmailScanningService extends Command
         ]);
         $client->connect();
 
-        $inbox = $client->getFolder(env('IMAP_INBOX_NAME'));
+        $inbox = $client->getFolder(env('ENQUIRY_IMAP_INBOX_NAME'));
         $messages = $inbox->messages()->all()->get();
         $this->info("Found ".count($messages)." emails to process");
         $nUnread = 0;
@@ -138,7 +138,7 @@ class EmailScanningService extends Command
         return $enquiryMessage;
     }
     private function deleteMessage($message){
-        //$message->delete($expunge = true);
+        $message->delete($expunge = true);
         $this->info("--- original messsage deleted");
     }
 
