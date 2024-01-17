@@ -164,6 +164,11 @@ class Team extends Model
             ->withPivot('user_id', 'id');
     }
 
+    public function permissions(): HasManyThrough
+    {
+        return $this->hasManyThrough(Permission::class, TeamHasUser::class);
+    }
+
     public function roles(): HasManyThrough
     {
         //return $this->hasManyThrough(TeamUserHasRole::class,TeamHasUser::class);

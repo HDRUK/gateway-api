@@ -101,7 +101,7 @@ class User extends Authenticatable
 
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'team_user_has_roles');
+        return $this->belongsToMany(Role::class, 'user_has_roles');
     }
 
     public function cohortRequests(): HasMany

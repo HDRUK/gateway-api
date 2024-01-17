@@ -157,6 +157,8 @@ class EmailScanningService extends Command
                 ->where("id",$teamId)
                 ->first();
 
+        $this->info($teamId);
+
         $managers = $team->roles
                     ->where("name","dar.manager")
                     ->where("enabled",true);
