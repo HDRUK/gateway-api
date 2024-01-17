@@ -153,7 +153,7 @@ class CollectionTest extends TestCase
             "counter" => 123,
             "datasets" => $this->generateDatasets(),
             "keywords" => $this->generateKeywords(),
-        ];    
+        ];
 
         $response = $this->json(
             'POST',

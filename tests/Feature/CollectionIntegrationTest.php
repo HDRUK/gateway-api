@@ -52,10 +52,7 @@ class CollectionIntegrationTest extends TestCase
             CollectionHasKeywordSeeder::class,
             CollectionHasDatasetSeeder::class,
         ]);
-        // $this->seed();
-        // $this->header = [
-        //     'Accept' => 'application/json',
-        // ];
+
         $this->integration = Application::find(1)->first();
         $this->body = [
             "app_id" => $this->integration['app_id'], 
