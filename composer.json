@@ -42,7 +42,8 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "Database\\Demo\\": "database/demo/"
+            "Database\\Demo\\": "database/demo/",
+            "Database\\Beta\\": "database/beta/"
         }
     },
     "autoload-dev": {
