@@ -8,7 +8,10 @@ use App\Models\Keyword;
 use App\Models\Collection;
 
 use App\Models\Application;
+use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DatasetVersionSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\CollectionSeeder;
@@ -21,6 +24,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class CollectionIntegrationTest extends TestCase
 {
     use RefreshDatabase;
+    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL = '/api/v1/integrations/collections';
 
@@ -33,21 +40,22 @@ class CollectionIntegrationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
             ApplicationSeeder::class,
             CollectionSeeder::class,
             DatasetSeeder::class,
+            DatasetVersionSeeder::class,
             KeywordSeeder::class,
             CollectionHasKeywordSeeder::class,
             CollectionHasDatasetSeeder::class,
         ]);
         // $this->seed();
-        $this->header = [
-            'Accept' => 'application/json',
-        ];
+        // $this->header = [
+        //     'Accept' => 'application/json',
+        // ];
         $this->integration = Application::find(1)->first();
         $this->body = [
             "app_id" => $this->integration['app_id'], 
