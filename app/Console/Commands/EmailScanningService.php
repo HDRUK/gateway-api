@@ -13,10 +13,13 @@ use App\Jobs\SendEmailJob;
 use App\Models\EmailTemplate;
 
 use Webklex\PHPIMAP\ClientManager;
+use App\Http\Traits\TeamTransformation;
 
 
 class EmailScanningService extends Command
 {
+    use TeamTransformation;
+
     /**
      * The name and signature of the console command.
      *
@@ -39,34 +42,33 @@ class EmailScanningService extends Command
 
         $cm = new ClientManager($options = []);
         $client = $cm->make([
-            'host'          => env('IMAP_HOST'),
-            'port'          => env('IMAP_PORT'),
-            'encryption'    => env('IMAP_ENCRYPTION'),
-            'validate_cert' => env('IMAP_VALIDATE_CERT'),
-            'username'      => env('IMAP_USERNAME'),
-            'password'      => env('IMAP_PASSWORD'),
-            'protocol'      => env('IMAP_PROTOCOL'),
+            'host'          => env('ENQUIRY_IMAP_HOST'),
+            'port'          => env('ENQUIRY_IMAP_PORT'),
+            'encryption'    => env('ENQUIRY_IMAP_ENCRYPTION'),
+            'validate_cert' => env('ENQUIRY_IMAP_VALIDATE_CERT'),
+            'username'      => env('ENQUIRY_IMAP_USERNAME'),
+            'password'      => env('ENQUIRY_IMAP_PASSWORD'),
+            'protocol'      => env('ENQUIRY_IMAP_PROTOCOL'),
         ]);
-
         $client->connect();
+
         $inbox = $client->getFolder(env('IMAP_INBOX_NAME'));
         $messages = $inbox->messages()->all()->get();
+        $this->info("Found ".count($messages)." emails to process");
+        $nUnread = 0;
         foreach($messages as $message){
             $seen = $message->getFlags()->get("seen") === "Seen";
             if(!$seen){
                 $this->processUnreadMessage($message);
+                $nUnread += 1;
             }
-        }   
-    }
-
-    private function hashId(int $id, string $name)
-    {
-        return base64_encode($name.":".$id);
-    }
-
-    private function decodeHashId(string $encodedId, string $name)
-    {
-        return str_replace($name.":", '', base64_decode($encodedId));
+            else{
+                $this->warn("..skipping email as has been read");
+            }
+        }
+        if($nUnread==0){
+            $this->warn("No unread messages found..");
+        }
     }
 
     private function processUnreadMessage($message)
@@ -95,21 +97,14 @@ class EmailScanningService extends Command
         $atPos = strpos($toaddress, '@');
         if ($plusPos !== false && $atPos !== false) {
             $alias = substr($toaddress, $plusPos + 1, $atPos - $plusPos - 1);
-            if(strpos($alias, '_') !== false){
-                $this->info("Found alias ".$alias);
-                return $alias;
-            }
+            $this->info("Found alias ".$alias);
+            return $alias;
         }
     }
 
     private function getThread($alias)
-    {
-        list($part1,$part2) = explode("_",$alias);
-        $enquiryId = $this->decodeHashId($part1,"enquiry_id");
-        $userId = $this->decodeHashId($part2,"user_id");   
-        $userId = '2977';            
-        $thread = EnquiryThread::where("id",$enquiryId)
-                    ->where("user_id",$userId)
+    {         
+        $thread = EnquiryThread::where("unique_key",$alias)
                     ->first();
 
         if ($thread !== null) {
@@ -137,6 +132,7 @@ class EmailScanningService extends Command
             "message_body" => $body,
             "thread_id" => $threadId,
         ]);
+        $this->info("enquiryMessage created!");
 
         $this->info($enquiryMessage);
         return $enquiryMessage;
@@ -148,40 +144,49 @@ class EmailScanningService extends Command
 
     private function sendEmail($enquiryMessageId)
     {
+        //get the message linked to the original thread
         $enquiryMessage = EnquiryMessages::with("thread")
                             ->where("id",$enquiryMessageId)
                             ->first();
         
+        //find the team from the thread the message belongs to
         $teamId = $enquiryMessage->thread->team_id;
-        $team = Team::with("roles")
+        $team = Team::with("teamUserRoles")
                 ->where("id",$teamId)
                 ->first();
-
-        $this->info($teamId);
-
-        $managers = $team->roles
-                    ->where("name","dar.manager")
+       
+        //from the team find all DAR managers 
+        $darManagers = $team->teamUserRoles
+                    ->where("role_name","custodian.dar.manager")
                     ->where("enabled",true);
 
-        $this->info($managers);
+        //email each dar manager that a new message has been received
+        foreach ($darManagers as $darManager){
+      
+            $userEmail = $darManager['user_preferred_email'] === 'secondary' ? $darManager['user_secondary_email'] : $darManager['user_email'];
+            $userName = $darManager['user_name'];
+      
+            $to = [
+                'to' => [
+                    'email' => $userEmail,
+                    'name' => $userName,
+                ],
+            ];
+            $this->info(json_encode($to, JSON_PRETTY_PRINT));
 
-        
-        /*
-        $to = [
-            'to' => [
-                'email' => $userEmail,
-                'name' => $user['name'],
-            ],
-        ];
+            $replacements = [
+                '[[DAR_MANAGER_FIRSTNAME]]' => $darManager['user_firstname'],
+                '[[ORIGINAL_MESSAGE_BODY]]' => $enquiryMessage->message_body,
+                '[[ORIGINAL_MESSAGE_SENDER]]' => $enquiryMessage->from,
+            ];
 
-        $replacements = [
-            '[[USER_FIRSTNAME]]' => $user['firstname'],
-            '[[ORIGINAL_MESSAGE_BODY]]' => $enquiryMessage->body,
-            '[[ORIGINAL_MESSAGE_SENDER]]' => $enquiryMessage->from,
-        ];
+            $this->info( json_encode($replacements, JSON_PRETTY_PRINT));
 
-        SendEmailJob::dispatch($to, $template, $replacements);
-        */
+            // Note Calum 17/01/2024:
+            //    - to be implemented once email design is done 
+            // $template = EmailTemplate::where('identifier', '=', '.....')->first();
+            // SendEmailJob::dispatch($to, $template, $replacements);
+        }
     }
 
 }

@@ -169,9 +169,8 @@ class Team extends Model
         return $this->hasManyThrough(Permission::class, TeamHasUser::class);
     }
 
-    public function roles(): HasManyThrough
+    public function teamUserRoles(): HasManyThrough
     {
-        //return $this->hasManyThrough(TeamUserHasRole::class,TeamHasUser::class);
         return $this->hasManyDeep(
             Role::class,  
             [TeamHasUser::class,TeamUserHasRole::class],
@@ -182,11 +181,27 @@ class Team extends Model
             ],
             [
               'id', // Local key on the "Team" table.
-              'user_id', // Local key on the "TeamHasUser" table.
+              'id', // Local key on the "TeamHasUser" table.
               'role_id'  // Local key on the "TeamUserHasRole" table.
             ]
-        )
-        ->withIntermediate(TeamHasUser::class);
+            )
+            ->withIntermediate(TeamUserHasRole::class)
+            ->withIntermediate(TeamHasUser::class)
+            ->join("users","team_has_users.user_id","=","users.id")
+            ->select([
+                "roles.id as role_id",
+                "roles.enabled as role_enabled",
+                "roles.name as role_name",
+                "users.id as user_id",
+                "users.name as user_name",
+                "users.firstname as user_firstname",
+                "users.lastname as user_lastname",
+                "users.name as user_name",
+                "users.email as user_email",
+                "users.secondary_email as user_secondary_email",
+                "users.preferred_email as user_preferred_email"
+            ]);
+
     }
 
     /**

@@ -25,9 +25,9 @@ class EnquiryThread extends Model
     public $timestamps = false;
 
 
-    public function getTitleAttribute()
+    public function getProjectTitleAttribute()
     {
-        return $this->attributes['title'];
+        return $this->attributes['project_title'];
     }
 
     /**

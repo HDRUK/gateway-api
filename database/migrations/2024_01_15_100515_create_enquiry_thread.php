@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->integer('user_id');
             $table->integer('team_id');
-            $table->string('title',255);
+            $table->string('project_title',255);
+            $table->string('unique_key',32);
         });
     }
 

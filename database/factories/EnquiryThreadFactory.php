@@ -21,12 +21,12 @@ class EnquiryThreadFactory extends Factory
 
         $team_id = Team::all()->random()->id;
         $user_id = User::all()->random()->id;
-        $title = fake()->sentence();
 
         return [
             'team_id' => $team_id,
             'user_id' => $user_id,
-            'title' => $title,
+            'project_title' => fake()->sentence(),
+            'unique_key' => fake()->regexify('[A-Za-z0-9]{32}')
         ];
     }
 }
