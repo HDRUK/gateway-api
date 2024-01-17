@@ -13,10 +13,11 @@ return new class extends Migration
     {
         Schema::create('enquiry_messages', function (Blueprint $table) {
             $table->id();
+            $table->timestamps();
             $table->bigInteger('thread_id')->unsigned();
             $table->string('from',255);
             $table->longText('message_body');
-
+            
             $table->foreign('thread_id')->references('id')->on('enquiry_thread');
         });
     }

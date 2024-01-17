@@ -26,8 +26,7 @@ class EnquiryThreadFactory extends Factory
         return [
             'team_id' => $team_id,
             'user_id' => $user_id,
-            'project_title' => $title,
-            'unique_key' => fake()->regexify('[A-Za-z0-9]{64}')
+            'title' => $title,
         ];
     }
 }

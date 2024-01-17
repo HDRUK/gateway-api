@@ -4,13 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class EnquiryThread extends Model
 {
     use HasFactory;
 
      protected $fillable = [
-        'project_title',
+        'title',
         'unique_key'
     ];
 
@@ -24,18 +25,18 @@ class EnquiryThread extends Model
     public $timestamps = false;
 
 
-    /**
-     * The associated project title
-     * 
-     * @var string
-     */
-    public $project_title = '';
+    public function getTitleAttribute()
+    {
+        return $this->attributes['title'];
+    }
 
     /**
-     * Unique key (hashed 64 string) for the enquiry thread
-     * 
-     * @var string
-     */
-    public $unique_key = '';
-
+     * Define the one-to-many relationship with EnquiryMessages
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+    */
+    public function messages(): HasMany
+    {
+        return $this->hasMany(EnquiryMessages::class, 'thread_id');
+    }
 }

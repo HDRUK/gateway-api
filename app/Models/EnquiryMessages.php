@@ -5,13 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 class EnquiryMessages extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'from',
-        'message_body'
+        'message_body',
+        'thread_id',
     ];
 
     /**
@@ -21,19 +24,21 @@ class EnquiryMessages extends Model
      */
     protected $table = 'enquiry_messages';
 
-    public $timestamps = false;
+    public $timestamps = true;
 
-    /**
-     * Email address from
-     * 
-     * @var string
-     */
-    public $from = '';
+    public function getFromAttribute()
+    {
+        return $this->attributes['from'];
+    }
 
-    /**
-     * Email body content
-     * 
-     * @var string
-     */
-    public $message_body = '';
+    public function getBodyAttribute()
+    {
+        return $this->attributes['body'];
+    }
+
+    public function thread(): BelongsTo
+    {
+        return $this->belongsTo(EnquiryThread::class,'thread_id');
+    }
+
 }

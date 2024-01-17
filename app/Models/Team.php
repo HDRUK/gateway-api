@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 class Team extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
     protected $fillable = [
         'updated_at',
@@ -163,9 +164,24 @@ class Team extends Model
             ->withPivot('user_id', 'id');
     }
 
-    public function permissions(): HasManyThrough
+    public function roles(): HasManyThrough
     {
-        return $this->hasManyThrough(Permission::class, TeamHasUser::class);
+        //return $this->hasManyThrough(TeamUserHasRole::class,TeamHasUser::class);
+        return $this->hasManyDeep(
+            Role::class,  
+            [TeamHasUser::class,TeamUserHasRole::class],
+            [
+               'team_id', // Foreign key on the "TeamHasUser" table.
+               'team_has_user_id',    // Foreign key on the "TeamUserHasRoles" table.
+               'id'     // Foreign key on the "Roles" table.
+            ],
+            [
+              'id', // Local key on the "Team" table.
+              'user_id', // Local key on the "TeamHasUser" table.
+              'role_id'  // Local key on the "TeamUserHasRole" table.
+            ]
+        )
+        ->withIntermediate(TeamHasUser::class);
     }
 
     /**
