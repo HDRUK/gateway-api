@@ -7,7 +7,9 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
@@ -22,6 +24,9 @@ class CollectionTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL = '/api/v1/collections';
 
@@ -34,24 +39,18 @@ class CollectionTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
         // $this->seed();
         $this->seed([
             MinimalUserSeeder::class,
             ApplicationSeeder::class,
             CollectionSeeder::class,
             DatasetSeeder::class,
+            DatasetVersionSeeder::class,
             KeywordSeeder::class,
             CollectionHasKeywordSeeder::class,
             CollectionHasDatasetSeeder::class,
         ]);
-
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
     }
 
     /**
@@ -144,6 +143,7 @@ class CollectionTest extends TestCase
     public function test_add_new_collection_with_success(): void
     {
         $countBefore = Collection::count();
+        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $mockData = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
@@ -167,6 +167,9 @@ class CollectionTest extends TestCase
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);
+
+        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
+        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
 
     /**

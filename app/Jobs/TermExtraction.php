@@ -48,7 +48,7 @@ class TermExtraction implements ShouldQueue
 
         $this->postToTermExtractionDirector(json_encode($data['metadata']), $this->datasetId);
 
-        MMC::reindexElastic($data, $this->datasetId);
+        MMC::reindexElastic($this->datasetId);
     }
 
     /**

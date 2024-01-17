@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
+use MetadataManagementController AS MMC;
 use App\Models\Keyword;
 use App\Models\Collection;
 use Illuminate\Http\Request;
@@ -578,6 +579,7 @@ class CollectionController extends Controller
                         'app_id' => $appId,
                     ]);
                 }
+                MMC::reindexElastic($dataset);
             }
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
