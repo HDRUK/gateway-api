@@ -47,8 +47,8 @@ class AliasReplyScanner extends Command
             $this->info($response);
 
             $response = ARS::sendEmail($response->id);
-            $this->info($response);
-            //$this->info(count($response)." emails sent");
+            //$this->info($response);
+            $this->info(count($response)." emails sent");
             //$response = ESS::deleteMessage($message);
             //$this->info($response);
         }
