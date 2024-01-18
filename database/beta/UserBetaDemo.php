@@ -3,7 +3,6 @@
 namespace Database\Beta;
 
 use Exception;
-use Hash;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
@@ -361,7 +360,6 @@ class UserBetaDemo extends Seeder
                 'lastname' => $lastname,
                 'email' => $email,
                 'provider' => $provider,
-                // 'password' => Hash::make($password),
                 'password' => $password,
                 'is_admin' => $isAdmin,
                 'preferred_email' => 'primary',
