@@ -10,10 +10,10 @@ use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 
-use App\Console\Commands\EmailScanningService;
+use App\Console\Commands\AliasReplyScanner;
 use Illuminate\Support\Facades\Artisan;
 
-class EmailScanningServiceTest extends TestCase
+class AliasReplyScannerTest extends TestCase
 {
     use RefreshDatabase;
 
