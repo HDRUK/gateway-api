@@ -196,7 +196,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         App\Providers\AuditorServiceProvider::class,
         App\Providers\MetadataManagementControllerServiceProvider::class,
-
+        App\Providers\EmailScanningServiceProvider::class,
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
     ],
 
@@ -214,6 +214,7 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         'Auditor' => App\Auditor\AuditorFacade::class,
         'MetadataManagementController' => App\MetadataManagementController\MetadataManagementControllerFacade::class,
+        'EmailScanningService' => App\EmailScanningService\EmailScanningServiceFacade::class,
     ])->toArray(),
 
 ];
