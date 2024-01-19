@@ -1319,15 +1319,6 @@ class EmailTemplatesSeeder extends Seeder
             ',
         ]);
 
-
-
-
-
-
-
-
-
-
         $fmaIntegrationCreateSubject = '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.';
 
         $fmaIntegrationDevCreateBody = '
@@ -1453,9 +1444,6 @@ class EmailTemplatesSeeder extends Seeder
             ',
         ]);
 
-
-
-
         $integrationDisabledSubject = 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.';
         
         $integrationDevDisabledBody = '
@@ -1580,11 +1568,6 @@ class EmailTemplatesSeeder extends Seeder
                 </mjml>
             ',
         ]);
-
-
-
-
-
 
         $integrationDeletedSubject = 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.';
         
