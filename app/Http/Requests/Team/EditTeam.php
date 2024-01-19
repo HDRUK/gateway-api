@@ -77,6 +77,14 @@ class EditTeam extends BaseFormRequest
             'is_question_bank' => [
                 'boolean',
             ],
+            'users' => [
+                'array',
+            ],
+            'users.*'  => [
+                'integer',
+                'distinct',
+                'exists:users,id',
+            ],
         ];
     }
 
