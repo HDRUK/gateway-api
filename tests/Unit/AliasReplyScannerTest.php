@@ -45,60 +45,6 @@ class AliasReplyScannerTest extends TestCase
     private $emails = null;
     private $messages = null;
 
-    
-
-    private function generateRandomCode($length = 50) {
-        $characters = '!@#$%^&*()_-+=<>?{}[]|';
-        $code = '';
-        for ($i = 0; $i < $length; $i++) {
-            $code .= $characters[rand(0, strlen($characters) - 1)];
-        }
-
-        return "<script>".$code."</script>";
-    }
-
-    private function getEmails ($unique_key) {
-        return [
-            [ //email that contains a valid alias 
-                "toaddress"=>"noreply+".$unique_key."@hdruk.ac.uk",
-                "from"=>fake()->email(),
-                "body"=>fake()->paragraph(),
-                "subject"=>fake()->sentence(),
-            ],
-            [//email that doesnt contains a valid alias 
-                "toaddress"=>"noreply@hdruk.ac.uk",
-                "from"=>fake()->email(),
-                "body"=>fake()->paragraph(),
-                "subject"=>fake()->sentence(),
-            ],
-            [//email that contains some nasty code
-                "toaddress"=>"noreply+".$unique_key."@hdruk.ac.uk",
-                "from"=>fake()->email(),
-                "body"=>$this->generateRandomCode(),
-                "subject"=>fake()->sentence(),
-            ]
-        ];
-    }
-
-    public function getMockedMessage ($email){
-
-        $mock = Mockery::mock(Message::class)
-            ->shouldReceive('get')->with(Mockery::any())
-            ->andReturnUsing(function ($key) use ($email) {
-                return $email[$key];
-            })
-            ->shouldReceive('getHTMLBody')
-            ->andReturnUsing(function () use ($email) {
-                return $email['body'];
-            })
-            ->shouldReceive('getFrom')
-            ->andReturnUsing(function () use ($email) {
-                return $email['from'];
-            })
-            ->getMock();
-        return $mock;
-    }
-
     public function setUp(): void
     {
 
@@ -259,6 +205,57 @@ class AliasReplyScannerTest extends TestCase
         ARS::sendEmail($enquiryMessage->id);
          
 
+    }
+
+
+    private function getMockedMessage ($email){
+
+        $mock = Mockery::mock(Message::class)
+            ->shouldReceive('get')->with(Mockery::any())
+            ->andReturnUsing(function ($key) use ($email) {
+                return $email[$key];
+            })
+            ->shouldReceive('getHTMLBody')
+            ->andReturnUsing(function () use ($email) {
+                return $email['body'];
+            })
+            ->shouldReceive('getFrom')
+            ->andReturnUsing(function () use ($email) {
+                return $email['from'];
+            })
+            ->getMock();
+        return $mock;
+    }
+     private function generateRandomCode($length = 50) {
+        $characters = '!@#$%^&*()_-+=<>?{}[]|';
+        $code = '';
+        for ($i = 0; $i < $length; $i++) {
+            $code .= $characters[rand(0, strlen($characters) - 1)];
+        }
+
+        return "<script>".$code."</script>";
+    }
+    private function getEmails ($unique_key) {
+        return [
+            [ //email that contains a valid alias 
+                "toaddress"=>"noreply+".$unique_key."@hdruk.ac.uk",
+                "from"=>fake()->email(),
+                "body"=>fake()->paragraph(),
+                "subject"=>fake()->sentence(),
+            ],
+            [//email that doesnt contains a valid alias 
+                "toaddress"=>"noreply@hdruk.ac.uk",
+                "from"=>fake()->email(),
+                "body"=>fake()->paragraph(),
+                "subject"=>fake()->sentence(),
+            ],
+            [//email that contains some nasty code
+                "toaddress"=>"noreply+".$unique_key."@hdruk.ac.uk",
+                "from"=>fake()->email(),
+                "body"=>$this->generateRandomCode(),
+                "subject"=>fake()->sentence(),
+            ]
+        ];
     }
 
 
