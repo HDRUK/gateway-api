@@ -32,23 +32,33 @@ class AliasReplyScanner extends Command
      */
     public function handle()
     {
-        $messages = ARS::getNewMessages();
-        foreach($messages as $message){
-            $alias = ARS::getAlias($message);
-            if(!$alias){
-                continue;
-            }
-            $thread = ARS::getThread($alias);
-            if(!$thread){
-                $this->error("Cannot find associated thread. Alias ".$alias." is not valid");
-                continue;
-            }
-            $response = ARS::scrapeAndStoreContent($message,$thread->id);
-            $this->info($response);
+        $messages = ARS::getNewMessagesSafe();
+        $this->info("Found ".count($messages)." new messages");
 
-            $response = ARS::sendEmail($response->id);
-            //$this->info($response);
-            $this->info(count($response)." emails sent");
+        foreach($messages as $i => $message){
+            $this->info("Working on message #".$i);
+            $alias = ARS::getAlias($message);
+            if($alias){   
+                $thread = ARS::getThread($alias);
+                if($thread){
+                    $response = ARS::scrapeAndStoreContent($message,$thread->id);
+                    $this->info("... ".$response->message_body);
+                    $response = ARS::sendEmail($response->id);
+                    $nEmailsSent = count($response);
+                    $msg =  "... ".$nEmailsSent." emails sent";
+                    if($nEmailsSent>0){
+                        $this->info($msg);
+                    }
+                    else{
+                        $this->warn($msg);
+                    } 
+                   
+                }else{
+                    $this->warn("... valid thread not found for key=".$alias);
+                }
+            }else{
+                $this->warn("... alias not found in the email sent");
+            }
             //$response = ESS::deleteMessage($message);
             //$this->info($response);
         }

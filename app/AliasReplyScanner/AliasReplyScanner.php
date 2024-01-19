@@ -36,6 +36,42 @@ class AliasReplyScanner {
         return $inbox->messages()->all()->get();
     }
 
+    public function getNewMessagesSafe(){
+        $messages = $this->getNewMessages();
+        return $messages->filter(function ($msg) {
+            $body = $this->getSanitisedBody($msg);
+            return $this->checkBodyIsSensible($body);
+        });
+    }
+
+    public function getSanitisedBody($message){
+        $body = $message->getHTMLBody();
+        $sanitized = strip_tags($body);
+        return $sanitized;
+    }
+    public function checkBodyIsSensible($text){
+        // Remove punctuation and special characters
+        $text = preg_replace('/[^a-zA-Z0-9\s]/', '', $text);
+
+        // Tokenize the text into words
+        $words = str_word_count($text, 1);
+
+        if(count($words)==0){
+            return false;
+        }
+
+        // Minimum number of words for sensible content
+        $minWords = 5;
+
+        // Calculate the average word length
+        $averageWordLength = array_sum(array_map('strlen', $words)) / count($words);
+
+        // Criteria for sensible content (you can adjust these)
+        $isSensible = count($words) >= $minWords && $averageWordLength >= 3;
+
+        return $isSensible == true;
+    }
+
     public function getAlias($message)
     {
         $toaddress = $message->get("toaddress");
@@ -54,7 +90,7 @@ class AliasReplyScanner {
 
     public function scrapeAndStoreContent($message,$threadId)
     {
-        $body = $message->getHTMLBody();
+        $body = $this->getSanitisedBody($message);
         $from = $message->getFrom();
         $pos1 = strpos($from, '<');
         $pos2 = strpos($from, '>');
