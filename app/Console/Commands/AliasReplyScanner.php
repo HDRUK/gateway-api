@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 
 use App\Http\Traits\TeamTransformation;
 
-use AliasReplyScanner AS ARS;
+use AliasReplyScanner as ARS;
 
 
 class AliasReplyScanner extends Command
@@ -59,7 +59,7 @@ class AliasReplyScanner extends Command
             }else{
                 $this->warn("... alias not found in the email sent");
             }
-            $response = ESS::deleteMessage($message);
+            $response = ARS::deleteMessage($message);
             $this->info("... message deleted from the inbox");
         }
     }
