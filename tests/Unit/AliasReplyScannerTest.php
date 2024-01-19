@@ -226,7 +226,22 @@ class AliasReplyScannerTest extends TestCase
             ->getMock();
         return $mock;
     }
-     private function generateRandomCode($length = 50) {
+
+      private function getInjectionAttack() {
+        return "<HTML>
+                <HEAD>
+                <TITLE>example</title></head><body><img src=http://myImage.png></TITLE>
+                </HEAD>
+                <BODY>
+                <BR SIZE=\"&{alert(\'Injected\')}\"> 
+                <DIV STYLE=\"background-image: url(javascript:alert(\'Injected\'))\">
+                I like this site because <script>alert(\'Injected!\');</script> teaches me a lot
+                Something
+                </BODY>
+                </HTML>";
+    }
+
+    private function generateRandomCode($length = 50) {
         $characters = '!@#$%^&*()_-+=<>?{}[]|';
         $code = '';
         for ($i = 0; $i < $length; $i++) {
