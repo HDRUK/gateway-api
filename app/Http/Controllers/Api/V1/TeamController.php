@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Mauro;
 use Config;
 use Exception;
-use Mauro;
+use App\Models\Role;
 use App\Models\Team;
+use App\Models\TeamHasUser;
 use Illuminate\Http\Request;
+use App\Models\TeamUserHasRole;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Team\GetTeam;
 use App\Models\TeamHasNotification;
@@ -18,7 +21,6 @@ use App\Http\Requests\Team\DeleteTeam;
 use App\Http\Requests\Team\UpdateTeam;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
-
 
 class TeamController extends Controller
 {
@@ -221,6 +223,7 @@ class TeamController extends Controller
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="users", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
      *      ),
@@ -246,9 +249,10 @@ class TeamController extends Controller
         try {
             $input = $request->all();
             $arrayTeam = array_filter($input, function ($key) {
-                return $key !== 'notifications';
+                return $key !== 'notifications' || $key !== 'users';
             }, ARRAY_FILTER_USE_KEY);
             $arrayTeamNotification = $input['notifications'];
+            $arrayTeamUsers = $input['users'];
 
             $team = Team::create($arrayTeam);
 
@@ -257,6 +261,19 @@ class TeamController extends Controller
                     TeamHasNotification::updateOrCreate([
                         'team_id' => (int) $team->id,
                         'notification_id' => (int) $value,
+                    ]);
+                }
+
+                $roles = Role::where(['name' => 'custodian.team.admin'])->first();
+                foreach ($arrayTeamUsers as $value) {
+                    $teamHasUsers = TeamHasUser::create([
+                        'team_id' => (int) $team->id,
+                        'user_id' => (int) $value,
+                    ]);
+
+                    TeamUserHasRole::updateOrCreate([
+                        'team_has_user_id' => (int) $teamHasUsers->id,
+                        'role_id' => (int) $roles->id,
                     ]);
                 }
             } else {
@@ -318,6 +335,7 @@ class TeamController extends Controller
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="users", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
      *      ),
@@ -363,42 +381,46 @@ class TeamController extends Controller
      */
     public function update(UpdateTeam $request, int $teamId): JsonResponse
     {
-        $team = Team::findOrFail($teamId);
-        $body = $request->post();
-        $team->name = $body['name'];
-        $team->enabled = $body['enabled'];
-        $team->allows_messaging = $body['allows_messaging'];
-        $team->workflow_enabled = $body['workflow_enabled'];
-        $team->access_requests_management = $body['access_requests_management'];
-        $team->uses_5_safes = $body['uses_5_safes'];
-        $team->is_admin = $body['is_admin'];
-        $team->member_of = $body['member_of'];
-        $team->contact_point = $body['contact_point'];
-        $team->application_form_updated_by = $body['application_form_updated_by'];
-        $team->application_form_updated_on = $body['application_form_updated_on'];
-        $team->is_question_bank = array_key_exists('is_question_bank', $body) ? $body['is_question_bank'] : false;
+        try {
+            $input = $request->all();
+            $arrayKeys = [
+                'name',
+                'enabled',
+                'allows_messaging',
+                'workflow_enabled',
+                'access_requests_management',
+                'uses_5_safes',
+                'is_admin',
+                'member_of',
+                'contact_point',
+                'application_form_updated_by',
+                'application_form_updated_on',
+                'is_question_bank',
+            ];
 
-        $arrayTeamNotification = $body['notifications'];
-        TeamHasNotification::where('team_id', $teamId)->delete();
-        foreach ($arrayTeamNotification as $value) {
-            TeamHasNotification::updateOrCreate([
-                'team_id' => (int) $teamId,
-                'notification_id' => (int) $value,
-            ]);
-        }
+            $array = $this->checkEditArray($input, $arrayKeys);
 
-        if ($team->save()) {
+            Team::where('id', $teamId)->update($array);
+
+            $arrayTeamNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
+            TeamHasNotification::where('team_id', $teamId)->delete();
+            foreach ($arrayTeamNotification as $value) {
+                TeamHasNotification::updateOrCreate([
+                    'team_id' => (int) $teamId,
+                    'notification_id' => (int) $value,
+                ]);
+            }
+
+            $users = array_key_exists('users', $input) ? $input['users'] : [];
+            $this->updateTeamAdminUsers($teamId, $users);
+
             return response()->json([
                 'message' => 'success',
-                'data' => $team,
+                'data' => Team::where('id', $teamId)->first(),
             ], 200);
-        } else {
-            return response()->json([
-                'message' => 'error',
-            ], 500);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new NotFoundException();
     }
 
     /**
@@ -510,6 +532,9 @@ class TeamController extends Controller
                 ]);
             }
 
+            $users = array_key_exists('users', $input) ? $input['users'] : [];
+            $this->updateTeamAdminUsers($teamId, $users);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => Team::where('id', $teamId)->first()
@@ -584,4 +609,36 @@ class TeamController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    private function updateTeamAdminUsers(int $teamId, array $users)
+    {
+        // check in team
+        $roleId = Role::where(['name' => 'custodian.team.admin'])->first()->id;
+        $existTeamHasUsers = TeamHasUser::where([
+            'team_id' => (int) $teamId,
+        ])->get();
+        foreach ($existTeamHasUsers as $existTeamHasUser) {
+            if (in_array($existTeamHasUser->user_id, $users)) {
+                continue;
+            }
+
+            TeamUserHasRole::where([
+                'team_has_user_id' => (int) $existTeamHasUser->id,
+                'role_id' => (int) $roleId,
+            ])->delete();
+        }
+
+        foreach ($users as $user) {
+            $teamhasUser = TeamHasUser::updateOrCreate([
+                'team_id' => (int) $teamId,
+                'user_id' => (int) $user,
+            ]);
+
+            TeamUserHasRole::updateOrCreate([
+                'team_has_user_id' => (int) $teamhasUser->id,
+                'role_id' => (int) $roleId,
+            ]);
+        }
+    }
+
 }

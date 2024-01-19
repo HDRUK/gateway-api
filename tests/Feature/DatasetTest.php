@@ -112,6 +112,7 @@ class DatasetTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'users' => [],
             ],
             $this->header,
         );
@@ -148,6 +149,7 @@ class DatasetTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'users' => [],
             ],
             $this->header,
         );
@@ -456,6 +458,7 @@ class DatasetTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'users' => [],
             ],
             $this->header,
         );
@@ -612,6 +615,7 @@ class DatasetTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'users' => [],
             ],
             $this->header,
         );
@@ -790,6 +794,7 @@ class DatasetTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'users' => [],
             ],
             $this->header,
         );
@@ -940,6 +945,7 @@ class DatasetTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'users' => [],
             ],
             $this->header,
         );
@@ -1068,6 +1074,7 @@ class DatasetTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'users' => [],
             ],
             $this->header,
         );
