@@ -158,6 +158,14 @@ class AliasReplyScannerTest extends TestCase
         $alias = $thread->unique_key;
         $response = ARS::getThread($alias);
         $this->assertNotEmpty($response);
+
+        $this->assertSame(array_keys($response->toArray()),
+                            ['id',
+                            'user_id',
+                            'team_id',
+                            'project_title',
+                            'unique_key']);
+
         $this->assertEquals($response->id,$thread->id);
     }
 
@@ -191,19 +199,10 @@ class AliasReplyScannerTest extends TestCase
 
     public function test_it_can_scrape_and_store_email_content(): void
     {
-
         $messages = ARS::getNewMessagesSafe();
         $firstMessage = $messages[0];
         $alias = ARS::getAlias($firstMessage);
         $enquiryThread = ARS::getThread($alias);
-
-        $this->assertSame(array_keys($enquiryThread->toArray()),
-                            ['id',
-                            'user_id',
-                            'team_id',
-                            'project_title',
-                            'unique_key']);
-
         $nMessagesBefore = EnquiryMessages::get()->count();
 
         $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage,$enquiryThread->id);
@@ -211,10 +210,7 @@ class AliasReplyScannerTest extends TestCase
 
         $nMessagesAfter = EnquiryMessages::get()->count();
         $this->assertTrue($nMessagesAfter == $nMessagesBefore + 1);
-
         $this->assertSame($enquiryMessage->message_body,$firstMessage->getHTMLBody());
-
-
 
     }
 
