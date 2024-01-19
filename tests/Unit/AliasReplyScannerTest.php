@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Mail\Email;
 use App\Models\EmailTemplate;
+use App\Models\EnquiryMessages;
 use App\Models\EnquiryThread;
 
 use Tests\TestCase;
@@ -196,13 +197,25 @@ class AliasReplyScannerTest extends TestCase
         $alias = ARS::getAlias($firstMessage);
         $enquiryThread = ARS::getThread($alias);
 
-        $this->assertSame(array_keys($enquiryThread->toArray()),['id','user_id','team_id','project_title','unique_key']);
+        $this->assertSame(array_keys($enquiryThread->toArray()),
+                            ['id',
+                            'user_id',
+                            'team_id',
+                            'project_title',
+                            'unique_key']);
+
+        $nMessagesBefore = EnquiryMessages::get()->count();
 
         $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage,$enquiryThread->id);
-
         $this->assertNotEmpty($enquiryMessage);
 
+        $nMessagesAfter = EnquiryMessages::get()->count();
+        $this->assertTrue($nMessagesAfter == $nMessagesBefore + 1);
+
         $this->assertSame($enquiryMessage->message_body,$firstMessage->getHTMLBody());
+
+
+
     }
 
 
