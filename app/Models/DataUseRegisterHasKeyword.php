@@ -2,20 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Prunable;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class DataUseRegisterHasDatasets extends Model
+class DataUseRegisterHasKeyword extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory;
 
     protected $fillable = [
         'data_use_register_id',
-        'dataset_id',
-        'user_id',
+        'keyword_id',
     ];
 
     /**
@@ -23,7 +19,7 @@ class DataUseRegisterHasDatasets extends Model
      * 
      * @var string
      */
-    protected $table = 'data_use_register_has_datasets';
+    protected $table = 'data_use_register_has_keywords';
 
     /**
      * Indicates if the model should be timestamped

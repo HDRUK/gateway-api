@@ -14,6 +14,6 @@ class DataUseRegisterSeeder extends Seeder
      */
     public function run(): void
     {
-        DataUseRegister::factory()->count(10)->create();
+        //DataUseRegister::factory()->count(10)->create();
     }
 }
