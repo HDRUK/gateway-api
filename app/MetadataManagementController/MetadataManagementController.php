@@ -187,41 +187,49 @@ class MetadataManagementController {
     }
 
     /**
-     * Calls a re-indexing of Elastic search when a dataset is created or updated
+     * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection
      * 
-     * @param array $dataset The dataset being created or updated
-     * @param string $datasetId The dataset id from Mauro
+     * @param string $datasetId The dataset id from the DB
      * 
      * @return void
      */
-    public function reindexElastic(array $dataset, string $datasetId): void
+    public function reindexElastic(string $datasetId): void
     {
         // Get named entities
         try {
 
-            $datasetMatch = Dataset::where('id', $datasetId)
-                ->with(['namedEntities'])
-                ->first()
-                ->toArray();
+            $datasetMatch = Dataset::where(['id' => $datasetId])
+                ->with(['namedEntities', 'collections'])
+                ->first();
+            
+            $version = $datasetMatch->latestVersion();
+            $metadata = $version->metadata;
+            $dataset = $datasetMatch->toArray();
 
             $namedEntities = array();
-            foreach ($datasetMatch['named_entities'] as $n) {
+            foreach ($dataset['named_entities'] as $n) {
                 $namedEntities[] = $n['name'];
             }
 
+            $collections = array();
+            foreach ($dataset['collections'] as $c) {
+                $collections[] = $c['name'];
+            }
+
             $toIndex = [
-                'abstract' => $dataset['metadata']['summary']['abstract'],
-                'keywords' => $dataset['metadata']['summary']['keywords'],
-                'description' => $dataset['metadata']['summary']['description'],
-                'shortTitle' => $dataset['metadata']['summary']['shortTitle'],
-                'title' => $dataset['metadata']['summary']['title'],
-                'publisherName' => $dataset['metadata']['summary']['publisher']['publisherName'],
-                'startDate' => $dataset['metadata']['provenance']['temporal']['startDate'],
-                'endDate' => $dataset['metadata']['provenance']['temporal']['endDate'],
-                'physicalSampleAvailability' => explode(',', $dataset['metadata']['coverage']['physicalSampleAvailability']),
-                'conformsTo' => explode(',', $dataset['metadata']['accessibility']['formatAndStandards']['conformsTo']),
+                'abstract' => $metadata['metadata']['summary']['abstract'],
+                'keywords' => $metadata['metadata']['summary']['keywords'],
+                'description' => $metadata['metadata']['summary']['description'],
+                'shortTitle' => $metadata['metadata']['summary']['shortTitle'],
+                'title' => $metadata['metadata']['summary']['title'],
+                'publisherName' => $metadata['metadata']['summary']['publisher']['publisherName'],
+                'startDate' => $metadata['metadata']['provenance']['temporal']['startDate'],
+                'endDate' => $metadata['metadata']['provenance']['temporal']['endDate'],
+                'physicalSampleAvailability' => explode(',', $metadata['metadata']['coverage']['physicalSampleAvailability']),
+                'conformsTo' => explode(',', $metadata['metadata']['accessibility']['formatAndStandards']['conformsTo']),
                 'hasTechnicalMetadata' => (bool) $datasetMatch['has_technical_details'],
-                'named_entities' => $namedEntities
+                'named_entities' => $namedEntities,
+                'collections' => $collections
             ];
 
             $params = [

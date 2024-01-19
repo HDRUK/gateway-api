@@ -1669,5 +1669,771 @@ class EmailTemplatesSeeder extends Seeder
             ',
         ]);
 
+        // Cohort Discovery access has been banned.
+        EmailTemplate::create([
+            'identifier' => 'cohort.discovery.access.banned',
+            'subject' => 'Your Cohort Discovery access has been banned.',
+            'body' => '
+                <mjml>
+                    <mj-head>
+                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                        <mj-style inline="inline">
+                            .main-button {
+                                padding:10px;
+                                width:auto;
+                                -webkit-border-radius:5px;
+                                -moz-border-radius:5px;
+                                border-radius:5px;
+                                color:#FFFFFF;
+                            }
+                        </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                                Your Cohort Discovery access has been banned.
+                            </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column width="100%">
+                                <mj-text line-height="20px">
+                                    Dear [[USER_FIRSTNAME]],
+                                </mj-text>
+                                <mj-text line-height="30px">
+                                    This is an automated message to let you know that your access to the Cohort Discovery tool has been permanently removed. If you have any question or would like to discuss this further please raise a supportticket on the HDR UK Innovation Gateway.
+                                </mj-text>
+                                <mj-text>
+                                <mj-text>
+                                    Regards,<br/>
+                                    Gateway Cohort Discovery admin.
+                                </mj-text>
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+            ',
+        ]);
+
+        // Cohort Discovery access has been suspended.
+        EmailTemplate::create([
+            'identifier' => 'cohort.discovery.access.suspended',
+            'subject' => 'Your Cohort Discovery access has been suspended.',
+            'body' => '
+                <mjml>
+                    <mj-head>
+                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                        <mj-style inline="inline">
+                            .main-button {
+                                padding:10px;
+                                width:auto;
+                                -webkit-border-radius:5px;
+                                -moz-border-radius:5px;
+                                border-radius:5px;
+                                color:#FFFFFF;
+                            }
+                        </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                            <mj-column>
+                                <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                            <mj-column width="100%">
+                                <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">
+                                Your Cohort Discovery access has been suspended.
+                            </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column width="100%">
+                                <mj-text line-height="20px">
+                                    Dear [[USER_FIRSTNAME]],
+                                </mj-text>
+                                <mj-text line-height="30px">
+                                    This is an automated message to let you know that your access to the Cohort Discovery tool has suspended. If you have any question or would like to discuss this further please raise a supportticket on the HDR UK Innovation Gateway.
+                                </mj-text>
+                                <mj-text>
+                                <mj-text>
+                                    Regards,<br/>
+                                    Gateway Cohort Discovery admin.
+                                </mj-text>
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                        <mj-section>
+                            <mj-column>
+                                <mj-text align="center">
+                                    <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                                </mj-text>
+                                <mj-text color="#525252" align="center">
+                                    @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+
+                    </mj-body>
+                </mjml>
+            ',
+        ]);
+
+        $apiIntegrationDevCreateBody = '
+            <mjml>
+                <mj-head>
+                    <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                    <mj-style inline="inline">
+                    .main-button {
+                    padding:10px;
+                    width:auto;
+                    -webkit-border-radius:5px;
+                    -moz-border-radius:5px;
+                    border-radius:5px;
+                    color:#FFFFFF;
+                    }
+                    </mj-style>
+                </mj-head>
+                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                    <mj-section background-color="#ffffff">
+                    <mj-column>
+                        <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                    </mj-column>
+                    </mj-section>
+
+                    <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                    <mj-column width="100%">
+                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
+                        </mj-text>
+                    </mj-column>
+                    </mj-section>
+                    <mj-section>
+                    <mj-column>
+                        <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                            Dear [[USER_FIRST_NAME]],<br></br>
+                            [[API_NAME]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
+                            To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
+                        </mj-text>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View app integrations</mj-button>
+                    </mj-column>
+                    </mj-section>
+                    <mj-section>
+                    <mj-column>
+                        <mj-text align="center">
+                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                        </mj-text>
+                        <mj-text color="#3C3C3B" align="center">
+                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                        </mj-text>
+                    </mj-column>
+                    </mj-section>
+                </mj-body>
+            </mjml>
+        ';
+
+        // APIintegration - create - developer
+        EmailTemplate::create([
+            'identifier' => 'apiintegration.developer.create',
+            'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
+            'body' => $apiIntegrationDevCreateBody,
+        ]);
+
+        // APIintegration - create - team.admin
+        EmailTemplate::create([
+            'identifier' => 'apiintegration.team.admin.create',
+            'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
+            'body' => $apiIntegrationDevCreateBody,
+        ]);
+
+        // APIintegration - create - other roles
+        EmailTemplate::create([
+            'identifier' => 'apiintegration.other.create',
+            'subject' => '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.',
+            'body' => '
+                <mjml>
+                    <mj-head>
+                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                        <mj-style inline="inline">
+                        .main-button {
+                        padding:10px;
+                        width:auto;
+                        -webkit-border-radius:5px;
+                        -moz-border-radius:5px;
+                        border-radius:5px;
+                        color:#FFFFFF;
+                        }
+                        </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                        <mj-column>
+                            <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                        </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                        <mj-column width="100%">
+                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
+                            </mj-text>
+                        </mj-column>
+                        </mj-section>
+                        <mj-section>
+                        <mj-column>
+                            <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                                Dear [[USER_FIRST_NAME]],<br></br>
+                                [[API_NAME]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
+                                To review or edit the integration, contact your Team Administrator(s) or Developer(s):<br></br>
+                                [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
+                            </mj-text>
+                        </mj-column>
+                        </mj-section>
+                        <mj-section>
+                        <mj-column>
+                            <mj-text align="center">
+                            <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                            </mj-text>
+                            <mj-text color="#3C3C3B" align="center">
+                            @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                            </mj-text>
+                        </mj-column>
+                        </mj-section>
+                    </mj-body>
+                </mjml>
+            ',
+        ]);
+
+        $fmaIntegrationCreateSubject = '[[API_NAME]] has been added as an API Integration to the [[TEAM_NAME]] team on the Gateway.';
+
+        $fmaIntegrationDevCreateBody = '
+            <mjml>
+                <mj-head>
+                    <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                    <mj-style inline="inline">
+                    .main-button {
+                    padding:10px;
+                    width:auto;
+                    -webkit-border-radius:5px;
+                    -moz-border-radius:5px;
+                    border-radius:5px;
+                    color:#FFFFFF;
+                    }
+                    </mj-style>
+                </mj-head>
+                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                    <mj-section background-color="#ffffff">
+                    <mj-column>
+                        <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                    </mj-column>
+                    </mj-section>
+
+                    <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                    <mj-column width="100%">
+                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
+                        </mj-text>
+                    </mj-column>
+                    </mj-section>
+                    <mj-section>
+                    <mj-column>
+                        <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                            Dear [[USER_FIRST_NAME]],<br></br>
+                            An integration for [[INTEGRATION_TYPE]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
+                            To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
+                        </mj-text>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View federated integrations</mj-button>
+                    </mj-column>
+                    </mj-section>
+                    <mj-section>
+                    <mj-column>
+                        <mj-text align="center">
+                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                        </mj-text>
+                        <mj-text color="#3C3C3B" align="center">
+                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                        </mj-text>
+                    </mj-column>
+                    </mj-section>
+                </mj-body>
+            </mjml>
+        ';
+
+        // FMAintegration - create - developer
+        EmailTemplate::create([
+            'identifier' => 'fmaintegration.developer.create',
+            'subject' => $fmaIntegrationCreateSubject,
+            'body' => $fmaIntegrationDevCreateBody,
+        ]);
+
+        // FMAintegration - create - team.admin
+        EmailTemplate::create([
+            'identifier' => 'fmaintegration.team.admin.create',
+            'subject' => $fmaIntegrationCreateSubject,
+            'body' => $fmaIntegrationDevCreateBody,
+        ]);
+
+        // FMAintegration - create - other roles
+        EmailTemplate::create([
+            'identifier' => 'fmaintegration.other.create',
+            'subject' => $fmaIntegrationCreateSubject,
+            'body' => '
+                <mjml>
+                <mj-head>
+                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                <mj-style inline="inline">
+                    .main-button {
+                    padding:10px;
+                    width:auto;
+                    -webkit-border-radius:5px;
+                    -moz-border-radius:5px;
+                    border-radius:5px;
+                    color:#FFFFFF;
+                    }
+                </mj-style>
+                </mj-head>
+                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                <mj-section background-color="#ffffff">
+                    <mj-column>
+                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                    </mj-column>
+                </mj-section>
+            
+                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                    <mj-column width="100%">
+                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
+                    </mj-text>
+                    </mj-column>
+                </mj-section>
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                        Dear [[USER_FIRST_NAME]],<br></br>
+                        An integration for [[INTEGRATION_TYPE]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
+                        To review or edit the integration, contact your Team Administrator(s) or Developer(s):<br></br>
+                        [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
+                    </mj-text>
+                    </mj-column>
+                </mj-section>
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="center">
+                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                    </mj-text>
+                    <mj-text color="#3C3C3B" align="center">
+                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                    </mj-text>
+                    </mj-column>
+                </mj-section>
+                </mj-body>
+            </mjml>
+            ',
+        ]);
+
+        $integrationDisabledSubject = 'An integration has been disabled for the [[TEAM_NAME]] team on the Gateway.';
+        
+        $integrationDevDisabledBody = '
+            <mjml>
+                <mj-head>
+                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                <mj-style inline="inline">
+                    .main-button {
+                    padding:10px;
+                    width:auto;
+                    -webkit-border-radius:5px;
+                    -moz-border-radius:5px;
+                    border-radius:5px;
+                    color:#FFFFFF;
+                    }
+                </mj-style>
+                </mj-head>
+                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                <mj-section background-color="#ffffff">
+                    <mj-column>
+                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                    </mj-column>
+                </mj-section>
+            
+                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                    <mj-column width="100%">
+                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
+                    </mj-text>
+                    </mj-column>
+                </mj-section>
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                        Dear [[USER_FIRST_NAME]],<br></br>
+                        This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
+                            To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
+                    </mj-text>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
+                    </mj-column>
+                </mj-section>
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="center">
+                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                    </mj-text>
+                    <mj-text color="#3C3C3B" align="center">
+                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                    </mj-text>
+                    </mj-column>
+                </mj-section>
+                </mj-body>
+            </mjml>
+        ';
+
+        // Integrations - disabled - developer
+        EmailTemplate::create([
+            'identifier' => 'fmaintegration.developer.disable',
+            'subject' => $integrationDisabledSubject,
+            'body' => $integrationDevDisabledBody,
+        ]);
+
+        // Integrations - disabled - team.admin
+        EmailTemplate::create([
+            'identifier' => 'fmaintegration.team.admin.disable',
+            'subject' => $integrationDisabledSubject,
+            'body' => $integrationDevDisabledBody,
+        ]);
+
+        // Integrations - disabled - other roles
+        EmailTemplate::create([
+            'identifier' => 'fmaintegration.other.disable',
+            'subject' => $integrationDisabledSubject,
+            'body' => '
+                <mjml>
+                    <mj-head>
+                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                        <mj-style inline="inline">
+                        .main-button {
+                        padding:10px;
+                        width:auto;
+                        -webkit-border-radius:5px;
+                        -moz-border-radius:5px;
+                        border-radius:5px;
+                        color:#FFFFFF;
+                        }
+                        </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                        <mj-column>
+                            <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                        </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                        <mj-column width="100%">
+                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
+                            </mj-text>
+                        </mj-column>
+                        </mj-section>
+                        <mj-section>
+                        <mj-column>
+                            <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                                Dear [[USER_FIRST_NAME]],<br></br>
+                                This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
+                                To review or edit the integration, contact your Team Administrator(s) or Developer(s):
+                    [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
+                            </mj-text>
+                        </mj-column>
+                        </mj-section>
+                        <mj-section>
+                        <mj-column>
+                            <mj-text align="center">
+                            <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                            </mj-text>
+                            <mj-text color="#3C3C3B" align="center">
+                            @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                            </mj-text>
+                        </mj-column>
+                        </mj-section>
+                    </mj-body>
+                </mjml>
+            ',
+        ]);
+
+        $integrationDeletedSubject = 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.';
+        
+        $integrationDevDeletedBody = '
+            <mjml>
+                <mj-head>
+                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                <mj-style inline="inline">
+                    .main-button {
+                    padding:10px;
+                    width:auto;
+                    -webkit-border-radius:5px;
+                    -moz-border-radius:5px;
+                    border-radius:5px;
+                    color:#FFFFFF;
+                    }
+                </mj-style>
+                </mj-head>
+                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                <mj-section background-color="#ffffff">
+                    <mj-column>
+                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                    </mj-column>
+                </mj-section>
+            
+                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                    <mj-column width="100%">
+                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was deleted on the Gateway for<br> [[TEAM_NAME]].
+                    </mj-text>
+                    </mj-column>
+                </mj-section>
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                        Dear [[USER_FIRST_NAME]],<br></br>
+                        This is an automated notification that [[DISABLER]] deleted an integration on the HDR Innovation Gateway. This is not reversible.<br></br>
+                        To review or edit integrations, click the link below or visit your account on the Gateway.<br></br>
+                    </mj-text>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
+                    </mj-column>
+                </mj-section>
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="center">
+                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                    </mj-text>
+                    <mj-text color="#3C3C3B" align="center">
+                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                    </mj-text>
+                    </mj-column>
+                </mj-section>
+                </mj-body>
+            </mjml>
+        ';
+
+        // Integrations - deleted - developer
+        EmailTemplate::create([
+            'identifier' => 'integration.developer.delete',
+            'subject' => $integrationDeletedSubject,
+            'body' => $integrationDevDeletedBody,
+        ]);
+
+        // Integrations - deleted - team.admin
+        EmailTemplate::create([
+            'identifier' => 'integration.team.admin.delete',
+            'subject' => $integrationDeletedSubject,
+            'body' => $integrationDevDeletedBody,
+        ]);
+
+        // Integrations - deleted - other roles
+        EmailTemplate::create([
+            'identifier' => 'integration.other.delete',
+            'subject' => $integrationDeletedSubject,
+            'body' => '
+                <mjml>
+                    <mj-head>
+                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                        <mj-style inline="inline">
+                        .main-button {
+                        padding:10px;
+                        width:auto;
+                        -webkit-border-radius:5px;
+                        -moz-border-radius:5px;
+                        border-radius:5px;
+                        color:#FFFFFF;
+                        }
+                        </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                        <mj-section background-color="#ffffff">
+                        <mj-column>
+                            <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                        </mj-column>
+                        </mj-section>
+
+                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                        <mj-column width="100%">
+                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was deleted on the Gateway for<br> [[TEAM_NAME]].
+                            </mj-text>
+                        </mj-column>
+                        </mj-section>
+                        <mj-section>
+                        <mj-column>
+                            <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                                Dear [[USER_FIRST_NAME]],<br></br>
+                                This is an automated notification that [[DISABLER]] deleted an integration on the HDR Innovation Gateway. This is not reversible.<br></br>
+                                To review or edit integrations, contact your Team Administrator(s) or Developer(s):
+                    [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
+                            </mj-text>
+                        </mj-column>
+                        </mj-section>
+                        <mj-section>
+                        <mj-column>
+                            <mj-text align="center">
+                            <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                            </mj-text>
+                            <mj-text color="#3C3C3B" align="center">
+                            @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                            </mj-text>
+                        </mj-column>
+                        </mj-section>
+                    </mj-body>
+                </mjml>
+            ',
+        ]);
+
+        $syncErrorSubject = 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.';
+        
+        $syncErrorDevBody = '
+            <mjml>
+                <mj-head>
+                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                <mj-style inline="inline">
+                    .main-button {
+                    padding:10px;
+                    width:auto;
+                    -webkit-border-radius:5px;
+                    -moz-border-radius:5px;
+                    border-radius:5px;
+                    color:#FFFFFF;
+                    }
+                </mj-style>
+                </mj-head>
+                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                <mj-section background-color="#ffffff">
+                    <mj-column>
+                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                    </mj-column>
+                </mj-section>
+            
+                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                    <mj-column width="100%">
+                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
+                    </mj-text>
+                    </mj-column>
+                </mj-section>
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                        Dear [[USER_FIRST_NAME]],<br></br>
+                        This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>
+                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
+                    </mj-text>
+                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
+                    </mj-column>
+                </mj-section>
+                <mj-section>
+                    <mj-column>
+                    <mj-text align="center">
+                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                    </mj-text>
+                    <mj-text color="#3C3C3B" align="center">
+                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                    </mj-text>
+                    </mj-column>
+                </mj-section>
+                </mj-body>
+            </mjml>
+        ';
+
+        // Sync Error - developer
+        EmailTemplate::create([
+            'identifier' => 'integration.developer.error',
+            'subject' => $syncErrorSubject,
+            'body' => $syncErrorDevBody,
+        ]);
+
+        // Sync Error - team.admin
+        EmailTemplate::create([
+            'identifier' => 'integration.team.admin.error',
+            'subject' => $syncErrorSubject,
+            'body' => $syncErrorDevBody,
+        ]);
+
+        // Sync Error - other roles
+        EmailTemplate::create([
+            'identifier' => 'integration.other.error',
+            'subject' => $syncErrorSubject,
+            'body' => '
+                <mjml>
+                    <mj-head>
+                    <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
+                    <mj-style inline="inline">
+                        .main-button {
+                        padding:10px;
+                        width:auto;
+                        -webkit-border-radius:5px;
+                        -moz-border-radius:5px;
+                        border-radius:5px;
+                        color:#FFFFFF;
+                        }
+                    </mj-style>
+                    </mj-head>
+                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
+                    <mj-section background-color="#ffffff">
+                        <mj-column>
+                        <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
+                        </mj-column>
+                    </mj-section>
+                
+                    <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
+                        <mj-column width="100%">
+                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An automation error occurred for an integration on the Gateway for<br> [[TEAM_NAME]].
+                        </mj-text>
+                        </mj-column>
+                    </mj-section>
+                    <mj-section>
+                        <mj-column>
+                        <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                            Dear [[USER_FIRST_NAME]],<br></br>
+                            This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>
+                            To review or edit the integration, contact your Team Administrator(s) or Developer(s):
+                            [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
+                        </mj-text>
+                        </mj-column>
+                    </mj-section>
+                    <mj-section>
+                        <mj-column>
+                        <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
+                            Errors:<br></br>
+                            [[LIST_OF_ERRORS]]<br></br>
+                            Success:<br></br>
+                            [[LIST_OF_SUCCESS]]<br></br>
+                        </mj-text>
+                        </mj-column>
+                    </mj-section>
+                    <mj-section>
+                        <mj-column>
+                        <mj-text align="center">
+                            <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
+                        </mj-text>
+                        <mj-text color="#3C3C3B" align="center">
+                            @HDR UK [[CURRENT_YEAR]]. All rights reserved.
+                        </mj-text>
+                        </mj-column>
+                    </mj-section>
+                    </mj-body>
+                </mjml>
+            ',
+        ]);
     }
 }

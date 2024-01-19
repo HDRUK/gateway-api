@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Collection;
 use App\Models\DataVersion;
 use App\Models\NamedEntities;
 use Illuminate\Database\Eloquent\Model;
@@ -69,6 +70,14 @@ class Dataset extends Model
     public function versions(): HasMany
     {
         return $this->hasMany(DatasetVersion::class, 'dataset_id');
+    }
+
+    /**
+     * The collections that the dataset belongs to.
+     */
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(Collection::class, 'collection_has_datasets');
     }
 
     /**
