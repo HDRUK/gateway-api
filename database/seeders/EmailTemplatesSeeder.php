@@ -1615,7 +1615,7 @@ class EmailTemplatesSeeder extends Seeder
             
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
-                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
+                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was deleted on the Gateway for<br> [[TEAM_NAME]].
                     </mj-text>
                     </mj-column>
                 </mj-section>
@@ -1623,8 +1623,8 @@ class EmailTemplatesSeeder extends Seeder
                     <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
                         Dear [[USER_FIRST_NAME]],<br></br>
-                        This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
-                            To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
+                        This is an automated notification that [[DISABLER]] deleted an integration on the HDR Innovation Gateway. This is not reversible.<br></br>
+                        To review or edit integrations, click the link below or visit your account on the Gateway.<br></br>
                     </mj-text>
                     <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
                     </mj-column>
@@ -1685,7 +1685,7 @@ class EmailTemplatesSeeder extends Seeder
 
                         <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                         <mj-column width="100%">
-                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
+                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was deleted on the Gateway for<br> [[TEAM_NAME]].
                             </mj-text>
                         </mj-column>
                         </mj-section>
@@ -1693,8 +1693,8 @@ class EmailTemplatesSeeder extends Seeder
                         <mj-column>
                             <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
                                 Dear [[USER_FIRST_NAME]],<br></br>
-                                This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
-                                To review or edit the integration, contact your Team Administrator(s) or Developer(s):
+                                This is an automated notification that [[DISABLER]] deleted an integration on the HDR Innovation Gateway. This is not reversible.<br></br>
+                                To review or edit integrations, contact your Team Administrator(s) or Developer(s):
                     [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                             </mj-text>
                             <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
@@ -1883,8 +1883,8 @@ class EmailTemplatesSeeder extends Seeder
                     <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
                         Dear [[USER_FIRST_NAME]],<br></br>
-                        This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
-                            To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
+                        This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>
+                        To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
                     </mj-text>
                     <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
                     </mj-column>
@@ -1954,7 +1954,8 @@ class EmailTemplatesSeeder extends Seeder
                         <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
                             Dear [[USER_FIRST_NAME]],<br></br>
                             This is an automated notification that on [[DATE_OF_ERROR]]  there was an error during the scheduled cloud run for the [[INTEGRATION_TYPE]] integration. Summary of the synchronisations is below.<br></br>
-                            To review or edit the integration, click the link below or visit your account on the Gateway.
+                            To review or edit the integration, contact your Team Administrator(s) or Developer(s):
+                            [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                         </mj-text>
                         <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
                         </mj-column>
