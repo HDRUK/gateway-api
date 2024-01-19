@@ -1220,7 +1220,7 @@ class EmailTemplatesSeeder extends Seeder
 
                     <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]]
+                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
                         </mj-text>
                     </mj-column>
                     </mj-section>
@@ -1290,7 +1290,7 @@ class EmailTemplatesSeeder extends Seeder
 
                         <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                         <mj-column width="100%">
-                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]]
+                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
                             </mj-text>
                         </mj-column>
                         </mj-section>
@@ -1302,7 +1302,6 @@ class EmailTemplatesSeeder extends Seeder
                                 To review or edit the integration, contact your Team Administrator(s) or Developer(s):<br></br>
                                 [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                             </mj-text>
-                            <mj-button css-class="main-section" background-color="#00ACCA" href="#">View app integrations</mj-button>
                         </mj-column>
                         </mj-section>
                         <mj-section>
@@ -1316,7 +1315,7 @@ class EmailTemplatesSeeder extends Seeder
                         </mj-column>
                         </mj-section>
                     </mj-body>
-                    </mjml>
+                </mjml>
             ',
         ]);
 
@@ -1355,7 +1354,7 @@ class EmailTemplatesSeeder extends Seeder
 
                     <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
-                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]]
+                        <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
                         </mj-text>
                     </mj-column>
                     </mj-section>
@@ -1363,10 +1362,10 @@ class EmailTemplatesSeeder extends Seeder
                     <mj-column>
                         <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
                             Dear [[USER_FIRST_NAME]],<br></br>
-                            An integration of [[INTEGRATION_TYPE]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
+                            An integration for [[INTEGRATION_TYPE]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
                             To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
                         </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View app integrations</mj-button>
+                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View federated integrations</mj-button>
                     </mj-column>
                     </mj-section>
                     <mj-section>
@@ -1425,7 +1424,7 @@ class EmailTemplatesSeeder extends Seeder
             
                 <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
                     <mj-column width="100%">
-                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]]
+                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">Congratulations! A new integration has been created for<br> [[TEAM_NAME]].
                     </mj-text>
                     </mj-column>
                 </mj-section>
@@ -1433,11 +1432,10 @@ class EmailTemplatesSeeder extends Seeder
                     <mj-column>
                     <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
                         Dear [[USER_FIRST_NAME]],<br></br>
-                        An integration of [[INTEGRATION_TYPE]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
+                        An integration for [[INTEGRATION_TYPE]] has been created to enable automated integration with the HDR Innovation Gateway.<br></br>
                         To review or edit the integration, contact your Team Administrator(s) or Developer(s):<br></br>
                         [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                     </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">View federated integrations</mj-button>
                     </mj-column>
                 </mj-section>
                 <mj-section>
@@ -1566,7 +1564,6 @@ class EmailTemplatesSeeder extends Seeder
                                 To review or edit the integration, contact your Team Administrator(s) or Developer(s):
                     [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                             </mj-text>
-                            <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
                         </mj-column>
                         </mj-section>
                         <mj-section>
@@ -1660,7 +1657,7 @@ class EmailTemplatesSeeder extends Seeder
         // Integrations - deleted - other roles
         EmailTemplate::create([
             'identifier' => 'integration.other.delete',
-            'subject' => $integrationDeleteddSubject,
+            'subject' => $integrationDeletedSubject,
             'body' => '
                 <mjml>
                     <mj-head>
@@ -1697,7 +1694,6 @@ class EmailTemplatesSeeder extends Seeder
                                 To review or edit integrations, contact your Team Administrator(s) or Developer(s):
                     [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                             </mj-text>
-                            <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
                         </mj-column>
                         </mj-section>
                         <mj-section>
@@ -1714,140 +1710,6 @@ class EmailTemplatesSeeder extends Seeder
                 </mjml>
             ',
         ]);
-
-
-
-
-
-
-        $integrationDeletedSubject = 'An integration has been deleted for the [[TEAM_NAME]] team on the Gateway.';
-        
-        $integrationDeletedDevBody = '
-            <mjml>
-                <mj-head>
-                <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                <mj-style inline="inline">
-                    .main-button {
-                    padding:10px;
-                    width:auto;
-                    -webkit-border-radius:5px;
-                    -moz-border-radius:5px;
-                    border-radius:5px;
-                    color:#FFFFFF;
-                    }
-                </mj-style>
-                </mj-head>
-                <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                <mj-section background-color="#ffffff">
-                    <mj-column>
-                    <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                    </mj-column>
-                </mj-section>
-            
-                <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                    <mj-column width="100%">
-                    <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
-                        Dear [[USER_FIRST_NAME]],<br></br>
-                        This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
-                            To review or edit the integration, click the link below or visit your account on the Gateway.<br></br>
-                    </mj-text>
-                    <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
-                    </mj-column>
-                </mj-section>
-                <mj-section>
-                    <mj-column>
-                    <mj-text align="center">
-                        <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                    </mj-text>
-                    <mj-text color="#3C3C3B" align="center">
-                        @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                    </mj-text>
-                    </mj-column>
-                </mj-section>
-                </mj-body>
-            </mjml>
-        ';
-
-        // Integrations - deleted - developer
-        EmailTemplate::create([
-            'identifier' => 'integration.developer.delete',
-            'subject' => $integrationDeletedSubject,
-            'body' => $integrationDeletedDevBody,
-        ]);
-
-        // Integrations - deleted - team.admin
-        EmailTemplate::create([
-            'identifier' => 'integration.team.admin.delete',
-            'subject' => $integrationDeletedSubject,
-            'body' => $integrationDeletedDevBody,
-        ]);
-
-        // Integrations - deleted - other roles
-        EmailTemplate::create([
-            'identifier' => 'integration.other.delete',
-            'subject' => $integrationDeletedSubject,
-            'body' => '
-                <mjml>
-                    <mj-head>
-                        <mj-font name="Museo Sans Rounded" href="https://fonts.cdnfonts.com/css/museo-sans-rounded" />
-                        <mj-style inline="inline">
-                        .main-button {
-                        padding:10px;
-                        width:auto;
-                        -webkit-border-radius:5px;
-                        -moz-border-radius:5px;
-                        border-radius:5px;
-                        color:#FFFFFF;
-                        }
-                        </mj-style>
-                    </mj-head>
-                    <mj-body background-color="#FFFFFF" style="font-family:Museo Sans Rounded,sans-serif;font-size:14px; color:#3C3C3B">
-                        <mj-section background-color="#ffffff">
-                        <mj-column>
-                            <mj-image src="https://storage.googleapis.com/public_files_dev/hdruk_logo_email.jpg" href="https://web.www.healthdatagateway.org" padding="10px 0" alt="" align="center" width="226px" />
-                        </mj-column>
-                        </mj-section>
-
-                        <mj-section background-url="https://storage.googleapis.com/public_files_dev/hdruk_header_email.jpg" background-size="cover" background-repeat="no-repeat">
-                        <mj-column width="100%">
-                            <mj-text align="center" color="#fff" font-size="24px" padding="30px 0">An integration was disabled on the Gateway for<br> [[TEAM_NAME]].
-                            </mj-text>
-                        </mj-column>
-                        </mj-section>
-                        <mj-section>
-                        <mj-column>
-                            <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif">
-                                Dear [[USER_FIRST_NAME]],<br></br>
-                                This is an automated notification that [[DISABLER]] disabled an integration on the HDR Innovation Gateway.<br></br>
-                                To review or edit the integration, contact your Team Administrator(s) or Developer(s):
-                    [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
-                            </mj-text>
-                            <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
-                        </mj-column>
-                        </mj-section>
-                        <mj-section>
-                        <mj-column>
-                            <mj-text align="center">
-                            <a style="text-decoration:none" href="https://web.www.healthdatagateway.org">www.healthdatagateway.org</a>
-                            </mj-text>
-                            <mj-text color="#3C3C3B" align="center">
-                            @HDR UK [[CURRENT_YEAR]]. All rights reserved.
-                            </mj-text>
-                        </mj-column>
-                        </mj-section>
-                    </mj-body>
-                </mjml>
-            ',
-        ]);
-
-
-
 
         $syncErrorSubject = 'An automation error occurred for the [[TEAM_NAME]] team on the Gateway.';
         
@@ -1957,7 +1819,6 @@ class EmailTemplatesSeeder extends Seeder
                             To review or edit the integration, contact your Team Administrator(s) or Developer(s):
                             [[LIST_TEAM_ADMINS_AND_DEVELOPERS]]
                         </mj-text>
-                        <mj-button css-class="main-section" background-color="#00ACCA" href="#">View integrations</mj-button>
                         </mj-column>
                     </mj-section>
                     <mj-section>
