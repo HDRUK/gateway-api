@@ -8,6 +8,9 @@ use App\Models\EnquiryThread;
 
 use App\Models\Team;
 
+use App\Exceptions\AliasReplyScannerException;
+use Exception;
+
 use App\Jobs\SendEmailJob;
 use App\Models\EmailTemplate;
 
@@ -120,14 +123,20 @@ class AliasReplyScanner {
         
         //find the team from the thread the message belongs to
         $teamId = $enquiryMessage->thread->team_id;
-        $team = Team::with("teamUserRoles")
-                ->where("id",$teamId)
-                ->first();
-       
-        //from the team find all DAR managers 
-        $darManagers = $team->teamUserRoles
-                    ->where("role_name","custodian.dar.manager")
-                    ->where("enabled",true);
+
+        try{
+            $team = Team::with("teamUserRoles")
+                    ->where("id",$teamId)
+                    ->first();
+
+            //from the team find all DAR managers 
+            $darManagers = $team->teamUserRoles
+                        ->where("role_name","custodian.dar.manager")
+                        ->where("enabled",true);
+
+        }catch (Exception $e) {
+            throw new AliasReplyScannerException("Could not retrieve the team (".$teamId.") and teamUserRoles");
+        }
 
         //email each dar manager that a new message has been received
         $sentEmails = array();

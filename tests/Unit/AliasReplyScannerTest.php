@@ -6,6 +6,8 @@ use App\Mail\Email;
 use App\Models\EmailTemplate;
 use App\Models\EnquiryMessages;
 use App\Models\EnquiryThread;
+use App\Models\Team;
+use App\Models\Role;
 
 use Tests\TestCase;
 use Database\Seeders\EnquiryThreadSeeder;
@@ -16,7 +18,7 @@ use Database\Seeders\TeamSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TeamUserHasRoleSeeder;
 use Database\Seeders\RoleSeeder;
-use Illuminate\Testing\Fluent\AssertableJson;
+use App\Exceptions\AliasReplyScannerException;
 
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -214,6 +216,50 @@ class AliasReplyScannerTest extends TestCase
 
     }
 
+    public function test_it_can_scrape_an_email_and_email_dar_managers(): void
+    {
+
+        $messages = ARS::getNewMessagesSafe();
+        $firstMessage = $messages[0];
+        $alias = ARS::getAlias($firstMessage);
+        $enquiryThread = ARS::getThread($alias);
+
+
+        $teamId = $enquiryThread->team_id;
+        $team = Team::with("users")
+                ->where("id",$teamId)
+                ->first();
+
+        $nDarManagers = $team->teamUserRoles
+            ->where("role_name","custodian.dar.manager")
+            ->where("enabled",true)
+            ->count();
+        
+        $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage,$enquiryThread->id);
+
+        $response = ARS::sendEmail($enquiryMessage->id);    
+        //number of emails sent should be equal to the number of dar managers
+        $this->assertCount($nDarManagers,$response);
+    }
+
+    public function test_it_will_fail_if_team_has_been_deleted(): void
+    {
+
+        $messages = ARS::getNewMessagesSafe();
+        $firstMessage = $messages[0];
+        $alias = ARS::getAlias($firstMessage);
+        $enquiryThread = ARS::getThread($alias);
+
+
+        $teamId = $enquiryThread->team_id;
+        Team::where("id",$teamId)->delete();
+        $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage,$enquiryThread->id);
+        
+        $this->expectException(AliasReplyScannerException::class);
+        ARS::sendEmail($enquiryMessage->id);
+         
+
+    }
 
 
 }
