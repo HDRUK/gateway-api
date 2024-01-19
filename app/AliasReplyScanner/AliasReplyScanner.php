@@ -2,7 +2,6 @@
 
 namespace App\AliasReplyScanner;
 
-
 use App\Models\EnquiryMessages;
 use App\Models\EnquiryThread;
 
@@ -20,22 +19,14 @@ class AliasReplyScanner {
 
     public function getImapClient() {
         $cm = new ClientManager($options = []);
-        $client = $cm->make([
-            'host'          => env('ENQUIRY_IMAP_HOST'),
-            'port'          => env('ENQUIRY_IMAP_PORT'),
-            'encryption'    => env('ENQUIRY_IMAP_ENCRYPTION'),
-            'validate_cert' => env('ENQUIRY_IMAP_VALIDATE_CERT'),
-            'username'      => env('ENQUIRY_IMAP_USERNAME'),
-            'password'      => env('ENQUIRY_IMAP_PASSWORD'),
-            'protocol'      => env('ENQUIRY_IMAP_PROTOCOL'),
-        ]);
+        $client = $cm->make(config('mail.mailers.ars.imap'));
         $client->connect();
         return $client;
     }
 
     public function getNewMessages(){
         $client = $this->getImapClient();
-        $inbox = $client->getFolder(env('ENQUIRY_IMAP_INBOX_NAME'));
+        $inbox = $client->getFolder(config('mail.mailers.ars.inbox'));
         return $inbox->messages()->all()->get();
     }
 
