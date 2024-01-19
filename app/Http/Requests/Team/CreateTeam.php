@@ -41,7 +41,6 @@ class CreateTeam extends BaseFormRequest
                 'boolean',
             ],
             'is_admin' => [
-                'required',
                 'boolean',
             ],
             'member_of' => [
@@ -62,7 +61,6 @@ class CreateTeam extends BaseFormRequest
                 'string',
             ],
             'application_form_updated_on' => [
-                'required',
                 'string',
             ],
             'notifications' => [
