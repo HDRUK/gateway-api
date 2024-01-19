@@ -5,7 +5,8 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
-use App\Models\DarIntegration;
+use Database\Seeders\DarIntegrationSeeder;
+use Database\Seeders\MinimalUserSeeder;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -18,7 +19,10 @@ class DarIntegrationTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            DarIntegrationSeeder::class,
+        ]);
 
         $response = $this->postJson('api/v1/auth', [
             'email' => 'developers@hdruk.ac.uk',

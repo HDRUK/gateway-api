@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Exception;
 use App\Models\Tag;
-use Illuminate\Http\Request;
 use App\Http\Requests\Tag\GetTag;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Tag\EditTag;
@@ -54,7 +53,7 @@ class TagController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tags = Tag::where('enabled', 1)->paginate(Config::get('constants.per_page'));
+        $tags = Tag::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         return response()->json(
             $tags

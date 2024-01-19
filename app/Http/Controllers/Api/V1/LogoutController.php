@@ -41,9 +41,16 @@ class LogoutController extends Controller
      */
     public function logout(Request $request): mixed
     {
-        $jwt = $request->header('Authorization');
+        $jwt = null;
+
+        if ($request->cookie('token')) {
+            $jwt = $request->cookie('token');
+        } else {
+            $jwt = explode(' ', $request->header('Authorization'))[1];
+        }
 
         if (AuthorisationCode::where(['jwt' => $jwt])->delete()) {
+            $request->session()->flush();
             return response()->json([
                 'message' => 'OK',
             ], 200);

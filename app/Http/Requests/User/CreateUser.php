@@ -28,6 +28,15 @@ class CreateUser extends BaseFormRequest
                 'email',
                 'unique:users,email',
             ],
+            'secondary_email' => [
+                'nullable',
+                'string',
+                'email',
+            ],
+            'preferred_email' => [
+                'string',
+                'in:primary,secondary',
+            ],
             'password' => [
                 'nullable', 
                 'string',
@@ -54,7 +63,8 @@ class CreateUser extends BaseFormRequest
                 'string',
             ],
             'orcid' => [
-                'integer',
+                'nullable',
+                'string',
             ],
             'contact_feedback' => [
                 'required', 
@@ -69,6 +79,9 @@ class CreateUser extends BaseFormRequest
             ],
             'mongo_object_id' => [
                 'nullable', 'string',
+            ],
+            'terms' => [
+                'boolean',
             ],
         ];
     }

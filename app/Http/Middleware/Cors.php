@@ -13,7 +13,7 @@ class Cors
         header('Access-Control-Allow-Credentials: true');
 
         $headers = [
-            'Access-Control-Allow-Methods' => 'GET, POST, PUT, DELETE, OPTIONS',
+            'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
             'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
         ];
 
@@ -23,7 +23,7 @@ class Cors
 
         $response = $next($request);
         foreach ($headers as $key => $value)
-            $response->header($key, $value);
+            $response->headers->add([$key => $value]);
         return $response;
     }
 }

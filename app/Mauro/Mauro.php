@@ -119,7 +119,8 @@ class Mauro {
     public function getDatasetById (string $datasetId): array
     {
         $url = env('MAURO_API_URL');
-        $url .= '/dataModels/' . $datasetId . '/metadata';
+        $url .= '/dataModels/' . $datasetId;
+        $overallResponse = [];
 
         try {
             $response = Http::withHeaders([
@@ -128,7 +129,12 @@ class Mauro {
                 ->acceptJson()
                 ->get($url);
 
-            return $response->json();
+            $overallResponse['DataModel'] = [
+                'responseJson' => $response->json(),
+                'responseStatus' => $response->status(),
+            ];
+            return $overallResponse;
+            
         } catch (Exception $e) {
             throw new MauroServiceException($e->getMessage());
         }
@@ -330,6 +336,139 @@ class Mauro {
     }
 
     /**
+     * Update Data Model within Mauro Data Mapper for $dataModelId
+     * 
+     * @param string $label             Represents the short text associated with this data model
+     * @param string $description       Represents the long text associated with this data model
+     * @param string $author            Represents the Author name associated with this data model
+     * @param string $organisation      Represents the Organisation associated with this author for this data model
+     * @param string $parentFolderId    Represents the parent folder id to create this data model under
+     * @param string $dataModelId       Represents data model id
+     * 
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     */
+    public function updateDataModel(string $label, string $description, string $author, string $organisation, string $parentFolderId, array $jsonObj, string $dataModelId): array
+    {
+        $overallResponse = [];
+
+        $url = env('MAURO_API_URL') . '/dataModels/' . $dataModelId;
+
+        try {
+            // Structural meta data held within the incoming dataset, will
+            // need to be created as a Schema->DataClass, and not be held
+            // along with the summary metadata
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+                ->acceptJson()
+                ->put($url, [
+                    'label' => $label,
+                    'description' => $description,
+                    'author' => $author,
+                    'organisation' => $organisation,
+                    'classifiers' => [],
+                    // This is required to align the HDR schema profile to the data model under Mauro.
+                    // Presumably this is mainly driven by `namespace` here, but documentation is lacking
+                    // as far as this metadata object data is concerned
+                    'metadata' => $this->generateMetadataFromMap($jsonObj),
+                ]);
+
+            $overallResponse['DataModel'] = [
+                'responseJson' => $response->json(),
+                'responseStatus' => $response->status(),
+            ];
+
+            return $overallResponse;
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
+    // PUT https://api.dev.hdruk.dev/mauro/api/dataModels/d0a30639-14eb-4ecc-9690-980cc0a520c8/newBranchModelVersion
+    // {asynchronous: false}
+    public function duplicateDataModel(string $id) 
+    {
+        $url = env('MAURO_API_URL').'/dataModels/' . $id . '/newBranchModelVersion';
+        try {
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+                ->acceptJson()
+                ->put($url,[
+                    'asynchronous' => false
+                ]);
+            
+            return $response->json();
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
+    /**
+     * Creates a new Data Model within Mauro Data Mapper underneath $parentFolderId, and mostly
+     * acts the same as the function above, but with a slight difference in that the type of
+     * this model is set to Data Standard to define a dynamic profile within mauro which
+     * maps to a particular schema shape
+     * 
+     * @param string $label             Represents the short text associated with this data model
+     * @param string $description       Represents the long text associated with this data model
+     * @param string $author            Represents the author name associated with this data model
+     * @param string $organisation      Represents the organisation associated with this author for this data model
+     * @param string $parentFolderId    Represents the parent folder id to create this data model under
+     * @param array $jsonObj            Represents the schema to be created for this data model
+     * 
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     */
+    public function createDataStandard(string $label, string $description, string $author, string $organisation, string $parentFolderId, array $jsonObj): array
+    {
+        $overallResponse = [];
+
+        $postUrl = env('MAURO_API_URL');
+        $postUrl .= '/folders/' . $parentFolderId . '/dataModels';
+
+        try {
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+            ->acceptJson()
+            ->post($postUrl, [
+                'label' => $label,
+                'description' => $description,
+                'author' => $author,
+                'organisation' => $organisation,
+                'type' => 'Data Standard',
+                'classifiers' => [],
+                'metadata' => $this->makeDataStandardMetadata($jsonObj),
+            ]);
+
+            $overallResponse['DataModel'] = [
+                'responseJson' => $response->json(),
+                'responseStatus' => $response->status(),
+            ];
+
+            if ($overallResponse['DataModel']['responseStatus'] === 201) {
+                // Successfully created the data model. Now create class and elements
+                $map = $this->makeDataStandardDataClassAndDataElementsMap($jsonObj);
+                $parentId = $overallResponse['DataModel']['responseJson']['id'];
+
+                foreach ($map as $class) {
+                    $responseClass = $this->createDataClass($parentId, $class['label'], $class['description']);
+                    foreach ($class['elements'] as $element) {
+                        if (isset($responseClass['id'])) {
+                            $this->createDataElement($parentId, $responseClass['id'], $element['label'], $element['description'], 'string');
+                        }
+                    }
+                }
+            }
+
+            return $overallResponse;
+
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
+    /**
      * Deletes an existing DataModel from Mauro
      * 
      * @param string $id                The ID of the DataModel to delete
@@ -337,7 +476,7 @@ class Mauro {
      * 
      * @return bool                     Whether the operation completed successfully or not
      */
-    public function deleteDataModel(string $id, string $permanentDeletion = 'true'): bool
+    public function deleteDataModel(string $id, string $permanentDeletion = 'false'): bool
     {
         $url = env('MAURO_API_URL');
         $url .= '/dataModels/' . $id . '?permanent=' . $permanentDeletion;
@@ -350,6 +489,32 @@ class Mauro {
             ->delete($url);
 
             return ($response->status() === 204);
+
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
+    /**
+     * Restores a soft deleted DataModel in Mauro
+     * 
+     * @param string $id                The ID of the DataModel to restore
+     * 
+     * @return bool                     Whether the operation completed successfully or not
+     */
+    public function restoreDataModel(string $id): bool
+    {
+        $url = env('MAURO_API_URL');
+        $url .= '/admin/dataModels/' . $id . '/undoSoftDelete';
+
+        try {
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+            ->acceptJson()
+            ->put($url);
+
+            return ($response->status() === 200);
 
         } catch (Exception $e) {
             throw new MauroServiceException($e->getMessage());
@@ -390,26 +555,82 @@ class Mauro {
     }
 
     /**
+     * Update a DataClass object within Mauro to store structural metadata against a model
+     * 
+     * @param string $parentModelId     Represents the model which owns this data class
+     * @param string $name              Represents the name of this data class
+     * @param string $description       Represents the description of this data class
+     * @param string $dataClassId       Represents the data class to update
+     * 
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     */
+    public function updateDataClass(string $parentModelId, string $name, string $description, string $dataClassId): array
+    {
+        try {
+            $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses/' . $dataClassId;
+
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+                ->acceptJson()
+                ->put($url, [
+                    'label' => $name,
+                    'description' => $description,
+                    'model' => $parentModelId,
+                    'dataType' => 'DataClass',
+                ]);
+
+            return $response->json();
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
+    /**
+     * Get All DataClasses object within Mauro
+     * 
+     * @param string $parentModelId     Represents the model which owns this new data class
+     * 
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     */
+    public function getAllDataClasses(string $parentModelId): array
+    {
+        try {
+            $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses';
+
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+            ->acceptJson()
+            ->get($url);
+
+            return $response->json();
+
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
+    /**
      * Deletes a DataClass object within Mauro
      * 
      * @param string $id            The ID of the DataClass to be deleted
      * @param string $parentModelId The ID of the parent DataModel to delete this DataClass from
      * 
-     * @return array                Returns entire response from Mauro Data Mapper as an array
+     * @return bool                 Returns whether Mauro Data Mapper deleted an element as a boolean value
      */
-    public function deleteDataClass(string $id, string $parentModelId): array
+    public function deleteDataClass(string $id, string $parentModelId): bool
     {
-        $postUrl = env('MAURO_API_URL');
-        $postUrl .= '/dataModels/' . $parentModelId . '/dataClasses/' . $id;
+        $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses/' . $id;
 
         try {
             $response = Http::withHeaders([
                 'apiKey' => env('MAURO_APP_KEY'),
             ])
             ->acceptJson()
-            ->post($postUrl);
+            ->delete($url);
 
-            return $response->json();
+            return ($response->status() === 204);
 
         } catch (Exception $e) {
             throw new MauroServiceException($e->getMessage());
@@ -454,6 +675,64 @@ class Mauro {
         }
     }
 
+     /**
+     * Update a DataElement object within Mauro to store structural metadata against a model
+     * 
+     * @param string $parentModelId     Represents the model which owns this new data class
+     * @param string $name              Represents the name of this data class
+     * @param string $description       Represents the description of this data class
+     * @param string $dataClassId       Represents the data class which owns this data element
+     * @param string $dataElementId     Represents the data element to update
+     * 
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     */
+    public function updateDataElement(string $parentModelId, string $name, string $description, string $dataClassId, string $dataElementId): array
+    {
+        try {
+            $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses/' . $dataClassId . '/dataElements/' . $dataElementId;
+
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+                ->acceptJson()
+                ->put($url, [
+                    'label' => $name,
+                    'description' => $description,
+                    'model' => $parentModelId,
+                    'dataClass' => $dataClassId,
+                    'domainType' => 'DataElement',
+                ]);
+
+            return $response->json();
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+    /**
+     * Get All DataElements object within Mauro against an existing model and data class
+     * 
+     * @param string $parentModelId     Represents the parent model which owns this data element
+     * @param string $parentDataClassId Represents the parent data class which owns this data element
+     * 
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     */
+    public function getAllDataElements(string $parentModelId, string $parentDataClassId)
+    {
+        try {
+            $url = env('MAURO_API_URL') . '/dataModels/' . $parentModelId . '/dataClasses/' . $parentDataClassId . '/dataElements';
+            
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+            ->acceptJson()
+            ->get($url);
+
+            return $response->json(); 
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
+    }
+
     /**
      * Deletes an existing DataElement from Mauro under $parentModelId and $parentDataClassId
      * 
@@ -461,9 +740,9 @@ class Mauro {
      * @param string $parentModelId         The ID of the parent DataModel to delete this DataElement from
      * @param string $parentDataClassId     The ID of the parent DataClass to delete this DataElement from
      * 
-     * @return array                        Returns entire response from Mauro Data Mapper as an array
+     * @return bool                         Returns whether Mauro Data Mapper deleted an element as a bool
      */
-    public function deleteDataElement(string $id, string $parentModelId, string $parentDataClassId): array
+    public function deleteDataElement(string $id, string $parentModelId, string $parentDataClassId): bool
     {
        $postUrl = env('MAURO_API_URL');
        $postUrl .= '/dataModels/' . $parentModelId . '/dataClasses/' . $parentDataClassId . '/dataElements/' . $id;
@@ -473,13 +752,38 @@ class Mauro {
                 'apiKey' => env('MAURO_APP_KEY'),
             ])
             ->acceptJson()
-            ->post($postUrl);
+            ->delete($postUrl);
 
-            return $response->json();
+            return ($response->status() === 204);
 
        } catch (Exception $e) {
             throw new MauroServiceException($e->getMessage());
        }
+    }
+
+    /**
+     * Get All DataClasses and DataElements object within a DataModel
+     * 
+     * @param string $dataModelId       Represents the data model to query
+     * 
+     * @return array                    Returns entire response from Mauro Data Mapper as an array
+     */
+    public function getDataModelHierarchy(string $dataModelId): array
+    {
+        try {
+            $url = env('MAURO_API_URL') . '/dataModels/' . $dataModelId . '/hierarchy';
+
+            $response = Http::withHeaders([
+                'apiKey' => env('MAURO_APP_KEY'),
+            ])
+            ->acceptJson()
+            ->get($url);
+
+            return $response->json();
+
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
     }
 
     /**
@@ -494,7 +798,7 @@ class Mauro {
      * 
      * @return array                    Returns entire response from Mauro Data Mapper as an array
      */
-    public function finaliseDataModel(string $id, string $semverChange='', string $semverVersion = ''): array
+    public function finaliseDataModel(string $id, string $semverChange='major', string $semverVersion = ''): array
     {
         $url = env('MAURO_API_URL');
         $url .= '/dataModels/' . $id . '/finalise';
@@ -503,15 +807,10 @@ class Mauro {
 
         try {
 
-            if ($semverChange !== '' && $semverVersion !== '') {
-                $payload = [
-                    'versionChange' => $semverChange,
-                    'version' => $semverVersion,
-                ];
+            if ($semverChange !== 'custom') {
+                $payload['versionChangeType'] = $semverChange;
             } else {
-                $payload = [
-                    'versionChange' => 'major',
-                ];
+                $payload['version'] = $semverVersion;
             }
 
             $response = Http::withHeaders([
@@ -539,10 +838,90 @@ class Mauro {
         $tmpArray = [];
 
         foreach (Config('metadata') as $key => $path) {
-            $tmpArray[] = $this->makeMetadataElement($key, $this->rootStringToObjectMapping($path, $obj));
+            $tmpArray[] = $this->makeMetadataElement($key, $this->rootStringToObjectMapping($path, $obj['dataset']));
         }
 
         return $tmpArray;
+    }
+
+    /**
+     * Returns an array defining the shape of the incoming schema, ready for importing
+     * as a DataStandard within Mauro. It should be noted that this is different
+     * from the function below, in that this defines the metadata paths for
+     * each element of the schema for Mauro to map and validate against
+     * 
+     * @param array $schema     The incoming metadata definition schema
+     * 
+     * @return array
+     */
+    private function makeDataStandardMetadata(array $schema): array
+    {
+        $tmpArray = [];
+        $forcedTitle = null;
+
+        foreach ($schema['$defs'] as $key => $shape) {
+            if (isset($shape['properties'])) {
+                foreach ($shape['properties'] as $element => $value) {
+                    if (!isset($value['title'])) {
+                        $forcedTitle = preg_replace('/(?<!\ )[A-Z]/', ' $0', $element);
+                    }
+                    
+                    $tmpArray[] = [
+                        'namespace' => 'hdruk.profile',
+                        'key' => sprintf('properties/%s/%s', strtolower($key), $element),
+                        'value' => (isset($value['title']) ? ucwords($value['title']) : ucwords($forcedTitle)),
+                    ];
+                }
+            }
+        }
+        
+        return $tmpArray;
+    }
+
+    /**
+     * Similar to the above, but this function returns the _entire_ shape of the schema as an
+     * importable array into Mauro. The main difference being that this function not only
+     * defines the classes to be built, but also the elements held underneath those
+     * classes.
+     * 
+     * @param array $schema     The incoming metadata definition schema
+     * 
+     * @return array
+     */
+    private function makeDataStandardDataClassAndDataElementsMap(array $schema): array
+    {
+        try {
+            $tmpArray = [];
+            $forcedTitle = null;
+
+            foreach ($schema['$defs'] as $key => $shape) {
+                if (isset($shape['properties'])) {
+                    $currentElement = [
+                        'label' => $key,
+                        'description' => $shape['title'],
+                        'dataType' => 'DataClass',
+                        'elements' => [],
+                    ];
+                    foreach ($shape['properties'] as $element => $value) {
+                        if (!isset($value['title'])) {
+                            $forcedTitle = preg_replace('/(?<!\ )[A-Z]/', ' $0', $element);
+                        }
+
+                        $currentElement['elements'][] = [
+                            'label' => (isset($value['title']) ? $value['title'] : $forcedTitle),
+                            'description' => (isset($value['description']) ? $value['description'] : ''),
+                            'dataType' => 'string',
+                        ];
+                    }
+
+                    $tmpArray[] = $currentElement;
+                }
+            }
+
+            return $tmpArray;
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
     }
 
     /**
@@ -555,11 +934,15 @@ class Mauro {
      */
     private function makeMetadataElement(string $key, mixed $value): array
     {
-        return [
-            'namespace' => 'Testing.mauro', // TODO - This shouldn't be hardcoded fine while testing implementation
-            'key' => $key,
-            'value' => $value,
-        ];
+        try {
+            return [
+                'namespace' => 'hdruk.profile', // TODO - This shouldn't be hardcoded fine while testing implementation
+                'key' => $key,
+                'value' => $value,
+            ];
+        } catch (Exception $e) {
+            throw new MauroServiceException($e->getMessage());
+        }
     }
 
     /**

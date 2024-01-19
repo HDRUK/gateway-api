@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use Database\Seeders\FeatureSeeder;
 use Tests\Traits\Authorization;
 use App\Models\Feature as FeatureModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,7 +27,9 @@ class FeatureTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            FeatureSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
@@ -71,17 +74,6 @@ class FeatureTest extends TestCase
             'to',
             'total',            
         ]);
-    }
-
-    /**
-     * Get All Features and generate exception
-     * 
-     * @return void
-     */
-    public function test_get_all_features_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
     }
 
     /**

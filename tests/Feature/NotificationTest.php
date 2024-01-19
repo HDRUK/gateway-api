@@ -5,6 +5,8 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\NotificationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class NotificationTest extends TestCase
@@ -17,7 +19,10 @@ class NotificationTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            NotificationSeeder::class,
+        ]);
 
         $response = $this->postJson('api/v1/auth', [
             'email' => 'developers@hdruk.ac.uk',
@@ -53,6 +58,7 @@ class NotificationTest extends TestCase
                         'message',
                         'opt_in',
                         'enabled',
+                        'email',
                     ],
                 ],
                 'first_page_url',
@@ -85,6 +91,7 @@ class NotificationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -114,6 +121,7 @@ class NotificationTest extends TestCase
                     'message',
                     'opt_in',
                     'enabled',
+                    'email',
                 ],
             ]);
 
@@ -134,6 +142,7 @@ class NotificationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -169,6 +178,7 @@ class NotificationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 0,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -196,6 +206,7 @@ class NotificationTest extends TestCase
                 'message' => 'New message',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -229,6 +240,7 @@ class NotificationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 0,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -258,6 +270,7 @@ class NotificationTest extends TestCase
                 'message' => 'New message',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -338,6 +351,7 @@ class NotificationTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 0,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

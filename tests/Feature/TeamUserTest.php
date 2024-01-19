@@ -8,12 +8,25 @@ use App\Models\Role;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use Tests\Traits\Authorization;
+use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\SectorSeeder;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+
+use Illuminate\Support\Facades\Http;
+
+use Mauro;
+use Tests\Traits\MockExternalApis;
+use Tests\Unit\MauroTest;
 
 class TeamUserTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis{
+        setUp as commonSetUp;
+    }
 
     protected $header = [];
 
@@ -24,15 +37,14 @@ class TeamUserTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        
+        $this->commonSetUp();
 
-        $this->seed();
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
+        $this->seed([
+            MinimalUserSeeder::class,
+            SectorSeeder::class,
+            EmailTemplatesSeeder::class,
+        ]);
    }
 
     /**
@@ -59,6 +71,7 @@ class TeamUserTest extends TestCase
         $response->assertJsonStructure([
             'message'
         ]);
+
         $response->assertStatus(201);
 
         $getTeamHasUsers = $this->getTeamHasUsers($teamId, $userId);
@@ -73,21 +86,6 @@ class TeamUserTest extends TestCase
 
         $this->deleteTeam($teamId);
     }
-
-    /**
-     * Create Team-User-Roles without success
-     * 
-     * @return void
-     */
-    // public function test_create_team_user_permission_and_generate_exception(): void
-    // {
-    //     $teamId = $this->createTeam();
-    //     $url = 'api/v1/teams/' . $teamId . '/users';
-    //     $response = $this->json('POST', $url, [], []);
-    //     $response->assertStatus(401);
-
-    //     $this->deleteTeam($teamId);
-    // }
 
     /**
      * Create Team-User-Roles add new permission with success
@@ -115,10 +113,10 @@ class TeamUserTest extends TestCase
         $responsePost->assertStatus(201);
 
         $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
-        $arrayPermissionsExpected = ["developer", "custodian.dar.manager", "metadata_editor"];
+        $arrayPermissionsExpected = ["developer", "custodian.dar.manager", "metadata.editor"];
         $payloadPut = [
             "roles" => [
-                "metadata_editor" => true,
+                "metadata.editor" => true,
             ],
         ];
         $responsePut = $this->json('PUT', $urlPut, $payloadPut, $this->header);
@@ -138,6 +136,77 @@ class TeamUserTest extends TestCase
         $getUserRoles = $this->getUserRoles($teamId, $userId);
         $arrayIntersection = array_intersect($arrayPermissionsExpected, $getUserRoles);
         $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
+
+        $this->deleteTeam($teamId);
+    }
+
+    /**
+     * Create Team-User-Roles add new permission bulk with success
+     * 
+     * @return void
+     */
+    public function test_update_team_user_roles_remove_roles_bulk_with_success(): void
+    {
+        $teamId = $this->createTeam();
+        $userId = $this->createUser();
+        $this->cleanTeamUserRoles($teamId, $userId);
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
+        $arrayPermissionsPost = ["developer", "custodian.dar.manager"];
+        $payloadPost = [
+            "userId" => $userId,
+            "roles" => $arrayPermissionsPost,
+        ];
+
+        $responsePost = $this->json('POST', $urlPost, $payloadPost, $this->header);
+
+        $responsePost->assertJsonStructure([
+            'message'
+        ]);
+        $responsePost->assertStatus(201);
+
+        $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
+        $arrayPermissionsExpected = ["developer", "custodian.dar.manager", "metadata.editor"];
+        $payloadPut = [
+            "roles" => [
+                "metadata.editor" => true,
+            ],
+        ];
+        $responsePut = $this->json('PUT', $urlPut, $payloadPut, $this->header);
+
+        $responsePut->assertJsonStructure([
+            'message'
+        ]);
+        $responsePut->assertStatus(200);
+
+        $getTeamHasUsers = $this->getTeamHasUsers($teamId, $userId);
+        $this->assertTrue((bool) (count($getTeamHasUsers) === 1), 'Team has one single user');
+
+        $getTeamUserHasRoles = $this->getTeamUserHasRoles($teamId, $userId);
+
+        $this->assertTrue((bool) (count($getTeamUserHasRoles) === 3), 'The user in the team has 2 permissions');
+
+        $getUserRoles = $this->getUserRoles($teamId, $userId);
+        $arrayIntersection = array_intersect($arrayPermissionsExpected, $getUserRoles);
+        $this->assertTrue((bool) (count($arrayIntersection) === count($arrayPermissionsExpected)), 'The number of permissions assigned for user in team is ' . count($arrayPermissionsExpected));
+
+        // update bulk
+        $urlUpdateBulk = 'api/v1/teams/' . $teamId . '/roles';
+        $payloadUpdateBulk = [
+            [
+                'userId' => $userId,
+                'roles' => [
+                    'metadata.editor' => false,
+                    'dar.reviewer' => true,
+                ]
+            ],
+        ];
+        $responseUpdateBulk = $this->json('PATCH', $urlUpdateBulk, $payloadUpdateBulk, $this->header);
+        $responseUpdateBulk->assertJsonStructure([
+            'message',
+            'data'
+        ]);
+        $responseUpdateBulk->assertStatus(200);
 
         $this->deleteTeam($teamId);
     }
@@ -168,11 +237,11 @@ class TeamUserTest extends TestCase
         $responsePost->assertStatus(201);
 
         $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
-        $arrayPermissionsExpected = ["developer", "reviewer"];
+        $arrayPermissionsExpected = ["developer", "dar.reviewer"];
         $payloadPut = [
             "roles" => [
                 "custodian.dar.manager" => false,
-                "reviewer" => true,
+                "dar.reviewer" => true,
             ],
         ];
         $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
@@ -194,6 +263,81 @@ class TeamUserTest extends TestCase
 
         $this->deleteTeam($teamId);
     }
+
+    /**
+     * Update Team-User-Roles permissions and email the updated permissions
+     * 
+     * @return void
+     */
+    public function test_update_team_user_permissions_and_send_email(): void
+    {
+
+        $initialRoles = ["developer", "dar.reviewer"];
+        $teamId = $this->createTeam();
+        $userId = $this->createUser();
+        $this->createTeamRoles($teamId,$userId,$initialRoles);
+
+        $urlPut = 'api/v1/teams/' . $teamId . '/users/' . $userId;
+        
+        //the following should add the "custodian.dar.manager" as a role
+        $payloadPut = [
+            "roles" => [
+                "developer" => true,
+                "dar.reviewer" => true,
+                "custodian.dar.manager" => true,
+            ],
+        ];
+
+        $expectedRoles = ["developer", "dar.reviewer", "custodian.dar.manager"];  
+        $responsePost = $this->json('PUT', $urlPut, $payloadPut, $this->header);
+        $responsePost->assertJsonStructure([
+            'message'
+        ]);
+        $responsePost->assertStatus(200);
+        $userRoles = $this->getUserRoles($teamId, $userId);
+        sort($userRoles);
+        sort($expectedRoles);
+        $this->assertTrue($expectedRoles === $userRoles,'User now has 3 roles');
+
+        $expectedDispatchedEmails = [
+            "developer" => true,
+            "dar.reviewer" => true,
+            "custodian.dar.manager" => true,
+        ];
+
+        $dispatchedEmails = $responsePost['data'];
+        $this->assertTrue( $dispatchedEmails ===  $expectedDispatchedEmails,'One email sent for assigning custodian.dar.manager');
+        
+        //now the developer role should be removed...
+        $payloadPut = [
+            "roles" => [
+                "developer" => false,
+                "dar.reviewer" => true,
+                "custodian.dar.manager" => true,
+            ],
+        ];
+
+        $expectedRoles = ["dar.reviewer", "custodian.dar.manager"];  
+        $responsePut = $this->json('PUT', $urlPut, $payloadPut, $this->header);
+        $responsePut->assertJsonStructure([
+            'message'
+        ]);
+        $responsePut->assertStatus(200);
+        $userRoles = $this->getUserRoles($teamId, $userId);
+        sort($userRoles);
+        sort($expectedRoles);
+        $this->assertTrue($expectedRoles === $userRoles,'Developer role should no longer be present');
+        $dispatchedEmails = $responsePut['data'];
+        $expectedDispatchedEmails = [
+            "developer" => false,
+            "dar.reviewer" => true,
+            "custodian.dar.manager" => true,
+        ];
+        $this->assertTrue( $dispatchedEmails ===  $expectedDispatchedEmails,'One email sent for removing developer');
+
+        $this->deleteTeam($teamId);
+    }
+
 
     /**
      * Delete Team-User-Roles with success
@@ -238,6 +382,7 @@ class TeamUserTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
+                'email' => 'some@email.com',
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -257,7 +402,11 @@ class TeamUserTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => now(),
@@ -294,13 +443,15 @@ class TeamUserTest extends TestCase
                 'firstname' => 'Firstname',
                 'lastname' => 'Lastname',
                 'email' => 'firstname.lastname.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Test Organisation',
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 75697342,
+                'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1, 
                 'mongo_id' => 1234566,
@@ -312,7 +463,21 @@ class TeamUserTest extends TestCase
         
         return $responseNewUser['data'];
     }
-
+    
+    private function createTeamRoles(int $tId, int $uId, array $roles)
+    {
+        $responseNewRoles = $this->json(
+            'POST',
+            '/api/v1/teams/' . $tId . '/users',
+            [
+                "userId" => $uId,
+                "roles" => $roles,
+            ],    
+            $this->header,
+        );
+        $responseNewRoles->assertStatus(201);
+    }
+    
     private function cleanTeamUserRoles($tId, $uId)
     {
         $userhasTeam = TeamHasUser::where('team_id', $tId)->where('user_id', $uId)->first();

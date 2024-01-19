@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Http\Enums\TeamMemberOf;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -24,10 +25,16 @@ class TeamFactory extends Factory
             'access_requests_management' => fake()->boolean(),
             'uses_5_safes' => fake()->boolean(),
             'is_admin' => fake()->boolean(),
-            'member_of' => fake()->randomNumber(4, false),
+            'member_of' => fake()->randomElement([
+                TeamMemberOf::ALLIANCE,
+                TeamMemberOf::HUB,
+                TeamMemberOf::OTHER,
+            ]),
             'contact_point' => fake()->email(),
             'application_form_updated_by' => fake()->words(2, true),
             'application_form_updated_on' => fake()->dateTime(),
+            'mongo_object_id' => null,
+            'is_question_bank' => fake()->boolean(),
         ];
     }
 }

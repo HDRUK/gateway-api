@@ -6,7 +6,10 @@ use App\Mail\Email;
 use App\Models\EmailTemplate;
 
 use Tests\TestCase;
+use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+
 
 class EmailServiceTest extends TestCase
 {
@@ -16,7 +19,9 @@ class EmailServiceTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            EmailTemplatesSeeder::class,
+        ]);
     }
 
     /**
@@ -37,18 +42,41 @@ class EmailServiceTest extends TestCase
         $template = EmailTemplate::where('identifier', '=', 'example_template')->first();
 
         $replacements = [
-            '[[header_text]]' => 'Health Data Research UK',
-            '[[button_text]]' => 'Click me!',
-            '[[subheading_text]]' => 'Sub Heading Something or other',
+            '[[HEADER_TEXT]]' => 'Health Data Research UK',
+            '[[SUBHEADING_TEXT]]' => 'Sub Heading Something or other',
+            '[[BUTTON_1_URL]]' => 'https://test.com/something1',
+            '[[BUTTON_2_URL]]' => 'https://test.com/something2',
         ];
 
         $email = new Email($template, $replacements);
+
+        Http::fake([
+            env('MJML_RENDER_URL') => Http::response([
+                    "html" => $this->mockedEmailContent($template, $replacements)
+            ], 200),
+        ]);
+
         $html = $email->mjmlToHtml();
 
         foreach ($replacements as $k => $v) {
             $this->assertStringContainsString($v, $html);
         }
+
+        $this->assertStringNotContainsString('[[HEADER_TEXT]]', $html);
+        $this->assertStringNotContainsString('[[SUBHEADING_TEXT]]', $html);
+        $this->assertStringNotContainsString('[[BUTTON_1_URL]]', $html);
+        $this->assertStringNotContainsString('[[BUTTON_2_URL]]', $html);
     }
+
+    private function mockedEmailContent(string $template, array $replacements): string
+    {
+        foreach ($replacements as $placeholder => $replacement) {
+            $template = str_replace($placeholder, $replacement, $template);
+        }
+
+        return $template;
+    }
+
 }
 
 ?>

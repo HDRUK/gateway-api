@@ -41,15 +41,36 @@ cfg = read_json('tiltconf.json')
 
 include(cfg.get('gatewayWeb2Root') + '/Tiltfile')
 
+# Load our service layer for deployment - if enabled
+
+if cfg.get('traserEnabled'):
+    include(cfg.get('traserServiceRoot') + '/Tiltfile')
+
+if cfg.get('tedEnabled'):
+    include(cfg.get('tedServiceRoot') + '/Tiltfile')
+
+if cfg.get('fmaEnabled'):
+    include(cfg.get('fmaServiceRoot') + '/Tiltfile')
+
+if cfg.get('searchEnabled'):
+    include(cfg.get('searchServiceRoot') + '/Tiltfile')
+
 docker_build(
     ref='hdruk/' + cfg.get('name'),
     context='.',
+    build_args={
+        'TRASER_ENABLED': '1' if cfg.get('traserEnabled') else '0',
+        'TED_ENABLED': '1' if cfg.get('tedEnabled') else '0',
+        'FMA_ENABLED': '1' if cfg.get('fmaEnabled') else '0',
+        'SEARCH_ENABLED': '1' if cfg.get('searchEnabled') else '0',
+    },
     live_update=[
         sync('.', '/var/www'),
         run('composer install', trigger='./composer.lock'),
         run('php artisan route:clear'),
         run('php artisan cache:clear'),
         run('php artisan config:clear', trigger='./.env'),
+        run('php artisan l5-swagger:generate'),
     ]
 )
 
@@ -57,5 +78,6 @@ k8s_yaml('chart/' + cfg.get('name') + '/deployment.yaml')
 k8s_yaml('chart/' + cfg.get('name') + '/service.yaml')
 k8s_resource(
    cfg.get('name'),
-   port_forwards=8000
+   port_forwards=8000,
+   labels=["Service"]
 )

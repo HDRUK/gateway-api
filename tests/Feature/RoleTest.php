@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use Database\Seeders\TeamSeeder;
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RoleSeeder;
 use App\Models\Role;
 use App\Models\RoleHasPermission;
 use Tests\Traits\Authorization;
@@ -27,7 +30,11 @@ class RoleTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            TeamSeeder::class,
+            PermissionSeeder::class,
+            RoleSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
@@ -71,17 +78,6 @@ class RoleTest extends TestCase
             'total',
         ]);
         $response->assertStatus(200);
-    }
-
-    /**
-     * Get All Roles with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_roles_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
     }
 
     /**

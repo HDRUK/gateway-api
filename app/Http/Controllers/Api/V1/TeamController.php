@@ -33,53 +33,103 @@ class TeamController extends Controller
      *      description="Returns a list of teams enabled on the system",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
-     *          response=200,
-     *          description="Success",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
-     *                      @OA\Property(property="name", type="string", example="someName"),
-     *                      @OA\Property(property="allows_messaging", type="boolean", example="1"),
-     *                      @OA\Property(property="workflow_enabled", type="boolean", example="1"),
-     *                      @OA\Property(property="access_requests_management", type="boolean", example="1"),
-     *                      @OA\Property(property="uses_5_safes", type="boolean", example="1"),
-     *                      @OA\Property(property="is_admin", type="boolean", example="1"),
-     *                      @OA\Property(property="member_of", type="string", example="someOrg"),
-     *                      @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
-     *                      @OA\Property(property="application_form_updated_by", type="integer", example="555"),
-     *                      @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
-     *                      @OA\Property(property="mdm_folder_id", type="datetime", example="xxxxxxx"), 
-     *                  )
-     *              )
-     *          )
-     *      )
+     *         response="200",
+     *         description="Success response",
+     *         @OA\JsonContent(
+     *            @OA\Property(property="current_page", type="integer", example="1"),
+     *               @OA\Property(property="data", type="array",
+     *                  @OA\Items(type="object",
+     *                    @OA\Property(property="id", type="integer", example="123"),
+     *                    @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                    @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
+     *                    @OA\Property(property="enabled", type="boolean", example="1"),
+     *                    @OA\Property(property="name", type="string", example="someName"),
+     *                    @OA\Property(property="allows_messaging", type="boolean", example="1"),
+     *                    @OA\Property(property="workflow_enabled", type="boolean", example="1"),
+     *                    @OA\Property(property="access_requests_management", type="boolean", example="1"),
+     *                    @OA\Property(property="uses_5_safes", type="boolean", example="1"),
+     *                    @OA\Property(property="is_admin", type="boolean", example="1"),
+     *                    @OA\Property(property="member_of", type="string", example="someOrg"),
+     *                    @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
+     *                    @OA\Property(property="application_form_updated_by", type="integer", example="555"),
+     *                    @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"), 
+     *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()), 
+     *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()), 
+     *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
+     *                ),
+     *             ),
+     *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
+     *             @OA\Property(property="from", type="integer", example="1"),
+     *             @OA\Property(property="last_page", type="integer", example="1"),
+     *             @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
+     *             @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *             @OA\Property(property="next_page_url", type="string", example="null"),
+     *             @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests"),
+     *             @OA\Property(property="per_page", type="integer", example="25"),
+     *             @OA\Property(property="prev_page_url", type="string", example="null"),
+     *             @OA\Property(property="to", type="integer", example="3"),
+     *             @OA\Property(property="total", type="integer", example="3"),
+     *          ),
+     *       ),
+     *    ),
      * )
      */
     public function index(Request $request): JsonResponse
     {
-        $teams = Team::where('enabled', 1)->with('users')->get()->toArray();
+        try {
+            $sort = [];
+            $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
+            foreach ($sortArray as $item) {
+                $tmp = explode(":", $item);
+                $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+            }
 
-        $response = $this->getTeams($teams);
+            $query = Team::where('enabled', 1);
 
-        return response()->json([
-            'data' => $response,
-        ]);
+            if ($request->has('uses_5_safes')) {
+                $query->where('teams.uses_5_safes', $request->query('uses_5_safes'));
+            }
+
+            if ($request->has('is_question_bank')) {
+                $query->where('teams.is_question_bank', $request->boolean('is_question_bank'));
+            }
+
+            foreach ($sort as $key => $value) {
+                if ($key === 'created_at') {
+                    $query->orderBy('teams.' . $key, strtoupper($value));
+                }
+
+                if ($key === 'data_provider') {
+                    $query->orderBy('teams.member_of', strtoupper($value));
+                    $query->orderBy('teams.name', strtoupper($value));
+                }
+            }
+
+            $perPage = request('per_page', Config::get('constants.per_page'));
+            $teams = $query
+                ->with('users')
+                ->paginate($perPage, ['*'], 'page')
+                ->toArray();
+
+            $teams['data'] = $this->getTeams($teams['data']);
+
+            return response()->json(
+                $teams
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
      * @OA\Get(
-     *      path="/api/v1/teams/{id}",
+     *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
      *      summary="Return a single team",
      *      description="Return a single team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *         name="id",
+     *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
@@ -109,8 +159,8 @@ class TeamController extends Controller
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                  @OA\Property(property="mdm_folder_id", type="string", example="xxxx"),
      *                  @OA\Property(property="notifications", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              )
      *          ),
      *      ),
@@ -123,19 +173,18 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function show(GetTeam $request, int $id): JsonResponse
+    public function show(GetTeam $request, int $teamId): JsonResponse
     {
-        $team = Team::with('notifications')->where('id', $id)->firstOrFail();
+        try {
+            $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
 
-        if ($team) {
-            $userTeam = Team::where('id', $id)->with(['users', 'notifications'])->get()->toArray();
             return response()->json([
                 'message' => 'success',
                 'data' => $this->getTeams($userTeam),
             ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new NotFoundException();
     }
 
     /**
@@ -173,8 +222,8 @@ class TeamController extends Controller
      *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *              @OA\Property(property="mdm_folder_id", type="string", example="xxxx"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -203,14 +252,6 @@ class TeamController extends Controller
             }, ARRAY_FILTER_USE_KEY);
             $arrayTeamNotification = $input['notifications'];
 
-            // create subfolder in mauro
-            $mauroResponse = Mauro::createFolder(
-                $input['name'],
-                $input['name'],
-                env('MAURO_PARENT_FOLDER_ID')
-            );
-
-            $arrayTeam['mdm_folder_id'] = $mauroResponse['id'];
             $team = Team::create($arrayTeam);
 
             if ($team) {
@@ -236,13 +277,13 @@ class TeamController extends Controller
 
     /**
      * @OA\Put(
-     *      path="/api/v1/teams/{id}",
+     *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
      *      summary="Update a team",
      *      description="Update a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *         name="id",
+     *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
@@ -280,8 +321,8 @@ class TeamController extends Controller
      *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *              @OA\Property(property="mdm_folder_id", type="string", example="xxx"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -310,8 +351,8 @@ class TeamController extends Controller
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                  @OA\Property(property="mdm_folder_id", type="string", example="xxxx"),
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              )
      *          ),
      *      ),
@@ -324,9 +365,9 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function update(UpdateTeam $request, int $id): JsonResponse
+    public function update(UpdateTeam $request, int $teamId): JsonResponse
     {
-        $team = Team::findOrFail($id);
+        $team = Team::findOrFail($teamId);
         $body = $request->post();
         $team->name = $body['name'];
         $team->enabled = $body['enabled'];
@@ -339,16 +380,13 @@ class TeamController extends Controller
         $team->contact_point = $body['contact_point'];
         $team->application_form_updated_by = $body['application_form_updated_by'];
         $team->application_form_updated_on = $body['application_form_updated_on'];
-
-        if (array_key_exists('mdm_folder_id', $body)) {
-            $team->mdm_folder_id = $body['mdm_folder_id'];
-        }
+        $team->is_question_bank = array_key_exists('is_question_bank', $body) ? $body['is_question_bank'] : false;
 
         $arrayTeamNotification = $body['notifications'];
-        TeamHasNotification::where('team_id', $id)->delete();
+        TeamHasNotification::where('team_id', $teamId)->delete();
         foreach ($arrayTeamNotification as $value) {
             TeamHasNotification::updateOrCreate([
-                'team_id' => (int) $id,
+                'team_id' => (int) $teamId,
                 'notification_id' => (int) $value,
             ]);
         }
@@ -369,13 +407,13 @@ class TeamController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="/api/v1/teams/{id}",
+     *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
      *      summary="Edit a team",
      *      description="Edit a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *         name="id",
+     *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
@@ -399,8 +437,8 @@ class TeamController extends Controller
      *              @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *              @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *              @OA\Property(property="mdm_folder_id", type="string", example="xxxxx"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -429,8 +467,8 @@ class TeamController extends Controller
      *                  @OA\Property(property="contact_point", type="string", example="someone@mail.com"),
      *                  @OA\Property(property="application_form_updated_by", type="integer", example="555"),
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
-     *                  @OA\Property(property="mdm_folder_id", type="string", example="xxxxx"),
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
+     *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              )
      *          ),
      *      ),
@@ -443,7 +481,7 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function edit(EditTeam $request, int $id): JsonResponse
+    public function edit(EditTeam $request, int $teamId): JsonResponse
     {
         try {
             $input = $request->all();
@@ -459,26 +497,26 @@ class TeamController extends Controller
                 'contact_point',
                 'application_form_updated_by',
                 'application_form_updated_on',
-                'mdm_folder_id',
+                'is_question_bank',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            Team::where('id', $id)->update($array);
+            Team::where('id', $teamId)->update($array);
 
             $arrayTeamNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
 
-            TeamHasNotification::where('team_id', $id)->delete();
+            TeamHasNotification::where('team_id', $teamId)->delete();
             foreach ($arrayTeamNotification as $value) {
                 TeamHasNotification::updateOrCreate([
-                    'team_id' => (int) $id,
+                    'team_id' => (int) $teamId,
                     'notification_id' => (int) $value,
                 ]);
             }
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Team::where('id', $id)->first()
+                'data' => Team::where('id', $teamId)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -487,13 +525,13 @@ class TeamController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="/api/v1/teams/{id}",
+     *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
      *      summary="Delete a team",
      *      description="Delete a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
-     *         name="id",
+     *         name="teamId",
      *         in="path",
      *         description="team id",
      *         required=true,
@@ -526,24 +564,17 @@ class TeamController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteTeam $request, int $id): JsonResponse
+    public function destroy(DeleteTeam $request, int $teamId): JsonResponse
     {
         try {
-            $team = Team::findOrFail($id);
+            $team = Team::findOrFail($teamId);
             if ($team) {
-                TeamHasNotification::where('team_id', $id)->delete();
+                TeamHasNotification::where('team_id', $teamId)->delete();
 
                 $deletePermanently = false;
                 if ($request->has('deletePermanently')) {
                     $deletePermanently = (bool) $request->query('deletePermanently');
                 }
-
-                // soft delete subfolder in mauro
-                Mauro::deleteFolder(
-                    $team['mdm_folder_id'],
-                    $deletePermanently,
-                    env('MAURO_PARENT_FOLDER_ID')
-                );
 
                 $team->delete();
 

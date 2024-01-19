@@ -27,6 +27,7 @@ class UpdateApplication extends BaseFormRequest
             ],
             'image_link' => [
                 'string',
+                'nullable',
                 'url',
             ],
             'description' => [
@@ -46,14 +47,6 @@ class UpdateApplication extends BaseFormRequest
             'enabled' => [
                 'required',
                 'boolean',
-            ],
-            'tags' => [
-                'array',
-            ],
-            'tags.*'  => [
-                'integer',
-                'distinct',
-                'exists:tags,id',
             ],
             'permissions' => [
                 'array',

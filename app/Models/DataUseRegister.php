@@ -14,36 +14,22 @@ class DataUseRegister extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public $timestamps = true;
+
     /**
      * The attributes that are mass assignable
      * 
      * @var array<int, string>
      */
     protected $fillable = [
-        'counter',
-        'keywords',
-        'dataset_ids',
-        'gateway_dataset_ids',
-        'non_gateway_dataset_ids',
-        'gateway_applicants',
-        'non_gateway_applicants',
-        'funders_and_sponsors',
-        'other_approval_committees',
-        'gateway_output_tools',
-        'gateway_output_papers',
-        'non_gateway_outputs',
-        'project_title',
-        'project_id_text',
-        'organisation_name',
-        'organisation_sector',
-        'lay_summary',
-        'latest_approval_date',
+        'dataset_id',
         'enabled',
-        'team_id',
         'user_id',
-        'last_activity',
-        'manual_upload',
-        'rejection_reason',
+        'ro_crate',
+        'organization_name',
+        'project_title',
+        'lay_summary',
+        'public_benefit_statement',
     ];
 
     /**
@@ -52,22 +38,16 @@ class DataUseRegister extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'keywords' => 'array',
-        'dataset_ids' => 'array',
-        'gateway_dataset_ids' => 'array',
-        'non_gateway_dataset_ids' => 'array',
-        'gateway_applicants' => 'array',
-        'non_gateway_applicants' => 'array',
-        'funders_and_sponsors' => 'array',
-        'other_approval_committees' => 'array',
-        'gateway_output_tools' => 'array',
-        'gateway_output_papers' => 'array',
-        'non_gateway_outputs' => 'array',
-        'latest_approval_date' => 'datetime',
         'enabled' => 'boolean',
-        'last_activity' => 'datetime',
-        'manual_upload' => 'boolean',
     ];
+
+    /**
+     * Get the dataset in the data use register
+     */
+    public function dataset(): HasOne
+    {
+        return $this->hasOne(Dataset::class, 'id', 'dataset_id');
+    }
 
     /**
      * Get the user that owns the data use register
@@ -77,11 +57,4 @@ class DataUseRegister extends Model
         return $this->hasOne(User::class, 'id', 'user_id');
     }
 
-    /**
-     * Get the team that owns the data use register
-     */
-    public function team(): HasOne
-    {
-        return $this->hasOne(Team::class, 'id', 'team_id');
-    }
 }

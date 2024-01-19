@@ -25,6 +25,8 @@ trait UserTransformation
                 'firstname' => $user['firstname'],
                 'lastname' => $user['lastname'],
                 'email' => $user['email'],
+                'secondary_email' => $user['secondary_email'],
+                'preferred_email' => $user['preferred_email'],
                 'providerid' => $user['providerid'],
                 'provider' => $user['provider'],
                 'created_at' => $user['created_at'],
@@ -40,6 +42,8 @@ trait UserTransformation
                 'contact_news' => $user['contact_news'],
                 'mongo_id' => $user['mongo_id'],
                 'mongo_object_id' => $user['mongo_object_id'],
+                'terms' => $user['terms'],
+                'roles' => $user['roles'],
             ];
 
             $tmpTeam = [];
@@ -57,6 +61,7 @@ trait UserTransformation
                     'contact_point' => $team['contact_point'],
                     'application_form_updated_by' => $team['application_form_updated_by'],
                     'application_form_updated_on' => $team['application_form_updated_on'],
+                    'is_question_bank' => $team['is_question_bank'],
                 ];
 
                 $teamHasUserId = (int) $team['pivot']['id'];

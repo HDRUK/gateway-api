@@ -35,6 +35,10 @@ class UpdateNotification extends BaseFormRequest
                 'required',
                 'boolean',
             ],
+            'email' => [
+                'required',
+                'email',
+            ],
         ];
     }
 

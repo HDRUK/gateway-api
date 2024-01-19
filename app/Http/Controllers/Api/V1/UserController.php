@@ -6,20 +6,24 @@ use Hash;
 use Config;
 use Exception;
 use App\Models\User;
+use App\Models\UserHasRole;
 use Illuminate\Http\Request;
 use App\Http\Requests\User\GetUser;
+use App\Http\Requests\User\IndexUser;
 use App\Models\UserHasNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\EditUser;
+use App\Exceptions\NotFoundException;
 use App\Http\Requests\User\CreateUser;
 use App\Http\Requests\User\DeleteUser;
 use App\Http\Requests\User\UpdateUser;
 use App\Http\Traits\UserTransformation;
-use App\Exceptions\NotFoundException;
+use App\Http\Traits\RequestTransformation;
 
 class UserController extends Controller
 {
     use UserTransformation;
+    use RequestTransformation;
 
     /**
      * @OA\Get(
@@ -29,6 +33,16 @@ class UserController extends Controller
      *    summary="UserController@index",
      *    description="Get All Users",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="filterNames",
+     *       in="query",
+     *       description="Three or more characters to filter users names by",
+     *       example="abc",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Three or more characters to filter users names by",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -46,17 +60,40 @@ class UserController extends Controller
      *    ),
      * )
      */
-    public function index(Request $request): mixed
+    public function index(IndexUser $request): mixed
     {
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $users = User::getAll('id', $jwtUser)->with('teams', 'notifications')->get()->toArray();
-
-        $response = $this->getUsers($users);
-
+        $response = [];
+        if (count($jwtUser)) { //should really always be a jwtUser
+            $userIsAdmin = (bool) $jwtUser['is_admin'];
+            if($userIsAdmin){ // if it's the superadmin return a bunch of information
+                $users = User::with(
+                    'roles',
+                    'roles.permissions',
+                    'teams',
+                    'notifications'
+                )->get()->toArray();
+                $response = $this->getUsers($users);
+            } else { 
+                // otherwise, for now, just return the ids and names 
+                // (filtered if appropriate)
+                if ($request->has('filterNames')) {
+                    $chars = $request->query('filterNames');
+                    $response = User::where('name', 'like', '%' . $chars . '%')
+                        ->select(['id', 'name'])
+                        ->get()
+                        ->toArray();
+                } else {
+                    $response = User::select(
+                        'id','name'
+                    )->get()->toArray();
+                }
+            }
+        }
         return response()->json([
-            'data' => $response
-        ]);
+            'data' => $response,
+        ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**
@@ -121,7 +158,12 @@ class UserController extends Controller
         ])->get();
 
         if ($users->count()) {
-            $userTeam = User::where('id', $id)->with(['teams', 'notifications'])->get()->toArray();
+            $userTeam = User::where('id', $id)->with(
+                'roles',
+                'roles.permissions',
+                'teams',
+                'notifications'
+            )->get()->toArray();
             return response()->json([
                 'message' => 'success',
                 'data' => $this->getUsers($userTeam),
@@ -189,7 +231,9 @@ class UserController extends Controller
                 'firstname' => $input['firstname'],
                 'lastname' => $input['lastname'],
                 'email' => $input['email'],
-                'provider' =>  Config::get('constants.provider.service'),
+                'secondary_email' => array_key_exists('secondary_email', $input) ? $input['secondary_email'] : NULL,
+                'preferred_email' => array_key_exists('preferred_email', $input) ? $input['preferred_email'] : 'primary',
+                'provider' =>  array_key_exists('provider', $input) ? $input['provider'] : Config::get('constants.provider.service'),
                 'password' => Hash::make($input['password']),
                 'sector_id' => $input['sector_id'],
                 'organisation' => $input['organisation'],
@@ -200,8 +244,14 @@ class UserController extends Controller
                 'contact_feedback' => $input['contact_feedback'],
                 'contact_news' => $input['contact_news'],
                 'mongo_id' => $input['mongo_id'],
-                'mongo_object_id' => $input['mongo_object_id'],  
+                'mongo_object_id' => $input['mongo_object_id'],
+                'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,
             ];
+
+            // TODO - At this stage we may want to use the is_admin
+            // model flag to signify creation of HDR specific users
+            // which use user_has_roles relation to determine their
+            // role/permissions outside of a team
 
             $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
             
@@ -322,17 +372,20 @@ class UserController extends Controller
                     "firstname" => $input['firstname'],
                     "lastname" => $input['lastname'],
                     "email" => $input['email'],
+                    'secondary_email' => array_key_exists('secondary_email', $input) ? $input['secondary_email'] : NULL,
+                    'preferred_email' => array_key_exists('preferred_email', $input) ? $input['preferred_email'] : 'primary',
                     'provider' =>  Config::get('constants.provider.service'),
-                    "sector_id" => $input['sector_id'],
-                    "organisation" => $input['organisation'],
-                    "bio" => $input['bio'],
-                    "domain" => $input['domain'],
-                    "link" => $input['link'],
-                    "orcid" => $input['orcid'],
-                    "contact_feedback" => $input['contact_feedback'],
-                    "contact_news" => $input['contact_news'],  
-                    "mongo_id" => $input['mongo_id'], 
-                    "mongo_object_id" => $input['mongo_object_id'],                 
+                    'sector_id' => $input['sector_id'],
+                    'organisation' => $input['organisation'],
+                    'bio' => $input['bio'],
+                    'domain' => $input['domain'],
+                    'link' => $input['link'],
+                    'orcid' => $input['orcid'],
+                    'contact_feedback' => $input['contact_feedback'],
+                    'contact_news' => $input['contact_news'],  
+                    'mongo_id' => $input['mongo_id'], 
+                    'mongo_object_id' => $input['mongo_object_id'],
+                    'terms' => array_key_exists('terms', $input) ? $input['terms'] : 0,                
                 ];
 
                 $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
@@ -448,60 +501,34 @@ class UserController extends Controller
     {
         try {
             $input = $request->all();
+            $arrayKeys = [
+                'firstname',
+                'lastname',
+                'email',
+                'secondary_email',
+                'preferred_email',
+                'provider',
+                'sector_id',
+                'organisation',
+                'bio',
+                'domain',
+                'link',
+                'orcid',
+                'contact_feedback',
+                'contact_news',
+                'mongo_id',
+                'mongo_object_id', 
+                'terms',                
+            ];
 
-            $array = [];
+            $array = $this->checkEditArray($input, $arrayKeys);
+
             if (array_key_exists('firstname', $input) && array_key_exists('lastname', $input)) {
                 $array['name'] = $input['firstname'] . " " . $input['lastname'];
-                $array['firstname'] = $input['firstname'];
-                $array['lastname'] = $input['lastname'];
-            }
-            
-            if (array_key_exists('email', $input)) {
-                $array['email'] = $input['email'];
             }
 
             if (array_key_exists('password', $input)) {
                 $array['password'] = Hash::make($input['password']);
-            }
-
-            if (array_key_exists('sector_id', $input)) {
-                $array['sector_id'] = $input['sector_id'];
-            }
-
-            if (array_key_exists('organisation', $input)) {
-                $array['organisation'] = $input['organisation'];
-            }
-
-            if (array_key_exists('bio', $input)) {
-                $array['bio'] = $input['bio'];
-            }
-
-            if (array_key_exists('domain', $input)) {
-                $array['domain'] = $input['domain'];
-            }
-
-            if (array_key_exists('link', $input)) {
-                $array['link'] = $input['link'];
-            }
-
-            if (array_key_exists('orcid', $input)) {
-                $array['orcid'] = $input['orcid'];
-            }
-
-            if (array_key_exists('contact_feedback', $input)) {
-                $array['contact_feedback'] = $input['contact_feedback'];
-            }
-
-            if (array_key_exists('contact_news', $input)) {
-                $array['contact_news'] = $input['contact_news'];
-            }
-
-            if (array_key_exists('mongo_id', $input)) {
-                $array['mongo_id'] = $input['mongo_id'];
-            }
-
-            if (array_key_exists('mongo_object_id', $input)) {
-                $array['mongo_object_id'] = $input['mongo_object_id'];
             }
 
             User::withTrashed()->where('id', $id)->update($array);
@@ -578,6 +605,7 @@ class UserController extends Controller
     {
         try {
             UserHasNotification::where('user_id', $id)->delete();
+            UserHasRole::where('user_id', $id)->delete();
             User::where('id', $id)->delete();
 
             return response()->json([

@@ -1,0 +1,210 @@
+<?php
+
+namespace Database\Beta;
+
+use Exception;
+use App\Models\Team;
+use Illuminate\Database\Seeder;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+class TeamBetaDemo extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        $teams = [
+            [
+                'name' => 'HEALTH DATA RESEARCH',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => 'OTHER',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'SAIL',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'HIC',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'MetadataWorks',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'NHS England',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'CPRD',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'DISCOVER NOW',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'CLOSER',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'Wessex SDE',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'North East and North Cumbria SDE',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'North West SDE',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'Cancer Research Horizons',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'Thames Valley and Surrey SDE',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'Aridhia',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+        ];
+
+        foreach ($teams as $team) {
+            try {
+                Team::create($team);
+            } catch (Exception $exception) {
+                throw new Exception($exception->getMessage());
+            }
+        }
+    }
+}

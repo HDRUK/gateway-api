@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use Hash;
 use App\Models\User;
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\SectorSeeder;
 use Tests\Traits\Authorization;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,12 +29,21 @@ class UserTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            SectorSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
+        ];
+        $this->authorisationUser(false);
+        $nonAdminJwt = $this->getAuthorisationJwt(false);
+        $this->headerNonAdmin = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $nonAdminJwt,
         ];
     }
 
@@ -53,6 +64,8 @@ class UserTest extends TestCase
                     'firstname',
                     'lastname',
                     'email',
+                    'secondary_email',
+                    'preferred_email',
                     'providerid',
                     'provider',
                     'created_at',
@@ -71,7 +84,9 @@ class UserTest extends TestCase
                     'contact_news',
                     'mongo_id',
                     'mongo_object_id',
+                    'terms',
                     'notifications',
+                    'roles',
                 ],
             ],   
         ]);
@@ -79,14 +94,54 @@ class UserTest extends TestCase
     }
 
     /**
-     * Get All Tag with no success
+     * Get All Users with success as non admin
      * 
      * @return void
      */
-    public function test_get_all_users_and_generate_exception(): void
+    public function test_non_admin_get_all_users_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
+        // Create User with a highly unique name 
+        $responseUser = $this->json(
+            'POST',
+            '/api/v1/users',
+            [
+                'firstname' => 'XXXXXXXXXX',
+                'lastname' => 'XXXXXXXXXX',
+                'email' => 'just.test.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/12345678",
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",           
+            ],
+            $this->header
+        );
+        $responseUser->assertStatus(201);
+        $uniqueUserId = $responseUser->decodeResponseJson()['data'];
+
+        $response = $this->json('GET', self::TEST_URL, [], $this->headerNonAdmin);
+
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    'id',
+                    'name'
+                ],
+            ],   
+        ]);
+        $response->assertStatus(200);
+
+        $filterResponse = $this->json('GET', self::TEST_URL . '?filterNames=XXXXX', [], $this->headerNonAdmin);
+
+        // Check the user named XXXXXXXXX is the only match
+        $filterUsers = $filterResponse->decodeResponseJson()['data'];
+        $this->assertEquals($filterUsers[0]['id'], $uniqueUserId);
     }
 
     /**
@@ -119,6 +174,7 @@ class UserTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
+                'email' => 'some@email.com',
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -134,13 +190,15 @@ class UserTest extends TestCase
                 'firstname' => 'Just',
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Test Organisation',
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 75697342,
+                'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1, 
                 'mongo_id' => 1234567,
@@ -166,6 +224,7 @@ class UserTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
+                'email' => 'some@email.com',
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -181,13 +240,15 @@ class UserTest extends TestCase
                 'firstname' => 'Just',
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Test Organisation',
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 75697342,
+                'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1, 
                 'mongo_id' => 1234567,
@@ -212,13 +273,15 @@ class UserTest extends TestCase
                 'firstname' => 'Just',
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Updated Organisation',
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 75697342,
+                'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 0,
                 'contact_news' => 0, 
                 'mongo_id' => 1234567,
@@ -249,6 +312,7 @@ class UserTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
+                'email' => 'some@email.com',
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -265,17 +329,20 @@ class UserTest extends TestCase
                 'firstname' => 'Just',
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Test Organisation',
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 75697342,
+                'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",
+                'terms' => true,
             ],
             $this->header
         );
@@ -295,17 +362,20 @@ class UserTest extends TestCase
                 'firstname' => 'Just',
                 'lastname' => 'Test',
                 'email' => 'just.test.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Updated Organisation',
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 75697342,
+                'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 0,
                 'contact_news' => 0,
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",
+                'terms' => true,
             ],
             $this->header
         );

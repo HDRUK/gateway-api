@@ -26,6 +26,7 @@ class EditApplication extends BaseFormRequest
             ],
             'image_link' => [
                 'string',
+                'nullable',
                 'url',
             ],
             'description' => [
@@ -41,14 +42,6 @@ class EditApplication extends BaseFormRequest
             ],
             'enabled' => [
                 'boolean',
-            ],
-            'tags' => [
-                'array',
-            ],
-            'tags.*'  => [
-                'integer',
-                'distinct',
-                'exists:tags,id',
             ],
             'permissions' => [
                 'array',

@@ -7,12 +7,13 @@ use Config;
 use Exception;
 use App\Models\Application;
 use Illuminate\Support\Str;
+use App\Models\Notification;
 use Illuminate\Http\Request;
-use App\Models\ApplicationHasTag;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\ApplicationHasPermission;
 use App\Http\Traits\RequestTransformation;
+use App\Models\ApplicationHasNotification;
 use App\Http\Requests\Application\GetApplication;
 use App\Http\Requests\Application\EditApplication;
 use App\Http\Requests\Application\CreateApplication;
@@ -35,6 +36,30 @@ class ApplicationController extends Controller
      *    tags={"Application"},
      *    summary="ApplicationController@index",
      *    description="Returns a list of applications",
+     *    @OA\Parameter(
+     *       name="teamId",
+     *       in="query",
+     *       description="Filter Apps by the teamId",
+     *       @OA\Schema(type="integer")
+     *    ),
+     *    @OA\Parameter(
+     *       name="text",
+     *       in="query",
+     *       description="Search term to filter by application name or description.",
+     *       @OA\Schema(type="string")
+     *    ),
+     *    @OA\Parameter(
+     *       name="enabled",
+     *       in="query",
+     *       description="Filter by application enabled status (true or false).",
+     *       @OA\Schema(type="boolean", enum={true, false})
+     *    ),
+     *    @OA\Parameter(
+     *       name="disabled",
+     *       in="query",
+     *       description="Filter by application disabled status (true or false).",
+     *       @OA\Schema(type="boolean", enum={true, false})
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -52,9 +77,9 @@ class ApplicationController extends Controller
      *                   @OA\Property(property="user_id", type="integer", example="2"),
      *                   @OA\Property(property="enabled", type="boolean", example="false"),
      *                   @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
-     *                   @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
@@ -67,9 +92,43 @@ class ApplicationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+
         $input = $request->all();
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $applications = Application::getAll('user_id', $jwtUser)->with(['permissions', 'tags', 'team', 'user'])->paginate(Config::get('constants.per_page'));
+        $applications = Application::getAll('user_id', $jwtUser)->with(['permissions','team','user','notifications']);
+
+
+        $teamId = $request->query('team_id');
+        if ($teamId !== null) {
+            $applications = $applications->where('team_id',(int)$teamId);
+        }
+        
+        $enabledTerm = $request->query('enabled');
+        $disabledTerm = $request->query('disabled');
+
+        if ($disabledTerm === "true" && $enabledTerm === "false") {
+            $applications = $applications->where('enabled', false);
+        }
+
+        if ($disabledTerm === "false" && $enabledTerm === "true") {
+            $applications = $applications->where('enabled', true);
+        }
+        
+        $textTerms = $request->query('text',[]);
+        if ($textTerms !== null) {
+            if (!is_array($textTerms)) {
+                $textTerms = [$textTerms];
+            }
+            foreach ($textTerms as $textTerm) {
+                $applications = $applications->where(function ($query) use ($textTerm) {
+                    $query->where('name', 'like', '%' . $textTerm . '%')
+                          ->orWhere('description', 'like', '%' . $textTerm . '%');
+                });
+            }
+        }
+        
+        $perPage = request('per_page', Config::get('constants.per_page'));
+        $applications = $applications->paginate($perPage, ['*'], 'page');
 
         $applications->getCollection()->each(function ($application) {
             $application->makeHidden(['client_secret']);
@@ -116,7 +175,6 @@ class ApplicationController extends Controller
      *                   @OA\Property(property="user_id", type="integer", example="2"),
      *                   @OA\Property(property="enabled", type="boolean", example="false"),
      *                   @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
-     *                   @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
@@ -132,7 +190,7 @@ class ApplicationController extends Controller
     public function show(GetApplication $request, int $id): JsonResponse
     {
         try {
-            $application = Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first();
+            $application = Application::with(['permissions','team','user','notifications'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
 
             return response()->json([
@@ -162,8 +220,8 @@ class ApplicationController extends Controller
      *            @OA\Property(property="team_id", type="integer", example="1"),
      *            @OA\Property(property="user_id", type="integer", example="2"),
      *            @OA\Property(property="enabled", type="boolean", example="false"),
-     *            @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *            @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
+     *            @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *        ),
      *    ),
      *    @OA\Response(
@@ -184,9 +242,9 @@ class ApplicationController extends Controller
      *                 @OA\Property(property="user_id", type="integer", example="2"),
      *                 @OA\Property(property="enabled", type="boolean", example="false"),
      *                 @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
-     *                 @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *                 @OA\Property(property="team", type="array", example="[]", @OA\Items()),
      *                 @OA\Property(property="user", type="array", example="[]", @OA\Items()),
+     *                 @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *                 @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                 @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                 @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
@@ -208,9 +266,16 @@ class ApplicationController extends Controller
         try {
             $input = $request->all();
 
-            $appId = Str::random(32);
-            $clientId = Str::random(32);
-            $clientSecret = Hash::make($appId . ':' . $clientId);
+            // While it seems weak, random uses openssl_random_pseudo_bytes under the hood
+            // which is cryptographically secure. Increasing the length of the string
+            // returned, increases security further still
+            $appId = Str::random(40);
+            $clientId = Str::random(40);
+            $clientSecret = Hash::make($appId . 
+                ':' . $clientId . 
+                ':' . env('APP_AUTH_PRIVATE_SALT') . 
+                ':' . env('APP_AUTH_PRIVATE_SALT_2')
+            );
 
             $array = [
                 'name' => $input['name'],
@@ -229,17 +294,17 @@ class ApplicationController extends Controller
 
             $application = Application::create($array);
 
-            if (array_key_exists('tags', $input)) {
-                $this->applicationHasTags((int) $application->id, $input['tags']);
-            }
-
             if (array_key_exists('permissions', $input)) {
                 $this->applicationHasPermissions((int) $application->id, $input['permissions']);
             }
 
+            if (array_key_exists('notifications', $input)) {
+                $this->applicationHasNotifications((int) $application->id, $input['notifications']);
+            }
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => Application::with(['permissions', 'tags', 'team', 'user'])
+                'data' => Application::with(['permissions', 'team', 'user'])
                     ->where('id', $application->id)
                     ->first(),
             ], Config::get('statuscodes.STATUS_CREATED.code'));
@@ -278,8 +343,8 @@ class ApplicationController extends Controller
      *            @OA\Property(property="team_id", type="integer", example="1"),
      *            @OA\Property(property="user_id", type="integer", example="2"),
      *            @OA\Property(property="enabled", type="boolean", example="false"),
-     *            @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *            @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
+     *            @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *        ),
      *    ),
      *    @OA\Response(
@@ -302,7 +367,6 @@ class ApplicationController extends Controller
      *                 @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
      *                 @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
      *                 @OA\Property(property="enabled", type="boolean", example="true"),
-     *                 @OA\Property(property="keywords", type="string", example="key words"),
      *                 @OA\Property(property="public", type="boolean", example="true"),
      *                 @OA\Property(property="counter", type="integer", example="123"),
      *                 @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -339,15 +403,15 @@ class ApplicationController extends Controller
 
             Application::where('id', $id)->update($array);
 
-            if (array_key_exists('tags', $input)) {
-                $this->applicationHasTags((int) $id, $input['tags']);
-            }
-
             if (array_key_exists('permissions', $input)) {
                 $this->applicationHasPermissions((int) $id, $input['permissions']);
             }
 
-            $application = Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first();
+            if (array_key_exists('notifications', $input)) {
+                $this->applicationHasNotifications((int) $id, $input['notifications']);
+            }
+
+            $application = Application::with(['permissions','team','user','notifications'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
 
             return response()->json([
@@ -390,8 +454,8 @@ class ApplicationController extends Controller
      *            @OA\Property(property="team_id", type="integer", example="1"),
      *            @OA\Property(property="user_id", type="integer", example="2"),
      *            @OA\Property(property="enabled", type="boolean", example="false"),
-     *            @OA\Property(property="tags", type="array", example="[]", @OA\Items()),
      *            @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
+     *            @OA\Property(property="notifications", type="array", example="[]", @OA\Items()),
      *        ),
      *    ),
      *    @OA\Response(
@@ -414,7 +478,6 @@ class ApplicationController extends Controller
      *                 @OA\Property(property="description", type="string", example="Dolorem voluptas consequatur nihil illum et sunt libero."),
      *                 @OA\Property(property="image_link", type="string", example="https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque"),
      *                 @OA\Property(property="enabled", type="boolean", example="true"),
-     *                 @OA\Property(property="keywords", type="string", example="key words"),
      *                 @OA\Property(property="public", type="boolean", example="true"),
      *                 @OA\Property(property="counter", type="integer", example="123"),
      *                 @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -442,15 +505,15 @@ class ApplicationController extends Controller
 
             Application::where('id', $id)->update($array);
 
-            if (array_key_exists('tags', $input)) {
-                $this->applicationHasTags((int) $id, $input['tags']);
-            }
-
             if (array_key_exists('permissions', $input)) {
                 $this->applicationHasPermissions((int) $id, $input['permissions']);
             }
 
-            $application = Application::with(['permissions', 'tags', 'team', 'user'])->where('id', $id)->first();
+            if (array_key_exists('notifications', $input)) {
+                $this->applicationHasNotifications((int) $id, $input['notifications']);
+            }
+
+            $application = Application::with(['permissions','team','user','notifications'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
             
             return response()->json([
@@ -508,36 +571,18 @@ class ApplicationController extends Controller
     {
         try {
             Application::where('id', $id)->delete();
-            ApplicationHasTag::where('application_id', $id)->delete();
             ApplicationHasPermission::where('application_id', $id)->delete();
+
+            $applicationHasNotificationIds = ApplicationHasNotification::where('application_id', $id)->pluck('notification_id');
+
+            foreach ($applicationHasNotificationIds as $applicationHasNotificationId) {
+                Notification::where('id', $applicationHasNotificationId)->delete();
+                ApplicationHasNotification::where('notification_id', $applicationHasNotificationId)->delete();
+            }
 
             return response()->json([
                 'message' => 'success',
             ], 200);
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * Application has tags associated
-     *
-     * @param integer $applicationId
-     * @param array $tags
-     * @return mixed
-     */
-    private function applicationHasTags(int $applicationId, array $tags): mixed
-    {
-        try {
-            ApplicationHasTag::where('application_id', $applicationId)->delete();
-            foreach ($tags as $tag) {
-                ApplicationHasTag::create([
-                    'application_id' => $applicationId,
-                    'tag_id' => $tag,
-                ]);
-            }
-
-            return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -558,6 +603,44 @@ class ApplicationController extends Controller
                 ApplicationHasPermission::create([
                     'application_id' => $applicationId,
                     'permission_id' => $permission,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Application has notifications associated
+     *
+     * @param integer $applicationId
+     * @param array $notifications
+     * @return mixed
+     */
+    private function applicationHasNotifications(int $applicationId, array $notifications): mixed
+    {
+        try {
+            $applicationHasNotificationIds = ApplicationHasNotification::where('application_id', $applicationId)->pluck('notification_id');
+
+            foreach ($applicationHasNotificationIds as $applicationHasNotificationId) {
+                Notification::where('id', $applicationHasNotificationId)->delete();
+                ApplicationHasNotification::where('notification_id', $applicationHasNotificationId)->delete();
+            }
+
+            foreach ($notifications as $notification) {
+                $notification = Notification::create([
+                    'notification_type' => 'application',
+                    'message' => '',
+                    'opt_in' => 0,
+                    'enabled' => 1,
+                    'email' => $notification,
+                ]);
+
+                ApplicationHasNotification::create([
+                    'application_id' => $applicationId,
+                    'notification_id' => $notification->id,
                 ]);
             }
 

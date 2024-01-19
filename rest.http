@@ -3,7 +3,6 @@
 
 ### Variables
 @baseUrl = http://localhost:8000
-# @baseUrl = https://api.dev.hdruk.cloud
 @apiVersion = v1
 @uFirstName = "John"
 @uLastName = "Doe"
@@ -30,7 +29,8 @@ Accept: application/json
 }
 
 ### Variables jwt token
-@accessToken = {{createUserAuth.response.body.$.access_token}}
+# @accessToken = {{createUserAuth.response.body.$.access_token}}
+@accessToken = {{loginUsernamePassword.response.body.$.access_token}}
 
 ### Access Token
 # @name loginUsernamePassword
@@ -109,7 +109,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get user by id
-GET {{baseUrl}}/api/{{apiVersion}}/users/1 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/users/3 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -145,13 +145,19 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 ### TEAMS
+#### get teams - filter and sort
+# GET {{baseUrl}}/api/{{apiVersion}}/teams?sort=updated_at:asc,data_provider:desc&uses_5_safes=true
+GET {{baseUrl}}/api/{{apiVersion}}/teams?sort=data_provider:asc&is_question_bank=true HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
 #### get all teams
 GET {{baseUrl}}/api/{{apiVersion}}/teams HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get one team by id
-GET {{baseUrl}}/api/{{apiVersion}}/teams/1 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/teams/50 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -169,7 +175,7 @@ Authorization: Bearer {{accessToken}}
     "access_requests_management": 1,
     "uses_5_safes": 1,
     "is_admin": 1,
-    "member_of": 1001,
+    "member_of": "HUB",
     "contact_point": "dinos345@mail.com",
     "application_form_updated_by": "Someone Somewhere",
     "application_form_updated_on": "2023-04-06 15:44:41",
@@ -217,55 +223,6 @@ Authorization: Bearer {{accessToken}}
 
 #### update review
 DELETE {{baseUrl}}/api/{{apiVersion}}/reviews/11 HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
-### Collections 
-#### get all collections
-GET {{baseUrl}}/api/{{apiVersion}}/collections HTTP/1.1
-Content-Type: application/json
-Authorization: Bearer {{accessToken}}
-
-#### get collection by id
-GET {{baseUrl}}/api/{{apiVersion}}/collections/1 HTTP/1.1
-Content-Type: application/json
-Authorization: Bearer {{accessToken}}
-
-#### add new collection
-POST {{baseUrl}}/api/{{apiVersion}}/collections HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "name": "covid",
-    "description" : "Dolorem voluptas consequatur nihil illum et sunt libero.",
-    "image_link" : "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
-    "enabled": true,
-    "keywords": "key words",
-    "public": true,
-    "counter": 123
-}
-
-#### update collection
-PUT {{baseUrl}}/api/{{apiVersion}}/collections/12 HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer {{accessToken}}
-
-{
-    "name": "covid 2",
-    "description" : "Dolorem voluptas consequatur nihil illum et sunt libero.",
-    "image_link" : "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
-    "enabled": true,
-    "keywords": "key words",
-    "public": true,
-    "counter": 123
-}
-
-#### delete collection
-DELETE {{baseUrl}}/api/{{apiVersion}}/collections/11 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
@@ -336,7 +293,12 @@ Authorization: Bearer {{accessToken}}
     "description": "Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.",
     "team_id": 5,
     "user_id": 2,
-    "enabled": true
+    "enabled": true,
+    "notifications": [
+        "t1@test.com",
+        "t2@test.com",
+        "t3@test.com"
+    ]
 }
 
 #### update application
@@ -353,7 +315,12 @@ Authorization: Bearer {{accessToken}}
     "user_id": 3,
     "enabled": true,
     "tags": [1,2],
-    "permissions": [3,2]
+    "permissions": [3,2],
+    "notifications": [
+        "t1@test.com",
+        "t2@test.com",
+        "t3@test.com"
+    ]
 }
 
 #### edit application
@@ -379,7 +346,23 @@ Authorization: Bearer {{accessToken}}
 
 ### DATASETS
 #### get all datasets
-GET {{baseUrl}}/api/{{apiVersion}}/datasets HTTP/1.1
+# GET {{baseUrl}}/api/{{apiVersion}}/datasets?team_id=12 HTTP/1.1
+GET http://localhost:8000/api/v1/datasets?mongo_pid=628e9ad9-28c5-4d58-9ec5-04a63be9b4cf HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get all datasets/ withTrashed
+GET {{baseUrl}}/api/{{apiVersion}}/datasets?withTrashed=true HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get all datasets/ pagination
+GET {{baseUrl}}/api/{{apiVersion}}/datasets?page=2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get all datasets/ withTrashed & pagination
+GET {{baseUrl}}/api/{{apiVersion}}/datasets?withTrashed=true&page=2 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -388,7 +371,411 @@ GET {{baseUrl}}/api/{{apiVersion}}/datasets/1 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
-#### create application
+#### create dataset
+# POST {{baseUrl}}/api/{{apiVersion}}/datasets HTTP/1.1
+# Content-Type: application/json
+# Accept: application/json
+# Authorization: Bearer {{accessToken}}
+
+# {
+#     "team_id": 1,
+#     "user_id": 3,
+#     "create_origin": "MANUAL",
+#     "label": "label dataset for test 1",
+#     "short_description": "lorem ipsum assaasdas as 1",
+#     "status": "ACTIVE",
+#     "dataset": {
+#         "metadata": {
+#             "required": {
+#                 "gatewayId": "1234",
+#                 "gatewayPid": "5124f2",
+#                 "issued": "2020-08-05T14:35:59Z",
+#                 "modified": "2021-01-28T14:15:46Z",
+#                 "revisions": [
+#                     {
+#                         "version": "1.0.0",
+#                         "url": "https://d5faf9c6-6c34-46d7-93c4-7706a5436ed9"
+#                     },
+#                     {
+#                         "version": "2.0.0",
+#                         "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
+#                     },
+#                     {
+#                         "version": "0.0.1",
+#                         "url": "https://9e798632-442a-427b-8d0e-456f754d28dc"
+#                     },
+#                     {
+#                         "version": "2.1.1",
+#                         "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
+#                     }
+#                 ]
+#             },
+#             "summary": {
+#                 "abstract": "xPublications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
+#                 "contactPoint": "susheel.varma@hdruk.ac.uk",
+#                 "keywords": "Preprints,Papers,HDR UK",
+#                 "controlledKeywords": "",
+#                 "datasetType": "list of papers",
+#                 "description": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations\n\nThis will include:\n- Papers\n- COVID-19 Papers\n- COVID-19 Preprint",
+#                 "doiName": "10.1093/ije/dyx196",
+#                 "shortTitle": "HDR UK Papers & Preprints",
+#                 "title": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
+#                 "publisher": {
+#                     "publisherName": "HEALTH DATA RESEARCH UK"
+#                 }
+#             },
+#             "coverage": {
+#                 "pathway": "NOT APPLICABLE",
+#                 "physicalSampleAvailability": "NOT AVAILABLE",
+#                 "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
+#                 "followup": "UNKNOWN",
+#                 "typicalAgeRange": "0-0"
+#             },
+#             "provenance": {
+#                 "origin": {
+#                     "purpose": "OTHER",
+#                     "source": "MACHINE GENERATED",
+#                     "collectionSituation": "OTHER"
+#                 },
+#                 "temporal": {
+#                     "endDate": "2022-04-30",
+#                     "startDate": "2020-03-31",
+#                     "timeLag": "NOT APPLICABLE",
+#                     "accrualPeriodicity": "DAILY",
+#                     "distributionReleaseDate": "2020-11-27"
+#                 }
+#             },
+#             "accessibility": {
+#                 "access": {
+#                     "deliveryLeadTime": "OTHER",
+#                     "jurisdiction": "GB-ENG",
+#                     "dataController": "HDR UK",
+#                     "dataProcessor": "HDR UK",
+#                     "accessRights": "https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE",
+#                     "accessService": "https://github.com/HDRUK/papers",
+#                     "accessRequestCost": "Free"
+#                 },
+#                 "usage": {
+#                     "dataUseLimitation": "GENERAL RESEARCH USE",
+#                     "dataUseRequirement": "RETURN TO DATABASE OR RESOURCE",
+#                     "resourceCreator": "HDR UK Science Team"
+#                 },
+#                 "formatAndStandards": {
+#                     "vocabularyEncodingSchemes": "OTHER",
+#                     "conformsTo": "OTHER",
+#                     "languages": "en",
+#                     "formats": "CSV,JSON"
+#                 }
+#             },
+#             "linkage": {
+#                 "isGeneratedUsing": "something",
+#                 "dataUses": "dunno",
+#                 "isReferenceIn": "10.5281/zenodo.326615",
+#                 "tools": "https://github.com/HDRUK/papers",
+#                 "datasetLinkage": {
+#                     "isDerivedFrom": "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357",
+#                     "isPartOf": "NOT APPLICABLE",
+#                     "isMemberOf": "blah",
+#                     "linkedDatasets": "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"
+#                 },
+#                 "investigations": "https://github.com/HDRUK/papers"
+#             },
+#             "observations": [
+#                 {
+#                     "observedNode": "FINDINGS",
+#                     "measuredValue": 575,
+#                     "observationDate": "2020-11-27",
+#                     "measuredProperty": "Count",
+#                     "disambiguatingDescription": "Number of papers with affiliation and/or acknowledgement to HDR UK"
+#                 }
+#             ],
+#             "structuralMetadata": [
+#                 {
+#                     "name": "table1",
+#                     "description": "this is table 1",
+#                     "columns": [
+#                         {
+#                             "name": "column1",
+#                             "description": "this is column1",
+#                             "dataType": "String",
+#                             "sensitive": false
+#                         }
+#                     ]
+#                 }
+#             ]
+#         }
+#     }
+# }
+
+#### create dataset from schema.org
+# POST {{baseUrl}}/api/{{apiVersion}}/datasets HTTP/1.1
+# Content-Type: application/json
+# Accept: application/json
+# Authorization: Bearer {{accessToken}}
+
+# {
+#     "team_id": 1,
+#     "user_id": 3,
+#     "create_origin": "MANUAL",
+#     "label": "label dataset schema.org test 13",
+#     "short_description": "lorem ipsum assaasdas as 12",
+#     "status":"ACTIVE",
+#     "dataset": {
+#         "metadata": {
+#             "required": {
+#                 "gatewayId": "1234",
+#                 "gatewayPid": "5124f2",
+#                 "issued": "2020-08-05T14:35:59Z",
+#                 "modified": "2021-01-28T14:15:46Z",
+#                 "revisions": [
+#                     {
+#                         "version": "1.0.0",
+#                         "url": "https://d5faf9c6-6c34-46d7-93c4-7706a5436ed9"
+#                     },
+#                     {
+#                         "version": "2.0.0",
+#                         "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
+#                     },
+#                     {
+#                         "version": "0.0.1",
+#                         "url": "https://9e798632-442a-427b-8d0e-456f754d28dc"
+#                     },
+#                     {
+#                         "version": "2.1.1",
+#                         "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
+#                     }
+#                 ]
+#             },
+#             "summary": {
+#                 "abstract": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
+#                 "contactPoint": "susheel.varma@hdruk.ac.uk",
+#                 "keywords": "Preprints,Papers,HDR UK",
+#                 "controlledKeywords": "",
+#                 "datasetType": "list of papers",
+#                 "description": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations\n\nThis will include:\n- Papers\n- COVID-19 Papers\n- COVID-19 Preprint",
+#                 "doiName": "10.1093/ije/dyx196",
+#                 "shortTitle": "HDR UK Papers & Preprints",
+#                 "title": "XYZ DATASET",
+#                 "publisher": {
+#                     "publisherName": "DEF DATA RESEARCH UK"
+#                 }
+#             },
+#             "coverage": {
+#                 "pathway": "NOT APPLICABLE",
+#                 "physicalSampleAvailability": "NOT AVAILABLE",
+#                 "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
+#                 "followup": "UNKNOWN",
+#                 "typicalAgeRange": "0-0"
+#             },
+#             "provenance": {
+#                 "origin": {
+#                     "purpose": "OTHER",
+#                     "source": "MACHINE GENERATED",
+#                     "collectionSituation": "OTHER"
+#                 },
+#                 "temporal": {
+#                     "endDate": "2022-04-30",
+#                     "startDate": "2020-03-31",
+#                     "timeLag": "NOT APPLICABLE",
+#                     "accrualPeriodicity": "DAILY",
+#                     "distributionReleaseDate": "2020-11-27"
+#                 }
+#             },
+#             "accessibility": {
+#                 "access": {
+#                     "deliveryLeadTime": "OTHER",
+#                     "jurisdiction": "GB-ENG",
+#                     "dataController": "HDR UK",
+#                     "dataProcessor": "HDR UK",
+#                     "accessRights": "https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE",
+#                     "accessService": "https://github.com/HDRUK/papers",
+#                     "accessRequestCost": "Free"
+#                 },
+#                 "usage": {
+#                     "dataUseLimitation": "GENERAL RESEARCH USE",
+#                     "dataUseRequirement": "RETURN TO DATABASE OR RESOURCE",
+#                     "resourceCreator": "HDR UK Science Team"
+#                 },
+#                 "formatAndStandards": {
+#                     "vocabularyEncodingSchemes": "OTHER",
+#                     "conformsTo": "OTHER",
+#                     "languages": "en",
+#                     "formats": "CSV,JSON"
+#                 }
+#             },
+#             "linkage": {
+#                 "isGeneratedUsing": "something",
+#                 "dataUses": "dunno",
+#                 "isReferenceIn": "10.5281/zenodo.326615",
+#                 "tools": "https://github.com/HDRUK/papers",
+#                 "datasetLinkage": {
+#                     "isDerivedFrom": "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357",
+#                     "isPartOf": "NOT APPLICABLE",
+#                     "isMemberOf": "blah",
+#                     "linkedDatasets": "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"
+#                 },
+#                 "investigations": "https://github.com/HDRUK/papers"
+#             },
+#             "observations": [
+#                 {
+#                     "observedNode": "FINDINGS",
+#                     "measuredValue": 575,
+#                     "observationDate": "2020-11-27",
+#                     "measuredProperty": "Count",
+#                     "disambiguatingDescription": "Number of papers with affiliation and/or acknowledgement to HDR UK"
+#                 }
+#             ],
+#             "structuralMetadata": [
+#                 {
+#                     "name": "table1",
+#                     "description": "this is table 1",
+#                     "columns": [
+#                         {
+#                             "name": "column1",
+#                             "description": "this is column1",
+#                             "dataType": "String",
+#                             "sensitive": false
+#                         }
+#                     ]
+#                 }
+#             ]
+#         }
+#     }
+# }
+
+# ### another way
+# POST {{baseUrl}}/api/{{apiVersion}}/datasets HTTP/1.1
+# Content-Type: application/json
+# Accept: application/json
+# Authorization: Bearer {{accessToken}}
+
+# {
+#     "team_id": 1,
+#     "user_id": 3,
+#     "label": "HDR UK Papers & Preprints",
+#     "short_description": "Publications that mention HDR-UK (or any variant thereof ) in Acknowledgements or Author Affiliations.",
+#     "dataset": {
+#         "metadata": {
+#             "required": {
+#                 "gatewayId": "1234",
+#                 "gatewayPid": "5124f2",
+#                 "issued": "2020-08-05T14:35:59Z",
+#                 "modified": "2021-01-28T14:15:46Z",
+#                 "revisions": [
+#                     {
+#                         "version": "1.0.0",
+#                         "url": "https://d5faf9c6-6c34-46d7-93c4-7706a5436ed9"
+#                     },
+#                     {
+#                         "version": "2.0.0",
+#                         "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
+#                     },
+#                     {
+#                         "version": "0.0.1",
+#                         "url": "https://9e798632-442a-427b-8d0e-456f754d28dc"
+#                     },
+#                     {
+#                         "version": "2.1.1",
+#                         "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
+#                     }
+#                 ]
+#             },
+#             "identifier":"82d60c45-3b7e-4287-abc3-b4539ae2b423",
+#             "version":"19.0.0",
+#             "issued":"08/09/2022",
+#             "modified":"08/09/2022",
+#             "summary": {
+#                 "title":"HDR UK Papers \u0026 Preprints",
+#                 "abstract":"Publications that mention HDR-UK (or any variant thereof ) in Acknowledgements or Author Affiliations.",
+#                 "publisher": {
+#                     "identifier":"5f7b1a2bce9f65e6ed83e7da",
+#                     "name":"HEALTH DATA RESEARCH UK",
+#                     "logo":"",
+#                     "description":"",
+#                     "contactPoint":[],
+#                     "memberOf":"OTHER",
+#                     "accessRights":[],
+#                     "deliveryLeadTime":"",
+#                     "accessService":"",
+#                     "accessRequestCost":"",
+#                     "dataUseLimitation":[],
+#                     "dataUseRequirements":[]
+#                     },
+#                 "contactPoint":"susheel.varma@hdruk.ac.uk",
+#                 "keywords": ["Preprints","Papers","HDR UK"],
+#                 "alternateIndentifiers":[],
+#                 "doiName":"10.1093/ije/dyx196"
+#             },
+#             "documentation": {
+#                 "description":"Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
+#                 "associatedMedia":["https://github.com/HDRUK/papers"],
+#                 "isPartOf":"NOT APPLICABLE"
+#             },
+#             "coverage": {
+#                 "spatial":["United Kingdom"],
+#                 "typicalAgeRange":"0-0",
+#                 "physicalSampleAvailability":["NOT AVAILABLE"],
+#                 "followup":"UNKNOWN",
+#                 "pathway":"NOT APPLICABLE"
+#             },
+#             "provenance": { 
+#                 "origin": { 
+#                     "purpose":["OTHER"],
+#                     "source":["MACHINE GENERATED"],
+#                     "collectionSituation":["OTHER"]},
+#                     "temporal": {
+#                         "accrualPeriodicity":"DAILY",
+#                         "distributionReleaseDate":"16/12/2021",
+#                         "startDate":"31/03/2020",
+#                         "endDate":"30/04/2022",
+#                         "timeLag":"NO TIMELAG"
+#                 }
+#             },
+#             "accessibility": {
+#                 "usage": { 
+#                     "dataUseLimitation":["GENERAL RESEARCH USE"],
+#                     "dataUseRequirements":["RETURN TO DATABASE OR RESOURCE"],
+#                     "resourceCreator":["HDR UK Science Team"],
+#                     "investigations":["https://github.com/HDRUK/papers"],
+#                     "isReferencedBy":["https://doi.org/10.5281/zenodo.326615"]
+#                 },
+#                 "access": { 
+#                     "accessRights":["https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE"],
+#                     "accessService":"https://github.com/HDRUK/papers",
+#                     "accessRequestCost":["Free"],
+#                     "deliveryTimeLead":"",
+#                     "jurisdiction":["GB-ENG"],
+#                     "dataProcessor":"HDR UK",
+#                     "dataController":"HDR UK"
+#                 },
+#                 "formatAndStandards": {
+#                     "vocabularyEncodingScheme":["OTHER"],
+#                     "conformsTo":["OTHER"],
+#                     "language":["en"],
+#                     "format":["CSV","JSON"]
+#                 }
+#             },
+#             "enrichmentAndLinkage": {
+#                 "qualifiedRelation":["https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"],
+#                 "derivation":["https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"],
+#                 "tools":["https://github.com/HDRUK/papers"]
+#             },
+#             "observations": [
+#                 [
+#                     {"Key":"observedNode","Value":"FINDINGS"},
+#                     {"Key":"measuredValue","Value":575},
+#                     {"Key":"disambiguatingDescription","Value":"Number of papers with affiliation and/or acknowledgement to HDR UK"},
+#                     {"Key":"observationDate","Value":"27/11/2020"},
+#                     {"Key":"measuredProperty","Value":"Count"}
+#                 ]
+#             ]
+#         }
+#     },
+#     "create_origin": "MANUAL",
+#     "status": "ACTIVE"
+# }
+
+#### create dataset from the HDRUK schema - ok
 POST {{baseUrl}}/api/{{apiVersion}}/datasets HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -397,152 +784,198 @@ Authorization: Bearer {{accessToken}}
 {
     "team_id": 1,
     "user_id": 3,
-    "label": "label dataset for test",
-    "short_description": "lorem ipsum",
-    "data": {
-        "datasetv2": {
-            "identifier": "bd18eb49-9789-4ed3-a6c1-7b4f851ec2e7",
-            "version": "1.0.0",
-            "issued": "12/04/2022",
-            "modified": "12/04/2022",
-            "revisions": [],
+    "create_origin": "MANUAL",
+    "label": "label dataset HDRUK 2.1.2 test 3",
+    "short_description": "lorem ipsum assaasdas as 12",
+    "status": "ACTIVE",
+    "dataset": {
+        "extra": {
+            "id": "1234", 
+            "pid": "5124f2",
+            "controlledKeyWords": [
+                "Papers",
+                "COVID-19",
+                "controlledWord"
+            ],
+            "pathwayDescription": "Not APPLICABLE for blah reason",
+            "datasetType": "list of papers",
+            "isGeneratedUsing": "something",
+            "dataUses": "dunno",
+            "isMemberOf": "blah"
+        },
+        "metadata": {
+            "identifier": "https://web.www.healthdatagateway.org/dataset/a7ddefbd-31d9-4703-a738-256e4689f76a",
+            "version": "2.0.0",
             "summary": {
-                "title": "Test Urinary tract infections acute presentations: microbiology, treatment, outcome",
-                "abstract": "Acute presentations of UTIs (2000 to date). Deeply phenotyped, longitudinal granular data. Serial acuity, physiology, microbiology cultures, blood parameters, treatments, interventions, outcomes. Presenting complaints. Catheterisation status.",
+                "title": "HDR UK Papers & Preprints",
+                "doiName": "10.1093/ije/dyx196",
+                "abstract": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
                 "publisher": {
-                    "identifier": "607db9c5e1f9d3704d570d5f",
-                    "name": "PIONEER",
-                    "logo": "",
-                    "description": "",
-                    "contactPoint": [],
-                    "memberOf": "HUB",
-                    "accessRights": [],
-                    "deliveryLeadTime": "",
-                    "accessService": "",
-                    "accessRequestCost": "",
-                    "dataUseLimitation": [],
-                    "dataUseRequirements": []
+                    "name": "HEALTH DATA RESEARCH UK",
+                    "memberOf": "OTHER",
+                    "contactPoint": "susheel.varma@hdruk.ac.uk"
                 },
-                "contactPoint": "PIONEER@UHB.NHS.UK",
+                "contactPoint": "susheel.varma@hdruk.ac.uk",
                 "keywords": [
-                    "test",
-                    "Urinary Tract Infection",
-                    "Infection",
-                    "UTI",
-                    "Antibiotics"
-                ],
-                "alternateIdentifiers": [],
-                "doiName": ""
+                    "Preprints",
+                    "Papers",
+                    "HDR UK"
+                ]
             },
             "documentation": {
-                "description": "Test Background: A urinary tract infection (UTI) is a common infection that affects the bladder (cystitis), urethra (urethritis) or kidneys (pyelonephritis). They are more prevalent in women, and the incidence in women over 65 years old is double the rate compared with the overall female population. Catheterisation is known to affect the likelihood of infection. The National Institute for Clinical Excellence suggests that UTIs in the elderly are often over-diagnosed and over-treated. This has led to NHS England requiring a reduction in the number of Trimethoprim prescriptions prescribed to patients over 70 years old. \n\nPIONEER geography: The West Midlands (WM) has a population of 5.9 million and includes a diverse ethnic and socio-economic mix.  \n\nEHR: UHB is one of the largest NHS Trusts in England, providing direct acute services and specialist care across four hospital sites, with 2.2 million patient episodes per year, 2750 beds and an expanded 250 ITU bed capacity during COVID. UHB runs a fully electronic healthcare record (EHR) (PICS; Birmingham Systems), a shared primary and secondary care record (Your Care Connected) and a patient portal “My Health”. \n\nScope: All hospitalised patients from 2000 onwards, curated to focus on Urinary tract infection. Longitudinal and individually linked, so that the preceding and subsequent health journey can be mapped and healthcare utilisation prior to and after admission understood. The dataset includes highly granular patient demographics and co-morbidities taken from ICD-10 and SNOMED-CT codes. Serial, structured data pertaining to acute care process (timings, staff grades, specialty review, wards and triage). Along with presenting complaints, outpatients admissions, microbiology results, referrals, procedures, therapies, all physiology readings (pulse, blood pressure, respiratory rate, oxygen saturations and others), all blood results (urea, albumin, platelets, white blood cells and others). This dataset includes all prescribed and administered treatments including antibiotics, bacterial resistance patterns from microbiology assessments and outcomes. Linked images are also available (radiographs, CT scans, MRI). \n\nAvailable supplementary data: Matched controls; ambulance, OMOP data, synthetic data. \n\nAvailable supplementary support: Analytics, Model build, validation and refinement; A.I.; Data partner support for ETL (extract, transform and load) process, Clinical expertise, Patient and end-user access, Purchaser access, Regulatory requirements, Data-driven trials, “fast screen” services. ",
-                "associatedMedia": [],
-                "isPartOf": []
-            },
-            "coverage": {
-                "spatial": [
-                    "United Kingdom,England,West Midlands"
+                "description": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations\n\nThis will include:\n- Papers\n- COVID-19 Papers\n- COVID-19 Preprint",
+                "associatedMedia": [
+                    "https://github.com/HDRUK/papers"
                 ],
-                "typicalAgeRange": "0-112",
-                "physicalSampleAvailability": [
-                    "NOT AVAILABLE"
-                ],
-                "followup": "OTHER",
-                "pathway": "Test Data is representative of the multi-ethnicity population within the West Midlands (42% non white). Data includes all patients admitted during this timeframe, with National data Opt Outs applied, and therefore is representative of admissions to secondary care. Data focuses on in-patient stay in hospital during the acute episode but can be supplemented on request to include previous and subsequent hospital contacts (including outpatient appointments) and ambulance, 111, 999 data. "
+                "isPartOf": "NOT APPLICABLE"
             },
-            "provenance": {
-                "origin": {
-                    "purpose": [
-                        "CARE"
-                    ],
-                    "source": [
-                        "EPR"
-                    ],
-                    "collectionSituation": [
-                        "ACCIDENT AND EMERGENCY",
-                        "OUTPATIENTS",
-                        "IN-PATIENTS"
-                    ]
+            "revisions": [
+                {
+                    "version": "1.0.0",
+                    "url": "https://d5faf9c6-6c34-46d7-93c4-7706a5436ed9"
                 },
-                "temporal": {
-                    "accrualPeriodicity": "QUARTERLY",
-                    "distributionReleaseDate": "20/01/2022",
-                    "startDate": "12/01/2000",
-                    "endDate": "01/01/2022",
-                    "timeLag": "OTHER"
+                {
+                    "version": "2.0.0",
+                    "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
+                },
+                {
+                    "version": "0.0.1",
+                    "url": "https://9e798632-442a-427b-8d0e-456f754d28dc"
+                },
+                {
+                    "version": "2.1.1",
+                    "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
                 }
-            },
+            ],
+            "modified": "2021-01-28T14:15:46Z",
+            "issued": "2020-08-05T14:35:59Z",
             "accessibility": {
+                "formatAndStandards": {
+                    "language": "en",
+                    "vocabularyEncodingScheme": "OTHER",
+                    "format": [
+                        "CSV",
+                        "JSON"
+                    ],
+                    "conformsTo": "OTHER"
+                },
                 "usage": {
-                    "dataUseLimitation": [
-                        "RESEARCH USE ONLY"
+                    "dataUseLimitation": "GENERAL RESEARCH USE",
+                    "resourceCreator": "HDR UK Science Team",
+                    "dataUseRequirements": "RETURN TO DATABASE OR RESOURCE",
+                    "isReferencedBy": [
+                        "10.5281/zenodo.326615"
                     ],
-                    "dataUseRequirements": [
-                        "PROJECT SPECIFIC RESTRICTIONS"
-                    ],
-                    "resourceCreator": [
-                        "Test This publication uses data from PIONEER, an ethically approved database and analytical environment (East Midlands Derby Research Ethics 20/EM/0158)"
-                    ],
-                    "investigations": [],
-                    "isReferencedBy": []
+                    "investigations": [
+                        "https://github.com/HDRUK/papers"
+                    ]
                 },
                 "access": {
-                    "accessRights": [
-                        "https://www.pioneerdatahub.co.uk/data/data-request-process/"
-                    ],
-                    "accessService": "Trusted Research Environments (TRE) are built using Microsoft Azure services and hosted in the UK to provide research teams a safe, secure and agile environment which allows users to quickly analyse, interpret and form an enriched view of primary care information through a range of integrated datasets.\n\nHealth data collated from multiple sources is ingested into a secure data lake which will then allow subsets of data to be made available to research teams on approval of a data request. Once approved a customer specific TRE is made available with a standard set of leading analytical tools from Microsoft including Azure Databricks, Azure Machine Learning, Azure SQL and Azure Synapse (for large-scale data warehouses). Specific tools can be provided at an additional cost over the standard platform data access charge and the PIONEER team will work with you to determine your exact needs.\n\nAccess to the TRE is managed using the latest virtual desktop technology to provide a safe and secure end-user experience.  By utilising leading edge design PIONEER are able to create TREs rapidly to enable us to service any customer requirement.",
-                    "accessRequestCost": [
-                        "www.pioneerdatahub.co.uk/data/data-services-costs/"
-                    ],
-                    "deliveryLeadTime": "1-2 MONTHS",
-                    "jurisdiction": [
-                        "GB-ENG"
-                    ],
-                    "dataProcessor": "NOT APPLICABLE",
-                    "dataController": "University Hospitals Birmingham NHS Foundation Trust"
-                },
-                "formatAndStandards": {
-                    "vocabularyEncodingScheme": [
-                        "SNOMED CT",
-                        "OPCS4",
-                        "ICD10"
-                    ],
-                    "conformsTo": [
-                        "LOCAL"
-                    ],
-                    "language": [
-                        "en"
-                    ],
-                    "format": [
-                        "SQL"
-                    ]
+                    "dataController": "HDR UK",
+                    "jurisdiction": "GB-ENG",
+                    "dataProcessor": "HDR UK",
+                    "accessService": "https://github.com/HDRUK/papers",
+                    "accessRights": "https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE",
+                    "accessRequestCost": "Free",
+                    "deliveryLeadTime": "OTHER"
                 }
-            },
-            "enrichmentAndLinkage": {
-                "qualifiedRelation": [],
-                "derivation": [
-                    "Not Available"
-                ],
-                "tools": []
             },
             "observations": [
                 {
-                    "measuredProperty": "Count",
-                    "observedNode": "EVENTS",
-                    "measuredValue": "91568",
-                    "disambiguatingDescription": "91,568 spells with patients with diabetes between 12-01-2000 and 01-01-2022",
-                    "observationDate": "02/01/2022"
+                    "observedNode": "FINDINGS",
+                    "measuredValue": 575,
+                    "disambiguatingDescription": "Number of papers with affiliation and/or acknowledgement to HDR UK",
+                    "observationDate": "2020-11-27",
+                    "measuredProperty": "Count"
+                }
+            ],
+            "provenance": {
+                "temporal": {
+                    "endDate": "2022-04-30",
+                    "timeLag": "NOT APPLICABLE",
+                    "distributionReleaseDate": "2020-11-27",
+                    "accrualPeriodicity": "DAILY",
+                    "startDate": "2020-03-31"
+                },
+                "origin": {
+                    "purpose": "OTHER",
+                    "source": "MACHINE GENERATED",
+                    "collectionSituation": [
+                        "OTHER"
+                    ]
+                }
+            },
+            "coverage": {
+                "followup": "UNKNOWN",
+                "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
+                "physicalSampleAvailability": [
+                    "NOT AVAILABLE"
+                ],
+                "pathway": "NOT APPLICABLE",
+                "typicalAgeRange": "0-0"
+            },
+            "enrichmentAndLinkage": {
+                "tools": [
+                    "https://github.com/HDRUK/papers"
+                ],
+                "qualifiedRelation": [
+                    "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"
+                ],
+                "derivation": [
+                    "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"
+                ]
+            },
+            "structuralMetadata": [
+                {
+                    "name": "table1",
+                    "description": "this is table 1",
+                    "elements": [
+                        {
+                            "name": "column1",
+                            "description": "this is column1",
+                            "dataType": "String",
+                            "sensitive": false
+                        }
+                    ]
                 }
             ]
         }
     }
 }
 
-#### delete application by id
-DELETE {{baseUrl}}/api/{{apiVersion}}/datasets/4 HTTP/1.1
+# ###
+# POST {{baseUrl}}/api/{{apiVersion}}/datasets HTTP/1.1
+# Content-Type: application/json
+# Accept: application/json
+# Authorization: Bearer {{accessToken}}
+
+# {
+#     "team_id": 1,
+#     "user_id": 3,
+#     "label": "HDR UK Papers & Preprints",
+#     "short_description": "Publications that mention HDR-UK (or any variant thereof ) in Acknowledgements or Author Affiliations.",
+#     "dataset": {"identifier":"82d60c45-3b7e-4287-abc3-b4539ae2b423","version":"19.0.0","issued":"08/09/2022","modified":"08/09/2022","summary":{"title":"HDR UK Papers \u0026 Preprints","abstract":"Publications that mention HDR-UK (or any variant thereof ) in Acknowledgements or Author Affiliations.","publisher":{"identifier":"5f7b1a2bce9f65e6ed83e7da","name":"HEALTH DATA RESEARCH UK","logo":"","description":"","contactPoint":[],"memberOf":"OTHER","accessRights":[],"deliveryLeadTime":"","accessService":"","accessRequestCost":"","dataUseLimitation":[],"dataUseRequirements":[]},"contactPoint":"susheel.varma@hdruk.ac.uk","keywords":["Preprints","Papers","HDR UK"],"alternateIndentifiers":[],"doiName":"10.1093/ije/dyx196"},"documentation":{"description":"Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations","associatedMedia":["https://github.com/HDRUK/papers"],"isPartOf":"NOT APPLICABLE"},"coverage":{"spatial":["United Kingdom"],"typicalAgeRange":"0-0","physicalSampleAvailability":["NOT AVAILABLE"],"followup":"UNKNOWN","pathway":"NOT APPLICABLE"},"provenance":{"origin":{"purpose":["OTHER"],"source":["MACHINE GENERATED"],"collectionSituation":["OTHER"]},"temporal":{"accrualPeriodicity":"DAILY","distributionReleaseDate":"16/12/2021","startDate":"31/03/2020","endDate":"30/04/2022","timeLag":"NO TIMELAG"}},"accessibility":{"usage":{"dataUseLimitation":["GENERAL RESEARCH USE"],"dataUseRequirements":["RETURN TO DATABASE OR RESOURCE"],"resourceCreator":["HDR UK Science Team"],"investigations":["https://github.com/HDRUK/papers"],"isReferencedBy":["https://doi.org/10.5281/zenodo.326615"]},"access":{"accessRights":["https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE"],"accessService":"https://github.com/HDRUK/papers","accessRequestCost":["Free"],"deliveryTimeLead":"","jurisdiction":["GB-ENG"],"dataProcessor":"HDR UK","dataController":"HDR UK"},"formatAndStandards":{"vocabularyEncodingScheme":["OTHER"],"conformsTo":["OTHER"],"language":["en"],"format":["CSV","JSON"]}},"enrichmentAndLinkage":{"qualifiedRelation":["https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"],"derivation":["https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"],"tools":["https://github.com/HDRUK/papers"]},"observations":[[{"Key":"observedNode","Value":"FINDINGS"},{"Key":"measuredValue","Value":575},{"Key":"disambiguatingDescription","Value":"Number of papers with affiliation and/or acknowledgement to HDR UK"},{"Key":"observationDate","Value":"27/11/2020"},{"Key":"measuredProperty","Value":"Count"}]]},
+#     "create_origin": "MANUAL",
+#     "status": "DRAFT"
+# }
+
+
+#### delete dateset by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/datasets/10 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+#### unarchived dateset by id
+PATCH {{baseUrl}}/api/{{apiVersion}}/datasets/10?unarchive HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "status": "ACTIVE"
+}
+
 
 ### ROLES
 #### get all roles
@@ -631,44 +1064,41 @@ Authorization: Bearer {{accessToken}}
 
 {
     "roles" : {
-        "custodian.team.admin": false,
         "custodian.metadata.manager": false,
-        "metadata_editor": true
+        "metadata.editor": true,
+        "dar.reviewer": true
     }
 }
 
-#### delete team - user - role
-DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/2 HTTP/1.1
+#### update bulk team - user - role
+PATCH {{baseUrl}}/api/{{apiVersion}}/teams/50/roles HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
-### Test Email
-#### test email
-# GET {{baseUrl}}/api/{{apiVersion}}/email-test HTTP/1.1
-# Content-Type: application/json
+[
+    {
+        "userId": 20,
+        "roles" : {
+            "custodian.metadata.manager": true,
+            "metadata.editor": true,
+            "dar.reviewer": true
+        }
+    },
+    {
+        "userId": 21,
+        "roles" : {
+            "metadata.editor": true,
+            "dar.reviewer": true
+        }
+    }
+]
 
-# // add in routes (api.v1.php)
-# // use App\Jobs\SendEmailJob;
-# // use App\Models\EmailTemplate;
-# Route::get('email-test', function () {
-#     $to = [
-#         'to' => [
-#             'email' => 'loki.sinclair@hdruk.ac.uk',
-#             'name' => 'Loki Sinclair',
-#         ],
-#     ];
-
-#     $template = EmailTemplate::where('identifier', '=', 'example_template')->first();
-
-#     $replacements = [
-#         '[[header_text]]' => 'Health Data Research UK',
-#         '[[button_text]]' => 'Click me!',
-#         '[[subheading_text]]' => 'Sub Heading Something or other',
-#     ];
-
-#     SendEmailJob::dispatch($to, $template, $replacements);
-# });
+#### delete team - user - role
+DELETE {{baseUrl}}/api/{{apiVersion}}/teams/1/users/12 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 
 ### Email Templates
@@ -680,7 +1110,7 @@ Authorization: Bearer {{accessToken}}
 #### get one email template by id
 GET {{baseUrl}}/api/{{apiVersion}}/emailtemplates/2 HTTP/1.1
 Content-Type: application/json
-# Authorization: Bearer {{accessToken}}
+Authorization: Bearer {{accessToken}}
 
 #### create email template
 POST {{baseUrl}}/api/{{apiVersion}}/emailtemplates HTTP/1.1
@@ -722,6 +1152,377 @@ Authorization: Bearer {{accessToken}}
 
 #### delete email template
 DELETE {{baseUrl}}/api/{{apiVersion}}/emailtemplates/16 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### Team Notifications
+#### get team notifications by teamId and jwt token
+GET {{baseUrl}}/api/{{apiVersion}}/teams/1/notifications HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create notifications for team
+POST {{baseUrl}}/api/{{apiVersion}}/teams/1/notifications HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "user_notification_status": true,
+    "team_notification_status": true,
+    "team_emails": [
+        "djakubowski@example.org",
+        "trohan.bla@example.net",
+        "willis.rice.bla@example.net",
+        "amir.swift.bla@example.org"
+    ]
+}
+
+### Federation Team Notifications
+#### get all federations for team
+GET {{baseUrl}}/api/{{apiVersion}}/teams/13/federations HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one federations for team
+GET {{baseUrl}}/api/{{apiVersion}}/teams/13/federations/51 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create federation for team
+POST {{baseUrl}}/api/{{apiVersion}}/teams/13/federations HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "federation_type": "dataset",
+    "auth_type": "BEARER",
+    "auth_secret_key": "path for secret key",
+    "endpoint_baseurl": "https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app",
+    "endpoint_datasets": "/api/v1/noauth/datasets",
+    "endpoint_dataset": "/api/v1/noauth/datasets/{id}",
+    "run_time_hour": 11,
+    "enabled": true,
+    "notifications": [
+        "t1@test.com",
+        "t2@test.com",
+        "t3@test.com"
+    ],
+    "tested": true
+}
+
+#### update federation for team
+PUT {{baseUrl}}/api/{{apiVersion}}/teams/13/federations/51 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "federation_type": "dataset",
+    "auth_type": "bearer",
+    "auth_secret_key": "path for secret key2",
+    "endpoint_baseurl": "https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app",
+    "endpoint_datasets": "/api/v1/noauth/datasets",
+    "endpoint_dataset": "/api/v1/noauth/datasets/{id}",
+    "run_time_hour": 11,
+    "enabled": true,
+    "notifications": [
+        "t1@test.com",
+        "y2@test.com",
+        "y3@test.com"
+    ]
+}
+
+#### edit federation for team
+PATCH {{baseUrl}}/api/{{apiVersion}}/teams/13/federations/51 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "federation_type": "dataset",
+    "auth_type": "bearer",
+    "auth_secret_key": "path for secret key4",
+    "endpoint_baseurl": "https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app/test2",
+    "endpoint_datasets": "/api/v1/noauth/datasets",
+    "endpoint_dataset": "/api/v1/noauth/datasets/{id}",
+    "run_time_hour": 11,
+    "enabled": true,
+    "notifications": [
+        "t1@test.com"
+    ]
+}
+
+#### delete federation for team by federation_id and team_id
+DELETE {{baseUrl}}/api/{{apiVersion}}/teams/13/federations/51 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### Audit Logs
+#### get all audit logs
+GET {{baseUrl}}/api/{{apiVersion}}/audit_logs HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one audit log by id
+GET {{baseUrl}}/api/{{apiVersion}}/audit_logs/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create audit_log
+POST {{baseUrl}}/api/{{apiVersion}}/audit_logs HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "user_id": 1,
+    "team_id": 2,
+    "action_type": "CREATE",
+    "action_service": "Gateway API",
+    "description": "ducimus suscipit sit dolores incidunt quis similique error ducimus et"
+}
+
+#### update audit_log
+PUT {{baseUrl}}/api/{{apiVersion}}/audit_logs/103 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "user_id": 1,
+    "team_id": 3,
+    "action_type": "UPDATE",
+    "action_service": "Gateway API",
+    "description": "ducimus suscipit sit dolores incidunt quis similique error ducimus et update"
+}
+
+#### edit audit_log
+PATCH {{baseUrl}}/api/{{apiVersion}}/audit_logs/103 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "team_id": 5,
+    "action_type": "CREATE",
+    "action_service": "Gateway API",
+    "description": "ducimus suscipit sit dolores incidunt quis similique error ducimus et edit"
+}
+
+#### get one audit log by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/audit_logs/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+## TESTS
+### Test Email
+#### test email
+# GET {{baseUrl}}/api/{{apiVersion}}/email-test HTTP/1.1
+# Content-Type: application/json
+
+# // add in routes (api.v1.php)
+# // use App\Jobs\SendEmailJob;
+# // use App\Models\EmailTemplate;
+# Route::get('email-test', function () {
+#     $to = [
+#         'to' => [
+#             'email' => 'loki.sinclair@hdruk.ac.uk',
+#             'name' => 'Loki Sinclair',
+#         ],
+#     ];
+
+#     $template = EmailTemplate::where('identifier', '=', 'example_template')->first();
+
+#     $replacements = [
+#         '[[header_text]]' => 'Health Data Research UK',
+#         '[[button_text]]' => 'Click me!',
+#         '[[subheading_text]]' => 'Sub Heading Something or other',
+#     ];
+
+#     SendEmailJob::dispatch($to, $template, $replacements);
+# });
+
+#### send a test for jwt
+POST {{baseUrl}}/api/{{apiVersion}}/test HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+#### send a test and check access
+POST {{baseUrl}}/api/{{apiVersion}}/test/check_access HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### Cohort Requests
+#### get all cohort requests
+GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get all cohort requests with query parameters
+# GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests?sort=created_at:asc,updated_at:asc,organisation:desc,name:desc&status=Approved&name=dan
+# GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests?sort=created_at:asc,updated_at:asc,organisation:desc,name:desc
+# ET {{baseUrl}}/api/{{apiVersion}}/cohort_requests?sort=created_at,updated_at:desc,organisation,name:desc&email=john.doe.1234567890@example.com
+GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests?sort=created_at,updated_at:desc,organisation,name:desc&text=Camille HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get cohort request by id
+GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests/19 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create cohort request
+POST {{baseUrl}}/api/{{apiVersion}}/cohort_requests HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "details": "ducimus suscipit sit dolores incidunt quis similique error ducimus et"
+}
+
+#### update cohort request
+PUT {{baseUrl}}/api/{{apiVersion}}/cohort_requests/19 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "request_status" : "APPROVED",
+    "details": "ducimus suscipit sit dolores incidunt quis similique error ducimus et - put"
+}
+
+#### delete cohort request by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/cohort_requests/24 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+### Keywords
+#### get all
+# GET {{baseUrl}}/api/{{apiVersion}}/keywords?perPage=5 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/keywords HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get by id
+GET {{baseUrl}}/api/{{apiVersion}}/keywords/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create resource
+POST {{baseUrl}}/api/{{apiVersion}}/keywords HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Ducimus suscipit",
+    "enabled": 1
+}
+
+#### update resource
+PUT {{baseUrl}}/api/{{apiVersion}}/keywords/55 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Ducimus suscipit update",
+    "enabled": 0
+}
+
+#### edit resource
+PATCH {{baseUrl}}/api/{{apiVersion}}/keywords/55 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "enabled": 1
+}
+
+#### delete resource
+DELETE {{baseUrl}}/api/{{apiVersion}}/keywords/55 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### Collections 
+#### get all
+GET {{baseUrl}}/api/{{apiVersion}}/collections HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get collection by id
+GET {{baseUrl}}/api/{{apiVersion}}/collections/15 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### add new collection
+POST {{baseUrl}}/api/{{apiVersion}}/collections HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Epidemiology and Surveillance",
+    "description" : "Mortality & risk stratification: Do particular groups (age, sex, socioeconomic status, occupation, geographical location, care setting, co-morbidities and ethnicity) have an increased risk of infection? And/or do they have an increased risk of severe outcomes? And what are the excess deaths compared with the previous 5 years? National core study",
+    "image_link" : "https://www.hdruk.ac.uk/wp-content/uploads/2020/06/shutterstock_1675328338-484x412.jpg",
+    "enabled": true,
+    "public": true,
+    "datasets": [1,3],
+    "keywords": ["COVID-19 test", "National Core Study test"]
+}
+
+#### update collection
+PUT {{baseUrl}}/api/{{apiVersion}}/collections/11 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "covid sasasdsa",
+    "description" : "Dolorem voluptas consequatur nihil illum et sunt libero. asdsad",
+    "image_link" : "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
+    "enabled": true,
+    "public": true,
+    "datasets": [1,2,3],
+    "keywords": ["Biobank", "Bladder Cancer", "Cancer", "Cervical Cancer"]
+}
+
+// optional: userId (int), mongo_object_id (string), mongo_id (string), counter (int)
+
+#### update collection
+PATCH {{baseUrl}}/api/{{apiVersion}}/collections/13 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "name": "Epidemiology and Surveillance",
+    "description" : "Dolorem voluptas consequatur nihil illum et sunt libero. asdsad",
+    "image_link" : "https://www.hdruk.ac.uk/wp-content/uploads/2020/06/shutterstock_1675328338-484x412.jpg",
+    "enabled": true,
+    "public": true,
+    "datasets": [5,7],
+    "keywords": ["COVID-19 test", "National Core Study test"]
+}
+
+// optional: userId (int), mongo_object_id (string), mongo_id (string), counter (int)
+
+#### delete collection
+DELETE {{baseUrl}}/api/{{apiVersion}}/collections/11 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}

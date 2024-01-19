@@ -39,6 +39,15 @@ class EditUser extends BaseFormRequest
                     }
                 },
             ],
+            'secondary_email' => [
+                'nullable',
+                'string',
+                'email',
+            ],
+            'preferred_email' => [
+                'string',
+                'in:primary,secondary',
+            ],
             'password' => [
                 'nullable',
                 'string',
@@ -64,7 +73,8 @@ class EditUser extends BaseFormRequest
                 'string',
             ],
             'orcid' => [
-                'integer',
+                'nullable',
+                'string',
             ],
             'contact_feedback' => [
                 'boolean',
@@ -76,8 +86,13 @@ class EditUser extends BaseFormRequest
                 'integer',
             ],
             'mongo_object_id' => [
-                'nullable', 'string',
+                'nullable', 
+                'string',
             ],
+            'terms' => [
+                'boolean',
+            ],
+
         ];
     }
 

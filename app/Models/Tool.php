@@ -30,7 +30,15 @@ class Tool extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'mongo_object_id', 'name', 'url', 'description', 'license', 'tech_stack', 'user_id', 'enabled',
+        'mongo_object_id', 
+        'name', 
+        'url', 
+        'description', 
+        'license', 
+        'tech_stack', 
+        'category_id', 
+        'user_id', 
+        'enabled',
     ];
 
     /**

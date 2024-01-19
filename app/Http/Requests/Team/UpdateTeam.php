@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Team;
 
+use Illuminate\Validation\Rule;
+use App\Http\Enums\TeamMemberOf;
 use App\Http\Requests\BaseFormRequest;
 
 class UpdateTeam extends BaseFormRequest
@@ -14,7 +16,7 @@ class UpdateTeam extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'id' => [
+            'teamId' => [
                 'int',
                 'required',
                 'exists:teams,id',
@@ -49,7 +51,12 @@ class UpdateTeam extends BaseFormRequest
             ],
             'member_of' => [
                 'required',
-                'integer',
+                'string',
+                Rule::in([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
             ],
             'contact_point' => [
                 'nullable',
@@ -67,8 +74,12 @@ class UpdateTeam extends BaseFormRequest
                 'required',
                 'array',
             ],
-            'mdm_folder_id' => [
+            'mongo_object_id' => [
+                'nullable',
                 'string',
+            ],
+            'is_question_bank' => [
+                'boolean',
             ],
         ];
     }
@@ -80,6 +91,6 @@ class UpdateTeam extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge(['teamId' => $this->route('teamId')]);
     }
 }

@@ -22,9 +22,9 @@ class ApplicationFactory extends Factory
         $teams = Team::all();
         $users = User::all();
 
-        $appId = fake()->regexify('[A-Za-z0-9]{32}');
-        $clientId = fake()->regexify('[A-Za-z0-9]{32}');
-        $clientSecret = Hash::make($appId . ':' . $clientId);
+        $appId = fake()->regexify('[A-Za-z0-9]{40}');
+        $clientId = fake()->regexify('[A-Za-z0-9]{40}');
+        $clientSecret = Hash::make($appId . ':' . $clientId . ':' . env('APP_AUTH_PRIVATE_SALT') . ':' . env('APP_AUTH_PRIVATE_SALT_2'));
 
         return [
             'name' => fake()->text(100),

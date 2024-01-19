@@ -31,6 +31,7 @@ class Application extends Model
         'name',
         'app_id',
         'client_id',
+        'client_secret',
         'image_link',
         'description',
         'team_id',
@@ -42,14 +43,13 @@ class Application extends Model
         'enabled' => 'boolean',
     ];
 
+    protected $hidden = [
+        'client_secret',
+    ];
+
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class, 'application_has_permissions');
-    }
-
-    public function tags(): BelongsToMany
-    {
-        return $this->belongsToMany(Tag::class, 'application_has_tags');
     }
 
     public function team(): BelongsTo
@@ -60,5 +60,13 @@ class Application extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+    
+    /**
+     * The notifications that belong to the team.
+     */
+    public function notifications(): BelongsToMany
+    {
+        return $this->belongsToMany(Notification::class, 'application_has_notifications');
     }
 }

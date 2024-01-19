@@ -46,15 +46,36 @@ class JwtMiddleware
             }
 
             $request->merge(['jwt' => $authorization]);
+
+            $payloadJwt = $jwtController->decode();
+            $userJwt = $payloadJwt['user'];
+
+            $user = $this->validateUserId((int) $userJwt['id']);
+
+            if (!$user) {
+                throw new NotFoundException('User not found.');
+            }
+
+            $request->merge(
+                [
+                    'jwt_user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'is_admin' => $user->is_admin,
+                        ]
+                    ]
+                );
+
             return $next($request);
         }
 
         // Otherwise fall back to bearer authorization header
-        $autorization = $request->header('Authorization');
-        $splitAutorization = explode(' ',$autorization);
+        $authorization = $request->header('Authorization');
+        $splitAuthorization = explode(' ',$authorization);
 
-        if (strtolower(trim($splitAutorization[0])) === 'bearer') {
-            $jwtBearer = $splitAutorization[1];
+        if (strtolower(trim($splitAuthorization[0])) === 'bearer') {
+            $jwtBearer = $splitAuthorization[1];
             
             $jwtController = new JwtController();
             $jwtController->setJwt($jwtBearer);

@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use Config;
 
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\AuditLogSeeder;
 
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,7 +24,10 @@ class AuditLogTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            AuditLogSeeder::class,
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
@@ -36,7 +41,7 @@ class AuditLogTest extends TestCase
      * 
      * @return void
      */
-    public function test_the_application_can_list_audit_logs()
+    public function test_list_all_audit_logs()
     {
         $response = $this->json(
             'GET',
@@ -53,9 +58,12 @@ class AuditLogTest extends TestCase
                         'id',
                         'created_at',
                         'updated_at',
+                        'deleted_at',
                         'user_id',
+                        'team_id',
+                        'action_type',
+                        'action_service',
                         'description',
-                        'function',
                     ],
                 ],
                 'first_page_url',
@@ -84,8 +92,10 @@ class AuditLogTest extends TestCase
             self::TEST_URL,
             [
                 'user_id' => 1,
+                'team_id' => 2,
+                'action_type' => 'CREATE',
+                'action_service' => 'Gateway API',
                 'description' => 'Test audit log description',
-                'function' => 'test_audit_log_creation',
             ],
             $this->header,
         );
@@ -111,9 +121,12 @@ class AuditLogTest extends TestCase
                     'id',
                     'created_at',
                     'updated_at',
+                    'deleted_at',
                     'user_id',
+                    'team_id',
+                    'action_type',
+                    'action_service',
                     'description',
-                    'function',
                 ],
             ]);
     }
@@ -130,8 +143,10 @@ class AuditLogTest extends TestCase
             self::TEST_URL,
             [
                 'user_id' => 1,
+                'team_id' => 2,
+                'action_type' => 'CREATE',
+                'action_service' => 'Gateway API',
                 'description' => 'Test audit log description',
-                'function' => 'test_audit_log_creation',
             ],
             $this->header,
         );
@@ -161,8 +176,10 @@ class AuditLogTest extends TestCase
             self::TEST_URL,
             [
                 'user_id' => 1,
+                'team_id' => 2,
+                'action_type' => 'CREATE',
+                'action_service' => 'Gateway API',
                 'description' => 'Test audit log description',
-                'function' => 'test_audit_log_creation',
             ],
             $this->header,
         );
@@ -183,15 +200,17 @@ class AuditLogTest extends TestCase
             'PATCH',
             self::TEST_URL . '/' . $id,
             [
+                'action_type' => 'UPDATE',
+                'action_service' => 'Translation Service',
                 'description' => 'Test audit log description edit',
-                'function' => 'test_audit_log_edit',
             ],
             $this->header,
         );
         $contentEdit = $responseEdit->decodeResponseJson();
         $this->assertEquals($contentEdit['data']['id'], $id);
+        $this->assertEquals($contentEdit['data']['action_type'], 'UPDATE');
+        $this->assertEquals($contentEdit['data']['action_service'], 'Translation Service');
         $this->assertEquals($contentEdit['data']['description'], 'Test audit log description edit');
-        $this->assertEquals($contentEdit['data']['function'], 'test_audit_log_edit');
         $responseEdit->assertStatus(200);
     }
 
@@ -209,8 +228,10 @@ class AuditLogTest extends TestCase
             self::TEST_URL,
             [
                 'user_id' => 1,
+                'team_id' => 2,
+                'action_type' => 'CREATE',
+                'action_service' => 'Gateway API',
                 'description' => 'Test audit log description',
-                'function' => 'test_audit_log_creation',                
             ],
             $this->header,
         );
@@ -233,8 +254,10 @@ class AuditLogTest extends TestCase
             self::TEST_URL . '/' . $content['data'],
             [
                 'user_id' => 2,
+                'team_id' => 2,
+                'action_type' => 'CREATE',
+                'action_service' => 'Gateway API',
                 'description' => 'Updated test audit log description',
-                'function' => 'test_audit_log_update',
             ],
             $this->header,
         );
@@ -243,7 +266,6 @@ class AuditLogTest extends TestCase
         
         $this->assertEquals($content['data']['user_id'], 2);
         $this->assertEquals($content['data']['description'], 'Updated test audit log description');
-        $this->assertEquals($content['data']['function'], 'test_audit_log_update');
     }
 
     /**
@@ -260,8 +282,10 @@ class AuditLogTest extends TestCase
             self::TEST_URL,
             [
                 'user_id' => 1,
+                'team_id' => 2,
+                'action_type' => 'CREATE',
+                'action_service' => 'Gateway API',
                 'description' => 'Test audit log description',
-                'function' => 'test_audit_log_for_deletion',
             ],
             $this->header,
         );

@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\ApplicationSeeder;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,7 +28,11 @@ class ApplicationTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+            ApplicationSeeder::class,
+        ]);
+
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
@@ -60,9 +66,9 @@ class ApplicationTest extends TestCase
                     'updated_at',
                     'deleted_at',
                     'permissions',
-                    'tags',
                     'team',
                     'user',
+                    'notifications',
                 ],
             ],
             'current_page',
@@ -94,13 +100,14 @@ class ApplicationTest extends TestCase
                 'team_id' => 5,
                 'user_id' => 2,
                 'enabled' => true,
-                'tags' => [
-                    1,
-                    5,
-                ],
                 'permissions' => [
                     1,
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com",
+                    "t2@test.com",
+                    "t3@test.com"
                 ],
             ],
             $this->header,
@@ -144,9 +151,9 @@ class ApplicationTest extends TestCase
                 'updated_at',
                 'deleted_at',
                 'permissions',
-                'tags',
                 'team',
                 'user',
+                'notifications',
             ],
         ]);
         $responseGet->assertStatus(200);
@@ -164,13 +171,14 @@ class ApplicationTest extends TestCase
                 'team_id' => 5,
                 'user_id' => 2,
                 'enabled' => true,
-                'tags' => [
-                    1,
-                    5,
-                ],
                 'permissions' => [
                     1,
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com",
+                    "t2@test.com",
+                    "t3@test.com"
                 ],
             ],
             $this->header,
@@ -202,13 +210,14 @@ class ApplicationTest extends TestCase
                 'team_id' => 5,
                 'user_id' => 2,
                 'enabled' => true,
-                'tags' => [
-                    1,
-                    5,
-                ],
                 'permissions' => [
                     1,
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com",
+                    "t2@test.com",
+                    "t3@test.com"
                 ],
             ],
             $this->header,
@@ -239,10 +248,6 @@ class ApplicationTest extends TestCase
                 'team_id' => 2,
                 'user_id' => 1,
                 'enabled' => false,
-                'tags' => [
-                    2,
-                    3,
-                ],
                 'permissions' => [
                     2,
                 ],
@@ -274,13 +279,14 @@ class ApplicationTest extends TestCase
                 'team_id' => 5,
                 'user_id' => 2,
                 'enabled' => true,
-                'tags' => [
-                    1,
-                    5,
-                ],
                 'permissions' => [
                     1,
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com",
+                    "t2@test.com",
+                    "t3@test.com"
                 ],
             ],
             $this->header,
@@ -311,12 +317,11 @@ class ApplicationTest extends TestCase
                 'team_id' => 2,
                 'user_id' => 1,
                 'enabled' => false,
-                'tags' => [
-                    2,
-                    3,
-                ],
                 'permissions' => [
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com"
                 ],
             ],
             $this->header,
@@ -367,13 +372,14 @@ class ApplicationTest extends TestCase
                 'team_id' => 5,
                 'user_id' => 2,
                 'enabled' => true,
-                'tags' => [
-                    1,
-                    5,
-                ],
                 'permissions' => [
                     1,
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com",
+                    "t2@test.com",
+                    "t3@test.com"
                 ],
             ],
             $this->header,
@@ -404,12 +410,11 @@ class ApplicationTest extends TestCase
                 'team_id' => 2,
                 'user_id' => 1,
                 'enabled' => false,
-                'tags' => [
-                    2,
-                    3,
-                ],
                 'permissions' => [
                     2,
+                ],
+                "notifications" => [
+                    "t1@test.com",
                 ],
             ],
             $this->header,

@@ -18,9 +18,7 @@ class DeleteCollection extends BaseFormRequest
             'id' => [
                 'required',
                 function ($attribute, $value, $fail) {
-                    $exists = Collection::withTrashed()
-                        ->where('id', $value)
-                        ->exists();
+                    $exists = Collection::where('id', $value)->exists();
 
                     if (!$exists) {
                         $fail('The selected collection does not exists.');

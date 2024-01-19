@@ -62,7 +62,7 @@ class RoleController extends Controller
      */
     public function index(): JsonResponse
     {
-        $roles = Role::with(['permissions'])->paginate(Config::get('constants.per_page'));
+        $roles = Role::with(['permissions'])->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         return response()->json(
             $roles

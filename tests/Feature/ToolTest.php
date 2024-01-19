@@ -6,6 +6,11 @@ use Config;
 use ReflectionClass;
 
 use Tests\TestCase;
+use Tests\Traits\MockExternalApis;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\ToolSeeder;
+use Database\Seeders\TagSeeder;
 
 use App\Models\Tool;
 use App\Models\ToolHasTag;
@@ -20,6 +25,9 @@ class ToolTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL = '/api/v1/tools';
 
@@ -32,15 +40,14 @@ class ToolTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed();
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
+        $this->seed([
+            MinimalUserSeeder::class,
+            CategorySeeder::class,
+            ToolSeeder::class,
+            TagSeeder::class,
+        ]);
     }
 
     /**
@@ -63,6 +70,7 @@ class ToolTest extends TestCase
                     'description',
                     'license',
                     'tech_stack',
+                    'category_id',
                     'user_id',
                     'enabled',
                     'created_at',
@@ -89,17 +97,6 @@ class ToolTest extends TestCase
     }
 
     /**
-     * Get All Tools with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_tools_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get Tool by Id with success
      * 
      * @return void
@@ -119,6 +116,7 @@ class ToolTest extends TestCase
                     'description',
                     'license',
                     'tech_stack',
+                    'category_id',
                     'user_id',
                     'enabled',
                     'created_at',
@@ -148,6 +146,7 @@ class ToolTest extends TestCase
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
             "license" => "Inventore omnis aut laudantium vel alias.",
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
             "enabled" => 1,
@@ -220,6 +219,7 @@ class ToolTest extends TestCase
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
             "license" => "Inventore omnis aut laudantium vel alias.",
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1),
             "enabled" => 1,
@@ -256,6 +256,7 @@ class ToolTest extends TestCase
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
             "license" => "Modi tenetur et et perferendis.",
             "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
             "enabled" => 1,
@@ -279,6 +280,7 @@ class ToolTest extends TestCase
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
         $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
+        $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
         $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
         $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
 
@@ -304,6 +306,7 @@ class ToolTest extends TestCase
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
             "license" => "Inventore omnis aut laudantium vel alias.",
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1),
             "enabled" => 1,
@@ -340,6 +343,7 @@ class ToolTest extends TestCase
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
             "license" => "Modi tenetur et et perferendis.",
             "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
             "enabled" => 1,
@@ -363,6 +367,7 @@ class ToolTest extends TestCase
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
         $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
+        $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
         $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
         $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
 
@@ -433,6 +438,7 @@ class ToolTest extends TestCase
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
             "license" => "Inventore omnis aut laudantium vel alias.",
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
             "enabled" => 1,

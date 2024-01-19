@@ -31,6 +31,9 @@ class EditNotification extends BaseFormRequest
             'enabled' => [
                 'boolean',
             ],
+            'email' => [
+                'email',
+            ],
         ];
     }
 

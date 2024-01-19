@@ -47,7 +47,7 @@ class SectorController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $sectors = Sector::where('enabled', 1)->paginate(Config::get('constants.per_page'));
+        $sectors = Sector::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
         return response()->json(
             $sectors
         );

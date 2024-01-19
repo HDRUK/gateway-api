@@ -5,19 +5,27 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
+use Tests\Traits\MockExternalApis;
+use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TeamTest extends TestCase
 {
     use RefreshDatabase;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     private $accessToken = '';
 
     public function setUp() :void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed();
+        $this->seed([
+            MinimalUserSeeder::class,
+        ]);
 
         $response = $this->postJson('api/v1/auth', [
             'email' => 'developers@hdruk.ac.uk',
@@ -25,8 +33,9 @@ class TeamTest extends TestCase
         ]);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $content = $response->decodeResponseJson();  
-        $this->accessToken = $content['access_token'];      
+        $content = $response->decodeResponseJson();
+        $this->accessToken = $content['access_token'];  
+        
     }
 
     /**
@@ -58,6 +67,7 @@ class TeamTest extends TestCase
                         'application_form_updated_on',
                         'users',
                         'notifications',
+                        'is_question_bank',
                     ],
                 ],               
             ]);
@@ -79,6 +89,7 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -99,11 +110,16 @@ class TeamTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 1,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -164,6 +180,7 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -184,11 +201,16 @@ class TeamTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 0,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -236,6 +258,7 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -257,11 +280,16 @@ class TeamTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 0,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -291,11 +319,12 @@ class TeamTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 0,
                 'is_admin' => 1,
-                'member_of' => 1002,
+                'member_of' => 'HUB',
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:45:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 1,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -311,7 +340,7 @@ class TeamTest extends TestCase
         $content = $response->decodeResponseJson();
 
         $this->assertEquals($content['data']['enabled'], 1);
-        $this->assertEquals($content['data']['member_of'], 1002);
+        $this->assertEquals($content['data']['member_of'], 'HUB');
         $this->assertEquals($content['data']['name'], $updateTeamName);
 
         // delete the team created
@@ -346,6 +375,7 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -366,11 +396,16 @@ class TeamTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 1,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -388,6 +423,11 @@ class TeamTest extends TestCase
 
         // update team
         $updateTeamName = 'Updated Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $updateTeamMemberOf = fake()->randomElement([
+            TeamMemberOf::ALLIANCE,
+            TeamMemberOf::HUB,
+            TeamMemberOf::OTHER,
+        ]);
         $responseUpdate = $this->json(
             'PUT',
             'api/v1/teams/' . $id,
@@ -399,11 +439,12 @@ class TeamTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 0,
                 'is_admin' => 1,
-                'member_of' => 1002,
+                'member_of' => 'HUB',
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:45:41',
                 'notifications' => [$notificationID],
+                'is_question_bank' => 0,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -419,7 +460,7 @@ class TeamTest extends TestCase
         $contentUpdate = $responseUpdate->decodeResponseJson();
 
         $this->assertEquals($contentUpdate['data']['enabled'], 1);
-        $this->assertEquals($contentUpdate['data']['member_of'], 1002);
+        $this->assertEquals($contentUpdate['data']['member_of'], 'HUB');
         $this->assertEquals($contentUpdate['data']['name'], $updateTeamName);
 
         // edit team
@@ -440,7 +481,6 @@ class TeamTest extends TestCase
             'message',
             'data',
         ]);
-
         $contentEdit1 = $responseEdit1->decodeResponseJson();
 
         $this->assertEquals($contentEdit1['data']['allows_messaging'], 0);
@@ -501,6 +541,7 @@ class TeamTest extends TestCase
                 'message' => 'Some message here',
                 'opt_in' => 1,
                 'enabled' => 1,
+                'email' => 'joe@example.com',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -522,12 +563,16 @@ class TeamTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
-                
+                'is_question_bank' => 0,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

@@ -15,7 +15,7 @@ class ExampleTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([]);
     }
 
     /**

@@ -1,9 +1,13 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use MetadataManagementController AS MMC;
 
 use App\Http\Controllers\FilterController;
+use App\Http\Controllers\ServiceLayerController;
+use App\Http\Controllers\Api\V1\DatasetController;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +39,19 @@ Route::get('/email', function (Request $reqest) {
             '[[subheading_text]]' => 'Something here 2',
         ],
     ]);
+});
+
+Route::get('/services/federations', [ServiceLayerController::class, 'getActiveFederationApplications']);
+Route::patch('/services/federations/{id}', [ServiceLayerController::class, 'setFederationInvalidRunState']);
+Route::post('/services/federations', [DatasetController::class, 'store']);
+Route::post('/services/audit', [ServiceLayerController::class, 'audit']);
+
+Route::get('/services/traser', function(Request $request) {
+    MMC::validateDataModelType(
+        json_encode($request->all()), 
+        env('GWDM'),
+        env('GWDM_CURRENT_VERSION')
+    );
 });
 
 // stop all all other routes

@@ -33,7 +33,8 @@ class Team extends Model
         'contact_point',
         'application_form_updated_by',
         'application_form_updated_on',
-        'mdm_folder_id',
+        'mongo_object_id',
+        'notification_status',
     ];
 
     /**
@@ -46,6 +47,8 @@ class Team extends Model
         'access_requests_management' => 'boolean',
         'uses_5_safes' => 'boolean',
         'is_admin' => 'boolean',
+        'notification_status' => 'boolean',
+        'is_question_bank' => 'boolean',
     ];
 
     /**
@@ -114,9 +117,9 @@ class Team extends Model
     /**
      * Indicates the organisation the team is a member of
      * 
-     * @var int
+     * @var string
      */
-    private $member_of = 0;
+    private $member_of = '';
 
     /**
      * Represents the contact point for the team
@@ -138,6 +141,21 @@ class Team extends Model
      * @var string
      */
     private $application_form_updated_on = '';
+
+    /**
+     * Indicates whether the team uses question bank
+     * 
+     * @var bool
+     */
+    private $is_question_bank = false;
+
+    /**
+     * Represents the migrated data id of a previous record to preserve internal
+     * linking
+     * 
+     * @var string
+     */
+    private $mongo_object_id = '';
 
     public function users(): BelongsToMany
     {
@@ -161,5 +179,10 @@ class Team extends Model
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class);
+    }
+
+    public function federation(): BelongsToMany
+    {
+        return $this->belongsToMany(Federation::class, 'team_has_federations');
     }
 }
