@@ -107,6 +107,10 @@ class AliasReplyScanner {
 
     public function sendEmail($enquiryMessageId)
     {
+        $teamId = null;
+        $team = null;
+        $darManagers = null;
+
         //get the message linked to the original thread
         $enquiryMessage = EnquiryMessages::with("thread")
                             ->where("id",$enquiryMessageId)
