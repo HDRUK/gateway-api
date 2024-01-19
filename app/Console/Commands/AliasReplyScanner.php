@@ -59,8 +59,8 @@ class AliasReplyScanner extends Command
             }else{
                 $this->warn("... alias not found in the email sent");
             }
-            //$response = ESS::deleteMessage($message);
-            //$this->info($response);
+            $response = ESS::deleteMessage($message);
+            $this->info("... message deleted from the inbox");
         }
     }
 

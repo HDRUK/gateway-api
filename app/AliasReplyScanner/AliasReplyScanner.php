@@ -66,7 +66,8 @@ class AliasReplyScanner {
         // Calculate the average word length
         $averageWordLength = array_sum(array_map('strlen', $words)) / count($words);
 
-        // Criteria for sensible content (you can adjust these)
+        // Criteria for sensible content
+        // note: we probably want to tune this and add in more spam checks
         $isSensible = count($words) >= $minWords && $averageWordLength >= 3;
 
         return $isSensible == true;

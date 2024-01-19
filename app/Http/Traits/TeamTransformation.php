@@ -72,7 +72,7 @@ trait TeamTransformation
                 $teamHasUserId = (int) $user['pivot']['id'];
 
                 $roles = TeamHasUser::where('id', $teamHasUserId)->with('roles', 'roles.permissions')->get()->toArray();
-                
+
                 $tmpPerm = [];
                 foreach ($roles[0]['roles'] as $role) {
                     $tmpPerm[] = $role;

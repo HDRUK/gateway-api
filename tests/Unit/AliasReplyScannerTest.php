@@ -68,7 +68,7 @@ class AliasReplyScannerTest extends TestCase
                 "body"=>fake()->paragraph(),
                 "subject"=>fake()->sentence(),
             ],
-            [//email that doesnt contains an attack 
+            [//email that contains some nasty code
                 "toaddress"=>"noreply+".$unique_key."@hdruk.ac.uk",
                 "from"=>fake()->email(),
                 "body"=>$this->generateRandomCode(),
