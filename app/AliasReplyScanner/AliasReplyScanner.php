@@ -113,7 +113,11 @@ class AliasReplyScanner {
                             ->first();
         
         //find the team from the thread the message belongs to
-        $teamId = $enquiryMessage->thread->team_id;
+        try{
+            $teamId = $enquiryMessage->thread->team_id;
+        }catch (Exception $e) {
+            throw new AliasReplyScannerException("Could not retrieve a team from the found enquiry thread.");
+        }
 
         try{
             $team = Team::with("teamUserRoles")
