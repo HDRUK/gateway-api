@@ -69,18 +69,7 @@ class AliasReplyScanner extends Command
     private function processThread($message, $thread)
     {
         $response = ARS::scrapeAndStoreContent($message, $thread->id);
-        $this->info("... " . $response->message_body);
-
-        $response = ARS::sendEmail($response->id);
-        $nEmailsSent = count($response);
-
-        $msg = "... " . $nEmailsSent . " emails sent";
-
-        if ($nEmailsSent > 0) {
-            $this->info($msg);
-        } else {
-            $this->warn($msg);
-        }
+        $this->info("... " . $response->message_body);    
     }
 
 }
