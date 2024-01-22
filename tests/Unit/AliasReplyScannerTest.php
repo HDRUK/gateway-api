@@ -162,7 +162,7 @@ class AliasReplyScannerTest extends TestCase
 
     }
 
-    public function test_it_can_scrape_an_email_and_email_dar_managers(): void
+    public function test_it_can_scrape_an_email_and_store_content(): void
     {
 
         $messages = ARS::getNewMessagesSafe();
@@ -170,25 +170,20 @@ class AliasReplyScannerTest extends TestCase
         $alias = ARS::getAlias($firstMessage);
         $enquiryThread = ARS::getThread($alias);
 
-
         $teamId = $enquiryThread->team_id;
         $team = Team::with("users")
                 ->where("id",$teamId)
                 ->first();
 
-        $nDarManagers = $team->teamUserRoles
+        $actualDarManagers = $team->teamUserRoles
             ->where("role_name","custodian.dar.manager")
-            ->where("enabled",true)
-            ->count();
+            ->where("enabled",true);
         
-        $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage,$enquiryThread->id);
-
-        $response = ARS::sendEmail($enquiryMessage->id);    
-        //number of emails sent should be equal to the number of dar managers
-        $this->assertCount($nDarManagers,$response);
+        $darManagers = ARS::getDarManagersFromEnquiryMessage($enquiryThread->id);
+        $this->assertEqualsCanonicalizing($darManagers,$actualDarManagers);
     }
 
-    public function test_it_will_fail_if_team_has_been_deleted(): void
+    public function test_it_will_fail_to_get_dar_managers_if_team_doesnt_exist(): void
     {
 
         $messages = ARS::getNewMessagesSafe();
@@ -199,12 +194,10 @@ class AliasReplyScannerTest extends TestCase
 
         $teamId = $enquiryThread->team_id;
         Team::where("id",$teamId)->delete();
-        $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage,$enquiryThread->id);
         
         $this->expectException(AliasReplyScannerException::class);
-        ARS::sendEmail($enquiryMessage->id);
+        ARS::getDarManagersFromEnquiryMessage($enquiryThread->id);
          
-
     }
 
 

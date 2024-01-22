@@ -99,13 +99,60 @@ class AliasReplyScanner {
             "message_body" => $body,
             "thread_id" => $threadId,
         ]);
+
+        $this->notifyDarManagesOfNewMessage($enquiryMessage->id);
+
         return $enquiryMessage;
     }
     public function deleteMessage($message){
         return $message->delete($expunge = true);
     }
 
-    public function sendEmail($enquiryMessageId)
+
+    public function notifyDarManagesOfNewMessage($enquiryMessageId)
+    {
+        $darManagers = $this->getDarManagersFromEnquiryMessage($enquiryMessageId);
+        //email each dar manager that a new message has been received
+        /*  
+
+        Note Calum 22/01/2024:
+        - this type of functionality needs to be moved to a seperate place/service
+           to avoid spamming DAR managers whenever a new enquiry message is created
+        - needs to be designed how this notification process will be 
+
+        $sentEmails = array();
+        foreach ($darManagers as $darManager){
+      
+            $userEmail = $darManager['user_preferred_email'] === 'secondary' ? $darManager['user_secondary_email'] : $darManager['user_email'];
+            $userName = $darManager['user_name'];
+      
+            $to = [
+                'to' => [
+                    'email' => $userEmail,
+                    'name' => $userName,
+                ],
+            ];
+            
+            $replacements = [
+                '[[DAR_MANAGER_FIRSTNAME]]' => $darManager['user_firstname'],
+                '[[ORIGINAL_MESSAGE_BODY]]' => $enquiryMessage->message_body,
+                '[[ORIGINAL_MESSAGE_SENDER]]' => $enquiryMessage->from,
+            ];
+
+            //$this->info( json_encode($replacements, JSON_PRETTY_PRINT));
+
+            // Note Calum 17/01/2024:
+            //    - to be implemented once email design is done 
+            // $template = EmailTemplate::where('identifier', '=', '.....')->first();
+            // SendEmailJob::dispatch($to, $template, $replacements);
+            $sentEmails[] = $userEmail;
+        }
+        return $sentEmails;
+        */
+
+    }
+
+    public function getDarManagersFromEnquiryMessage($enquiryMessageId)
     {
         $teamId = null;
         $team = null;
@@ -136,36 +183,7 @@ class AliasReplyScanner {
         }catch (Exception $e) {
             throw new AliasReplyScannerException("Could not retrieve the team (".$teamId.") and teamUserRoles");
         }
-
-        //email each dar manager that a new message has been received
-        $sentEmails = array();
-        foreach ($darManagers as $darManager){
-      
-            $userEmail = $darManager['user_preferred_email'] === 'secondary' ? $darManager['user_secondary_email'] : $darManager['user_email'];
-            $userName = $darManager['user_name'];
-      
-            $to = [
-                'to' => [
-                    'email' => $userEmail,
-                    'name' => $userName,
-                ],
-            ];
-            
-            $replacements = [
-                '[[DAR_MANAGER_FIRSTNAME]]' => $darManager['user_firstname'],
-                '[[ORIGINAL_MESSAGE_BODY]]' => $enquiryMessage->message_body,
-                '[[ORIGINAL_MESSAGE_SENDER]]' => $enquiryMessage->from,
-            ];
-
-            //$this->info( json_encode($replacements, JSON_PRETTY_PRINT));
-
-            // Note Calum 17/01/2024:
-            //    - to be implemented once email design is done 
-            // $template = EmailTemplate::where('identifier', '=', '.....')->first();
-            // SendEmailJob::dispatch($to, $template, $replacements);
-            $sentEmails[] = $userEmail;
-        }
-        return $sentEmails;
+        return $darManagers;
     }
 
 }
