@@ -75,6 +75,8 @@ class Dur extends Model
         'mongo_id',
         'user_id',
         'team_id',
+        'created_at', // for migration from mongo database
+        'updated_at', // for migration from mongo database
     ];
 
     /**

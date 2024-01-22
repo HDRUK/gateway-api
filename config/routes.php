@@ -2656,4 +2656,17 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'dur.post',
+        'method' => 'post',
+        'path' => '/dur',
+        'methodController' => 'DurController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];

@@ -4,14 +4,18 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
+use App\Models\Dur;
 use Illuminate\Http\Request;
+use App\Http\Requests\Dur\CreateDur;
+use App\Http\Requests\Dur\GetDur;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Dur\GetDur;
-use App\Models\Dur;
+use App\Http\Traits\RequestTransformation;
 
 class DurController extends Controller
 {
+    use RequestTransformation;
+    
     /**
      * @OA\Get(
      *    path="/api/v1/dur",
@@ -194,7 +198,7 @@ class DurController extends Controller
      *    ),
      * )
      */
-    public function show(GetDur$request, int $id): JsonResponse
+    public function show(GetDur $request, int $id): JsonResponse
     {
         try {
             $dur = Dur::where(['id' => $id])
@@ -212,6 +216,93 @@ class DurController extends Controller
                 'message' => 'success',
                 'data' => $dur,
             ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function store(CreateDur $request): JsonResponse
+    {
+        try {
+            $input = $request->all();
+
+            $userId = null;
+            if ($request->has('user_id')) {
+                $userId = (int) $input['userId'];
+            } elseif (array_key_exists('jwt_user', $input)) {
+                $userId = (int) $input['jwt_user']['id'];
+            }
+
+            $arrayKeys = [
+                'non_gateway_datasets', 
+                'non_gateway_applicants',
+                'funders_and_sponsors',
+                'other_approval_committees',
+                'gateway_outputs_tools',
+                'gateway_outputs_papers',
+                'non_gateway_outputs',
+                'project_title',
+                'project_id_text',
+                'organisation_name',
+                'organisation_sector',
+                'lay_summary',
+                'technical_summary',
+                'latest_approval_date',
+                'manual_upload',
+                'rejection_reason',
+                'sublicence_arrangements',
+                'public_benefit_statement',
+                'data_sensitivity_level',
+                'accredited_researcher_status',
+                'confidential_description',
+                'dataset_linkage_description',
+                'duty_of_confidentiality',
+                'legal_basis_for_data_article6',
+                'legal_basis_for_data_article9',
+                'national_data_optout',
+                'organisation_id',
+                'privacy_enhancements',
+                'request_category_type',
+                'request_frequency',
+                'access_type',
+                'mongo_object_dar_id',
+                'technicalSummary',
+                'team_id',
+                'user_id',
+                'enabled',
+                'last_activity',
+                'counter',
+                'mongo_object_id',
+                'mongo_id',
+            ];
+            $array = $this->checkEditArray($input, $arrayKeys);
+            if (!array_key_exists('user_id', $array)) {
+                $array['user_id'] = $userId;
+            }
+
+            $dur = Dur::create($array);
+            $durId = $dur->id;
+
+            // $datasets - use user_id
+            // $datasets = $input['datasets'];
+
+            // $keywords - accept and if !exists create
+            // $keywords = $input['keywords'];
+
+            // for migration from mongo database
+            if (array_key_exists('createdAt', $input)) {
+                Dur::where('id', $durId)->update(['created_at' => $input['createdAt']]);
+            }
+
+            // for migration from mongo database
+            if (array_key_exists('updatedAt', $input)) {
+                Dur::where('id', $durId)->update(['updated_at' => $input['updatedAt']]);
+            }
+
+            return response()->json([
+                'message' => 'created',
+                'data' => $durId,
+            ], 201);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

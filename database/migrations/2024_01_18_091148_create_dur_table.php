@@ -58,8 +58,6 @@ return new class extends Migration
             $table->string('access_type')->nullable(); // accessType
             $table->char('mongo_object_dar_id', 24)->nullable(); // projectId which is data_requests._id (mongo)
 
-            $table->text('technicalSummary')->nullable(); // technicalSummary
-
             $table->foreign('user_id')->references('id')->on('users'); // user: from team
             $table->foreign('team_id')->references('id')->on('teams'); // publisher: from team
 

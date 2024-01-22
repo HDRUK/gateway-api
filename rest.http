@@ -1538,3 +1538,14 @@ Authorization: Bearer {{accessToken}}
 GET {{baseUrl}}/api/{{apiVersion}}/dur/4 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
+
+#### add new
+POST {{baseUrl}}/api/{{apiVersion}}/dur HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "non_gateway_datasets": ["COVID-19 test", "National Core Study test"],
+    "latest_approval_date": "2017-09-12T01:00:00"
+}
