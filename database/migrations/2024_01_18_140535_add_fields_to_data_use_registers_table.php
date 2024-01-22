@@ -56,18 +56,18 @@ return new class extends Migration
 
             $table->text('technicalSummary')->nullable(); // technicalSummary
 
-            $table->bigInteger('user_id')->nullable()->default(null)->unsigned(); // user: from team
-            $table->bigInteger('team_id')->nullable()->default(null)->unsigned(); // publisher: from team
+            $table->foreign('user_id')->references('id')->on('users'); // user: from team
+            $table->foreign('team_id')->references('id')->on('teams'); // publisher: from team
+
+            $table->boolean('enabled')->default(1); // activeflag
+            $table->timestamp('last_activity')->nullable(); // lastActivity
             $table->integer('counter')->default(0); // counter
 
-            $table->char('mongo_object_id', 24)->nullable();
+            $table->char('mongo_object_id', 24)->nullable(); // _id (mongo)
             $table->char('mongo_id', 255)->nullable(); // id
-            $table->boolean('enabled')->default(1); // activeflag
 
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('team_id')->references('id')->on('teams');
-
-            $table->timestamp('last_activity')->nullable(); // lastActivity
+            $table->bigInteger('user_id')->nullable()->default(null)->unsigned();
+            $table->bigInteger('team_id')->nullable()->default(null)->unsigned();
         });
     }
 
