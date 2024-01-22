@@ -11,18 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('data_use_registers', function (Blueprint $table) {
-            $table->dropColumn([
-                'dataset_id',
-                'enabled',
-                'user_id',
-                'ro_crate',
-                'organization_name',
-                'project_title',
-                'lay_summary',
-                'public_benefit_statement',
-            ]);
-        });
+        Schema::disableForeignKeyConstraints();
+
+        Schema::dropIfExists('data_use_registers');
+
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
@@ -30,11 +23,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('data_use_registers', function (Blueprint $table) {
-            $table->bigInteger('dataset_id')->unsigned();
+        Schema::create('data_use_registers', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->softDeletes();
             $table->boolean('enabled')->default(true);
             $table->bigInteger('user_id')->unsigned();
             $table->mediumText('ro_crate')->nullable();
+            $table->foreign('dataset_id')->references('id')->on('datasets');
+            $table->foreign('user_id')->references('id')->on('users');
             $table->string('organization_name')->nullable();
             $table->string('project_title')->nullable();
             $table->string('lay_summary')->nullable();

@@ -11,7 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('dur', function (Blueprint $table) {
+        Schema::create('dur', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->softDeletes();
+
             $table->json('non_gateway_datasets')->nullable(); // nonGatewayDatasets
             $table->json('non_gateway_applicants')->nullable(); // nonGatewayApplicants
             $table->json('funders_and_sponsors')->nullable(); // fundersAndSponsors
@@ -77,53 +81,9 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::hasTable('dur')) {
-            Schema::table('dur', function (Blueprint $table) {
-                $table->dropColumn([
-                    'non_gateway_datasets',
-                    'non_gateway_applicants',
-                    'funders_and_sponsors',
-                    'other_approval_committees',
-                    'gateway_outputs_tools',
-                    'gateway_outputs_papers',
-                    'non_gateway_outputs',
-                    'project_title',
-                    'project_id_text',
-                    'organisation_name',
-                    'organisation_sector',
-                    'lay_summary',
-                    'technical_summary',
-                    'latest_approval_date',
-                    'manual_upload',
-                    'rejection_reason',
-                    'sublicence_arrangements',
-                    'public_benefit_statement',
-                    'data_sensitivity_level',
-                    'project_start_date',
-                    'project_end_date',
-                    'access_date',
-                    'accredited_researcher_status',
-                    'confidential_description',
-                    'dataset_linkage_description',
-                    'duty_of_confidentiality',
-                    'legal_basis_for_data_article6',
-                    'legal_basis_for_data_article9',
-                    'national_data_optout',
-                    'organisation_id',
-                    'privacy_enhancements',
-                    'request_category_type',
-                    'request_frequency',
-                    'access_type',
-                    'mongo_object_dar_id',
-                    'technicalSummary',
-                    'user_id',
-                    'team_id',
-                    'enabled',
-                    'last_activity',
-                    'counter',
-                    'mongo_object_id',
-                    'mongo_id',
-                ]);
-            });
+            Schema::disableForeignKeyConstraints();
+            Schema::dropIfExists('dur');
+            Schema::enableForeignKeyConstraints();
         }
     }
 };

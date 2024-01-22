@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Dur\GetDur;
 use App\Models\Dur;
 
 class DurController extends Controller
@@ -107,5 +109,28 @@ class DurController extends Controller
         return response()->json(
             $dur
         );
+    }
+
+    public function show(GetDur$request, int $id): JsonResponse
+    {
+        try {
+            $dur = Dur::where(['id', $id])
+                ->with([
+                    'datasets',
+                    'keywords',
+                    'users' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'user',
+                    'team',
+                ])->get();
+
+            return response()->json([
+                'message' => 'success',
+                'data' => $dur,
+            ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 }
