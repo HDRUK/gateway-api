@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FilterSeeder::class,
             SectorSeeder::class,
+            OrganisationSeeder::class,
             TagSeeder::class,
             FeatureSeeder::class,
             DarIntegrationSeeder::class,
@@ -36,6 +37,7 @@ class DatabaseSeeder extends Seeder
             NotificationSeeder::class,
             TeamHasNotificationSeeder::class,
             UserHasNotificationSeeder::class,
+            UserHasOrganisationSeeder::class,
             EmailTemplatesSeeder::class,
             ReviewSeeder::class,
             CollectionSeeder::class,

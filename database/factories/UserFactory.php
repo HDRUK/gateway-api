@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Sector;
+use App\Models\Organisation;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -20,6 +21,7 @@ class UserFactory extends Factory
     public function definition()
     {
         $sectors = Sector::select('id')->get();
+        $orgs = Organisation::select('id')->get();
         $firstName = fake()->firstName();
         $lastName = fake()->lastName();
 
@@ -34,7 +36,6 @@ class UserFactory extends Factory
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
             'sector_id' => fake()->randomElement($sectors),
-            'organisation' => fake()->words(3, true),
             'bio' => fake()->sentence(),
             'domain' => fake()->domainName(),
             'link' => fake()->url(),

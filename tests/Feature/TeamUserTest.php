@@ -11,6 +11,8 @@ use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use Database\Seeders\SectorSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\OrganisationSeeder;
+use Database\Seeders\UserHasOrganisationSeeder;
 use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -44,6 +46,8 @@ class TeamUserTest extends TestCase
             MinimalUserSeeder::class,
             SectorSeeder::class,
             EmailTemplatesSeeder::class,
+            OrganisationSeeder::class,
+            UserHasOrganisationSeeder::class
         ]);
    }
 
@@ -447,7 +451,7 @@ class TeamUserTest extends TestCase
                 'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
-                'organisation' => 'Test Organisation',
+                'organisation_id' => 1,
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',

@@ -46,10 +46,6 @@ class CreateUser extends BaseFormRequest
                 'integer',
                 'exists:sectors,id',
             ],
-            'organisation' => [
-                'nullable', 
-                'string',
-            ],
             'bio' => [
                 'nullable', 
                 'string',

@@ -6,6 +6,7 @@ use App\Http\Enums\UserPreferredEmail;
 use App\Models\Team;
 use App\Models\Tool;
 use App\Models\Role;
+use App\Models\Organisation;
 // use Laravel\Sanctum\HasApiTokens;
 use App\Models\Application;
 use App\Http\Traits\WithJwtUser;
@@ -37,7 +38,6 @@ class User extends Authenticatable
         'password',
         'provider',
         'sector_id',
-        'organisation',
         'bio',
         'domain',
         'link',
@@ -107,6 +107,11 @@ class User extends Authenticatable
     public function cohortRequests(): HasMany
     {
         return $this->hasMany(CohortRequest::class);
+    }
+
+    public function organisation(): BelongsToMany
+    {
+        return $this->belongsToMany(Organisation::class, 'user_has_organisation');
     }
     
 }

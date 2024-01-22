@@ -57,7 +57,6 @@ trait TeamTransformation
                     'updated_at' => $user['updated_at'],
                     'deleted_at' => $user['deleted_at'],
                     'sector_id' => $user['sector_id'],
-                    'organisation' => $user['organisation'],
                     'bio' => $user['bio'],
                     'domain' => $user['domain'],
                     'link' => $user['link'],

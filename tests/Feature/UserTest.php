@@ -6,7 +6,9 @@ use Hash;
 use App\Models\User;
 use Tests\TestCase;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\OrganisationSeeder;
 use Database\Seeders\SectorSeeder;
+use Database\Seeders\UserHasOrganisationSeeder;
 use Tests\Traits\Authorization;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,6 +34,8 @@ class UserTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             SectorSeeder::class,
+            OrganisationSeeder::class,
+            UserHasOrganisationSeeder::class
         ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
@@ -75,7 +79,6 @@ class UserTest extends TestCase
                     'teams',
                     'notifications',
                     'sector_id',
-                    'organisation',
                     'bio',
                     'domain',
                     'link',
@@ -86,6 +89,7 @@ class UserTest extends TestCase
                     'mongo_object_id',
                     'terms',
                     'notifications',
+                    'organisation',
                     'roles',
                 ],
             ],   
@@ -112,7 +116,7 @@ class UserTest extends TestCase
                 'sector_id' => 1,
                 'contact_feedback' => 1,
                 'contact_news' => 1,
-                'organisation' => 'Test Organisation',
+                'organisation_id' => 1,
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
@@ -194,7 +198,7 @@ class UserTest extends TestCase
                 'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
-                'organisation' => 'Test Organisation',
+                'organisation_id' => 1,
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
@@ -244,7 +248,7 @@ class UserTest extends TestCase
                 'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
-                'organisation' => 'Test Organisation',
+                'organisation_id' => 1,
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
@@ -277,8 +281,8 @@ class UserTest extends TestCase
                 'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
-                'organisation' => 'Updated Organisation',
-                'bio' => 'Test Biography',
+                'organisation_id' => 1,
+                'bio' => 'Updated Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/75697342",
@@ -298,7 +302,7 @@ class UserTest extends TestCase
             ]);
 
         $contentUpdate = $responseUpdate->decodeResponseJson();
-        $this->assertEquals($contentUpdate['data']['organisation'], 'Updated Organisation');
+        $this->assertEquals($contentUpdate['data']['bio'], 'Updated Biography');
         $this->assertEquals($contentUpdate['data']['contact_feedback'], false);
         $this->assertEquals($contentUpdate['data']['contact_news'], false);
     }
@@ -321,6 +325,19 @@ class UserTest extends TestCase
         $contentNotification = $responseNotification->decodeResponseJson();
         $notificationID = $contentNotification['data'];
 
+        // Create an organisation to be used by the new user
+        $responseOrganisation = $this->json(
+            'POST',
+            'api/v1/organisations',
+            [
+                'name' => "A Test Org",
+                'enabled' => 1,
+            ],
+            $this->header
+        );
+        $contentOrganisation = $responseOrganisation->decodeResponseJson();
+        $organisationID = $contentOrganisation['data'];
+
         // create user (with no notifications initially)
         $responseCreate = $this->json(
             'POST',
@@ -333,7 +350,7 @@ class UserTest extends TestCase
                 'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
-                'organisation' => 'Test Organisation',
+                'organisation_id' => 1,
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
@@ -366,8 +383,8 @@ class UserTest extends TestCase
                 'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
-                'organisation' => 'Updated Organisation',
-                'bio' => 'Test Biography',
+                'organisation_id' => 1,
+                'bio' => 'Updated Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
                 'orcid' => "https://orcid.org/75697342",
@@ -387,7 +404,7 @@ class UserTest extends TestCase
             ]);
 
         $contentUpdate = $responseUpdate->decodeResponseJson();
-        $this->assertEquals($contentUpdate['data']['organisation'], 'Updated Organisation');
+        $this->assertEquals($contentUpdate['data']['bio'], 'Updated Biography');
         $this->assertEquals($contentUpdate['data']['contact_feedback'], false);
         $this->assertEquals($contentUpdate['data']['contact_news'], false);
 
@@ -398,7 +415,8 @@ class UserTest extends TestCase
             [
                 'firstname' => 'JustE1',
                 'lastname' => 'TestE1',
-                'notifications' => [$notificationID]
+                'notifications' => [$notificationID],
+                'organisation_id' => $organisationID
             ],
             $this->header
         );
@@ -416,6 +434,10 @@ class UserTest extends TestCase
         $this->assertEquals(
             $contentEdit1['data']['notifications'][0]['notification_type'], 
             "applicationSubmitted",
+        );
+        $this->assertEquals(
+            $contentEdit1['data']['organisation'][0]['name'], 
+            "A Test Org",
         );
 
         // edit

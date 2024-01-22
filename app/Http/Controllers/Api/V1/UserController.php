@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\User\GetUser;
 use App\Http\Requests\User\IndexUser;
 use App\Models\UserHasNotification;
+use App\Models\UserHasOrganisation;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\EditUser;
 use App\Exceptions\NotFoundException;
@@ -72,7 +73,8 @@ class UserController extends Controller
                     'roles',
                     'roles.permissions',
                     'teams',
-                    'notifications'
+                    'notifications',
+                    'organisation'
                 )->get()->toArray();
                 $response = $this->getUsers($users);
             } else { 
@@ -236,7 +238,6 @@ class UserController extends Controller
                 'provider' =>  array_key_exists('provider', $input) ? $input['provider'] : Config::get('constants.provider.service'),
                 'password' => Hash::make($input['password']),
                 'sector_id' => $input['sector_id'],
-                'organisation' => $input['organisation'],
                 'bio' => $input['bio'],
                 'domain' => $input['domain'],
                 'link' => $input['link'],
@@ -254,7 +255,7 @@ class UserController extends Controller
             // role/permissions outside of a team
 
             $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
-            
+
             $user = User::create($array);
 
             if ($user) {
@@ -262,6 +263,12 @@ class UserController extends Controller
                     UserHasNotification::updateOrCreate([
                         'user_id' => (int) $user->id,
                         'notification_id' => (int) $value,
+                    ]);
+                }
+                if (array_key_exists('organisation_id', $input)) {
+                    UserHasOrganisation::updateOrCreate([
+                        'user_id' => (int) $user->id,
+                        'organisation_id' => (int) $input['organisation_id']
                     ]);
                 }
             } else {
@@ -376,7 +383,6 @@ class UserController extends Controller
                     'preferred_email' => array_key_exists('preferred_email', $input) ? $input['preferred_email'] : 'primary',
                     'provider' =>  Config::get('constants.provider.service'),
                     'sector_id' => $input['sector_id'],
-                    'organisation' => $input['organisation'],
                     'bio' => $input['bio'],
                     'domain' => $input['domain'],
                     'link' => $input['link'],
@@ -395,6 +401,13 @@ class UserController extends Controller
                     UserHasNotification::updateOrCreate([
                         'user_id' => (int) $id,
                         'notification_id' => (int) $value,
+                    ]);
+                }
+                if (array_key_exists('organisation_id', $input)) {
+                    UserHasOrganisation::where('user_id', $id)->delete();
+                    UserHasOrganisation::updateOrCreate([
+                        'user_id' => (int) $user->id,
+                        'organisation_id' => (int) $input['organisation_id']
                     ]);
                 }
 
@@ -509,7 +522,6 @@ class UserController extends Controller
                 'preferred_email',
                 'provider',
                 'sector_id',
-                'organisation',
                 'bio',
                 'domain',
                 'link',
@@ -534,7 +546,7 @@ class UserController extends Controller
             User::withTrashed()->where('id', $id)->update($array);
 
             $arrayUserNotification = array_key_exists('notifications', $input) ? $input['notifications'] : [];
-                
+            
             UserHasNotification::where('user_id', $id)->delete();
             foreach ($arrayUserNotification as $value) {
                 UserHasNotification::updateOrCreate([
@@ -542,10 +554,17 @@ class UserController extends Controller
                     'notification_id' => (int) $value,
                 ]);
             }
+            if (array_key_exists('organisation_id', $input)) {
+                UserHasOrganisation::where('user_id', $id)->delete();
+                UserHasOrganisation::updateOrCreate([
+                    'user_id' => (int) $id,
+                    'organisation_id' => (int) $input['organisation_id']
+                ]);
+            }
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => User::withTrashed()->where('id', $id)->with(['notifications'])->first(),
+                'data' => User::withTrashed()->where('id', $id)->with(['notifications', 'organisation'])->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -605,6 +624,7 @@ class UserController extends Controller
     {
         try {
             UserHasNotification::where('user_id', $id)->delete();
+            UserHasOrganisation::where('user_id', $id)->delete();
             UserHasRole::where('user_id', $id)->delete();
             User::where('id', $id)->delete();
 

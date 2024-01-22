@@ -2631,4 +2631,83 @@ return [
         ],
     ],
 
+    // organisations
+    [
+        'name' => 'organisations.get',
+        'method' => 'get',
+        'path' => '/organisations',
+        'methodController' => 'OrganisationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'organisations.get.id',
+        'method' => 'get',
+        'path' => '/organisations/{id}',
+        'methodController' => 'OrganisationController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'organisations',
+        'method' => 'post',
+        'path' => '/organisations',
+        'methodController' => 'OrganisationController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'organisations',
+        'method' => 'put',
+        'path' => '/organisations/{id}',
+        'methodController' => 'OrganisationController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'organisations',
+        'method' => 'patch',
+        'path' => '/organisations/{id}',
+        'methodController' => 'OrganisationController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'organisations',
+        'method' => 'delete',
+        'path' => '/organisations/{id}',
+        'methodController' => 'OrganisationController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ]
+
 ];

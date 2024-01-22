@@ -5,6 +5,8 @@ namespace App\Http\Traits;
 use App\Models\TeamHasUser;
 use App\Models\UserHasNotification;
 use App\Models\Notification;
+use App\Models\Organisation;
+use App\Models\UserHasOrganisation;
 
 trait UserTransformation
 {
@@ -33,7 +35,6 @@ trait UserTransformation
                 'updated_at' => $user['updated_at'],
                 'deleted_at' => $user['deleted_at'],
                 'sector_id' => $user['sector_id'],
-                'organisation' => $user['organisation'],
                 'bio' => $user['bio'],
                 'domain' => $user['domain'],
                 'link' => $user['link'],
@@ -88,6 +89,15 @@ trait UserTransformation
             }
             $tmpUser['notifications'] = $tmpNotification;
 
+            $organisation = UserHasOrganisation::where('user_id', $tmpUser['id'])->first();
+            if ($organisation) {
+                $tmpOrganisation = Organisation::where('id', $organisation->organisation_id)->firstOrFail()->toArray();
+                $tmpUser['organisation'] = $tmpOrganisation;
+            } else {
+                $tmpUser['organisation'] = [];
+            }
+            
+
             // Added in to stop a singular /users/:id call returning an array for
             // the users part of the payload
             if (count($users) === 1) {
@@ -99,6 +109,7 @@ trait UserTransformation
             unset($tmpTeam);
             unset($tmpUser);
             unset($tmpNotification);
+            unset($tmpOrganisation);
         }
 
         return $response;
