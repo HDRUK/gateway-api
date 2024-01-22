@@ -2643,5 +2643,17 @@ return [
         ],
         'constraint' => [],
     ],
-
+    [
+        'name' => 'dur.get.id',
+        'method' => 'get',
+        'path' => '/dur/{id}',
+        'methodController' => 'DurController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
