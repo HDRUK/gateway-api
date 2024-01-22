@@ -18,7 +18,9 @@
         "nyholm/psr7": "^1.8",
         "predis/predis": "^2.2",
         "socialiteproviders/microsoft-azure": "^5.1",
-        "staudenmeir/belongs-to-through": "^2.5"
+        "staudenmeir/belongs-to-through": "^2.5",
+        "staudenmeir/eloquent-has-many-deep": "^1.7",
+        "webklex/laravel-imap": "^5.3"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.13",
