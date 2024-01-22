@@ -126,5 +126,4 @@ return new class extends Migration
             });
         }
     }
-    // support@boulies.com
 };
