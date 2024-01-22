@@ -72,7 +72,7 @@ class KeywordSeeder extends Seeder
 
         $dataToInsert = [];
         foreach ($keywords as $keyword) {
-            $dataToInsert[] = ['name' => $keyword, 'enabled' => fake()->randomElement([0, 1])];
+            $dataToInsert[] = ['name' => htmlspecialchars($keyword), 'enabled' => fake()->randomElement([0, 1])];
         }
 
         Keyword::insert($dataToInsert);
