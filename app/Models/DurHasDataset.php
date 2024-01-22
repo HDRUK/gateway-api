@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class DataUseRegisterHasDataset extends Model
+class DurHasDataset extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'data_use_register_id',
+        'dur_id',
         'dataset_id',
         'user_id',
     ];
@@ -20,7 +20,7 @@ class DataUseRegisterHasDataset extends Model
      * 
      * @var string
      */
-    protected $table = 'data_use_register_has_datasets';
+    protected $table = 'dur_has_datasets';
 
     /**
      * Indicates if the model should be timestamped

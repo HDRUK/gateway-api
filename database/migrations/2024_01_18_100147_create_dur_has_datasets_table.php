@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('data_use_register_has_datasets', function (Blueprint $table) {
-            $table->bigInteger('data_use_register_id')->unsigned();
+        Schema::create('dur_has_datasets', function (Blueprint $table) {
+            $table->bigInteger('dur_id')->unsigned();
             $table->bigInteger('dataset_id')->unsigned();
             $table->bigInteger('user_id')->nullable()->default(null)->unsigned();
 
-            $table->foreign('data_use_register_id')->references('id')->on('data_use_registers');
+            $table->foreign('dur_id')->references('id')->on('dur');
             $table->foreign('dataset_id')->references('id')->on('datasets');
             $table->foreign('user_id')->references('id')->on('users');
 

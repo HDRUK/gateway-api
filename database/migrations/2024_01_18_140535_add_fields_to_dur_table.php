@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('data_use_registers', function (Blueprint $table) {
+        Schema::table('dur', function (Blueprint $table) {
             $table->json('non_gateway_datasets')->nullable(); // nonGatewayDatasets
             $table->json('non_gateway_applicants')->nullable(); // nonGatewayApplicants
             $table->json('funders_and_sponsors')->nullable(); // fundersAndSponsors
@@ -76,8 +76,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasTable('data_use_registers')) {
-            Schema::table('data_use_registers', function (Blueprint $table) {
+        if (Schema::hasTable('dur')) {
+            Schema::table('dur', function (Blueprint $table) {
                 $table->dropColumn([
                     'non_gateway_datasets',
                     'non_gateway_applicants',

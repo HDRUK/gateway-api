@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DataUseRegisterHasKeyword extends Model
+class DurHasKeyword extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'data_use_register_id',
+        'dur_id',
         'keyword_id',
     ];
 
@@ -19,7 +19,7 @@ class DataUseRegisterHasKeyword extends Model
      * 
      * @var string
      */
-    protected $table = 'data_use_register_has_keywords';
+    protected $table = 'dur_has_keywords';
 
     /**
      * Indicates if the model should be timestamped

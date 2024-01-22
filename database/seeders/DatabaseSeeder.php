@@ -58,6 +58,7 @@ class DatabaseSeeder extends Seeder
             CollectionHasDatasetSeeder::class,
             SavedSearchSeeder::class,
             SavedSearchHasFilterSeeder::class,
+            DurSeeder::class,
         ]);
     }
 }

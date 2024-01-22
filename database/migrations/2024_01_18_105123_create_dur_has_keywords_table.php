@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('data_use_register_has_keywords', function (Blueprint $table) {
-            $table->bigInteger('data_use_register_id')->unsigned();
+        Schema::create('dur_has_keywords', function (Blueprint $table) {
+            $table->bigInteger('dur_id')->unsigned();
             $table->bigInteger('keyword_id')->unsigned();
 
-            $table->foreign('data_use_register_id')->references('id')->on('data_use_registers');
+            $table->foreign('dur_id')->references('id')->on('dur');
             $table->foreign('keyword_id')->references('id')->on('keywords');
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('data_use_register_has_keywords');
+        Schema::dropIfExists('dur_has_keywords');
     }
 };
