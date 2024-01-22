@@ -2631,4 +2631,17 @@ return [
         ],
     ],
 
+    // data use registers
+    [
+        'name' => 'dur.get',
+        'method' => 'get',
+        'path' => '/dur',
+        'methodController' => 'DurController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+
 ];

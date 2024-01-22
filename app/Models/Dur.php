@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Team;
+use App\Models\User;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -81,6 +84,7 @@ class Dur extends Model
      */
     protected $casts = [
         'enabled' => 'boolean',
+        'manual_upload' => 'boolean',
         'non_gateway_datasets' => 'array',
         'non_gateway_applicants' => 'array',
         'funders_and_sponsors' => 'array',
@@ -98,5 +102,20 @@ class Dur extends Model
     public function datasets(): BelongsToMany
     {
         return $this->belongsToMany(Dataset::class, 'dur_has_datasets');
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'dur_has_datasets');
+    }
+    
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
     }
 }
