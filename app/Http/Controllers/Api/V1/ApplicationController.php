@@ -52,7 +52,7 @@ class ApplicationController extends Controller
      *       name="status",
      *       in="query",
      *       description="Filter by application status is enabled or not (true or false).",
-     *       @OA\Schema(type="integer", enum={1, 0})
+     *       @OA\Schema(type="string", enum={"1", "0"})
      *    ),
      *    @OA\Response(
      *       response=200,
@@ -99,7 +99,7 @@ class ApplicationController extends Controller
         
         if ($request->has('status')) {
             $applicationStatus = $request->query('status');
-            if ($applicationStatus == "1" || $applicationStatus == "0") {
+            if ($applicationStatus === "1" || $applicationStatus === "0") {
                 $applications = $applications->where('enabled', $applicationStatus);
             }
         }
