@@ -1546,6 +1546,19 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "non_gateway_datasets": ["COVID-19 test", "National Core Study test"],
-    "latest_approval_date": "2017-09-12T01:00:00"
+    "non_gateway_datasets": ["External Dataset 01", "External Dataset 02"],
+    "latest_approval_date": "2017-09-12T01:00:00",
+    "keywords": ["COVID-19 test", "National Core Study test"]
+}
+
+#### update
+PUT {{baseUrl}}/api/{{apiVersion}}/dur/1 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "non_gateway_datasets": ["External Dataset 01", "External Dataset 02"],
+    "latest_approval_date": "2017-09-12T01:00:00",
+    "keywords": ["COVID-19 test 2", "National Core Study test"]
 }

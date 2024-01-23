@@ -2669,4 +2669,17 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'dur.put.id',
+        'method' => 'put',
+        'path' => '/dur/{id}',
+        'methodController' => 'DurController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
