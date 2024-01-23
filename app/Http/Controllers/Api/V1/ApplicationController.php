@@ -100,7 +100,7 @@ class ApplicationController extends Controller
         if ($request->has('status')) {
             $applicationStatus = $request->query('status');
             if ($applicationStatus === "1" || $applicationStatus === "0") {
-                $applications = $applications->where('enabled', $applicationStatus);
+                $applications = $applications->where('enabled', (int) $applicationStatus);
             }
         }
         
