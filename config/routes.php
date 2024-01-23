@@ -2695,4 +2695,17 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'dur.delete.id',
+        'method' => 'delete',
+        'path' => '/keywords/{id}',
+        'methodController' => 'DurController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];

@@ -953,7 +953,7 @@ class DurController extends Controller
     {
         $ds = DurHasDataset::where(['dur_id' => $durId])->get();
         foreach ($ds as $d) {
-            if (!array_key_exists($d->dataset_id, $inDatasets)) {
+            if (!in_array($d->dataset_id, $inDatasets)) {
                 $this->deleteDurHasDatasets($durId, $d->dataset_id);
             }
         }
@@ -1017,9 +1017,9 @@ class DurController extends Controller
                 continue;
             }
 
-            if (array_key_exists($checkKeyword->name, $inKeywords)) continue;
+            if (in_array($checkKeyword->name, $inKeywords)) continue;
 
-            if (!array_key_exists($checkKeyword->name, $inKeywords)) {
+            if (!in_array($checkKeyword->name, $inKeywords)) {
                 $this->deleteDurHasKeywords($kwId);
             }
         }

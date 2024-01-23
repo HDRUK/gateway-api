@@ -1558,7 +1558,26 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
+    "datasets": [3,2],
+    "non_gateway_datasets": ["External Dataset 01", "External Dataset 02"],
+    "latest_approval_date": "2017-09-12T01:00:00",
+    "keywords": ["National Core Study test"]
+}
+
+#### edit
+PATCH {{baseUrl}}/api/{{apiVersion}}/dur/1 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
     "non_gateway_datasets": ["External Dataset 01", "External Dataset 02"],
     "latest_approval_date": "2017-09-12T01:00:00",
     "keywords": ["COVID-19 test 2", "National Core Study test"]
 }
+
+#### edit
+DELETE {{baseUrl}}/api/{{apiVersion}}/dur/1 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
