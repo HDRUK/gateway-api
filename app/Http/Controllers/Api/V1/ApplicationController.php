@@ -49,16 +49,10 @@ class ApplicationController extends Controller
      *       @OA\Schema(type="string")
      *    ),
      *    @OA\Parameter(
-     *       name="enabled",
+     *       name="status",
      *       in="query",
-     *       description="Filter by application enabled status (true or false).",
-     *       @OA\Schema(type="boolean", enum={true, false})
-     *    ),
-     *    @OA\Parameter(
-     *       name="disabled",
-     *       in="query",
-     *       description="Filter by application disabled status (true or false).",
-     *       @OA\Schema(type="boolean", enum={true, false})
+     *       description="Filter by application status is enabled or not (true or false).",
+     *       @OA\Schema(type="string", enum={"1", "0"})
      *    ),
      *    @OA\Response(
      *       response=200,
@@ -75,7 +69,7 @@ class ApplicationController extends Controller
      *                   @OA\Property(property="description", type="string", example="Magni minima facilis quo soluta. Ab quasi quaerat doloremque. Sapiente asperiores nisi maiores ex quia velit."),
      *                   @OA\Property(property="team_id", type="integer", example="1"),
      *                   @OA\Property(property="user_id", type="integer", example="2"),
-     *                   @OA\Property(property="enabled", type="boolean", example="false"),
+     *                   @OA\Property(property="status", type="boolean", example="false"),
      *                   @OA\Property(property="permissions", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="[]", @OA\Items()),
@@ -103,15 +97,11 @@ class ApplicationController extends Controller
             $applications = $applications->where('team_id',(int)$teamId);
         }
         
-        $enabledTerm = $request->query('enabled');
-        $disabledTerm = $request->query('disabled');
-
-        if ($disabledTerm === "true" && $enabledTerm === "false") {
-            $applications = $applications->where('enabled', false);
-        }
-
-        if ($disabledTerm === "false" && $enabledTerm === "true") {
-            $applications = $applications->where('enabled', true);
+        if ($request->has('status')) {
+            $applicationStatus = $request->query('status');
+            if ($applicationStatus === "1" || $applicationStatus === "0") {
+                $applications = $applications->where('enabled', (int) $applicationStatus);
+            }
         }
         
         $textTerms = $request->query('text',[]);

@@ -1,13 +1,13 @@
 <?php
 
-namespace Database\Demo;
+namespace Database\Beta;
 
 use App\Models\EmailTemplate;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class EmailTemplatesDemo extends Seeder
+class EmailTemplatesBetaDemo extends Seeder
 {
     /**
      * Run the database seeds.

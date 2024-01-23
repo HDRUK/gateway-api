@@ -329,7 +329,7 @@ class DatasetController extends Controller
     {
         try {
             $dataset = Dataset::where(['id' => $id])
-                ->with(['namedEntities'])
+                ->with(['namedEntities', 'collections'])
                 ->first();
 
             $outputSchemaModel = $request->query('schema_model');
@@ -650,7 +650,7 @@ class DatasetController extends Controller
                     'version' => ($lastVersionNumber + 1),
                 ]);
 
-                MMC::reindexElastic($input['metadata'], $currDataset->id);
+                MMC::reindexElastic($currDataset->id);
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -723,10 +723,7 @@ class DatasetController extends Controller
                         $metadata->save();
 
                         if ($request['status'] === Dataset::STATUS_ACTIVE) {
-                            MMC::reindexElastic(
-                                $metadata['metadata'],
-                                $id
-                            );
+                            MMC::reindexElastic($id);
                         }
                     } else {
                         throw new Exception('unknown status type');

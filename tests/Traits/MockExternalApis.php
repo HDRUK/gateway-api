@@ -193,4 +193,10 @@ trait MockExternalApis
 
     }
 
+    // Count requests made to the elastic mock client
+    public function countElasticClientRequests(object $client): int
+    {
+        return count($client->getTransport()->getClient()->getRequests());
+    }
+
 }
