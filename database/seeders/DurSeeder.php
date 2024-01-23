@@ -206,8 +206,6 @@ class DurSeeder extends Seeder
                 'access_type' => fake()->randomElement($accessType), // accessType
                 'mongo_object_dar_id' => fake()->numerify('MOBJIDDAR-####'), // projectId which is data_requests._id (mongo)
 
-                'technicalSummary' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"), // technicalSummary
-
                 'user_id' => $userId, // user: from team
                 'team_id' => $teamId, // publisher: from team
 

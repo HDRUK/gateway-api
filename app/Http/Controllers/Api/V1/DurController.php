@@ -320,8 +320,8 @@ class DurController extends Controller
             $input = $request->all();
 
             $userId = null;
-            if ($request->has('user_id')) {
-                $userId = (int) $input['userId'];
+            if (array_key_exists('user_id', $input)) {
+                $userId = (int) $input['user_id'];
             } elseif (array_key_exists('jwt_user', $input)) {
                 $userId = (int) $input['jwt_user']['id'];
             }
@@ -369,9 +369,7 @@ class DurController extends Controller
                 'mongo_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            if (!array_key_exists('user_id', $array)) {
-                $array['user_id'] = $userId;
-            }
+            $array['user_id'] = $userId;
 
             $dur = Dur::create($array);
             $durId = $dur->id;
@@ -558,8 +556,8 @@ class DurController extends Controller
             $input = $request->all();
 
             $userId = null;
-            if ($request->has('user_id')) {
-                $userId = (int) $input['userId'];
+            if (array_key_exists('user_id', $input)) {
+                $userId = (int) $input['user_id'];
             } elseif (array_key_exists('jwt_user', $input)) {
                 $userId = (int) $input['jwt_user']['id'];
             }
@@ -607,9 +605,7 @@ class DurController extends Controller
                 'mongo_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            if (!array_key_exists('user_id', $array)) {
-                $array['user_id'] = $userId;
-            }
+            $array['user_id'] = $userId;
 
             Dur::where('id', $id)->update($array);
 
@@ -803,8 +799,8 @@ class DurController extends Controller
             $input = $request->all();
 
             $userId = null;
-            if ($request->has('user_id')) {
-                $userId = (int) $input['userId'];
+            if (array_key_exists('user_id', $input)) {
+                $userId = (int) $input['user_id'];
             } elseif (array_key_exists('jwt_user', $input)) {
                 $userId = (int) $input['jwt_user']['id'];
             }
@@ -852,9 +848,7 @@ class DurController extends Controller
                 'mongo_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            if (!array_key_exists('user_id', $array)) {
-                $array['user_id'] = $userId;
-            }
+            $array['user_id'] = $userId;
 
             Dur::where('id', $id)->update($array);
 
