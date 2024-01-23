@@ -56,9 +56,8 @@ class UserOrganisationTest extends TestCase
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $response->assertJsonStructure([
-            'data' => [
-                'organisations',
-            ],
+            'message',
+            'data'
         ]);
         $response->assertStatus(200);
     }
@@ -73,8 +72,8 @@ class UserOrganisationTest extends TestCase
         $response = $this->json('GET', self::TEST_URL, [], $this->headerNonAdmin);
 
         $response->assertJsonStructure([
-            'message',
-            'details'
+                'message',
+                'details'
             ],
         );
         $response->assertStatus(403);
@@ -102,9 +101,8 @@ class UserOrganisationTest extends TestCase
         $response = $this->json('GET', self::TEST_URL, [], $cohortAdminHeader);
 
         $response->assertJsonStructure([
-            'data' => [
-                'organisations',
-            ],
+            'message',
+            'data'
         ]);
         $response->assertStatus(200);
     }

@@ -56,9 +56,7 @@ class UserOrganisationController extends Controller
 
                     return response()->json([
                         'message' => 'success',
-                        'data' => [
-                            'organisations' => $organisations
-                        ]
+                        'data' => $organisations
                     ], 200);
                 }
             }
