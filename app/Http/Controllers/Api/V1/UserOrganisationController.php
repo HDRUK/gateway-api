@@ -61,12 +61,12 @@ class UserOrganisationController extends Controller
                         ]
                     ], 200);
                 }
-                
-                return response()->json([
-                    'message' => 'forbidden',
-                    'details' => 'you must be an admin or cohort admin to perform this action'
-                ], 403);
             }
+
+            return response()->json([
+                'message' => 'forbidden',
+                'details' => 'you must be an admin or cohort admin to perform this action'
+            ], 403);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
