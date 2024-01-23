@@ -2682,4 +2682,17 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'dur.patch.id',
+        'method' => 'patch',
+        'path' => '/dur/{id}',
+        'methodController' => 'DurController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
