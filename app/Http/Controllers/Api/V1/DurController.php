@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dur\CreateDur;
+use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Traits\RequestTransformation;
 
@@ -892,6 +893,61 @@ class DurController extends Controller
         }
     }
 
+    /**
+     * @OA\Delete(
+     *    path="/api/v1/dur/{id}",
+     *    tags={"Data Use Registers"},
+     *    summary="Delete a dur",
+     *    description="Delete a dur",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="dur id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="dur id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Not found response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="not found")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="Success",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=500,
+     *       description="Error",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="error")
+     *       )
+     *    )
+     * )
+     */
+    public function destroy(DeleteDur $request, int $id): JsonResponse
+    {
+        try {
+            DurHasDataset::where(['dur_id' => $id])->delete();
+            DurHasKeyword::where(['dur_id' => $id])->delete();
+            Dur::where(['id' => $id])->delete();
+
+            return response()->json([
+                'message' => 'success',
+            ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 
     private function checkDatasets(int $durId, array $inDatasets, int $userId) 
     {
