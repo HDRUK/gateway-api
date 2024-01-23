@@ -437,6 +437,21 @@ class DatasetController extends Controller
             $input = $request->all();
             $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
 
+            // Pre-process check for incoming data from a resource that passes strings
+            // when we expect an associative array. FMA passes strings, this
+            // is a safe-guard to ensure execution is unaffected by other data types.
+            if (isset($input['metadata']['metadata'])) {
+                if (is_string($input['metadata']['metadata'])) {
+                    $tmpMetadata['metadata'] = json_decode($input['metadata']['metadata'], true);
+                    unset($input['metadata']);
+                    $input['metadata'] = $tmpMetadata;
+                }
+            } else if (is_string($input['metadata'])) {
+                $tmpMetadata['metadata'] = json_decode($input['metadata'], true);
+                unset($input['metadata']);
+                $input['metadata'] = $tmpMetadata;
+            }
+
             //send the payload to traser
             // - traser will return the input unchanged if the data is
             //   already in the GWDM with GWDM_CURRENT_VERSION
@@ -452,6 +467,8 @@ class DatasetController extends Controller
                 "publisherId"=>$team['id'],
                 "publisherName"=>$team['name'],
             ];
+
+            // dd($payload);
 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
@@ -514,12 +531,12 @@ class DatasetController extends Controller
             }
             else {
                 return response()->json([
-                    'message' => 'dataset is in an unknown format and cannot be processed',
+                    'message' => 'metadata is in an unknown format and cannot be processed',
                     'details' => $traserResponse,
                 ], 400);
             }
         } catch (Exception $e) {
-                throw new Exception($e->getMessage());
+            throw new Exception($e->getMessage());
         }
     }
 
