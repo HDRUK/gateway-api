@@ -22,4 +22,3 @@ yarn-error.log
 .phpstorm.meta.php
 .phpunit.result.cache
 tiltconf.json
-_ide_helper.php
