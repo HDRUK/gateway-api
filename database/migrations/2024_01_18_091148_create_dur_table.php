@@ -58,9 +58,6 @@ return new class extends Migration
             $table->string('access_type')->nullable(); // accessType
             $table->char('mongo_object_dar_id', 24)->nullable(); // projectId which is data_requests._id (mongo)
 
-            $table->foreign('user_id')->references('id')->on('users'); // user: from team
-            $table->foreign('team_id')->references('id')->on('teams'); // publisher: from team
-
             $table->boolean('enabled')->default(1); // activeflag
             $table->timestamp('last_activity')->nullable(); // lastActivity
             $table->integer('counter')->default(0); // counter
@@ -70,6 +67,11 @@ return new class extends Migration
 
             $table->bigInteger('user_id')->nullable()->default(null)->unsigned();
             $table->bigInteger('team_id')->nullable()->default(null)->unsigned();
+            $table->bigInteger('application_id')->nullable()->default(null)->unsigned();
+
+            $table->foreign('user_id')->references('id')->on('users'); // user: from team
+            $table->foreign('team_id')->references('id')->on('teams'); // publisher: from team
+            $table->foreign('application_id')->references('id')->on('applications'); // publisher: from applications/integration
         });
     }
 

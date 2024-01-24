@@ -6,6 +6,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Models\Keyword;
+use App\Models\Application;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -110,6 +111,11 @@ class Dur extends Model
     {
         return $this->belongsToMany(User::class, 'dur_has_datasets');
     }
+
+    public function applications(): BelongsToMany
+    {
+        return $this->belongsToMany(Application::class, 'dur_has_datasets');
+    }
     
     public function user(): BelongsTo
     {
@@ -119,5 +125,10 @@ class Dur extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
     }
 }

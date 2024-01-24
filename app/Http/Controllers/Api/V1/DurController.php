@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\NotFoundException;
 use Config;
 use Exception;
 use App\Models\Dur;
@@ -17,6 +18,7 @@ use App\Http\Requests\Dur\CreateDur;
 use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Traits\RequestTransformation;
+use App\Models\Application;
 
 class DurController extends Controller
 {
@@ -113,8 +115,12 @@ class DurController extends Controller
                 'users' => function ($query) {
                     $query->distinct('id');
                 },
+                'applications' => function ($query) {
+                    $query->distinct('id');
+                },
                 'user',
                 'team',
+                'application',
                 ])->paginate($perPage);
         return response()->json(
             $dur
@@ -195,8 +201,10 @@ class DurController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
      *                ),
      *             ),
      *          ),
@@ -214,8 +222,12 @@ class DurController extends Controller
                     'users' => function ($query) {
                         $query->distinct('id');
                     },
+                    'applications' => function ($query) {
+                        $query->distinct('id');
+                    },
                     'user',
                     'team',
+                    'application',
                 ])->get();
 
             return response()->json([
@@ -320,10 +332,17 @@ class DurController extends Controller
             $input = $request->all();
 
             $userId = null;
+            $appId = null;
+            $teamId = null;
             if (array_key_exists('user_id', $input)) {
                 $userId = (int) $input['user_id'];
             } elseif (array_key_exists('jwt_user', $input)) {
                 $userId = (int) $input['jwt_user']['id'];
+            } else {
+                $appId = (int) $input['app']['id'];
+                $app = Application::where(['id' => $appId])->first();
+                $userId = (int) $app->user_id;
+                $teamId = (int) $app->team_id;
             }
 
             $arrayKeys = [
@@ -361,7 +380,6 @@ class DurController extends Controller
                 'mongo_object_dar_id',
                 'technicalSummary',
                 'team_id',
-                'user_id',
                 'enabled',
                 'last_activity',
                 'counter',
@@ -369,14 +387,22 @@ class DurController extends Controller
                 'mongo_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            $array['user_id'] = $userId;
+            $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+            $array['team_id'] = array_key_exists('team_id', $input) ? $input['team_id'] : $teamId;
+            if ($appId) {
+                $array['application_id'] = $appId;
+            }
+
+            if (!$array['team_id']) {
+                throw new NotFoundException("Team Id not found in request.");
+            }
 
             $dur = Dur::create($array);
             $durId = $dur->id;
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            $this->checkDatasets($durId, $datasets, $array['user_id']);
+            $this->checkDatasets($durId, $datasets, $array['user_id'], $appId);
 
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
@@ -536,8 +562,10 @@ class DurController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
      *              ),
      *        ),
      *    ),
@@ -556,10 +584,13 @@ class DurController extends Controller
             $input = $request->all();
 
             $userId = null;
+            $appId = null;
             if (array_key_exists('user_id', $input)) {
                 $userId = (int) $input['user_id'];
             } elseif (array_key_exists('jwt_user', $input)) {
                 $userId = (int) $input['jwt_user']['id'];
+            } else {
+                $appId = (int) $input['app']['id'];
             }
 
             $arrayKeys = [
@@ -596,8 +627,6 @@ class DurController extends Controller
                 'access_type',
                 'mongo_object_dar_id',
                 'technicalSummary',
-                'team_id',
-                'user_id',
                 'enabled',
                 'last_activity',
                 'counter',
@@ -605,13 +634,13 @@ class DurController extends Controller
                 'mongo_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            $array['user_id'] = $userId;
+            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             Dur::where('id', $id)->update($array);
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            $this->checkDatasets($id, $datasets, $array['user_id']);
+            $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
 
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
@@ -635,8 +664,12 @@ class DurController extends Controller
                     'users' => function ($query) {
                         $query->distinct('id');
                     },
+                    'applications' => function ($query) {
+                        $query->distinct('id');
+                    },
                     'user',
                     'team',
+                    'application',
                 ])->first(),
             ], 200);
         } catch (Exception $e) {
@@ -779,8 +812,10 @@ class DurController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
      *              ),
      *        ),
      *    ),
@@ -799,10 +834,13 @@ class DurController extends Controller
             $input = $request->all();
 
             $userId = null;
+            $appId = null;
             if (array_key_exists('user_id', $input)) {
                 $userId = (int) $input['user_id'];
             } elseif (array_key_exists('jwt_user', $input)) {
                 $userId = (int) $input['jwt_user']['id'];
+            } else {
+                $appId = (int) $input['app']['id'];
             }
 
             $arrayKeys = [
@@ -839,8 +877,6 @@ class DurController extends Controller
                 'access_type',
                 'mongo_object_dar_id',
                 'technicalSummary',
-                'team_id',
-                'user_id',
                 'enabled',
                 'last_activity',
                 'counter',
@@ -848,13 +884,13 @@ class DurController extends Controller
                 'mongo_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            $array['user_id'] = $userId;
+            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             Dur::where('id', $id)->update($array);
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            $this->checkDatasets($id, $datasets, $array['user_id']);
+            $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
 
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
@@ -878,8 +914,12 @@ class DurController extends Controller
                     'users' => function ($query) {
                         $query->distinct('id');
                     },
+                    'applications' => function ($query) {
+                        $query->distinct('id');
+                    },
                     'user',
                     'team',
+                    'application',
                 ])->first(),
             ], 200);
         } catch (Exception $e) {
@@ -943,7 +983,7 @@ class DurController extends Controller
         }
     }
 
-    private function checkDatasets(int $durId, array $inDatasets, int $userId) 
+    private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null) 
     {
         $ds = DurHasDataset::where(['dur_id' => $durId])->get();
         foreach ($ds as $d) {
@@ -956,19 +996,28 @@ class DurController extends Controller
             $checking = $this->checkInDurHasDatasets($durId, $dataset);
 
             if (!$checking) {
-                $this->addDurHasDataset($durId, $dataset, $userId);
+                $this->addDurHasDataset($durId, $dataset, $userId, $appId);
             }
         }
     }
 
-    private function addDurHasDataset(int $durId, int $datasetId, int $userId)
+    private function addDurHasDataset(int $durId, int $datasetId, int $userId = null, int $appId = null)
     {
         try {
-            return DurHasDataset::create([
+            $arrCreate = [
                 'dur_id' => $durId,
                 'dataset_id' => $datasetId,
-                'user_id' => $userId,
-            ]);
+            ];
+
+            if ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return DurHasDataset::create($arrCreate);
         } catch (Exception $e) {
             throw new Exception("addDurHasDataset :: " . $e->getMessage());
         }
