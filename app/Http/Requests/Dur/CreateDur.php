@@ -144,7 +144,7 @@ class CreateDur extends BaseFormRequest
                 'integer',
                 'exists:users,id',
             ],
-            'team_id' => [
+            'team_id' => [ // is required if we create a new dur with jwt token
                 'integer',
                 'exists:teams,id',
             ],
