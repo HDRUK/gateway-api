@@ -46,7 +46,6 @@ class UpdateTeam extends BaseFormRequest
                 'boolean',
             ],
             'is_admin' => [
-                'required',
                 'boolean',
             ],
             'member_of' => [
@@ -67,7 +66,6 @@ class UpdateTeam extends BaseFormRequest
                 'string',
             ],
             'application_form_updated_on' => [
-                'required',
                 'string',
             ],
             'notifications' => [
@@ -80,6 +78,14 @@ class UpdateTeam extends BaseFormRequest
             ],
             'is_question_bank' => [
                 'boolean',
+            ],
+            'users' => [
+                'array',
+            ],
+            'users.*'  => [
+                'integer',
+                'distinct',
+                'exists:users,id',
             ],
         ];
     }

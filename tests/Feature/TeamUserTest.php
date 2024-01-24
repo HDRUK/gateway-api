@@ -411,6 +411,7 @@ class TeamUserTest extends TestCase
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => now(),
                 'notifications' => [$notificationID],
+                'users' => [],
             ],
             $this->header,
         );

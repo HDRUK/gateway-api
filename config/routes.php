@@ -2629,4 +2629,17 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // organisations
+    [
+        'name' => 'users.organisations.index',
+        'method' => 'get',
+        'path' => '/users/organisations',
+        'methodController' => 'UserOrganisationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+
+
 ];
