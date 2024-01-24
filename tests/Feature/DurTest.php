@@ -10,7 +10,6 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use Database\Seeders\DurSeeder;
 use Tests\Traits\Authorization;
-use Database\Seeders\TeamSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
@@ -230,6 +229,169 @@ class DurTest extends TestCase
         $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+    }
+
+    /**
+     * Create and Update Dur with success
+     * 
+     * @return void
+     */
+    public function test_update_dur_with_success(): void
+    {
+        // create dur
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+        $countBefore = Dur::count();
+        $mockData = [
+            'datasets' => $this->generateDatasets(),
+            'keywords' => $this->generateKeywords(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        $countAfter = Dur::count();
+        $countNewRow = $countAfter - $countBefore;
+
+        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+
+        // update
+        $mockDataUpdate = [
+            'datasets' => $this->generateDatasets(),
+            'keywords' => $this->generateKeywords(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01','External Dataset 02', 'External Dataset 03'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+        ];
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $durId,
+            $mockDataUpdate,
+            $this->header
+        );
+        $responseUpdate->assertStatus(200);
+    }
+
+    /**
+     * Create and Update and Edit Dur with success
+     * 
+     * @return void
+     */
+    public function test_edit_dur_with_success(): void
+    {
+        // create dur
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+        $countBefore = Dur::count();
+        $mockData = [
+            'datasets' => $this->generateDatasets(),
+            'keywords' => $this->generateKeywords(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        $countAfter = Dur::count();
+        $countNewRow = $countAfter - $countBefore;
+
+        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+
+        // update
+        $mockDataUpdate = [
+            'datasets' => $this->generateDatasets(),
+            'keywords' => $this->generateKeywords(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02', 'External Dataset 03'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+        ];
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $durId,
+            $mockDataUpdate,
+            $this->header
+        );
+        $responseUpdate->assertStatus(200);
+
+        // update
+        $mockDataEdit = [
+            'datasets' => $this->generateDatasets(),
+            'keywords' => $this->generateKeywords(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+        ];
+        $responseEdit = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $durId,
+            $mockDataEdit,
+            $this->header
+        );
+        $responseEdit->assertStatus(200);
+    }
+
+    /**
+     * Create and delete Dur with success
+     * 
+     * @return void
+     */
+    public function test_delete_dur_with_success(): void
+    {
+        // create dur
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+        $countBefore = Dur::count();
+        $mockData = [
+            'datasets' => $this->generateDatasets(),
+            'keywords' => $this->generateKeywords(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        $countAfter = Dur::count();
+        $countNewRow = $countAfter - $countBefore;
+
+        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+
+        // delete
+        $responseDelete = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $durId,
+            [],
+            $this->header
+        );
+        $responseDelete->assertStatus(200);
     }
 
     private function generateKeywords()

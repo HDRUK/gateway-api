@@ -2698,7 +2698,7 @@ return [
     [
         'name' => 'dur.delete.id',
         'method' => 'delete',
-        'path' => '/keywords/{id}',
+        'path' => '/dur/{id}',
         'methodController' => 'DurController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
