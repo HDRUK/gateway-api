@@ -53,6 +53,7 @@ class CheckAccessMiddleware
 
         if ($type === 'permissions') {
             $currentUserPermissions = $this->getAllPermissions($currentUserRoles);
+            ///throw new UnauthorizedException(implode("|",$currentUserPermissions));
 
             $checkingPermissions = array_diff($access, $currentUserPermissions);
 

@@ -50,6 +50,17 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
+     *       name="pid",
+     *       in="query",
+     *       description="get based on a pid",
+     *       required=false,
+     *       example="aa588d1c-21e7-42d9-9b60-48e3d6b784a9",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="retrieve based on pid",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
      *       name="sort",
      *       in="query",
      *       description="Field to sort by (default: 'created')",
@@ -113,7 +124,7 @@ class DatasetController extends Controller
         $teamId = $request->query('team_id',null);
         $filterStatus = $request->query('status', null);
         $datasetId = $request->query('dataset_id', null);
-
+        
         $sort = $request->query('sort',"created:desc");   
         
         $tmp = explode(":", $sort);
@@ -485,6 +496,8 @@ class DatasetController extends Controller
                 $mongo_pid = array_key_exists('mongo_pid', $input) ? $input['mongo_pid'] : null;
                 $datasetid = array_key_exists('datasetid', $input) ? $input['datasetid'] : null;
 
+                $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
+
                 $dataset = MMC::createDataset([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
@@ -495,7 +508,7 @@ class DatasetController extends Controller
                     'created' => now(),
                     'updated' => now(),
                     'submitted' => now(),
-                    'pid' => (string) Str::uuid(),
+                    'pid' => $pid,
                     'create_origin' => $input['create_origin'],
                     'status' => $input['status'],
                 ]);
@@ -816,6 +829,13 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    public function destroyByPid(Request $request, string $pid) // softdelete
+    {
+        $dataset = Dataset::where('pid', "=", $pid)->first();
+        return $this->destroy($request,$dataset->id);
+    }
+
 
     /**
      * @OA\Get(
