@@ -233,7 +233,7 @@ class DurController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => $dur,
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -421,7 +421,7 @@ class DurController extends Controller
             return response()->json([
                 'message' => 'created',
                 'data' => $durId,
-            ], 201);
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -671,7 +671,7 @@ class DurController extends Controller
                     'team',
                     'application',
                 ])->first(),
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -921,7 +921,7 @@ class DurController extends Controller
                     'team',
                     'application',
                 ])->first(),
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -976,8 +976,8 @@ class DurController extends Controller
             Dur::where(['id' => $id])->delete();
 
             return response()->json([
-                'message' => 'success',
-            ], 200);
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
