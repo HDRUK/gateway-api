@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Requests\DataUseRegister;
+namespace App\Http\Requests\Dur;
 
 use App\Http\Requests\BaseFormRequest;
 
-class GetDataUseRegister extends BaseFormRequest
+class GetDur extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\Rule|array|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -17,7 +17,7 @@ class GetDataUseRegister extends BaseFormRequest
             'id' => [
                 'int',
                 'required',
-                'exists:data_use_registers,id',
+                'exists:dur,id',
             ],
         ];
     }

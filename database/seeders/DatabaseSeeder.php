@@ -42,7 +42,6 @@ class DatabaseSeeder extends Seeder
             AuditLogSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
-            DataUseRegisterSeeder::class,
             ApplicationSeeder::class,
             ApplicationHasPermissionSeeder::class,
             FAIRShareCommandSeeder::class,
@@ -58,6 +57,7 @@ class DatabaseSeeder extends Seeder
             CollectionHasDatasetSeeder::class,
             SavedSearchSeeder::class,
             SavedSearchHasFilterSeeder::class,
+            DurSeeder::class,
         ]);
     }
 }
