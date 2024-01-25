@@ -212,6 +212,7 @@ class DurTest extends TestCase
         $userId = (int) User::all()->random()->id;
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
+        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $mockData = [
             'datasets' => $this->generateDatasets(),
             'keywords' => $this->generateKeywords(),
@@ -233,6 +234,9 @@ class DurTest extends TestCase
         $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+
+        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
+        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
 
     /**
