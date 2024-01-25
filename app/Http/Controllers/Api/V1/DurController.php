@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Exceptions\NotFoundException;
 use Config;
 use Exception;
+use App\Models\Dataset;
 use App\Models\Dur;
 use App\Models\Keyword;
 use Illuminate\Http\Request;
@@ -19,6 +20,8 @@ use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Traits\RequestTransformation;
 use App\Models\Application;
+
+use MetadataManagementController AS MMC;
 
 class DurController extends Controller
 {
@@ -418,6 +421,8 @@ class DurController extends Controller
                 Dur::where('id', $durId)->update(['updated_at' => $input['updatedAt']]);
             }
 
+            $this->indexElasticDur($durId);
+
             return response()->json([
                 'message' => 'created',
                 'data' => $durId,
@@ -655,6 +660,8 @@ class DurController extends Controller
             if (array_key_exists('updatedAt', $input)) {
                 Dur::where('id', $id)->update(['updated_at' => $input['updatedAt']]);
             }
+
+            $this->indexElasticDur($id);
 
             return response()->json([
                 'message' => 'success',
@@ -906,6 +913,8 @@ class DurController extends Controller
                 Dur::where('id', $id)->update(['updated_at' => $input['updatedAt']]);
             }
 
+            $this->indexElasticDur($id);
+
             return response()->json([
                 'message' => 'success',
                 'data' => Dur::where('id', $id)->with([
@@ -1105,6 +1114,61 @@ class DurController extends Controller
             return DurHasKeyword::where(['keyword_id' => $keywordId])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Calls a re-indexing of Elastic search when a data use is created or updated
+     * 
+     * @param string $id The dur id from the DB
+     * 
+     * @return void
+     */
+    public function indexElasticDur(string $id): void
+    {
+        try {
+
+            $durMatch = Dur::where(['id' => $id])
+                ->with(['datasets', 'keywords'])
+                ->first()
+                ->toArray();
+
+            $datasetTitles = array();
+            foreach ($durMatch['datasets'] as $d) {
+                $metadata = Dataset::where(['id' => $d])
+                    ->first()
+                    ->latestVersion()
+                    ->metadata;
+                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+            }
+
+            $keywords = array();
+            foreach ($durMatch['keywords'] as $k) {
+                $keywords[] = $k['name'];
+            }
+
+            $toIndex = [
+                'projectTitle' => $durMatch['project_title'],
+                'laySummary' => $durMatch['lay_summary'],
+                'publicBenefitStatement' => $durMatch['public_benefit_statement'],
+                'technicalSummary' => $durMatch['technical_summary'],
+                'fundersAndSponsors' => $durMatch['funders_and_sponsors'],
+                'datasetTitles' => $datasetTitles,
+                'keywords' => $keywords
+            ];
+
+            $params = [
+                'index' => 'data_uses',
+                'id' => $id,
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+            
+            $client = MMC::getElasticClient();
+            $response = $client->index($params);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
     }
 }
