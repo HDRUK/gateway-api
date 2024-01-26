@@ -197,7 +197,7 @@ class DatasetController extends Controller
                 })
             ->when($sortByMetadataField,
                     function ($query) use ($sortField, $sortDirection) {
-                        return $query->sortByTitle($sortField, $sortDirection);
+                        return $query->sortByMetadataField($sortField, $sortDirection);
                     })
             ->when(!$sortByMetadataField,
                     function ($query) use ($sortField, $sortDirection) {

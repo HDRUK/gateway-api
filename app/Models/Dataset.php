@@ -97,7 +97,7 @@ class Dataset extends Model
     /**
      * Helper function to use JSON functions to search by title within metadata.
      */
-    public function scopeSortByTitle(Builder $query, string $title, string  $direction): Builder
+    public function scopeSortByMetadataField(Builder $query, string $title, string  $direction): Builder
     {
         //"LOWER(JSON_EXTRACT(versions.metadata, '$.%$title%')) $direction"
         return $query->orderByRaw("LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) ");
