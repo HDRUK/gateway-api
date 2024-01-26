@@ -61,9 +61,11 @@ class CreateTeam extends BaseFormRequest
                 'string',
             ],
             'application_form_updated_on' => [
+                'nullable',
                 'string',
             ],
             'notifications' => [
+                'nullable',
                 'array',
 
             ],
