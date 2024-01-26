@@ -59,12 +59,15 @@ class EditTeam extends BaseFormRequest
                 ]),
             ],
             'contact_point' => [
+                'nullable',
                 'string',
             ],
             'application_form_updated_by' => [
+                'nullable',
                 'string',
             ],
             'application_form_updated_on' => [
+                'nullable',
                 'string',
             ],
             'notifications' => [
