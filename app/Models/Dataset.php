@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Collection;
 use App\Models\DataVersion;
 use App\Models\NamedEntities;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -91,6 +92,16 @@ class Dataset extends Model
                 LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$title%')
                 "
             )->latest('version')->first();
+    }
+
+    /**
+     * Helper function to use JSON functions to search by title within metadata.
+     */
+    public function scopeSortByTitle(Builder $query, string $title, string  $direction): Builder
+    {
+        //"LOWER(JSON_EXTRACT(versions.metadata, '$.%$title%')) $direction"
+        return $query->orderByRaw("LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) ");
+            //->latest('dataset_versions.version');
     }
 
     /**
