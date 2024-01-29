@@ -449,8 +449,8 @@ class DatasetController extends Controller
                 "id"=>"placeholder",
                 "pid"=>"placeholder",
                 "datasetType"=>"Healthdata",
-                "publisherId"=>$team['id'],
-                "publisherName"=>$team['pid'],
+                "publisherId"=>$team['pid'],
+                "publisherName"=>$team['name'],
             ];
 
             $traserResponse = MMC::translateDataModelType(
@@ -493,6 +493,13 @@ class DatasetController extends Controller
                     'revisions' => [],
                 ];
                 $input['metadata']['metadata']['required'] = $required;
+
+                $publisher = $input['metadata']['metadata']['summary']['publisher'];
+                $publisher['publisherId'] = $team['pid'];
+                $publisher['publisherName'] = $team['name'];
+
+                $input['metadata']['metadata']['summary']['publisher'] = $publisher;
+
 
                 $version = MMC::createDatasetVersion([
                     'dataset_id' => $dataset->id,

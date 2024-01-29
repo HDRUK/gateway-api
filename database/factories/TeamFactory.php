@@ -36,7 +36,6 @@ class TeamFactory extends Factory
             'application_form_updated_on' => fake()->dateTime(),
             'mongo_object_id' => null,
             'is_question_bank' => fake()->boolean(),
-            'pid' => (string) Str::uuid(),
         ];
     }
 }
