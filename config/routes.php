@@ -2301,10 +2301,10 @@ return [
 
     // search
     [
-        'name' => 'search',
+        'name' => 'search.datasets',
         'method' => 'get',
-        'path' => '/search',
-        'methodController' => 'SearchController@search',
+        'path' => '/search/datasets',
+        'methodController' => 'SearchController@datasets',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => ['jwt.verify'],
         'constraint' => [],

@@ -99,64 +99,72 @@ trait MockExternalApis
         Http::fake([
             'search-service*' => Http::response(
                 [
-                    'collections' => [],
-                    'tools' => [],
-                    'datasets' => [
-                        'took' => 1000,
-                        'timed_out' => false,
-                        '_shards' => [],
+                    'took' => 1000,
+                    'timed_out' => false,
+                    '_shards' => [],
+                    'hits' => [
                         'hits' => [
-                            'hits' => [
-                                0 => [
-                                    '_explanation' => [],
-                                    '_id' => '1',
-                                    '_index' => 'datasets',
-                                    '_node' => 'abcd-123-efgh',
-                                    '_score' => 20.0,
-                                    '_shard' => '[datasets][0]',
-                                    '_source' => [
-                                        'abstract' => '',
-                                        'description' => '',
-                                        'keywords' => '',
-                                        'named_entities' => [],
-                                        'publisher_name' => '',
-                                        'shortTitle' => 'Asthma dataset',
-                                        'title' => 'Asthma dataset'
-                                    ]
+                            0 => [
+                                '_explanation' => [],
+                                '_id' => '1',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 20.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Asthma dataset',
+                                    'title' => 'Asthma dataset'
                                 ],
-                                1 => [
-                                    '_explanation' => [],
-                                    '_id' => '2',
-                                    '_index' => 'datasets',
-                                    '_node' => 'abcd-123-efgh',
-                                    '_score' => 18.0,
-                                    '_shard' => '[datasets][0]',
-                                    '_source' => [
-                                        'abstract' => '',
-                                        'description' => '',
-                                        'keywords' => '',
-                                        'named_entities' => [],
-                                        'publisher_name' => '',
-                                        'shortTitle' => 'Another asthma dataset',
-                                        'title' => 'Another asthma dataset'
-                                    ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            1 => [
+                                '_explanation' => [],
+                                '_id' => '2',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 18.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Another asthma dataset',
+                                    'title' => 'Another asthma dataset'
                                 ],
-                                2 => [
-                                    '_explanation' => [],
-                                    '_id' => '3',
-                                    '_index' => 'datasets',
-                                    '_node' => 'abcd-123-efgh',
-                                    '_score' => 16.0,
-                                    '_shard' => '[datasets][0]',
-                                    '_source' => [
-                                        'abstract' => '',
-                                        'description' => '',
-                                        'keywords' => '',
-                                        'named_entities' => [],
-                                        'publisher_name' => '',
-                                        'shortTitle' => 'Third asthma dataset',
-                                        'title' => 'Third asthma dataset'
-                                    ]
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            2 => [
+                                '_explanation' => [],
+                                '_id' => '3',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Third asthma dataset',
+                                    'title' => 'Third asthma dataset'
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
                                 ]
                             ]
                         ]
