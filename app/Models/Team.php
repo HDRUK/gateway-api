@@ -53,12 +53,14 @@ class Team extends Model
         'mongo_object_id',
         'notification_status',
         'is_question_bank',
+        'pid',
     ];
 
     /**
      * Specifically requests that Laravel casts the tiny ints as boolean
      */
     protected $casts = [
+        'pid' => 'string',
         'enabled' => 'boolean',
         'allows_messaging' => 'boolean',
         'workflow_enabled' => 'boolean',
@@ -175,7 +177,6 @@ class Team extends Model
      */
     private $mongo_object_id = '';
 
-   
     public function getPid(){
         return $this->attributes['pid'];
     }

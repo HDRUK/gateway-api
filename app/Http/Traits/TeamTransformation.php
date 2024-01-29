@@ -23,6 +23,7 @@ trait TeamTransformation
         foreach ($teams as $team) {
             $tmpTeam = [
                 'id' => $team['id'],
+                'pid' => $team['pid'],
                 'created_at' => $team['created_at'],
                 'updated_at' => $team['updated_at'],
                 'name' => $team['name'],
