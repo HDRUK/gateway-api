@@ -494,10 +494,11 @@ class DatasetController extends Controller
                 ];
                 $input['metadata']['metadata']['required'] = $required;
 
-                $publisher = $input['metadata']['metadata']['summary']['publisher'];
-                $publisher['publisherId'] = $team['pid'];
-                $publisher['publisherName'] = $team['name'];
-
+                //force correct publisher field based on the team
+                $publisher = [
+                    'publisherId' => $team['pid'],
+                    'publisherName' => $team['name'],
+                ];
                 $input['metadata']['metadata']['summary']['publisher'] = $publisher;
 
 
