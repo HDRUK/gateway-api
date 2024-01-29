@@ -58,6 +58,7 @@ class DatabaseSeeder extends Seeder
             SavedSearchSeeder::class,
             SavedSearchHasFilterSeeder::class,
             DurSeeder::class,
+            TeamSeederAddPid::class,
         ]);
     }
 }

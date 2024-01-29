@@ -449,7 +449,7 @@ class DatasetController extends Controller
                 "id"=>"placeholder",
                 "pid"=>"placeholder",
                 "datasetType"=>"Healthdata",
-                "publisherId"=>$team['id'],
+                "publisherId"=>$team['pid'],
                 "publisherName"=>$team['name'],
             ];
 
@@ -493,6 +493,14 @@ class DatasetController extends Controller
                     'revisions' => [],
                 ];
                 $input['metadata']['metadata']['required'] = $required;
+
+                //force correct publisher field based on the team
+                $publisher = [
+                    'publisherId' => $team['pid'],
+                    'publisherName' => $team['name'],
+                ];
+                $input['metadata']['metadata']['summary']['publisher'] = $publisher;
+
 
                 $version = MMC::createDatasetVersion([
                     'dataset_id' => $dataset->id,

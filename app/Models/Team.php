@@ -14,11 +14,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Support\Str;
 
 class Team extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
     use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
+
+    /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        //create a pid for this team
+        static::creating(function ($model) {
+            $model->pid = (string) Str::uuid();
+        });
+    }
 
     protected $fillable = [
         'updated_at',
@@ -43,6 +59,7 @@ class Team extends Model
      * Specifically requests that Laravel casts the tiny ints as boolean
      */
     protected $casts = [
+        'pid' => 'string',
         'enabled' => 'boolean',
         'allows_messaging' => 'boolean',
         'workflow_enabled' => 'boolean',
@@ -158,6 +175,10 @@ class Team extends Model
      * @var string
      */
     private $mongo_object_id = '';
+
+    public function getPid(){
+        return $this->attributes['pid'];
+    }
 
     public function users(): BelongsToMany
     {
