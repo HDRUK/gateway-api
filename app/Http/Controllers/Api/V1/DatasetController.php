@@ -449,8 +449,8 @@ class DatasetController extends Controller
                 "id"=>"placeholder",
                 "pid"=>"placeholder",
                 "datasetType"=>"Healthdata",
-                "publisherId"=>$team['pid'],
-                "publisherName"=>$team['name'],
+                "publisherId"=>$team['id'],
+                "publisherName"=>$team['pid'],
             ];
 
             $traserResponse = MMC::translateDataModelType(

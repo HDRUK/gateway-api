@@ -159,6 +159,15 @@ class Team extends Model
      */
     private $mongo_object_id = '';
 
+    /**
+     * Represents the new pid of the team
+     * linking
+     * 
+     * @var string
+     */
+    private $pid = '';
+
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'team_has_users')
