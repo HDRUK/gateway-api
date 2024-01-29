@@ -449,7 +449,7 @@ class DatasetController extends Controller
                 "id"=>"placeholder",
                 "pid"=>"placeholder",
                 "datasetType"=>"Healthdata",
-                "publisherId"=>$team['id'],
+                "publisherId"=>$team['pid'],
                 "publisherName"=>$team['name'],
             ];
 
