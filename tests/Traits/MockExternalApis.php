@@ -95,9 +95,9 @@ trait MockExternalApis
             )
         ]);
 
-        // Mock the search service
+        // Mock the search service - datasets
         Http::fake([
-            'search-service*' => Http::response(
+            'search-service*datasets*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -161,6 +161,172 @@ trait MockExternalApis
                                     'publisherName' => '',
                                     'shortTitle' => 'Third asthma dataset',
                                     'title' => 'Third asthma dataset'
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
+        // Mock the search service - tools
+        Http::fake([
+            'search-service*tools*' => Http::response(
+                [
+                    'took' => 1000,
+                    'timed_out' => false,
+                    '_shards' => [],
+                    'hits' => [
+                        'hits' => [
+                            0 => [
+                                '_explanation' => [],
+                                '_id' => '1',
+                                '_index' => 'tools',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 20.0,
+                                '_shard' => '[tools][0]',
+                                '_source' => [
+                                    'category' => 'NLP System',
+                                    'description' => 'An NLP tool',
+                                    'name' => 'B tool',
+                                    'tags' => [
+                                        'nlp',
+                                        'machine learning'
+                                    ]
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            1 => [
+                                '_explanation' => [],
+                                '_id' => '2',
+                                '_index' => 'tools',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 18.0,
+                                '_shard' => '[tools][0]',
+                                '_source' => [
+                                    'category' => 'NLP System',
+                                    'description' => 'Other NLP tool',
+                                    'name' => 'A tool',
+                                    'tags' => [
+                                        'nlp',
+                                        'machine learning'
+                                    ]
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            2 => [
+                                '_explanation' => [],
+                                '_id' => '3',
+                                '_index' => 'tools',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[tools][0]',
+                                '_source' => [
+                                    'category' => 'NLP System',
+                                    'description' => 'Yet another NLP tool',
+                                    'name' => 'C tool',
+                                    'tags' => [
+                                        'nlp',
+                                        'machine learning'
+                                    ]
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
+        // Mock the search service - tools
+        Http::fake([
+            'search-service*collections*' => Http::response(
+                [
+                    'took' => 1000,
+                    'timed_out' => false,
+                    '_shards' => [],
+                    'hits' => [
+                        'hits' => [
+                            0 => [
+                                '_explanation' => [],
+                                '_id' => '1',
+                                '_index' => 'tools',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 20.0,
+                                '_shard' => '[tools][0]',
+                                '_source' => [
+                                    'description' => 'a gateway collection',
+                                    'name' => 'One Collection',
+                                    'keywords' => 'some, useful, keywords',
+                                    'relatedObjects' => [
+                                        'keywords' => '',
+                                        'title' => '',
+                                        'name' => '',
+                                        'description' => ''
+                                    ]
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            1 => [
+                                '_explanation' => [],
+                                '_id' => '2',
+                                '_index' => 'tools',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 18.0,
+                                '_shard' => '[tools][0]',
+                                '_source' => [
+                                    'description' => 'a gateway collection',
+                                    'name' => 'Another Collection',
+                                    'keywords' => 'some, useful, keywords',
+                                    'relatedObjects' => [
+                                        'keywords' => '',
+                                        'title' => '',
+                                        'name' => '',
+                                        'description' => ''
+                                    ]
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            2 => [
+                                '_explanation' => [],
+                                '_id' => '3',
+                                '_index' => 'tools',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[tools][0]',
+                                '_source' => [
+                                    'description' => 'a gateway collection',
+                                    'name' => 'Third Collection',
+                                    'keywords' => 'some, useful, keywords',
+                                    'relatedObjects' => [
+                                        'keywords' => '',
+                                        'title' => '',
+                                        'name' => '',
+                                        'description' => ''
+                                    ]
                                 ],
                                 'highlight' => [
                                     'abstract' => [],

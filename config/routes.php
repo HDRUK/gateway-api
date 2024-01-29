@@ -2309,6 +2309,24 @@ return [
         'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
+    [
+        'name' => 'search.tools',
+        'method' => 'get',
+        'path' => '/search/tools',
+        'methodController' => 'SearchController@tools',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'search.collections',
+        'method' => 'get',
+        'path' => '/search/collections',
+        'methodController' => 'SearchController@collections',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
 
 // categories
     [
