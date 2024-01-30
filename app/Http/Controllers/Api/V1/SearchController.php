@@ -15,7 +15,7 @@ class SearchController extends Controller
 {
 
     /**
-     * @OA\Get(
+     * @OA\Post(
      *      path="/api/v1/search",
      *      summary="Keyword search across multiple gateway entity types",
      *      description="Returns gateway entities related to the provided query term(s)",
@@ -96,15 +96,29 @@ class SearchController extends Controller
 
             $urlString = env('SEARCH_SERVICE_URL') . '/search';
 
-            $response = Http::withBody(
-                $request->getContent(), 'application/json'
-            )->get($urlString);
+            $response = Http::post($urlString, 
+                            json_decode($request->getContent())
+            );
 
-            $datasetsArray = $response['datasets']['hits']['hits'];
+            if($response->status() !== 200){
+                return response()->json(
+                    [
+                        "message" => "failed to call the search service"
+                    ],
+                    400);
+            }
+
+            $responseData = $response->json();
+            
+            $datasetsArray = $responseData['datasets']['hits']['hits'];
+
             // join to created at from DB
             foreach (array_values($datasetsArray) as $i => $d) {
-                $datasetModel = Dataset::where(['id' => $d['_id']])->first()->toArray();
-                $datasetsArray[$i]['_source']['created_at'] = $datasetModel['created_at'];
+                $datasetModel = Dataset::where(['id' => $d['_id']])->first();
+                if ($datasetModel) {
+                    $datasetModel = $datasetModel->toArray();
+                    $datasetsArray[$i]['_source']['created_at'] = $datasetModel['created_at'];
+                }
             }
 
             if ($sortField === 'score') {

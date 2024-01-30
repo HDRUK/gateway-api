@@ -2302,11 +2302,13 @@ return [
     // search
     [
         'name' => 'search',
-        'method' => 'get',
+        'method' => 'post',
         'path' => '/search',
         'methodController' => 'SearchController@search',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [
+            //'jwt.verify'
+        ],
         'constraint' => [],
     ],
 
