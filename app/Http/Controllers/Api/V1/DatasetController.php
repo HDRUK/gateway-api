@@ -483,24 +483,52 @@ class DatasetController extends Controller
                     'status' => $input['status'],
                 ]);
 
-                //create a new 'required' section for the metadata to be saved
-                // - otherwise this section is filled with placeholders by all translations to GWDM
+    
+                $publisher = null;
                 $required = [
-                    'gatewayId' => strval($dataset->id),
-                    'gatewayPid' => $dataset->pid,
-                    'issued' => $dataset->created,
-                    'modified' => $dataset->updated,
-                    'revisions' => [],
-                ];
-                $input['metadata']['metadata']['required'] = $required;
+                        'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
+                        'gatewayPid' => $dataset->pid,
+                        'issued' => $dataset->created,
+                        'modified' => $dataset->updated,
+                        'revisions' => [],
+                    ];
 
-                //force correct publisher field based on the team
-                $publisher = [
-                    'publisherId' => $team['pid'],
-                    'publisherName' => $team['name'],
-                ];
+                // ------------------------------------------------------------------- 
+                // * Create a new 'required' section for the metadata to be saved
+                //    - otherwise this section is filled with placeholders by all translations to GWDM
+                // * Force correct publisher field based on the team associated with 
+                //
+                // Note: 
+                //     - This is hopefully a rare scenario when the BE has to be changed due to an update 
+                //        to the GWDM 
+                //     - future releases of the GWDM will hopefully not modify anything that we need to
+                //       set via the MMC
+                //     - we can't pass the publisherId nor the gatewayPid of the dataset to traser before  
+                //       they have been created, this is why we are doing this..
+                //     - GWDM >= 1.1 versions have a change related to these sections of the GWDM
+                //         - addition of the field 'version' in the required field 
+                //         - restructure of the 'publisher' in the summary field 
+                //            - publisher.publisherId --> publisher.gatewayId
+                //            - publisher.publisherName --> publisher.name
+                // ------------------------------------------------------------------- 
+                if(version_compare(env('GWDM_CURRENT_VERSION'),"1.1","<")){
+                    $publisher = [
+                        'publisherId' => $team['pid'],
+                        'publisherName' => $team['name'],
+                    ];
+                } else{
+                    $required['version'] = $this->getVersion(1);
+                    $publisher = [
+                        'gatewayId' => $team['pid'],
+                        'name' => $team['name'],
+                    ];
+                }
+
+                $input['metadata']['metadata']['required'] = $required;
                 $input['metadata']['metadata']['summary']['publisher'] = $publisher;
 
+                //include a note of what the metadata was (i.e. which GWDM version)
+                $input['metadata']['gwdmVersion'] =  env('GWDM_CURRENT_VERSION');
 
                 $version = MMC::createDatasetVersion([
                     'dataset_id' => $dataset->id,
@@ -974,5 +1002,20 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    private function getVersion(int $version){
+        if($version>999) throw new Exception("too many versions");
+
+        $version = max(0, $version);
+
+        $hundreds = floor($version / 100);
+        $tens = floor(($version % 100) / 10);
+        $units = $version % 10;
+
+        $formattedVersion = "{$hundreds}.{$tens}.{$units}";
+
+        return $formattedVersion;
+    }
+
 
 }
