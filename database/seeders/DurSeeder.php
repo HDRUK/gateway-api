@@ -191,7 +191,7 @@ class DurSeeder extends Seeder
                 'access_date' => Carbon::now(), // accessDate - seems like is a relation with counter
 
                 'accredited_researcher_status' => fake()->randomElement(['', 'No', 'Unknown', 'Yes']), // accreditedResearcherStatus
-                'confidential_description' => '', // confidentialDataDescription
+                'confidential_data_description' => '', // confidentialDataDescription
                 'dataset_linkage_description' => '', // datasetLinkageDescription
                 'duty_of_confidentiality' => fake()->randomElement($dutyOfConfidentiality), // dutyOfConfidentiality
 

@@ -86,7 +86,7 @@ class DurTest extends TestCase
                     'project_end_date',
                     'access_date',
                     'accredited_researcher_status',
-                    'confidential_description',
+                    'confidential_data_description',
                     'dataset_linkage_description',
                     'duty_of_confidentiality',
                     'legal_basis_for_data_article6',
@@ -113,6 +113,7 @@ class DurTest extends TestCase
                     'team',
                     'user',
                     'application',
+                    'applicant_id',
                 ],
             ],
             'current_page',
@@ -169,7 +170,7 @@ class DurTest extends TestCase
                     'project_end_date',
                     'access_date',
                     'accredited_researcher_status',
-                    'confidential_description',
+                    'confidential_data_description',
                     'dataset_linkage_description',
                     'duty_of_confidentiality',
                     'legal_basis_for_data_article6',
@@ -196,6 +197,7 @@ class DurTest extends TestCase
                     'team',
                     'user',
                     'application',
+                    'applicant_id',
                 ]
             ]
         ]);

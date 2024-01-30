@@ -104,7 +104,7 @@ class CreateDur extends BaseFormRequest
             'accredited_researcher_status' => [
                 'string',
             ],
-            'confidential_description' => [
+            'confidential_data_description' => [
                 'string',
             ],
             'dataset_linkage_description' => [
@@ -157,6 +157,9 @@ class CreateDur extends BaseFormRequest
             'counter' => [
                 'integer',
             ],
+            'applicant_id' => [
+                'string',
+            ],
             'mongo_object_id' => [
                 'nullable', 
                 'string',
@@ -180,10 +183,10 @@ class CreateDur extends BaseFormRequest
                 'distinct',
                 'exists:datasets,id',
             ],
-            'createdAt' => [
+            'created_at' => [
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],
-            'updatedAt' => [
+            'updated_at' => [
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],
         ];
