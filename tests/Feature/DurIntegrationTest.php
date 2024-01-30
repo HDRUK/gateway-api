@@ -121,6 +121,7 @@ class DurIntegrationTest extends TestCase
                     'keywords',
                     'team',
                     'user',
+                    'applicant_id',
                 ],
             ],
             'current_page',
@@ -204,6 +205,7 @@ class DurIntegrationTest extends TestCase
                     'team',
                     'user',
                     'application',
+                    'applicant_id',
                 ]
             ]
         ]);
