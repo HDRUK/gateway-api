@@ -392,7 +392,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function data_uses(Request $request): JsonResponse
+    public function dataUses(Request $request): JsonResponse
     {
         try {
             $sort = $request->query('sort',"score:desc");   

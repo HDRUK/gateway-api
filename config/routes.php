@@ -2331,7 +2331,7 @@ return [
         'name' => 'search.data_uses',
         'method' => 'get',
         'path' => '/search/data_uses',
-        'methodController' => 'SearchController@data_uses',
+        'methodController' => 'SearchController@dataUses',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => ['jwt.verify'],
         'constraint' => [],
