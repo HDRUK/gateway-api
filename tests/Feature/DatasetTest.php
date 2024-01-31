@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use App\Models\Team;
+use App\Models\User;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use Tests\Traits\Authorization;

@@ -224,12 +224,15 @@ class MetadataManagementController {
             // ------------------------------------------------------
             $publisherName = null;
             $physicalSampleAvailability = null;
-            if(version_compare(env('GWDM_CURRENT_VERSION'),"1.1","<")){
+            if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
                 $publisherName = $metadata['metadata']['summary']['publisher']['publisherName'];
                 $physicalSampleAvailability = explode(',', $metadata['metadata']['coverage']['physicalSampleAvailability']);
             } else {
                 $publisherName = $metadata['metadata']['summary']['publisher']['name'];
-                $physicalSampleAvailability = explode(',', $metadata['metadata']['coverage']['biologicalsamples']);
+                $physicalSampleAvailability = [];
+                if(array_key_exists('biologicalsamples',$metadata['metadata']['coverage'])){
+                    $physicalSampleAvailability = explode(',', $metadata['metadata']['coverage']['biologicalsamples']);
+                }
             }
             
             $toIndex = [

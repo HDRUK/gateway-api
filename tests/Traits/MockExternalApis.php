@@ -32,6 +32,15 @@ trait MockExternalApis
         return $json;
     }
 
+
+    public function getFakeDatasetNew()
+    {
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1p1_dataset_min.json', 0, null);
+        $json = json_decode($jsonFile, true);
+
+        return $json;
+    }
+
     // Changed visibility. Private functions in shared trait is frowned upon
     public function getFakeUpdateDataset()
     {

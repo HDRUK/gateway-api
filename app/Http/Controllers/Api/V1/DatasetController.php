@@ -350,8 +350,8 @@ class DatasetController extends Controller
                     $version->metadata,
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
-                    env('GWDM'),
-                    env('GWDM_CURRENT_VERSION'),
+                    Config::get('metadata.GWDM.name'),
+                    Config::get('metadata.GWDM.version'),
                 );
 
                 if ($translated['wasTranslated']) {
@@ -455,8 +455,8 @@ class DatasetController extends Controller
 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
-                env('GWDM'),
-                env('GWDM_CURRENT_VERSION')
+                Config::get('metadata.GWDM.name'),
+                Config::get('metadata.GWDM.version'),
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -511,7 +511,7 @@ class DatasetController extends Controller
                 //            - publisher.publisherId --> publisher.gatewayId
                 //            - publisher.publisherName --> publisher.name
                 // ------------------------------------------------------------------- 
-                if(version_compare(env('GWDM_CURRENT_VERSION'),"1.1","<")){
+                if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
                     $publisher = [
                         'publisherId' => $team['pid'],
                         'publisherName' => $team['name'],
@@ -528,7 +528,7 @@ class DatasetController extends Controller
                 $input['metadata']['metadata']['summary']['publisher'] = $publisher;
 
                 //include a note of what the metadata was (i.e. which GWDM version)
-                $input['metadata']['gwdmVersion'] =  env('GWDM_CURRENT_VERSION');
+                $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
                 $version = MMC::createDatasetVersion([
                     'dataset_id' => $dataset->id,
@@ -628,8 +628,8 @@ class DatasetController extends Controller
 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($input['metadata']),
-                env('GWDM'),
-                env('GWDM_CURRENT_VERSION')
+                Config::get('metadata.GWDM.name'),
+                Config::get('metadata.GWDM.version')
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -662,6 +662,8 @@ class DatasetController extends Controller
                     "version"=>$lastVersionNumber
                 ];
 
+                $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
+
                 // Create new metadata version for this dataset
                 $version = DatasetVersion::create([
                     'dataset_id' => $currDataset->id,
@@ -669,7 +671,7 @@ class DatasetController extends Controller
                     'version' => ($lastVersionNumber + 1),
                 ]);
 
-                MMC::reindexElastic($currDataset->id);
+                //MMC::reindexElastic($currDataset->id);
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -906,6 +908,7 @@ class DatasetController extends Controller
                     $metadata = $rowDetails['metadata']['metadata'];
                     $row = [
                         $metadata['metadata']['summary']['title'] !== null ? $metadata['metadata']['summary']['title'] : '',
+                        //fix this...
                         $metadata['metadata']['summary']['publisher']['publisherName'] !== null ? $metadata['metadata']['summary']['publisher']['publisherName'] : '',
                         $rowDetails['metadata']['updated_at'] !== null ? $rowDetails['metadata']['updated_at'] : '',
                         (string)strtoupper($rowDetails['create_origin']),
@@ -982,8 +985,8 @@ class DatasetController extends Controller
             // - otherwise traser will return a non-200 error 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($input['metadata']),
-                env('GWDM'),
-                env('GWDM_CURRENT_VERSION')
+                Config::get('metadata.GWDM.name'),
+                Config::get('metadata.GWDM.version')
             );
 
             if ($traserResponse['wasTranslated']) {

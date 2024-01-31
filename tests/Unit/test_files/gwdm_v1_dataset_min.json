@@ -40,7 +40,7 @@
         },
         "coverage": {
             "pathway": "NOT APPLICABLE",
-            "physicalSampleAvailability": "NOT AVAILABLE",
+            "physicalSampleAvailability": "Blood,Urine",
             "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
             "followup": "UNKNOWN",
             "typicalAgeRange": "0-0"
