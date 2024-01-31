@@ -9,7 +9,6 @@
 @uEmail = "john.doe.1234567890@example.com"
 @uEmail2 = "john.for.doe.1234567890@example.com"
 @uPassword = "Bet@TesterP@ssw0rd"
-# $2y$10$JbgO1oSSA6QKk4pPmgZDX.r5MxwkbQ/2LkqyG9S2sQa9UGC14BIii
 # @accessToken=jwt....
 
 ### Login
