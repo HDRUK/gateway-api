@@ -400,7 +400,7 @@ class DurController extends Controller
                 $array['application_id'] = $appId;
             }
 
-            if (!$array['team_id']) {
+            if (!array_key_exists('team_id', $array)) {
                 throw new NotFoundException("Team Id not found in request.");
             }
 
