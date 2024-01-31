@@ -274,10 +274,18 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
 
         $metadata = $dataset->versions[0]->metadata;
 
-        $teamPid = Team::first()->getPid();
+        $teamPid = Team::where('id',$teamId)->first()->getPid();
+
+        $publisherId = $metadata['metadata']['summary']['publisher'];
+        if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
+            $publisherId =  $publisherId['publisherId'];
+        } else{
+            $publisherId =  $publisherId['gatewayId'];
+        }
+       
 
         $this->assertEquals(
-            $metadata['metadata']['summary']['publisher']['publisherId'],
+            $publisherId,
             $teamPid
         );
 
