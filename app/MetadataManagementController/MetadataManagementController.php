@@ -224,14 +224,16 @@ class MetadataManagementController {
             //  - this part of the code may need updating when the GWDM is changed 
             //  - can we make this more dynamic in someway?
             // ------------------------------------------------------
-            $publisherName = null;
-            $physicalSampleAvailability = null;
+            $publisherName = '';
+            $physicalSampleAvailability = [];
+
             if(version_compare($metadataModelVersion,"1.1","<")){
                 $publisherName = $metadata['metadata']['summary']['publisher']['publisherName'];
                 $physicalSampleAvailability = explode(',', $metadata['metadata']['coverage']['physicalSampleAvailability']);
             } else {
-                $publisherName = $metadata['metadata']['summary']['publisher']['name'];
-                $physicalSampleAvailability = [];
+                if (array_key_exists('name',$metadata['metadata']['summary']['publisher'])){
+                    $publisherName = $metadata['metadata']['summary']['publisher']['name'];
+                }
                 if(array_key_exists('biologicalsamples',$metadata['metadata']['coverage'])){
                     $physicalSampleAvailability = explode(',', $metadata['metadata']['coverage']['biologicalsamples']);
                 }

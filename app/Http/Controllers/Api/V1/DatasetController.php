@@ -676,7 +676,6 @@ class DatasetController extends Controller
                 ]);
 
 
-
                 MMC::reindexElastic($currDataset->id);
 
                 return response()->json([

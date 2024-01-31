@@ -404,7 +404,7 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
             ],
             $this->header
         );
-
+        
         $responseUpdateDataset->assertStatus(200);
         
         $version = DatasetVersion::where('dataset_id', $datasetId)->get();
