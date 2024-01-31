@@ -1,4 +1,5 @@
 {
+    "gwdmVersion": "1.0",
     "metadata": {
         "required": {
             "gatewayId": "1234",

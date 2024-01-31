@@ -217,6 +217,8 @@ class MetadataManagementController {
             }
 
 
+            $metadataModelVersion = $metadata['gwdmVersion'];
+
             // ------------------------------------------------------
             // WARNING....
             //  - this part of the code may need updating when the GWDM is changed 
@@ -224,7 +226,7 @@ class MetadataManagementController {
             // ------------------------------------------------------
             $publisherName = null;
             $physicalSampleAvailability = null;
-            if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
+            if(version_compare($metadataModelVersion,"1.1","<")){
                 $publisherName = $metadata['metadata']['summary']['publisher']['publisherName'];
                 $physicalSampleAvailability = explode(',', $metadata['metadata']['coverage']['physicalSampleAvailability']);
             } else {

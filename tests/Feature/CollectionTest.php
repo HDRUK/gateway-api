@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\Keyword;
 use App\Models\Collection;
 use Tests\Traits\MockExternalApis;
