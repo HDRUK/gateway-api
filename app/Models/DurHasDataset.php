@@ -19,6 +19,10 @@ class DurHasDataset extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'is_locked' => 'boolean',
+    ];
+
     /**
      * The table associated with the model
      * 

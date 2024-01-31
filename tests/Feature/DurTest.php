@@ -216,7 +216,7 @@ class DurTest extends TestCase
         $countBefore = Dur::count();
         $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $mockData = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -253,7 +253,7 @@ class DurTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -277,7 +277,7 @@ class DurTest extends TestCase
 
         // update
         $mockDataUpdate = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -305,7 +305,7 @@ class DurTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -329,7 +329,7 @@ class DurTest extends TestCase
 
         // update
         $mockDataUpdate = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -346,7 +346,7 @@ class DurTest extends TestCase
 
         // update
         $mockDataEdit = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -372,7 +372,7 @@ class DurTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -422,7 +422,9 @@ class DurTest extends TestCase
         $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = Dataset::all()->random()->id;
+            $return['id'] = Dataset::all()->random()->id;
+            $return['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return['is_locked'] = fake()->randomElement([0, 1]);
         }
 
         return array_unique($return);
