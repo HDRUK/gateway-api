@@ -271,7 +271,7 @@ class SearchTest extends TestCase
      */
     public function test_data_uses_search_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL_SEARCH . "/data_uses", ["query" => "term"], $this->header);
+        $response = $this->json('GET', self::TEST_URL_SEARCH . "/dur", ["query" => "term"], $this->header);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',
@@ -293,7 +293,7 @@ class SearchTest extends TestCase
             ]
         ]);
 
-        $response = $this->json('GET', self::TEST_URL_SEARCH . "/data_uses" . '?sort=score:asc', ["query" => "term"], $this->header);   
+        $response = $this->json('GET', self::TEST_URL_SEARCH . "/dur" . '?sort=score:asc', ["query" => "term"], $this->header);   
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',
@@ -308,7 +308,7 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_source']['projectTitle'] === 'Third Data Use');
 
         // Test sorting by dataset name (shortTitle)        
-        $response = $this->json('GET', self::TEST_URL_SEARCH . "/data_uses" . '?sort=projectTitle:asc', ["query" => "term"], $this->header); 
+        $response = $this->json('GET', self::TEST_URL_SEARCH . "/dur" . '?sort=projectTitle:asc', ["query" => "term"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',
@@ -323,7 +323,7 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_source']['projectTitle'] === 'Another Data Use');
 
         // Test sorting by created_at desc        
-        $response = $this->json('GET', self::TEST_URL_SEARCH . "/data_uses" . '?sort=created_at:desc', ["query" => "term"], $this->header); 
+        $response = $this->json('GET', self::TEST_URL_SEARCH . "/dur" . '?sort=created_at:desc', ["query" => "term"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',

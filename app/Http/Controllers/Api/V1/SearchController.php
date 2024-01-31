@@ -326,7 +326,7 @@ class SearchController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/search/data_uses",
+     *      path="/api/v1/search/dur",
      *      summary="Keyword search across gateway data uses",
      *      description="Returns gateway data uses related to the provided query term(s)",
      *      tags={"Search-DataUses"},

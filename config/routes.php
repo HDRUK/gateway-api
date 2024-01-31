@@ -2330,7 +2330,7 @@ return [
     [
         'name' => 'search.data_uses',
         'method' => 'get',
-        'path' => '/search/data_uses',
+        'path' => '/search/dur',
         'methodController' => 'SearchController@dataUses',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => ['jwt.verify'],
