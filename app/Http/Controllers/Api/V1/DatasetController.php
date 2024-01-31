@@ -650,8 +650,12 @@ class DatasetController extends Controller
                 // Determine the last version of metadata
                 $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
      
-                //update the GWDM modified date
+                //update the GWDM modified date and version
                 $input['metadata']['metadata']['required']['modified'] = $updateTime;
+                if(version_compare(Config::get('metadata.GWDM.version'),"1.0",">")){
+                    //version was missing in GWDM 1.0
+                    $input['metadata']['metadata']['required']['version'] = $this->getVersion($lastVersionNumber + 1);
+                }
 
                 //update the GWDM revisions
                 // NOTE: Calum 12/1/24
@@ -671,7 +675,9 @@ class DatasetController extends Controller
                     'version' => ($lastVersionNumber + 1),
                 ]);
 
-                //MMC::reindexElastic($currDataset->id);
+
+
+                MMC::reindexElastic($currDataset->id);
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
