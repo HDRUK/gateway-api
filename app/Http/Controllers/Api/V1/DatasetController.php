@@ -906,10 +906,17 @@ class DatasetController extends Controller
                 // add the given number of rows to the file.
                 foreach ($results as $rowDetails) {
                     $metadata = $rowDetails['metadata']['metadata'];
+
+                    $publisherName = $metadata['metadata']['summary']['publisher'];
+                    if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
+                        $publisherName = $publisherName['publisherName'];
+                    }else{
+                        $publisherName = $publisherName['name'];
+                    }
+
                     $row = [
                         $metadata['metadata']['summary']['title'] !== null ? $metadata['metadata']['summary']['title'] : '',
-                        //fix this...
-                        $metadata['metadata']['summary']['publisher']['publisherName'] !== null ? $metadata['metadata']['summary']['publisher']['publisherName'] : '',
+                        $publisherName !== null ? $publisherName : '',
                         $rowDetails['metadata']['updated_at'] !== null ? $rowDetails['metadata']['updated_at'] : '',
                         (string)strtoupper($rowDetails['create_origin']),
                         (string)strtoupper($rowDetails['status']),
