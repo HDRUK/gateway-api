@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('dur_has_datasets', function (Blueprint $table) {
-            $table->string('reason')->nullable()->after('is_locked'); // relatedObjects.reason
+            $table->text('reason')->nullable()->after('is_locked'); // relatedObjects.reason
         });
     }
 

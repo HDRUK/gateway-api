@@ -906,12 +906,16 @@ class DurController extends Controller
             Dur::where('id', $id)->update($array);
 
             // link/unlink dur with datasets
-            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
+            if (array_key_exists('datasets', $input)) {
+                $datasets = $input['datasets'];
+                $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
+            }
 
             // link/unlink dur with keywords
-            $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
-            $this->checkKeywords($id, $keywords);
+            if (array_key_exists('keywords', $input)) {
+                $keywords = $input['keywords'];
+                $this->checkKeywords($id, $keywords);
+            }
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
@@ -1006,13 +1010,13 @@ class DurController extends Controller
     {
         $ds = DurHasDataset::where(['dur_id' => $durId])->get();
         foreach ($ds as $d) {
-            if (!in_array($d->dataset_id, $inDatasets)) {
+            if (!in_array($d->dataset_id, $this->extractInputDatasetIdToArray($inDatasets))) {
                 $this->deleteDurHasDatasets($durId, $d->dataset_id);
             }
         }
 
         foreach ($inDatasets as $dataset) {
-            $checking = $this->checkInDurHasDatasets($durId, $dataset);
+            $checking = $this->checkInDurHasDatasets($durId, (int) $dataset['id']);
 
             if (!$checking) {
                 $this->addDurHasDataset($durId, $dataset, $userId, $appId);
@@ -1020,23 +1024,44 @@ class DurController extends Controller
         }
     }
 
-    private function addDurHasDataset(int $durId, int $datasetId, int $userId = null, int $appId = null)
+    private function addDurHasDataset(int $durId, array $dataset, int $userId = null, int $appId = null)
     {
         try {
             $arrCreate = [
                 'dur_id' => $durId,
-                'dataset_id' => $datasetId,
+                'dataset_id' => $dataset['id'],
             ];
 
-            if ($userId) {
+            if (array_key_exists('user_id', $dataset)) {
+                $arrCreate['user_id'] = (int) $dataset['user_id'];
+            } elseif ($userId) {
                 $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $dataset)) {
+                $arrCreate['reason'] = $dataset['reason'];
+            }
+
+            if (array_key_exists('updated_at', $dataset)) { // special for migration
+                $arrCreate['created_at'] = $dataset['updated_at'];
+                $arrCreate['updated_at'] = $dataset['updated_at'];
+            }
+
+            if (array_key_exists('is_locked', $dataset)) {
+                $arrCreate['is_locked'] = (bool) $dataset['is_locked'];
             }
 
             if ($appId) {
                 $arrCreate['application_id'] = $appId;
             }
 
-            return DurHasDataset::create($arrCreate);
+            return DurHasDataset::updateOrCreate(
+                $arrCreate,
+                [
+                    'dur_id' => $durId,
+                    'dataset_id' => $dataset['id'],
+                ]
+            );
         } catch (Exception $e) {
             throw new Exception("addDurHasDataset :: " . $e->getMessage());
         }
@@ -1125,6 +1150,16 @@ class DurController extends Controller
         } catch (Exception $e) {
             throw new Exception("deleteKeywordDur :: " . $e->getMessage());
         }
+    }
+
+    private function extractInputDatasetIdToArray(array $inputDatasets): Array
+    {
+        $response = [];
+        foreach ($inputDatasets as $inputDataset) {
+            $response[] = $inputDataset['id'];
+        }
+
+        return $response;
     }
 
     /**

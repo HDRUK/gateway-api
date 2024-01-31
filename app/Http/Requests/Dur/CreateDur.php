@@ -178,10 +178,24 @@ class CreateDur extends BaseFormRequest
             'datasets' => [
                 'array',
             ],
-            'datasets.*'  => [
+            'datasets.*.id'  => [
                 'integer',
-                'distinct',
                 'exists:datasets,id',
+            ],
+            'datasets.*.is_locked'  => [
+                'boolean',
+            ],
+            'datasets.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'datasets.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'datasets.*.reason'  => [
+                'nullable',
+                'string',
             ],
             'created_at' => [
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00

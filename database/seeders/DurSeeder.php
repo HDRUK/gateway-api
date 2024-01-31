@@ -227,6 +227,8 @@ class DurSeeder extends Seeder
                 'dur_id' => $dur->id,
                 'dataset_id' => $datasetId,
                 'user_id' => $userId,
+                'reason' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                'is_locked' => fake()->randomElement([0, 1])
             ]);
         }
     }

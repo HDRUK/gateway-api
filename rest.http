@@ -1536,7 +1536,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get by id
-GET {{baseUrl}}/api/{{apiVersion}}/dur/4 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/dur/22 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -1550,24 +1550,69 @@ Authorization: Bearer {{accessToken}}
     "non_gateway_datasets": ["External Dataset 01", "External Dataset 02"],
     "latest_approval_date": "2017-09-12T01:00:00",
     "keywords": ["COVID-19 test", "National Core Study test"],
-    "team_id": 1
+    "team_id": 1,
+    "datasets": [
+        {
+            "id": 2,
+            "is_locked": true,
+            "updated_at": "2022-05-09T00:00:00",
+            "user_id": 5,
+            "reason": "This dataset was added via an edit of this data use register"
+        },
+        {
+            "id": 4,
+            "is_locked": true,
+            "updated_at": "2022-05-09T00:00:00",
+            "user_id": 5,
+            "reason": "This dataset was added via an edit of this data use register"
+        }
+    ]
 }
 
 #### update
-PUT {{baseUrl}}/api/{{apiVersion}}/dur/1 HTTP/1.1
+PUT {{baseUrl}}/api/{{apiVersion}}/dur/22 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "datasets": [3,2],
     "non_gateway_datasets": ["External Dataset 01", "External Dataset 02"],
     "latest_approval_date": "2017-09-12T01:00:00",
-    "keywords": ["National Core Study test"]
+    "keywords": ["National Core Study test"],
+    "datasets": [
+        {
+            "id": 2,
+            "is_locked": true,
+            "updated_at": "2022-05-09T00:00:00",
+            "user_id": 5,
+            "reason": "This dataset was added via an edit of this data use register"
+        },
+        {
+            "id": 4,
+            "is_locked": true,
+            "updated_at": "2022-05-09T00:00:00",
+            "user_id": 5,
+            "reason": "This dataset was added via an edit of this data use register"
+        },
+        {
+            "id": 6,
+            "is_locked": true,
+            "updated_at": "2022-05-09T00:00:00",
+            "user_id": 5,
+            "reason": "This dataset was added via an edit of this data use register"
+        },
+        {
+            "id": 8,
+            "is_locked": true,
+            "updated_at": "2022-05-09T00:00:00",
+            "user_id": 5,
+            "reason": "This dataset was added via an edit of this data use register"
+        }
+    ]
 }
 
 #### edit
-PATCH {{baseUrl}}/api/{{apiVersion}}/dur/11 HTTP/1.1
+PATCH {{baseUrl}}/api/{{apiVersion}}/dur/21 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
