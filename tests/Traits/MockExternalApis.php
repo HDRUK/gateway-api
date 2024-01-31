@@ -255,7 +255,7 @@ trait MockExternalApis
             )
         ]);
 
-        // Mock the search service - tools
+        // Mock the search service - collections
         Http::fake([
             'search-service*collections*' => Http::response(
                 [
@@ -341,6 +341,83 @@ trait MockExternalApis
             )
         ]);
         
+        // Mock the search service - data uses
+        Http::fake([
+            'search-service*dur*' => Http::response(
+                [
+                    'took' => 1000,
+                    'timed_out' => false,
+                    '_shards' => [],
+                    'hits' => [
+                        'hits' => [
+                            0 => [
+                                '_explanation' => [],
+                                '_id' => '1',
+                                '_index' => 'data_uses',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 20.0,
+                                '_shard' => '[data_uses][0]',
+                                '_source' => [
+                                    'projectTitle' => 'One Data Use',
+                                    'laySummary' => 'a gateway data use',
+                                    'publicBenefitStatement' => '',
+                                    'technicalSummary' => '',
+                                    'fundersAndSponsors' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'keywords' => ['some', 'useful', 'keywords']
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
+                            ],
+                            1 => [
+                                '_explanation' => [],
+                                '_id' => '2',
+                                '_index' => 'collections',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 18.0,
+                                '_shard' => '[collections][0]',
+                                '_source' => [
+                                    'projectTitle' => 'Another Data Use',
+                                    'laySummary' => 'a gateway data use',
+                                    'publicBenefitStatement' => '',
+                                    'technicalSummary' => '',
+                                    'fundersAndSponsors' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'keywords' => ['some', 'useful', 'keywords']
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
+                            ],
+                            2 => [
+                                '_explanation' => [],
+                                '_id' => '3',
+                                '_index' => 'collections',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[collections][0]',
+                                '_source' => [
+                                    'projectTitle' => 'Third Data Use',
+                                    'laySummary' => 'a gateway data use',
+                                    'publicBenefitStatement' => '',
+                                    'technicalSummary' => '',
+                                    'fundersAndSponsors' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'keywords' => ['some', 'useful', 'keywords']
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);

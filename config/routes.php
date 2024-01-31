@@ -2327,6 +2327,15 @@ return [
         'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
+    [
+        'name' => 'search.data_uses',
+        'method' => 'get',
+        'path' => '/search/dur',
+        'methodController' => 'SearchController@dataUses',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
 
 // categories
     [
