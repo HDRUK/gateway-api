@@ -14,7 +14,6 @@ use Illuminate\Support\Carbon;
 use App\Http\Enums\TeamMemberOf;
 
 use Database\Seeders\TeamSeeder;
-use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\UserSeeder;
@@ -41,8 +40,7 @@ class DatasetVersionTest extends TestCase
             PermissionSeeder::class,
             RoleSeeder::class,
             TeamSeeder::class,
-            UserSeeder::class,
-            //TeamHasUserSeeder::class,
+            UserSeeder::class
         ]);
 
         $this->metadata = $this->getFakeDataset();
@@ -404,7 +402,7 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
             ],
             $this->header
         );
-        
+
         $responseUpdateDataset->assertStatus(200);
         
         $version = DatasetVersion::where('dataset_id', $datasetId)->get();
