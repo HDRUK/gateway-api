@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\UserTransformation;
 use App\Exceptions\UnauthorizedException;
+use App\Models\UserHasRole;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckAccessMiddleware
@@ -43,7 +44,12 @@ class CheckAccessMiddleware
         } else {
             $currentUserRoles = $this->getRolesNoTeamId($userId);
         }
+        
+        // roles assigned to the current user who are not related to the team
+        $currentUserRolesHdr = $this->getAllRolesFromUser($userId);
 
+        $currentUserRoles = array_unique(array_merge($currentUserRoles, $currentUserRolesHdr));
+        
         if ($type === 'roles') {
             $checkingRoles = array_diff($access, $currentUserRoles);
             if (!empty($checkingRoles)) {
@@ -62,6 +68,24 @@ class CheckAccessMiddleware
         }
 
         return $next($request);
+    }
+
+    public function getAllRolesFromUser(int $userId)
+    {
+        $return = [];
+        
+        $userRoles = UserHasRole::where(['user_id' => $userId])->get();
+
+        foreach ($userRoles as $ur) {
+            $role = Role::where([
+                'id' => $ur->role_id,
+                ])->first();
+            if ($role) {
+                $return[] = $role["name"];
+            }
+        }
+        
+        return $return;
     }
 
     public function getRolesNoTeamId(int $userId)
