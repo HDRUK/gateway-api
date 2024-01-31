@@ -402,7 +402,7 @@ class SearchController extends Controller
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/data_uses';
+            $urlString = env('SEARCH_SERVICE_URL') . '/search/dur';
 
             $response = Http::withBody(
                 $request->getContent(), 'application/json'

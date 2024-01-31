@@ -343,7 +343,7 @@ trait MockExternalApis
         
         // Mock the search service - data uses
         Http::fake([
-            'search-service*data_uses*' => Http::response(
+            'search-service*dur*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
