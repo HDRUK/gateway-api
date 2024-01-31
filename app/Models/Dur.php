@@ -56,7 +56,7 @@ class Dur extends Model
         'project_end_date',
         'access_date',
         'accredited_researcher_status',
-        'confidential_description',
+        'confidential_data_description',
         'dataset_linkage_description',
         'duty_of_confidentiality',
         'legal_basis_for_data_article6',
@@ -78,6 +78,7 @@ class Dur extends Model
         'team_id',
         'created_at', // for migration from mongo database
         'updated_at', // for migration from mongo database
+        'applicant_id',
     ];
 
     /**
@@ -104,7 +105,8 @@ class Dur extends Model
 
     public function datasets(): BelongsToMany
     {
-        return $this->belongsToMany(Dataset::class, 'dur_has_datasets');
+        return $this->belongsToMany(Dataset::class, 'dur_has_datasets')
+            ->withPivot('dur_id', 'dataset_id', 'user_id', 'application_id', 'is_locked', 'reason', 'created_at', 'updated_at');
     }
 
     public function users(): BelongsToMany
