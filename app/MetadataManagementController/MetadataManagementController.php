@@ -220,6 +220,7 @@ class MetadataManagementController {
             // ------------------------------------------------------
             // WARNING....
             //  - this part of the code may need updating when the GWDM is changed 
+            //  - can we make this more dynamic in someway?
             // ------------------------------------------------------
             $publisherName = null;
             $physicalSampleAvailability = null;
