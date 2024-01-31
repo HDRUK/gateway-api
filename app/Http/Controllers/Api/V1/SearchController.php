@@ -324,6 +324,108 @@ class SearchController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *      path="/api/v1/search/data_uses",
+     *      summary="Keyword search across gateway data uses",
+     *      description="Returns gateway data uses related to the provided query term(s)",
+     *      tags={"Search-DataUses"},
+     *      summary="Search@data_uses",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Submit search query",
+     *          @OA\MediaType(
+     *              mediaType="application/json",
+     *              @OA\Schema(
+     *                  @OA\Property(property="query", type="string", example="diabetes data uses"),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="sort",
+     *          in="query",
+     *          description="Field to sort by (default: 'score')",
+     *          example="created",
+     *          @OA\Schema(
+     *              type="string",
+     *              description="Field to sort by (score, created_at, projectTitle)",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="direction",
+     *          in="query",
+     *          description="Sort direction ('asc' or 'desc', default: 'desc')",
+     *          example="desc",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum={"asc", "desc"},
+     *              description="Sort direction",
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="_source", type="array",
+     *                          @OA\Items(
+     *                              @OA\Property(property="projectTitle", type="string"),
+     *                              @OA\Property(property="laySummary", type="string"),
+     *                              @OA\Property(property="publicBenefitStatement", type="string"),
+     *                              @OA\Property(property="technicalSummary", type="string"),
+     *                              @OA\Property(property="fundersAndSponsors", type="string"),
+     *                              @OA\Property(property="datasetTitles", type="array", @OA\Items()),
+     *                              @OA\Property(property="keywords", type="array", @OA\Items())
+     *                          )
+     *                      ),
+     *                      @OA\Property(property="highlight", type="array",
+     *                          @OA\Items(
+     *                              @OA\Property(property="laySummary", type="array", @OA\Items())
+     *                          )
+     *                      )
+     *                  )
+     *              )
+     *          )
+     *      )
+     * )
+     */
+    public function data_uses(Request $request): JsonResponse
+    {
+        try {
+            $sort = $request->query('sort',"score:desc");   
+        
+            $tmp = explode(":", $sort);
+            $sortField = $tmp[0];
+
+            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+            $urlString = env('SEARCH_SERVICE_URL') . '/search/data_uses';
+
+            $response = Http::withBody(
+                $request->getContent(), 'application/json'
+            )->get($urlString);
+
+            $durArray = $response['hits']['hits'];
+            // join to created at from DB
+            foreach (array_values($durArray) as $i => $d) {
+                $durModel = Collection::where(['id' => $d['_id']])->first();
+                $durArray[$i]['_source']['created_at'] = $durModel->toArray()['created_at'];
+            }
+
+            $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => $durArraySorted,
+            ], 200);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 
     /**
      * Sorts results returned by the search service according to sort field and direction
