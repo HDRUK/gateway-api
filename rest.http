@@ -8,7 +8,9 @@
 @uLastName = "Doe"
 @uEmail = "john.doe.1234567890@example.com"
 @uEmail2 = "john.for.doe.1234567890@example.com"
-@uPassword = "Bet@TesterP@ssw0rd"
+
+@uPassword = "passw@rdJ0hnD0e"
+# "Bet@TesterP@ssw0rd"
 # @accessToken=jwt....
 
 ### Login
