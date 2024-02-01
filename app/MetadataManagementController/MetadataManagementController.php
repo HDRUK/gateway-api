@@ -6,6 +6,7 @@ use Config;
 use Mauro;
 use Exception;
 
+use App\Models\Filter;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 
@@ -268,6 +269,34 @@ class MetadataManagementController {
             $client = $this->getElasticClient();
             $response = $client->delete($params);
 
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Generic function to apply a filter to the incoming eloquent
+     * builder model for further searching. Completely goverened
+     * by the incoming data and ultimately building a query that
+     * will AND the required fields and OR the incoming search terms
+     * for the selected filters.
+     * 
+     * @param mixed $to A reference to the eloquent builder instance
+     * @param string $filter The filter being applied
+     * @param string $type The sub type of filter being applied
+     * @param array $terms The terms being applied to this filter
+     */
+    public function applySearchFilter(mixed &$to, string $filter, string $type, array $terms): void
+    {
+        try {
+            $filterRow = Filter::where('type', $filter)
+                ->where('keys', $type)->firstOrFail();
+
+            $to->orWhere(function ($query) use ($filterRow, $terms) {
+                foreach ($terms as $term) {
+                    $query->orWhereRaw($filterRow->value, "'%$term%'");
+                }
+            });
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
