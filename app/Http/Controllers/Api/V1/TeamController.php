@@ -97,7 +97,7 @@ class TeamController extends Controller
             }
 
             foreach ($sort as $key => $value) {
-                if ($key === 'created_at') {
+                if ($key === 'created_at' || $key === 'updated_at') {
                     $query->orderBy('teams.' . $key, strtoupper($value));
                 }
 

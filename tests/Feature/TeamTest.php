@@ -7,6 +7,7 @@ use Config;
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use App\Http\Enums\TeamMemberOf;
+use App\Models\Team;
 use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -148,6 +149,9 @@ class TeamTest extends TestCase
             ]);
 
         $this->assertEquals($content['data']['notifications'][0]['notification_type'], 'applicationSubmitted');
+
+        $teamPid = $content['data']['pid'];
+        $this->assertStringMatchesFormat('%x-%x-%x-%x-%x', $teamPid);
 
         // delete the team created
         $responseDelete = $this->json(

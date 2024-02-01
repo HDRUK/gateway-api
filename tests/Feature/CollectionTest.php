@@ -6,24 +6,21 @@ use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
-use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Database\Seeders\DatasetHasNamedEntitiesSeeder;
 
 class CollectionTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
     }
@@ -40,7 +37,7 @@ class CollectionTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
-        // $this->seed();
+
         $this->seed([
             MinimalUserSeeder::class,
             ApplicationSeeder::class,

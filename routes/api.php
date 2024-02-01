@@ -52,8 +52,8 @@ Route::post('/services/audit', [ServiceLayerController::class, 'audit']);
 Route::get('/services/traser', function(Request $request) {
     MMC::validateDataModelType(
         json_encode($request->all()), 
-        env('GWDM'),
-        env('GWDM_CURRENT_VERSION')
+        Config::get('metadata.GWDM.name'),
+        Config::get('metadata.GWDM.version')
     );
 });
 

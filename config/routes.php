@@ -1507,97 +1507,12 @@ return [
         ],
     ],
 
-    // data.use.registers
-    [
-        'name' => 'data.use.registers',
-        'method' => 'get',
-        'path' => '/data_use_registers',
-        'methodController' => 'DataUseRegisterController@index',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.read',
-        ],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'data.use.registers',
-        'method' => 'get',
-        'path' => '/data_use_registers/{id}',
-        'methodController' => 'DataUseRegisterController@show',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.read',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'data.use.registers',
-        'method' => 'post',
-        'path' => '/data_use_registers',
-        'methodController' => 'DataUseRegisterController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,dur.create',
-        ],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'data.use.registers',
-        'method' => 'put',
-        'path' => '/data_use_registers/{id}',
-        'methodController' => 'DataUseRegisterController@update',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,dur.update',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'data.use.registers',
-        'method' => 'patch',
-        'path' => '/data_use_registers/{id}',
-        'methodController' => 'DataUseRegisterController@edit',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,dur.update',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-    [
-        'name' => 'data.use.registers',
-        'method' => 'delete',
-        'path' => '/data_use_registers/{id}',
-        'methodController' => 'DataUseRegisterController@destroy',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.delete',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
-
     // data.use.registers integrations
     [
-        'name' => 'data.use.registers.integrations',
+        'name' => 'dur.integrations.get',
         'method' => 'get',
-        'path' => '/integrations/data_use_registers',
-        'methodController' => 'DataUseRegisterController@index',
+        'path' => '/integrations/dur',
+        'methodController' => 'DurController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1605,10 +1520,10 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'data.use.registers.integrations',
+        'name' => 'dur.integrations.get.id',
         'method' => 'get',
-        'path' => '/integrations/data_use_registers/{id}',
-        'methodController' => 'DataUseRegisterController@show',
+        'path' => '/integrations/dur/{id}',
+        'methodController' => 'DurController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1618,10 +1533,10 @@ return [
         ],
     ],
     [
-        'name' => 'data.use.registers.integrations',
+        'name' => 'get.integrations.post',
         'method' => 'post',
-        'path' => '/integrations/data_use_registers',
-        'methodController' => 'DataUseRegisterController@store',
+        'path' => '/integrations/dur',
+        'methodController' => 'DurController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1630,10 +1545,10 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'data.use.registers.integrations',
+        'name' => 'dur.integrations.put.id',
         'method' => 'put',
-        'path' => '/integrations/data_use_registers/{id}',
-        'methodController' => 'DataUseRegisterController@update',
+        'path' => '/integrations/dur/{id}',
+        'methodController' => 'DurController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1644,10 +1559,10 @@ return [
         ],
     ],
     [
-        'name' => 'data.use.registers.integrations',
+        'name' => 'dur.integrations.patch.id',
         'method' => 'patch',
-        'path' => '/integrations/data_use_registers/{id}',
-        'methodController' => 'DataUseRegisterController@edit',
+        'path' => '/integrations/dur/{id}',
+        'methodController' => 'DurController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1658,10 +1573,10 @@ return [
         ],
     ],
     [
-        'name' => 'data.use.registers.integrations',
+        'name' => 'dur.integrations.delete.id',
         'method' => 'delete',
-        'path' => '/integrations/data_use_registers/{id}',
-        'methodController' => 'DataUseRegisterController@destroy',
+        'path' => '/integrations/dur/{id}',
+        'methodController' => 'DurController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -2386,10 +2301,28 @@ return [
 
     // search
     [
-        'name' => 'search',
+        'name' => 'search.datasets',
         'method' => 'get',
-        'path' => '/search',
-        'methodController' => 'SearchController@search',
+        'path' => '/search/datasets',
+        'methodController' => 'SearchController@datasets',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'search.tools',
+        'method' => 'get',
+        'path' => '/search/tools',
+        'methodController' => 'SearchController@tools',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'search.collections',
+        'method' => 'get',
+        'path' => '/search/collections',
+        'methodController' => 'SearchController@collections',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => ['jwt.verify'],
         'constraint' => [],
@@ -2631,6 +2564,90 @@ return [
         ],
     ],
 
+    // data use registers
+    [
+        'name' => 'dur.get',
+        'method' => 'get',
+        'path' => '/dur',
+        'methodController' => 'DurController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,dur.read',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dur.get.id',
+        'method' => 'get',
+        'path' => '/dur/{id}',
+        'methodController' => 'DurController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,dur.read',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dur.post',
+        'method' => 'post',
+        'path' => '/dur',
+        'methodController' => 'DurController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,dur.create',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dur.put.id',
+        'method' => 'put',
+        'path' => '/dur/{id}',
+        'methodController' => 'DurController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,dur.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dur.patch.id',
+        'method' => 'patch',
+        'path' => '/dur/{id}',
+        'methodController' => 'DurController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,dur.update',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'dur.delete.id',
+        'method' => 'delete',
+        'path' => '/dur/{id}',
+        'methodController' => 'DurController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:permissions,dur.delete',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
     // organisations
     [
         'name' => 'users.organisations.index',
@@ -2641,5 +2658,6 @@ return [
         'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
+
 
 ];

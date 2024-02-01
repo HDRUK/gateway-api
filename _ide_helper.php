@@ -4,7 +4,7 @@
 
 /**
  * A helper file for Laravel, to provide autocomplete information to your IDE
- * Generated for Laravel 10.41.0.
+ * Generated for Laravel 10.42.0.
  *
  * This file should not be included in your code, only analyzed by your IDE!
  *
@@ -8013,6 +8013,18 @@
         {
                         /** @var \Illuminate\Http\Client\Factory $instance */
                         return $instance->globalResponseMiddleware($middleware);
+        }
+                    /**
+         * Set the options to apply to every request.
+         *
+         * @param array $options
+         * @return \Illuminate\Http\Client\Factory 
+         * @static 
+         */ 
+        public static function globalOptions($options)
+        {
+                        /** @var \Illuminate\Http\Client\Factory $instance */
+                        return $instance->globalOptions($options);
         }
                     /**
          * Create a new response instance for use during stubbing.
@@ -18820,17 +18832,16 @@
                         $instance->deleteDataset($id);
         }
                     /**
-         * Calls a re-indexing of Elastic search when a dataset is created or updated
+         * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection
          *
-         * @param array $dataset The dataset being created or updated
-         * @param string $datasetId The dataset id from Mauro
+         * @param string $datasetId The dataset id from the DB
          * @return void 
          * @static 
          */ 
-        public static function reindexElastic($dataset, $datasetId)
+        public static function reindexElastic($datasetId)
         {
                         /** @var \App\MetadataManagementController\MetadataManagementController $instance */
-                        $instance->reindexElastic($dataset, $datasetId);
+                        $instance->reindexElastic($datasetId);
         }
                     /**
          * Calls a delete on the document in ElasticSearch index when a dataset is
@@ -18951,10 +18962,20 @@
          *
          * @static 
          */ 
-        public static function sendEmail($enquiryMessageId)
+        public static function notifyDarManagesOfNewMessage($enquiryMessageId)
         {
                         /** @var \App\AliasReplyScanner\AliasReplyScanner $instance */
-                        return $instance->sendEmail($enquiryMessageId);
+                        return $instance->notifyDarManagesOfNewMessage($enquiryMessageId);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function getDarManagersFromEnquiryMessage($enquiryMessageId)
+        {
+                        /** @var \App\AliasReplyScanner\AliasReplyScanner $instance */
+                        return $instance->getDarManagersFromEnquiryMessage($enquiryMessageId);
         }
          
     }

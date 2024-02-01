@@ -66,7 +66,7 @@ class TermExtraction implements ShouldQueue
                 'application/json'
             )->post(env('TED_SERVICE_URL'));
 
-            if (array_key_exists('extracted_terms', $response->json())) {
+            if ($response->json() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $n) {
                     $named_entities = NamedEntities::create([
                         'name' => $n,
