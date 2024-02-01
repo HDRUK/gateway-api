@@ -284,7 +284,7 @@ class MetadataManagementController {
      * @param mixed $to A reference to the eloquent builder instance
      * @param string $filter The filter being applied
      * @param string $type The sub type of filter being applied
-     * @param array $terms The terms being applied to this filter
+     * @param array $terms The terms being searched for under this filter
      */
     public function applySearchFilter(mixed &$to, string $filter, string $type, array $terms): void
     {
