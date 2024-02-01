@@ -292,9 +292,9 @@ class MetadataManagementController {
             $filterRow = Filter::where('type', $filter)
                 ->where('keys', $type)->firstOrFail();
 
-            $to->orWhere(function ($query) use ($filterRow, $terms) {
+            $to->where(function ($query) use ($filterRow, $terms) {
                 foreach ($terms as $term) {
-                    $query->orWhereRaw($filterRow->value, "'%$term%'");
+                    $query->orWhereRaw($filterRow->value, '%' . $term .'%');
                 }
             });
         } catch (Exception $e) {
