@@ -558,6 +558,9 @@ class DatasetController extends Controller
                     'version' => 1,
                 ]);
 
+                // map coverage/spatial field to controlled list for filtering
+                $this->mapCoverage($input['metadata'], $dataset);
+
                 // Dispatch term extraction to a subprocess as it may take some time
                 TermExtraction::dispatch(
                     $dataset->id,
@@ -1103,5 +1106,11 @@ class DatasetController extends Controller
         return $metadata;
     }
 
+
+    private function mapCoverage(array $metadata, Dataset $dataset): void 
+    {
+        $coverage = $metadata['metadata']['coverage']['spatial'];
+        $allCoverages = Coverage::all();
+    }
 
 }
