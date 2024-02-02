@@ -145,7 +145,19 @@ class SearchController extends Controller
             }
 
             $slimSet = array_intersect($matchedIds, $likeIds);
-            $datasetsArray = Dataset::whereIn('id', $slimSet)->get()->toArray();
+
+            $datasetsModels = Dataset::with('versions')->whereIn('id', $slimSet)->get()->toArray();
+            foreach ($datasetsArray as $i => $dataset) {
+                if (!in_array($dataset['_id'], $slimSet)) {
+                    unset($datasetsArray[$i]);
+                    continue;
+                }
+                foreach ($datasetsModels as $model) {
+                    if ((int) $dataset['_id'] === $model['id']) {
+                        $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                    }
+                }
+            }
 
             $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
