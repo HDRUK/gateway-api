@@ -58,7 +58,8 @@ class ServiceLayerController extends Controller
 
     public function getDatasets(Request $request)
     {
-        $datasets = Dataset::with(['versions' => fn($version) => $version->withTrashed()->latest()->first()])
+        //$datasets = Dataset::with(['versions' => fn($version) => $version->withTrashed()->latest()->first()])
+        $datasets = Dataset::with('versions')
                     ->when($request->has('team_id'), 
                             function ($query) use ($request) {
                                 return $query->where("team_id","=",$request->query('team_id'));
@@ -74,9 +75,16 @@ class ServiceLayerController extends Controller
             if(count($dataset->versions)==0){
                 continue;
             }
+
+            $version = '0.0.1';
+            $versions = $dataset->versions;
+            /*if (version_compare($metadata['gwdmVersion'],'1.0','>')){
+                $version = $metadata['metadata']['required']['version'];
+            }*/
+
             $response[$dataset->pid] = [
-                "version" => $dataset->versions[0]->version,
-                "metadata" => $dataset->versions[0]->metadata['metadata'],
+                "versions" => count($versions),
+                //"metadata" => $dataset->versions[0]->metadata['metadata'],
             ];
         }
 
