@@ -2302,7 +2302,7 @@ return [
     // search
     [
         'name' => 'search.datasets',
-        'method' => 'get',
+        'method' => 'post',
         'path' => '/search/datasets',
         'methodController' => 'SearchController@datasets',
         'namespaceController' => 'App\Http\Controllers\Api\V1',

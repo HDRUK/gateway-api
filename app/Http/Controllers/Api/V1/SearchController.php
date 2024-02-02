@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Exception;
+use MetadataManagementController as MMC;
 
+use App\Models\DatasetVersion;
 use App\Models\Collection;
 use App\Models\Dataset;
 use App\Models\Tool;
@@ -17,7 +19,7 @@ class SearchController extends Controller
 {
 
     /**
-     * @OA\Get(
+     * @OA\Post(
      *      path="/api/v1/search/datasets",
      *      summary="Keyword search across gateway datasets",
      *      description="Returns gateway datasets related to the provided query term(s)",
@@ -36,7 +38,7 @@ class SearchController extends Controller
      *      ),
      *      @OA\Parameter(
      *          name="sort",
-     *          in="query",
+     *          in="body",
      *          description="Field to sort by (default: 'score')",
      *          example="created",
      *          @OA\Schema(
@@ -46,13 +48,23 @@ class SearchController extends Controller
      *      ),
      *      @OA\Parameter(
      *          name="direction",
-     *          in="query",
+     *          in="body",
      *          description="Sort direction ('asc' or 'desc', default: 'desc')",
      *          example="desc",
      *          @OA\Schema(
      *              type="string",
      *              enum={"asc", "desc"},
      *              description="Sort direction",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="filter",
+     *          in="body",
+     *          description="Filters to apply to this search term",
+     *          example="dataset",
+     *          @OA\Schema(
+     *              type="string"
+     *              description="Filters to apply to this search term",
      *          ),
      *      ),
      *      @OA\Response(
@@ -98,15 +110,54 @@ class SearchController extends Controller
 
             $urlString = env('SEARCH_SERVICE_URL') . '/search/datasets';
 
+            $filters = (isset($request['filters']) ? $request['filters'] : []);
+
             $response = Http::withBody(
                 $request->getContent(), 'application/json'
             )->get($urlString);
 
             $datasetsArray = $response['hits']['hits'];
+            $matchedIds = [];
             // join to created at from DB
             foreach (array_values($datasetsArray) as $i => $d) {
-                $datasetModel = Dataset::where(['id' => $d['_id']])->first();
-                $datasetsArray[$i]['_source']['created_at'] = $datasetModel->toArray()['created_at'];
+               $matchedIds[] = $d['_id'];
+            }
+
+            // debug code left in to map to dataset_version Ids for testing - TODO Remove
+            // $matchedIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+            // whereRaw(1=1) here is a trick to allow us to access the builder model
+            // without fully forming a query first
+            $datasetsFiltered = DatasetVersion::whereRaw('1=1');
+
+            // Apply any filters to retrieve matching datasets on like basis, for
+            // later intersection with elastic matched datasets
+            foreach ($filters as $filter => $value) {
+                foreach ($value as $key => $val) {
+                    MMC::applySearchFilter($datasetsFiltered, $filter, $key, $val['terms']);
+                }
+            }
+
+            $ds = $datasetsFiltered->whereIn('dataset_id', $matchedIds)->get();
+            $likeIds = [];
+            foreach ($ds as $d) {
+                $likeIds[] = $d['dataset_id'];
+            }
+
+            $slimSet = array_intersect($matchedIds, $likeIds);
+
+            $datasetsModels = Dataset::with('versions')->whereIn('id', $slimSet)->get()->toArray();
+            foreach ($datasetsArray as $i => $dataset) {
+                if (!in_array($dataset['_id'], $slimSet)) {
+                    unset($datasetsArray[$i]);
+                    continue;
+                }
+                foreach ($datasetsModels as $model) {
+                    if ((int) $dataset['_id'] === $model['id']) {
+                        $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
+                        $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                    }
+                }
             }
 
             $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);

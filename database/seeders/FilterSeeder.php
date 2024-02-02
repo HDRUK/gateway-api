@@ -13,6 +13,35 @@ class FilterSeeder extends Seeder
      */
     public function run(): void
     {
-        Filter::factory(50)->create();
+        $keys = [
+            'containsTissue',
+            'dataType',
+            'publisherName',
+            'collectionName',
+            'dataUse',
+            'dateRange',
+            'populationSize',
+            'geographicLocation',
+        ];
+
+        $code = [
+            'NOT_YET',
+            "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.datasetType')) LIKE LOWER(?)",
+            "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.publisher.publisherName')) LIKE LOWER(?)",
+            'NOT_YET',
+            "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.linkage.dataUses')) LIKE LOWER(?)",
+            "JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.provenance.temporal.startDate') >= ? AND JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.provenance.temporal.endDate') <= ?",
+            'NOT_YET',
+            "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.coverage.spatial')) LIKE LOWER(?)",
+        ];
+
+        for($i = 0; $i < count($keys); $i++) {
+            Filter::create([
+                'type' => 'dataset', // hardcoded while there is only one
+                'keys' => $keys[$i],
+                'value' => $code[$i],
+                'enabled' => true,
+            ]);
+        }
     }
 }
