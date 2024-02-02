@@ -216,21 +216,45 @@ class MetadataManagementController {
                 $collections[] = $c['name'];
             }
 
+
+            $metadataModelVersion = $metadata['gwdmVersion'];
+
+            // ------------------------------------------------------
+            // WARNING....
+            //  - this part of the code may need updating when the GWDM is changed 
+            //  - can we make this more dynamic in someway?
+            // ------------------------------------------------------
+            $publisherName = '';
+            $physicalSampleAvailability = [];
+
+            if(version_compare($metadataModelVersion,"1.1","<")){
+                $publisherName = $metadata['metadata']['summary']['publisher']['publisherName'];
+                $physicalSampleAvailability = explode(',', $metadata['metadata']['coverage']['physicalSampleAvailability']);
+            } else {
+                if (array_key_exists('name',$metadata['metadata']['summary']['publisher'])){
+                    $publisherName = $metadata['metadata']['summary']['publisher']['name'];
+                }
+                if(array_key_exists('biologicalsamples',$metadata['metadata']['coverage'])){
+                    $physicalSampleAvailability = explode(',', $metadata['metadata']['coverage']['biologicalsamples']);
+                }
+            }
+            
             $toIndex = [
                 'abstract' => $metadata['metadata']['summary']['abstract'],
                 'keywords' => $metadata['metadata']['summary']['keywords'],
                 'description' => $metadata['metadata']['summary']['description'],
                 'shortTitle' => $metadata['metadata']['summary']['shortTitle'],
                 'title' => $metadata['metadata']['summary']['title'],
-                'publisherName' => $metadata['metadata']['summary']['publisher']['publisherName'],
+                'publisherName' => $publisherName,
                 'startDate' => $metadata['metadata']['provenance']['temporal']['startDate'],
                 'endDate' => $metadata['metadata']['provenance']['temporal']['endDate'],
-                'physicalSampleAvailability' => explode(',', $metadata['metadata']['coverage']['physicalSampleAvailability']),
+                'physicalSampleAvailability' => $physicalSampleAvailability,
                 'conformsTo' => explode(',', $metadata['metadata']['accessibility']['formatAndStandards']['conformsTo']),
                 'hasTechnicalMetadata' => (bool) $datasetMatch['has_technical_details'],
                 'named_entities' => $namedEntities,
                 'collections' => $collections
             ];
+            
 
             $params = [
                 'index' => 'datasets',

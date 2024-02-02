@@ -350,8 +350,8 @@ class DatasetController extends Controller
                     $version->metadata,
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
-                    env('GWDM'),
-                    env('GWDM_CURRENT_VERSION'),
+                    Config::get('metadata.GWDM.name'),
+                    Config::get('metadata.GWDM.version'),
                 );
 
                 if ($translated['wasTranslated']) {
@@ -455,8 +455,8 @@ class DatasetController extends Controller
 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
-                env('GWDM'),
-                env('GWDM_CURRENT_VERSION')
+                Config::get('metadata.GWDM.name'),
+                Config::get('metadata.GWDM.version'),
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -483,24 +483,52 @@ class DatasetController extends Controller
                     'status' => $input['status'],
                 ]);
 
-                //create a new 'required' section for the metadata to be saved
-                // - otherwise this section is filled with placeholders by all translations to GWDM
+    
+                $publisher = null;
                 $required = [
-                    'gatewayId' => strval($dataset->id),
-                    'gatewayPid' => $dataset->pid,
-                    'issued' => $dataset->created,
-                    'modified' => $dataset->updated,
-                    'revisions' => [],
-                ];
-                $input['metadata']['metadata']['required'] = $required;
+                        'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
+                        'gatewayPid' => $dataset->pid,
+                        'issued' => $dataset->created,
+                        'modified' => $dataset->updated,
+                        'revisions' => [],
+                    ];
 
-                //force correct publisher field based on the team
-                $publisher = [
-                    'publisherId' => $team['pid'],
-                    'publisherName' => $team['name'],
-                ];
+                // ------------------------------------------------------------------- 
+                // * Create a new 'required' section for the metadata to be saved
+                //    - otherwise this section is filled with placeholders by all translations to GWDM
+                // * Force correct publisher field based on the team associated with 
+                //
+                // Note: 
+                //     - This is hopefully a rare scenario when the BE has to be changed due to an update 
+                //        to the GWDM 
+                //     - future releases of the GWDM will hopefully not modify anything that we need to
+                //       set via the MMC
+                //     - we can't pass the publisherId nor the gatewayPid of the dataset to traser before  
+                //       they have been created, this is why we are doing this..
+                //     - GWDM >= 1.1 versions have a change related to these sections of the GWDM
+                //         - addition of the field 'version' in the required field 
+                //         - restructure of the 'publisher' in the summary field 
+                //            - publisher.publisherId --> publisher.gatewayId
+                //            - publisher.publisherName --> publisher.name
+                // ------------------------------------------------------------------- 
+                if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
+                    $publisher = [
+                        'publisherId' => $team['pid'],
+                        'publisherName' => $team['name'],
+                    ];
+                } else{
+                    $required['version'] = $this->getVersion(1);
+                    $publisher = [
+                        'gatewayId' => $team['pid'],
+                        'name' => $team['name'],
+                    ];
+                }
+
+                $input['metadata']['metadata']['required'] = $required;
                 $input['metadata']['metadata']['summary']['publisher'] = $publisher;
 
+                //include a note of what the metadata was (i.e. which GWDM version)
+                $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
                 $version = MMC::createDatasetVersion([
                     'dataset_id' => $dataset->id,
@@ -600,8 +628,8 @@ class DatasetController extends Controller
 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($input['metadata']),
-                env('GWDM'),
-                env('GWDM_CURRENT_VERSION')
+                Config::get('metadata.GWDM.name'),
+                Config::get('metadata.GWDM.version')
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -622,8 +650,12 @@ class DatasetController extends Controller
                 // Determine the last version of metadata
                 $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
      
-                //update the GWDM modified date
+                //update the GWDM modified date and version
                 $input['metadata']['metadata']['required']['modified'] = $updateTime;
+                if(version_compare(Config::get('metadata.GWDM.version'),"1.0",">")){
+                    //version was missing in GWDM 1.0
+                    $input['metadata']['metadata']['required']['version'] = $this->getVersion($lastVersionNumber + 1);
+                }
 
                 //update the GWDM revisions
                 // NOTE: Calum 12/1/24
@@ -634,12 +666,15 @@ class DatasetController extends Controller
                     "version"=>$lastVersionNumber
                 ];
 
+                $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
+
                 // Create new metadata version for this dataset
                 $version = DatasetVersion::create([
                     'dataset_id' => $currDataset->id,
                     'metadata' => json_encode($input['metadata']),
                     'version' => ($lastVersionNumber + 1),
                 ]);
+
 
                 MMC::reindexElastic($currDataset->id);
 
@@ -876,9 +911,17 @@ class DatasetController extends Controller
                 // add the given number of rows to the file.
                 foreach ($results as $rowDetails) {
                     $metadata = $rowDetails['metadata']['metadata'];
+
+                    $publisherName = $metadata['metadata']['summary']['publisher'];
+                    if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
+                        $publisherName = $publisherName['publisherName'];
+                    }else{
+                        $publisherName = $publisherName['name'];
+                    }
+
                     $row = [
                         $metadata['metadata']['summary']['title'] !== null ? $metadata['metadata']['summary']['title'] : '',
-                        $metadata['metadata']['summary']['publisher']['publisherName'] !== null ? $metadata['metadata']['summary']['publisher']['publisherName'] : '',
+                        $publisherName !== null ? $publisherName : '',
                         $rowDetails['metadata']['updated_at'] !== null ? $rowDetails['metadata']['updated_at'] : '',
                         (string)strtoupper($rowDetails['create_origin']),
                         (string)strtoupper($rowDetails['status']),
@@ -954,8 +997,8 @@ class DatasetController extends Controller
             // - otherwise traser will return a non-200 error 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($input['metadata']),
-                env('GWDM'),
-                env('GWDM_CURRENT_VERSION')
+                Config::get('metadata.GWDM.name'),
+                Config::get('metadata.GWDM.version')
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -974,5 +1017,20 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    private function getVersion(int $version){
+        if($version>999) throw new Exception("too many versions");
+
+        $version = max(0, $version);
+
+        $hundreds = floor($version / 100);
+        $tens = floor(($version % 100) / 10);
+        $units = $version % 10;
+
+        $formattedVersion = "{$hundreds}.{$tens}.{$units}";
+
+        return $formattedVersion;
+    }
+
 
 }

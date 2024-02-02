@@ -1,11 +1,12 @@
 {
-    "gwdmVersion": "1.0",
+    "gwdmVersion": "1.1",
     "metadata": {
         "required": {
             "gatewayId": "1234",
             "gatewayPid": "5124f2",
             "issued": "2020-08-05T14:35:59Z",
             "modified": "2021-01-28T14:15:46Z",
+            "version": "3.0.0",
             "revisions": [
                 {
                     "version": "1.0.0",
@@ -36,12 +37,13 @@
             "shortTitle": "HDR UK Papers & Preprints",
             "title": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
             "publisher": {
-                "publisherName": "HEALTH DATA RESEARCH UK"
-            }
+                "name": "HEALTH DATA RESEARCH UK"
+            },
+            "populationSize": 1000
         },
         "coverage": {
             "pathway": "NOT APPLICABLE",
-            "physicalSampleAvailability": "Blood,Urine",
+            "biologicalsamples": "Blood,Urine",
             "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
             "followup": "UNKNOWN",
             "typicalAgeRange": "0-0"
@@ -107,29 +109,29 @@
         "structuralMetadata": [
             {
                 "name": "table1",
-                "description": "this is table 1 - with a changed description",
+                "description": "this is table 1 - description to be changed",
                 "columns": [
                     {
                         "name": "column1-1",
-                        "description": "this is column1-1 - with a changed description",
+                        "description": "this is column1-1 - description to be changed",
                         "dataType": "String",
                         "sensitive": false
                     },
                     {
-                        "name": "column1-3",
-                        "description": "this is column1-3 - to be added",
+                        "name": "column1-2",
+                        "description": "this is column1-2 - to be deleted",
                         "dataType": "String",
                         "sensitive": false
                     }
                 ]
             },
             {
-                "name": "table3",
-                "description": "this is table 3 - to be added",
+                "name": "table2",
+                "description": "this is table 2 - to be deleted",
                 "columns": [
                     {
-                        "name": "column3-1",
-                        "description": "this is column3-1 - to be added",
+                        "name": "column2-1",
+                        "description": "this is column2-1 - to be automatically deleted",
                         "dataType": "String",
                         "sensitive": false
                     }
