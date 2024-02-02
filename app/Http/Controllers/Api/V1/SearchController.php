@@ -110,7 +110,7 @@ class SearchController extends Controller
 
             $urlString = env('SEARCH_SERVICE_URL') . '/search/datasets';
 
-            $filters = $request['filters'];
+            $filters = (isset($request['filters']) ? $request['filters'] : []);
 
             $response = Http::withBody(
                 $request->getContent(), 'application/json'
