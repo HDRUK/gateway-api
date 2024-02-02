@@ -14,11 +14,6 @@ class UpdateDataset extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'id' => [
-                'required',
-                'int',
-                'exists:datasets,id',
-            ],
             'team_id' => [
                 'int',
                 'required',

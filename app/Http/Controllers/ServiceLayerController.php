@@ -76,16 +76,26 @@ class ServiceLayerController extends Controller
                 continue;
             }
 
-            $version = '0.0.1';
-            $versions = $dataset->versions;
-            /*if (version_compare($metadata['gwdmVersion'],'1.0','>')){
-                $version = $metadata['metadata']['required']['version'];
-            }*/
+            $metadataVersions = [];
+            foreach($dataset->versions as $version){
+                $gwdmVersion = $version->metadata['gwdmVersion'];
+                if(version_compare($gwdmVersion,"1.0",">")){
+                    $metadata = $version->metadata['metadata'];
+                    $metadataVersions[] = $metadata['required']['version'];
+                }
+            }
 
             $response[$dataset->pid] = [
-                "versions" => count($versions),
-                //"metadata" => $dataset->versions[0]->metadata['metadata'],
+                "versions" => $metadataVersions,
             ];
+
+            if ($request->has('onlyVersions')) {
+                if($request->boolean('onlyVersions')){
+                    continue;
+                }
+            }
+            $response[$dataset->pid]["metadata"] = $dataset->versions[0]->metadata['metadata'];
+
         }
 
         return response()->json($response);

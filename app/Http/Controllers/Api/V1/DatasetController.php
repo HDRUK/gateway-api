@@ -886,6 +886,12 @@ class DatasetController extends Controller
         return $this->destroy($request,$dataset->id);
     }
 
+    public function updateByPid(UpdateDataset $request, string $pid)
+    {
+        $dataset = Dataset::where('pid', "=", $pid)->first();
+        return $this->update($request,$dataset->id);
+    }
+
 
     /**
      * @OA\Get(

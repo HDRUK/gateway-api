@@ -44,7 +44,7 @@ Route::get('/email', function (Request $reqest) {
 Route::get('/services/federations', [ServiceLayerController::class, 'getActiveFederationApplications']);
 Route::patch('/services/federations/{id}', [ServiceLayerController::class, 'setFederationInvalidRunState']);
 Route::post('/services/federations', [DatasetController::class, 'store']);
-Route::put('/services/datasets/{id}', [DatasetController::class, 'update']);
+Route::put('/services/federations/update/{pid}', [DatasetController::class, 'updateByPid']);
 Route::get('/services/datasets', [ServiceLayerController::class, 'getDatasets']);
 Route::get('/services/datasets/{pid}', [ServiceLayerController::class, 'getDatasetFromPid']);
 Route::delete('/services/datasets/{pid}', [DatasetController::class, 'destroyByPid']);
