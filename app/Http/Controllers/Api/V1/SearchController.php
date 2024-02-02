@@ -154,6 +154,7 @@ class SearchController extends Controller
                 }
                 foreach ($datasetsModels as $model) {
                     if ((int) $dataset['_id'] === $model['id']) {
+                        $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
                         $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
                     }
                 }

@@ -9,6 +9,7 @@ use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\ToolSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TeamHasUserSeeder;
@@ -38,6 +39,7 @@ class SearchTest extends TestCase
             MinimalUserSeeder::class,
             TeamHasUserSeeder::class,
             DatasetSeeder::class,
+            DatasetVersionSeeder::class,
             ToolSeeder::class,
             CollectionSeeder::class
         ]);
