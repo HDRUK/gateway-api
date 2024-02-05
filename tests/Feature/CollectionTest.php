@@ -158,6 +158,7 @@ class CollectionTest extends TestCase
             $mockData,
             $this->header
         );
+        dd($response);
 
         $countAfter = Collection::count();
         $countNewRow = $countAfter - $countBefore;
@@ -366,7 +367,8 @@ class CollectionTest extends TestCase
         $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = Dataset::all()->random()->id;
+            $return['id'] = Dataset::all()->random()->id;
+            $return['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
         }
 
         return array_unique($return);

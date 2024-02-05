@@ -254,6 +254,7 @@ class CollectionController extends Controller
 
             $collection = Collection::create($array);
             $collectionId = (int) $collection->id;
+            
             $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             // link/unlink dur with datasets
@@ -781,97 +782,4 @@ class CollectionController extends Controller
 
         return $response;
     }
-
-    // private function addDatasets(array $datasets, int $collectionId, $userId, $appId)
-    // {
-    //     try {
-    //         foreach ($datasets as $dataset) {
-    //             $checkDatasetInCollection = CollectionHasDataset::where([
-    //                 'collection_id' => $collectionId,
-    //                 'dataset_id' => $dataset,
-    //             ])->first();
-
-    //             if (!$checkDatasetInCollection) {
-    //                 CollectionHasDataset::create([
-    //                     'collection_id' => $collectionId,
-    //                     'dataset_id' => $dataset,
-    //                     'user_id' => $userId,
-    //                     'app_id' => $appId,
-    //                 ]);
-    //             }
-    //             MMC::reindexElastic($dataset);
-    //         }
-    //     } catch (Exception $e) {
-    //         throw new Exception($e->getMessage());
-    //     }
-    // }
-
-    // private function addKeywords(array $keywords, int $collectionId)
-    // {
-    //     try {
-    //         foreach ($keywords as $keyword) {
-    //             $keywordId = 0;
-    //             $keywordDB = Keyword::where(['enabled' => 1, 'name' => $keyword])->first();
-    //             if (!$keywordDB) {
-    //                 $keywordDB = Keyword::create([
-    //                     'name' => $keyword,
-    //                     'enabled' => 1,
-    //                 ]);
-    //             }
-    //             $keywordId = $keywordDB->id;
-
-    //             $checkKeywordInCollection = CollectionHasKeyword::where([
-    //                 'collection_id' => $collectionId,
-    //                 'keyword_id' => $keywordId,
-    //             ])->first();
-
-    //             if (!$checkKeywordInCollection) {
-    //                 CollectionHasKeyword::create([
-    //                     'collection_id' => $collectionId,
-    //                     'keyword_id' => $keywordId,
-    //                 ]);
-    //             }
-    //         }
-    //     } catch (Exception $e) {
-    //         throw new Exception($e->getMessage());
-    //     }
-    // }
-
-    // private function clearDatasets(array $inDatasets, int $collectionId)
-    // {
-    //     try {
-    //         $datasetIds = CollectionHasDataset::where('collection_id', $collectionId)->pluck('dataset_id')->toArray();
-
-    //         foreach ($datasetIds as $datasetId) {
-    //             if (!in_array($datasetId, $inDatasets)) {
-    //                 CollectionHasDataset::where([
-    //                     'collection_id' => $collectionId,
-    //                     'dataset_id' => $datasetId
-    //                 ])->delete();
-    //             }
-    //         }
-    //     } catch (Exception $e) {
-    //         throw new Exception($e->getMessage());
-    //     }
-    // }
-
-    // private function clearKeywords(array $inKeywords, int $collectionId)
-    // {
-    //     try {
-    //         $keywordIds = CollectionHasKeyword::where('collection_id', $collectionId)->pluck('keyword_id')->toArray();
-
-    //         foreach ($keywordIds as $keywordId) {
-    //             $keywordDB = Keyword::where(['id' => $keywordId])->first();
-
-    //             if (!in_array($keywordDB->name, $inKeywords)) {
-    //                 CollectionHasKeyword::where([
-    //                     'collection_id' => $collectionId,
-    //                     'keyword_id' => $keywordId
-    //                 ])->delete();
-    //             }
-    //         }
-    //     } catch (Exception $e) {
-    //         throw new Exception($e->getMessage());
-    //     }
-    // }
 }
