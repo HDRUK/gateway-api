@@ -646,6 +646,8 @@ class CollectionController extends Controller
             if (!$checking) {
                 $this->addCollectionHasDataset($collectionId, $dataset, $userId, $appId);
             }
+
+            MMC::reindexElastic($dataset['id']);
         }
     }
 
