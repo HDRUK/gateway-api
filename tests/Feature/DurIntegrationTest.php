@@ -356,14 +356,11 @@ class DurIntegrationTest extends TestCase
     private function generateDatasets()
     {
         $return = [];
-        $iterations = rand(1, 5);
 
-        for ($i = 1; $i <= $iterations; $i++) {
-            $return['id'] = Dataset::all()->random()->id;
-            $return['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
-            $return['is_locked'] = fake()->randomElement([0, 1]);
-        }
+        $return['id'] = Dataset::all()->random()->id;
+        $return['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+        $return['is_locked'] = fake()->randomElement([0, 1]);
 
-        return array_unique($return);
+        return $return;
     }
 }
