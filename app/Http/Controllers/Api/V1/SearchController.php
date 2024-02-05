@@ -63,7 +63,7 @@ class SearchController extends Controller
      *          description="Filters to apply to this search term",
      *          example="dataset",
      *          @OA\Schema(
-     *              type="string"
+     *              type="string",
      *              description="Filters to apply to this search term",
      *          ),
      *      ),
