@@ -19,9 +19,6 @@ class CreateCollection extends BaseFormRequest
             'name' => [
                 'string',
                 'required',
-                Rule::unique('collections')->where(function ($query) {
-                    $query->where('name', trim($this->name));
-                }),
             ],
             'description' => [
                 'string',
@@ -43,10 +40,21 @@ class CreateCollection extends BaseFormRequest
             'datasets' => [
                 'array',
             ],
-            'datasets.*'  => [
+            'datasets.*.id'  => [
                 'integer',
-                'distinct',
                 'exists:datasets,id',
+            ],
+            'datasets.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'datasets.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'datasets.*.reason'  => [
+                'nullable',
+                'string',
             ],
             'keywords' => [
                 'array',
@@ -54,13 +62,6 @@ class CreateCollection extends BaseFormRequest
             'keywords.*' => [
                 'string',
                 'distinct',
-                function ($attribute, $value, $fail) {
-                    $keywords = Keyword::where(['name' => $value, 'enabled' => 1])->first();
-
-                    if (!$keywords) {
-                        $fail('The selected keyword is invalid, not found. - ' . $value);
-                    }
-                }
             ],
             'userId' => [
                 'integer',
@@ -75,6 +76,15 @@ class CreateCollection extends BaseFormRequest
             'mongo_object_id' => [
                 'nullable', 
                 'string',
+            ],
+            'created_at' => [
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'updated_at' => [
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'updated_on' => [
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],
         ];
     }

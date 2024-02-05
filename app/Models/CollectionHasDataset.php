@@ -17,6 +17,9 @@ class CollectionHasDataset extends Model
         'dataset_id',
         'user_id',
         'application_id',
+        'reason',
+        'created_at',
+        'updated_at',
     ];
 
     /**
