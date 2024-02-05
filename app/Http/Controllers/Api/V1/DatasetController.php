@@ -469,7 +469,6 @@ class DatasetController extends Controller
                 "publisherName"=>$team['name']
             ];
 
-            
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
@@ -477,9 +476,6 @@ class DatasetController extends Controller
             );
 
             if ($traserResponse['wasTranslated']) {
-
-               
-
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
                 $input['metadata']['metadata'] = $traserResponse['metadata'];
 
