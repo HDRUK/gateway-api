@@ -19,6 +19,22 @@ class SearchController extends Controller
 {
 
     /**
+     * @OA\Examples(
+     *      example="filtersExample",
+     *      summary="Example Filters payload",
+     *      value={
+     *          "filters": {
+     *               "dataset": {
+     *                   "publisherName": {
+     *                      "terms": {
+     *                          "BREATHE",
+     *                          "HDRUK"
+     *                      }
+     *                   }
+     *               }
+     *           }
+     *       }
+     * ),
      * @OA\Post(
      *      path="/api/v1/search/datasets",
      *      summary="Keyword search across gateway datasets",
@@ -33,39 +49,11 @@ class SearchController extends Controller
      *              mediaType="application/json",
      *              @OA\Schema(
      *                  @OA\Property(property="query", type="string", example="asthma dataset"),
+     *                  @OA\Property(property="sort", type="string", example="score"),
+     *                  @OA\Property(property="direction", type="string", example="desc"),
+     *                  @OA\Property(property="filters", type="string", example={"filtersExample": @OA\Schema(ref="#/components/examples/filtersExample")})
      *              )
      *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="sort",
-     *          in="body",
-     *          description="Field to sort by (default: 'score')",
-     *          example="created",
-     *          @OA\Schema(
-     *              type="string",
-     *              description="Field to sort by (score, created_at, title)",
-     *          ),
-     *      ),
-     *      @OA\Parameter(
-     *          name="direction",
-     *          in="body",
-     *          description="Sort direction ('asc' or 'desc', default: 'desc')",
-     *          example="desc",
-     *          @OA\Schema(
-     *              type="string",
-     *              enum={"asc", "desc"},
-     *              description="Sort direction",
-     *          ),
-     *      ),
-     *      @OA\Parameter(
-     *          name="filter",
-     *          in="body",
-     *          description="Filters to apply to this search term",
-     *          example="dataset",
-     *          @OA\Schema(
-     *              type="string",
-     *              description="Filters to apply to this search term",
-     *          ),
      *      ),
      *      @OA\Response(
      *          response=200,
