@@ -1089,7 +1089,7 @@ class DatasetController extends Controller
         if (isset($metadata['metadata'])) {
             if (is_string($metadata['metadata'])) {
                 $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
-                unset($input['metadata']);
+                unset($metadata['metadata']);
                 $metadata = $tmpMetadata;
             }
         } else if (is_string($metadata)) {
