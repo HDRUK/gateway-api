@@ -68,7 +68,7 @@ class DurController extends Controller
      *                @OA\Property(property="project_end_date", type="datetime", example="2023-04-03 12:00:00"),
      *                @OA\Property(property="access_date", type="datetime", example="2023-04-03 12:00:00"),
      *                @OA\Property(property="accredited_researcher_status", type="string", example="No"),
-     *                @OA\Property(property="confidential_description", type="string", example=""),
+     *                @OA\Property(property="confidential_data_description", type="string", example=""),
      *                @OA\Property(property="dataset_linkage_description", type="string", example=""),
      *                @OA\Property(property="duty_of_confidentiality", type="string", example="Statutory exemption to flow confidential data without consent"),
      *                @OA\Property(property="legal_basis_for_data_article6", type="string", example="Ad labore atque asperiores eum quia. ..."),
@@ -91,6 +91,7 @@ class DurController extends Controller
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *                @OA\Property(property="applicant_id", type="string", example=""),
      *             ),
      *          ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
@@ -183,7 +184,7 @@ class DurController extends Controller
      *                   @OA\Property(property="project_end_date", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="access_date", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="accredited_researcher_status", type="string", example="No"),
-     *                   @OA\Property(property="confidential_description", type="string", example=""),
+     *                   @OA\Property(property="confidential_data_description", type="string", example=""),
      *                   @OA\Property(property="dataset_linkage_description", type="string", example=""),
      *                   @OA\Property(property="duty_of_confidentiality", type="string", example="Statutory exemption to flow confidential data without consent"),
      *                   @OA\Property(property="legal_basis_for_data_article6", type="string", example="Ad labore atque asperiores eum quia. ..."),
@@ -208,6 +209,7 @@ class DurController extends Controller
      *                   @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
+     *                   @OA\Property(property="applicant_id", type="string", example=""),
      *                ),
      *             ),
      *          ),
@@ -279,7 +281,7 @@ class DurController extends Controller
      *             @OA\Property(property="project_end_date", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="access_date", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="accredited_researcher_status", type="string", example="No"),
-     *             @OA\Property(property="confidential_description", type="string", example=""),
+     *             @OA\Property(property="confidential_data_description", type="string", example=""),
      *             @OA\Property(property="dataset_linkage_description", type="string", example=""),
      *             @OA\Property(property="duty_of_confidentiality", type="string", example="Statutory exemption to flow confidential data without consent"),
      *             @OA\Property(property="legal_basis_for_data_article6", type="string", example="Ad labore atque asperiores eum quia. ..."),
@@ -302,6 +304,7 @@ class DurController extends Controller
      *             @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *             @OA\Property(property="applicant_id", type="string", example=""),
      *          ),
      *       ),
      *    ),
@@ -369,7 +372,7 @@ class DurController extends Controller
                 'public_benefit_statement',
                 'data_sensitivity_level',
                 'accredited_researcher_status',
-                'confidential_description',
+                'confidential_data_description',
                 'dataset_linkage_description',
                 'duty_of_confidentiality',
                 'legal_basis_for_data_article6',
@@ -388,6 +391,7 @@ class DurController extends Controller
                 'counter',
                 'mongo_object_id',
                 'mongo_id',
+                'applicant_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
@@ -396,7 +400,7 @@ class DurController extends Controller
                 $array['application_id'] = $appId;
             }
 
-            if (!$array['team_id']) {
+            if (!array_key_exists('team_id', $array)) {
                 throw new NotFoundException("Team Id not found in request.");
             }
 
@@ -412,13 +416,13 @@ class DurController extends Controller
             $this->checkKeywords($durId, $keywords);
 
             // for migration from mongo database
-            if (array_key_exists('createdAt', $input)) {
-                Dur::where('id', $durId)->update(['created_at' => $input['createdAt']]);
+            if (array_key_exists('created_at', $input)) {
+                Dur::where('id', $durId)->update(['created_at' => $input['created_at']]);
             }
 
             // for migration from mongo database
-            if (array_key_exists('updatedAt', $input)) {
-                Dur::where('id', $durId)->update(['updated_at' => $input['updatedAt']]);
+            if (array_key_exists('updated_at', $input)) {
+                Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
 
             $this->indexElasticDur($durId);
@@ -479,7 +483,7 @@ class DurController extends Controller
      *             @OA\Property(property="project_end_date", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="access_date", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="accredited_researcher_status", type="string", example="No"),
-     *             @OA\Property(property="confidential_description", type="string", example=""),
+     *             @OA\Property(property="confidential_data_description", type="string", example=""),
      *             @OA\Property(property="dataset_linkage_description", type="string", example=""),
      *             @OA\Property(property="duty_of_confidentiality", type="string", example="Statutory exemption to flow confidential data without consent"),
      *             @OA\Property(property="legal_basis_for_data_article6", type="string", example="Ad labore atque asperiores eum quia. ..."),
@@ -502,6 +506,7 @@ class DurController extends Controller
      *             @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *             @OA\Property(property="applicant_id", type="string", example=""),
      *          ),
      *       ),
      *    ),
@@ -546,7 +551,7 @@ class DurController extends Controller
      *                   @OA\Property(property="project_end_date", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="access_date", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="accredited_researcher_status", type="string", example="No"),
-     *                   @OA\Property(property="confidential_description", type="string", example=""),
+     *                   @OA\Property(property="confidential_data_description", type="string", example=""),
      *                   @OA\Property(property="dataset_linkage_description", type="string", example=""),
      *                   @OA\Property(property="duty_of_confidentiality", type="string", example="Statutory exemption to flow confidential data without consent"),
      *                   @OA\Property(property="legal_basis_for_data_article6", type="string", example="Ad labore atque asperiores eum quia. ..."),
@@ -571,6 +576,7 @@ class DurController extends Controller
      *                   @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
+     *                   @OA\Property(property="applicant_id", type="string", example=""),
      *              ),
      *        ),
      *    ),
@@ -619,7 +625,7 @@ class DurController extends Controller
                 'public_benefit_statement',
                 'data_sensitivity_level',
                 'accredited_researcher_status',
-                'confidential_description',
+                'confidential_data_description',
                 'dataset_linkage_description',
                 'duty_of_confidentiality',
                 'legal_basis_for_data_article6',
@@ -637,6 +643,7 @@ class DurController extends Controller
                 'counter',
                 'mongo_object_id',
                 'mongo_id',
+                'applicant_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
@@ -652,13 +659,13 @@ class DurController extends Controller
             $this->checkKeywords($id, $keywords);
 
             // for migration from mongo database
-            if (array_key_exists('createdAt', $input)) {
-                Dur::where('id', $id)->update(['created_at' => $input['createdAt']]);
+            if (array_key_exists('created_at', $input)) {
+                Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
             }
 
             // for migration from mongo database
-            if (array_key_exists('updatedAt', $input)) {
-                Dur::where('id', $id)->update(['updated_at' => $input['updatedAt']]);
+            if (array_key_exists('updated_at', $input)) {
+                Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
             $this->indexElasticDur($id);
@@ -731,7 +738,7 @@ class DurController extends Controller
      *             @OA\Property(property="project_end_date", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="access_date", type="datetime", example="2023-04-03 12:00:00"),
      *             @OA\Property(property="accredited_researcher_status", type="string", example="No"),
-     *             @OA\Property(property="confidential_description", type="string", example=""),
+     *             @OA\Property(property="confidential_data_description", type="string", example=""),
      *             @OA\Property(property="dataset_linkage_description", type="string", example=""),
      *             @OA\Property(property="duty_of_confidentiality", type="string", example="Statutory exemption to flow confidential data without consent"),
      *             @OA\Property(property="legal_basis_for_data_article6", type="string", example="Ad labore atque asperiores eum quia. ..."),
@@ -754,6 +761,7 @@ class DurController extends Controller
      *             @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *             @OA\Property(property="applicant_id", type="string", example=""),
      *          ),
      *       ),
      *    ),
@@ -798,7 +806,7 @@ class DurController extends Controller
      *                   @OA\Property(property="project_end_date", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="access_date", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="accredited_researcher_status", type="string", example="No"),
-     *                   @OA\Property(property="confidential_description", type="string", example=""),
+     *                   @OA\Property(property="confidential_data_description", type="string", example=""),
      *                   @OA\Property(property="dataset_linkage_description", type="string", example=""),
      *                   @OA\Property(property="duty_of_confidentiality", type="string", example="Statutory exemption to flow confidential data without consent"),
      *                   @OA\Property(property="legal_basis_for_data_article6", type="string", example="Ad labore atque asperiores eum quia. ..."),
@@ -823,6 +831,7 @@ class DurController extends Controller
      *                   @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
+     *                   @OA\Property(property="applicant_id", type="string", example=""),
      *              ),
      *        ),
      *    ),
@@ -871,7 +880,7 @@ class DurController extends Controller
                 'public_benefit_statement',
                 'data_sensitivity_level',
                 'accredited_researcher_status',
-                'confidential_description',
+                'confidential_data_description',
                 'dataset_linkage_description',
                 'duty_of_confidentiality',
                 'legal_basis_for_data_article6',
@@ -889,6 +898,7 @@ class DurController extends Controller
                 'counter',
                 'mongo_object_id',
                 'mongo_id',
+                'applicant_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
@@ -896,21 +906,25 @@ class DurController extends Controller
             Dur::where('id', $id)->update($array);
 
             // link/unlink dur with datasets
-            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
+            if (array_key_exists('datasets', $input)) {
+                $datasets = $input['datasets'];
+                $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
+            }
 
             // link/unlink dur with keywords
-            $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
-            $this->checkKeywords($id, $keywords);
-
-            // for migration from mongo database
-            if (array_key_exists('createdAt', $input)) {
-                Dur::where('id', $id)->update(['created_at' => $input['createdAt']]);
+            if (array_key_exists('keywords', $input)) {
+                $keywords = $input['keywords'];
+                $this->checkKeywords($id, $keywords);
             }
 
             // for migration from mongo database
-            if (array_key_exists('updatedAt', $input)) {
-                Dur::where('id', $id)->update(['updated_at' => $input['updatedAt']]);
+            if (array_key_exists('created_at', $input)) {
+                Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
+            }
+
+            // for migration from mongo database
+            if (array_key_exists('updated_at', $input)) {
+                Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
             $this->indexElasticDur($id);
@@ -996,13 +1010,13 @@ class DurController extends Controller
     {
         $ds = DurHasDataset::where(['dur_id' => $durId])->get();
         foreach ($ds as $d) {
-            if (!in_array($d->dataset_id, $inDatasets)) {
+            if (!in_array($d->dataset_id, $this->extractInputDatasetIdToArray($inDatasets))) {
                 $this->deleteDurHasDatasets($durId, $d->dataset_id);
             }
         }
 
         foreach ($inDatasets as $dataset) {
-            $checking = $this->checkInDurHasDatasets($durId, $dataset);
+            $checking = $this->checkInDurHasDatasets($durId, (int) $dataset['id']);
 
             if (!$checking) {
                 $this->addDurHasDataset($durId, $dataset, $userId, $appId);
@@ -1010,23 +1024,44 @@ class DurController extends Controller
         }
     }
 
-    private function addDurHasDataset(int $durId, int $datasetId, int $userId = null, int $appId = null)
+    private function addDurHasDataset(int $durId, array $dataset, int $userId = null, int $appId = null)
     {
         try {
             $arrCreate = [
                 'dur_id' => $durId,
-                'dataset_id' => $datasetId,
+                'dataset_id' => $dataset['id'],
             ];
 
-            if ($userId) {
+            if (array_key_exists('user_id', $dataset)) {
+                $arrCreate['user_id'] = (int) $dataset['user_id'];
+            } elseif ($userId) {
                 $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $dataset)) {
+                $arrCreate['reason'] = $dataset['reason'];
+            }
+
+            if (array_key_exists('updated_at', $dataset)) { // special for migration
+                $arrCreate['created_at'] = $dataset['updated_at'];
+                $arrCreate['updated_at'] = $dataset['updated_at'];
+            }
+
+            if (array_key_exists('is_locked', $dataset)) {
+                $arrCreate['is_locked'] = (bool) $dataset['is_locked'];
             }
 
             if ($appId) {
                 $arrCreate['application_id'] = $appId;
             }
 
-            return DurHasDataset::create($arrCreate);
+            return DurHasDataset::updateOrCreate(
+                $arrCreate,
+                [
+                    'dur_id' => $durId,
+                    'dataset_id' => $dataset['id'],
+                ]
+            );
         } catch (Exception $e) {
             throw new Exception("addDurHasDataset :: " . $e->getMessage());
         }
@@ -1115,6 +1150,16 @@ class DurController extends Controller
         } catch (Exception $e) {
             throw new Exception("deleteKeywordDur :: " . $e->getMessage());
         }
+    }
+
+    private function extractInputDatasetIdToArray(array $inputDatasets): Array
+    {
+        $response = [];
+        foreach ($inputDatasets as $inputDataset) {
+            $response[] = $inputDataset['id'];
+        }
+
+        return $response;
     }
 
     /**

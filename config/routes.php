@@ -2302,7 +2302,7 @@ return [
     // search
     [
         'name' => 'search.datasets',
-        'method' => 'get',
+        'method' => 'post',
         'path' => '/search/datasets',
         'methodController' => 'SearchController@datasets',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -2323,6 +2323,15 @@ return [
         'method' => 'get',
         'path' => '/search/collections',
         'methodController' => 'SearchController@collections',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'search.data_uses',
+        'method' => 'get',
+        'path' => '/search/dur',
+        'methodController' => 'SearchController@dataUses',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => ['jwt.verify'],
         'constraint' => [],

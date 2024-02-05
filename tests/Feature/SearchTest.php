@@ -9,6 +9,7 @@ use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\ToolSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TeamHasUserSeeder;
@@ -38,6 +39,7 @@ class SearchTest extends TestCase
             MinimalUserSeeder::class,
             TeamHasUserSeeder::class,
             DatasetSeeder::class,
+            DatasetVersionSeeder::class,
             ToolSeeder::class,
             CollectionSeeder::class
         ]);
@@ -50,7 +52,7 @@ class SearchTest extends TestCase
      */
     public function test_datasets_search_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL_SEARCH . "/datasets", ["query" => "asthma"], $this->header);
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets", ["query" => "asthma"], $this->header);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',
@@ -67,12 +69,13 @@ class SearchTest extends TestCase
                         'shortTitle',
                         'title',
                         'created_at'
-                    ]
+                    ],
+                    'metadata'
                 ]
             ]
         ]);
 
-        $response = $this->json('GET', self::TEST_URL_SEARCH . "/datasets" . '?sort=score:asc', ["query" => "asthma"], $this->header);   
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?sort=score:asc', ["query" => "asthma"], $this->header);   
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',
@@ -80,14 +83,15 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'metadata'
                 ]
             ]
         ]);
         $this->assertTrue($response['data'][0]['_source']['shortTitle'] === 'Third asthma dataset');
 
         // Test sorting by dataset name (shortTitle)        
-        $response = $this->json('GET', self::TEST_URL_SEARCH . "/datasets" . '?sort=title:asc', ["query" => "asthma"], $this->header); 
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?sort=title:asc', ["query" => "asthma"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',
@@ -95,14 +99,15 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'metadata'
                 ]
             ]
         ]);
         $this->assertTrue($response['data'][0]['_source']['shortTitle'] === 'Another asthma dataset');
 
         // Test sorting by created_at desc        
-        $response = $this->json('GET', self::TEST_URL_SEARCH . "/datasets" . '?sort=created_at:desc', ["query" => "asthma"], $this->header); 
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?sort=created_at:desc', ["query" => "asthma"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',
@@ -110,7 +115,8 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'metadata'
                 ]
             ]
         ]);
@@ -250,6 +256,80 @@ class SearchTest extends TestCase
 
         // Test sorting by created_at desc        
         $response = $this->json('GET', self::TEST_URL_SEARCH . "/collections" . '?sort=created_at:desc', ["query" => "nlp"], $this->header); 
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'message',
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source'
+                ]
+            ]
+        ]);
+        $this->assertTrue($response['data'][0]['_id'] === '1');
+    }
+
+    /**
+     * Search using a query with success
+     * 
+     * @return void
+     */
+    public function test_data_uses_search_with_success(): void
+    {
+        $response = $this->json('GET', self::TEST_URL_SEARCH . "/dur", ["query" => "term"], $this->header);
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'message',
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source' => [
+                        'projectTitle',
+                        'laySummary',
+                        'publicBenefitStatement',
+                        'technicalSummary',
+                        'fundersAndSponsors',
+                        'datasetTitles',
+                        'keywords',
+                        'created_at'
+                    ]
+                ]
+            ]
+        ]);
+
+        $response = $this->json('GET', self::TEST_URL_SEARCH . "/dur" . '?sort=score:asc', ["query" => "term"], $this->header);   
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'message',
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source'
+                ]
+            ]
+        ]);
+        $this->assertTrue($response['data'][0]['_source']['projectTitle'] === 'Third Data Use');
+
+        // Test sorting by dataset name (shortTitle)        
+        $response = $this->json('GET', self::TEST_URL_SEARCH . "/dur" . '?sort=projectTitle:asc', ["query" => "term"], $this->header); 
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'message',
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source'
+                ]
+            ]
+        ]);
+        $this->assertTrue($response['data'][0]['_source']['projectTitle'] === 'Another Data Use');
+
+        // Test sorting by created_at desc        
+        $response = $this->json('GET', self::TEST_URL_SEARCH . "/dur" . '?sort=created_at:desc', ["query" => "term"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',

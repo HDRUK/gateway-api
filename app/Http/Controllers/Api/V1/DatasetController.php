@@ -124,7 +124,8 @@ class DatasetController extends Controller
         $teamId = $request->query('team_id',null);
         $filterStatus = $request->query('status', null);
         $datasetId = $request->query('dataset_id', null);
-        
+        $mongoPId = $request->query('mongo_pid', null);
+
         $sort = $request->query('sort',"created:desc");   
         
         $tmp = explode(":", $sort);
@@ -156,6 +157,8 @@ class DatasetController extends Controller
             return $query->where('team_id', '=', $teamId);
         })->when($datasetId, function ($query) use ($datasetId) {
                 return $query->where('datasetid', '=', $datasetId);
+        })->when($mongoPId, function ($query) use ($mongoPId) {
+            return $query->where('mongo_pid', '=', $mongoPId);
         })->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
             function ($query) {
                 return $query->withTrashed();

@@ -96,7 +96,7 @@ class DurIntegrationTest extends TestCase
                     'project_end_date',
                     'access_date',
                     'accredited_researcher_status',
-                    'confidential_description',
+                    'confidential_data_description',
                     'dataset_linkage_description',
                     'duty_of_confidentiality',
                     'legal_basis_for_data_article6',
@@ -121,6 +121,7 @@ class DurIntegrationTest extends TestCase
                     'keywords',
                     'team',
                     'user',
+                    'applicant_id',
                 ],
             ],
             'current_page',
@@ -177,7 +178,7 @@ class DurIntegrationTest extends TestCase
                     'project_end_date',
                     'access_date',
                     'accredited_researcher_status',
-                    'confidential_description',
+                    'confidential_data_description',
                     'dataset_linkage_description',
                     'duty_of_confidentiality',
                     'legal_basis_for_data_article6',
@@ -204,6 +205,7 @@ class DurIntegrationTest extends TestCase
                     'team',
                     'user',
                     'application',
+                    'applicant_id',
                 ]
             ]
         ]);
@@ -221,7 +223,7 @@ class DurIntegrationTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -255,7 +257,7 @@ class DurIntegrationTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -279,7 +281,7 @@ class DurIntegrationTest extends TestCase
 
         // update
         $mockDataUpdate = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -307,7 +309,7 @@ class DurIntegrationTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -357,7 +359,9 @@ class DurIntegrationTest extends TestCase
         $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = Dataset::all()->random()->id;
+            $return['id'] = Dataset::all()->random()->id;
+            $return['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return['is_locked'] = fake()->randomElement([0, 1]);
         }
 
         return array_unique($return);

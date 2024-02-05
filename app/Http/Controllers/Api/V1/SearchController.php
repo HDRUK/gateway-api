@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Exception;
+use MetadataManagementController as MMC;
 
+use App\Models\DatasetVersion;
 use App\Models\Collection;
 use App\Models\Dataset;
 use App\Models\Tool;
@@ -17,7 +19,23 @@ class SearchController extends Controller
 {
 
     /**
-     * @OA\Get(
+     * @OA\Examples(
+     *      example="filtersExample",
+     *      summary="Example Filters payload",
+     *      value={
+     *          "filters": {
+     *               "dataset": {
+     *                   "publisherName": {
+     *                      "terms": {
+     *                          "BREATHE",
+     *                          "HDRUK"
+     *                      }
+     *                   }
+     *               }
+     *           }
+     *       }
+     * ),
+     * @OA\Post(
      *      path="/api/v1/search/datasets",
      *      summary="Keyword search across gateway datasets",
      *      description="Returns gateway datasets related to the provided query term(s)",
@@ -31,29 +49,11 @@ class SearchController extends Controller
      *              mediaType="application/json",
      *              @OA\Schema(
      *                  @OA\Property(property="query", type="string", example="asthma dataset"),
+     *                  @OA\Property(property="sort", type="string", example="score"),
+     *                  @OA\Property(property="direction", type="string", example="desc"),
+     *                  @OA\Property(property="filters", type="string", example={"filtersExample": @OA\Schema(ref="#/components/examples/filtersExample")})
      *              )
      *          )
-     *      ),
-     *      @OA\Parameter(
-     *          name="sort",
-     *          in="query",
-     *          description="Field to sort by (default: 'score')",
-     *          example="created",
-     *          @OA\Schema(
-     *              type="string",
-     *              description="Field to sort by (score, created_at, title)",
-     *          ),
-     *      ),
-     *      @OA\Parameter(
-     *          name="direction",
-     *          in="query",
-     *          description="Sort direction ('asc' or 'desc', default: 'desc')",
-     *          example="desc",
-     *          @OA\Schema(
-     *              type="string",
-     *              enum={"asc", "desc"},
-     *              description="Sort direction",
-     *          ),
      *      ),
      *      @OA\Response(
      *          response=200,
@@ -98,15 +98,54 @@ class SearchController extends Controller
 
             $urlString = env('SEARCH_SERVICE_URL') . '/search/datasets';
 
+            $filters = (isset($request['filters']) ? $request['filters'] : []);
+
             $response = Http::withBody(
                 $request->getContent(), 'application/json'
             )->get($urlString);
 
             $datasetsArray = $response['hits']['hits'];
+            $matchedIds = [];
             // join to created at from DB
             foreach (array_values($datasetsArray) as $i => $d) {
-                $datasetModel = Dataset::where(['id' => $d['_id']])->first();
-                $datasetsArray[$i]['_source']['created_at'] = $datasetModel->toArray()['created_at'];
+               $matchedIds[] = $d['_id'];
+            }
+
+            // debug code left in to map to dataset_version Ids for testing - TODO Remove
+            // $matchedIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+            // whereRaw(1=1) here is a trick to allow us to access the builder model
+            // without fully forming a query first
+            $datasetsFiltered = DatasetVersion::whereRaw('1=1');
+
+            // Apply any filters to retrieve matching datasets on like basis, for
+            // later intersection with elastic matched datasets
+            foreach ($filters as $filter => $value) {
+                foreach ($value as $key => $val) {
+                    MMC::applySearchFilter($datasetsFiltered, $filter, $key, $val['terms']);
+                }
+            }
+
+            $ds = $datasetsFiltered->whereIn('dataset_id', $matchedIds)->get();
+            $likeIds = [];
+            foreach ($ds as $d) {
+                $likeIds[] = $d['dataset_id'];
+            }
+
+            $slimSet = array_intersect($matchedIds, $likeIds);
+
+            $datasetsModels = Dataset::with('versions')->whereIn('id', $slimSet)->get()->toArray();
+            foreach ($datasetsArray as $i => $dataset) {
+                if (!in_array($dataset['_id'], $slimSet)) {
+                    unset($datasetsArray[$i]);
+                    continue;
+                }
+                foreach ($datasetsModels as $model) {
+                    if ((int) $dataset['_id'] === $model['id']) {
+                        $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
+                        $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                    }
+                }
             }
 
             $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
@@ -324,6 +363,108 @@ class SearchController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *      path="/api/v1/search/dur",
+     *      summary="Keyword search across gateway data uses",
+     *      description="Returns gateway data uses related to the provided query term(s)",
+     *      tags={"Search-DataUses"},
+     *      summary="Search@data_uses",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Submit search query",
+     *          @OA\MediaType(
+     *              mediaType="application/json",
+     *              @OA\Schema(
+     *                  @OA\Property(property="query", type="string", example="diabetes data uses"),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="sort",
+     *          in="query",
+     *          description="Field to sort by (default: 'score')",
+     *          example="created",
+     *          @OA\Schema(
+     *              type="string",
+     *              description="Field to sort by (score, created_at, projectTitle)",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="direction",
+     *          in="query",
+     *          description="Sort direction ('asc' or 'desc', default: 'desc')",
+     *          example="desc",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum={"asc", "desc"},
+     *              description="Sort direction",
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="_source", type="array",
+     *                          @OA\Items(
+     *                              @OA\Property(property="projectTitle", type="string"),
+     *                              @OA\Property(property="laySummary", type="string"),
+     *                              @OA\Property(property="publicBenefitStatement", type="string"),
+     *                              @OA\Property(property="technicalSummary", type="string"),
+     *                              @OA\Property(property="fundersAndSponsors", type="string"),
+     *                              @OA\Property(property="datasetTitles", type="array", @OA\Items()),
+     *                              @OA\Property(property="keywords", type="array", @OA\Items())
+     *                          )
+     *                      ),
+     *                      @OA\Property(property="highlight", type="array",
+     *                          @OA\Items(
+     *                              @OA\Property(property="laySummary", type="array", @OA\Items())
+     *                          )
+     *                      )
+     *                  )
+     *              )
+     *          )
+     *      )
+     * )
+     */
+    public function dataUses(Request $request): JsonResponse
+    {
+        try {
+            $sort = $request->query('sort',"score:desc");   
+        
+            $tmp = explode(":", $sort);
+            $sortField = $tmp[0];
+
+            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+            $urlString = env('SEARCH_SERVICE_URL') . '/search/dur';
+
+            $response = Http::withBody(
+                $request->getContent(), 'application/json'
+            )->get($urlString);
+
+            $durArray = $response['hits']['hits'];
+            // join to created at from DB
+            foreach (array_values($durArray) as $i => $d) {
+                $durModel = Collection::where(['id' => $d['_id']])->first();
+                $durArray[$i]['_source']['created_at'] = $durModel->toArray()['created_at'];
+            }
+
+            $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => $durArraySorted,
+            ], 200);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
 
     /**
      * Sorts results returned by the search service according to sort field and direction
