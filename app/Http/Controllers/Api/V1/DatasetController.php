@@ -535,13 +535,16 @@ class DatasetController extends Controller
                         'publisherName' => $team['name'],
                     ];
                 } else{
-                    $required['version'] = $input['metadata']['metadata']['required']['version'];
+                    $version = $this->getVersion(1);
+                    if(array_key_exists( 'version', $input['metadata']['metadata']['required'])){
+                       $version = $input['metadata']['metadata']['required']['version'];
+                    }
+                    $required['version'] = $version;
                     $publisher = [
                         'gatewayId' => $team['pid'],
                         'name' => $team['name'],
                     ];
                 }
-                
 
                 $input['metadata']['metadata']['required'] = $required;
                 $input['metadata']['metadata']['summary']['publisher'] = $publisher;
