@@ -33,6 +33,9 @@ class Collection extends Model
         'counter',
         'mongo_object_id',
         'mongo_id',
+        'created_at',
+        'updated_at',
+        'updated_on',
     ];
     
     protected $casts = [
@@ -46,7 +49,8 @@ class Collection extends Model
 
     public function datasets(): BelongsToMany
     {
-        return $this->belongsToMany(Dataset::class, 'collection_has_datasets');
+        return $this->belongsToMany(Dataset::class, 'collection_has_datasets')
+        ->withPivot('collection_id', 'dataset_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
     }
 
     public function users(): BelongsToMany

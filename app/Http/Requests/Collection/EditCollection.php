@@ -19,15 +19,7 @@ class EditCollection extends BaseFormRequest
             'id' => [
                 'int',
                 'required',
-                function ($attribute, $value, $fail) {
-                    $exists = Collection::withTrashed()
-                        ->where('id', $value)
-                        ->exists();
-
-                    if (!$exists) {
-                        $fail('The selected collection does not exists.');
-                    }
-                },
+                'exists:collections,id',
             ],
             'name' => [
                 'string',
@@ -48,10 +40,21 @@ class EditCollection extends BaseFormRequest
             'datasets' => [
                 'array',
             ],
-            'datasets.*'  => [
+            'datasets.*.id'  => [
                 'integer',
-                'distinct',
                 'exists:datasets,id',
+            ],
+            'datasets.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'datasets.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'datasets.*.reason'  => [
+                'nullable',
+                'string',
             ],
             'keywords' => [
                 'array',
@@ -59,13 +62,6 @@ class EditCollection extends BaseFormRequest
             'keywords.*' => [
                 'string',
                 'distinct',
-                function ($attribute, $value, $fail) {
-                    $keywords = Keyword::where(['name' => $value, 'enabled' => 1])->first();
-
-                    if (!$keywords) {
-                        $fail('The selected keyword is invalid, not found. - ' . $value);
-                    }
-                }
             ],
             'userId' => [
                 'integer',
@@ -78,8 +74,17 @@ class EditCollection extends BaseFormRequest
                 'integer',
             ],
             'mongo_object_id' => [
-                'nullable',
+                'nullable', 
                 'string',
+            ],
+            'created_at' => [
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'updated_at' => [
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'updated_on' => [
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],
         ];
     }

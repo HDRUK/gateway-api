@@ -4,15 +4,16 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
-use MetadataManagementController AS MMC;
 use App\Models\Keyword;
 use App\Models\Collection;
+use App\Models\Application;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\CollectionHasDataset;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
+use MetadataManagementController AS MMC;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Collection\GetCollection;
 use App\Http\Requests\Collection\EditCollection;
@@ -229,28 +230,57 @@ class CollectionController extends Controller
 
             $userId = null;
             $appId = null;
-            if ($request->has('userId')) {
-                $userId = (int) $input['userId'];
+            if (array_key_exists('user_id', $input)) {
+                $userId = (int) $input['user_id'];
             } elseif (array_key_exists('jwt_user', $input)) {
                 $userId = (int) $input['jwt_user']['id'];
             } elseif (array_key_exists('app_user', $input)) {
                 $appId = (int) $input['app']['id'];
+                $app = Application::where(['id' => $appId])->first();
+                $userId = (int) $app->user_id;
             }
-
-            $arrayKeys = ['name', 'description', 'image_link', 'enabled', 'public', 'counter', 'mongo_object_id', 'mongo_id'];
+ 
+            $arrayKeys = [
+                'name', 
+                'description', 
+                'image_link', 
+                'enabled', 
+                'public', 
+                'counter', 
+                'mongo_object_id', 
+                'mongo_id',
+            ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
             $collection = Collection::create($array);
+            $collectionId = (int) $collection->id;
+            
+            $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
-            $datasets = $input['datasets'];
-            $this->addDatasets($datasets, $collection->id, $userId, $appId);
+            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+            $this->checkDatasets($collectionId, $datasets, $array['user_id'], $appId);
 
-            $keywords = $input['keywords'];
-            $this->addKeywords($keywords, $collection->id);
+            $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
+            $this->checkKeywords($collectionId, $keywords);
+
+            // for migration from mongo database
+            if (array_key_exists('created_at', $input)) {
+                Collection::where('id', $collectionId)->update(['created_at' => $input['created_at']]);
+            }
+
+            // for migration from mongo database
+            if (array_key_exists('updated_at', $input)) {
+                Collection::where('id', $collectionId)->update(['updated_at' => $input['updated_at']]);
+            }
+
+            // updated_on
+            if (array_key_exists('updated_on', $input)) {
+                Collection::where('id', $collectionId)->update(['updated_on' => $input['updated_on']]);
+            }
 
             return response()->json([
                 'message' => 'created',
-                'data' => $collection->id,
+                'data' => $collectionId,
             ], 201);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -340,26 +370,51 @@ class CollectionController extends Controller
 
             $userId = null;
             $appId = null;
-            if ($request->has('userId')) {
-                $userId = (int) $input['userId'];
+            if (array_key_exists('user_id', $input)) {
+                $userId = (int) $input['user_id'];
             } elseif (array_key_exists('jwt_user', $input)) {
                 $userId = (int) $input['jwt_user']['id'];
             } elseif (array_key_exists('app_user', $input)) {
                 $appId = (int) $input['app']['id'];
+                $app = Application::where(['id' => $appId])->first();
+                $userId = (int) $app->user_id;
             }
 
-            $arrayKeys = ['name', 'description', 'image_link', 'enabled', 'public', 'counter', 'mongo_object_id', 'mongo_id'];
+            $arrayKeys = [
+                'name', 
+                'description', 
+                'image_link', 
+                'enabled', 
+                'public', 
+                'counter', 
+                'mongo_object_id', 
+                'mongo_id',
+            ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Collection::where('id', $id)->update($array);
+            $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
-            $datasets = $input['datasets'];
-            $this->clearDatasets($datasets, $id);
-            $this->addDatasets($datasets, $id, $userId, $appId);
+            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+            $this->checkDatasets($id, $datasets, $array['user_id'], $appId);
 
-            $keywords = $input['keywords'];
-            $this->clearKeywords($keywords, $id);
-            $this->addKeywords($keywords, $id);
+            $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
+            $this->checkKeywords($id, $keywords);
+
+            // for migration from mongo database
+            if (array_key_exists('created_at', $input)) {
+                Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
+            }
+
+            // for migration from mongo database
+            if (array_key_exists('updated_at', $input)) {
+                Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
+            }
+
+            // updated_on
+            if (array_key_exists('updated_on', $input)) {
+                Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
+            }
 
             return response()->json([
                 'message' => 'success',
@@ -474,17 +529,26 @@ class CollectionController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Collection::where('id', $id)->update($array);
+            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             if (array_key_exists('datasets', $input)) {
                 $datasets = $input['datasets'];
-                $this->clearDatasets($datasets, $id);
-                $this->addDatasets($datasets, $id, $userId, $appId);
+                $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
             }
 
             if (array_key_exists('keywords', $input)) {
                 $keywords = $input['keywords'];
-                $this->clearKeywords($keywords, $id);
-                $this->addKeywords($keywords, $id);
+                $this->checkKeywords($id, $keywords);
+            }
+
+            // for migration from mongo database
+            if (array_key_exists('created_at', $input)) {
+                Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
+            }
+
+            // for migration from mongo database
+            if (array_key_exists('updated_at', $input)) {
+                Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
             return response()->json([
@@ -562,96 +626,158 @@ class CollectionController extends Controller
         }
     }
 
-    private function addDatasets(array $datasets, int $collectionId, $userId, $appId)
+
+    private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null) 
+    {
+        $cols = CollectionHasDataset::where(['collection_id' => $collectionId])->get();
+        foreach ($cols as $col) {
+            if (!in_array($col->dataset_id, $this->extractInputDatasetIdToArray($inDatasets))) {
+                $this->deleteCollectionHasDatasets($collectionId, $col->dataset_id);
+            }
+        }
+
+        foreach ($inDatasets as $dataset) {
+            $checking = $this->checkInCollectionHasDatasets($collectionId, (int) $dataset['id']);
+
+            if (!$checking) {
+                $this->addCollectionHasDataset($collectionId, $dataset, $userId, $appId);
+            }
+
+            MMC::reindexElastic($dataset['id']);
+        }
+    }
+
+    private function addCollectionHasDataset(int $collectionId, array $dataset, int $userId = null, int $appId = null)
     {
         try {
-            foreach ($datasets as $dataset) {
-                $checkDatasetInCollection = CollectionHasDataset::where([
+            $arrCreate = [
+                'collection_id' => $collectionId,
+                'dataset_id' => $dataset['id'],
+            ];
+
+            if (array_key_exists('user_id', $dataset)) {
+                $arrCreate['user_id'] = (int) $dataset['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $dataset)) {
+                $arrCreate['reason'] = $dataset['reason'];
+            }
+
+            if (array_key_exists('updated_at', $dataset)) { // special for migration
+                $arrCreate['created_at'] = $dataset['updated_at'];
+                $arrCreate['updated_at'] = $dataset['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return CollectionHasDataset::updateOrCreate(
+                $arrCreate,
+                [
                     'collection_id' => $collectionId,
-                    'dataset_id' => $dataset,
-                ])->first();
-
-                if (!$checkDatasetInCollection) {
-                    CollectionHasDataset::create([
-                        'collection_id' => $collectionId,
-                        'dataset_id' => $dataset,
-                        'user_id' => $userId,
-                        'app_id' => $appId,
-                    ]);
-                }
-                MMC::reindexElastic($dataset);
-            }
+                    'dataset_id' => $dataset['id'],
+                ]
+            );
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            throw new Exception("addCollectionHasDataset :: " . $e->getMessage());
         }
     }
 
-    private function addKeywords(array $keywords, int $collectionId)
+    private function checkInCollectionHasDatasets(int $collectionId, int $datasetId)
     {
         try {
-            foreach ($keywords as $keyword) {
-                $keywordId = 0;
-                $keywordDB = Keyword::where(['enabled' => 1, 'name' => $keyword])->first();
-                if (!$keywordDB) {
-                    $keywordDB = Keyword::create([
-                        'name' => $keyword,
-                        'enabled' => 1,
-                    ]);
-                }
-                $keywordId = $keywordDB->id;
-
-                $checkKeywordInCollection = CollectionHasKeyword::where([
-                    'collection_id' => $collectionId,
-                    'keyword_id' => $keywordId,
-                ])->first();
-
-                if (!$checkKeywordInCollection) {
-                    CollectionHasKeyword::create([
-                        'collection_id' => $collectionId,
-                        'keyword_id' => $keywordId,
-                    ]);
-                }
-            }
+            return CollectionHasDataset::where([
+                'collection_id' => $collectionId,
+                'dataset_id' => $datasetId,
+            ])->first();
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            throw new Exception("checkInCollectionHasDatasets :: " . $e->getMessage());
         }
     }
 
-    private function clearDatasets(array $inDatasets, int $collectionId)
+    private function deleteCollectionHasDatasets(int $collectionId, int $datasetId)
     {
         try {
-            $datasetIds = CollectionHasDataset::where('collection_id', $collectionId)->pluck('dataset_id')->toArray();
-
-            foreach ($datasetIds as $datasetId) {
-                if (!in_array($datasetId, $inDatasets)) {
-                    CollectionHasDataset::where([
-                        'collection_id' => $collectionId,
-                        'dataset_id' => $datasetId
-                    ])->delete();
-                }
-            }
+            return CollectionHasDataset::where([
+                'collection_id' => $collectionId,
+                'dataset_id' => $datasetId,
+            ])->delete();
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            throw new Exception("deleteKeywordDur :: " . $e->getMessage());
         }
     }
 
-    private function clearKeywords(array $inKeywords, int $collectionId)
+    private function checkKeywords(int $collectionId, array $inKeywords)
+    {
+        $kws = CollectionHasKeyword::where('collection_id', $collectionId)->get();
+
+        foreach($kws as $kw) {
+            $kwId = $kw->keyword_id;
+            $checkKeyword = Keyword::where('id', $kwId)->first();
+
+            if (!$checkKeyword) {
+                $this->deleteCollectionHasKeywords($kwId);
+                continue;
+            }
+
+            if (in_array($checkKeyword->name, $inKeywords)) continue;
+
+            if (!in_array($checkKeyword->name, $inKeywords)) {
+                $this->deleteCollectionHasKeywords($kwId);
+            }
+        }
+
+        foreach ($inKeywords as $keyword) {
+            $keywordId = $this->updateOrCreateKeyword($keyword)->id;
+            $this->updateOrCreateDurHasKeywords($collectionId, $keywordId);
+        }
+    }
+
+    private function updateOrCreateDurHasKeywords(int $collectionId, int $keywordId)
     {
         try {
-            $keywordIds = CollectionHasKeyword::where('collection_id', $collectionId)->pluck('keyword_id')->toArray();
-
-            foreach ($keywordIds as $keywordId) {
-                $keywordDB = Keyword::where(['id' => $keywordId])->first();
-
-                if (!in_array($keywordDB->name, $inKeywords)) {
-                    CollectionHasKeyword::where([
-                        'collection_id' => $collectionId,
-                        'keyword_id' => $keywordId
-                    ])->delete();
-                }
-            }
+            return CollectionHasKeyword::updateOrCreate([
+                'collection_id' => $collectionId,
+                'keyword_id' => $keywordId,
+            ]);
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            throw new Exception("addKeywordDur :: " . $e->getMessage());
         }
+    }
+
+    private function updateOrCreateKeyword($keyword)
+    {
+        try {
+            return Keyword::updateOrCreate([
+                'name' => $keyword,
+            ],[
+                'name' => $keyword,
+                'enabled' => 1,
+            ]);
+        } catch (Exception $e) {
+            throw new Exception("createUpdateKeyword :: " . $e->getMessage());
+        }
+    } 
+
+    private function deleteCollectionHasKeywords($keywordId)
+    {
+        try {
+            return CollectionHasKeyword::where(['keyword_id' => $keywordId])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+        }
+    }
+
+    private function extractInputDatasetIdToArray(array $inputDatasets): Array
+    {
+        $response = [];
+        foreach ($inputDatasets as $inputDataset) {
+            $response[] = $inputDataset['id'];
+        }
+
+        return $response;
     }
 }

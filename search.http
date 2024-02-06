@@ -1,0 +1,16 @@
+### Search Service
+###  
+### https://github.com/HDRUK/search-service
+### Description: Rest Client in Visual Studio Code
+
+### Variables
+@baseUrl = http://localhost:8003
+
+### Swagger
+GET {{baseUrl}}/search HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "query": "asthma icd10"
+}
