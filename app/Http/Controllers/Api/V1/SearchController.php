@@ -169,8 +169,8 @@ class SearchController extends Controller
             $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $responseData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
-            return response()->json($responseData, 200);
+            $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -279,7 +279,8 @@ class SearchController extends Controller
             $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            return response()->json($this->paginateArray($request, $toolsArraySorted, $perPage), 200);
+            $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -390,9 +391,9 @@ class SearchController extends Controller
 
             $collectionsArraySorted = $this->sortSearchResult($collectionsArray, $sortField, $sortDirection);
 
-
             $perPage = request('perPage', Config::get('constants.per_page'));
-            return response()->json($this->paginateArray($request, $collectionsArraySorted, $perPage), 200);
+            $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -504,7 +505,8 @@ class SearchController extends Controller
             $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            return response()->json($this->paginateArray($request, $durArraySorted, $perPage), 200);
+            $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
