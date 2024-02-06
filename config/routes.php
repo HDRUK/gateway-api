@@ -2311,7 +2311,7 @@ return [
     ],
     [
         'name' => 'search.tools',
-        'method' => 'get',
+        'method' => 'post',
         'path' => '/search/tools',
         'methodController' => 'SearchController@tools',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -2320,7 +2320,7 @@ return [
     ],
     [
         'name' => 'search.collections',
-        'method' => 'get',
+        'method' => 'post',
         'path' => '/search/collections',
         'methodController' => 'SearchController@collections',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
@@ -2329,7 +2329,7 @@ return [
     ],
     [
         'name' => 'search.data_uses',
-        'method' => 'get',
+        'method' => 'post',
         'path' => '/search/dur',
         'methodController' => 'SearchController@dataUses',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
