@@ -257,11 +257,9 @@ class CollectionController extends Controller
             
             $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
-            // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($collectionId, $datasets, $array['user_id'], $appId);
 
-            // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($collectionId, $keywords);
 
@@ -397,11 +395,9 @@ class CollectionController extends Controller
             Collection::where('id', $id)->update($array);
             $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
-            // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($id, $datasets, $array['user_id'], $appId);
 
-            // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
 
