@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Exceptions\NotFoundException;
+use Config;
 use Exception;
 use MetadataManagementController as MMC;
 
@@ -14,10 +16,14 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Dur;
+use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Support\Facades\Http;
+
+use App\Http\Traits\PaginateFromArray;
 
 class SearchController extends Controller
 {
+    use PaginateFromArray;
 
     /**
      * @OA\Examples(
@@ -60,7 +66,7 @@ class SearchController extends Controller
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
      *                  @OA\Items(
      *                      @OA\Property(property="_source", type="array",
@@ -82,7 +88,18 @@ class SearchController extends Controller
      *                          )
      *                      )
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
      *          )
      *      )
      * )
@@ -151,10 +168,9 @@ class SearchController extends Controller
 
             $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
-            return response()->json([
-                'message' => 'success',
-                'data' => $datasetsArraySorted,
-            ], 200);
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -162,7 +178,7 @@ class SearchController extends Controller
     }
 
     /**
-     * @OA\Get(
+     * @OA\Post(
      *      path="/api/v1/search/tools",
      *      summary="Keyword search across gateway tools",
      *      description="Returns gateway tools related to the provided query term(s)",
@@ -204,7 +220,7 @@ class SearchController extends Controller
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
      *                  @OA\Items(
      *                      @OA\Property(property="_source", type="array",
@@ -221,7 +237,18 @@ class SearchController extends Controller
      *                          )
      *                      )
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
      *          )
      *      )
      * )
@@ -251,10 +278,9 @@ class SearchController extends Controller
 
             $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
-            return response()->json([
-                'message' => 'success',
-                'data' => $toolsArraySorted,
-            ], 200);
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $paginatedData = $this->paginateArray($request, $toolsArraySorted, $perPage);
+            return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -262,7 +288,7 @@ class SearchController extends Controller
     }
 
     /**
-     * @OA\Get(
+     * @OA\Post(
      *      path="/api/v1/search/collections",
      *      summary="Keyword search across gateway collections",
      *      description="Returns gateway collections related to the provided query term(s)",
@@ -304,7 +330,7 @@ class SearchController extends Controller
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
      *                  @OA\Items(
      *                      @OA\Property(property="_source", type="array",
@@ -324,7 +350,18 @@ class SearchController extends Controller
      *                          )
      *                      )
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
      *          )
      *      )
      * )
@@ -354,10 +391,9 @@ class SearchController extends Controller
 
             $collectionsArraySorted = $this->sortSearchResult($collectionsArray, $sortField, $sortDirection);
 
-            return response()->json([
-                'message' => 'success',
-                'data' => $collectionsArraySorted,
-            ], 200);
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $paginatedData = $this->paginateArray($request, $collectionsArraySorted, $perPage);
+            return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -407,7 +443,7 @@ class SearchController extends Controller
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="current_page", type="integer", example="1"),
      *              @OA\Property(property="data", type="array",
      *                  @OA\Items(
      *                      @OA\Property(property="_source", type="array",
@@ -427,7 +463,18 @@ class SearchController extends Controller
      *                          )
      *                      )
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
      *          )
      *      )
      * )
@@ -457,10 +504,9 @@ class SearchController extends Controller
 
             $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);
 
-            return response()->json([
-                'message' => 'success',
-                'data' => $durArraySorted,
-            ], 200);
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $paginatedData = $this->paginateArray($request, $durArraySorted, $perPage);
+            return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -500,5 +546,4 @@ class SearchController extends Controller
         }
         return $resultArray;
     }
-
 }
