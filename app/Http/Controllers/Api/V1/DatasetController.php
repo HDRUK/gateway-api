@@ -50,6 +50,17 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
+     *       name="pid",
+     *       in="query",
+     *       description="get based on a pid",
+     *       required=false,
+     *       example="aa588d1c-21e7-42d9-9b60-48e3d6b784a9",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="retrieve based on pid",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
      *       name="sort",
      *       in="query",
      *       description="Field to sort by (default: 'created')",
@@ -440,6 +451,8 @@ class DatasetController extends Controller
             $input = $request->all();
             $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
 
+            $input['metadata'] = $this->extractMetadata($input['metadata']);
+
             //send the payload to traser
             // - traser will return the input unchanged if the data is
             //   already in the GWDM with GWDM_CURRENT_VERSION
@@ -453,7 +466,7 @@ class DatasetController extends Controller
                 "pid"=>"placeholder",
                 "datasetType"=>"Healthdata",
                 "publisherId"=>$team['pid'],
-                "publisherName"=>$team['name'],
+                "publisherName"=>$team['name']
             ];
 
             $traserResponse = MMC::translateDataModelType(
@@ -471,6 +484,8 @@ class DatasetController extends Controller
                 $mongo_pid = array_key_exists('mongo_pid', $input) ? $input['mongo_pid'] : null;
                 $datasetid = array_key_exists('datasetid', $input) ? $input['datasetid'] : null;
 
+                $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
+
                 $dataset = MMC::createDataset([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
@@ -481,7 +496,7 @@ class DatasetController extends Controller
                     'created' => now(),
                     'updated' => now(),
                     'submitted' => now(),
-                    'pid' => (string) Str::uuid(),
+                    'pid' => $pid,
                     'create_origin' => $input['create_origin'],
                     'status' => $input['status'],
                 ]);
@@ -493,7 +508,7 @@ class DatasetController extends Controller
                         'gatewayPid' => $dataset->pid,
                         'issued' => $dataset->created,
                         'modified' => $dataset->updated,
-                        'revisions' => [],
+                        'revisions' => []
                     ];
 
                 // ------------------------------------------------------------------- 
@@ -520,7 +535,11 @@ class DatasetController extends Controller
                         'publisherName' => $team['name'],
                     ];
                 } else{
-                    $required['version'] = $this->getVersion(1);
+                    $version = $this->getVersion(1);
+                    if(array_key_exists( 'version', $input['metadata']['metadata']['required'])){
+                       $version = $input['metadata']['metadata']['required']['version'];
+                    }
+                    $required['version'] = $version;
                     $publisher = [
                         'gatewayId' => $team['pid'],
                         'name' => $team['name'],
@@ -553,12 +572,12 @@ class DatasetController extends Controller
             }
             else {
                 return response()->json([
-                    'message' => 'dataset is in an unknown format and cannot be processed',
+                    'message' => 'metadata is in an unknown format and cannot be processed',
                     'details' => $traserResponse,
                 ], 400);
             }
         } catch (Exception $e) {
-                throw new Exception($e->getMessage());
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -628,9 +647,19 @@ class DatasetController extends Controller
             $currDataset = Dataset::where('id', $id)->first();
             $currentPid = $currDataset->pid;
 
+            $input['metadata'] = $this->extractMetadata($input['metadata']);
+
+            $payload = $input['metadata'];
+            $payload['extra'] = [
+                "id"=>$id,
+                "pid"=>$currentPid,
+                "datasetType"=>"Healthdata",
+                "publisherId"=>$team['pid'],
+                "publisherName"=>$team['name']
+            ];
 
             $traserResponse = MMC::translateDataModelType(
-                json_encode($input['metadata']),
+                json_encode($payload),
                 Config::get('metadata.GWDM.name'),
                 Config::get('metadata.GWDM.version')
             );
@@ -638,6 +667,7 @@ class DatasetController extends Controller
             if ($traserResponse['wasTranslated']) {
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
                 $input['metadata']['metadata'] = $traserResponse['metadata'];
+
 
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
@@ -652,21 +682,27 @@ class DatasetController extends Controller
 
                 // Determine the last version of metadata
                 $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
+
+                $currentVersionCode = $this->getVersion($lastVersionNumber + 1);
+                $lastVersionCode = $this->getVersion($lastVersionNumber);
+
+                $lastMetadata = $currDataset->lastMetadata();
      
                 //update the GWDM modified date and version
                 $input['metadata']['metadata']['required']['modified'] = $updateTime;
-                if(version_compare(Config::get('metadata.GWDM.version'),"1.0",">")){
-                    //version was missing in GWDM 1.0
-                    $input['metadata']['metadata']['required']['version'] = $this->getVersion($lastVersionNumber + 1);
+                if(version_compare(Config::get('metadata.GWDM.version'),"1.0",">")){   
+                    if(version_compare($lastMetadata['gwdmVersion'],"1.0",">")){
+                        $lastVersionCode = $lastMetadata['metadata']['required']['version'];
+                    }
                 }
-
+                
                 //update the GWDM revisions
                 // NOTE: Calum 12/1/24
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $input['metadata']['metadata']['required']['revisions'][] = [
-                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$lastVersionNumber, 
-                    "version"=>$lastVersionNumber
+                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$lastVersionCode, 
+                    "version"=>$lastVersionCode
                 ];
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
@@ -845,6 +881,19 @@ class DatasetController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    public function destroyByPid(Request $request, string $pid) // softdelete
+    {
+        $dataset = Dataset::where('pid', "=", $pid)->first();
+        return $this->destroy($request,$dataset->id);
+    }
+
+    public function updateByPid(UpdateDataset $request, string $pid)
+    {
+        $dataset = Dataset::where('pid', "=", $pid)->first();
+        return $this->update($request,$dataset->id);
+    }
+
 
     /**
      * @OA\Get(
@@ -1033,6 +1082,25 @@ class DatasetController extends Controller
         $formattedVersion = "{$hundreds}.{$tens}.{$units}";
 
         return $formattedVersion;
+    }
+
+    private function extractMetadata (Mixed $metadata){
+
+        // Pre-process check for incoming data from a resource that passes strings
+        // when we expect an associative array. FMA passes strings, this
+        // is a safe-guard to ensure execution is unaffected by other data types.
+        if (isset($metadata['metadata'])) {
+            if (is_string($metadata['metadata'])) {
+                $tmpMetadata['metadata'] = json_decode($metadata['metadata'], true);
+                unset($metadata['metadata']);
+                $metadata = $tmpMetadata;
+            }
+        } else if (is_string($metadata)) {
+            $tmpMetadata['metadata'] = json_decode($metadata, true);
+            unset($metadata);
+            $metadata = $tmpMetadata;
+        }
+        return $metadata;
     }
 
 
