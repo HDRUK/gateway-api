@@ -279,7 +279,7 @@ class SearchController extends Controller
             $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $toolsArraySorted, $perPage);
             return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
@@ -392,7 +392,7 @@ class SearchController extends Controller
             $collectionsArraySorted = $this->sortSearchResult($collectionsArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $collectionsArraySorted, $perPage);
             return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
@@ -505,7 +505,7 @@ class SearchController extends Controller
             $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $durArraySorted, $perPage);
             return response()->json($paginatedData, 200);
 
         } catch (Exception $e) {
