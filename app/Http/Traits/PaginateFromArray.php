@@ -17,13 +17,19 @@ trait PaginateFromArray
      */
     private function paginateArray(Request $request, array $searchArray, int $noItemsPerPage): LengthAwarePaginator
     {
-        $itemsCollection = collect($searchArray);
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $currentPageItems = $itemsCollection->slice(($currentPage - 1) * $noItemsPerPage, $noItemsPerPage)->all();
-        $paginatedItems = new LengthAwarePaginator($currentPageItems, count($itemsCollection), $noItemsPerPage, $currentPage, [
-            'path' => $request->url(),
-            'query' => $request->query(), // This will ensure all query parameters are kept
-        ]);
+        $offset = ($currentPage - 1) * $noItemsPerPage;
+        $currentPageItems = array_slice($searchArray, $offset, $noItemsPerPage, false);
+        $paginatedItems = new LengthAwarePaginator(
+            $currentPageItems, 
+            count($searchArray), 
+            $noItemsPerPage, 
+            $currentPage, 
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]
+        );
         $paginatedItems->setPath($request->url());
         $paginatedItems->appends($request->query());
 

@@ -122,10 +122,6 @@ class SearchController extends Controller
                 $request->getContent(), 'application/json'
             )->get($urlString);
 
-            if (!$response) {
-                throw new NotFoundException("Datasets not found.");
-            }
-
             $datasetsArray = $response['hits']['hits'];
             $matchedIds = [];
             // join to created at from DB
@@ -173,7 +169,8 @@ class SearchController extends Controller
             $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            return response()->json($this->paginateArray($request, $datasetsArraySorted, $perPage), 200);
+            $responseData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
+            return response()->json($responseData, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -271,10 +268,6 @@ class SearchController extends Controller
             $response = Http::withBody(
                 $request->getContent(), 'application/json'
             )->get($urlString);
-
-            if (!$response) {
-                throw new NotFoundException("Tools not found.");
-            }
 
             $toolsArray = $response['hits']['hits'];
             // join to created at from DB
@@ -387,11 +380,6 @@ class SearchController extends Controller
             $response = Http::withBody(
                 $request->getContent(), 'application/json'
             )->get($urlString);
-// var_dump($response);
-// exit();
-            if (!$response) {
-                throw new NotFoundException("Collections not found.");
-            }
 
             $collectionsArray = $response['hits']['hits'];
             // join to created at from DB
@@ -505,10 +493,6 @@ class SearchController extends Controller
             $response = Http::withBody(
                 $request->getContent(), 'application/json'
             )->get($urlString);
-
-            if (!$response) {
-                throw new NotFoundException("Data Use Resigisters not found.");
-            }
 
             $durArray = $response['hits']['hits'];
             // join to created at from DB

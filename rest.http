@@ -1871,11 +1871,11 @@ Authorization: Bearer {{accessToken}}
 # example url: POST {{baseUrl}}/api/{{apiVersion}}/search/datasets?page=2 HTTP/1.1
 # example url: POST {{baseUrl}}/api/{{apiVersion}}/search/datasets?perPage=5 HTTP/1.1
 # example url: POST {{baseUrl}}/api/{{apiVersion}}/search/datasets?perPage=5&page=2 HTTP/1.1
-POST {{baseUrl}}/api/{{apiVersion}}/search/collections HTTP/1.1
+POST {{baseUrl}}/api/{{apiVersion}}/search/datasets HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "query": "hdr icd10"
+    "query": "asthma icd10"
 }
