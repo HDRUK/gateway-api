@@ -13,6 +13,7 @@ use App\Models\Tool;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Models\Dur;
 use Illuminate\Support\Facades\Http;
 
 class SearchController extends Controller
@@ -462,7 +463,7 @@ class SearchController extends Controller
             $durArray = $response['hits']['hits'];
             // join to created at from DB
             foreach (array_values($durArray) as $i => $d) {
-                $durModel = Collection::where(['id' => $d['_id']])->first();
+                $durModel = Dur::where(['id' => $d['_id']])->first();
                 $durArray[$i]['_source']['created_at'] = $durModel->toArray()['created_at'];
             }
 
