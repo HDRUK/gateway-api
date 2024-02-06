@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
+use App\Models\SpatialCoverage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
@@ -1110,7 +1111,8 @@ class DatasetController extends Controller
     private function mapCoverage(array $metadata, Dataset $dataset): void 
     {
         $coverage = $metadata['metadata']['coverage']['spatial'];
-        $allCoverages = Coverage::all();
+        $allCoverages = SpatialCoverage::all();
+        dd($allCoverages);
     }
 
 }

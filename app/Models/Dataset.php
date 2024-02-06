@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Collection;
 use App\Models\DataVersion;
 use App\Models\NamedEntities;
+use App\Models\spatialCoverage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -125,5 +126,12 @@ class Dataset extends Model
         $datasetVersion = DatasetVersion::where('dataset_id', $this->id)
             ->latest('version')->select('metadata')->first();
         return  $datasetVersion['metadata'];
+    }
+    /**
+     * The spatial coverage that belong to the dataset.
+     */
+    public function spatialCoverage(): BelongsToMany
+    {
+        return $this->belongsToMany(SpatialCoverage::class, 'dataset_has_spatial_coverage');
     }
 }
