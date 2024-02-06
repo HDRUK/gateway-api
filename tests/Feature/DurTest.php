@@ -416,16 +416,6 @@ class DurTest extends TestCase
         return array_unique($return);
     }
 
-    // private function generateDatasets()
-    // {
-    //     $return = [];
-
-    //     $return['id'] = Dataset::all()->random()->id;
-    //     $return['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
-    //     $return['is_locked'] = fake()->randomElement([0, 1]);
-
-    //     return $return;
-    // }
     private function generateDatasets()
     {
         $return = [];
