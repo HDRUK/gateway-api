@@ -70,7 +70,10 @@ class Tool extends Model
         return $this->hasMany(Review::class);
     }
 
-    public function category()
+    /**
+     * @mixin BelongsTo
+     */
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class,'category_id', 'id');
     }

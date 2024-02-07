@@ -1172,7 +1172,6 @@ class DurController extends Controller
     public function indexElasticDur(string $id): void
     {
         try {
-
             $durMatch = Dur::where(['id' => $id])
                 ->with(['datasets', 'keywords'])
                 ->first()

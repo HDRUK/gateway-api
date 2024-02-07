@@ -269,7 +269,7 @@ class SearchController extends Controller
 
             //IDs that have been matched and IDs that have been filtered
             $slimSet = array_intersect($matchedIds, $likeIds);
-           
+
             foreach ($toolsArray as $i => $tool) {
                 if (!in_array($tool['_id'], $slimSet)) {
                     unset($toolsArray[$i]);
@@ -278,12 +278,17 @@ class SearchController extends Controller
                 foreach ($toolModels as $model){
                     if ((int) $tool['_id'] === $model['id']) {
                         $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
-                        $toolsArray[$i]['_source']['category'] = $model->category['name'];
+                        $category = null;
+                        if( $model->category){
+                            $category = $model->category['name'];
+                        }
+                        $toolsArray[$i]['_source']['category'] = $category;
+                        $toolsArray[$i]['_source']['created_at'] = $model['created_at'];
                         break;
                     }
                 }
             }
-            
+     
             $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
             return response()->json([
@@ -297,7 +302,7 @@ class SearchController extends Controller
     }
 
     /**
-     * @OA\Get(
+     * @OA\Post(
      *      path="/api/v1/search/collections",
      *      summary="Keyword search across gateway collections",
      *      description="Returns gateway collections related to the provided query term(s)",
@@ -374,24 +379,55 @@ class SearchController extends Controller
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
+            $filters = (isset($request['filters']) ? $request['filters'] : []);
             $urlString = env('SEARCH_SERVICE_URL') . '/search/collections';
 
             $response = Http::withBody(
                 $request->getContent(), 'application/json'
             )->get($urlString);
 
-            $collectionsArray = $response['hits']['hits'];
-            // join to created at from DB
-            foreach (array_values($collectionsArray) as $i => $d) {
-                $collectionModel = Collection::where(['id' => $d['_id']])->first();
-                $collectionsArray[$i]['_source']['created_at'] = $collectionModel->toArray()['created_at'];
+
+            $collectionArray = $response['hits']['hits'];
+            $matchedIds = [];
+            foreach (array_values($collectionArray) as $i => $d) {
+                $matchedIds[] = $d['_id'];
             }
 
-            $collectionsArraySorted = $this->sortSearchResult($collectionsArray, $sortField, $sortDirection);
+            $collectionsFiltered = Collection::whereRaw("1=1");
+            foreach ($filters as $filter => $value) {
+                foreach ($value as $key => $val) {
+                    MMC::applySearchFilter($collectionsFiltered, $filter, $key, $val['terms']);
+                }
+            }
+
+            $collectionModels = $collectionsFiltered->whereIn('id', $matchedIds)->get();
+
+            $likeIds = [];
+            foreach ($collectionModels as $d) {
+                $likeIds[] = $d['id'];
+            }
+
+            //IDs that have been matched and IDs that have been filtered
+            $slimSet = array_intersect($matchedIds, $likeIds);
+
+            foreach ($collectionArray as $i => $collection) {
+                if (!in_array($collection['_id'], $slimSet)) {
+                    unset($collectionArray[$i]);
+                    continue;
+                }
+                foreach ($collectionModels as $model){
+                    if ((int) $collection['_id'] === $model['id']) {
+                        $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
+                        break;
+                    }
+                }
+            }
+
+            $collectionArraySorted = $this->sortSearchResult($collectionArray, $sortField, $sortDirection);
 
             return response()->json([
                 'message' => 'success',
-                'data' => $collectionsArraySorted,
+                'data' => $collectionArraySorted,
             ], 200);
 
         } catch (Exception $e) {
@@ -400,7 +436,7 @@ class SearchController extends Controller
     }
 
     /**
-     * @OA\Get(
+     * @OA\Post(
      *      path="/api/v1/search/dur",
      *      summary="Keyword search across gateway data uses",
      *      description="Returns gateway data uses related to the provided query term(s)",
@@ -477,6 +513,7 @@ class SearchController extends Controller
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
+            $filters = (isset($request['filters']) ? $request['filters'] : []);
             $urlString = env('SEARCH_SERVICE_URL') . '/search/dur';
 
             $response = Http::withBody(
@@ -484,10 +521,39 @@ class SearchController extends Controller
             )->get($urlString);
 
             $durArray = $response['hits']['hits'];
-            // join to created at from DB
+            $matchedIds = [];
             foreach (array_values($durArray) as $i => $d) {
-                $durModel = Dur::where(['id' => $d['_id']])->first();
-                $durArray[$i]['_source']['created_at'] = $durModel->toArray()['created_at'];
+                $matchedIds[] = $d['_id'];
+            }
+
+            $durFiltered = Dur::whereRaw("1=1");
+            foreach ($filters as $filter => $value) {
+                foreach ($value as $key => $val) {
+                    MMC::applySearchFilter($durFiltered, $filter, $key, $val['terms']);
+                }
+            }
+
+            $durModels = $durFiltered->whereIn('id', $matchedIds)->get();
+
+            $likeIds = [];
+            foreach ($durModels as $d) {
+                $likeIds[] = $d['id'];
+            }
+
+            //IDs that have been matched and IDs that have been filtered
+            $slimSet = array_intersect($matchedIds, $likeIds);
+
+            foreach ($durArray as $i => $dur) {
+                if (!in_array($dur['_id'], $slimSet)) {
+                    unset($durArray[$i]);
+                    continue;
+                }
+                foreach ($durModels as $model){
+                    if ((int) $dur['_id'] === $model['id']) {
+                        $durArray[$i]['_source']['created_at'] = $model['created_at'];
+                        break;
+                    }
+                }
             }
 
             $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);
