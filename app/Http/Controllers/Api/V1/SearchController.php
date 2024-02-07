@@ -250,7 +250,7 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $toolsFiltered = Tool::whereRaw("1=1");//with("category");
+            $toolsFiltered = Tool::with("category");
 
             // Apply any filters to retrieve matching tools on like basis
             foreach ($filters as $filter => $value) {
@@ -258,8 +258,6 @@ class SearchController extends Controller
                     MMC::applySearchFilter($toolsFiltered, $filter, $key, $val['terms']);
                 }
             }
-
-            //throw new Exception(count($toolsFiltered->get()));
 
             //get all tools models that have been filtered and then matched by elastic
             $toolModels = $toolsFiltered->whereIn('id', $matchedIds)->get();
@@ -287,14 +285,9 @@ class SearchController extends Controller
             
             $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
-            $retval = [];
-            foreach($toolsArraySorted as $ds){
-                $retval[] = $ds['_source'];
-            }
-
             return response()->json([
                 'message' => 'success',
-                'data' => $retval//$toolsArraySorted,
+                'data' => $toolsArraySorted,
             ], 200);
 
         } catch (Exception $e) {
