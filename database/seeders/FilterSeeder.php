@@ -20,6 +20,24 @@ class FilterSeeder extends Seeder
 
     public function seed_dataset_filters(): void
     {
+
+        /* NOTE- may need to have some sort of switch/protection for differences in GWDMs 1.0 and 1.1
+
+        $publisherNameFilter = "LOWER(
+                JSON_EXTRACT(
+                    JSON_UNQUOTE(
+                        COALESCE(
+                            JSON_EXTRACT(metadata, '$.metadata.summary.publisher.name')
+                            JSON_EXTRACT(metadata, '$.metadata.summary.publisher.publisherName'),
+                        )
+                    ), 
+                    '$'
+                )
+            ) LIKE LOWER(?)";
+
+        */
+
+
         $filters = [
             'containsTissue'=>[
                 'filter_condition'=>'NOT_YET',
@@ -46,21 +64,6 @@ class FilterSeeder extends Seeder
                 'filter_condition'=> "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.coverage.spatial')) LIKE LOWER(?)",
             ]
         ];
-
-        /*
-        LOWER(
-                JSON_EXTRACT(
-                    JSON_UNQUOTE(
-                        COALESCE(
-                            JSON_EXTRACT(metadata, '$.metadata.summary.publisher.publisherName'),
-                            JSON_EXTRACT(metadata, '$.metadata.summary.publisher.name')
-                        )
-                    ), 
-                    '$'
-                )
-            ) LIKE LOWER(?)
-
-        */
 
         $this->seed_filter("dataset",$filters);
     }
