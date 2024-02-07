@@ -162,7 +162,7 @@ class SearchController extends Controller
     }
 
     /**
-     * @OA\Get(
+     * @OA\Post(
      *      path="/api/v1/search/tools",
      *      summary="Keyword search across gateway tools",
      *      description="Returns gateway tools related to the provided query term(s)",
@@ -236,6 +236,7 @@ class SearchController extends Controller
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
+            $filters = (isset($request['filters']) ? $request['filters'] : []);
             $urlString = env('SEARCH_SERVICE_URL') . '/search/tools';
 
             $response = Http::withBody(
@@ -243,17 +244,57 @@ class SearchController extends Controller
             )->get($urlString);
 
             $toolsArray = $response['hits']['hits'];
-            // join to created at from DB
+
+            $matchedIds = [];
             foreach (array_values($toolsArray) as $i => $d) {
-                $toolModel = Tool::where(['id' => $d['_id']])->first();
-                $toolsArray[$i]['_source']['created_at'] = $toolModel->toArray()['created_at'];
+                $matchedIds[] = $d['_id'];
             }
 
+            $toolsFiltered = Tool::whereRaw("1=1");//with("category");
+
+            // Apply any filters to retrieve matching tools on like basis
+            foreach ($filters as $filter => $value) {
+                foreach ($value as $key => $val) {
+                    MMC::applySearchFilter($toolsFiltered, $filter, $key, $val['terms']);
+                }
+            }
+
+            //throw new Exception(count($toolsFiltered->get()));
+
+            //get all tools models that have been filtered and then matched by elastic
+            $toolModels = $toolsFiltered->whereIn('id', $matchedIds)->get();
+
+            $likeIds = [];
+            foreach ($toolModels as $d) {
+                $likeIds[] = $d['id'];
+            }
+            //IDs that have been matched and IDs that have been filtered
+            $slimSet = array_intersect($matchedIds, $likeIds);
+           
+            foreach ($toolsArray as $i => $tool) {
+                if (!in_array($tool['_id'], $slimSet)) {
+                    unset($toolsArray[$i]);
+                    continue;
+                }
+                foreach ($toolModels as $model){
+                    if ((int) $tool['_id'] === $model['id']) {
+                        $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
+                        $toolsArray[$i]['_source']['category'] = $model['category']['name'];
+                        break;
+                    }
+                }
+            }
+            
             $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
+
+            $retval = [];
+            foreach($toolsArraySorted as $ds){
+                $retval[] = $ds['_source'];
+            }
 
             return response()->json([
                 'message' => 'success',
-                'data' => $toolsArraySorted,
+                'data' => $retval//$toolsArraySorted,
             ], 200);
 
         } catch (Exception $e) {
