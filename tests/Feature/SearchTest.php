@@ -5,15 +5,6 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Database\Seeders\DurSeeder;
 use Tests\Traits\Authorization;
-<<<<<<< HEAD
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Database\Seeders\CollectionSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\DurSeeder;
-use Database\Seeders\KeywordSeeder;
-=======
->>>>>>> origin/dev
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
