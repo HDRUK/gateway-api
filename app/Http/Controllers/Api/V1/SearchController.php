@@ -277,7 +277,7 @@ class SearchController extends Controller
                 foreach ($toolModels as $model){
                     if ((int) $tool['_id'] === $model['id']) {
                         $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
-                        $toolsArray[$i]['_source']['category'] = $model['category']['name'];
+                        $toolsArray[$i]['_source']['category'] = $model->category['name'];
                         break;
                     }
                 }
