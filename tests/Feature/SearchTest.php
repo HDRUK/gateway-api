@@ -3,18 +3,29 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use Tests\Traits\MockExternalApis;
-use Illuminate\Support\Facades\Http;
+use Database\Seeders\DurSeeder;
 use Tests\Traits\Authorization;
+<<<<<<< HEAD
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\KeywordSeeder;
+=======
+>>>>>>> origin/dev
 use Database\Seeders\ToolSeeder;
+use Tests\Traits\MockExternalApis;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\KeywordSeeder;
+use Illuminate\Support\Facades\Http;
+use Database\Seeders\CollectionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TeamHasUserSeeder;
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\CollectionHasKeywordSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SearchTest extends TestCase
 {
@@ -40,11 +51,14 @@ class SearchTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             TeamHasUserSeeder::class,
+            KeywordSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             ToolSeeder::class,
             CollectionSeeder::class,
             KeywordSeeder::class,
+            CollectionHasDatasetSeeder::class,
+            CollectionHasKeywordSeeder::class,
             DurSeeder::class,
         ]);
     }
@@ -56,10 +70,9 @@ class SearchTest extends TestCase
      */
     public function test_datasets_search_with_success(): void
     {
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets", ["query" => "asthma"], $this->header);
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets?perPage=1", ["query" => "asthma"], $this->header);
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
@@ -74,23 +87,44 @@ class SearchTest extends TestCase
                         'title',
                         'created_at'
                     ],
-                    'metadata'
-                ]
-            ]
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?sort=score:asc', ["query" => "asthma"], $this->header);   
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
-                    '_source',
-                    'metadata'
-                ]
-            ]
+                    '_source'
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_source']['shortTitle'] === 'Third asthma dataset');
 
@@ -98,15 +132,25 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?sort=title:asc', ["query" => "asthma"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
-                    '_source',
-                    'metadata'
-                ]
-            ]
+                    '_source'
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_source']['shortTitle'] === 'Another asthma dataset');
 
@@ -114,15 +158,25 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?sort=created_at:desc', ["query" => "asthma"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
-                    '_source',
-                    'metadata'
-                ]
-            ]
+                    '_source'
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_id'] === '1');
     }
@@ -137,7 +191,6 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/tools", ["query" => "nlp"], $this->header);
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
@@ -148,22 +201,45 @@ class SearchTest extends TestCase
                         'name',
                         'tags',
                         'created_at'
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/tools" . '?sort=score:asc', ["query" => "nlp"], $this->header);   
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
                     '_source'
-                ]
-            ]
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'C tool');
 
@@ -171,14 +247,25 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/tools" . '?sort=name:asc', ["query" => "nlp"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
                     '_source'
-                ]
-            ]
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'A tool');
 
@@ -186,14 +273,25 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/tools" . '?sort=created_at:desc', ["query" => "nlp"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
                     '_source'
-                ]
-            ]
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_id'] === '1');
     }
@@ -208,7 +306,6 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/collections", ["query" => "term"], $this->header);
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
@@ -224,22 +321,45 @@ class SearchTest extends TestCase
 		                    'description'
                         ],
                         'created_at'
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/collections" . '?sort=score:asc', ["query" => "term"], $this->header);   
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
                     '_source'
-                ]
-            ]
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Third Collection');
 
@@ -247,14 +367,25 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/collections" . '?sort=name:asc', ["query" => "term"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
                     '_source'
-                ]
-            ]
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Collection');
 
@@ -262,14 +393,25 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/collections" . '?sort=created_at:desc', ["query" => "nlp"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
                     '_source'
-                ]
-            ]
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_id'] === '1');
     }
@@ -284,7 +426,6 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur", ["query" => "term"], $this->header);
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
@@ -298,22 +439,45 @@ class SearchTest extends TestCase
                         'datasetTitles',
                         'keywords',
                         'created_at'
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur" . '?sort=score:asc', ["query" => "term"], $this->header);   
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
                     '_source'
-                ]
-            ]
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_source']['projectTitle'] === 'Third Data Use');
 
@@ -321,14 +485,25 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur" . '?sort=projectTitle:asc', ["query" => "term"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
                     '_source'
-                ]
-            ]
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_source']['projectTitle'] === 'Another Data Use');
 
@@ -336,14 +511,25 @@ class SearchTest extends TestCase
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur" . '?sort=created_at:desc', ["query" => "term"], $this->header); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
-            'message',
             'data' => [
                 0 => [
                     '_id',
                     'highlight',
                     '_source'
-                ]
-            ]
+                ],
+            ],
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
         ]);
         $this->assertTrue($response['data'][0]['_id'] === '1');
     }

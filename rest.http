@@ -1864,3 +1864,18 @@ DELETE {{baseUrl}}/api/{{apiVersion}}/dur/1 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+
+### Search
+#### search for datasets
+# example url: POST {{baseUrl}}/api/{{apiVersion}}/search/datasets?page=2 HTTP/1.1
+# example url: POST {{baseUrl}}/api/{{apiVersion}}/search/datasets?perPage=5 HTTP/1.1
+# example url: POST {{baseUrl}}/api/{{apiVersion}}/search/datasets?perPage=5&page=2 HTTP/1.1
+POST {{baseUrl}}/api/{{apiVersion}}/search/datasets HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "query": "asthma icd10"
+}
