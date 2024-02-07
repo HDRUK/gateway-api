@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Tag;
+use App\Models\Category;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -67,5 +68,13 @@ class Tool extends Model
     public function review()
     {
         return $this->hasMany(Review::class);
+    }
+
+    /**
+     * @mixin BelongsTo
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class,'category_id', 'id');
     }
 }

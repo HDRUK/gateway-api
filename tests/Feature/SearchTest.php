@@ -47,6 +47,7 @@ class SearchTest extends TestCase
             DatasetVersionSeeder::class,
             ToolSeeder::class,
             CollectionSeeder::class,
+            KeywordSeeder::class,
             CollectionHasDatasetSeeder::class,
             CollectionHasKeywordSeeder::class,
             DurSeeder::class,

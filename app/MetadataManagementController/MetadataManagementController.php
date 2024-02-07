@@ -18,6 +18,8 @@ use Illuminate\Support\Carbon;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 
+use Illuminate\Support\Facades\DB;
+
 class MetadataManagementController {
 
     /**
@@ -318,9 +320,27 @@ class MetadataManagementController {
 
             $to->where(function ($query) use ($filterRow, $terms) {
                 foreach ($terms as $term) {
-                    $query->orWhereRaw($filterRow->value, '%' . $term .'%');
+
+                    if (str_contains($filterRow->value, 'LIKE')){
+                       $term = '%'.$term.'%';
+                    }
+
+                    if($filterRow->join_condition){
+                        $joinConditions = json_decode($filterRow->join_condition,true);
+                        foreach($joinConditions as $tableName => $joinCondition){
+                            $query->orWhereExists(fn ($subQuery) =>
+                                $subQuery->select(DB::raw(1))
+                                    ->from($tableName)
+                                    ->whereRaw($joinCondition)
+                                    ->whereRaw($filterRow->value, $term)
+                            );
+                        }
+                    }else{
+                        $query->orWhereRaw($filterRow->value, $term);  
+                    }
                 }
             });
+
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

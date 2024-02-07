@@ -179,7 +179,7 @@ class ToolController extends Controller
             $input = $request->all();
 
             $tool = Tool::create([
-                'mongo_object_id' => $input['mongo_object_id'],
+                'mongo_object_id' => array_key_exists('mongo_object_id',$input) ? $input['mongo_object_id'] : null,
                 'name' => $input['name'],
                 'url' => $input['url'],
                 'description' => $input['description'],
