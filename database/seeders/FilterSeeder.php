@@ -21,7 +21,7 @@ class FilterSeeder extends Seeder
     public function seed_dataset_filters(): void
     {
 
-        /* NOTE- may need to have some sort of switch/protection for differences in GWDMs 1.0 and 1.1
+        /* NOTE- may need to have some sort of switch/protection for differences in GWDM 1.0 and 1.1
 
         $publisherNameFilter = "LOWER(
                 JSON_EXTRACT(
@@ -101,8 +101,8 @@ class FilterSeeder extends Seeder
                     "categories" => "tools.category_id = categories.id"
                 ]
             ],
-            'category_by_id' => [
-                "filter_condition" => 'categories.id = ?',
+            'category_id' => [
+                "filter_condition" => 'category_id = ?',
             ],
             'license' => [
                 "filter_condition" =>  'license LIKE LOWER(?)'

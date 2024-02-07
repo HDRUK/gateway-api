@@ -266,6 +266,9 @@ class SearchController extends Controller
             foreach ($toolModels as $d) {
                 $likeIds[] = $d['id'];
             }
+
+            
+
             //IDs that have been matched and IDs that have been filtered
             $slimSet = array_intersect($matchedIds, $likeIds);
            
