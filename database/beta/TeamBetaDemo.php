@@ -210,6 +210,32 @@ class TeamBetaDemo extends Seeder
                 'application_form_updated_on' => '2023-03-22 08:39:44',
                 'enabled' => 1,
             ],
+            [
+                'name' => 'Northwest SDE',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'ALLIANCE',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
+            [
+                'name' => 'Dev Testing',
+                'allows_messaging' => 1,
+                'workflow_enabled' =>  1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 0,
+                'member_of' => 'Other',
+                'contact_point' => 'nobody',
+                'application_form_updated_by' => NULL,
+                'application_form_updated_on' => '2023-03-22 08:39:44',
+                'enabled' => 1,
+            ],
         ];
 
         foreach ($teams as $team) {
