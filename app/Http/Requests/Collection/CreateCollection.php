@@ -25,8 +25,8 @@ class CreateCollection extends BaseFormRequest
                 'required',
             ],
             'image_link' => [
+                'nullable',
                 'string',
-                'required',
                 'url',
             ],
             'enabled' => [

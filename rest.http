@@ -1476,112 +1476,102 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "mongo_object_id": "5f281a88b409ac1ade289cb8",
-    "mongo_id": "6189783343484221",
-    "counter": 326,
-    "name": "PROTECT COVID-19 National Core Study on transmission and environment",
-    "description": "This collection supports the [PROTECT COVID-19 National Core Study on transmission and environment](https://gbr01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fsites.manchester.ac.uk%2Fcovid19-national-project%2F&data=04%7C01%7CVicky.Hellon%40hdruk.ac.uk%7C07f29243241043cc4cf208d960943581%7C844cacb1702742639d8a18faa5bf0839%7C1%7C0%7C637647011954409380%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&sdata=1q3z3aU%2FOdBvYhdGhUfPtwq8SPhdj%2FlZSePm3K%2FxJI4%3D&reserved=0)  The PROTECT study is a UK-wide research programme improving our understanding of how SARS-CoV-2 (the virus that causes COVID-19) is transmitted from person to person, and how this varies in different settings and environments. This improved understanding will enable more effective measures to stop transmission, saving lives and getting society back towards ‘normal’.  Led by the Health and Safety Executive’s Chief Scientific Adviser, Professor Andrew Curran, this critical work is being delivered by more than 70 researchers from 16 institutions across the UK. The PROTECT study began in October 2020, as part of the [COVID-19 National Core Studies](https://gbr01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.hdruk.ac.uk%2Fcovid-19%2Fcovid-19-national-core-studies%2F&data=04%7C01%7CVicky.Hellon%40hdruk.ac.uk%7C07f29243241043cc4cf208d960943581%7C844cacb1702742639d8a18faa5bf0839%7C1%7C0%7C637647011954409380%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&sdata=n4%2FD4EiCvuGeVERQLXcEl%2BNMijBb0fbezZ93Jmd%2FF%2BI%3D&reserved=0) programme spearheaded by UK Government Chief Scientific Adviser Sir Patrick Vallance. It is currently funded by HM Treasury until March 2022.  The PROTECT study is made up of six themes that use a complementary variety of research methods and scientific disciplines to address the research questions from different angles – including microbiology, epidemiology, building science, behavioural science and mathematical modelling – and ensure findings are turned into practical tools and advice for policymakers.  Theme 1: includes rapid on-the-ground investigations (known as the COVID-OUT study) of outbreaks in workplaces, as well as comprehensive analyses of outbreak data collected within public health and regulatory information systems. The aim is to identify outbreak causes and common risk factors, a better understanding of which will help prevent and control further outbreaks as the UK unlocks. *Led by Drs Yiqun Chen and Derek Morgan, Health and Safety Executive.*  Theme 2: applying a range of cutting-edge modelling and experimental approaches to address the key research questions of the PROTECT study on how the physical environment and human behaviour affect transmission of the COVID-19 virus, how best to control it, and what it really means to be ‘COVID secure’. *Led by Professor Cath Noakes, University of Leeds.*  Theme 3: conducting targeted studies to improve understanding of specific workplace transmission risks and effective control measures within different industrial sectors, helping to support these sectors to return to more normal operation. The sectors being studied include transport, food manufacturing, retail and hospitality. *Led by Professor Martie van Tongeren, University of Manchester.*  Theme 4: developing a range of tools and methods to better understand transmission of the COVID-19 virus in the environment. These are not only crucial to support the delivery of the other PROTECT research themes, but will also help ensure the legacy impact of the study by enhancing the UK’s capability to study respiratory virus transmission in readiness for any future pandemic. *Led by Allan Bennett, Public Health England.*  Theme 5: conducting experimental infections of both human volunteers and animals with SARS-CoV-2 to examine how they emit and transmit the virus, particularly in the early stages after infection. This will answer key questions such as how big a dose of the virus is needed to infect people, and how long afterwards they are most infectious. The UK is the only country in the world conducting such human volunteer studies for COVID-19. *Led by Professor Wendy Barclay, Imperial College London.*  Theme 6: bringing together all the knowledge and evidence created by the other research themes and making it count; translating it into practical policy advice and tools for government, industry and individuals to reduce transmission of the COVID-19 virus and help get society back closer to normal. *Led by Professor Andrew Curran, Health and Safety Executive.* ",
-    "image_link": "https://storage.googleapis.com/hdruk-gateway_prod-cms/web-assets/PROTECT-logo.png?mtime=20210816104909&focal=none",
+    "mongo_object_id": "5fa1a0c7ea8c9619608caa13",
+    "mongo_id": "6978092390119939",
+    "counter": 142,
+    "name": "Welcome to the Gateway!",
+    "description": "Welcome to the Gateway!   This is the place where you will find all the resources you need to use the Gateway, from short how-to videos showing you how to add do things on the Gateway, to self-guided tour, and background information.   Let us know if there is anything else you would like to see in this collection. ",
+    "image_link": "https://images.unsplash.com/photo-1489533119213-66a5cd877091?",
     "public": true,
     "enabled": true,
     "keywords": [],
-    "datasets": [
-        {
-            "id": 308,
-            "updated_at": "2020-08-03T00:00:00",
-            "user_id": 22,
-            "reason": ""
-        },
-        {
-            "id": 3,
-            "updated_at": "2020-09-11T00:00:00",
-            "user_id": 149,
-            "reason": ""
-        },
-        {
-            "id": 182,
-            "updated_at": "2020-09-11T00:00:00",
-            "user_id": 149,
-            "reason": ""
-        },
-        {
-            "id": 129,
-            "updated_at": "2020-09-11T00:00:00",
-            "user_id": 149,
-            "reason": ""
-        },
-        {
-            "id": 156,
-            "updated_at": "2020-09-11T00:00:00",
-            "user_id": 149,
-            "reason": ""
-        },
-        {
-            "id": 139,
-            "updated_at": "2020-09-11T00:00:00",
-            "user_id": 149,
-            "reason": ""
-        },
-        {
-            "id": 162,
-            "updated_at": "2020-09-11T00:00:00",
-            "user_id": 149,
-            "reason": ""
-        },
-        {
-            "id": 181,
-            "updated_at": "2020-09-11T00:00:00",
-            "user_id": 149,
-            "reason": ""
-        },
-        {
-            "id": 140,
-            "updated_at": "2020-09-11T00:00:00",
-            "user_id": 149,
-            "reason": ""
-        },
-        {
-            "id": 161,
-            "updated_at": "2020-09-11T00:00:00",
-            "user_id": 149,
-            "reason": ""
-        },
-        {
-            "id": 147,
-            "updated_at": "2020-10-15T00:00:00",
-            "user_id": 22,
-            "reason": ""
-        },
-        {
-            "id": 188,
-            "updated_at": "2020-11-11T00:00:00",
-            "user_id": 387,
-            "reason": ""
-        }
-    ]
+    "datasets": []
 }
 
 # {
-#     "mongo_object_id": "5f0c7ea20c2b923303bd203c",
-#     "mongo_id": 1500718307312039,
-#     "name": "Epidemiology and Surveillance",
-#     "description" : "Mortality & risk stratification: Do particular groups (age, sex, socioeconomic status, occupation, geographical location, care setting, co-morbidities and ethnicity) have an increased risk of infection? And/or do they have an increased risk of severe outcomes? And what are the excess deaths compared with the previous 5 years? National core study",
-#     "image_link" : "https://www.hdruk.ac.uk/wp-content/uploads/2020/06/shutterstock_1675328338-484x412.jpg",
-#     "enabled": true,
+#     "mongo_object_id": "5f281a88b409ac1ade289cb8",
+#     "mongo_id": "6189783343484221",
+#     "counter": 326,
+#     "name": "PROTECT COVID-19 National Core Study on transmission and environment",
+#     "description": "This collection supports the [PROTECT COVID-19 National Core Study on transmission and environment](https://gbr01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fsites.manchester.ac.uk%2Fcovid19-national-project%2F&data=04%7C01%7CVicky.Hellon%40hdruk.ac.uk%7C07f29243241043cc4cf208d960943581%7C844cacb1702742639d8a18faa5bf0839%7C1%7C0%7C637647011954409380%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&sdata=1q3z3aU%2FOdBvYhdGhUfPtwq8SPhdj%2FlZSePm3K%2FxJI4%3D&reserved=0)  The PROTECT study is a UK-wide research programme improving our understanding of how SARS-CoV-2 (the virus that causes COVID-19) is transmitted from person to person, and how this varies in different settings and environments. This improved understanding will enable more effective measures to stop transmission, saving lives and getting society back towards ‘normal’.  Led by the Health and Safety Executive’s Chief Scientific Adviser, Professor Andrew Curran, this critical work is being delivered by more than 70 researchers from 16 institutions across the UK. The PROTECT study began in October 2020, as part of the [COVID-19 National Core Studies](https://gbr01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fwww.hdruk.ac.uk%2Fcovid-19%2Fcovid-19-national-core-studies%2F&data=04%7C01%7CVicky.Hellon%40hdruk.ac.uk%7C07f29243241043cc4cf208d960943581%7C844cacb1702742639d8a18faa5bf0839%7C1%7C0%7C637647011954409380%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C1000&sdata=n4%2FD4EiCvuGeVERQLXcEl%2BNMijBb0fbezZ93Jmd%2FF%2BI%3D&reserved=0) programme spearheaded by UK Government Chief Scientific Adviser Sir Patrick Vallance. It is currently funded by HM Treasury until March 2022.  The PROTECT study is made up of six themes that use a complementary variety of research methods and scientific disciplines to address the research questions from different angles – including microbiology, epidemiology, building science, behavioural science and mathematical modelling – and ensure findings are turned into practical tools and advice for policymakers.  Theme 1: includes rapid on-the-ground investigations (known as the COVID-OUT study) of outbreaks in workplaces, as well as comprehensive analyses of outbreak data collected within public health and regulatory information systems. The aim is to identify outbreak causes and common risk factors, a better understanding of which will help prevent and control further outbreaks as the UK unlocks. *Led by Drs Yiqun Chen and Derek Morgan, Health and Safety Executive.*  Theme 2: applying a range of cutting-edge modelling and experimental approaches to address the key research questions of the PROTECT study on how the physical environment and human behaviour affect transmission of the COVID-19 virus, how best to control it, and what it really means to be ‘COVID secure’. *Led by Professor Cath Noakes, University of Leeds.*  Theme 3: conducting targeted studies to improve understanding of specific workplace transmission risks and effective control measures within different industrial sectors, helping to support these sectors to return to more normal operation. The sectors being studied include transport, food manufacturing, retail and hospitality. *Led by Professor Martie van Tongeren, University of Manchester.*  Theme 4: developing a range of tools and methods to better understand transmission of the COVID-19 virus in the environment. These are not only crucial to support the delivery of the other PROTECT research themes, but will also help ensure the legacy impact of the study by enhancing the UK’s capability to study respiratory virus transmission in readiness for any future pandemic. *Led by Allan Bennett, Public Health England.*  Theme 5: conducting experimental infections of both human volunteers and animals with SARS-CoV-2 to examine how they emit and transmit the virus, particularly in the early stages after infection. This will answer key questions such as how big a dose of the virus is needed to infect people, and how long afterwards they are most infectious. The UK is the only country in the world conducting such human volunteer studies for COVID-19. *Led by Professor Wendy Barclay, Imperial College London.*  Theme 6: bringing together all the knowledge and evidence created by the other research themes and making it count; translating it into practical policy advice and tools for government, industry and individuals to reduce transmission of the COVID-19 virus and help get society back closer to normal. *Led by Professor Andrew Curran, Health and Safety Executive.* ",
+#     "image_link": "https://storage.googleapis.com/hdruk-gateway_prod-cms/web-assets/PROTECT-logo.png?mtime=20210816104909&focal=none",
 #     "public": true,
+#     "enabled": true,
+#     "keywords": [],
 #     "datasets": [
 #         {
-#             "id": 2,
-#             "updated_at": "2022-05-09T00:00:00",
-#             "user_id": 5,
-#             "reason": "This dataset was added via an edit of this data use register"
+#             "id": 308,
+#             "updated_at": "2020-08-03T00:00:00",
+#             "user_id": 22,
+#             "reason": ""
+#         },
+#         {
+#             "id": 3,
+#             "updated_at": "2020-09-11T00:00:00",
+#             "user_id": 149,
+#             "reason": ""
+#         },
+#         {
+#             "id": 182,
+#             "updated_at": "2020-09-11T00:00:00",
+#             "user_id": 149,
+#             "reason": ""
+#         },
+#         {
+#             "id": 129,
+#             "updated_at": "2020-09-11T00:00:00",
+#             "user_id": 149,
+#             "reason": ""
+#         },
+#         {
+#             "id": 156,
+#             "updated_at": "2020-09-11T00:00:00",
+#             "user_id": 149,
+#             "reason": ""
+#         },
+#         {
+#             "id": 139,
+#             "updated_at": "2020-09-11T00:00:00",
+#             "user_id": 149,
+#             "reason": ""
+#         },
+#         {
+#             "id": 162,
+#             "updated_at": "2020-09-11T00:00:00",
+#             "user_id": 149,
+#             "reason": ""
+#         },
+#         {
+#             "id": 181,
+#             "updated_at": "2020-09-11T00:00:00",
+#             "user_id": 149,
+#             "reason": ""
+#         },
+#         {
+#             "id": 140,
+#             "updated_at": "2020-09-11T00:00:00",
+#             "user_id": 149,
+#             "reason": ""
+#         },
+#         {
+#             "id": 161,
+#             "updated_at": "2020-09-11T00:00:00",
+#             "user_id": 149,
+#             "reason": ""
+#         },
+#         {
+#             "id": 147,
+#             "updated_at": "2020-10-15T00:00:00",
+#             "user_id": 22,
+#             "reason": ""
+#         },
+#         {
+#             "id": 188,
+#             "updated_at": "2020-11-11T00:00:00",
+#             "user_id": 387,
+#             "reason": ""
 #         }
-#     ],
-#     "keywords": ["COVID-19 test", "National Core Study test"],
-#     "created_at": "2021-12-16T15:44:03",
-#     "updated_at": "2022-01-17T14:49:53",
-#     "counter": 10,
-#     "updated_on": "2023-08-22T20:27:00"
+#     ]
 # }
 
 // migration: userId (int), mongo_object_id (string), mongo_id (string), counter (int), updated_on, created_at, updated_at
