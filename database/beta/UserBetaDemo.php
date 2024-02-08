@@ -644,8 +644,6 @@ class UserBetaDemo extends Seeder
                 'orcid' => NULL,
             ]);
 
-            printf("\nemail: '%s' ::: password: '%s'", $email, $realPassword);
-
             if ($assignTeam) {
                 $teamName = Team::where(['name' => $teamName])->first()->id;
 
