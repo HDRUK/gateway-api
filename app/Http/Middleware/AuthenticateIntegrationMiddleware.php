@@ -35,7 +35,7 @@ class AuthenticateIntegrationMiddleware
         $appId = $request->header('app_id');
         $app = Application::where('app_id', $appId)->first();
         if (!$app) {
-            throw new NotFoundException('App ('.$request['app_id'].') not found.');
+            throw new NotFoundException('App ('.$appId.') not found.');
         }
 
         # Check that the app id and client id both match, and check the client secret. Throw an exception if not matching.
