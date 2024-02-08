@@ -18856,6 +18856,24 @@
                         /** @var \App\MetadataManagementController\MetadataManagementController $instance */
                         $instance->deleteFromElastic($id);
         }
+                    /**
+         * Generic function to apply a filter to the incoming eloquent
+         * builder model for further searching. Completely goverened
+         * by the incoming data and ultimately building a query that
+         * will AND the required fields and OR the incoming search terms
+         * for the selected filters.
+         *
+         * @param mixed $to A reference to the eloquent builder instance
+         * @param string $filter The filter being applied
+         * @param string $type The sub type of filter being applied
+         * @param array $terms The terms being searched for under this filter
+         * @static 
+         */ 
+        public static function applySearchFilter($to, $filter, $type, $terms)
+        {
+                        /** @var \App\MetadataManagementController\MetadataManagementController $instance */
+                        return $instance->applySearchFilter($to, $filter, $type, $terms);
+        }
          
     }
      
