@@ -32,17 +32,16 @@ class AuthenticateIntegrationMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         # Check that the app id is in the app table
-        $appId = $request['app_id'];
+        $appId = $request->header('app_id');
         $app = Application::where('app_id', $appId)->first();
-        $userId = $app->user_id;
         if (!$app) {
-            throw new NotFoundException('App not found.');
+            throw new NotFoundException('App ('.$request['app_id'].') not found.');
         }
 
         # Check that the app id and client id both match, and check the client secret. Throw an exception if not matching.
-        $clientId = $app->client_id;
+        $clientId = $request->header('client_id');
         $clientSecret = $app->client_secret;
-        if (!($clientId == $request['client_id'] && Hash::check(
+        if (!($clientId == $app->client_id && Hash::check(
             $appId . ':' . $clientId . ':' . env('APP_AUTH_PRIVATE_SALT') . ':' . env('APP_AUTH_PRIVATE_SALT_2'),
             $clientSecret))
         ) {

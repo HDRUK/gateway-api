@@ -364,6 +364,17 @@ class UserBetaDemo extends Seeder
                 'assignTeam' => true,
                 'teamName' => 'Northwest SDE',
             ],
+                        [
+                'firstname' => 'Calum',
+                'lastname' => 'Macdonald',
+                'email' => 'calum.macdonald@hdruk.ac.uk',
+                'password' => '$2y$10$JbgO1oSSA6QKk4pPmgZDX.r5MxwkbQ/2LkqyG9S2sQa9UGC14BIii',
+                'provider' => 'service',
+                'isAdmin' => true,
+                'roles' => ['custodian.team.admin'],
+                'assignTeam' => true,
+                'teamName' => 'Northwest SDE',
+            ],
         ];
 
         foreach ($users as $user) {
