@@ -33,10 +33,17 @@ class AuthenticateIntegrationMiddleware
     {
         # Check that the app id is in the app table
         $appId = $request->header('app_id');
+        if (!$appId) {
+            throw new NotFoundException('app_id not found in the request headers.');
+        }
+
         $app = Application::where('app_id', $appId)->first();
         if (!$app) {
             throw new NotFoundException('App ('.$appId.') not found.');
         }
+
+        $userId = $app->user_id;
+        $teamId = $app->team_id;
 
         # Check that the app id and client id both match, and check the client secret. Throw an exception if not matching.
         $clientId = $request->header('client_id');
@@ -52,6 +59,9 @@ class AuthenticateIntegrationMiddleware
             [
                 'app' => [
                     'id' => (int) $appId,
+                    'user_id' => (int) $userId,
+                    'team_id' => (int) $teamId,
+
                 ]
             ]
         );

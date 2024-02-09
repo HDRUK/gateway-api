@@ -2052,7 +2052,19 @@ return [
         'name' => 'datasets.integrations',
         'method' => 'post',
         'path' => '/integrations/datasets',
-        'methodController' => 'DatasetController@store',
+        'methodController' => 'DatasetController@storeFromApp',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets.integrations',
+        'method' => 'put',
+        'path' => '/integrations/datasets/{id}',
+        'methodController' => 'DatasetController@updateFromApp',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',

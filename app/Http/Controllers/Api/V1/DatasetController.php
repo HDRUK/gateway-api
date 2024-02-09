@@ -23,7 +23,9 @@ use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
+use App\Http\Requests\Dataset\CreateDatasetFromApp;
 use App\Http\Requests\Dataset\UpdateDataset;
+use App\Http\Requests\Dataset\UpdateDatasetFromApp;
 use App\Http\Requests\Dataset\EditDataset;
 
 use Illuminate\Support\Facades\Http;
@@ -359,9 +361,10 @@ class DatasetController extends Controller
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
                 $version = $dataset->latestVersion();
+                $payload = ["metadata" => $version["metadata"]["metadata"]];
 
                 $translated = MMC::translateDataModelType(
-                    $version->metadata,
+                    json_encode($payload),
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
                     Config::get('metadata.GWDM.name'),
@@ -581,6 +584,86 @@ class DatasetController extends Controller
         }
     }
 
+/**
+     * @OA\Post(
+     *    path="/api/v1/integrations/datasets",
+     *    operationId="create_datasets_from_app",
+     *    tags={"Dataset Integrations"},
+     *    summary="DatasetController@storeFromApp",
+     *    description="Create a new dataset",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *          )
+     *       )
+     *    ),
+     *    @OA\Parameter(
+     *       name="client_id",
+     *       in="header",
+     *       required=true,
+     *       description="Client ID",
+     *       @OA\Schema(
+     *          type="string"
+     *       )
+     *    ),
+     *    @OA\Parameter(
+     *       name="app_id",
+     *       in="header",
+     *       required=true,
+     *       description="App ID",
+     *       @OA\Schema(
+     *          type="string"
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Created",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="created"),
+     *              @OA\Property(property="data", type="integer", example="100"),
+     *              @OA\Property(property="version", type="integer", example="1") 
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function storeFromApp(CreateDatasetFromApp $request): JsonResponse
+    {
+        $storeRequest = new CreateDataset;
+        $storeRequest->merge(
+            [
+                'team_id' => $request['app']['team_id'],
+                'user_id' => $request['app']['user_id'],
+                'create_origin' => 'API',
+                'status' => $request->has('status') ? $request['status'] :'ACTIVE',
+                'metadata' => [ 
+                    "metadata" => $request['metadata'],
+                    "extra" => $request->has('extra') ? $request['extra'] : null
+                ],
+            ]
+        );
+        return $this->store($storeRequest);
+    }
+
+
     /**
      * @OA\Put(
      *    path="/api/v1/datasets/{id}",
@@ -731,6 +814,86 @@ class DatasetController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+/**
+     * @OA\Put(
+     *    path="/api/v1/integrations/datasets/{id}",
+     *    operationId="update_datasets_from_app",
+     *    tags={"Dataset Integrations"},
+     *    summary="DatasetController@updateFromApp",
+     *    description="Update an existing dataset",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="metadata", type="array", @OA\Items())
+     *          )
+     *       )
+     *    ),
+     *    @OA\Parameter(
+     *       name="client_id",
+     *       in="header",
+     *       required=true,
+     *       description="Client ID",
+     *       @OA\Schema(
+     *          type="string"
+     *       )
+     *    ),
+     *    @OA\Parameter(
+     *       name="app_id",
+     *       in="header",
+     *       required=true,
+     *       description="App ID",
+     *       @OA\Schema(
+     *          type="string"
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=201,
+     *          description="Created",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="created"),
+     *              @OA\Property(property="data", type="integer", example="100"),
+     *              @OA\Property(property="version", type="integer", example="1") 
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function updateFromApp(UpdateDatasetFromApp $request,int $id): JsonResponse
+    {
+        $currDataset = Dataset::where('id', $id)->first();
+        $storeRequest = new UpdateDataset;
+        $storeRequest->merge(
+            [
+                'team_id' => $request['app']['team_id'],
+                'user_id' => $request['app']['user_id'],
+                'create_origin' => $currDataset->create_origin, //shouldnt be changing this
+                'status' => $request->has('status') ? $request['status'] : $currDataset->status,
+                'metadata' => [ 
+                    "metadata" => $request['metadata'],
+                    "extra" => $request->has('extra') ? $request['extra'] : null
+                ],
+            ]
+        );
+        return $this->update($storeRequest,$id);
     }
 
     /**
