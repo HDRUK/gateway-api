@@ -318,6 +318,16 @@ class MetadataManagementController {
             $filterRow = Filter::where('type', $filter)
                 ->where('keys', $type)->firstOrFail();
 
+            // Code for filtering tables that require multiple joins
+            // This is the poc for putting the whole sql query into the db - see dataset filtered by spatial coverage
+            // Other filters need to be updated and the code below replaced with these lines
+            // $join_condition = json_decode($filterRow->join_condition, true);
+            // $to->fromRaw($join_condition);
+            // $to->where(function ($query) use ($filterRow, $terms) {
+            //     foreach ($terms as $term) {
+            //         $query->orWhereRaw($filterRow->value, '%'.$term.'%');
+            //     }
+            // });
             $to->where(function ($query) use ($filterRow, $terms) {
                 foreach ($terms as $term) {
 
@@ -328,13 +338,13 @@ class MetadataManagementController {
                     if($filterRow->join_condition){
                         $joinConditions = json_decode($filterRow->join_condition,true);
                         foreach($joinConditions as $tableName => $joinCondition){
-                            $query->whereExists(fn ($subQuery) =>
+                            $query->orWhereExists(fn ($subQuery) =>
                                 $subQuery->select(DB::raw(1))
                                     ->from($tableName)
                                     ->whereRaw($joinCondition)
+                                    ->whereRaw($filterRow->value, $term)
                             );
                         }
-                        $query->whereRaw($filterRow->value, $term);
                     }else{
                         $query->orWhereRaw($filterRow->value, $term);  
                     }

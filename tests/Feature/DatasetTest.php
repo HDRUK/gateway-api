@@ -6,6 +6,7 @@ use Config;
 use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use Database\Seeders\SpatialCoverageSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Carbon;
@@ -29,6 +30,10 @@ class DatasetTest extends TestCase
     public function setUp(): void
     {
         $this->commonSetUp();
+
+        $this->seed([
+            SpatialCoverageSeeder::class,
+        ]);
 
         $this->metadata = $this->getFakeDataset();
         $this->metadataAlt = $this->metadata;

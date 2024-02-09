@@ -135,6 +135,8 @@ class SearchController extends Controller
             // whereRaw(1=1) here is a trick to allow us to access the builder model
             // without fully forming a query first
             $datasetsFiltered = DatasetVersion::whereRaw('1=1');
+            // replace line above with this to enable filtering involving joins
+            // $datasetsFiltered = DatasetVersion::query();
 
             // Apply any filters to retrieve matching datasets on like basis, for
             // later intersection with elastic matched datasets
@@ -144,7 +146,7 @@ class SearchController extends Controller
                 }
             }
 
-            $ds = $datasetsFiltered->whereIn('dataset_id', $matchedIds)->get();
+            $ds = $datasetsFiltered->whereIn('dataset_versions.dataset_id', $matchedIds)->get();
             $likeIds = [];
             foreach ($ds as $d) {
                 $likeIds[] = $d['dataset_id'];
