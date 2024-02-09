@@ -176,6 +176,9 @@ class MetadataManagementController {
     {
         try {
             $dataset = Dataset::with('versions')->where('id', (int)$id)->first();
+            if(!$dataset){
+                throw new Exception("Cannot find dataset to delete");
+            }
             $dataset->deleted_at = Carbon::now();
             $dataset->status = Dataset::STATUS_ARCHIVED;
             $dataset->save();
