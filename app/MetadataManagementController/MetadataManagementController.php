@@ -328,13 +328,13 @@ class MetadataManagementController {
                     if($filterRow->join_condition){
                         $joinConditions = json_decode($filterRow->join_condition,true);
                         foreach($joinConditions as $tableName => $joinCondition){
-                            $query->orWhereExists(fn ($subQuery) =>
+                            $query->whereExists(fn ($subQuery) =>
                                 $subQuery->select(DB::raw(1))
                                     ->from($tableName)
                                     ->whereRaw($joinCondition)
-                                    ->whereRaw($filterRow->value, $term)
                             );
                         }
+                        $query->whereRaw($filterRow->value, $term);
                     }else{
                         $query->orWhereRaw($filterRow->value, $term);  
                     }

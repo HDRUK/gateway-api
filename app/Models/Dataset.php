@@ -127,6 +127,7 @@ class Dataset extends Model
             ->latest('version')->select('metadata')->first();
         return  $datasetVersion['metadata'];
     }
+    
     /**
      * The spatial coverage that belong to the dataset.
      */
