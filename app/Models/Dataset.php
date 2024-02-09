@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Models\Collection;
 use App\Models\DataVersion;
 use App\Models\NamedEntities;
-use App\Models\spatialCoverage;
+use App\Models\SpatialCoverage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
