@@ -134,8 +134,10 @@ class DatasetController extends Controller
         $sortField = $tmp[0];
         $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
+        $sortOnMetadata = str_starts_with($sortField,"metadata.");
+
         $allFields = collect(Dataset::first())->keys()->toArray();
-        if (count($allFields) > 0 && !in_array($sortField, $allFields)) {
+        if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
             return response()->json([
                 'message' => '\"' . $sortField .'\" is not a valid field to sort on'
             ], 400);
@@ -207,10 +209,10 @@ class DatasetController extends Controller
                 function ($query) {
                     return $query->withTrashed();
                 })
-            ->when(true,
-                    function ($query) use ($sortField, $sortDirection) {
-                        return $query->orderBy($sortField, $sortDirection);
-                    })
+            ->when(!$sortOnMetadata, 
+                fn($query) => $query->orderBy($sortField, $sortDirection),
+                fn($query) => $query->orderByMetadata($sortField, $sortDirection)
+            )
             ->paginate($perPage, ['*'], 'page');
 
         return response()->json(
