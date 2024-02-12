@@ -16,6 +16,7 @@ use App\Http\Enums\TeamMemberOf;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\PermissionSeeder;
+use Database\Seeders\SpatialCoverageSeeder;
 use Database\Seeders\UserSeeder;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,6 +40,7 @@ class DatasetVersionTest extends TestCase
         $this->seed([
             PermissionSeeder::class,
             RoleSeeder::class,
+            SpatialCoverageSeeder::class,
             TeamSeeder::class,
             UserSeeder::class
         ]);

@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
+use App\Models\DatasetHasSpatialCoverage;
+use App\Models\SpatialCoverage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
@@ -558,6 +560,9 @@ class DatasetController extends Controller
                     'version' => 1,
                 ]);
 
+                // map coverage/spatial field to controlled list for filtering
+                $this->mapCoverage($input['metadata'], $dataset);
+
                 // Dispatch term extraction to a subprocess as it may take some time
                 TermExtraction::dispatch(
                     $dataset->id,
@@ -1103,5 +1108,39 @@ class DatasetController extends Controller
         return $metadata;
     }
 
+
+    private function mapCoverage(array $metadata, Dataset $dataset): void 
+    {
+        $coverage = strtolower($metadata['metadata']['coverage']['spatial']);
+        $ukCoverages = SpatialCoverage::whereNot('region', 'Rest of the world')->get();
+        $worldId = SpatialCoverage::where('region', 'Rest of the world')->first()->id;
+
+        $matchFound = false;
+        foreach ($ukCoverages as $c) {
+            if (str_contains($coverage, strtolower($c['region']))) {
+                DatasetHasSpatialCoverage::updateOrCreate([
+                    'dataset_id' => (int) $dataset['id'],
+                    'spatial_coverage_id' => (int) $c['id'],
+                ]);
+                $matchFound = true;
+            }
+        }
+
+        if (!$matchFound) {
+            if (str_contains($coverage, 'united kingdom')) {
+                foreach ($ukCoverages as $c) {
+                    DatasetHasSpatialCoverage::updateOrCreate([
+                        'dataset_id' => (int) $dataset['id'],
+                        'spatial_coverage_id' => (int) $c['id'],
+                    ]);
+                }
+            } else {
+                DatasetHasSpatialCoverage::updateOrCreate([
+                    'dataset_id' => (int) $dataset['id'],
+                    'spatial_coverage_id' => (int) $worldId,
+                ]);
+            }
+        }
+    }
 
 }

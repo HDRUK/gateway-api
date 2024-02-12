@@ -61,7 +61,8 @@ class FilterSeeder extends Seeder
                 'filter_condition'=> 'NOT_YET',
             ],
             'geographicLocation'=>[
-                'filter_condition'=> "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.coverage.spatial')) LIKE LOWER(?)",
+                'filter_condition' => 'LOWER(spatial_coverage.region) LIKE LOWER(?)',
+                'join_condition'=> 'dataset_versions JOIN dataset_has_spatial_coverage ON dataset_versions.dataset_id = dataset_has_spatial_coverage.dataset_id JOIN spatial_coverage on dataset_has_spatial_coverage.spatial_coverage_id = spatial_coverage.id',
             ]
         ];
 

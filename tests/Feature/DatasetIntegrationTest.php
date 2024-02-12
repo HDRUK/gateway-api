@@ -12,6 +12,7 @@ use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use Database\Seeders\SectorSeeder;
 use Database\Seeders\DatasetSeeder;
+use Database\Seeders\SpatialCoverageSeeder;
 
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
@@ -52,6 +53,7 @@ class DatasetIntegrationTest extends TestCase
             DatasetSeeder::class,
             SectorSeeder::class,
             ApplicationSeeder::class,
+            SpatialCoverageSeeder::class,
         ]);
         
         $this->integration = Application::find(1)->first();
