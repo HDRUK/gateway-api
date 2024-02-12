@@ -60,7 +60,6 @@ class DatabaseSeeder extends Seeder
             DurSeeder::class,
             TeamSeederAddPid::class,
             CoverageSeeder::class,
-            SpatialCoverageSeeder::class,
         ]);
     }
 }
