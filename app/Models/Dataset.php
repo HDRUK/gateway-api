@@ -144,6 +144,6 @@ class Dataset extends Model
     {
         return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')") 
                             ->whereColumn('datasets.id','dataset_versions.dataset_id')
-                            ->take(1),$direction);
+                            ->latest()->limit(1),$direction);
     }
 }
