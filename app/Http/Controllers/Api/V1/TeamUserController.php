@@ -20,6 +20,7 @@ use App\Http\Requests\TeamUser\CreateTeamUser;
 use App\Http\Requests\TeamUser\DeleteTeamUser;
 use App\Http\Requests\TeamUser\UpdateTeamUser;
 use App\Http\Requests\TeamUser\UpdateBulkTeamUser;
+use App\Models\TeamUserHasNotification;
 
 class TeamUserController extends Controller
 {
@@ -404,6 +405,10 @@ class TeamUserController extends Controller
             if (!$teamHasUsers) {
                 throw new NotFoundException();
             }
+
+            TeamUserHasNotification::where([
+                "team_has_user_id" => $teamHasUsers->id,
+            ])->delete();
 
             TeamUserHasRole::where([
                 "team_has_user_id" => $teamHasUsers->id,
