@@ -35,6 +35,13 @@ class Filter extends Model
     ];
 
     /**
+     * Requests that Laravel remove these values from the returned payload
+     */
+    protected $hidden = [
+        'value',
+    ];
+
+    /**
      * Indicates if this model is timestamped
      * 
      * @var bool
