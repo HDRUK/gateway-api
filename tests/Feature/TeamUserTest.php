@@ -406,6 +406,7 @@ class TeamUserTest extends TestCase
                     TeamMemberOf::ALLIANCE,
                     TeamMemberOf::HUB,
                     TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
                 ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
