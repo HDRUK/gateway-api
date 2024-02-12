@@ -56,6 +56,7 @@ class EditTeam extends BaseFormRequest
                     TeamMemberOf::ALLIANCE,
                     TeamMemberOf::HUB,
                     TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
                 ]),
             ],
             'contact_point' => [

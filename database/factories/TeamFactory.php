@@ -29,6 +29,7 @@ class TeamFactory extends Factory
                 TeamMemberOf::ALLIANCE,
                 TeamMemberOf::HUB,
                 TeamMemberOf::OTHER,
+                TeamMemberOf::NCS,
             ]),
             'contact_point' => fake()->email(),
             'application_form_updated_by' => fake()->words(2, true),
