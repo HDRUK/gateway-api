@@ -78,6 +78,7 @@ class CollectionTest extends TestCase
                     'keywords',
                     'users',
                     'applications',
+                    'team',
                 ],
             ],
             'current_page',
@@ -126,6 +127,7 @@ class CollectionTest extends TestCase
                     'keywords',
                     'users',
                     'applications',
+                    'team',
                 ]
             ]
         ]);
