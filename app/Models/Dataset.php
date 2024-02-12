@@ -75,12 +75,6 @@ class Dataset extends Model
         return $this->hasMany(DatasetVersion::class, 'dataset_id');
     }
 
-    public function latestVersion2(): HasOne
-    {
-        return $this->hasOne(DatasetVersion::class, 'dataset_id')->latest();
-    }
-
-
     /**
      * The collections that the dataset belongs to.
      */
@@ -153,5 +147,3 @@ class Dataset extends Model
                             ->take(1),$direction);
     }
 }
-
-
