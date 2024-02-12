@@ -209,9 +209,9 @@ class DatasetController extends Controller
                 function ($query) {
                     return $query->withTrashed();
                 })
-            ->when(!$sortOnMetadata, 
-                fn($query) => $query->orderBy($sortField, $sortDirection),
-                fn($query) => $query->orderByMetadata($sortField, $sortDirection)
+            ->when($sortOnMetadata, 
+                fn($query) => $query->orderByMetadata($sortField, $sortDirection),
+                fn($query) => $query->orderBy($sortField, $sortDirection)
             )
             ->paginate($perPage, ['*'], 'page');
 
