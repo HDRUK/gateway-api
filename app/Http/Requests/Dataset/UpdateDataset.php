@@ -37,6 +37,9 @@ class UpdateDataset extends BaseFormRequest
                 'required',
                 'in:ACTIVE,ARCHIVED,DRAFT',
             ],
+            'is_cohort_discovery' => [
+                'boolean',
+            ],
         ];
     }
 

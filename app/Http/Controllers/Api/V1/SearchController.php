@@ -89,13 +89,13 @@ class SearchController extends Controller
      *                      )
      *                  )
      *              ),
-     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/datasets?page=1"),
      *              @OA\Property(property="from", type="integer", example="1"),
      *              @OA\Property(property="last_page", type="integer", example="1"),
-     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/datasets?page=1"),
      *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="next_page_url", type="string", example="null"),
-     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections"),
+     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/datasets"),
      *              @OA\Property(property="per_page", type="integer", example="25"),
      *              @OA\Property(property="prev_page_url", type="string", example="null"),
      *              @OA\Property(property="to", type="integer", example="3"),
@@ -162,6 +162,7 @@ class SearchController extends Controller
                     if ((int) $dataset['_id'] === $model['id']) {
                         $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
                         $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                        $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
                     }
                 }
             }
@@ -238,13 +239,13 @@ class SearchController extends Controller
      *                      )
      *                  )
      *              ),
-     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/tools?page=1"),
      *              @OA\Property(property="from", type="integer", example="1"),
      *              @OA\Property(property="last_page", type="integer", example="1"),
-     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/tools?page=1"),
      *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="next_page_url", type="string", example="null"),
-     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections"),
+     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/tools"),
      *              @OA\Property(property="per_page", type="integer", example="25"),
      *              @OA\Property(property="prev_page_url", type="string", example="null"),
      *              @OA\Property(property="to", type="integer", example="3"),
@@ -531,13 +532,13 @@ class SearchController extends Controller
      *                      )
      *                  )
      *              ),
-     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/dur?page=1"),
      *              @OA\Property(property="from", type="integer", example="1"),
      *              @OA\Property(property="last_page", type="integer", example="1"),
-     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/dur?page=1"),
      *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="next_page_url", type="string", example="null"),
-     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections"),
+     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/dur"),
      *              @OA\Property(property="per_page", type="integer", example="25"),
      *              @OA\Property(property="prev_page_url", type="string", example="null"),
      *              @OA\Property(property="to", type="integer", example="3"),
