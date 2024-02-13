@@ -452,6 +452,7 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
             $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
+            $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 
@@ -501,6 +502,7 @@ class DatasetController extends Controller
                     'pid' => $pid,
                     'create_origin' => $input['create_origin'],
                     'status' => $input['status'],
+                    'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
     
@@ -647,6 +649,7 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
 
+            $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
             $user = User::where('id', (int) $input['user_id'])->first();
             $team = Team::where('id', (int) $input['team_id'])->first();
             $currDataset = Dataset::where('id', $id)->first();
@@ -683,6 +686,7 @@ class DatasetController extends Controller
                     'pid' => $currentPid,
                     'create_origin' => $input['create_origin'],
                     'status' => $input['status'],
+                    'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
                 // Determine the last version of metadata
