@@ -63,9 +63,13 @@ class CreateCollection extends BaseFormRequest
                 'string',
                 'distinct',
             ],
-            'userId' => [
+            'user_id' => [
                 'integer',
                 'exists:users,id',
+            ],
+            'team_id' => [
+                'integer',
+                'exists:teams,id',
             ],
             'counter' => [
                 'integer'

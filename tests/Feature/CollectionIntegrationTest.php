@@ -90,6 +90,7 @@ class CollectionIntegrationTest extends TestCase
                     'applications',
                     'mongo_object_id',
                     'mongo_id',
+                    'team',
                 ],
             ],
             'current_page',
@@ -137,6 +138,7 @@ class CollectionIntegrationTest extends TestCase
                     'keywords',
                     'users',
                     'applications',
+                    'team',
                 ]
             ]
         ]);

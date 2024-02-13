@@ -60,6 +60,7 @@ class CollectionController extends Controller
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *             ),
      *          ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
@@ -82,14 +83,15 @@ class CollectionController extends Controller
         try {
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $collections = Collection::with([
-                'datasets',
-                'users' => function ($query) {
-                    $query->distinct('id');
-                },
-                'keywords',
-                'applications' => function ($query) {
-                    $query->distinct('id');
-                },
+                    'datasets',
+                    'users' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'keywords',
+                    'applications' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'team',
                 ])->paginate((int) $perPage, ['*'], 'page');
 
             return response()->json(
@@ -142,6 +144,7 @@ class CollectionController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                ),
      *             ),
      *          ),
@@ -162,6 +165,7 @@ class CollectionController extends Controller
                     'applications' => function ($query) {
                         $query->distinct('id');
                     },
+                    'team',
                 ])->get();
 
             return response()->json([
@@ -249,6 +253,7 @@ class CollectionController extends Controller
                 'counter', 
                 'mongo_object_id', 
                 'mongo_id',
+                'team_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -351,6 +356,7 @@ class CollectionController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *              ),
      *        ),
      *    ),
@@ -389,6 +395,7 @@ class CollectionController extends Controller
                 'counter', 
                 'mongo_object_id', 
                 'mongo_id',
+                'team_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -419,14 +426,15 @@ class CollectionController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => Collection::where('id', $id)->with([
-                    'datasets',
-                    'users' => function ($query) {
-                        $query->distinct('id');
-                    }, 
-                    'keywords',
-                    'applications' => function ($query) {
-                        $query->distinct('id');
-                    },
+                        'datasets',
+                        'users' => function ($query) {
+                            $query->distinct('id');
+                        }, 
+                        'keywords',
+                        'applications' => function ($query) {
+                            $query->distinct('id');
+                        },
+                        'team',
                     ])->first(),
             ], 200);
         } catch (Exception $e) {
@@ -498,6 +506,7 @@ class CollectionController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *              ),
      *        ),
      *    ),
@@ -525,7 +534,17 @@ class CollectionController extends Controller
                 $appId = (int) $input['app']['id'];
             }
 
-            $arrayKeys = ['name', 'description', 'image_link', 'enabled', 'public', 'counter', 'mongo_object_id', 'mongo_id'];
+            $arrayKeys = [
+                'name', 
+                'description', 
+                'image_link', 
+                'enabled', 
+                'public', 
+                'counter', 
+                'mongo_object_id', 
+                'mongo_id',
+                'team_id',
+            ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Collection::where('id', $id)->update($array);
@@ -562,6 +581,7 @@ class CollectionController extends Controller
                     'applications' => function ($query) {
                         $query->distinct('id');
                     },
+                    'team',
                 ])->first(),
             ], 200);
         } catch (Exception $e) {
