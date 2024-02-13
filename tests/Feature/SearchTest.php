@@ -295,7 +295,6 @@ class SearchTest extends TestCase
     public function test_collections_search_with_success(): void
     {
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/collections", ["query" => "term"], $this->header);
-        dd($response);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
