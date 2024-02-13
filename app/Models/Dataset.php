@@ -12,7 +12,9 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Builder;
 
 class Dataset extends Model
 {
@@ -134,5 +136,14 @@ class Dataset extends Model
     public function spatialCoverage(): BelongsToMany
     {
         return $this->belongsToMany(SpatialCoverage::class, 'dataset_has_spatial_coverage');
+    }
+    /**
+     * Order by raw metadata extract
+     */
+    public function scopeOrderByMetadata(Builder $query, string $field, string $direction): Builder
+    {
+        return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')") 
+                            ->whereColumn('datasets.id','dataset_versions.dataset_id')
+                            ->latest()->limit(1),$direction);
     }
 }

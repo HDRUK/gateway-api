@@ -65,22 +65,15 @@ class DatasetController extends Controller
      *    @OA\Parameter(
      *       name="sort",
      *       in="query",
-     *       description="Field to sort by (default: 'created')",
-     *       example="created",
+     *       description="Field and direction (colon separated) to sort by (default: 'created:desc') ... <br/> <br/>
+        - ?sort=\<field\>:\<direction\> <br/>
+        - \<direction\> can only be 'asc' or 'desc'  <br/>
+        - \<field\> can only be a valid field for the dataset table that can be ordered on  <br/>
+        - \<field\> can start with the prefix 'metadata.' so that nested values within the field 'metadata'  <br/>
+            (represented by the GWDM JSON structure) can be used to order on.  <br/>  <br/>",
+     *       example="created:desc",
      *       @OA\Schema(
      *          type="string",
-     *          description="Field to sort by",
-     *       ),
-     *    ),
-     *    @OA\Parameter(
-     *       name="direction",
-     *       in="query",
-     *       description="Sort direction ('asc' or 'desc', default: 'desc')",
-     *       example="desc",
-     *       @OA\Schema(
-     *          type="string",
-     *          enum={"asc", "desc"},
-     *          description="Sort direction",
      *       ),
      *    ),
      *    @OA\Parameter(
@@ -134,8 +127,10 @@ class DatasetController extends Controller
         $sortField = $tmp[0];
         $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
+        $sortOnMetadata = str_starts_with($sortField,"metadata.");
+
         $allFields = collect(Dataset::first())->keys()->toArray();
-        if (count($allFields) > 0 && !in_array($sortField, $allFields)) {
+        if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
             return response()->json([
                 'message' => '\"' . $sortField .'\" is not a valid field to sort on'
             ], 400);
@@ -207,10 +202,10 @@ class DatasetController extends Controller
                 function ($query) {
                     return $query->withTrashed();
                 })
-            ->when(true,
-                    function ($query) use ($sortField, $sortDirection) {
-                        return $query->orderBy($sortField, $sortDirection);
-                    })
+            ->when($sortOnMetadata, 
+                fn($query) => $query->orderByMetadata($sortField, $sortDirection),
+                fn($query) => $query->orderBy($sortField, $sortDirection)
+            )
             ->paginate($perPage, ['*'], 'page');
 
         return response()->json(
