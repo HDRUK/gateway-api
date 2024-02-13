@@ -55,6 +55,11 @@ class Dataset extends Model
         'version',
         'create_origin',
         'status',
+        'is_cohort_discovery',
+    ];
+
+    protected $casts = [
+        'is_cohort_discovery' => 'boolean',
     ];
 
     /**
