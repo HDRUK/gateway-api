@@ -507,7 +507,6 @@ class CollectionController extends Controller
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
-     *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *              ),
      *        ),
      *    ),
