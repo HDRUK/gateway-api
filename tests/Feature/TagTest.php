@@ -172,7 +172,7 @@ class TagTest extends TestCase
     }
 
     /**
-     * Create new Tag without success
+     * Update Tag with success
      *
      * @return void
      */

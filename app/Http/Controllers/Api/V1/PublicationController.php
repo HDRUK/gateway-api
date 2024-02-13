@@ -22,6 +22,31 @@ class PublicationController extends Controller
 {
     use RequestTransformation;
 
+    /**
+     * @OA\Get(
+     *    path="/api/v1/publications",
+     *    operationId="fetch_all_publications",
+     *    tags={"Publication"},
+     *    summary="PublicationController@index",
+     *    description="Get All Publications",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          ),
+     *       ),
+     *    ),
+     * )
+     */
     public function index(Request $request): JsonResponse
     {
         $publications = Publication::all()->paginate(Config::get('constants.per_page'), ['*'], 'page');
@@ -30,6 +55,58 @@ class PublicationController extends Controller
         );
     }
 
+    /**
+     * @OA\Get(
+     *    path="/api/v1/publications/{id}",
+     *    operationId="fetch_publications",
+     *    tags={"Publication"},
+     *    summary="PublicationController@show",
+     *    description="Get publication by id",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="publication id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="publication id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="success"),
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          ),
+     *       ),
+     *    ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     * 
+     */
     public function show(GetRequest $request, int $id): JsonResponse
     {
         $publication = Publication::findOrFail($id);
@@ -45,6 +122,48 @@ class PublicationController extends Controller
         ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
+    /**
+     * @OA\Post(
+     *    path="/api/v1/publications",
+     *    operationId="create_publications",
+     *    tags={"Publication"},
+     *    summary="PublicationController@store",
+     *    description="Create a new publication",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="name", type="string", example="features"),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=201,
+     *        description="Created",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="success"),
+     *            @OA\Property(property="data", type="integer", example="100")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
+     * )
+     */
     public function store(CreatePublication $request): JsonResponse
     {
         try {
@@ -60,6 +179,75 @@ class PublicationController extends Controller
         }
     }
 
+    /**
+     * @OA\Put(
+     *    path="/api/v1/publications/{id}",
+     *    operationId="update_publications",
+     *    tags={"Publication"},
+     *    summary="PublicationController@update",
+     *    description="Update publications",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="publication id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="publications id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="name", type="string", example="fake_role"),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="message", type="string", example="success"),
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=400,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="bad request"),
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
+     * )
+     */
     public function update(UpdatePublication $request, int $id): JsonResponse
     {
         try {
@@ -75,6 +263,75 @@ class PublicationController extends Controller
         }
     }
 
+   /**
+     * @OA\Patch(
+     *    path="/api/v1/publications/{id}",
+     *    operationId="edit_publications",
+     *    tags={"Publication"},
+     *    summary="PublicationController@edit",
+     *    description="Edit publications",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="publications id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="publications id",
+     *       ),
+     *    ),
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="name", type="string", example="fake_role"),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="message", type="string", example="success"),
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             example="[]",
+     *             @OA\Items(
+     *                type="array",
+     *                @OA\Items()
+     *             )
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=400,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="bad request"),
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
+     * )
+     */
     public function edit(EditPublication $request, int $id): JsonResponse
     {
         try {
@@ -90,6 +347,56 @@ class PublicationController extends Controller
         }
     }
 
+    /**
+     * @OA\Delete(
+     *    path="/api/v1/publications/{id}",
+     *    operationId="delete_publications",
+     *    tags={"Publication"},
+     *    summary="PublicationController@destroy",
+     *    description="Delete publication by id",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="publication id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="publication id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=401,
+     *        description="Unauthorized",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="unauthorized")
+     *        )
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Error response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource not found"),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *        response=500,
+     *        description="Error",
+     *        @OA\JsonContent(
+     *            @OA\Property(property="message", type="string", example="error"),
+     *        )
+     *    )
+     * )
+     *
+     */
     public function destroy(DeletePublication $request, int $id): JsonResponse
     {
         try {
