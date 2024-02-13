@@ -118,9 +118,7 @@ class SearchController extends Controller
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
 
-            $response = Http::withBody(
-                $request->getContent(), 'application/json'
-            )->get($urlString);
+            $response = Http::post($urlString,$request->all());
 
             $datasetsArray = $response['hits']['hits'];
             $matchedIds = [];
@@ -268,10 +266,8 @@ class SearchController extends Controller
             $filters = (isset($request['filters']) ? $request['filters'] : []);
             $urlString = env('SEARCH_SERVICE_URL') . '/search/tools';
 
-            $response = Http::withBody(
-                $request->getContent(), 'application/json'
-            )->get($urlString);
-
+            $response = Http::post($urlString,$request->all());
+           
             $toolsArray = $response['hits']['hits'];
 
             $matchedIds = [];
@@ -420,11 +416,8 @@ class SearchController extends Controller
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
             $urlString = env('SEARCH_SERVICE_URL') . '/search/collections';
-
-            $response = Http::withBody(
-                $request->getContent(), 'application/json'
-            )->get($urlString);
-
+        
+            $response = Http::post($urlString,$request->all());
 
             $collectionArray = $response['hits']['hits'];
             $matchedIds = [];
@@ -566,9 +559,7 @@ class SearchController extends Controller
             $filters = (isset($request['filters']) ? $request['filters'] : []);
             $urlString = env('SEARCH_SERVICE_URL') . '/search/dur';
 
-            $response = Http::withBody(
-                $request->getContent(), 'application/json'
-            )->get($urlString);
+            $response = Http::post($urlString,$request->all());
 
             $durArray = $response['hits']['hits'];
             $matchedIds = [];
