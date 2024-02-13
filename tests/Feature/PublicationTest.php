@@ -189,6 +189,7 @@ class PublicationTest extends TestCase
 
         $countAfter = Publication::all()->count();
         $this->assertTrue((bool) ($countAfter - $countBefore));
+        
         $response->assertJsonStructure([
             'message',
             'data'
@@ -198,7 +199,7 @@ class PublicationTest extends TestCase
 
         $responseUpdate = $this->json(
             'PUT',
-            self::TEST_URL,
+            self::TEST_URL . '/' . $publicationId,
             [
                 'paper_title' => 'Not A Test Paper Title',
                 'authors' => 'Einstein, Albert, Yankovich, Al',
@@ -210,10 +211,11 @@ class PublicationTest extends TestCase
             ],
             $this->header,
         );
-        $countAfter = Publication::all()->count();
+
+        $content = $responseUpdate->decodeResponseJson()['data'];
+        $this->assertEquals($content['paper_title'], 'Not A Test Paper Title');
 
         $responseUpdate->assertStatus(200);
-        $this->assertFalse((bool) ($countAfter - $countBefore));
         $responseUpdate->assertJsonStructure([
             'message',
             'data'

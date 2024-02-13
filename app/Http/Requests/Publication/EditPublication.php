@@ -17,7 +17,7 @@ class EditPublication extends BaseFormRequest
             'id' => [
                 'required',
                 'int',
-                'exists:permissions,id',
+                'exists:publications,id',
             ],
             'paper_title' => [
                 'string',

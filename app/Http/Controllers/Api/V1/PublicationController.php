@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use DB;
 use Config;
 use Exception;
 
@@ -49,7 +50,7 @@ class PublicationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $publications = Publication::all()->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        $publications = DB::table('publications')->paginate(Config::get('constants.per_page'), ['*'], 'page');
         return response()->json(
             $publications
         );
@@ -107,19 +108,23 @@ class PublicationController extends Controller
      * )
      * 
      */
-    public function show(GetRequest $request, int $id): JsonResponse
+    public function show(GetPublication $request, int $id): JsonResponse
     {
-        $publication = Publication::findOrFail($id);
-        if ($publication) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $publication,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        }
+        try {
+            $publication = Publication::where('id', $id)->get();
+            if ($publication) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $publication,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -168,7 +173,15 @@ class PublicationController extends Controller
     {
         try {
             $input = $request->all();
-            $publication = Publication::create($input);
+            $publication = Publication::create([
+                'paper_title' => $input['paper_title'],
+                'authors' => $input['authors'],
+                'year_of_publication' => $input['year_of_publication'],
+                'paper_doi' => $input['paper_doi'],
+                'publication_type' => $input['publication_type'],
+                'journal_name' => $input['journal_name'],
+                'abstract' => $input['abstract'],
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
@@ -252,11 +265,19 @@ class PublicationController extends Controller
     {
         try {
             $input = $request->all();
-            $publication = Publication::where('id', $id)->update($input);
+            Publication::where('id', $id)->update([
+                'paper_title' => $input['paper_title'],
+                'authors' => $input['authors'],
+                'year_of_publication' => $input['year_of_publication'],
+                'paper_doi' => $input['paper_doi'],
+                'publication_type' => $input['publication_type'],
+                'journal_name' => $input['journal_name'],
+                'abstract' => $input['abstract'],
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $publication,
+                'data' => Publication::where('id', $id)->get()[0],
             ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -336,7 +357,15 @@ class PublicationController extends Controller
     {
         try {
             $input = $request->all();
-            $publication = Publication::where('id', $id)->update($input);
+            $publication = Publication::where('id', $id)->update([
+                'paper_title' => $input['paper_title'],
+                'authors' => $input['authors'],
+                'year_of_publication' => $input['year_of_publication'],
+                'paper_doi' => $input['paper_doi'],
+                'publication_type' => $input['publication_type'],
+                'journal_name' => $input['journal_name'],
+                'abstract' => $input['abstract'],
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),

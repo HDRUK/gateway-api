@@ -17,7 +17,7 @@ class GetPublication extends BaseFormRequest
             'id' => [
                 'required',
                 'int',
-                'exists:publication,id',
+                'exists:publications,id',
             ],
         ];
     }

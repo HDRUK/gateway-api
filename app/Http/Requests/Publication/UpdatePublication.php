@@ -17,7 +17,7 @@ class UpdatePublication extends BaseFormRequest
             'id' => [
                 'required',
                 'int',
-                'exists:publication,id',
+                'exists:publications,id',
             ],
             'paper_title' => [
                 'required',

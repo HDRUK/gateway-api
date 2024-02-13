@@ -2718,7 +2718,7 @@ return [
         'name' => 'publications.destroy',
         'method' => 'delete',
         'path' => 'publications/{id}',
-        'methodController' => 'PublicationController@delete',
+        'methodController' => 'PublicationController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => ['jwt.verify'],
         'constraint' => [],
