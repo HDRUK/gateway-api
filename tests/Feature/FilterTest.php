@@ -56,7 +56,6 @@ class FilterTest extends TestCase
                         'updated_at',
                         'deleted_at',
                         'type',
-                        'value',
                         'keys',
                         'enabled',
                     ],
@@ -117,7 +116,6 @@ class FilterTest extends TestCase
                     'updated_at',
                     'deleted_at',
                     'type',
-                    'value',
                     'keys',
                     'enabled',
                 ],
@@ -215,7 +213,6 @@ class FilterTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['data']['value'], 'New Value');
         $this->assertEquals($content['data']['enabled'], 1);
     }
 
@@ -275,7 +272,6 @@ class FilterTest extends TestCase
         ]);
 
         $contentUpdate = $responseUpdate->decodeResponseJson();
-        $this->assertEquals($contentUpdate['data']['value'], 'New Value');
         $this->assertEquals($contentUpdate['data']['enabled'], 1);
 
         // edit
@@ -299,7 +295,6 @@ class FilterTest extends TestCase
 
         $contentEdit1 = $responseEdit1->decodeResponseJson();
         $this->assertEquals($contentEdit1['data']['type'], 'collection');
-        $this->assertEquals($contentEdit1['data']['value'], 'New Value e1');
 
         // edit
         $responseEdit2 = $this->json(
@@ -322,7 +317,6 @@ class FilterTest extends TestCase
         ]);
 
         $contentEdit2 = $responseEdit2->decodeResponseJson();
-        $this->assertEquals($contentEdit2['data']['value'], 'New Value e2');
         $this->assertEquals($contentEdit2['data']['keys'], 'purpose e2');
         $this->assertEquals($contentEdit2['data']['enabled'], 0);
     }
