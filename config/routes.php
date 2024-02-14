@@ -1946,6 +1946,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'datasets-histogram',
+        'method' => 'get',
+        'path' => '/datasets/histogram',
+        'methodController' => 'DatasetController@histogram',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'datasets',
         'method' => 'get',
         'path' => '/datasets/{id}',

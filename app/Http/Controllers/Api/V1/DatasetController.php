@@ -214,6 +214,161 @@ class DatasetController extends Controller
     }
 
 
+/**
+     * @OA\Get(
+     *    path="/api/v1/datasets/histogram",
+     *    operationId="get_histogram_datasets",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@histogram",
+     *    description="make a histogram of data from a field in the metadata",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="query",
+     *       description="name of the field to create histogram data from",
+     *       required=true,
+     *       example="metadata.summary.populationSize",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="field name to create histogram data from",
+     *       ),
+     *    ),
+     *     @OA\Parameter(
+     *         name="logYscale",
+     *         in="query",
+     *         description="Description of logYscale parameter",
+     *         required=false,
+     *         @OA\Schema(type="boolean")
+     *     ),
+     *     @OA\Parameter(
+     *         name="logXscale",
+     *         in="query",
+     *         description="Description of logXscale parameter",
+     *         required=false,
+     *         @OA\Schema(type="boolean")
+     *     ),
+     *     @OA\Parameter(
+     *         name="includeZero",
+     *         in="query",
+     *         description="Description of includeZero parameter",
+     *         required=false,
+     *         @OA\Schema(type="boolean")
+     *     ),
+     *     @OA\Parameter(
+     *         name="xmin",
+     *         in="query",
+     *         description="Description of xmin parameter",
+     *         required=false,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Parameter(
+     *         name="xmax",
+     *         in="query",
+     *         description="Description of xmax parameter",
+     *         required=false,
+     *         @OA\Schema(type="number")
+     *     ),
+     *     @OA\Parameter(
+     *         name="nbins",
+     *         in="query",
+     *         description="Description of nbins parameter",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *        response=200,
+     *        description="Successful operation",
+     *        @OA\JsonContent(
+     *            type="object",
+     *            @OA\Property(
+     *                property="data",
+     *                type="array",
+     *                description="Array of histogram data",
+     *                @OA\Items(
+     *                    type="object",
+     *                    @OA\Property(
+     *                        property="xValue",
+     *                        type="array",
+     *                        description="Array containing the start and end values of the bin",
+     *                        @OA\Items(type="number")
+     *                    ),
+     *                    @OA\Property(
+     *                        property="yValue",
+     *                        type="number",
+     *                        description="Value representing the frequency of data points within the bin"
+     *                    )
+     *                )
+     *            )
+     *        )
+     *    )
+     * )
+     */
+    public function histogram(Request $request): JsonResponse
+    {
+
+        $field = $request->query("field");
+
+        $logYScale = $request->boolean("logYscale", false);
+        $logXScale = $request->boolean("logXscale", false);
+
+        $includeZero = $logXScale ? false : $request->boolean("includeZero",false);
+
+        $fieldInMetadata = str_contains($field,"metadata.");
+          
+        $values = DatasetVersion::latestVersions()
+                    ->when($fieldInMetadata,
+                      fn($query) => $query->select(\DB::raw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."') as value")),
+                      fn($query) => $query->select(\DB::raw($field." as value"))
+                    )
+                    ->get()
+                    ->pluck('value')
+                    ->map(function ($value) {
+                            return intval($value);
+                        })
+                    ->when(!$includeZero, fn($query) => $query->filter(fn($value) => $value > 0));
+
+        $xmin = $request->query("xmin",0);
+        $xmax = $request->query("xmax",$values->max());
+        $numBins = $request->query("nbins",20);
+
+
+        if ($logXScale) {
+            $xmin = max($xmin, 1);
+            $xmax = max($xmax, 1);
+
+            $xmin = log10($xmin);
+            $xmax = log10($xmax);
+        } 
+
+        $binWidth = ($xmax - $xmin) / $numBins;
+        $bins = array_fill(0, $numBins, 0);
+
+        $values->each(function ($value) use ($xmin, $binWidth, &$bins, $logXScale) {
+             if ($logXScale) {
+                $value = log10(max($value, 1)); // Apply logarithmic scaling to the value
+            }
+            $binIndex = min(intval(($value - $xmin) / $binWidth), count($bins) - 1);
+            $bins[$binIndex]++;
+        });
+
+        if($logYScale){
+            $bins = array_map(function($bin) {
+                return $bin > 0 ? log10($bin) : 0;
+            }, $bins);
+        }
+
+        $histogramData = [];
+        for ($i = 0; $i < $numBins; $i++) {
+            $binStart = $xmin + $i * $binWidth;
+            $binEnd = $xmin + ($i + 1) * $binWidth;
+            $histogramData[] = [
+                'xValue' => [$binStart, $binEnd],
+                'yValue' => $bins[$i]
+            ];
+        }
+
+        return response()->json(["data"=>$histogramData]);
+    }
     /**
      * @OA\Get(
      *    path="/api/v1/datasets/count/{field}",
@@ -258,6 +413,7 @@ class DatasetController extends Controller
      */
     public function count(Request $request, string $field): JsonResponse
     {
+
         $teamId = $request->query('team_id',null);
         $counts = Dataset::when($teamId, function ($query) use ($teamId) {
             return $query->where('team_id', '=', $teamId);
