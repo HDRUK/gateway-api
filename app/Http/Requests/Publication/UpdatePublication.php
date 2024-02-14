@@ -22,7 +22,6 @@ class UpdatePublication extends BaseFormRequest
             'paper_title' => [
                 'required',
                 'string',
-                'max:255',
             ],
             'authors' => [
                 'required',

@@ -21,7 +21,6 @@ class EditPublication extends BaseFormRequest
             ],
             'paper_title' => [
                 'string',
-                'max:255',
             ],
             'authors' => [
                 'string',
