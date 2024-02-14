@@ -327,9 +327,9 @@ class DatasetController extends Controller
                         })
                     ->when(!$includeZero, fn($query) => $query->filter(fn($value) => $value > 0));
 
-        $xmin = $request->query("xmin",0);
-        $xmax = $request->query("xmax",$values->max());
-        $numBins = $request->query("nbins",20);
+        $xmin = $request->float("xmin",0);
+        $xmax = $request->float("xmax",$values->max());
+        $numBins = $request->integer("nbins",20);
 
 
         if ($logXScale) {
