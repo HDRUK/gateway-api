@@ -35,7 +35,7 @@ class DatasetVersionFactory extends Factory
         $ds = Dataset::all();
         return [
             'dataset_id' => fake()->randomElement($ds)->id,
-            'metadata' => ,
+            'metadata' => $metadata,
             'version' => fake()->unique()->numberBetween(1, 50),
         ];
     }
