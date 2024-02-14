@@ -79,6 +79,7 @@ class DatasetVersion extends Model
         return $query->whereIn('id', function ($subquery) {
             $subquery->selectRaw('MAX(id)')
                 ->from('dataset_versions')
+                ->whereNull('deleted_at')
                 ->groupBy('dataset_id');
         });
     }
