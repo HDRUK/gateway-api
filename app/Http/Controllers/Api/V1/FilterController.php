@@ -134,7 +134,7 @@ class FilterController extends Controller
 
             $filterBuckets = $response->json()['filters'][0];
             if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
-                $filter['buckets'] = $filterBuckets[$type][$keys]['buckets'];
+                $filter['buckets'] = $filterBuckets[$filter['type']][$filter['keys']]['buckets'];
             } else {
                 $filter['buckets'] = [];
             }
