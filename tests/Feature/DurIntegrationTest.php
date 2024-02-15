@@ -10,7 +10,9 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Application;
-// use Illuminate\Foundation\Testing\WithFaker;
+use App\Models\ApplicationHasPermission;
+use App\Models\Permission;
+
 use Database\Seeders\DurSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
@@ -50,14 +52,28 @@ class DurIntegrationTest extends TestCase
             KeywordSeeder::class,
             DurSeeder::class,
         ]);
-        $this->header = [
-            'Accept' => 'application/json',
-        ];
-        $this->integration = Application::find(1)->first();
-        $this->body = [
-            "app_id" => $this->integration['app_id'], 
-            "client_id" => $this->integration['client_id']
-        ];
+
+        $this->integration = Application::where('id', 1)->first();
+
+        $perms = Permission::whereIn('name', [
+            'dur.create',
+            'dur.read',
+            'dur.update',
+            'dur.delete',
+        ])->get();
+
+        foreach ($perms as $perm) {
+            // Use firstOrCreate ignoring the return as we only care that missing perms
+            // of the above are added, rather than retrieving existing
+            ApplicationHasPermission::firstOrCreate([
+                'application_id' => $this->integration->id,
+                'permission_id' => $perm->id,
+            ]);            
+        }
+
+        // Add Integration auth keys to the header generated in commonSetUp
+        $this->header['X-Application-ID'] = $this->integration['app_id'];
+        $this->header['X-Client-ID'] = $this->integration['client_id'];
     }
 
     /**
@@ -67,7 +83,7 @@ class DurIntegrationTest extends TestCase
      */
     public function test_get_all_integration_dur_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL, $this->body, $this->header);
+        $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $response->assertJsonStructure([
             'data' => [
@@ -148,7 +164,7 @@ class DurIntegrationTest extends TestCase
     public function test_get_integration_dur_by_id_with_success(): void
     {
         $durId = (int) Dur::all()->random()->id;
-        $response = $this->json('GET', self::TEST_URL . '/' . $durId, $this->body, $this->header);
+        $response = $this->json('GET', self::TEST_URL . '/' . $durId, [], $this->header);
 
         $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
@@ -234,7 +250,7 @@ class DurIntegrationTest extends TestCase
         $response = $this->json(
             'POST',
             self::TEST_URL,
-            array_merge($mockData, $this->body),
+            $mockData,
             $this->header
         );
         $response->assertStatus(201);
@@ -268,7 +284,7 @@ class DurIntegrationTest extends TestCase
         $response = $this->json(
             'POST',
             self::TEST_URL,
-            array_merge($mockData, $this->body),
+            $mockData,
             $this->header
         );
         $response->assertStatus(201);
@@ -291,7 +307,7 @@ class DurIntegrationTest extends TestCase
         $responseUpdate = $this->json(
             'PUT',
             self::TEST_URL . '/' . $durId,
-            array_merge($mockDataUpdate, $this->body),
+            $mockDataUpdate,
             $this->header
         );
         $responseUpdate->assertStatus(200);
@@ -320,7 +336,7 @@ class DurIntegrationTest extends TestCase
         $response = $this->json(
             'POST',
             self::TEST_URL,
-            array_merge($mockData, $this->body),
+            $mockData,
             $this->header
         );
         $response->assertStatus(201);
@@ -335,7 +351,7 @@ class DurIntegrationTest extends TestCase
         $responseDelete = $this->json(
             'DELETE',
             self::TEST_URL . '/' . $durId,
-            $this->body,
+            [],
             $this->header
         );
         $responseDelete->assertStatus(200);

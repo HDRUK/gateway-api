@@ -286,24 +286,24 @@ return [
     [
         'name' => 'dar.integrations',
         'method' => 'get',
-        'path' => '/dar-integrations',
+        'path' => '/integrations/dar',
         'methodController' => 'DarIntegrationController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'jwt.verify',
-            'check.integration.access:permissions,dar.read',
+            'integration.auth',
+            'check.integration.access:permissions,dar.read.all',
         ],
         'constraint' => [],
     ],
     [
         'name' => 'dar.integrations',
         'method' => 'get',
-        'path' => '/dar-integrations/{id}',
+        'path' => '/integrations/dar/{id}',
         'methodController' => 'DarIntegrationController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'jwt.verify',
-            'check.integration.access:permissions,dar.read',
+            'integration.auth',
+            'check.integration.access:permissions,dar.read.all',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -311,25 +311,12 @@ return [
     ],
     [
         'name' => 'dar.integrations',
-        'method' => 'post',
-        'path' => '/dar-integrations',
-        'methodController' => 'DarIntegrationController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.integration.access:permissions,dar.create',
-        ],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'dar.integrations',
         'method' => 'put',
-        'path' => '/dar-integrations/{id}',
+        'path' => '/integrations/dar/{id}',
         'methodController' => 'DarIntegrationController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'jwt.verify',
+            'integration.auth',
             'sanitize.input',
             'check.integration.access:permissions,dar.update',
         ],
@@ -340,11 +327,11 @@ return [
     [
         'name' => 'dar.integrations',
         'method' => 'patch',
-        'path' => '/dar-integrations/{id}',
+        'path' => '/integrations/dar/{id}',
         'methodController' => 'DarIntegrationController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'jwt.verify',
+            'integration.auth',
             'sanitize.input',
             'check.integration.access:permissions,dar.update',
         ],
@@ -352,20 +339,8 @@ return [
             'id' => '[0-9]+',
         ],
     ],
-    [
-        'name' => 'dar.integrations',
-        'method' => 'delete',
-        'path' => '/dar-integrations/{id}',
-        'methodController' => 'DarIntegrationController@destroy',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.integration.access:permissions,dar.delete',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
+
+    // TODO - Add DAR.decision rule and route
 
     // teams
     [
@@ -1524,7 +1499,7 @@ return [
         'name' => 'dur.integrations.get',
         'method' => 'get',
         'path' => '/integrations/dur',
-        'methodController' => 'DurController@index',
+        'methodController' => 'IntegrationDurController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1536,7 +1511,7 @@ return [
         'name' => 'dur.integrations.get.id',
         'method' => 'get',
         'path' => '/integrations/dur/{id}',
-        'methodController' => 'DurController@show',
+        'methodController' => 'IntegrationDurController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1547,10 +1522,10 @@ return [
         ],
     ],
     [
-        'name' => 'get.integrations.post',
+        'name' => 'dur.integrations.post',
         'method' => 'post',
         'path' => '/integrations/dur',
-        'methodController' => 'DurController@store',
+        'methodController' => 'IntegrationDurController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1563,7 +1538,7 @@ return [
         'name' => 'dur.integrations.put.id',
         'method' => 'put',
         'path' => '/integrations/dur/{id}',
-        'methodController' => 'DurController@update',
+        'methodController' => 'IntegrationDurController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1578,7 +1553,7 @@ return [
         'name' => 'dur.integrations.patch.id',
         'method' => 'patch',
         'path' => '/integrations/dur/{id}',
-        'methodController' => 'DurController@edit',
+        'methodController' => 'IntegrationDurController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1593,7 +1568,7 @@ return [
         'name' => 'dur.integrations.delete.id',
         'method' => 'delete',
         'path' => '/integrations/dur/{id}',
-        'methodController' => 'DurController@destroy',
+        'methodController' => 'IntegrationDurController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
