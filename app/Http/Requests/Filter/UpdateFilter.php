@@ -30,10 +30,6 @@ class UpdateFilter extends BaseFormRequest
                     }
                 },
             ],
-            'value' => [
-                'required',
-                'string',
-            ],
             'keys' => [
                 'required',
                 'string',

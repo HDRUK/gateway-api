@@ -20,50 +20,15 @@ class FilterSeeder extends Seeder
 
     public function seed_dataset_filters(): void
     {
-
-        /* NOTE- may need to have some sort of switch/protection for differences in GWDM 1.0 and 1.1
-
-        $publisherNameFilter = "LOWER(
-                JSON_EXTRACT(
-                    JSON_UNQUOTE(
-                        COALESCE(
-                            JSON_EXTRACT(metadata, '$.metadata.summary.publisher.name')
-                            JSON_EXTRACT(metadata, '$.metadata.summary.publisher.publisherName'),
-                        )
-                    ), 
-                    '$'
-                )
-            ) LIKE LOWER(?)";
-
-        */
-
-
         $filters = [
-            'containsTissue'=>[
-                'filter_condition'=>'NOT_YET',
-            ],
-            'dataType'=>[
-                'filter_condition'=> "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.datasetType')) LIKE LOWER(?)",
-            ],
-            'publisherName'=>[
-                'filter_condition'=>"LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.publisher.publisherName')) LIKE LOWER(?)",
-            ],
-            'collectionName'=>[
-                'filter_condition'=>'NOT_YET',
-            ],
-            'dataUse'=>[
-                'filter_condition'=> "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.linkage.dataUses')) LIKE LOWER(?)",
-            ],
-            'dateRange'=>[
-                'filter_condition'=> "JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.provenance.temporal.startDate') >= ? AND JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.provenance.temporal.endDate') <= ?",
-            ],
-            'populationSize'=>[
-                'filter_condition'=> 'NOT_YET',
-            ],
-            'geographicLocation'=>[
-                'filter_condition' => 'LOWER(spatial_coverage.region) LIKE LOWER(?)',
-                'join_condition'=> 'dataset_versions JOIN dataset_has_spatial_coverage ON dataset_versions.dataset_id = dataset_has_spatial_coverage.dataset_id JOIN spatial_coverage on dataset_has_spatial_coverage.spatial_coverage_id = spatial_coverage.id',
-            ]
+            'publisherName',
+            'containsTissue',
+            'dataType',
+            'collectionName',
+            'dataUse',
+            'dateRange',
+            'populationSize',
+            'geographicLocation'
         ];
 
         $this->seed_filter("dataset",$filters);
@@ -72,18 +37,10 @@ class FilterSeeder extends Seeder
      public function seed_datauses_filters(): void
     {
         $filters = [
-            'publisherName' => [
-                'filter_condition'=>'NOT_YET',
-            ],
-            'organisationSect' => [
-                'filter_condition'=>'NOT_YET',
-            ],
-            'latestApprovalDate' => [
-                'filter_condition'=>'NOT_YET',
-            ],
-            'accessType' => [
-                'filter_condition'=>'NOT_YET',
-            ],
+            'publisherName',
+            'organisationSect',
+            'latestApprovalDate',
+            'accessType'
         ];
 
 
@@ -93,21 +50,10 @@ class FilterSeeder extends Seeder
     public function seed_tools_filters(): void
     {
         $filters = [
-            'programmingLanguage' => [
-                "filter_condition" => 'tech_stack LIKE LOWER(?)',
-            ],
-            'category' => [
-                "filter_condition" => 'categories.name LIKE LOWER(?)',
-                "join_condition" => [
-                    "categories" => "tools.category_id = categories.id"
-                ]
-            ],
-            'category_id' => [
-                "filter_condition" => 'category_id = ?',
-            ],
-            'license' => [
-                "filter_condition" =>  'license LIKE LOWER(?)'
-            ]
+            'programmingLanguage',
+            'category',
+            'category_id',
+            'license'
         ];
 
         $this->seed_filter("tool",$filters);
@@ -117,12 +63,10 @@ class FilterSeeder extends Seeder
 
     public function seed_filter(string $type, array $filters): void
     {
-        foreach ($filters as $key => $filter){
+        foreach ($filters as $filter){
             Filter::create([
                 'type' => $type, 
-                'keys' => $key,
-                'value' => $filter["filter_condition"],
-                'join_condition' => array_key_exists("join_condition",$filter) ? json_encode($filter['join_condition']) : null,
+                'keys' => $filter,
                 'enabled' => true,
             ]);
         }

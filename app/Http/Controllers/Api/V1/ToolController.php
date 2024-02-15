@@ -505,7 +505,7 @@ class ToolController extends Controller
                 'tags' => $tagsDescription
             ];
             $params = [
-                'index' => 'tools',
+                'index' => 'tool',
                 'id' => $toolId,
                 'body' => $toIndex,
                 'headers' => 'application/json'

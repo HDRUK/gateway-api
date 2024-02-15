@@ -6,6 +6,7 @@ use Config;
 
 use Exception;
 use App\Models\Filter;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -15,10 +16,11 @@ use App\Http\Requests\Filter\CreateFilter;
 use App\Http\Requests\Filter\DeleteFilter;
 use App\Http\Requests\Filter\UpdateFilter;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Traits\PaginateFromArray;
 
 class FilterController extends Controller
 {
-    use RequestTransformation;
+    use RequestTransformation, PaginateFromArray;
     
     /**
      * @OA\Get(
@@ -50,10 +52,29 @@ class FilterController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $filters = Filter::where('enabled', 1)->orderBy('type')->paginate(Config::get('constants.per_page'), ['*'], 'page');
-        return response()->json(
-            $filters
-        );
+        $filters = Filter::where('enabled', 1)->orderBy('type')->get()->toArray();
+
+        $urlString = env('SEARCH_SERVICE_URL') . '/filters';
+
+        $response = Http::withBody(
+            json_encode(['filters' => $filters]), 'application/json'
+        )->post($urlString);
+
+        $filterBuckets = $response->json()['filters'];
+
+        foreach ($filters as $i => $f) {
+            $type = $f['type'];
+            $keys = $f['keys'];
+            if (isset($filterBuckets[$i][$type][$keys])) {
+                $filters[$i]['buckets'] = $filterBuckets[$i][$type][$keys]['buckets'];
+            } else {
+                $filters[$i]['buckets'] = [];
+            }
+        }
+
+        $perPage = request('perPage', Config::get('constants.per_page'));
+        $paginatedData = $this->paginateArray($request, $filters, $perPage);
+        return response()->json($paginatedData, 200);
     }
 
     /**
@@ -104,6 +125,20 @@ class FilterController extends Controller
     {
         $filter = Filter::findOrFail($id);
         if ($filter) {
+
+            $urlString = env('SEARCH_SERVICE_URL') . '/filters';
+
+            $response = Http::withBody(
+                json_encode(['filters' => [$filter->toArray()]]), 'application/json'
+            )->post($urlString);
+
+            $filterBuckets = $response->json()['filters'][0];
+            if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
+                $filter['buckets'] = $filterBuckets[$type][$keys]['buckets'];
+            } else {
+                $filter['buckets'] = [];
+            }
+            
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $filter,
@@ -127,9 +162,8 @@ class FilterController extends Controller
      *          required=true,
      *          description="Filter definition",
      *          @OA\JsonContent(
-     *              required={"type", "value", "keys", "enabled"},
+     *              required={"type", "keys", "enabled"},
      *              @OA\Property(property="type", type="string", example="dataset"),
-     *              @OA\Property(property="value", type="string", example="your filter value here"),
      *              @OA\Property(property="keys", type="string", example="purpose"),
      *          ),
      *      ),
@@ -157,7 +191,6 @@ class FilterController extends Controller
 
             $filter = Filter::create([
                 'type' => $input['type'],
-                'value' => $input['value'],
                 'keys' => $input['keys'],
                 'enabled' => $input['enabled'],
             ]);
@@ -196,7 +229,6 @@ class FilterController extends Controller
      *          @OA\JsonContent(
      *              required={"type", "value", "keys", "enabled"},
      *              @OA\Property(property="type", type="string", example="dataset"),
-     *              @OA\Property(property="value", type="string", example="your filter value here"),
      *              @OA\Property(property="keys", type="string", example="purpose"),
      *              @OA\Property(property="enabled", type="integer", example="1"),
      *          ),
@@ -218,7 +250,6 @@ class FilterController extends Controller
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="type", type="string", example="someType"),
-     *                  @OA\Property(property="value", type="string", example="some value"),
      *                  @OA\Property(property="keys", type="string", example="someKey"),
      *                  @OA\Property(property="enabled", type="boolean", example="1"),
      *              )
@@ -240,7 +271,6 @@ class FilterController extends Controller
 
             Filter::where('id', $id)->update([
                 'type' => $input['type'],
-                'value' => $input['value'],
                 'keys' => $input['keys'],
                 'enabled' => $input['enabled'],
             ]);
@@ -278,7 +308,6 @@ class FilterController extends Controller
      *          description="Filter definition",
      *          @OA\JsonContent(
      *              @OA\Property(property="type", type="string", example="dataset"),
-     *              @OA\Property(property="value", type="string", example="your filter value here"),
      *              @OA\Property(property="keys", type="string", example="purpose"),
      *              @OA\Property(property="enabled", type="integer", example="1"),
      *          ),
@@ -300,7 +329,6 @@ class FilterController extends Controller
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="type", type="string", example="someType"),
-     *                  @OA\Property(property="value", type="string", example="some value"),
      *                  @OA\Property(property="keys", type="string", example="someKey"),
      *                  @OA\Property(property="enabled", type="boolean", example="1"),
      *              )
@@ -319,7 +347,7 @@ class FilterController extends Controller
     {
         try {
             $input = $request->all();
-            $arrayKeys = ['type', 'value', 'keys', 'enabled'];
+            $arrayKeys = ['type', 'keys', 'enabled'];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
