@@ -2,9 +2,12 @@
 
 namespace App\Exports;
 
+use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
-class DatasetTableExport implements FromCollection
+class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
 {
     use Exportable;
 
@@ -112,14 +115,14 @@ class DatasetTableExport implements FromCollection
         }
         
         if (!$start && $stop) {
-            $splitDate = explode('-', $endData);
+            $splitDate = explode('-', $stop);
             return $splitDate[0];
         }
 
         if ($start && $stop) {
             $splitStartDate = explode('-', $start);
             $splitEndDate = explode('-', $start);
-            return $splitStartDate[0] . ' - ' . $splitEndDate;
+            return $splitStartDate[0] . " - " . $splitEndDate[0];
         }
 
     }

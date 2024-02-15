@@ -115,14 +115,14 @@ class DatasetListExport implements WithHeadings, FromCollection, WithMapping
         }
         
         if (!$start && $stop) {
-            $splitDate = explode('-', $endData);
+            $splitDate = explode('-', $stop);
             return $splitDate[0];
         }
 
         if ($start && $stop) {
             $splitStartDate = explode('-', $start);
-            $splitEndDate = explode('-', $start);
-            return $splitStartDate[0] . ' - ' . $splitEndDate;
+            $splitEndDate = explode('-', $stop);
+            return $splitStartDate[0] . " - " . $splitEndDate[0];
         }
 
     }
