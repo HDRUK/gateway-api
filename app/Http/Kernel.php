@@ -66,5 +66,6 @@ class Kernel extends HttpKernel
         'sanitize.input' => \App\Http\Middleware\SanitizeMiddleware::class,
         'check.access' => \App\Http\Middleware\CheckAccessMiddleware::class,
         'integration.auth' => \App\Http\Middleware\AuthenticateIntegrationMiddleware::class,
+        'check.integration.access' => \App\Http\Middleware\CheckIntegrationAccessMiddleware::class,
     ];
 }

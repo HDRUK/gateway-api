@@ -5,23 +5,29 @@ namespace App\Http\Controllers\Api\V1;
 use Mauro;
 use Config;
 use Exception;
-use App\Models\Team;
 
+use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
 use App\Models\DatasetHasSpatialCoverage;
 use App\Models\SpatialCoverage;
+
+use App\Jobs\TermExtraction;
+use MetadataManagementController AS MMC;
+
+use App\Http\Traits\IntegrationOverride;
+
+use App\Http\Controllers\Controller;
+use App\Exceptions\NotFoundException;
+
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use App\Http\Controllers\Controller;
-use App\Exceptions\NotFoundException;
-use App\Jobs\TermExtraction;
-use MetadataManagementController AS MMC;
+
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
@@ -32,6 +38,8 @@ use Illuminate\Support\Facades\Http;
 
 class DatasetController extends Controller
 {
+    use IntegrationOverride;
+
     /**
      * @OA\Get(
      *    path="/api/v1/datasets",
@@ -120,6 +128,11 @@ class DatasetController extends Controller
         $filterStatus = $request->query('status', null);
         $datasetId = $request->query('dataset_id', null);
         $mongoPId = $request->query('mongo_pid', null);
+
+        // Injection to override the team_id in the scenario that an integration
+        // is making the call, to only provide data the integration is allowed
+        // to see
+        $this->overrideTeamId($teamId, $request->headers->all());
 
         $sort = $request->query('sort',"created:desc");   
         
@@ -446,7 +459,14 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
-            $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
+
+            $teamId = (int)$input['team_id'];
+
+            if (isset($request->header)) {
+                $this->overrideTeamId($teamId, $request->header->all());
+            }
+
+            $team = Team::where('id', $teamId)->first()->toArray();
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
@@ -484,9 +504,14 @@ class DatasetController extends Controller
 
                 $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
 
+                // If this is coming from an integration, we override the default settings
+                // so these aren't required as part of the payload and inferred from the
+                // application token being used instead
+                $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults();
+
                 $dataset = MMC::createDataset([
-                    'user_id' => $input['user_id'],
-                    'team_id' => $input['team_id'],
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                     'mongo_object_id' => $mongo_object_id,
                     'mongo_id' => $mongo_id,
                     'mongo_pid' => $mongo_pid,
@@ -495,8 +520,8 @@ class DatasetController extends Controller
                     'updated' => now(),
                     'submitted' => now(),
                     'pid' => $pid,
-                    'create_origin' => $input['create_origin'],
-                    'status' => $input['status'],
+                    'create_origin' => (isset($applicationOverrideDefaultValues['create_origin']) ? $applicationOverrideDefaultValues['create_origin'] : $input['create_origin']),
+                    'status' => (isset($applicationOverrideDefaultValues['status']) ? $applicationOverrideDefaultValues['status'] : $input['status']),
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
@@ -645,8 +670,17 @@ class DatasetController extends Controller
             $input = $request->all();
 
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
-            $user = User::where('id', (int) $input['user_id'])->first();
-            $team = Team::where('id', (int) $input['team_id'])->first();
+
+            $teamId = (int)$input['team_id'];
+            $userId = (int)$input['user_id'];
+
+            if (isset($request->header)) {
+                $this->overrideUserId($userId, $request->header->all());
+                $this->overrideTeamId($teamId, $request->header->all());
+            }
+
+            $user = User::where('id', $userId)->first();
+            $team = Team::where('id', $teamId)->first();
             $currDataset = Dataset::where('id', $id)->first();
             $currentPid = $currDataset->pid;
 
@@ -671,16 +705,17 @@ class DatasetController extends Controller
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
                 $input['metadata']['metadata'] = $traserResponse['metadata'];
 
+                $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults();
 
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
                 $updatedDataset = $currDataset->update([
-                    'user_id' => $input['user_id'],
-                    'team_id' => $input['team_id'],
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                     'updated' => $updateTime,
                     'pid' => $currentPid,
-                    'create_origin' => $input['create_origin'],
-                    'status' => $input['status'],
+                    'create_origin' => (isset($applicationOverrideDefaultValues['create_origin']) ? $applicationOverrideDefaultValues['create_origin'] : $input['create_origin']),
+                    'status' => (isset($applicationOverrideDefaultValues['status']) ? $applicationOverrideDefaultValues['status'] : $input['status']),
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 

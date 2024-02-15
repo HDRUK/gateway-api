@@ -8,6 +8,8 @@ use Tests\TestCase;
 
 use App\Models\Dataset;
 use App\Models\Application;
+use App\Models\ApplicationHasPermission;
+use App\Models\Permission;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
 use Database\Seeders\SectorSeeder;
@@ -56,10 +58,28 @@ class DatasetIntegrationTest extends TestCase
             SpatialCoverageSeeder::class,
         ]);
         
-        $this->integration = Application::find(1)->first();
-        $this->body = [
-            "app_id" => $this->integration['app_id'], 
-            "client_id" => $this->integration['client_id']
+        $this->integration = Application::where('id', 1)->first();
+
+        $perms = Permission::whereIn('name', [
+            'datasets.create',
+            'datasets.read',
+            'datasets.update',
+            'datasets.delete',
+        ])->get();
+
+        foreach ($perms as $perm) {
+            // Use firstOrCreate ignoring the return as we only care
+            // that missing perms of the above are added, rather
+            // than retrieving existing
+            ApplicationHasPermission::firstOrCreate([
+                'application_id' => $this->integration->id,
+                'permission_id' => $perm->id,
+            ]);
+        }
+        
+        $this->header = [
+            "app-id" => $this->integration['app_id'],
+            "client-id" => $this->integration['client_id'],
         ];
         
         // Lengthy process, but a more consistent representation
@@ -75,7 +95,7 @@ class DatasetIntegrationTest extends TestCase
      */
     public function test_get_all_datasets_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL_DATASET, $this->body, $this->header);
+        $response = $this->json('GET', self::TEST_URL_DATASET, [], $this->header);
 
         $response->assertJsonStructure([
             'current_page',

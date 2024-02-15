@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Application;
 use App\Models\Collection;
 use App\Models\DataVersion;
 use App\Models\NamedEntities;

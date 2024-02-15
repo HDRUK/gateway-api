@@ -291,7 +291,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,integrations.dar',
+            'check.integration.access:permissions,dar.read',
         ],
         'constraint' => [],
     ],
@@ -303,7 +303,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,integrations.dar',
+            'check.integration.access:permissions,dar.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -318,7 +318,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,integrations.dar',
+            'check.integration.access:permissions,dar.create',
         ],
         'constraint' => [],
     ],
@@ -331,7 +331,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,integrations.dar',
+            'check.integration.access:permissions,dar.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -346,7 +346,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:permissions,integrations.dar',
+            'check.integration.access:permissions,dar.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -360,7 +360,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'check.access:permissions,integrations.dar',
+            'check.integration.access:permissions,dar.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -536,6 +536,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.read',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -548,6 +549,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.read',            
             'sanitize.input',
         ],
         'constraint' => [
@@ -562,6 +564,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -574,6 +577,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -588,6 +592,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -602,6 +607,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1355,6 +1361,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.read',
         ],
         'constraint' => [],
     ],
@@ -1366,6 +1373,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1379,6 +1387,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.create',
         ],
         'constraint' => [],
     ],
@@ -1390,6 +1399,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1403,6 +1413,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1416,6 +1427,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1516,6 +1528,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.read',
         ],
         'constraint' => [],
     ],
@@ -1527,6 +1540,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1540,6 +1554,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -1552,6 +1567,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -1566,6 +1582,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -1580,6 +1597,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2032,6 +2050,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,datasets.read',
         ],
         'constraint' => [],
     ],
@@ -2043,6 +2062,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,datasets.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2056,6 +2076,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,datasets.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -2068,6 +2089,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,datasets.delete',
         ],
         'constraint' => [
             'id', '[0-9]+'
