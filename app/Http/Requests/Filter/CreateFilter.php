@@ -25,10 +25,6 @@ class CreateFilter extends BaseFormRequest
                     }
                 },
             ],
-            'value' => [
-                'required',
-                'string',
-            ],
             'keys' => [
                 'required',
                 'string',

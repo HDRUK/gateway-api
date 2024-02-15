@@ -38,10 +38,8 @@ class SearchController extends Controller
      *          "filters": {
      *               "dataset": {
      *                   "publisherName": {
-     *                      "terms": {
-     *                          "BREATHE",
-     *                          "HDRUK"
-     *                      }
+     *                      "BREATHE",
+     *                      "HDRUK"
      *                   }
      *               }
      *           }
@@ -136,34 +134,9 @@ class SearchController extends Controller
                $matchedIds[] = $d['_id'];
             }
 
-            // debug code left in to map to dataset_version Ids for testing - TODO Remove
-            // $matchedIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-            // whereRaw(1=1) here is a trick to allow us to access the builder model
-            // without fully forming a query first
-            $datasetsFiltered = DatasetVersion::whereRaw('1=1');
-            // replace line above with this to enable filtering involving joins
-            // $datasetsFiltered = DatasetVersion::query();
-
-            // Apply any filters to retrieve matching datasets on like basis, for
-            // later intersection with elastic matched datasets
-            foreach ($filters as $filter => $value) {
-                foreach ($value as $key => $val) {
-                    MMC::applySearchFilter($datasetsFiltered, $filter, $key, $val['terms']);
-                }
-            }
-
-            $ds = $datasetsFiltered->whereIn('dataset_versions.dataset_id', $matchedIds)->get();
-            $likeIds = [];
-            foreach ($ds as $d) {
-                $likeIds[] = $d['dataset_id'];
-            }
-
-            $slimSet = array_intersect($matchedIds, $likeIds);
-
-            $datasetsModels = Dataset::with('versions')->whereIn('id', $slimSet)->get()->toArray();
+            $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
             foreach ($datasetsArray as $i => $dataset) {
-                if (!in_array($dataset['_id'], $slimSet)) {
+                if (!in_array($dataset['_id'], $matchedIds)) {
                     unset($datasetsArray[$i]);
                     continue;
                 }
@@ -287,34 +260,16 @@ class SearchController extends Controller
             $response = Http::post($urlString,$request->all());
            
             $toolsArray = $response['hits']['hits'];
-
             $matchedIds = [];
             foreach (array_values($toolsArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
             }
 
-            $toolsFiltered = Tool::with("category");
-
-            // Apply any filters to retrieve matching tools on like basis
-            foreach ($filters as $filter => $value) {
-                foreach ($value as $key => $val) {
-                    MMC::applySearchFilter($toolsFiltered, $filter, $key, $val['terms']);
-                }
-            }
-
             //get all tools models that have been filtered and then matched by elastic
-            $toolModels = $toolsFiltered->whereIn('id', $matchedIds)->get();
-
-            $likeIds = [];
-            foreach ($toolModels as $d) {
-                $likeIds[] = $d['id'];
-            }
-
-            //IDs that have been matched and IDs that have been filtered
-            $slimSet = array_intersect($matchedIds, $likeIds);
+            $toolModels = Tool::whereIn('id', $matchedIds)->get();
 
             foreach ($toolsArray as $i => $tool) {
-                if (!in_array($tool['_id'], $slimSet)) {
+                if (!in_array($tool['_id'], $matchedIds)) {
                     unset($toolsArray[$i]);
                     continue;
                 }
@@ -443,25 +398,10 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $collectionsFiltered = Collection::whereRaw("1=1");
-            foreach ($filters as $filter => $value) {
-                foreach ($value as $key => $val) {
-                    MMC::applySearchFilter($collectionsFiltered, $filter, $key, $val['terms']);
-                }
-            }
-
-            $collectionModels = $collectionsFiltered->whereIn('id', $matchedIds)->get();
-
-            $likeIds = [];
-            foreach ($collectionModels as $d) {
-                $likeIds[] = $d['id'];
-            }
-
-            //IDs that have been matched and IDs that have been filtered
-            $slimSet = array_intersect($matchedIds, $likeIds);
+            $collectionModels = Collection::whereIn('id', $matchedIds)->get();
 
             foreach ($collectionArray as $i => $collection) {
-                if (!in_array($collection['_id'], $slimSet)) {
+                if (!in_array($collection['_id'], $matchedIds)) {
                     unset($collectionArray[$i]);
                     continue;
                 }
@@ -587,25 +527,10 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $durFiltered = Dur::with(['team'])->whereRaw("1=1");
-            foreach ($filters as $filter => $value) {
-                foreach ($value as $key => $val) {
-                    MMC::applySearchFilter($durFiltered, $filter, $key, $val['terms']);
-                }
-            }
-
-            $durModels = $durFiltered->whereIn('id', $matchedIds)->get();
-
-            $likeIds = [];
-            foreach ($durModels as $d) {
-                $likeIds[] = $d['id'];
-            }
-
-            //IDs that have been matched and IDs that have been filtered
-            $slimSet = array_intersect($matchedIds, $likeIds);
+            $durModels = Dur::whereIn('id', $matchedIds)->get();
 
             foreach ($durArray as $i => $dur) {
-                if (!in_array($dur['_id'], $slimSet)) {
+                if (!in_array($dur['_id'], $matchedIds)) {
                     unset($durArray[$i]);
                     continue;
                 }
