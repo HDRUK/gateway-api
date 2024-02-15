@@ -57,7 +57,7 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
         $array = [];
         foreach ($data as $item) {
             $version = $this->getValueFromPath($item, 'metadata/gwdmVersion');
-            $abstract = $this->getValueFromPath($item, 'metadata/metadata/summary/title');
+            $title = $this->getValueFromPath($item, 'metadata/metadata/summary/title');
             $populationSize = ($version !== '1.0') ? $this->getValueFromPath($item, 'metadata/metadata/summary/populationSize') : '';
             $startDate = $this->getValueFromPath($item, 'metadata/metadata/provenance/temporal/startDate');
             $endData = $this->getValueFromPath($item, 'metadata/metadata/provenance/temporal/endData');
@@ -73,7 +73,7 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
             }
             
             $array[] = [
-                'abstract' => $abstract,
+                'title' => $title,
                 'populationSize' => (int) $populationSize,
                 'dataRange' => $this->convertDate($startDate, $endData),
                 'accessService' => $accessService,
