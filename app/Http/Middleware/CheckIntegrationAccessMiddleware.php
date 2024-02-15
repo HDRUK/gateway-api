@@ -25,8 +25,8 @@ class CheckIntegrationAccessMiddleware
         // that this has already happened, so, we just check application permissions
         // from here on
         $application = Application::with('permissions')
-            ->where('app_id', $request->header('app-id'))
-            ->where('client_id', $request->header('client-id'))
+            ->where('app_id', $request->header('X-Application-ID'))
+            ->where('client_id', $request->header('X-Client-ID'))
             ->first()
             ->toArray();
         

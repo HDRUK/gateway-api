@@ -532,7 +532,7 @@ return [
         'name' => 'tools.integrations',
         'method' => 'get',
         'path' => '/integrations/tools',
-        'methodController' => 'ToolController@index',
+        'methodController' => 'IntegrationToolController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -545,7 +545,7 @@ return [
         'name' => 'tools.integrations',
         'method' => 'get',
         'path' => '/integrations/tools/{id}',
-        'methodController' => 'ToolController@show',
+        'methodController' => 'IntegrationToolController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -560,7 +560,7 @@ return [
         'name' => 'tools.integrations',
         'method' => 'post',
         'path' => '/integrations/tools',
-        'methodController' => 'ToolController@store',
+        'methodController' => 'IntegrationToolController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -573,7 +573,7 @@ return [
         'name' => 'tools.integrations',
         'method' => 'put',
         'path' => '/integrations/tools/{id}',
-        'methodController' => 'ToolController@update',
+        'methodController' => 'IntegrationToolController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -588,7 +588,7 @@ return [
         'name' => 'tools.integrations',
         'method' => 'patch',
         'path' => '/integrations/tools/{id}',
-        'methodController' => 'ToolController@edit',
+        'methodController' => 'IntegrationToolController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -603,7 +603,7 @@ return [
         'name' => 'tools.integrations',
         'method' => 'delete',
         'path' => '/integrations/tools/{id}',
-        'methodController' => 'ToolController@destroy',
+        'methodController' => 'IntegrationToolController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1357,7 +1357,7 @@ return [
         'name' => 'collections.integrations',
         'method' => 'get',
         'path' => '/integrations/collections',
-        'methodController' => 'CollectionController@index',
+        'methodController' => 'IntegrationCollectionController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1369,7 +1369,7 @@ return [
         'name' => 'collections.integrations',
         'method' => 'get',
         'path' => '/integrations/collections/{id}',
-        'methodController' => 'CollectionController@show',
+        'methodController' => 'IntegrationCollectionController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1383,7 +1383,7 @@ return [
         'name' => 'collections.integrations',
         'method' => 'post',
         'path' => '/integrations/collections',
-        'methodController' => 'CollectionController@store',
+        'methodController' => 'IntegrationCollectionController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1395,7 +1395,7 @@ return [
         'name' => 'collections.integrations',
         'method' => 'put',
         'path' => '/integrations/collections/{id}',
-        'methodController' => 'CollectionController@update',
+        'methodController' => 'IntegrationCollectionController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1409,7 +1409,7 @@ return [
         'name' => 'collections.integrations',
         'method' => 'patch',
         'path' => '/integrations/collections/{id}',
-        'methodController' => 'CollectionController@edit',
+        'methodController' => 'IntegrationCollectionController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -1423,7 +1423,7 @@ return [
         'name' => 'collections.integrations',
         'method' => 'delete',
         'path' => '/integrations/collections/{id}',
-        'methodController' => 'CollectionController@destroy',
+        'methodController' => 'IntegrationCollectionController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -2046,7 +2046,7 @@ return [
         'name' => 'datasets.integrations',
         'method' => 'get',
         'path' => '/integrations/datasets',
-        'methodController' => 'DatasetController@index',
+        'methodController' => 'IntegrationDatasetController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -2058,7 +2058,7 @@ return [
         'name' => 'datasets.integrations',
         'method' => 'get',
         'path' => '/integrations/datasets/{id}',
-        'methodController' => 'DatasetController@show',
+        'methodController' => 'IntegrationDatasetController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -2072,7 +2072,7 @@ return [
         'name' => 'datasets.integrations',
         'method' => 'post',
         'path' => '/integrations/datasets',
-        'methodController' => 'DatasetController@store',
+        'methodController' => 'IntegrationDatasetController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -2085,7 +2085,7 @@ return [
         'name' => 'datasets.integrations',
         'method' => 'delete',
         'path' => '/integrations/datasets/{id}',
-        'methodController' => 'DatasetController@destroy',
+        'methodController' => 'IntegrationDatasetController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
@@ -2099,7 +2099,7 @@ return [
         'name' => 'datasets.integrations.test',
         'method' => 'post',
         'path' => '/integrations/datasets/test',
-        'methodController' => 'DatasetController@datasetTest',
+        'methodController' => 'IntegrationDatasetController@datasetTest',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',

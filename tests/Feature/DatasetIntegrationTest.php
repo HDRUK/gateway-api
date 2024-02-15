@@ -68,24 +68,21 @@ class DatasetIntegrationTest extends TestCase
         ])->get();
 
         foreach ($perms as $perm) {
-            // Use firstOrCreate ignoring the return as we only care
-            // that missing perms of the above are added, rather
-            // than retrieving existing
+            // Use firstOrCreate ignoring the return as we only care that missing perms
+            // of the above are added, rather than retrieving existing
             ApplicationHasPermission::firstOrCreate([
                 'application_id' => $this->integration->id,
                 'permission_id' => $perm->id,
             ]);
         }
         
-        $this->header = [
-            "app-id" => $this->integration['app_id'],
-            "client-id" => $this->integration['client_id'],
-        ];
+        // Add Integration auth keys to the header generated in commonSetUp
+        $this->header['X-Application-ID'] = $this->integration['app_id'];
+        $this->header['X-Client-ID'] = $this->integration['client_id'];
         
         // Lengthy process, but a more consistent representation
         // of an incoming dataset
         $this->metadata = $this->getFakeDataset();
-
     }
 
     /**
@@ -95,8 +92,13 @@ class DatasetIntegrationTest extends TestCase
      */
     public function test_get_all_datasets_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL_DATASET, [], $this->header);
+        // First create a dataset for the team who owns this integration
+        $response = $this->json('POST', self::TEST_URL_DATASET, [
+            'metadata' => $this->metadata,
+        ], $this->header);
+        $response->assertStatus(201);
 
+        $response = $this->json('GET', self::TEST_URL_DATASET, [], $this->header);
         $response->assertJsonStructure([
             'current_page',
             'data',
@@ -206,16 +208,9 @@ class DatasetIntegrationTest extends TestCase
         $responseCreateDataset = $this->json(
             'POST',
             self::TEST_URL_DATASET,
-            array_merge(
-                $this->body,
-                [
-                    'team_id' => $teamId,
-                    'user_id' => $userId,
-                    'metadata' => $this->metadata,
-                    'create_origin' => Dataset::ORIGIN_MANUAL,
-                    'status' => Dataset::STATUS_ACTIVE,
-                ],
-            ),
+            [
+                'metadata' => $this->metadata,
+            ],
             $this->header,
         );
 
@@ -224,7 +219,7 @@ class DatasetIntegrationTest extends TestCase
         $datasetId = $contentCreateDataset['data'];
 
         // get one dataset
-        $responseGetOne = $this->json('GET', self::TEST_URL_DATASET . '/' . $datasetId, $this->body, $this->header);
+        $responseGetOne = $this->json('GET', self::TEST_URL_DATASET . '/' . $datasetId, [], $this->header);
 
         $responseGetOne->assertJsonStructure([
             'message',
@@ -236,7 +231,7 @@ class DatasetIntegrationTest extends TestCase
         $responseDeleteDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
-            $this->body,
+            [],
             $this->header
         );
         $responseDeleteDataset->assertJsonStructure([
@@ -362,17 +357,10 @@ class DatasetIntegrationTest extends TestCase
         // create dataset
         $responseCreateDataset = $this->json(
             'POST',
-            self::TEST_URL_DATASET,
-            array_merge(
-                $this->body, 
-                [
-                    'team_id' => $teamId,
-                    'user_id' => $userId,
-                    'metadata' => $this->metadata,
-                    'create_origin' => Dataset::ORIGIN_MANUAL,
-                    'status' => Dataset::STATUS_ACTIVE,
-                ],
-            ),
+            self::TEST_URL_DATASET, 
+            [
+                'metadata' => $this->metadata,
+            ],
             $this->header,
         );
         $responseCreateDataset->assertStatus(201);
@@ -383,7 +371,7 @@ class DatasetIntegrationTest extends TestCase
         $responseDeleteDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
-            $this->body,
+            [],
             $this->header
         );
         $responseDeleteDataset->assertJsonStructure([

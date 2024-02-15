@@ -8,9 +8,9 @@ trait IntegrationOverride
 {
     private function overrideTeamId(mixed &$teamId, array $input): void
     {
-        if (isset($input['app-id'][0]) && isset($input['client-id'][0])) {
-            $application = Application::where('app_id', $input['app-id'][0])
-                ->where('client_id', $input['client-id'][0])->first();
+        if (isset($input['X-Application-ID']) && isset($input['X-Client-ID'])) {
+            $application = Application::where('app_id', $input['X-Application-ID'])
+                ->where('client_id', $input['X-Client-ID'])->first();
             
             if ($application) {
                 $teamId = $application->team_id;
@@ -20,9 +20,9 @@ trait IntegrationOverride
 
     private function overrideUserId(mixed &$userId, array $input): void
     {
-        if (isset($input['app-id'][0]) && isset($input['client-id'][0])) {
-            $application = Application::where('app_id', $input['app-id'][0])
-                ->where('client_id', $input['client-id'][0])->first();
+        if (isset($input['X-Application-ID']) && isset($input['X-Client-ID'])) {
+            $application = Application::where('app_id', $input['X-Application-ID'])
+                ->where('client_id', $input['X-Client-ID'])->first();
             
             if ($application) {
                 $userId = $application->user_id;
@@ -30,11 +30,11 @@ trait IntegrationOverride
         }
     }
 
-    private function injectApplicationDatasetDefaults(): array
+    private function injectApplicationDatasetDefaults(array $input): array
     {
-        if (isset($input['app-id'][0]) && isset($input['client-id'][0])) {
-            $application = Application::where('app_id', $input['app-id'][0])
-                ->where('client_id', $input['client-id'][0])->first();
+        if (isset($input['X-Application-ID']) && isset($input['X-Client-ID'])) {
+            $application = Application::where('app_id', $input['X-Application-ID'])
+                ->where('client_id', $input['X-Client-ID'])->first();
 
             if ($application) {
                 return [

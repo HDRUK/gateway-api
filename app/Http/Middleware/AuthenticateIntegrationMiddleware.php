@@ -32,22 +32,23 @@ class AuthenticateIntegrationMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         # Check that the app id is in the app table
-        $appId = $request->header('app-id');
-        $app = Application::where('app_id', $appId)
-            ->first();
-        $userId = $app->user_id;
+        $appId = $request->header('X-Application-ID');
+        $app = Application::where('app_id', $appId)->first();
+
         if (!$app) {
-            throw new NotFoundException('App not found.');
+            throw new UnauthorizedException('No known integration matches the credentials provided');
         }
+
+        $userId = $app->user_id;
 
         # Check that the app id and client id both match, and check the client secret. Throw an exception if not matching.
         $clientId = $app->client_id;
         $clientSecret = $app->client_secret;
-        if (!($clientId == $request->header('client-id') && Hash::check(
+        if (!($clientId == $request->header('X-Client-ID') && Hash::check(
             $appId . ':' . $clientId . ':' . env('APP_AUTH_PRIVATE_SALT') . ':' . env('APP_AUTH_PRIVATE_SALT_2'),
             $clientSecret))
         ) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException('The credentials provided are invalid');
         }
 
         $request->merge(
