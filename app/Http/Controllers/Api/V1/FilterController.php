@@ -34,18 +34,34 @@ class FilterController extends Controller
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="type", type="string", example="someType"),
-     *                      @OA\Property(property="value", type="string", example="some value"),
-     *                      @OA\Property(property="keys", type="string", example="someKey"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
+     *            @OA\Property(property="current_page", type="integer", example="1"),
+     *            @OA\Property(property="data", type="array",
+     *              @OA\Items(
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="type", type="string", example="dataset"),
+     *                  @OA\Property(property="keys", type="string", example="publisherName"),
+     *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="buckets", type="array",
+     *                      @OA\Items(
+     *                          @OA\Property(property="doc_count", type="integer", example="123"),
+     *                          @OA\Property(property="key", type="string", example="Some publisher"),
+     *                      )
      *                  )
      *              )
+     *            ),
+     *            @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
+     *            @OA\Property(property="from", type="integer", example="1"),
+     *            @OA\Property(property="last_page", type="integer", example="1"),
+     *            @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
+     *            @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *            @OA\Property(property="next_page_url", type="string", example="null"),
+     *            @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests"),
+     *            @OA\Property(property="per_page", type="integer", example="25"),
+     *            @OA\Property(property="prev_page_url", type="string", example="null"),
+     *            @OA\Property(property="to", type="integer", example="3"),
+     *            @OA\Property(property="total", type="integer", example="3")
      *          )
      *      )
      * )
@@ -105,10 +121,15 @@ class FilterController extends Controller
      *                  @OA\Property(property="id", type="integer", example="123"),
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="type", type="string", example="someType"),
-     *                  @OA\Property(property="value", type="string", example="some value"),
-     *                  @OA\Property(property="keys", type="string", example="someKey"),
+     *                  @OA\Property(property="type", type="string", example="dataset"),
+     *                  @OA\Property(property="keys", type="string", example="publisherName"),
      *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="buckets", type="array",
+     *                      @OA\Items(
+     *                          @OA\Property(property="doc_count", type="integer", example="123"),
+     *                          @OA\Property(property="key", type="string", example="Some publisher"),
+     *                      )
+     *                  )
      *              )
      *          ),
      *      ),

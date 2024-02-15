@@ -243,7 +243,6 @@ class SearchController extends Controller
             $response = Http::post($urlString,$request->all());
            
             $toolsArray = $response['hits']['hits'];
-
             $matchedIds = [];
             foreach (array_values($toolsArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
@@ -251,23 +250,6 @@ class SearchController extends Controller
 
             //get all tools models that have been filtered and then matched by elastic
             $toolModels = Tool::whereIn('id', $matchedIds)->get();
-
-            $likeIds = [];
-            foreach ($toolModels as $d) {
-                $likeIds[] = $d['id'];
-            }
-
-            //IDs that have been matched and IDs that have been filtered
-            $slimSet = array_intersect($matchedIds, $likeIds);
-
-            
-            $likeIds = [];
-            foreach ($toolModels as $d) {
-                $likeIds[] = $d['id'];
-            }
-
-            //IDs that have been matched and IDs that have been filtered
-            $slimSet = array_intersect($matchedIds, $likeIds);
 
             foreach ($toolsArray as $i => $tool) {
                 if (!in_array($tool['_id'], $matchedIds)) {
