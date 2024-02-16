@@ -23,19 +23,10 @@ class DatasetVersionFactory extends Factory
      */
     public function definition(): array
     {
-
-        $metadata = null;
-        if(version_compare(Config::get('metadata.GWDM.version'),"1.0",">")){   
-            $metadata = json_encode($this->getFakeDatasetNew());
-        }
-        else{
-            $metadata = json_encode($this->getFakeDataset());
-        }
-
         $ds = Dataset::all();
         return [
             'dataset_id' => fake()->randomElement($ds)->id,
-            'metadata' => $metadata,
+            'metadata' => json_encode($this->getFakeDataset()),
             'version' => fake()->unique()->numberBetween(1, 50),
         ];
     }

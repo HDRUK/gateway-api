@@ -43,7 +43,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/datasets",
-     *    operationId="fetch_all_datasets",
+     *    operationId="fetch_all_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@index",
      *    description="Get All Datasets",
@@ -229,7 +229,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/datasets/{id}",
-     *    operationId="fetch_datasets",
+     *    operationId="fetch_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@show",
      *    description="Get dataset by id",
@@ -350,7 +350,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/integrations/datasets",
-     *    operationId="create_datasets",
+     *    operationId="create_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@store",
      *    description="Create a new dataset",
@@ -546,7 +546,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/integrations/datasets/{id}",
-     *    operationId="update_datasets",
+     *    operationId="update_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@update",
      *    description="Update a dataset with a new dataset version",
@@ -710,7 +710,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/integrations/datasets/{id}",
-     *    operationId="patch_datasets",
+     *    operationId="patch_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@edit",
      *    description="Patch dataset by id",

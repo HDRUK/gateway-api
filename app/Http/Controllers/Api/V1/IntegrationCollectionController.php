@@ -36,7 +36,7 @@ class IntegrationCollectionController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/collections",
-     *    operationId="fetch_all_collections",
+     *    operationId="fetch_all_collections_integrations",
      *    tags={"Integration Collections"},
      *    summary="IntegrationCollectionController@index",
      *    description="Returns a list of collections",
@@ -108,7 +108,7 @@ class IntegrationCollectionController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/collections/{id}",
-     *    operationId="fetch_collections",
+     *    operationId="fetch_collections_integrations",
      *    tags={"Integration Collections"},
      *    summary="IntegrationCollectionController@show",
      *    description="Get collection by id",
@@ -185,7 +185,7 @@ class IntegrationCollectionController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/integrations/collections",
-     *    operationId="create_collections",
+     *    operationId="create_collections_integrations",
      *    tags={"Integration Collections"},
      *    summary="IntegrationCollectionController@store",
      *    description="Create a new collection",

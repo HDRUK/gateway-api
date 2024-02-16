@@ -7,9 +7,6 @@ use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use Database\Seeders\SpatialCoverageSeeder;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use  Database\Seeders\MinimalUserSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Carbon;
@@ -1197,37 +1194,5 @@ class DatasetTest extends TestCase
         $responseDeleteUser->assertStatus(200);
         
     }
-
-    /**
-     *  Turned off due to the following error.. 
-     *  SQLSTATE[HY000]: General error: 1 no such function: JSON_UNQUOTE 
-     *                   (Connection: sqlite, SQL: select JSON_EXTRACT(JSON_UNQUOTE(metadata),
-     *  Method uses JSON functions that are not available in sqlite (what we use for testing)
-     */
-    /*
-    public function test_can_get_histogram_data_from_dataset(): void
-    {   
-        $this->seed([
-            MinimalUserSeeder::class,
-            DatasetSeeder::class,
-            DatasetVersionSeeder::class,
-        ]);
-
-        $response = $this->json(
-            'GET',
-            self::TEST_URL_DATASET,
-            [],
-            $this->header,
-        );
-
-        $response = $this->json(
-            'GET',
-            self::TEST_URL_DATASET."/histogram?field=metadata.summary.populationSize",
-            [],
-            $this->header,
-        );
-        $response->assertStatus(201);
-    }
-    */
 
 }

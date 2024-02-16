@@ -39,7 +39,7 @@ class IntegrationDurController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/dur",
-     *    operationId="fetch_all_dur",
+     *    operationId="fetch_all_dur_integrations",
      *    tags={"Integration Data Use Registers"},
      *    summary="IntegrationDurController@index",
      *    description="Returns a list of dur",
@@ -143,7 +143,7 @@ class IntegrationDurController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/dur/{id}",
-     *    operationId="fetch_dur_by_id",
+     *    operationId="fetch_dur_by_id_integrations",
      *    tags={"Integration Data Use Registers"},
      *    summary="IntegrationDurController@show",
      *    description="Get dur by id",
@@ -256,7 +256,7 @@ class IntegrationDurController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/integrations/dur",
-     *    operationId="create_dur",
+     *    operationId="create_dur_integrations",
      *    tags={"Integration Data Use Registers"},
      *    summary="IntegrationDurController@store",
      *    description="Create a new dur",
