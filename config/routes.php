@@ -2677,6 +2677,7 @@ return [
         'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
+    
     // publications
     [
         'name' => 'publications.index',
