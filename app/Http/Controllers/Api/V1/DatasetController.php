@@ -446,7 +446,10 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
-            $team = Team::where('id', (int) $input['team_id'])->first()->toArray();
+
+            $teamId = (int)$input['team_id'];
+
+            $team = Team::where('id', $teamId)->first()->toArray();
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
@@ -645,8 +648,13 @@ class DatasetController extends Controller
             $input = $request->all();
 
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
-            $user = User::where('id', (int) $input['user_id'])->first();
-            $team = Team::where('id', (int) $input['team_id'])->first();
+
+            $teamId = (int)$input['team_id'];
+            $userId = (int)$input['user_id'];
+
+            $user = User::where('id', $userId)->first();
+            $team = Team::where('id', $teamId)->first();
+
             $currDataset = Dataset::where('id', $id)->first();
             $currentPid = $currDataset->pid;
 
@@ -670,7 +678,6 @@ class DatasetController extends Controller
             if ($traserResponse['wasTranslated']) {
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
                 $input['metadata']['metadata'] = $traserResponse['metadata'];
-
 
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
