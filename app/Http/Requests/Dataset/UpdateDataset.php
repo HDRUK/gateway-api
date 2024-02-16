@@ -16,12 +16,10 @@ class UpdateDataset extends BaseFormRequest
         return [
             'team_id' => [
                 'int',
-                'required',
                 'exists:teams,id',
             ],
             'user_id' => [
                 'int',
-                'required',
                 'exists:users,id',
             ],
             'metadata' => [
@@ -29,12 +27,10 @@ class UpdateDataset extends BaseFormRequest
             ],
             'create_origin' => [
                 'string',
-                'required',
                 'in:MANUAL,API,FMA',
             ],
             'status' => [
                 'string',
-                'required',
                 'in:ACTIVE,ARCHIVED,DRAFT',
             ],
             'is_cohort_discovery' => [
