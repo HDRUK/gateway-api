@@ -177,6 +177,16 @@ trait MockExternalApis
                                 ]
                             ]
                         ]
+                    ],
+                    'aggregations' => [
+                        'publisherName' => [
+                            'buckets' => [
+                                0 => [
+                                    'doc_count' => 10,
+                                    'key' => 'A PUBLISHER'
+                                ]
+                            ]
+                        ]
                     ]
                 ],
                 200,
@@ -257,7 +267,8 @@ trait MockExternalApis
                                 ]
                             ]
                         ]
-                    ]
+                    ],
+                    'aggregations' => []
                 ],
                 200,
                 ['application/json']
@@ -343,7 +354,8 @@ trait MockExternalApis
                                 ]
                             ]
                         ]
-                    ]
+                    ],
+                    'aggregations' => []
                 ],
                 200,
                 ['application/json']
@@ -420,7 +432,8 @@ trait MockExternalApis
                                 ]
                             ]
                         ]
-                    ]
+                    ],
+                    'aggregations' => []
                 ],
                 200,
                 ['application/json']

@@ -251,6 +251,12 @@ class CohortRequestController extends Controller
                     ])
                 ->first()->toArray();
 
+            if (isset($cohortRequests['logs'])) {
+                foreach ($cohortRequests['logs'] as &$log) {
+                    $log['details'] = html_entity_decode($log['details']);
+                }
+            }
+
             return response()->json([
                 'message' => 'success',
                 'data' => $cohortRequests,
