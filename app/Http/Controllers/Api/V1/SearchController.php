@@ -161,7 +161,12 @@ class SearchController extends Controller
 
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
-            return response()->json($paginatedData, 200);
+            $aggs = collect([
+                'aggregations' => $response['aggregations']
+            ]);
+
+            $final = $aggs->merge($paginatedData);
+            return response()->json($final, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -291,7 +296,12 @@ class SearchController extends Controller
 
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $toolsArraySorted, $perPage);
-            return response()->json($paginatedData, 200);
+            $aggs = collect([
+                'aggregations' => $response['aggregations']
+            ]);
+
+            $final = $aggs->merge($paginatedData);
+            return response()->json($final, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -417,8 +427,12 @@ class SearchController extends Controller
 
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $collectionArraySorted, $perPage);
-            return response()->json($paginatedData, 200);
+            $aggs = collect([
+                'aggregations' => $response['aggregations']
+            ]);
 
+            $final = $aggs->merge($paginatedData);
+            return response()->json($final, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -553,7 +567,12 @@ class SearchController extends Controller
 
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $durArraySorted, $perPage);
-            return response()->json($paginatedData, 200);
+            $aggs = collect([
+                'aggregations' => $response['aggregations']
+            ]);
+
+            $final = $aggs->merge($paginatedData);
+            return response()->json($final, 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
