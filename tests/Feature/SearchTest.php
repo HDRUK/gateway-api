@@ -80,6 +80,7 @@ class SearchTest extends TestCase
                     ],
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -104,6 +105,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -130,6 +132,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -156,6 +159,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -195,6 +199,7 @@ class SearchTest extends TestCase
                     ],
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -219,6 +224,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -245,6 +251,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -271,6 +278,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -315,6 +323,7 @@ class SearchTest extends TestCase
                     ],
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -339,6 +348,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -365,6 +375,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -391,6 +402,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -433,6 +445,7 @@ class SearchTest extends TestCase
                     ],
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -457,6 +470,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -483,6 +497,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
@@ -509,6 +524,7 @@ class SearchTest extends TestCase
                     '_source'
                 ],
             ],
+            'aggregations',
             'current_page',
             'first_page_url',
             'from',
