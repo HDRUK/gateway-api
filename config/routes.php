@@ -2733,6 +2733,3 @@ return [
         'constraint' => [],
     ],
 ];
-
-
-];
