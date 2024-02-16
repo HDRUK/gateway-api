@@ -17,8 +17,6 @@ use App\Models\SpatialCoverage;
 use App\Jobs\TermExtraction;
 use MetadataManagementController AS MMC;
 
-use App\Http\Traits\IntegrationOverride;
-
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 
