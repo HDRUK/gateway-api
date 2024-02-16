@@ -8,6 +8,9 @@ use App\Models\Keyword;
 use App\Models\Collection;
 
 use App\Models\Application;
+use App\Models\ApplicationHasPermission;
+use App\Models\Permission;
+
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
@@ -53,11 +56,27 @@ class CollectionIntegrationTest extends TestCase
             CollectionHasDatasetSeeder::class,
         ]);
 
-        $this->integration = Application::find(1)->first();
-        $this->body = [
-            "app_id" => $this->integration['app_id'], 
-            "client_id" => $this->integration['client_id']
-        ];
+        $this->integration = Application::where('id', 1)->first();
+
+        $perms = Permission::whereIn('name', [
+            'collections.create',
+            'collections.read',
+            'collections.update',
+            'collections.delete',
+        ])->get();
+
+        foreach ($perms as $perm) {
+            // Use firstOrCreate ignoring the return as we only care that missing perms
+            // of the above are added, rather than retrieving existing            
+            ApplicationHasPermission::firstOrCreate([
+                'application_id' => $this->integration->id,
+                'permission_id' => $perm->id,
+            ]);
+        }
+
+        // Add Integration auth keys to the header generated in commonSetUp
+        $this->header['x-application-id'] = $this->integration['app_id'];
+        $this->header['x-client-id'] = $this->integration['client_id'];
     }
 
     /**
@@ -68,7 +87,7 @@ class CollectionIntegrationTest extends TestCase
     public function test_get_all_integration_collections_with_success(): void
     {
         $countCollection = Collection::count();
-        $response = $this->json('GET', self::TEST_URL, $this->body, $this->header);
+        $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $this->assertCount($countCollection, $response['data']);
         $response->assertJsonStructure([
@@ -116,7 +135,7 @@ class CollectionIntegrationTest extends TestCase
      */
     public function test_get_integration_collection_by_id_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL . '/1', $this->body, $this->header);
+        $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
 
         $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
@@ -167,7 +186,7 @@ class CollectionIntegrationTest extends TestCase
         $response = $this->json(
             'POST',
             self::TEST_URL,
-            array_merge($mockData, $this->body),
+            $mockData,
             $this->header
         );
 
@@ -199,7 +218,7 @@ class CollectionIntegrationTest extends TestCase
         $responseIns = $this->json(
             'POST',
             self::TEST_URL,
-            array_merge($mockDataIns, $this->body),
+            $mockDataIns,
             $this->header
         );
 
@@ -220,7 +239,7 @@ class CollectionIntegrationTest extends TestCase
         $responseUpdate = $this->json(
             'PUT',
             self::TEST_URL . '/' . $idIns,
-            array_merge($mockDataUpdate, $this->body),
+            $mockDataUpdate,
             $this->header
         );
         $responseUpdate->assertStatus(200);
@@ -252,7 +271,7 @@ class CollectionIntegrationTest extends TestCase
         $responseIns = $this->json(
             'POST',
             self::TEST_URL,
-            array_merge($mockDataIns, $this->body),
+            $mockDataIns,
             $this->header
         );
 
@@ -273,7 +292,7 @@ class CollectionIntegrationTest extends TestCase
         $responseUpdate = $this->json(
             'PUT',
             self::TEST_URL . '/' . $idIns,
-            array_merge($mockDataUpdate, $this->body),
+            $mockDataUpdate,
             $this->header
         );
         $responseUpdate->assertStatus(200);
@@ -292,7 +311,7 @@ class CollectionIntegrationTest extends TestCase
         $responseEdit1 = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $idIns,
-            array_merge($mockDataEdit1, $this->body),
+            $mockDataEdit1,
             $this->header
         );
         $responseEdit1->assertStatus(200);
@@ -308,7 +327,7 @@ class CollectionIntegrationTest extends TestCase
         $responseEdit2 = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $idIns,
-            array_merge($mockDataEdit2, $this->body),
+            $mockDataEdit2,
             $this->header
         );
         $responseEdit2->assertStatus(200);
@@ -340,7 +359,7 @@ class CollectionIntegrationTest extends TestCase
         $responseIns = $this->json(
             'POST',
             self::TEST_URL,
-            array_merge($mockDataIns, $this->body),
+            $mockDataIns,
             $this->header
         );
 
@@ -351,7 +370,7 @@ class CollectionIntegrationTest extends TestCase
         $this->assertTrue((bool) ($countAfter - $countBefore), 'Response was successfully');
 
         // delete collection
-        $response = $this->json('DELETE', self::TEST_URL . '/' . $idIns, $this->body, $this->header);
+        $response = $this->json('DELETE', self::TEST_URL . '/' . $idIns, [], $this->header);
         $response->assertStatus(200);
         $countTrasherAfter = Collection::onlyTrashed()->count();
         $this->assertTrue((bool) ($countTrasherAfter - $countTrashedBefore), 'Response was successfully');

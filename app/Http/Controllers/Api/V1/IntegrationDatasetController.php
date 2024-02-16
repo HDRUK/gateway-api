@@ -36,16 +36,16 @@ use App\Http\Requests\Dataset\EditDataset;
 
 use Illuminate\Support\Facades\Http;
 
-class DatasetController extends Controller
+class IntegrationDatasetController extends Controller
 {
     use IntegrationOverride;
 
     /**
      * @OA\Get(
-     *    path="/api/v1/datasets",
+     *    path="/api/v1/integrations/datasets",
      *    operationId="fetch_all_datasets",
      *    tags={"Datasets"},
-     *    summary="DatasetController@index",
+     *    summary="IntegrationDatasetController@index",
      *    description="Get All Datasets",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -129,13 +129,18 @@ class DatasetController extends Controller
         $datasetId = $request->query('dataset_id', null);
         $mongoPId = $request->query('mongo_pid', null);
 
-        $sort = $request->query('sort',"created:desc");   
+        // Injection to override the team_id in the scenario that an integration
+        // is making the call, to only provide data the integration is allowed
+        // to see
+        $this->overrideTeamId($teamId, $request->headers->all());
+
+        $sort = $request->query('sort', 'created:desc');
         
         $tmp = explode(":", $sort);
         $sortField = $tmp[0];
         $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-        $sortOnMetadata = str_starts_with($sortField,"metadata.");
+        $sortOnMetadata = str_starts_with($sortField, 'metadata.');
 
         $allFields = collect(Dataset::first())->keys()->toArray();
         if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
@@ -149,7 +154,7 @@ class DatasetController extends Controller
         if (!in_array($sortDirection, $validDirections)) {
             //if the sort direction is not desc or asc then return a bad request
             return response()->json([
-                "message" => "Sort direction must be either: " . 
+                'message' => 'Sort direction must be either: ' . 
                     implode(' OR ',$validDirections) . 
                     '. Not "' . $sortDirection .'"'
                 ], 400);
@@ -221,71 +226,12 @@ class DatasetController extends Controller
         );
     }
 
-
     /**
      * @OA\Get(
-     *    path="/api/v1/datasets/count/{field}",
-     *    operationId="count_unique_fields",
-     *    tags={"Datasets"},
-     *    summary="DatasetController@count",
-     *    description="Get Counts for distinct entries of a field in the model",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="field",
-     *       in="path",
-     *       description="name of the field to perform a count on",
-     *       required=true,
-     *       example="status",
-     *       @OA\Schema(
-     *          type="string",
-     *          description="status field",
-     *       ),
-     *    ),
-    *    @OA\Parameter(
-     *       name="team_id",
-     *       in="query",
-     *       description="team id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="team id",
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response="200",
-     *       description="Success response",
-     *       @OA\JsonContent(
-     *          @OA\Property(
-     *             property="data",
-     *             type="object",
-     *          )
-     *       )
-     *    )
-     * )
-     */
-    public function count(Request $request, string $field): JsonResponse
-    {
-        $teamId = $request->query('team_id',null);
-        $counts = Dataset::when($teamId, function ($query) use ($teamId) {
-            return $query->where('team_id', '=', $teamId);
-        })->withTrashed()
-            ->select($field)
-            ->get()
-            ->groupBy($field)
-            ->map->count();
-
-        return response()->json([
-            "data" => $counts
-        ]);
-    }
-
-    /**
-     * @OA\Get(
-     *    path="/api/v1/datasets/{id}",
+     *    path="/api/v1/integrations/datasets/{id}",
      *    operationId="fetch_datasets",
      *    tags={"Datasets"},
-     *    summary="DatasetController@show",
+     *    summary="IntegrationDatasetController@show",
      *    description="Get dataset by id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -403,10 +349,10 @@ class DatasetController extends Controller
 
     /**
      * @OA\Post(
-     *    path="/api/v1/datasets",
+     *    path="/api/v1/integrations/datasets",
      *    operationId="create_datasets",
      *    tags={"Datasets"},
-     *    summary="DatasetController@store",
+     *    summary="IntegrationDatasetController@store",
      *    description="Create a new dataset",
      *    security={{"bearerAuth":{}}},
      *    @OA\RequestBody(
@@ -455,9 +401,12 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
 
-            $teamId = (int)$input['team_id'];
+            // If this is coming from an integration, we override the default settings
+            // so these aren't required as part of the payload and inferred from the
+            // application token being used instead
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());            
 
-            $team = Team::where('id', $teamId)->first()->toArray();
+            $team = Team::where('id', $applicationOverrideDefaultValues['team_id'])->first()->toArray();
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
@@ -496,8 +445,8 @@ class DatasetController extends Controller
                 $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
 
                 $dataset = MMC::createDataset([
-                    'user_id' => $input['user_id'],
-                    'team_id' => $input['team_id'],
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                     'mongo_object_id' => $mongo_object_id,
                     'mongo_id' => $mongo_id,
                     'mongo_pid' => $mongo_pid,
@@ -506,8 +455,8 @@ class DatasetController extends Controller
                     'updated' => now(),
                     'submitted' => now(),
                     'pid' => $pid,
-                    'create_origin' => $input['create_origin'],
-                    'status' => $input['status'],
+                    'create_origin' => (isset($applicationOverrideDefaultValues['create_origin']) ? $applicationOverrideDefaultValues['create_origin'] : $input['create_origin']),
+                    'status' => (isset($applicationOverrideDefaultValues['status']) ? $applicationOverrideDefaultValues['status'] : $input['status']),
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
@@ -596,10 +545,10 @@ class DatasetController extends Controller
 
     /**
      * @OA\Put(
-     *    path="/api/v1/datasets/{id}",
+     *    path="/api/v1/integrations/datasets/{id}",
      *    operationId="update_datasets",
      *    tags={"Datasets"},
-     *    summary="DatasetController@update",
+     *    summary="IntegrationDatasetController@update",
      *    description="Update a dataset with a new dataset version",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -660,6 +609,11 @@ class DatasetController extends Controller
             $teamId = (int)$input['team_id'];
             $userId = (int)$input['user_id'];
 
+            if (isset($request->header)) {
+                $this->overrideUserId($userId, $request->header->all());
+                $this->overrideTeamId($teamId, $request->header->all());
+            }
+
             $user = User::where('id', $userId)->first();
             $team = Team::where('id', $teamId)->first();
             $currDataset = Dataset::where('id', $id)->first();
@@ -686,15 +640,17 @@ class DatasetController extends Controller
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
                 $input['metadata']['metadata'] = $traserResponse['metadata'];
 
+                $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
                 $updatedDataset = $currDataset->update([
-                    'user_id' => $input['user_id'],
-                    'team_id' => $input['team_id'],
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                     'updated' => $updateTime,
                     'pid' => $currentPid,
-                    'create_origin' => $input['create_origin'],
-                    'status' => $input['status'],
+                    'create_origin' => (isset($applicationOverrideDefaultValues['create_origin']) ? $applicationOverrideDefaultValues['create_origin'] : $input['create_origin']),
+                    'status' => (isset($applicationOverrideDefaultValues['status']) ? $applicationOverrideDefaultValues['status'] : $input['status']),
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
@@ -753,10 +709,10 @@ class DatasetController extends Controller
 
     /**
      * @OA\Patch(
-     *    path="/api/v1/datasets/{id}",
+     *    path="/api/v1/integrations/datasets/{id}",
      *    operationId="patch_datasets",
      *    tags={"Datasets"},
-     *    summary="DatasetController@edit",
+     *    summary="IntegrationDatasetController@edit",
      *    description="Patch dataset by id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -846,11 +802,11 @@ class DatasetController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="/api/v1/datasets/{id}",
+     *      path="/api/v1/integrations/datasets/{id}",
      *      summary="Delete a dataset",
      *      description="Delete a dataset",
      *      tags={"Datasets"},
-     *      summary="DatasetController@destroy",
+     *      summary="IntegrationDatasetController@destroy",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -900,124 +856,12 @@ class DatasetController extends Controller
         }
     }
 
-    public function destroyByPid(Request $request, string $pid) // softdelete
-    {
-        $dataset = Dataset::where('pid', "=", $pid)->first();
-        return $this->destroy($request,$dataset->id);
-    }
-
-    public function updateByPid(UpdateDataset $request, string $pid)
-    {
-        $dataset = Dataset::where('pid', "=", $pid)->first();
-        return $this->update($request,$dataset->id);
-    }
-
-
-    /**
-     * @OA\Get(
-     *    path="/api/v1/datasets/export",
-     *    operationId="export_datasets",
-     *    tags={"Datasets"},
-     *    summary="DatasetController@export",
-     *    description="Export CSV Of All Datasets",
-     *    security={{"bearerAuth":{}}},
-     *    @OA\Parameter(
-     *       name="team_id",
-     *       in="query",
-     *       description="team id",
-     *       required=true,
-     *       example="1",
-     *       @OA\Schema(
-     *          type="integer",
-     *          description="team id",
-     *       ),
-     *    ),
-     *    @OA\Response(
-     *       response=200,
-     *       description="CSV file",
-     *       @OA\MediaType(
-     *          mediaType="text/csv",
-     *          @OA\Schema(
-     *             type="string",
-     *             example="Title,""Publisher name"",Version,""Last Activity"",""Method of dataset creation"",Status,""Metadata detail""\n""Publications mentioning HDRUK"",""Health Data Research UK"",2.0.0,""2023-04-21T11:31:00.000Z"",MANUAL,ACTIVE,""{""properties\/accessibility\/usage\/dataUseRequirements"":{""id"":""95c37b03-54c4-468b-bda4-4f53f9aaaadd"",""namespace"":""hdruk.profile"",""key"":""properties\/accessibility\/usage\/dataUseRequirements"",""value"":""N\/A"",""lastUpdated"":""2023-12-14T11:31:11.312Z""},""properties\/required\/gatewayId"":{""id"":""8214d549-db98-453f-93e8-d88c6195ad93"",""namespace"":""hdruk.profile"",""key"":""properties\/required\/gatewayId"",""value"":""1234"",""lastUpdated"":""2023-12-14T11:31:11.311Z""}""",
-     *          )
-     *       )
-     *    ),
-     *    @OA\Response(
-     *       response=401,
-     *       description="Unauthorized",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="unauthorized")
-     *       )
-     *    )
-     * )
-     */
-    public function export(Request $request): StreamedResponse
-    {
-        $teamId = $request->query('team_id',null);
-        $datasets = Dataset::when($teamId, function ($query) use ($teamId){
-            return $query->where('team_id', '=', $teamId);
-        });
-
-        $results = $datasets->select('datasets.*')->get();
-
-        // collect all the required information
-        foreach ($results as $dataset) {
-            $dataset['metadata'] = $dataset->latestVersion();
-        }
-
-        // callback function that writes to php://output
-        $response = new StreamedResponse(
-            function() use ($results) {
-
-                // Open output stream
-                $handle = fopen('php://output', 'w');
-                
-                $headerRow = ['Title', 'Publisher name', 'Last Activity', 'Method of dataset creation', 'Status', 'Metadata detail'];
-
-                // Add CSV headers
-                fputcsv($handle, $headerRow);
-        
-                // add the given number of rows to the file.
-                foreach ($results as $rowDetails) {
-                    $metadata = $rowDetails['metadata']['metadata'];
-
-                    $publisherName = $metadata['metadata']['summary']['publisher'];
-                    if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
-                        $publisherName = $publisherName['publisherName'];
-                    }else{
-                        $publisherName = $publisherName['name'];
-                    }
-
-                    $row = [
-                        $metadata['metadata']['summary']['title'] !== null ? $metadata['metadata']['summary']['title'] : '',
-                        $publisherName !== null ? $publisherName : '',
-                        $rowDetails['metadata']['updated_at'] !== null ? $rowDetails['metadata']['updated_at'] : '',
-                        (string)strtoupper($rowDetails['create_origin']),
-                        (string)strtoupper($rowDetails['status']),
-                        $metadata['metadata'] !== null ? (string)json_encode($metadata['metadata']) : '',
-                    ];
-                    fputcsv($handle, $row);
-                }
-                
-                // Close the output stream
-                fclose($handle);
-            }
-        );
-
-        $response->headers->set('Content-Type', 'text/csv');
-        $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
-        $response->headers->set('Cache-Control','max-age=0');
-        
-        return $response;
-    }
-
     /**
      * @OA\Post(
      *    path="/api/v1/integrations/datasets/test",
      *    operationId="integrations_datasets_test",
      *    tags={"Integrations datasets test"},
-     *    summary="DatasetController@datasetTest",
+     *    summary="IntegrationDatasetController@datasetTest",
      *    description="Integrations datasets test",
      *    security={{"bearerAppAuth":{}}},
      *    @OA\RequestBody(

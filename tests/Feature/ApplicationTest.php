@@ -3,10 +3,19 @@
 namespace Tests\Feature;
 
 use Config;
+
 use Tests\TestCase;
+
+use App\Models\Application;
+use App\Models\Permission;
+use App\Models\ApplicationHasPermission;
+
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ApplicationSeeder;
+
 use Tests\Traits\Authorization;
+use App\Http\Traits\IntegrationOverride;
+
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -14,6 +23,7 @@ class ApplicationTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use IntegrationOverride;
 
     const TEST_URL = '/api/v1/applications';
 
@@ -462,4 +472,41 @@ class ApplicationTest extends TestCase
         $responseDelete->assertStatus(200);
     }
 
+    public function test_application_credentials_can_be_translated_to_teams_and_users()
+    {
+        $integration = Application::where('id', 1)->first();
+        $teamId = null;
+        $userId = null;
+
+        $headers = [
+            'x-application-id' => $integration->app_id,
+            'x-client-id' => $integration->client_id,
+        ];
+
+        $this->overrideBothTeamAndUserId($teamId, $userId, $headers);
+
+        $this->assertNotEquals($teamId, null);
+        $this->assertNotEquals($userId, null);
+    }
+
+    public function test_application_credentials_can_create_dataset_defaults()
+    {
+        $integration = Application::where('id', 1)->first();
+        $teamId = null;
+        $userId = null;
+
+        $headers = [
+            'x-application-id' => $integration->app_id,
+            'x-client-id' => $integration->client_id,
+        ];
+
+        $retVal = $this->injectApplicationDatasetDefaults($headers);
+
+        $this->assertTrue(is_array($retVal));
+
+        $this->assertEquals($retVal['user_id'], $integration->user_id);
+        $this->assertEquals($retVal['team_id'], $integration->team_id);
+        $this->assertEquals($retVal['create_origin'], 'API');
+        $this->assertEquals($retVal['status'], 'ACTIVE');
+    }
 }

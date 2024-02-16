@@ -286,24 +286,24 @@ return [
     [
         'name' => 'dar.integrations',
         'method' => 'get',
-        'path' => '/dar-integrations',
+        'path' => '/integrations/dar',
         'methodController' => 'DarIntegrationController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,integrations.dar',
+            'integration.auth',
+            'check.integration.access:permissions,dar.read.all',
         ],
         'constraint' => [],
     ],
     [
         'name' => 'dar.integrations',
         'method' => 'get',
-        'path' => '/dar-integrations/{id}',
+        'path' => '/integrations/dar/{id}',
         'methodController' => 'DarIntegrationController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,integrations.dar',
+            'integration.auth',
+            'check.integration.access:permissions,dar.read.all',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -311,27 +311,14 @@ return [
     ],
     [
         'name' => 'dar.integrations',
-        'method' => 'post',
-        'path' => '/dar-integrations',
-        'methodController' => 'DarIntegrationController@store',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'sanitize.input',
-            'check.access:permissions,integrations.dar',
-        ],
-        'constraint' => [],
-    ],
-    [
-        'name' => 'dar.integrations',
         'method' => 'put',
-        'path' => '/dar-integrations/{id}',
+        'path' => '/integrations/dar/{id}',
         'methodController' => 'DarIntegrationController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'jwt.verify',
+            'integration.auth',
             'sanitize.input',
-            'check.access:permissions,integrations.dar',
+            'check.integration.access:permissions,dar.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -340,32 +327,20 @@ return [
     [
         'name' => 'dar.integrations',
         'method' => 'patch',
-        'path' => '/dar-integrations/{id}',
+        'path' => '/integrations/dar/{id}',
         'methodController' => 'DarIntegrationController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
-            'jwt.verify',
+            'integration.auth',
             'sanitize.input',
-            'check.access:permissions,integrations.dar',
+            'check.integration.access:permissions,dar.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
         ],
     ],
-    [
-        'name' => 'dar.integrations',
-        'method' => 'delete',
-        'path' => '/dar-integrations/{id}',
-        'methodController' => 'DarIntegrationController@destroy',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,integrations.dar',
-        ],
-        'constraint' => [
-            'id' => '[0-9]+',
-        ],
-    ],
+
+    // TODO - Add DAR.decision rule and route
 
     // teams
     [
@@ -532,10 +507,11 @@ return [
         'name' => 'tools.integrations',
         'method' => 'get',
         'path' => '/integrations/tools',
-        'methodController' => 'ToolController@index',
+        'methodController' => 'IntegrationToolController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.read',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -544,10 +520,11 @@ return [
         'name' => 'tools.integrations',
         'method' => 'get',
         'path' => '/integrations/tools/{id}',
-        'methodController' => 'ToolController@show',
+        'methodController' => 'IntegrationToolController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.read',            
             'sanitize.input',
         ],
         'constraint' => [
@@ -558,10 +535,11 @@ return [
         'name' => 'tools.integrations',
         'method' => 'post',
         'path' => '/integrations/tools',
-        'methodController' => 'ToolController@store',
+        'methodController' => 'IntegrationToolController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -570,10 +548,11 @@ return [
         'name' => 'tools.integrations',
         'method' => 'put',
         'path' => '/integrations/tools/{id}',
-        'methodController' => 'ToolController@update',
+        'methodController' => 'IntegrationToolController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -584,10 +563,11 @@ return [
         'name' => 'tools.integrations',
         'method' => 'patch',
         'path' => '/integrations/tools/{id}',
-        'methodController' => 'ToolController@edit',
+        'methodController' => 'IntegrationToolController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -598,10 +578,11 @@ return [
         'name' => 'tools.integrations',
         'method' => 'delete',
         'path' => '/integrations/tools/{id}',
-        'methodController' => 'ToolController@destroy',
+        'methodController' => 'IntegrationToolController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,tools.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1351,10 +1332,11 @@ return [
         'name' => 'collections.integrations',
         'method' => 'get',
         'path' => '/integrations/collections',
-        'methodController' => 'CollectionController@index',
+        'methodController' => 'IntegrationCollectionController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.read',
         ],
         'constraint' => [],
     ],
@@ -1362,10 +1344,11 @@ return [
         'name' => 'collections.integrations',
         'method' => 'get',
         'path' => '/integrations/collections/{id}',
-        'methodController' => 'CollectionController@show',
+        'methodController' => 'IntegrationCollectionController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1375,10 +1358,11 @@ return [
         'name' => 'collections.integrations',
         'method' => 'post',
         'path' => '/integrations/collections',
-        'methodController' => 'CollectionController@store',
+        'methodController' => 'IntegrationCollectionController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.create',
         ],
         'constraint' => [],
     ],
@@ -1386,10 +1370,11 @@ return [
         'name' => 'collections.integrations',
         'method' => 'put',
         'path' => '/integrations/collections/{id}',
-        'methodController' => 'CollectionController@update',
+        'methodController' => 'IntegrationCollectionController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1399,10 +1384,11 @@ return [
         'name' => 'collections.integrations',
         'method' => 'patch',
         'path' => '/integrations/collections/{id}',
-        'methodController' => 'CollectionController@edit',
+        'methodController' => 'IntegrationCollectionController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.update',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1412,10 +1398,11 @@ return [
         'name' => 'collections.integrations',
         'method' => 'delete',
         'path' => '/integrations/collections/{id}',
-        'methodController' => 'CollectionController@destroy',
+        'methodController' => 'IntegrationCollectionController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,collections.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -1512,10 +1499,11 @@ return [
         'name' => 'dur.integrations.get',
         'method' => 'get',
         'path' => '/integrations/dur',
-        'methodController' => 'DurController@index',
+        'methodController' => 'IntegrationDurController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.read',
         ],
         'constraint' => [],
     ],
@@ -1523,23 +1511,25 @@ return [
         'name' => 'dur.integrations.get.id',
         'method' => 'get',
         'path' => '/integrations/dur/{id}',
-        'methodController' => 'DurController@show',
+        'methodController' => 'IntegrationDurController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
         ],
     ],
     [
-        'name' => 'get.integrations.post',
+        'name' => 'dur.integrations.post',
         'method' => 'post',
         'path' => '/integrations/dur',
-        'methodController' => 'DurController@store',
+        'methodController' => 'IntegrationDurController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -1548,10 +1538,11 @@ return [
         'name' => 'dur.integrations.put.id',
         'method' => 'put',
         'path' => '/integrations/dur/{id}',
-        'methodController' => 'DurController@update',
+        'methodController' => 'IntegrationDurController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -1562,10 +1553,11 @@ return [
         'name' => 'dur.integrations.patch.id',
         'method' => 'patch',
         'path' => '/integrations/dur/{id}',
-        'methodController' => 'DurController@edit',
+        'methodController' => 'IntegrationDurController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.update',
             'sanitize.input',
         ],
         'constraint' => [
@@ -1576,10 +1568,11 @@ return [
         'name' => 'dur.integrations.delete.id',
         'method' => 'delete',
         'path' => '/integrations/dur/{id}',
-        'methodController' => 'DurController@destroy',
+        'methodController' => 'IntegrationDurController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,dur.delete',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2028,10 +2021,11 @@ return [
         'name' => 'datasets.integrations',
         'method' => 'get',
         'path' => '/integrations/datasets',
-        'methodController' => 'DatasetController@index',
+        'methodController' => 'IntegrationDatasetController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,datasets.read',
         ],
         'constraint' => [],
     ],
@@ -2039,10 +2033,11 @@ return [
         'name' => 'datasets.integrations',
         'method' => 'get',
         'path' => '/integrations/datasets/{id}',
-        'methodController' => 'DatasetController@show',
+        'methodController' => 'IntegrationDatasetController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,datasets.read',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2052,10 +2047,11 @@ return [
         'name' => 'datasets.integrations',
         'method' => 'post',
         'path' => '/integrations/datasets',
-        'methodController' => 'DatasetController@store',
+        'methodController' => 'IntegrationDatasetController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,datasets.create',
             'sanitize.input',
         ],
         'constraint' => [],
@@ -2064,10 +2060,11 @@ return [
         'name' => 'datasets.integrations',
         'method' => 'delete',
         'path' => '/integrations/datasets/{id}',
-        'methodController' => 'DatasetController@destroy',
+        'methodController' => 'IntegrationDatasetController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',
+            'check.integration.access:permissions,datasets.delete',
         ],
         'constraint' => [
             'id', '[0-9]+'
@@ -2077,7 +2074,7 @@ return [
         'name' => 'datasets.integrations.test',
         'method' => 'post',
         'path' => '/integrations/datasets/test',
-        'methodController' => 'DatasetController@datasetTest',
+        'methodController' => 'IntegrationDatasetController@datasetTest',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'integration.auth',

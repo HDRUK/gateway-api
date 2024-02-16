@@ -7,6 +7,7 @@ use ReflectionClass;
 
 use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
+
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\ToolSeeder;
@@ -14,6 +15,8 @@ use Database\Seeders\TagSeeder;
 use Database\Seeders\ApplicationSeeder;
 
 use App\Models\Application;
+use App\Models\Permission;
+use App\Models\ApplicationHasPermission;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
 use App\Http\Requests\ToolRequest;
@@ -50,14 +53,28 @@ class ToolIntegrationTest extends TestCase
             TagSeeder::class,
             ApplicationSeeder::class,
         ]);
-        $this->header = [
-            'Accept' => 'application/json',
-        ];
-        $this->integration = Application::find(1)->first();
-        $this->body = [
-            "app_id" => $this->integration['app_id'], 
-            "client_id" => $this->integration['client_id']
-        ];
+
+        $this->integration = Application::where('id', 1)->first();
+
+        $perms = Permission::whereIn('name', [
+            'tools.create',
+            'tools.read',
+            'tools.update',
+            'tools.delete',
+        ])->get();
+
+        foreach ($perms as $perm) {
+            // Use firstOrCreate ignoring the return as we only care that missing perms
+            // of the above are added, rather than retrieving existing
+            ApplicationHasPermission::firstOrCreate([
+                'application_id' => $this->integration->id,
+                'permission_id' => $perm->id,
+            ]);
+        }
+
+        // Add Integration auth keys to the header generated in commonSetUp
+        $this->header['x-application-id'] = $this->integration['app_id'];
+        $this->header['x-client-id'] = $this->integration['client_id'];
     }
 
     /**
@@ -68,7 +85,7 @@ class ToolIntegrationTest extends TestCase
     public function test_get_all_tools_with_success(): void
     {
         $countTool = Tool::where('enabled', 1)->count();
-        $response = $this->json('GET', self::TEST_URL, $this->body, $this->header);
+        $response = $this->json('GET', self::TEST_URL, [], $this->header);
         $this->assertEquals($countTool, $response['total']);
         $response->assertJsonStructure([
             'data' => [
@@ -113,7 +130,7 @@ class ToolIntegrationTest extends TestCase
     public function test_get_tool_by_id_with_success(): void
     {
         $tools = Tool::where('enabled', 1)->first();
-        $response = $this->json('GET', self::TEST_URL . '/' . $tools->id, $this->body, $this->header);
+        $response = $this->json('GET', self::TEST_URL . '/' . $tools->id, [], $this->header);
         $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
             'data' => [
@@ -148,22 +165,22 @@ class ToolIntegrationTest extends TestCase
         $countBefore = Tool::withTrashed()->count();
         $countPivotBefore = ToolHasTag::all()->count();
         $mockData = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
-            "name" => "Similique sapiente est vero eum.",
-            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
-            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => "Inventore omnis aut laudantium vel alias.",
-            "tech_stack" => "Cumque molestias excepturi quam at.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => array(1, 2),
-            "enabled" => 1,
+            'mongo_object_id' => '5ece82082abda8b3a06f1941',
+            'name' => 'Similique sapiente est vero eum.',
+            'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
+            'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
+            'license' => 'Inventore omnis aut laudantium vel alias.',
+            'tech_stack' => 'Cumque molestias excepturi quam at.',
+            'category_id' => 1,
+            'user_id' => $this->integration->user_id,
+            'tag' => array(1, 2),
+            'enabled' => 1,
         );
 
         $response = $this->json(
             'POST',
             self::TEST_URL . '/',
-            array_merge($mockData, $this->body),
+            $mockData,
             $this->header
         );
 
@@ -176,7 +193,7 @@ class ToolIntegrationTest extends TestCase
         $this->assertEquals(
             2,
             $countPivotNewRows,
-            "actual value is equal to expected"
+            'actual value is equal to expected'
         );
         $response->assertStatus(201);
     }
@@ -206,7 +223,7 @@ class ToolIntegrationTest extends TestCase
         $this->assertEquals(
             count($mockData),
             $countAfter,
-            "actual value is equal to expected"
+            'actual value is equal to expected'
         );
 
         $this->assertTrue(true);
@@ -221,21 +238,21 @@ class ToolIntegrationTest extends TestCase
     {
         // insert
         $mockDataIns = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
-            "name" => "Similique sapiente est vero eum.",
-            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
-            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => "Inventore omnis aut laudantium vel alias.",
-            "tech_stack" => "Cumque molestias excepturi quam at.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => array(1),
-            "enabled" => 1,
+            'mongo_object_id' => '5ece82082abda8b3a06f1941',
+            'name' => 'Similique sapiente est vero eum.',
+            'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
+            'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
+            'license' => 'Inventore omnis aut laudantium vel alias.',
+            'tech_stack' => 'Cumque molestias excepturi quam at.',
+            'category_id' => 1,
+            'user_id' => $this->integration->user_id,
+            'tag' => array(1),
+            'enabled' => 1,
         );
         $responseIns = $this->json(
             'POST',
             self::TEST_URL . '/',
-            array_merge($mockDataIns, $this->body),
+            $mockDataIns,
             $this->header
         );
         $responseIns->assertStatus(201);
@@ -258,22 +275,22 @@ class ToolIntegrationTest extends TestCase
 
         // update
         $mockDataUpdate = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
-            "name" => "Ea fuga ab aperiam nihil quis.",
-            "url" => "http://dach.com/odio-facilis-ex-culpa",
-            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
-            "license" => "Modi tenetur et et perferendis.",
-            "tech_stack" => "Dolor accusamus rerum numquam et.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => array(2),
-            "enabled" => 1,
+            'mongo_object_id' => '5ece82082abda8b3a06f1941',
+            'name' => 'Ea fuga ab aperiam nihil quis.',
+            'url' => 'http://dach.com/odio-facilis-ex-culpa',
+            'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.',
+            'license' => 'Modi tenetur et et perferendis.',
+            'tech_stack' => 'Dolor accusamus rerum numquam et.',
+            'category_id' => 1,
+            'user_id' => $this->integration->user_id,
+            'tag' => array(2),
+            'enabled' => 1,
         );
 
         $responseUpdate = $this->json(
             'PUT',
             self::TEST_URL . '/' . $toolIdInsert,
-            array_merge($mockDataUpdate, $this->body),
+            $mockDataUpdate,
             $this->header
         );
 
@@ -307,21 +324,21 @@ class ToolIntegrationTest extends TestCase
     {
         // insert
         $mockDataIns = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
-            "name" => "Similique sapiente est vero eum.",
-            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
-            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => "Inventore omnis aut laudantium vel alias.",
-            "tech_stack" => "Cumque molestias excepturi quam at.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => array(1),
-            "enabled" => 1,
+            'mongo_object_id' => '5ece82082abda8b3a06f1941',
+            'name' => 'Similique sapiente est vero eum.',
+            'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
+            'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
+            'license' => 'Inventore omnis aut laudantium vel alias.',
+            'tech_stack' => 'Cumque molestias excepturi quam at.',
+            'category_id' => 1,
+            'user_id' => $this->integration->user_id,
+            'tag' => array(1),
+            'enabled' => 1,
         );
         $responseIns = $this->json(
             'POST',
             self::TEST_URL . '/',
-            array_merge($mockDataIns, $this->body),
+            $mockDataIns,
             $this->header
         );
         $responseIns->assertStatus(201);
@@ -344,22 +361,22 @@ class ToolIntegrationTest extends TestCase
 
         // update
         $mockDataUpdate = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
-            "name" => "Ea fuga ab aperiam nihil quis.",
-            "url" => "http://dach.com/odio-facilis-ex-culpa",
-            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
-            "license" => "Modi tenetur et et perferendis.",
-            "tech_stack" => "Dolor accusamus rerum numquam et.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => array(2),
-            "enabled" => 1,
+            'mongo_object_id' => '5ece82082abda8b3a06f1941',
+            'name' => 'Ea fuga ab aperiam nihil quis.',
+            'url' => 'http://dach.com/odio-facilis-ex-culpa',
+            'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.',
+            'license' => 'Modi tenetur et et perferendis.',
+            'tech_stack' => 'Dolor accusamus rerum numquam et.',
+            'category_id' => 1,
+            'user_id' => $this->integration->user_id,
+            'tag' => array(2),
+            'enabled' => 1,
         );
 
         $responseUpdate = $this->json(
             'PUT',
             self::TEST_URL . '/' . $toolIdInsert,
-            array_merge($mockDataUpdate, $this->body),
+            $mockDataUpdate,
             $this->header
         );
 
@@ -386,17 +403,18 @@ class ToolIntegrationTest extends TestCase
 
         // edit 
         $mockDataEdit1 = array(
-            "name" => "Ea fuga ab aperiam nihil quis e1.",
-            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque. e1",
-            "enabled" => 0,
+            'name' => 'Ea fuga ab aperiam nihil quis e1.',
+            'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque. e1',
+            'enabled' => 0,
+            'user_id' => $this->integration->user_id,
         );
 
         $responseEdit1 = $this->json(
-                'PATCH',
-                self::TEST_URL . '/' . $toolIdInsert,
-                array_merge($mockDataEdit1, $this->body),
-                $this->header
-            );
+            'PATCH',
+            self::TEST_URL . '/' . $toolIdInsert,
+            $mockDataEdit1,
+            $this->header
+        );
 
         $responseEdit1->assertJsonStructure([
             'message',
@@ -409,15 +427,16 @@ class ToolIntegrationTest extends TestCase
 
         // edit 
         $mockDataEdit2 = array(
-            "url" => "http://dach.com/odio-facilis-ex-culpa-e2",
-            "license" => "Modi tenetur et et perferendis. e2",
-            "tech_stack" => "Dolor accusamus rerum numquam et. e2",
+            'url' => 'http://dach.com/odio-facilis-ex-culpa-e2',
+            'license' => 'Modi tenetur et et perferendis. e2',
+            'tech_stack' => 'Dolor accusamus rerum numquam et. e2',
+            'user_id' => $this->integration->user_id,
         );
 
         $responseEdit2 = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $toolIdInsert,
-            array_merge($mockDataEdit2, $this->body),
+            $mockDataEdit2,
             $this->header
         );
 
@@ -446,7 +465,7 @@ class ToolIntegrationTest extends TestCase
             "license" => "Inventore omnis aut laudantium vel alias.",
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
-            "user_id" => 1,
+            "user_id" => $this->integration->user_id,
             "tag" => array(1, 2),
             "enabled" => 1,
         );
@@ -455,7 +474,7 @@ class ToolIntegrationTest extends TestCase
         $response = $this->json(
             'PUT',
             self::TEST_URL . '/' . $id,
-            array_merge($mockData, $this->body),
+            $mockData,
             $this->header
         );
         $response->assertStatus(400);
@@ -468,17 +487,33 @@ class ToolIntegrationTest extends TestCase
      */
     public function test_soft_delete_tool_with_success(): void
     {
-        $tools = Tool::first();
-        $countBefore = Tool::onlyTrashed()->count();
-        $response = $this->json('DELETE', self::TEST_URL . '/' . $tools->id, $this->body, $this->header);
-        $countAfter = Tool::onlyTrashed()->count();
+        $mockData = array(
+            'mongo_object_id' => '5ece82082abda8b3a06f1941',
+            'name' => 'Similique sapiente est vero eum.',
+            'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
+            'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
+            'license' => 'Inventore omnis aut laudantium vel alias.',
+            'tech_stack' => 'Cumque molestias excepturi quam at.',
+            'category_id' => 1,
+            'user_id' => $this->integration->user_id,
+            'tag' => array(1, 2),
+            'enabled' => 1,
+        );
 
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(201);
+
+        $toolId = $response->decodeResponseJson()['data'];
+
+        $response = $this->json('DELETE', self::TEST_URL . '/' . $toolId, [], $this->header);
         $response->assertStatus(200);
 
-        $this->assertEquals(
-            $countBefore+1,
-            $countAfter,
-            "actual value is equals to expected"
-        );
+        $tool = Tool::withTrashed()->where('id', $toolId)->first();
+        $this->assertNotEquals($tool->deleted_at, null);
     }
 }
