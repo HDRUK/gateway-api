@@ -25,13 +25,13 @@ class CheckIntegrationAccessMiddleware
         // that this has already happened, so, we just check application permissions
         // from here on
         $application = Application::with('permissions')
-            ->where('app_id', $request->header('X-Application-ID'))
-            ->where('client_id', $request->header('X-Client-ID'))
+            ->where('app_id', $request->header('x-application-id'))
+            ->where('client_id', $request->header('x-client-id'))
             ->first()
             ->toArray();
         
         if (!$application) {
-            throw new IntegrationPermissionException('No application matches supplied credentials');
+            throw new IntegrationPermissionException('No known integration matches supplied credentials');
         }
 
         foreach ($application['permissions'] as $perm) {

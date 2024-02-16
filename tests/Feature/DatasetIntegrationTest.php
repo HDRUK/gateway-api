@@ -12,6 +12,7 @@ use App\Models\ApplicationHasPermission;
 use App\Models\Permission;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\TeamSeeder;
 use Database\Seeders\SectorSeeder;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\SpatialCoverageSeeder;
@@ -54,6 +55,7 @@ class DatasetIntegrationTest extends TestCase
             MinimalUserSeeder::class,
             DatasetSeeder::class,
             SectorSeeder::class,
+            TeamSeeder::class,
             ApplicationSeeder::class,
             SpatialCoverageSeeder::class,
         ]);
@@ -77,8 +79,8 @@ class DatasetIntegrationTest extends TestCase
         }
         
         // Add Integration auth keys to the header generated in commonSetUp
-        $this->header['X-Application-ID'] = $this->integration['app_id'];
-        $this->header['X-Client-ID'] = $this->integration['client_id'];
+        $this->header['x-application-id'] = $this->integration->app_id;
+        $this->header['x-client-id'] = $this->integration->client_id;
         
         // Lengthy process, but a more consistent representation
         // of an incoming dataset

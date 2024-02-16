@@ -32,7 +32,7 @@ class AuthenticateIntegrationMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         # Check that the app id is in the app table
-        $appId = $request->header('X-Application-ID');
+        $appId = $request->header('x-application-id');
         $app = Application::where('app_id', $appId)->first();
 
         if (!$app) {

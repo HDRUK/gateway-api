@@ -134,13 +134,13 @@ class IntegrationDatasetController extends Controller
         // to see
         $this->overrideTeamId($teamId, $request->headers->all());
 
-        $sort = $request->query('sort',"created:desc");   
+        $sort = $request->query('sort', 'created:desc');
         
         $tmp = explode(":", $sort);
         $sortField = $tmp[0];
         $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-        $sortOnMetadata = str_starts_with($sortField,"metadata.");
+        $sortOnMetadata = str_starts_with($sortField, 'metadata.');
 
         $allFields = collect(Dataset::first())->keys()->toArray();
         if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
@@ -154,7 +154,7 @@ class IntegrationDatasetController extends Controller
         if (!in_array($sortDirection, $validDirections)) {
             //if the sort direction is not desc or asc then return a bad request
             return response()->json([
-                "message" => "Sort direction must be either: " . 
+                'message' => 'Sort direction must be either: ' . 
                     implode(' OR ',$validDirections) . 
                     '. Not "' . $sortDirection .'"'
                 ], 400);
@@ -401,10 +401,12 @@ class IntegrationDatasetController extends Controller
         try {
             $input = $request->all();
 
-            $teamId = (isset($input['team_id']) ? (int)$input['team_id'] : null);
-            $this->overrideTeamId($teamId, $request->header());
+            // If this is coming from an integration, we override the default settings
+            // so these aren't required as part of the payload and inferred from the
+            // application token being used instead
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());            
 
-            $team = Team::where('id', $teamId)->first()->toArray();
+            $team = Team::where('id', $applicationOverrideDefaultValues['team_id'])->first()->toArray();
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
@@ -441,11 +443,6 @@ class IntegrationDatasetController extends Controller
                 $datasetid = array_key_exists('datasetid', $input) ? $input['datasetid'] : null;
 
                 $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
-
-                // If this is coming from an integration, we override the default settings
-                // so these aren't required as part of the payload and inferred from the
-                // application token being used instead
-                $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
                 $dataset = MMC::createDataset([
                     'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),

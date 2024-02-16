@@ -6,12 +6,24 @@ use App\Models\Application;
 
 trait IntegrationOverride
 {
+    private function overrideBothTeamAndUserId(mixed &$teamId, mixed &$userId, array $input): void
+    {
+        if (isset($input['x-application-id']) && isset($input['x-client-id'])) {
+            $application = Application::where('app_id', $input['x-application-id'])
+                ->where('client_id', $input['x-client-id'])->first();
+
+            if ($application) {
+                $teamId = $application->team_id;
+            }
+        }
+    }
+
     private function overrideTeamId(mixed &$teamId, array $input): void
     {
-        if (isset($input['X-Application-ID']) && isset($input['X-Client-ID'])) {
-            $application = Application::where('app_id', $input['X-Application-ID'])
-                ->where('client_id', $input['X-Client-ID'])->first();
-            
+        if (isset($input['x-application-id']) && isset($input['x-client-id'])) {
+            $application = Application::where('app_id', $input['x-application-id'])
+                ->where('client_id', $input['x-client-id'])->first();
+
             if ($application) {
                 $teamId = $application->team_id;
             }
@@ -20,9 +32,9 @@ trait IntegrationOverride
 
     private function overrideUserId(mixed &$userId, array $input): void
     {
-        if (isset($input['X-Application-ID']) && isset($input['X-Client-ID'])) {
-            $application = Application::where('app_id', $input['X-Application-ID'])
-                ->where('client_id', $input['X-Client-ID'])->first();
+        if (isset($input['x-application-id']) && isset($input['x-client-id'])) {
+            $application = Application::where('app_id', $input['x-application-id'])
+                ->where('client_id', $input['x-client-id'])->first();
             
             if ($application) {
                 $userId = $application->user_id;
@@ -32,9 +44,9 @@ trait IntegrationOverride
 
     private function injectApplicationDatasetDefaults(array $input): array
     {
-        if (isset($input['X-Application-ID']) && isset($input['X-Client-ID'])) {
-            $application = Application::where('app_id', $input['X-Application-ID'])
-                ->where('client_id', $input['X-Client-ID'])->first();
+        if (isset($input['x-application-id']) && isset($input['x-client-id'])) {
+            $application = Application::where('app_id', $input['x-application-id'])
+                ->where('client_id', $input['x-client-id'])->first();
 
             if ($application) {
                 return [
