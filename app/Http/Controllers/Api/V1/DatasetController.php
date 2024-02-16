@@ -689,12 +689,12 @@ class DatasetController extends Controller
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
                 $updatedDataset = $currDataset->update([
-                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                    'user_id' => $input['user_id'],
+                    'team_id' => $input['team_id'],
                     'updated' => $updateTime,
                     'pid' => $currentPid,
-                    'create_origin' => (isset($applicationOverrideDefaultValues['create_origin']) ? $applicationOverrideDefaultValues['create_origin'] : $input['create_origin']),
-                    'status' => (isset($applicationOverrideDefaultValues['status']) ? $applicationOverrideDefaultValues['status'] : $input['status']),
+                    'create_origin' => $input['create_origin'],
+                    'status' => $input['status'],
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 

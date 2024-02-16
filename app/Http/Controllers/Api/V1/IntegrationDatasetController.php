@@ -640,7 +640,7 @@ class IntegrationDatasetController extends Controller
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
                 $input['metadata']['metadata'] = $traserResponse['metadata'];
 
-                $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults();
+                $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
