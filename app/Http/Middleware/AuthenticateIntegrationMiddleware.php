@@ -39,8 +39,6 @@ class AuthenticateIntegrationMiddleware
             throw new UnauthorizedException('No known integration matches the credentials provided');
         }
 
-        $userId = $app->user_id;
-
         # Check that the app id and client id both match, and check the client secret. Throw an exception if not matching.
         $clientId = $app->client_id;
         $clientSecret = $app->client_secret;
