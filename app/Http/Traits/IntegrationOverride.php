@@ -14,6 +14,7 @@ trait IntegrationOverride
 
             if ($application) {
                 $teamId = $application->team_id;
+                $userId = $application->user_id;
             }
         }
     }
