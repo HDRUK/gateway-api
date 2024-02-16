@@ -660,7 +660,6 @@ class DatasetController extends Controller
 
             $user = User::where('id', $userId)->first();
             $team = Team::where('id', $teamId)->first();
-
             $currDataset = Dataset::where('id', $id)->first();
             $currentPid = $currDataset->pid;
 
