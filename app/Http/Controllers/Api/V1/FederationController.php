@@ -660,10 +660,8 @@ class FederationController extends Controller
     {
         $input = $request->all();
         try {
-            $response = Http::withBody(
-                json_encode($input), 'application/json'
-            )->post(env('FMA_SERVICE_URL') . '/test');
-
+            
+            $response = Http::post(env('FMA_SERVICE_URL') . '/test',$input);
             return response()->json($response->json());
         } catch (Exception $e) {
             throw new Exception($e->getMessage());

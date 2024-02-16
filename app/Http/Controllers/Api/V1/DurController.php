@@ -1203,7 +1203,7 @@ class DurController extends Controller
             ];
 
             $params = [
-                'index' => 'data_uses',
+                'index' => 'dataUseRegister',
                 'id' => $id,
                 'body' => $toIndex,
                 'headers' => 'application/json'

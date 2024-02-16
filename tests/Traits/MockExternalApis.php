@@ -427,6 +427,54 @@ trait MockExternalApis
             )
         ]);
 
+        // Mock the search service - filters
+        Http::fake([
+            'search-service*filters*' => Http::response(
+                [
+                    'filters' => [
+                        0 => [
+                            'dataset' => [
+                                'publisherName' => [
+                                    'buckets' => [
+                                        0 => [
+                                            'doc_count' => 10,
+                                            'key' => 'publisher1'
+                                        ],
+                                        1 => [
+                                            'doc_count' => 5,
+                                            'key' => 'publisher2'
+                                        ],
+                                        2 => [
+                                            'doc_count' => 1,
+                                            'key' => 'publisher3'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ],
+                        1 => [
+                            'dataset' => [
+                                'containsTissue' => [
+                                    'buckets' => [
+                                        0 => [
+                                            'doc_count' => 10,
+                                            'key' => true
+                                        ],
+                                        1 => [
+                                            'doc_count' => 5,
+                                            'key' => false
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);

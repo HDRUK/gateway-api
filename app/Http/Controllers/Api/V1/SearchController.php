@@ -2,24 +2,29 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Exceptions\NotFoundException;
 use Config;
 use Exception;
-use MetadataManagementController as MMC;
-
-use App\Models\DatasetVersion;
-use App\Models\Collection;
-use App\Models\Dataset;
+use App\Models\Dur;
 use App\Models\Tool;
 
+use App\Models\Dataset;
+use App\Models\Collection;
 use Illuminate\Http\Request;
+use App\Exports\DataUseExport;
+
+use App\Models\DatasetVersion;
 use Illuminate\Http\JsonResponse;
+use App\Exports\DatasetListExport;
+use App\Exports\DatasetTableExport;
 use App\Http\Controllers\Controller;
-use App\Models\Dur;
-use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Support\Facades\Http;
 
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exceptions\NotFoundException;
 use App\Http\Traits\PaginateFromArray;
+use MetadataManagementController as MMC;
+use Illuminate\Database\Eloquent\Casts\Json;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
 {
@@ -33,10 +38,8 @@ class SearchController extends Controller
      *          "filters": {
      *               "dataset": {
      *                   "publisherName": {
-     *                      "terms": {
-     *                          "BREATHE",
-     *                          "HDRUK"
-     *                      }
+     *                      "BREATHE",
+     *                      "HDRUK"
      *                   }
      *               }
      *           }
@@ -104,9 +107,13 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function datasets(Request $request): JsonResponse
+    public function datasets(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
+            $input = $request->all();
+
+            $download = array_key_exists('download', $input) ? $input['download'] : false;
+            $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : "list";
             $sort = $request->query('sort',"score:desc");   
         
             $tmp = explode(":", $sort);
@@ -118,7 +125,7 @@ class SearchController extends Controller
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
 
-            $response = Http::post($urlString,$request->all());
+            $response = Http::post($urlString,$input);
 
             $datasetsArray = $response['hits']['hits'];
             $matchedIds = [];
@@ -127,34 +134,9 @@ class SearchController extends Controller
                $matchedIds[] = $d['_id'];
             }
 
-            // debug code left in to map to dataset_version Ids for testing - TODO Remove
-            // $matchedIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-
-            // whereRaw(1=1) here is a trick to allow us to access the builder model
-            // without fully forming a query first
-            $datasetsFiltered = DatasetVersion::whereRaw('1=1');
-            // replace line above with this to enable filtering involving joins
-            // $datasetsFiltered = DatasetVersion::query();
-
-            // Apply any filters to retrieve matching datasets on like basis, for
-            // later intersection with elastic matched datasets
-            foreach ($filters as $filter => $value) {
-                foreach ($value as $key => $val) {
-                    MMC::applySearchFilter($datasetsFiltered, $filter, $key, $val['terms']);
-                }
-            }
-
-            $ds = $datasetsFiltered->whereIn('dataset_versions.dataset_id', $matchedIds)->get();
-            $likeIds = [];
-            foreach ($ds as $d) {
-                $likeIds[] = $d['dataset_id'];
-            }
-
-            $slimSet = array_intersect($matchedIds, $likeIds);
-
-            $datasetsModels = Dataset::with('versions')->whereIn('id', $slimSet)->get()->toArray();
+            $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
             foreach ($datasetsArray as $i => $dataset) {
-                if (!in_array($dataset['_id'], $slimSet)) {
+                if (!in_array($dataset['_id'], $matchedIds)) {
                     unset($datasetsArray[$i]);
                     continue;
                 }
@@ -165,6 +147,14 @@ class SearchController extends Controller
                         $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
                     }
                 }
+            }
+
+            if ($download && $downloadType === "list") {
+                return Excel::download(new DatasetListExport($datasetsArray), 'datasets.xlsx');
+            }
+
+            if ($download && $downloadType === "table") {
+                return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.xlsx');
             }
 
             $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
@@ -270,34 +260,16 @@ class SearchController extends Controller
             $response = Http::post($urlString,$request->all());
            
             $toolsArray = $response['hits']['hits'];
-
             $matchedIds = [];
             foreach (array_values($toolsArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
             }
 
-            $toolsFiltered = Tool::with("category");
-
-            // Apply any filters to retrieve matching tools on like basis
-            foreach ($filters as $filter => $value) {
-                foreach ($value as $key => $val) {
-                    MMC::applySearchFilter($toolsFiltered, $filter, $key, $val['terms']);
-                }
-            }
-
             //get all tools models that have been filtered and then matched by elastic
-            $toolModels = $toolsFiltered->whereIn('id', $matchedIds)->get();
-
-            $likeIds = [];
-            foreach ($toolModels as $d) {
-                $likeIds[] = $d['id'];
-            }
-
-            //IDs that have been matched and IDs that have been filtered
-            $slimSet = array_intersect($matchedIds, $likeIds);
+            $toolModels = Tool::whereIn('id', $matchedIds)->get();
 
             foreach ($toolsArray as $i => $tool) {
-                if (!in_array($tool['_id'], $slimSet)) {
+                if (!in_array($tool['_id'], $matchedIds)) {
                     unset($toolsArray[$i]);
                     continue;
                 }
@@ -426,25 +398,10 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $collectionsFiltered = Collection::whereRaw("1=1");
-            foreach ($filters as $filter => $value) {
-                foreach ($value as $key => $val) {
-                    MMC::applySearchFilter($collectionsFiltered, $filter, $key, $val['terms']);
-                }
-            }
-
-            $collectionModels = $collectionsFiltered->whereIn('id', $matchedIds)->get();
-
-            $likeIds = [];
-            foreach ($collectionModels as $d) {
-                $likeIds[] = $d['id'];
-            }
-
-            //IDs that have been matched and IDs that have been filtered
-            $slimSet = array_intersect($matchedIds, $likeIds);
+            $collectionModels = Collection::whereIn('id', $matchedIds)->get();
 
             foreach ($collectionArray as $i => $collection) {
-                if (!in_array($collection['_id'], $slimSet)) {
+                if (!in_array($collection['_id'], $matchedIds)) {
                     unset($collectionArray[$i]);
                     continue;
                 }
@@ -547,9 +504,11 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function dataUses(Request $request): JsonResponse
+    public function dataUses(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
+            $input = $request->all();
+            $download = array_key_exists('download', $input) ? $input['download'] : false;
             $sort = $request->query('sort',"score:desc");   
         
             $tmp = explode(":", $sort);
@@ -560,7 +519,7 @@ class SearchController extends Controller
             $filters = (isset($request['filters']) ? $request['filters'] : []);
             $urlString = env('SEARCH_SERVICE_URL') . '/search/dur';
 
-            $response = Http::post($urlString,$request->all());
+            $response = Http::post($urlString, $input);
 
             $durArray = $response['hits']['hits'];
             $matchedIds = [];
@@ -568,34 +527,26 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $durFiltered = Dur::whereRaw("1=1");
-            foreach ($filters as $filter => $value) {
-                foreach ($value as $key => $val) {
-                    MMC::applySearchFilter($durFiltered, $filter, $key, $val['terms']);
-                }
-            }
-
-            $durModels = $durFiltered->whereIn('id', $matchedIds)->get();
-
-            $likeIds = [];
-            foreach ($durModels as $d) {
-                $likeIds[] = $d['id'];
-            }
-
-            //IDs that have been matched and IDs that have been filtered
-            $slimSet = array_intersect($matchedIds, $likeIds);
+            $durModels = Dur::whereIn('id', $matchedIds)->get();
 
             foreach ($durArray as $i => $dur) {
-                if (!in_array($dur['_id'], $slimSet)) {
+                if (!in_array($dur['_id'], $matchedIds)) {
                     unset($durArray[$i]);
                     continue;
                 }
                 foreach ($durModels as $model){
                     if ((int) $dur['_id'] === $model['id']) {
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $durArray[$i]['organisationName'] = $model['organisation_name'];
+                        $durArray[$i]['team'] = $model['team']; 
+                        $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
                         break;
                     }
                 }
+            }
+
+            if ($download) {
+                return Excel::download(new DataUseExport($durArray), 'dur.xlsx');
             }
 
             $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);

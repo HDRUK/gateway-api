@@ -15,7 +15,6 @@ class Filter extends Model
         'updated_at',
         'deleted_at',
         'type',
-        'value',
         'keys',
         'enabled',
     ];
@@ -35,13 +34,6 @@ class Filter extends Model
     ];
 
     /**
-     * Requests that Laravel remove these values from the returned payload
-     */
-    protected $hidden = [
-        'value',
-    ];
-
-    /**
      * Indicates if this model is timestamped
      * 
      * @var bool
@@ -55,13 +47,6 @@ class Filter extends Model
      * @var string
      */
     private $type = '';
-
-    /**
-     * Represents the filter value
-     * 
-     * @var string
-     */
-    private $value = '';
 
     /**
      * Represents the filter key this filter is linked

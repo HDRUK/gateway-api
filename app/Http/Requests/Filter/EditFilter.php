@@ -29,9 +29,6 @@ class EditFilter extends BaseFormRequest
                     }
                 },
             ],
-            'value' => [
-                'string',
-            ],
             'keys' => [
                 'string',
             ],

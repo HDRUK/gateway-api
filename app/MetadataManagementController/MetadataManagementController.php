@@ -260,7 +260,7 @@ class MetadataManagementController {
             
 
             $params = [
-                'index' => 'datasets',
+                'index' => 'dataset',
                 'id' => $datasetMatch['id'],
                 'body' => $toIndex,
                 'headers' => 'application/json'
@@ -287,69 +287,13 @@ class MetadataManagementController {
         try {
 
             $params = [
-                'index' => 'datasets',
+                'index' => 'dataset',
                 'id' => $id,
                 'headers' => 'application/json'
             ];
             
             $client = $this->getElasticClient();
             $response = $client->delete($params);
-
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
-    }
-
-    /**
-     * Generic function to apply a filter to the incoming eloquent
-     * builder model for further searching. Completely goverened
-     * by the incoming data and ultimately building a query that
-     * will AND the required fields and OR the incoming search terms
-     * for the selected filters.
-     * 
-     * @param mixed $to A reference to the eloquent builder instance
-     * @param string $filter The filter being applied
-     * @param string $type The sub type of filter being applied
-     * @param array $terms The terms being searched for under this filter
-     */
-    public function applySearchFilter(mixed &$to, string $filter, string $type, array $terms): void
-    {
-        try {
-            $filterRow = Filter::where('type', $filter)
-                ->where('keys', $type)->firstOrFail();
-
-            // Code for filtering tables that require multiple joins
-            // This is the poc for putting the whole sql query into the db - see dataset filtered by spatial coverage
-            // Other filters need to be updated and the code below replaced with these lines
-            // $join_condition = json_decode($filterRow->join_condition, true);
-            // $to->fromRaw($join_condition);
-            // $to->where(function ($query) use ($filterRow, $terms) {
-            //     foreach ($terms as $term) {
-            //         $query->orWhereRaw($filterRow->value, '%'.$term.'%');
-            //     }
-            // });
-            $to->where(function ($query) use ($filterRow, $terms) {
-                foreach ($terms as $term) {
-
-                    if (str_contains($filterRow->value, 'LIKE')){
-                       $term = '%'.$term.'%';
-                    }
-
-                    if($filterRow->join_condition){
-                        $joinConditions = json_decode($filterRow->join_condition,true);
-                        foreach($joinConditions as $tableName => $joinCondition){
-                            $query->orWhereExists(fn ($subQuery) =>
-                                $subQuery->select(DB::raw(1))
-                                    ->from($tableName)
-                                    ->whereRaw($joinCondition)
-                                    ->whereRaw($filterRow->value, $term)
-                            );
-                        }
-                    }else{
-                        $query->orWhereRaw($filterRow->value, $term);  
-                    }
-                }
-            });
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
