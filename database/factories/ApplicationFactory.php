@@ -35,7 +35,7 @@ class ApplicationFactory extends Factory
             'description' => fake()->text(),
             'team_id' => fake()->randomElement($teams)->id,
             'user_id' => fake()->randomElement($users)->id,
-            'enabled' => fake()->randomElement([0, 1]),
+            'enabled' => 1,
         ];
     }
 }

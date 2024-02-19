@@ -25,7 +25,7 @@ class FilterSeeder extends Seeder
             'containsTissue',
             'dataType',
             'collectionName',
-            'dataUse',
+            'dataUseTitles',
             'dateRange',
             'populationSize',
             'geographicLocation'

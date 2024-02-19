@@ -127,7 +127,8 @@ trait MockExternalApis
                                     'named_entities' => [],
                                     'publisherName' => '',
                                     'shortTitle' => 'Asthma dataset',
-                                    'title' => 'Asthma dataset'
+                                    'title' => 'Asthma dataset',
+                                    'dataUseTitles' => []
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -148,7 +149,8 @@ trait MockExternalApis
                                     'named_entities' => [],
                                     'publisherName' => '',
                                     'shortTitle' => 'Another asthma dataset',
-                                    'title' => 'Another asthma dataset'
+                                    'title' => 'Another asthma dataset',
+                                    'dataUseTitles' => []
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -169,7 +171,8 @@ trait MockExternalApis
                                     'named_entities' => [],
                                     'publisherName' => '',
                                     'shortTitle' => 'Third asthma dataset',
-                                    'title' => 'Third asthma dataset'
+                                    'title' => 'Third asthma dataset',
+                                    'dataUseTitles' => []
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
