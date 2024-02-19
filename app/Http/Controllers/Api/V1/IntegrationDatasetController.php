@@ -296,9 +296,6 @@ class IntegrationDatasetController extends Controller
             $dataset = Dataset::where(['id' => $id])
                 ->with(['namedEntities', 'collections'])
                 ->first();
-            if(!$dataset){
-                throw new Exception('Dataset with id='.$id." cannot be found");
-            }
 
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
