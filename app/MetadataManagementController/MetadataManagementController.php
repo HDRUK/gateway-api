@@ -205,7 +205,7 @@ class MetadataManagementController {
         try {
 
             $datasetMatch = Dataset::where(['id' => $datasetId])
-                ->with(['namedEntities', 'collections'])
+                ->with(['namedEntities', 'collections', 'durs'])
                 ->first();
             
             $version = $datasetMatch->latestVersion();
@@ -222,6 +222,10 @@ class MetadataManagementController {
                 $collections[] = $c['name'];
             }
 
+            $durs = array();
+            foreach ($dataset['durs'] as $d) {
+                $durs[] = $d['project_title'];
+            }
 
             $metadataModelVersion = $metadata['gwdmVersion'];
 
@@ -258,9 +262,9 @@ class MetadataManagementController {
                 'conformsTo' => explode(',', $metadata['metadata']['accessibility']['formatAndStandards']['conformsTo']),
                 'hasTechnicalMetadata' => (bool) $datasetMatch['has_technical_details'],
                 'named_entities' => $namedEntities,
-                'collections' => $collections
+                'collections' => $collections,
+                'dataUseTitles' => $durs
             ];
-            
 
             $params = [
                 'index' => 'dataset',

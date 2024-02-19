@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Application;
 use App\Models\Collection;
 use App\Models\DataVersion;
+use App\Models\Dur;
 use App\Models\NamedEntities;
 use App\Models\SpatialCoverage;
 use Illuminate\Database\Eloquent\Model;
@@ -151,5 +152,10 @@ class Dataset extends Model
         return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')") 
                             ->whereColumn('datasets.id','dataset_versions.dataset_id')
                             ->latest()->limit(1),$direction);
+    }
+
+    public function durs(): BelongsToMany
+    {
+        return $this->belongsToMany(Dur::class, 'dur_has_datasets');
     }
 }

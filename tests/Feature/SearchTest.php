@@ -76,6 +76,7 @@ class SearchTest extends TestCase
                         'publisherName',
                         'shortTitle',
                         'title',
+                        'dataUseTitles',
                         'created_at'
                     ],
                 ],
