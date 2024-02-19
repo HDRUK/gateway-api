@@ -2320,6 +2320,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'search.similarDatasets',
+        'method' => 'post',
+        'path' => '/search/similar/datasets',
+        'methodController' => 'SearchController@similarDatasets',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+    [
         'name' => 'search.tools',
         'method' => 'post',
         'path' => '/search/tools',

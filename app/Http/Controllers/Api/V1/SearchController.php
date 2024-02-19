@@ -175,6 +175,84 @@ class SearchController extends Controller
 
     /**
      * @OA\Post(
+     *      path="/api/v1/search/similar/datasets",
+     *      summary="Search for similar datasets",
+     *      description="Returns top three gateway datasets most similar to the provided dataset",
+     *      tags={"Search-Similar-Datasets"},
+     *      summary="Search@similarDatasets",
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Submit dataset id",
+     *          @OA\MediaType(
+     *              mediaType="application/json",
+     *              @OA\Schema(
+     *                  @OA\Property(property="id", type="integer", example=1)
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="_source", type="array",
+     *                          @OA\Items(
+     *                              @OA\Property(property="abstract", type="string"),
+     *                              @OA\Property(property="description", type="string"),
+     *                              @OA\Property(property="keywords", type="string"),
+     *                              @OA\Property(property="named_entities", type="array", @OA\Items()),
+     *                              @OA\Property(property="publisherName", type="string"),
+     *                              @OA\Property(property="shortTitle", type="string"),
+     *                              @OA\Property(property="title", type="string"),
+     *                              @OA\Property(property="created_at", type="string")
+     *                          )
+     *                      ),
+     *                      @OA\Property(property="metadata", type="array", @OA\Items()
+     *                      )
+     *                  )
+     *              )
+     *          )
+     *      )
+     * )
+     */
+    public function similarDatasets(Request $request): JsonResponse
+    {
+        try {
+            $id = (string) $request['id'];
+            $urlString = env('SEARCH_SERVICE_URL') . '/similar/datasets';
+
+            $response = Http::post($urlString, ['id' => $id]);
+
+            $datasetsArray = $response['hits']['hits'];
+            $matchedIds = [];
+            // join to data from DB
+            foreach (array_values($datasetsArray) as $i => $d) {
+               $matchedIds[] = $d['_id'];
+            }
+
+            $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
+            foreach ($datasetsArray as $i => $dataset) {
+                foreach ($datasetsModels as $model) {
+                    if ((int) $dataset['_id'] === $model['id']) {
+                        $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
+                        $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                        $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
+                    }
+                }
+            }
+
+            return response()->json(['data' => $datasetsArray], 200);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+
+
+    /**
+     * @OA\Post(
      *      path="/api/v1/search/tools",
      *      summary="Keyword search across gateway tools",
      *      description="Returns gateway tools related to the provided query term(s)",

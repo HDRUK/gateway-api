@@ -178,6 +178,36 @@ class SearchTest extends TestCase
     }
 
     /**
+     * Search for similar datasets with success
+     * 
+     * @return void
+     */
+    public function test_similar_datasets_search_with_success(): void
+    {
+        $response = $this->json('POST', self::TEST_URL_SEARCH . '/similar/datasets', ['id' => 1], $this->header);
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    '_source' => [
+                        'abstract',
+                        'description',
+                        'keywords',
+                        'named_entities',
+                        'publisherName',
+                        'shortTitle',
+                        'title',
+                        'dataUseTitles',
+                        'created_at'
+                    ],
+                    'metadata'
+                ]
+            ]              
+        ]);
+    }
+
+    /**
      * Search using a query with success
      * 
      * @return void
