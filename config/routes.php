@@ -2058,6 +2058,19 @@ return [
     ],
     [
         'name' => 'datasets.integrations',
+        'method' => 'put',
+        'path' => '/integrations/datasets/{id}',
+        'methodController' => 'IntegrationDatasetController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'integration.auth',
+            'check.integration.access:permissions,datasets.update',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'datasets.integrations',
         'method' => 'delete',
         'path' => '/integrations/datasets/{id}',
         'methodController' => 'IntegrationDatasetController@destroy',
@@ -2664,7 +2677,7 @@ return [
         'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
-
+    
     // publications
     [
         'name' => 'publications.index',

@@ -33,7 +33,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/tools",
-     *    operationId="fetch_all_tools",
+     *    operationId="fetch_all_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@index",
      *    description="Get All Tools",
@@ -59,7 +59,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/tools/{id}",
-     *    operationId="fetch_tools",
+     *    operationId="fetch_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@show",
      *    description="Get tool by id",
@@ -118,7 +118,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/integrations/tools",
-     *    operationId="create_tools",
+     *    operationId="create_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@store",
      *    description="Create a new tool",
@@ -207,7 +207,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/integrations/tools/{id}",
-     *    operationId="update_tools",
+     *    operationId="update_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@update",
      *    description="Update tool by id",
@@ -306,7 +306,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/integrations/tools/{id}",
-     *    operationId="edit_tools",
+     *    operationId="edit_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@edit",
      *    description="Edit tool by id",
@@ -410,7 +410,7 @@ class IntegrationToolController extends Controller
     /**
      * @OA\Delete(
      *    path="/api/v1/integrations/tools/{id}",
-     *    operationId="delete_tools",
+     *    operationId="delete_tools_integrations",
      *    tags={"Tools"},
      *    summary="IntegrationToolController@destroy",
      *    description="Delete tool by id",

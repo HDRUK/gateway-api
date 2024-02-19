@@ -44,8 +44,8 @@ class UpdateFederation extends BaseFormRequest
                 'in:API_KEY,BEARER,NO_AUTH',
             ],
             'auth_secret_key' => [
-                'required',
                 'string',
+                'nullable'
             ],
             'endpoint_baseurl' => [
                 'required',

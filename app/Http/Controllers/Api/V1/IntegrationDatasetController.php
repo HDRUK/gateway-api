@@ -43,7 +43,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/datasets",
-     *    operationId="fetch_all_datasets",
+     *    operationId="fetch_all_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@index",
      *    description="Get All Datasets",
@@ -229,7 +229,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Get(
      *    path="/api/v1/integrations/datasets/{id}",
-     *    operationId="fetch_datasets",
+     *    operationId="fetch_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@show",
      *    description="Get dataset by id",
@@ -312,16 +312,18 @@ class IntegrationDatasetController extends Controller
                 $version = $dataset->latestVersion();
 
                 $translated = MMC::translateDataModelType(
-                    $version->metadata,
+                    json_encode($version->metadata),
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
                     Config::get('metadata.GWDM.name'),
                     Config::get('metadata.GWDM.version'),
                 );
-
+               
                 if ($translated['wasTranslated']) {
-                    $version->metadata = json_decode(json_encode($translated['metadata]']));
-                    $dataset->versions[] = $version;
+                    return response()->json([
+                        'message' => 'success, translated to model='.$outputSchemaModel." version=".$outputSchemaModelVersion,
+                        'data' => $translated['metadata'],
+                    ], 200);
                 }
                 else {
                     return response()->json([
@@ -350,7 +352,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Post(
      *    path="/api/v1/integrations/datasets",
-     *    operationId="create_datasets",
+     *    operationId="create_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@store",
      *    description="Create a new dataset",
@@ -361,13 +363,6 @@ class IntegrationDatasetController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="team_id", type="integer", example="1"),
-     *             @OA\Property(property="user_id", type="integer", example="3"),
-     *             @OA\Property(property="create_origin", type="string", example="MANUAL"),
-     *             @OA\Property(property="mongo_object_id", type="string", example="abc123"),
-     *             @OA\Property(property="mongo_id", type="string", example="456"),
-     *             @OA\Property(property="mongo_pid", type="string", example="def789"),
-     *             @OA\Property(property="datasetid", type="string", example="xyz1011"),
      *             @OA\Property(property="metadata", type="array", @OA\Items())
      *          )
      *       )
@@ -409,7 +404,7 @@ class IntegrationDatasetController extends Controller
             $team = Team::where('id', $applicationOverrideDefaultValues['team_id'])->first()->toArray();
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
-            $input['metadata'] = $this->extractMetadata($input['metadata']);
+            $input['metadata'] = $this->extractMetadata($input);
 
             //send the payload to traser
             // - traser will return the input unchanged if the data is
@@ -546,7 +541,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Put(
      *    path="/api/v1/integrations/datasets/{id}",
-     *    operationId="update_datasets",
+     *    operationId="update_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@update",
      *    description="Update a dataset with a new dataset version",
@@ -604,10 +599,11 @@ class IntegrationDatasetController extends Controller
         try {
             $input = $request->all();
 
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
-            $teamId = (int)$input['team_id'];
-            $userId = (int)$input['user_id'];
+            $teamId = $applicationOverrideDefaultValues['team_id'];
+            $userId = $applicationOverrideDefaultValues['user_id'];
 
             if (isset($request->header)) {
                 $this->overrideUserId($userId, $request->header->all());
@@ -617,9 +613,12 @@ class IntegrationDatasetController extends Controller
             $user = User::where('id', $userId)->first();
             $team = Team::where('id', $teamId)->first();
             $currDataset = Dataset::where('id', $id)->first();
+            if(!$currDataset){
+                throw new Exception('Dataset with id='.$id." cannot be found");
+            }
             $currentPid = $currDataset->pid;
 
-            $input['metadata'] = $this->extractMetadata($input['metadata']);
+            $input['metadata'] = $this->extractMetadata($input);
 
             $payload = $input['metadata'];
             $payload['extra'] = [
@@ -639,8 +638,6 @@ class IntegrationDatasetController extends Controller
             if ($traserResponse['wasTranslated']) {
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
                 $input['metadata']['metadata'] = $traserResponse['metadata'];
-
-                $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
@@ -710,7 +707,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Patch(
      *    path="/api/v1/integrations/datasets/{id}",
-     *    operationId="patch_datasets",
+     *    operationId="patch_datasets_integrations",
      *    tags={"Datasets"},
      *    summary="IntegrationDatasetController@edit",
      *    description="Patch dataset by id",
@@ -947,6 +944,10 @@ class IntegrationDatasetController extends Controller
     }
 
     private function extractMetadata (Mixed $metadata){
+
+        if(isset($metadata['metadata']['metadata'])){
+            $metadata = $metadata['metadata'];
+        }
 
         // Pre-process check for incoming data from a resource that passes strings
         // when we expect an associative array. FMA passes strings, this

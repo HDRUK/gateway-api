@@ -31,6 +31,10 @@ class AuthenticateIntegrationMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if(!($request->header('x-application-id') && $request->header('x-client_id'))){
+            throw new UnauthorizedException('Please provide a x-application-id and x-client-id in your headers');
+        }
+
         # Check that the app id is in the app table
         $appId = $request->header('x-application-id');
         $app = Application::where('app_id', $appId)->first();

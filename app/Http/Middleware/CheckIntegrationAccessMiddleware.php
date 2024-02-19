@@ -34,6 +34,10 @@ class CheckIntegrationAccessMiddleware
             throw new IntegrationPermissionException('No known integration matches supplied credentials');
         }
 
+        if (!$application['enabled']) {
+            throw new IntegrationPermissionException('Application has not been enabled!');
+        }
+
         foreach ($application['permissions'] as $perm) {
             if ($perm['name'] === $data) {
                 return $next($request);

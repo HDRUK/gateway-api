@@ -17,8 +17,6 @@ use App\Models\SpatialCoverage;
 use App\Jobs\TermExtraction;
 use MetadataManagementController AS MMC;
 
-use App\Http\Traits\IntegrationOverride;
-
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 
@@ -38,8 +36,6 @@ use Illuminate\Support\Facades\Http;
 
 class DatasetController extends Controller
 {
-    use IntegrationOverride;
-
     /**
      * @OA\Get(
      *    path="/api/v1/datasets",
@@ -1010,82 +1006,6 @@ class DatasetController extends Controller
         $response->headers->set('Cache-Control','max-age=0');
         
         return $response;
-    }
-
-    /**
-     * @OA\Post(
-     *    path="/api/v1/integrations/datasets/test",
-     *    operationId="integrations_datasets_test",
-     *    tags={"Integrations datasets test"},
-     *    summary="DatasetController@datasetTest",
-     *    description="Integrations datasets test",
-     *    security={{"bearerAppAuth":{}}},
-     *    @OA\RequestBody(
-     *       required=true,
-     *       description="Pass datasets payload",
-     *       @OA\MediaType(
-     *          mediaType="application/json",
-     *          @OA\Schema(
-     *             @OA\Property(property="metadata", type="array", @OA\Items())
-     *          )
-     *       )
-     *    ),
-     *      @OA\Response(
-     *          response=201,
-     *          description="Created",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="success"),
-     *              @OA\Property(property="data", type="integer", example="100")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error"),
-     *          )
-     *      )
-     * )
-     */
-    public function datasetTest(TestDataset $request)
-    {
-        try {
-            $input = $request->all();
-
-            //send the payload to traser
-            // - traser will return the input unchanged if the data is
-            //   already in the GWDM with GWDM_CURRENT_VERSION
-            // - if it is not, traser will try to work out what the metadata is
-            //   and translate it into the GWDM
-            // - otherwise traser will return a non-200 error 
-            $traserResponse = MMC::translateDataModelType(
-                json_encode($input['metadata']),
-                Config::get('metadata.GWDM.name'),
-                Config::get('metadata.GWDM.version')
-            );
-
-            if ($traserResponse['wasTranslated']) {
-                return response()->json([
-                    'message' => 'success',
-                    'payload_received' => $input,
-                ], 200);
-            }
-
-            return response()->json([
-                'message' => 'metadata is in an unknown format and cannot be processed',
-                'details' => $traserResponse,
-                'payload_received' => $input,
-            ], 400);
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
     }
 
     private function getVersion(int $version){
