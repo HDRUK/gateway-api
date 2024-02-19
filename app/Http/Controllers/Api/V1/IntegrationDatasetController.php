@@ -296,6 +296,9 @@ class IntegrationDatasetController extends Controller
             $dataset = Dataset::where(['id' => $id])
                 ->with(['namedEntities', 'collections'])
                 ->first();
+            if(!$dataset){
+                throw new Exception('Dataset with id='.$id." cannot be found");
+            }
 
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
@@ -312,16 +315,18 @@ class IntegrationDatasetController extends Controller
                 $version = $dataset->latestVersion();
 
                 $translated = MMC::translateDataModelType(
-                    $version->metadata,
+                    json_encode($version->metadata),
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
                     Config::get('metadata.GWDM.name'),
                     Config::get('metadata.GWDM.version'),
                 );
-
+               
                 if ($translated['wasTranslated']) {
-                    $version->metadata = json_decode(json_encode($translated['metadata]']));
-                    $dataset->versions[] = $version;
+                    return response()->json([
+                        'message' => 'success, translated to model='.$outputSchemaModel." version=".$outputSchemaModelVersion,
+                        'data' => $translated['metadata'],
+                    ], 200);
                 }
                 else {
                     return response()->json([
@@ -611,6 +616,9 @@ class IntegrationDatasetController extends Controller
             $user = User::where('id', $userId)->first();
             $team = Team::where('id', $teamId)->first();
             $currDataset = Dataset::where('id', $id)->first();
+            if(!$currDataset){
+                throw new Exception('Dataset with id='.$id." cannot be found");
+            }
             $currentPid = $currDataset->pid;
 
             $input['metadata'] = $this->extractMetadata($input);
