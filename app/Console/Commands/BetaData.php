@@ -49,6 +49,13 @@ class BetaData extends Command
         $this->info("Running seed EmailTemplatesBetaDemo");
         Artisan::call('db:seed', ['--class' => "Database\Beta\EmailTemplatesBetaDemo"]);
 
+        //additional seeders also needed 
+        $this->info("Running seed SpatialCoverageSeeder");
+        Artisan::call('db:seed', ['--class' => "Database\Seeders\SpatialCoverageSeeder"]);
+
+        $this->info("Running seed KeywordSeeder");
+        Artisan::call('db:seed', ['--class' => "Database\Seeders\KeywordSeeder"]);
+
         $this->info("Completed...");
     }
 }
