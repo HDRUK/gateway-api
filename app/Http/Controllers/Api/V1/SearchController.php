@@ -9,6 +9,7 @@ use App\Models\Tool;
 
 use App\Models\Dataset;
 use App\Models\Collection;
+use App\Models\Filter;
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
 
@@ -124,8 +125,10 @@ class SearchController extends Controller
             $urlString = env('SEARCH_SERVICE_URL') . '/search/datasets';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
+            $aggs = Filter::where('type', 'dataset')->get()->toArray();
+            $input['aggs'] = $aggs;
 
-            $response = Http::post($urlString,$input);
+            $response = Http::post($urlString, $input);
 
             $datasetsArray = $response['hits']['hits'];
             $matchedIds = [];
