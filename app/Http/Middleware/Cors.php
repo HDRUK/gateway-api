@@ -15,6 +15,7 @@ class Cors
         $headers = [
             'Access-Control-Allow-Methods' => 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
             'Access-Control-Allow-Headers' => 'Content-Type, Origin, Authorization',
+            'Access-Control-Expose-Headers' => 'Content-Disposition',
         ];
 
         if ($request->getMethod() === 'OPTIONS') {
