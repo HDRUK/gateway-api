@@ -283,6 +283,12 @@ class CollectionController extends Controller
                 Collection::where('id', $collectionId)->update(['updated_on' => $input['updated_on']]);
             }
 
+            // add in a team
+            if (array_key_exists('team_id', $input)) {
+                Collection::where('id', $collectionId)->update(['team_id' => $input['team_id']]);
+            }
+            $this->indexElasticCollections((int)$collectionId);
+
             return response()->json([
                 'message' => 'created',
                 'data' => $collectionId,
@@ -422,6 +428,12 @@ class CollectionController extends Controller
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
             }
+
+            // add in a team
+            if (array_key_exists('team_id', $input)) {
+                Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
+            }
+            $this->indexElasticCollections($id);
 
             return response()->json([
                 'message' => 'success',
@@ -569,6 +581,12 @@ class CollectionController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
+
+            // add in a team
+            if (array_key_exists('team_id', $input)) {
+                Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
+            }
+            $this->indexElasticCollections($id);
 
             return response()->json([
                 'message' => 'success',
@@ -800,4 +818,35 @@ class CollectionController extends Controller
 
         return $response;
     }
+
+    /**
+     * Insert collection document into elastic index
+     *
+     * @param integer $collectionId
+     * @return void
+     */
+    private function indexElasticCollections(int $collectionId): void 
+    {
+        $collection = Collection::with("team")->where('id', $collectionId)->first()->toArray();
+        $team = $collection['team'];
+
+        try {
+            $toIndex = [
+                'publisherName' => isset($team['name']) ? $team['name'] : ''
+            ];
+            $params = [
+                'index' => 'collection',
+                'id' => $collectionId,
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+
+            $client = MMC::getElasticClient();
+            $client->index($params);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
 }
