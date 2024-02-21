@@ -23,7 +23,7 @@ class DatasetExportTest extends TestCase
 
         $export = new DatasetTableExport($testData);
 
-        $fileName = 'datasets-table.xlsx';
+        $fileName = 'datasets-table.csv';
         Excel::store($export, $fileName, 'local');
 
         Storage::disk('local')->assertExists($fileName);
@@ -37,7 +37,7 @@ class DatasetExportTest extends TestCase
 
         $export = new DatasetListExport($testData);
 
-        $fileName = 'datasets-list.xlsx';
+        $fileName = 'datasets-list.csv';
         Excel::store($export, $fileName, 'local');
 
         Storage::disk('local')->assertExists($fileName);
