@@ -17,7 +17,7 @@ class DurExportTest extends TestCase
 
         $export = new DataUseExport($testData);
 
-        $fileName = 'dur-table.xlsx';
+        $fileName = 'dur-table.csv';
         Excel::store($export, $fileName, 'local');
 
         Storage::disk('local')->assertExists($fileName);

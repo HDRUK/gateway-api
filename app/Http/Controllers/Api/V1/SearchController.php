@@ -153,11 +153,11 @@ class SearchController extends Controller
             }
 
             if ($download && $downloadType === "list") {
-                return Excel::download(new DatasetListExport($datasetsArray), 'datasets.xlsx');
+                return Excel::download(new DatasetListExport($datasetsArray), 'datasets.csv');
             }
 
             if ($download && $downloadType === "table") {
-                return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.xlsx');
+                return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
             }
 
             $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
@@ -641,7 +641,7 @@ class SearchController extends Controller
             }
 
             if ($download) {
-                return Excel::download(new DataUseExport($durArray), 'dur.xlsx');
+                return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
 
             $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);
