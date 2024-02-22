@@ -51,7 +51,7 @@ class KeywordSeeder extends Seeder
             'Outpatient',
             'Ovarian Cancer',
             'Pancreatic Cancer',
-            'Parkinson\'s Uk',
+            'Parkinson',
             'Pharmacy',
             'Physical Measures',
             'Pregnancy',

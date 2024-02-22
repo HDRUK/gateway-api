@@ -12,7 +12,7 @@ class BetaData extends Command
      *
      * @var string
      */
-    protected $signature = 'app:beta-data';
+    protected $signature = 'app:beta-data {all?} {user?} {coverage?} {keyword?}';
 
     /**
      * The console command description.
@@ -26,28 +26,79 @@ class BetaData extends Command
      */
     public function handle()
     {
+        $all = $this->argument('all');
+        if ($all) {
+            $this->runMigrations($all);
+        }
+
+        $user = $this->argument('user');
+        if ($user) {
+            $this->runMigrations($user);
+        }
+
+        $coverage = $this->argument('coverage');
+        if ($coverage) {
+            $this->runMigrations($coverage);
+        }
+
+        $keyword = $this->argument('keyword');
+        if ($keyword) {
+            $this->runMigrations($keyword);
+        }
+    }
+
+    public function runMigrations(string $value)
+    {
         $this->info("Starting migration for demo data");
 
-        $this->info("Running migrate:fresh");
-        Artisan::call('migrate:fresh');
+        switch ($value) {
+            case 'user': 
+                $this->info("Running seed UserBetaDemo");
+                Artisan::call('db:seed', ['--class' => "Database\Beta\UserBetaDemo"]);
 
-        $this->info("Running seed SectorBetaDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Beta\SectorBetaDemo"]);
+                break;
 
-        $this->info("Running seed PermissionBetaDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Beta\PermissionBetaDemo"]);
+            case 'coverage': 
+                $this->info("Running seed SpatialCoverageSeeder");
+                Artisan::call('db:seed', ['--class' => "Database\Seeders\SpatialCoverageSeeder"]);
 
-        $this->info("Running seed RoleBetaDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Beta\RoleBetaDemo"]);
+                break;
 
-        $this->info("Running seed TeamBetaDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Beta\TeamBetaDemo"]);
+            case 'keyword': 
+                $this->info("Running seed KeywordSeeder");
+                Artisan::call('db:seed', ['--class' => "Database\Seeders\KeywordSeeder"]);
 
-        $this->info("Running seed UserBetaDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Beta\UserBetaDemo"]);
+                break;
+            case 'all':
+                $this->info("Running migrate:fresh");
+                Artisan::call('migrate:fresh');
         
-        $this->info("Running seed EmailTemplatesBetaDemo");
-        Artisan::call('db:seed', ['--class' => "Database\Beta\EmailTemplatesBetaDemo"]);
+                $this->info("Running seed SectorSeeder");
+                Artisan::call('db:seed', ['--class' => "Database\Seeders\SectorSeeder"]);
+        
+                $this->info("Running seed PermissionSeeder");
+                Artisan::call('db:seed', ['--class' => "Database\Seeders\PermissionSeeder"]);
+        
+                $this->info("Running seed RoleSeeder");
+                Artisan::call('db:seed', ['--class' => "Database\Seeders\RoleSeeder"]);
+        
+                $this->info("Running seed TeamBetaDemo");
+                Artisan::call('db:seed', ['--class' => "Database\Beta\TeamBetaDemo"]);
+        
+                $this->info("Running seed UserBetaDemo");
+                Artisan::call('db:seed', ['--class' => "Database\Beta\UserBetaDemo"]);
+                
+                $this->info("Running seed EmailTemplatesSeeder");
+                Artisan::call('db:seed', ['--class' => "Database\Seeders\EmailTemplatesSeeder"]);
+
+                $this->info("Running seed SpatialCoverageSeeder");
+                Artisan::call('db:seed', ['--class' => "Database\Seeders\SpatialCoverageSeeder"]);
+
+                $this->info("Running seed KeywordSeeder");
+                Artisan::call('db:seed', ['--class' => "Database\Seeders\KeywordSeeder"]);
+
+                break;            
+        }
 
         $this->info("Completed...");
     }
