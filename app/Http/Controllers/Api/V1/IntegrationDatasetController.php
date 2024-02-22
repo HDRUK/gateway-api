@@ -433,7 +433,6 @@ class IntegrationDatasetController extends Controller
 
                 $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
 
-                $teamId = (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']);
                 $dataset = MMC::createDataset([
                     'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                     'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
@@ -610,7 +609,6 @@ class IntegrationDatasetController extends Controller
 
             $user = User::where('id', $userId)->first();
             $team = Team::where('id', $teamId)->first();
-
             $currentPid = $currDataset->pid;
 
             $input['metadata'] = $this->extractMetadata($input);
