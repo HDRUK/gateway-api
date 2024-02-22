@@ -27,22 +27,17 @@ class BetaData extends Command
     public function handle()
     {
         $all = $this->argument('all');
+        $user = $this->argument('user');
+        $coverage = $this->argument('coverage');
+        $keyword = $this->argument('keyword');
+
         if ($all) {
             $this->runMigrations($all);
-        }
-
-        $user = $this->argument('user');
-        if ($user) {
+        } elseif ($user) {
             $this->runMigrations($user);
-        }
-
-        $coverage = $this->argument('coverage');
-        if ($coverage) {
+        } elseif ($coverage) {
             $this->runMigrations($coverage);
-        }
-
-        $keyword = $this->argument('keyword');
-        if ($keyword) {
+        }elseif ($keyword) {
             $this->runMigrations($keyword);
         }
     }
