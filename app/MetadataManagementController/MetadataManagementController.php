@@ -205,7 +205,7 @@ class MetadataManagementController {
         try {
 
             $datasetMatch = Dataset::where(['id' => $datasetId])
-                ->with(['namedEntities', 'collections', 'durs'])
+                ->with(['namedEntities', 'collections', 'durs', 'spatialCoverage'])
                 ->first();
             
             $version = $datasetMatch->latestVersion();
@@ -227,6 +227,11 @@ class MetadataManagementController {
                 $durs[] = $d['project_title'];
             }
 
+            $geographicLocations = array();
+            foreach ($dataset['spatial_coverage'] as $s) {
+                $geographicLocations[] = $s['region'];
+            }
+
             $metadataModelVersion = $metadata['gwdmVersion'];
 
             // ------------------------------------------------------
@@ -235,17 +240,17 @@ class MetadataManagementController {
             //  - can we make this more dynamic in someway?
             // ------------------------------------------------------
             $publisherName = '';
-            $physicalSampleAvailability = [];
+            $containsTissue = false;
 
             if(version_compare($metadataModelVersion,"1.1","<")){
                 $publisherName = $metadata['metadata']['summary']['publisher']['publisherName'];
-                $physicalSampleAvailability = explode(',', $metadata['metadata']['coverage']['physicalSampleAvailability']);
+                $containsTissue = !empty($metadata['metadata']['coverage']['physicalSampleAvailability']) ? true : false;
             } else {
                 if (array_key_exists('name',$metadata['metadata']['summary']['publisher'])){
                     $publisherName = $metadata['metadata']['summary']['publisher']['name'];
                 }
                 if(array_key_exists('biologicalsamples',$metadata['metadata']['coverage'])){
-                    $physicalSampleAvailability = explode(',', $metadata['metadata']['coverage']['biologicalsamples']);
+                    $containsTissue = !empty($metadata['metadata']['coverage']['biologicalsamples']) ? true : false;
                 }
             }
             
@@ -258,12 +263,13 @@ class MetadataManagementController {
                 'publisherName' => $publisherName,
                 'startDate' => $metadata['metadata']['provenance']['temporal']['startDate'],
                 'endDate' => $metadata['metadata']['provenance']['temporal']['endDate'],
-                'physicalSampleAvailability' => $physicalSampleAvailability,
+                'containsTissue' => $containsTissue,
                 'conformsTo' => explode(',', $metadata['metadata']['accessibility']['formatAndStandards']['conformsTo']),
                 'hasTechnicalMetadata' => (bool) $datasetMatch['has_technical_details'],
                 'named_entities' => $namedEntities,
-                'collections' => $collections,
-                'dataUseTitles' => $durs
+                'collectionName' => $collections,
+                'dataUseTitles' => $durs,
+                'geographicLocation' => $geographicLocations
             ];
 
             $params = [
