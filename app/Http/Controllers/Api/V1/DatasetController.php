@@ -573,8 +573,6 @@ class DatasetController extends Controller
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
                 );
 
-                MMC::reindexElastic($dataset->id);
-
                 return response()->json([
                     'message' => 'created',
                     'data' => $dataset->id,
