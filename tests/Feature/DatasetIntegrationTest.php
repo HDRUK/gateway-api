@@ -405,4 +405,110 @@ class DatasetIntegrationTest extends TestCase
         $responseDeleteUser->assertStatus(200);
     }
 
+
+    public function test_cannot_delete_dataset_from_another_team(): void
+    {
+       
+        $dataset = Dataset::where("team_id","!=", $this->integration->team_id)->first();
+         $responseDeleteDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $dataset->id . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteDataset->assertStatus(500)
+                              ->assertSeeText("This Application is not allowed to interact with datasets from another team!");
+
+    }
+    public function test_cannot_update_dataset_from_another_team(): void
+    {
+       
+        $dataset = Dataset::where("team_id","!=", $this->integration->team_id)->first();
+         $responseDeleteDataset = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET . '/' . $dataset->id . '?deletePermanently=true',
+            $this->metadata,
+            $this->header
+        );
+        $responseDeleteDataset->assertStatus(500)
+                              ->assertSeeText("This Application is not allowed to interact with datasets from another team!");
+
+    }
+
+    public function test_cannot_get_without_correct_auth_and_permissions(): void
+    {
+        
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET, 
+            [
+                'metadata' => $this->metadata,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(201);
+        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
+        $datasetId = $contentCreateDataset['data'];
+
+        //mess up the client-id
+        $tempHeader = $this->header;
+        $tempHeader['x-client-id'] = 'abcde';
+
+        $responseGetDataset = $this->json(
+            'GET',
+            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+            [],
+            $tempHeader
+        );
+        $responseGetDataset->assertStatus(401)
+                            ->assertSeeText("The credentials provided are invalid");
+
+        //mess up the application-id
+        $tempHeader = $this->header;
+        $tempHeader['x-application-id'] = 'abcde';
+
+        $responseGetDataset = $this->json(
+            'GET',
+            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+            [],
+            $tempHeader
+        );
+        $responseGetDataset->assertStatus(401)
+                            ->assertSeeText("No known integration matches the credentials provided");
+
+
+        //give a bad dataset identifier
+        $responseGetDataset = $this->json(
+            'GET',
+            self::TEST_URL_DATASET . '/' . 1000000 . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseGetDataset->assertStatus(400)
+                           ->assertJson([
+                                "status" => "INVALID_ARGUMENT",
+                                "message" => "Invalid argument(s)",
+                                "errors" => [
+                                    [
+                                        "reason" => "EXISTS",
+                                        "message" => "The selected id is invalid.",
+                                        "field" => "id"
+                                    ]
+                                ]
+                            ]);
+
+        Application::findOrFail($this->integration->id)->update(["enabled"=>false]);
+        
+        $responseGetDataset = $this->json(
+            'GET',
+            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseGetDataset->assertStatus(400)
+            ->assertSeeText("Application has not been enabled!");
+        
+
+    }
+
 }
