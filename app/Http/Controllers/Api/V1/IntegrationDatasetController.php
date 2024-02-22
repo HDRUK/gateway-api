@@ -133,7 +133,7 @@ class IntegrationDatasetController extends Controller
         // is making the call, to only provide data the integration is allowed
         // to see
         $this->overrideTeamId($teamId, $request->headers->all());
-
+        
         $sort = $request->query('sort', 'created:desc');
         
         $tmp = explode(":", $sort);
@@ -292,21 +292,15 @@ class IntegrationDatasetController extends Controller
      */
     public function show(GetDataset $request, int $id): JsonResponse
     {
-        try {
-            $dataset = Dataset::where(['id' => $id])
-                ->with(['namedEntities', 'collections'])
-                ->first();
 
+        try {
+            $dataset = Dataset::with(['namedEntities', 'collections','versions'])->findOrFail($id);
+
+            $this->checkAppCanHandleDataset($dataset->team_id,$request);
+        
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
-
-            // Return the latest metadata for this dataset
-            if (!($outputSchemaModel && $outputSchemaModelVersion)) {
-                $version = $dataset->latestVersion();
-                if ($version) {
-                    $dataset->versions[] = $version;
-                }
-            }            
+      
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
                 $version = $dataset->latestVersion();
@@ -439,6 +433,7 @@ class IntegrationDatasetController extends Controller
 
                 $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
 
+                $teamId = (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']);
                 $dataset = MMC::createDataset([
                     'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                     'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
@@ -597,6 +592,9 @@ class IntegrationDatasetController extends Controller
     public function update(UpdateDataset $request, int $id)
     {
         try {
+            $currDataset = Dataset::findOrFail($id);
+            $this->checkAppCanHandleDataset($currDataset->team_id,$request);
+
             $input = $request->all();
 
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
@@ -612,10 +610,7 @@ class IntegrationDatasetController extends Controller
 
             $user = User::where('id', $userId)->first();
             $team = Team::where('id', $teamId)->first();
-            $currDataset = Dataset::where('id', $id)->first();
-            if(!$currDataset){
-                throw new Exception('Dataset with id='.$id." cannot be found");
-            }
+
             $currentPid = $currDataset->pid;
 
             $input['metadata'] = $this->extractMetadata($input);
@@ -745,6 +740,8 @@ class IntegrationDatasetController extends Controller
                     ->where(['id' => $id])
                     ->first();
 
+                $this->checkAppCanHandleDataset($datasetModel->team_id,$request);
+
                 if ($request['status'] !== Dataset::STATUS_ARCHIVED) {
                     if (in_array($request['status'], [
                         Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT
@@ -768,6 +765,8 @@ class IntegrationDatasetController extends Controller
             } else {
                 $datasetModel = Dataset::where(['id' => $id])
                     ->first();
+
+                $this->checkAppCanHandleDataset($datasetModel->team_id,$request);
 
                 if ($datasetModel['status'] === Dataset::STATUS_ARCHIVED) {
                     return response()->json([
@@ -842,6 +841,10 @@ class IntegrationDatasetController extends Controller
     public function destroy(Request $request, string $id) // softdelete
     {
         try {
+
+            $dataset = Dataset::findOrFail($id);
+            $this->checkAppCanHandleDataset($dataset->team_id,$request);
+
             MMC::deleteDataset($id);
             MMC::deleteFromElastic($id);
 
