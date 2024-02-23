@@ -578,10 +578,70 @@ class UserBetaDemo extends Seeder
                 'assignTeam' => true,
                 'teamName' => 'Dev Testing',
             ],
+            [
+                'firstname' => 'Alistair',
+                'lastname' => 'Hopper',
+                'email' => 'alistair.hopper@nhs.net',
+                'password' => '$2y$10$JnvMqRp9xm1guotyu7NonuXzVxkVj/USMq0uMoztAUQHhU9dD0JQS',
+                'provider' => 'service',
+                'isAdmin' => true,
+                'roles' => ['developer'],
+                'assignTeam' => true,
+                'teamName' => 'Northwest SDE',
+            ],
+            [
+                'firstname' => 'Al-Fahad',
+                'lastname' => 'Abdul-Mumuni',
+                'email' => 'al-fahad.abdul-mumuni2@nhs.net',
+                'password' => '$2y$10$S8zVYC3mqBGGv12muhOuzeenxdyDRtXtOA33VfEjo/g3smfWDV1Zm',
+                'provider' => 'service',
+                'isAdmin' => true,
+                'roles' => ['developer'],
+                'assignTeam' => true,
+                'teamName' => 'Northwest SDE',
+            ],
+            [
+                'firstname' => 'Colleen',
+                'lastname' => 'Knight',
+                'email' => 'colleenknight@nhs.net',
+                'password' => '$2y$10$jKedfR8s6klHZx7jcayrAOX/.BnI87As1UYfi9/ILdn.d6XP5w5y2',
+                'provider' => 'service',
+                'isAdmin' => true,
+                'roles' => ['custodian.team.admin'],
+                'assignTeam' => true,
+                'teamName' => 'Northwest SDE',
+            ],
+            [
+                'firstname' => 'James',
+                'lastname' => 'Richardson',
+                'email' => 'james.richardson34@nhs.net',
+                'password' => '$2y$10$Uzin1uIEOF6wP9jnHC4Qv.OUK8SzWnNvapgUqP9qO0MJBnc6g95K6',
+                'provider' => 'service',
+                'isAdmin' => true,
+                'roles' => ['developer'],
+                'assignTeam' => true,
+                'teamName' => 'Northwest SDE',
+            ],
+            [
+                'firstname' => 'James',
+                'lastname' => 'Mcshane',
+                'email' => 'jamesmcshane@nhs.net',
+                'password' => '$2y$10$PcNqRWOaiYkRcgBHPaj.iu1n9eBQaZmVMVq41.4FrEX7wtmY1k8gu',
+                'provider' => 'service',
+                'isAdmin' => true,
+                'roles' => ['developer'],
+                'assignTeam' => true,
+                'teamName' => 'Northwest SDE',
+            ],
 
         ];
 
         foreach ($users as $user) {
+            $isUser = User::where(['email' => $user['email']])->first();
+            if ($isUser) {
+                continue;
+            }
+
             $this->createUser(
                 $user['firstname'],
                 $user['lastname'],
@@ -626,6 +686,7 @@ class UserBetaDemo extends Seeder
         try {
             // $realPassword = $this->generatePassword(15);
             // $hashPassword = \Hash::make($realPassword);
+            // print_r("\npassword :: " . $realPassword . " - hash :: " . $hashPassword . " \n");
 
             $user = User::factory()->create([
                 'name' => $firstname . ' ' . $lastname,
