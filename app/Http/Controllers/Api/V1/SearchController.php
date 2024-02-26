@@ -622,7 +622,7 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $durModels = Dur::whereIn('id', $matchedIds)->get();
+            $durModels = Dur::whereIn('id', $matchedIds)->with('datasets')->get();
 
             foreach ($durArray as $i => $dur) {
                 if (!in_array($dur['_id'], $matchedIds)) {
@@ -632,9 +632,11 @@ class SearchController extends Controller
                 foreach ($durModels as $model){
                     if ((int) $dur['_id'] === $model['id']) {
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $durArray[$i]['projectTitle'] = $model['project_title'];
                         $durArray[$i]['organisationName'] = $model['organisation_name'];
-                        $durArray[$i]['team'] = $model['team']; 
+                        $durArray[$i]['team'] = $model['team'];
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
+                        $durArray[$i]['datasetTitles'] = $this->durDatasetTitles($model);
                         break;
                     }
                 }
@@ -658,6 +660,27 @@ class SearchController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * Find dataset titles associated with a given Dur model instance.
+     * Returns an array of titles.
+     * 
+     * @param Dur $durMatch The Dur model the find dataset titles for
+     * 
+     * @return array
+     */
+    private function durDatasetTitles(Dur $durMatch): array
+    {
+        $datasetTitles = array();
+        foreach ($durMatch['datasets'] as $d) {
+            $metadata = Dataset::where(['id' => $d['id']])
+                ->first()
+                ->latestVersion()
+                ->metadata;
+            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+        }
+        return $datasetTitles;
     }
 
     /**

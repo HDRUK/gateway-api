@@ -397,10 +397,10 @@ trait MockExternalApis
                             1 => [
                                 '_explanation' => [],
                                 '_id' => '2',
-                                '_index' => 'collections',
+                                '_index' => 'data_uses',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 18.0,
-                                '_shard' => '[collections][0]',
+                                '_shard' => '[data_uses][0]',
                                 '_source' => [
                                     'projectTitle' => 'Another Data Use',
                                     'laySummary' => 'a gateway data use',
@@ -417,10 +417,10 @@ trait MockExternalApis
                             2 => [
                                 '_explanation' => [],
                                 '_id' => '3',
-                                '_index' => 'collections',
+                                '_index' => 'data_uses',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 16.0,
-                                '_shard' => '[collections][0]',
+                                '_shard' => '[data_uses][0]',
                                 '_source' => [
                                     'projectTitle' => 'Third Data Use',
                                     'laySummary' => 'a gateway data use',
