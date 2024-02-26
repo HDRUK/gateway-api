@@ -105,7 +105,8 @@ class ToolController extends Controller
      */
     public function show(GetTool $request, int $id): JsonResponse
     {
-        $tags = Tool::with([
+        try {
+            $tools = Tool::with([
                 'user', 
                 'tag',
                 'team',
@@ -114,16 +115,13 @@ class ToolController extends Controller
                 'enabled' => 1,
             ])->get();
 
-        if ($tags->count()) {
             return response()->json([
                 'message' => 'success',
-                'data' => $tags,
+                'data' => $tools,
             ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
     }
 
     /**
@@ -147,6 +145,7 @@ class ToolController extends Controller
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
+     *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
@@ -244,6 +243,7 @@ class ToolController extends Controller
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
+     *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
@@ -349,6 +349,7 @@ class ToolController extends Controller
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
+     *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Exception;
 
-use App\Models\Category;
 use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
@@ -48,7 +47,7 @@ class IntegrationToolController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $tools = Tool::with(['user', 'tag'])->where('enabled', 1)
+        $tools = Tool::with(['user', 'tag', 'team'])->where('enabled', 1)
             ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         return response()->json(
@@ -98,21 +97,23 @@ class IntegrationToolController extends Controller
      */
     public function show(GetTool $request, int $id): JsonResponse
     {
-        $tags = Tool::with(['user', 'tag'])->where([
-            'id' => $id,
-            'enabled' => 1,
-        ])->get();
+        try {
+            $tools = Tool::with([
+                'user', 
+                'tag',
+                'team',
+            ])->where([
+                'id' => $id,
+                'enabled' => 1,
+            ])->get();
 
-        if ($tags->count()) {
             return response()->json([
                 'message' => 'success',
-                'data' => $tags,
+                'data' => $tools,
             ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
     }
 
     /**
@@ -136,6 +137,7 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
+     *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
@@ -178,7 +180,8 @@ class IntegrationToolController extends Controller
             $input = $request->all();
 
             $userId = $input['user_id'];
-            $this->overrideUserId($userId, $request->header());
+            $teamId = isset($input['team_id']) ? $input['team_id'] : null;
+            $this->overrideBothTeamAndUserId($teamId, $userId, $request->header());
 
             $tool = Tool::create([
                 'mongo_object_id' => array_key_exists('mongo_object_id',$input) ? $input['mongo_object_id'] : null,
@@ -190,6 +193,7 @@ class IntegrationToolController extends Controller
                 'category_id' => $input['category_id'],
                 'user_id' => $userId,
                 'enabled' => $input['enabled'],
+                'team_id' => $teamId,
             ]);
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
@@ -274,22 +278,28 @@ class IntegrationToolController extends Controller
         try {
             $input = $request->all();
 
-            $userId = $input['user_id'];
-            $this->overrideUserId($userId, $request->header());            
+            $arrayKeys = [
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'license',
+                'tech_stack',
+                'category_id',
+                'enabled',
+            ];
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            $userId = isset($input['user_id']) ? $input['user_id'] : null;
+            $teamId = isset($input['team_id']) ? $input['team_id'] : null;
+            $this->overrideBothTeamAndUserId($teamId, $userId, $request->header());
+
+            $array['user_id'] = $userId;
+            $array['team_id'] = $teamId;
 
             Tool::withTrashed()->where('id', $id)
-                ->where('user_id', $userId)
-                ->update([
-                    'mongo_object_id' => $input['mongo_object_id'],
-                    'name' => $input['name'],
-                    'url' => $input['url'],
-                    'description' => $input['description'],
-                    'license' => $input['license'],
-                    'tech_stack' =>  $input['tech_stack'],
-                    'category_id' => $input['category_id'],
-                    'user_id' => $userId,
-                    'enabled' => $input['enabled'],
-                ]);
+                ->where('id', $id)
+                ->update($array);
 
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
@@ -382,15 +392,19 @@ class IntegrationToolController extends Controller
                 'license',
                 'tech_stack',
                 'category_id',
-                'user_id',
                 'enabled',
             ];
-
             $array = $this->checkEditArray($input, $arrayKeys);
-            $this->overrideUserId($array['user_id'], $request->header());
+
+            $userId = isset($input['user_id']) ? $input['user_id'] : null;
+            $teamId = isset($input['team_id']) ? $input['team_id'] : null;
+            $this->overrideBothTeamAndUserId($teamId, $userId, $request->header());
+
+            $array['user_id'] = $userId;
+            $array['team_id'] = $teamId;
 
             Tool::withTrashed()->where('id', $id)
-                ->where('user_id', $array['user_id'])
+                ->where('id', $id)
                 ->update($array);
 
             if (array_key_exists('tag', $input)) {
@@ -400,7 +414,7 @@ class IntegrationToolController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Tool::with(['user', 'tag'])->withTrashed()->where('id', $id)->first(),
+                'data' => Tool::with(['user', 'tag', 'team'])->withTrashed()->where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
