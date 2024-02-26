@@ -106,7 +106,7 @@ trait MockExternalApis
 
         // Mock the search service - datasets
         Http::fake([
-            '*search*datasets*' => Http::response(
+            '*/search/datasets*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -199,7 +199,7 @@ trait MockExternalApis
 
         // Mock the search service - tools
         Http::fake([
-            '*search*tools*' => Http::response(
+            '*/search/tools*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -280,7 +280,7 @@ trait MockExternalApis
 
         // Mock the search service - collections
         Http::fake([
-            '*search*collections*' => Http::response(
+            '*/search/collections*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -367,7 +367,7 @@ trait MockExternalApis
         
         // Mock the search service - data uses
         Http::fake([
-            '*search*dur*' => Http::response(
+            '*/search/dur*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -445,7 +445,7 @@ trait MockExternalApis
 
         // Mock the search service - filters
         Http::fake([
-            '*search*filters*' => Http::response(
+            '*/search/filters*' => Http::response(
                 [
                     'filters' => [
                         0 => [
