@@ -59,18 +59,21 @@ class FilterSeeder extends Seeder
         $this->seed_filter("tool",$filters);
     }
 
-
-
     public function seed_filter(string $type, array $filters): void
     {
         foreach ($filters as $filter){
-            Filter::create([
+            $checkFilter = Filter::where([
                 'type' => $type, 
                 'keys' => $filter,
-                'enabled' => true,
-            ]);
+            ])->first();
+            if (!$checkFilter) {
+                Filter::create([
+                    'type' => $type, 
+                    'keys' => $filter,
+                    'enabled' => true,
+                ]);
+            }
         }
     }
-
 
 }
