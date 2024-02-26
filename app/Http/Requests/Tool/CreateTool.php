@@ -49,6 +49,10 @@ class CreateTool extends BaseFormRequest
                 'required', 
                 'integer'
             ],
+            'team_id' => [
+                'integer',
+                'exists:teams,id',
+            ],
             'tag' => [
                 'nullable', 
                 'array', 

@@ -78,4 +78,9 @@ class Tool extends Model
     {
         return $this->belongsTo(Category::class,'category_id', 'id');
     }
+
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
 }

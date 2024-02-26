@@ -50,7 +50,13 @@ class ToolController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tools = Tool::with(['user', 'tag'])->where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        $tools = Tool::with([
+                'user', 
+                'tag',
+                'team',
+            ])
+            ->where('enabled', 1)
+            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
         return response()->json(
             $tools
@@ -99,21 +105,23 @@ class ToolController extends Controller
      */
     public function show(GetTool $request, int $id): JsonResponse
     {
-        $tags = Tool::with(['user', 'tag'])->where([
-            'id' => $id,
-            'enabled' => 1,
-        ])->get();
+        try {
+            $tools = Tool::with([
+                'user', 
+                'tag',
+                'team',
+            ])->where([
+                'id' => $id,
+                'enabled' => 1,
+            ])->get();
 
-        if ($tags->count()) {
             return response()->json([
                 'message' => 'success',
-                'data' => $tags,
+                'data' => $tools,
             ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
     }
 
     /**
@@ -137,6 +145,7 @@ class ToolController extends Controller
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
+     *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
@@ -177,18 +186,20 @@ class ToolController extends Controller
     {
         try {
             $input = $request->all();
-
-            $tool = Tool::create([
-                'mongo_object_id' => array_key_exists('mongo_object_id',$input) ? $input['mongo_object_id'] : null,
-                'name' => $input['name'],
-                'url' => $input['url'],
-                'description' => $input['description'],
-                'license' => $input['license'],
-                'tech_stack' =>  $input['tech_stack'],
-                'category_id' => $input['category_id'],
-                'user_id' => $input['user_id'],
-                'enabled' => $input['enabled'],
-            ]);
+            $arrayKeys = [
+                'mongo_object_id', 
+                'name', 
+                'url', 
+                'description', 
+                'license', 
+                'tech_stack', 
+                'category_id', 
+                'user_id',
+                'enabled',
+                'team_id', 
+            ];
+            $array = $this->checkEditArray($input, $arrayKeys);
+            $tool = Tool::create($array);
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
 
@@ -232,6 +243,7 @@ class ToolController extends Controller
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
+     *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
@@ -272,25 +284,36 @@ class ToolController extends Controller
     {
         try {
             $input = $request->all();
+            $arrayKeys = [
+                'mongo_object_id', 
+                'name', 
+                'url', 
+                'description', 
+                'license', 
+                'tech_stack', 
+                'category_id', 
+                'user_id',
+                'enabled',
+                'team_id', 
+            ];
 
-            Tool::withTrashed()->where('id', $id)->update([
-                'mongo_object_id' => $input['mongo_object_id'],
-                'name' => $input['name'],
-                'url' => $input['url'],
-                'description' => $input['description'],
-                'license' => $input['license'],
-                'tech_stack' =>  $input['tech_stack'],
-                'category_id' => $input['category_id'],
-                'user_id' => $input['user_id'],
-                'enabled' => $input['enabled'],
-            ]);
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            Tool::withTrashed()->where('id', $id)->update($array);
 
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Tool::with(['user', 'tag'])->withTrashed()->where('id', $id)->first(),
+                'data' => Tool::with([
+                            'user', 
+                            'tag',
+                            'team',
+                        ])
+                        ->withTrashed()
+                        ->where('id', $id)
+                        ->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -326,6 +349,7 @@ class ToolController extends Controller
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
+     *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
@@ -376,6 +400,7 @@ class ToolController extends Controller
                 'category_id',
                 'user_id',
                 'enabled',
+                'team_id',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -389,7 +414,14 @@ class ToolController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Tool::with(['user', 'tag'])->withTrashed()->where('id', $id)->first(),
+                'data' => Tool::with([
+                            'user', 
+                            'tag',
+                            'team',
+                        ])
+                        ->withTrashed()
+                        ->where('id', $id)
+                        ->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
