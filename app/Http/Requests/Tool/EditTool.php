@@ -53,6 +53,10 @@ class EditTool extends BaseFormRequest
             'user_id' => [
                 'integer'
             ],
+            'team_id' => [
+                'integer',
+                'exists:teams,id',
+            ],
             'tag' => [
                 'nullable',
                 'array',
