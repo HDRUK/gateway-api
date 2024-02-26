@@ -76,7 +76,7 @@ class FilterController extends Controller
             json_encode(['filters' => $filters]), 'application/json'
         )->post($urlString);
 
-        $filterBuckets = $response->json()['filters'];
+        $filterBuckets = isset($response->json()['filters']) ? $response->json()['filters'] : [];
 
         foreach ($filters as $i => $f) {
             $type = $f['type'];
@@ -153,7 +153,7 @@ class FilterController extends Controller
                 json_encode(['filters' => [$filter->toArray()]]), 'application/json'
             )->post($urlString);
 
-            $filterBuckets = $response->json()['filters'][0];
+            $filterBuckets = isset($response->json()['filters'][0]) ? $response->json()['filters'][0] : [];
             if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
                 $filter['buckets'] = $filterBuckets[$filter['type']][$filter['keys']]['buckets'];
             } else {

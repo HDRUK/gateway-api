@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Filter;
 
+use App\Models\Filter;
 use App\Http\Requests\BaseFormRequest;
 
 class EditFilter extends BaseFormRequest
@@ -26,6 +27,17 @@ class EditFilter extends BaseFormRequest
 
                     if (!in_array($value, $type)) {
                         $fail('The selected value is invalid.');
+                    }
+                },
+                function ($attribute, $value, $fail) {
+                    $key = $this->input('keys');
+                    $checkFilter = Filter::where([
+                        'type' => $value,
+                        'key' => $key,
+                    ])->where('id', '<>', $this->id)->first();
+
+                    if ($checkFilter) {
+                        $fail('The combination of type and key must be unique.');
                     }
                 },
             ],
