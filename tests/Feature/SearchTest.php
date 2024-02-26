@@ -474,6 +474,10 @@ class SearchTest extends TestCase
                         'keywords',
                         'created_at'
                     ],
+                    'organisationName',
+                    'projectTitle',
+                    'datasetTitles',
+                    'team'
                 ],
             ],
             'aggregations',
