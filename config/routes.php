@@ -2316,7 +2316,7 @@ return [
         'path' => '/search/datasets',
         'methodController' => 'SearchController@datasets',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -2325,7 +2325,7 @@ return [
         'path' => '/search/similar/datasets',
         'methodController' => 'SearchController@similarDatasets',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -2334,7 +2334,7 @@ return [
         'path' => '/search/tools',
         'methodController' => 'SearchController@tools',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -2343,7 +2343,7 @@ return [
         'path' => '/search/collections',
         'methodController' => 'SearchController@collections',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -2352,7 +2352,7 @@ return [
         'path' => '/search/dur',
         'methodController' => 'SearchController@dataUses',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [],
         'constraint' => [],
     ],
 
