@@ -41,7 +41,12 @@ class SearchController extends Controller
      *                   "publisherName": {
      *                      "BREATHE",
      *                      "HDRUK"
-     *                   }
+     *                   },
+     *                  "populationSize": {
+     *                      "includeUnreported": true,
+     *                      "from": 100,
+     *                      "to": 1000
+     *                  }
      *               }
      *           }
      *       }

@@ -241,6 +241,7 @@ class MetadataManagementController {
             // ------------------------------------------------------
             $publisherName = '';
             $containsTissue = false;
+            $populationSize = -1;
 
             if(version_compare($metadataModelVersion,"1.1","<")){
                 $publisherName = $metadata['metadata']['summary']['publisher']['publisherName'];
@@ -252,6 +253,9 @@ class MetadataManagementController {
                 if(array_key_exists('biologicalsamples',$metadata['metadata']['coverage'])){
                     $containsTissue = !empty($metadata['metadata']['coverage']['biologicalsamples']) ? true : false;
                 }
+                if (array_key_exists('populationSize', $metadata['metadata']['summary'])){
+                    $populationSize = $metadata['metadata']['summary']['populationSize'];
+                }
             }
             
             $toIndex = [
@@ -260,6 +264,7 @@ class MetadataManagementController {
                 'description' => $metadata['metadata']['summary']['description'],
                 'shortTitle' => $metadata['metadata']['summary']['shortTitle'],
                 'title' => $metadata['metadata']['summary']['title'],
+                'populationSize' => $populationSize,
                 'publisherName' => $publisherName,
                 'startDate' => $metadata['metadata']['provenance']['temporal']['startDate'],
                 'endDate' => $metadata['metadata']['provenance']['temporal']['endDate'],

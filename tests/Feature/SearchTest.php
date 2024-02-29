@@ -77,6 +77,7 @@ class SearchTest extends TestCase
                         'shortTitle',
                         'title',
                         'dataUseTitles',
+                        'populationSize',
                         'created_at'
                     ],
                 ],
@@ -199,6 +200,7 @@ class SearchTest extends TestCase
                         'shortTitle',
                         'title',
                         'dataUseTitles',
+                        'populationSize',
                         'created_at'
                     ],
                     'metadata'
