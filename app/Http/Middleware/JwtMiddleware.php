@@ -10,11 +10,14 @@ use Illuminate\Http\Request;
 use App\Models\AuthorisationCode;
 use App\Exceptions\NotFoundException;
 use App\Http\Controllers\JwtController;
+use App\Http\Traits\UserRolePermissions;
 use App\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 
 class JwtMiddleware
 {
+    use UserRolePermissions;
+
     /**
      * @OA\SecurityScheme(
      *     type="http",
@@ -63,9 +66,10 @@ class JwtMiddleware
                         'name' => $user->name,
                         'email' => $user->email,
                         'is_admin' => $user->is_admin,
-                        ]
-                    ]
-                );
+                        'role_perms' => $this->getUserRolePerms($user->id),
+                    ],
+                ],
+            );
 
             return $next($request);
         }
@@ -104,9 +108,10 @@ class JwtMiddleware
                         'name' => $user->name,
                         'email' => $user->email,
                         'is_admin' => $user->is_admin,
-                        ]
-                    ]
-                );
+                        'role_perms' => $this->getUserRolePerms($user->id),
+                    ],
+                ],
+            );
             return $next($request);
         }
 

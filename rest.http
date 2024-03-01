@@ -6,7 +6,8 @@
 @apiVersion = v1
 @uFirstName = "John"
 @uLastName = "Doe"
-@uEmail = "developers@hdruk.ac.uk"
+@uEmail = "fsipes@example.net"
+# @uEmail = "developers@hdruk.ac.uk"
 @uEmail2 = "john.for.doe.1234567890@example.com"
 @uPassword = "Watch26Task?"
 # @accessToken=jwt....
@@ -916,11 +917,11 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "roles" : {
+    "roles" : [
         "custodian.metadata.manager": false,
         "metadata.editor": true,
         "dar.reviewer": true
-    }
+    ]
 }
 
 #### update bulk team - user - role

@@ -15,18 +15,40 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\TeamTransformation;
+use App\Models\TeamUserHasNotification;
+use App\Http\Traits\UserRolePermissions;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Requests\TeamUser\CreateTeamUser;
 use App\Http\Requests\TeamUser\DeleteTeamUser;
 use App\Http\Requests\TeamUser\UpdateTeamUser;
 use App\Http\Requests\TeamUser\UpdateBulkTeamUser;
-use App\Models\TeamUserHasNotification;
 
 class TeamUserController extends Controller
 {
     use TeamTransformation;
+    use UserRolePermissions;
     
-    private $roleAdmin = 'custodian.team.admin';
+    private const ROLE_CUSTODIAN_TEAM_ADMIN = 'custodian.team.admin';
+    private const CHECK_PERMISSIONS_IN_CREATE = [
+        'team-members.create' => '',
+        'roles.cta.update' => 'custodian.team.admin',
+        'roles.dev.update' => 'developer',
+        'roles.mdm.update' => 'custodian.metadata.manager',
+        'roles.mde.update' => 'metadata.editor',
+        'roles.dar-m.update' => 'custodian.dar.manager',
+        'roles.dar-r.update' => 'dar.reviewer',
+    ];
+    private const CHECK_PERMISSIONS_IN_UPDATE = [
+        'roles.cta.update' => 'custodian.team.admin',
+        'roles.dev.update' => 'developer',
+        'roles.mdm.update' => 'custodian.metadata.manager',
+        'roles.mde.update' => 'metadata.editor',
+        'roles.dar-m.update' => 'custodian.dar.manager',
+        'roles.dar-r.update' => 'dar.reviewer',
+    ];
+    private const CHECK_PERMISSIONS_IN_DELETE = [
+        'team-members.delete' => '',
+    ];
 
     public function __construct()
     {
@@ -107,6 +129,14 @@ class TeamUserController extends Controller
     {
         try {
             $input = $request->all();
+
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUserIsAdmin = $jwtUser['is_admin'];
+            $jwtUserRolePerms = $jwtUser['role_perms'];
+
+            if (!$jwtUserIsAdmin) {
+                $this->checkUserPermissions($input['roles'], $jwtUserRolePerms, $teamId, self::CHECK_PERMISSIONS_IN_CREATE);
+            }
 
             $userId = $input['userId'];
             $permissions = $input['roles'];
@@ -211,7 +241,14 @@ class TeamUserController extends Controller
     {
         try {
             $input = $request->all();
+
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUserIsAdmin = $jwtUser['is_admin'];
+            $jwtUserRolePerms = $jwtUser['role_perms'];
+
+            if (!$jwtUserIsAdmin) {
+                $this->checkUserPermissions($input['roles'], $jwtUserRolePerms, $teamId, self::CHECK_PERMISSIONS_IN_UPDATE);
+            }
 
             $res = $this->teamUserRoles($teamId, $userId, $input, $jwtUser);
 
@@ -316,6 +353,18 @@ class TeamUserController extends Controller
             $input = $request->all();
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUserIsAdmin = $jwtUser['is_admin'];
+            $jwtUserRolePerms = $jwtUser['role_perms'];
+
+            if (!$jwtUserIsAdmin) {
+                $roles = [];
+                foreach ($input as $user) {
+                    $roles = array_unique(array_merge($roles, $user['roles']));
+                }
+
+                $this->checkUserPermissions($roles, $jwtUserRolePerms, $teamId, self::CHECK_PERMISSIONS_IN_UPDATE);
+            }
+
             $response = [];
 
             foreach ($input['payload_data'] as $item) {
@@ -397,6 +446,15 @@ class TeamUserController extends Controller
     public function destroy(DeleteTeamUser $request, int $teamId, int $userId): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUserIsAdmin = $jwtUser['is_admin'];
+            $jwtUserRolePerms = $jwtUser['role_perms'];
+
+            if (!$jwtUserIsAdmin) {
+                $this->checkUserPermissions([],$jwtUserRolePerms, $teamId, self::CHECK_PERMISSIONS_IN_DELETE);
+            }
+
             $teamHasUsers = TeamHasUser::where([
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -512,7 +570,7 @@ class TeamUserController extends Controller
                         'role_id' => $roles->id,
                     ]);
                 } else {
-                    if ($roleName === $this->roleAdmin && count($this->listOfAdmin($teamId)) === 1) {
+                    if ($roleName === self::ROLE_CUSTODIAN_TEAM_ADMIN && count($this->listOfAdmin($teamId)) === 1) {
                         throw new UnauthorizedException('You cannot remove last team admin role');
                     }
                     TeamUserHasRole::where('team_has_user_id', $teamHasUsers->id)
@@ -578,7 +636,7 @@ class TeamUserController extends Controller
             foreach ($users as $user) {
                 $userName = $user['name'];
                 foreach ($user['roles'] as $role) {
-                    if ($role['name'] === $this->roleAdmin) {
+                    if ($role['name'] === self::ROLE_CUSTODIAN_TEAM_ADMIN) {
                         $admins[] = $userName;
                     }
                 }
@@ -588,5 +646,20 @@ class TeamUserController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         } 
+    }
+
+    protected function checkUserPermissions($payloadRoles, array $rolePerms, $teamId, array $checkPermissions)
+    {
+        $currentUserPermissions = array_unique(array_merge($rolePerms['extra']['perms'], $rolePerms['teams'][(string) $teamId]['perms']));
+
+        foreach ($checkPermissions as $key => $value) {
+            if (!$value) {
+                (!in_array($key, $currentUserPermissions)) ?: throw new UnauthorizedException('Not Enough Permissions.');
+            }
+
+            if (in_array($value, $payloadRoles)) {
+                (!in_array($key, $currentUserPermissions)) ?: throw new UnauthorizedException('Not Enough Permissions.');
+            }
+        }
     }
 }

@@ -3,21 +3,13 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Models\Role;
-use App\Models\Team;
-use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Traits\TeamTransformation;
-use App\Http\Traits\UserTransformation;
+use App\Http\Middleware\JwtMiddleware;
 use App\Exceptions\UnauthorizedException;
-use App\Models\UserHasRole;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckAccessMiddleware
 {
-    use UserTransformation;
-    use TeamTransformation;
-
     /**
      * Handle an incoming request.
      *
@@ -26,12 +18,11 @@ class CheckAccessMiddleware
     public function handle(Request $request, Closure $next, string $type='permissions|roles', string $data=''): Response
     {
         $input = $request->all();
-        $userId = $input['jwt_user']['id'];
+        $jwtUserIsAdminId = $input['jwt_user']['is_admin'];
         $access = explode("|", $data);
         $teamId = $request->route('teamId');
 
-        $user = User::where('id', $userId)->first();
-        if ($user->is_admin) {
+        if ($jwtUserIsAdminId) {
             return $next($request);
         }
 
@@ -39,17 +30,16 @@ class CheckAccessMiddleware
             throw new UnauthorizedException();
         }
 
+        $currentUserRoles= [];
+        $currentUserPermissions = [];
         if ($teamId) {
-            $currentUserRoles = $this->getRoles($teamId, $userId);
+            $currentUserRoles = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['roles'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['roles']));
+            $currentUserPermissions = array_unique(array_merge($input['jwt_user']['role_perms']['extra']['perms'], $input['jwt_user']['role_perms']['teams'][(string) $teamId]['perms']));
         } else {
-            $currentUserRoles = $this->getRolesNoTeamId($userId);
+            $currentUserRoles = $input['jwt_user']['role_perms']['summary']['roles'];
+            $currentUserPermissions = $input['jwt_user']['role_perms']['summary']['perms'];
         }
-        
-        // roles assigned to the current user who are not related to the team
-        $currentUserRolesHdr = $this->getAllRolesFromUser($userId);
 
-        $currentUserRoles = array_unique(array_merge($currentUserRoles, $currentUserRolesHdr));
-        
         if ($type === 'roles') {
             $checkingRoles = array_diff($access, $currentUserRoles);
             if (!empty($checkingRoles)) {
@@ -58,8 +48,6 @@ class CheckAccessMiddleware
         }
 
         if ($type === 'permissions') {
-            $currentUserPermissions = $this->getAllPermissions($currentUserRoles);
-
             $checkingPermissions = array_diff($access, $currentUserPermissions);
 
             if (!empty($checkingPermissions)) {
@@ -68,75 +56,5 @@ class CheckAccessMiddleware
         }
 
         return $next($request);
-    }
-
-    public function getAllRolesFromUser(int $userId)
-    {
-        $return = [];
-        
-        $userRoles = UserHasRole::where(['user_id' => $userId])->get();
-
-        foreach ($userRoles as $ur) {
-            $role = Role::where([
-                'id' => $ur->role_id,
-                ])->first();
-            if ($role) {
-                $return[] = $role["name"];
-            }
-        }
-        
-        return $return;
-    }
-
-    public function getRolesNoTeamId(int $userId)
-    {
-        $return = [];
-
-        $userTeams = User::where('id', $userId)->with(['roles', 'teams', 'notifications'])->get()->toArray();
-        $teams = $this->getUsers($userTeams);
-
-        foreach ($teams['teams'] as $team) {
-            foreach ($team['roles'] as $role) {
-                $return[] = $role['name'];
-            }
-        }
-        return array_unique($return);
-    }
-
-    public function getRoles(int $teamId, int $userId)
-    {
-        $return = [];
-
-        $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
-        $teams = $this->getTeams($userTeam);
-
-        foreach ($teams['users'] as $user) {
-            if ($user['id'] === $userId) {
-                foreach ($user['roles'] as $role) {
-                    $return[] = $role['name'];
-                }
-            }
-        }
-
-        return array_unique($return);
-    }
-
-    public function getAllPermissions(array $roles)
-    {
-        $return = [];
-
-        $rolePermissions = Role::with(['permissions'])->get()->toArray();
-
-        foreach ($roles as $role) {
-            foreach ($rolePermissions as $rolePermission) {
-                if ($rolePermission['name'] === $role) {
-                    foreach ($rolePermission['permissions'] as $permissions) {
-                        $return[] = $permissions['name'];
-                    }
-                }
-            }
-        }
-
-        return array_unique($return);
     }
 }
