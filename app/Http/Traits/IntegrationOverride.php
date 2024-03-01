@@ -3,6 +3,9 @@
 namespace App\Http\Traits;
 
 use App\Models\Application;
+use Illuminate\Http\Request;
+
+use App\Exceptions\UnauthorizedException;
 
 trait IntegrationOverride
 {
@@ -60,5 +63,14 @@ trait IntegrationOverride
         }
 
         return [];
+    }
+    private function checkAppCanHandleDataset(int $datasetTeamId, Request $request): void 
+    {
+        $teamId = null;
+        $this->overrideTeamId($teamId, $request->headers->all());
+
+        if ($datasetTeamId != $teamId){
+            throw new UnauthorizedException("This Application is not allowed to interact with datasets from another team!");
+        }
     }
 }

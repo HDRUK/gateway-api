@@ -16,6 +16,7 @@ class FilterSeeder extends Seeder
         $this->seed_dataset_filters();
         $this->seed_datauses_filters();
         $this->seed_tools_filters();
+        $this->seed_collection_filters();
     }
 
     public function seed_dataset_filters(): void
@@ -57,6 +58,16 @@ class FilterSeeder extends Seeder
         ];
 
         $this->seed_filter("tool",$filters);
+    }
+
+
+    public function seed_collection_filters(): void
+    {
+        $filters = [
+            'publisherName'
+        ];
+
+        $this->seed_filter("collection",$filters);
     }
 
     public function seed_filter(string $type, array $filters): void
