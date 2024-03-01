@@ -15,12 +15,12 @@ trait UserRolePermissions
     private function getUserRolePerms(int $userId, int $teamId = null): array
     {
         $return = [];
-        // extra - user roles outside team
+        // extra - user roles/perms outside team
         $extraRoles = $this->getUserRolesNoTeam($userId);
         $return['extra']['roles'] = $extraRoles;
         $return['extra']['perms'] = $this->getPermsFromRoles($extraRoles);
 
-        // extra - user roles by team
+        // teams - user roles/perms by team
         $roleWithTeams = $this->getUserRolesWithTeams($userId);
 
         if ($teamId) {
@@ -33,7 +33,7 @@ trait UserRolePermissions
             }
         }
 
-        // summary
+        // summary - user roles/perms
         $roles = $return['extra']['roles'];
         $perms = $this->getPermsFromRoles($return['extra']['roles']);
         foreach ($roleWithTeams as $team => $roleWithTeam) {
