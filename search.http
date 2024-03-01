@@ -7,7 +7,16 @@
 @baseUrl = http://localhost:8003
 
 ### Swagger
-GET {{baseUrl}}/search HTTP/1.1
+POST {{baseUrl}}/search HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+
+{
+    "query": "asthma icd10"
+}
+
+###
+POST {{baseUrl}}/search/datasets HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 

@@ -9,6 +9,7 @@ use App\Models\Tool;
 
 use App\Models\Dataset;
 use App\Models\Collection;
+use App\Models\Filter;
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
 
@@ -40,7 +41,12 @@ class SearchController extends Controller
      *                   "publisherName": {
      *                      "BREATHE",
      *                      "HDRUK"
-     *                   }
+     *                   },
+     *                  "populationSize": {
+     *                      "includeUnreported": true,
+     *                      "from": 100,
+     *                      "to": 1000
+     *                  }
      *               }
      *           }
      *       }
@@ -124,8 +130,10 @@ class SearchController extends Controller
             $urlString = env('SEARCH_SERVICE_URL') . '/search/datasets';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
+            $aggs = Filter::where('type', 'dataset')->get()->toArray();
+            $input['aggs'] = $aggs;
 
-            $response = Http::post($urlString,$input);
+            $response = Http::post($urlString, $input);
 
             $datasetsArray = $response['hits']['hits'];
             $matchedIds = [];
@@ -150,11 +158,11 @@ class SearchController extends Controller
             }
 
             if ($download && $downloadType === "list") {
-                return Excel::download(new DatasetListExport($datasetsArray), 'datasets.xlsx');
+                return Excel::download(new DatasetListExport($datasetsArray), 'datasets.csv');
             }
 
             if ($download && $downloadType === "table") {
-                return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.xlsx');
+                return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
             }
 
             $datasetsArraySorted = $this->sortSearchResult($datasetsArray, $sortField, $sortDirection);
@@ -619,7 +627,7 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $durModels = Dur::whereIn('id', $matchedIds)->get();
+            $durModels = Dur::whereIn('id', $matchedIds)->with('datasets')->get();
 
             foreach ($durArray as $i => $dur) {
                 if (!in_array($dur['_id'], $matchedIds)) {
@@ -629,16 +637,18 @@ class SearchController extends Controller
                 foreach ($durModels as $model){
                     if ((int) $dur['_id'] === $model['id']) {
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $durArray[$i]['projectTitle'] = $model['project_title'];
                         $durArray[$i]['organisationName'] = $model['organisation_name'];
-                        $durArray[$i]['team'] = $model['team']; 
+                        $durArray[$i]['team'] = $model['team'];
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
+                        $durArray[$i]['datasetTitles'] = $this->durDatasetTitles($model);
                         break;
                     }
                 }
             }
 
             if ($download) {
-                return Excel::download(new DataUseExport($durArray), 'dur.xlsx');
+                return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
 
             $durArraySorted = $this->sortSearchResult($durArray, $sortField, $sortDirection);
@@ -655,6 +665,27 @@ class SearchController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * Find dataset titles associated with a given Dur model instance.
+     * Returns an array of titles.
+     * 
+     * @param Dur $durMatch The Dur model the find dataset titles for
+     * 
+     * @return array
+     */
+    private function durDatasetTitles(Dur $durMatch): array
+    {
+        $datasetTitles = array();
+        foreach ($durMatch['datasets'] as $d) {
+            $metadata = Dataset::where(['id' => $d['id']])
+                ->first()
+                ->latestVersion()
+                ->metadata;
+            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+        }
+        return $datasetTitles;
     }
 
     /**

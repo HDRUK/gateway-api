@@ -106,7 +106,7 @@ trait MockExternalApis
 
         // Mock the search service - datasets
         Http::fake([
-            'search-service*datasets*' => Http::response(
+            '*/search/datasets*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -128,7 +128,8 @@ trait MockExternalApis
                                     'publisherName' => '',
                                     'shortTitle' => 'Asthma dataset',
                                     'title' => 'Asthma dataset',
-                                    'dataUseTitles' => []
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -150,7 +151,8 @@ trait MockExternalApis
                                     'publisherName' => '',
                                     'shortTitle' => 'Another asthma dataset',
                                     'title' => 'Another asthma dataset',
-                                    'dataUseTitles' => []
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -172,7 +174,104 @@ trait MockExternalApis
                                     'publisherName' => '',
                                     'shortTitle' => 'Third asthma dataset',
                                     'title' => 'Third asthma dataset',
-                                    'dataUseTitles' => []
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ]
+                        ]
+                    ],
+                    'aggregations' => [
+                        'publisherName' => [
+                            'buckets' => [
+                                0 => [
+                                    'doc_count' => 10,
+                                    'key' => 'A PUBLISHER'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
+        // Mock the search service - similar datasets
+        Http::fake([
+            '*/similar/datasets*' => Http::response(
+                [
+                    'took' => 1000,
+                    'timed_out' => false,
+                    '_shards' => [],
+                    'hits' => [
+                        'hits' => [
+                            0 => [
+                                '_explanation' => [],
+                                '_id' => '1',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 20.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Asthma dataset',
+                                    'title' => 'Asthma dataset',
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            1 => [
+                                '_explanation' => [],
+                                '_id' => '2',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 18.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Another asthma dataset',
+                                    'title' => 'Another asthma dataset',
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            2 => [
+                                '_explanation' => [],
+                                '_id' => '3',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Third asthma dataset',
+                                    'title' => 'Third asthma dataset',
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -199,7 +298,7 @@ trait MockExternalApis
 
         // Mock the search service - tools
         Http::fake([
-            'search-service*tools*' => Http::response(
+            '*/search/tools*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -280,7 +379,7 @@ trait MockExternalApis
 
         // Mock the search service - collections
         Http::fake([
-            'search-service*collections*' => Http::response(
+            '*/search/collections*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -367,7 +466,7 @@ trait MockExternalApis
         
         // Mock the search service - data uses
         Http::fake([
-            'search-service*dur*' => Http::response(
+            '*/search/dur*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -397,10 +496,10 @@ trait MockExternalApis
                             1 => [
                                 '_explanation' => [],
                                 '_id' => '2',
-                                '_index' => 'collections',
+                                '_index' => 'data_uses',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 18.0,
-                                '_shard' => '[collections][0]',
+                                '_shard' => '[data_uses][0]',
                                 '_source' => [
                                     'projectTitle' => 'Another Data Use',
                                     'laySummary' => 'a gateway data use',
@@ -417,10 +516,10 @@ trait MockExternalApis
                             2 => [
                                 '_explanation' => [],
                                 '_id' => '3',
-                                '_index' => 'collections',
+                                '_index' => 'data_uses',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 16.0,
-                                '_shard' => '[collections][0]',
+                                '_shard' => '[data_uses][0]',
                                 '_source' => [
                                     'projectTitle' => 'Third Data Use',
                                     'laySummary' => 'a gateway data use',
@@ -445,7 +544,7 @@ trait MockExternalApis
 
         // Mock the search service - filters
         Http::fake([
-            'search-service*filters*' => Http::response(
+            '*/search/filters*' => Http::response(
                 [
                     'filters' => [
                         0 => [
