@@ -60,7 +60,7 @@ trait UserRolePermissions
     private function getUserIsAdmin(int $userId): bool
     {
         $user = User::where('id', $userId)->first();
-        return (bool) $user->is_Admin;
+        return (bool) $user->is_admin;
     }
 
     private function getUserRolesNoTeam(int $userId): array
