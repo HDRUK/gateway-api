@@ -128,7 +128,8 @@ trait MockExternalApis
                                     'publisherName' => '',
                                     'shortTitle' => 'Asthma dataset',
                                     'title' => 'Asthma dataset',
-                                    'dataUseTitles' => []
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -150,7 +151,8 @@ trait MockExternalApis
                                     'publisherName' => '',
                                     'shortTitle' => 'Another asthma dataset',
                                     'title' => 'Another asthma dataset',
-                                    'dataUseTitles' => []
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -172,7 +174,104 @@ trait MockExternalApis
                                     'publisherName' => '',
                                     'shortTitle' => 'Third asthma dataset',
                                     'title' => 'Third asthma dataset',
-                                    'dataUseTitles' => []
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ]
+                        ]
+                    ],
+                    'aggregations' => [
+                        'publisherName' => [
+                            'buckets' => [
+                                0 => [
+                                    'doc_count' => 10,
+                                    'key' => 'A PUBLISHER'
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
+        // Mock the search service - similar datasets
+        Http::fake([
+            '*/similar/datasets*' => Http::response(
+                [
+                    'took' => 1000,
+                    'timed_out' => false,
+                    '_shards' => [],
+                    'hits' => [
+                        'hits' => [
+                            0 => [
+                                '_explanation' => [],
+                                '_id' => '1',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 20.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Asthma dataset',
+                                    'title' => 'Asthma dataset',
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            1 => [
+                                '_explanation' => [],
+                                '_id' => '2',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 18.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Another asthma dataset',
+                                    'title' => 'Another asthma dataset',
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            2 => [
+                                '_explanation' => [],
+                                '_id' => '3',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Third asthma dataset',
+                                    'title' => 'Third asthma dataset',
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
