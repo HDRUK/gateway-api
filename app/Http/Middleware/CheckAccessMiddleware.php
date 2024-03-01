@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Http\Middleware\JwtMiddleware;
 use App\Exceptions\UnauthorizedException;
 use Symfony\Component\HttpFoundation\Response;
 
