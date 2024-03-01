@@ -82,6 +82,11 @@ class Dataset extends Model
         return $this->hasMany(DatasetVersion::class, 'dataset_id');
     }
 
+    public function latestVersion(): HasOne
+    {
+        return $this->hasOne(DatasetVersion::class, 'dataset_id')->latest();
+    }
+
     /**
      * The collections that the dataset belongs to.
      */
@@ -112,14 +117,21 @@ class Dataset extends Model
             ->latest('version')->select('metadata')->first();
     }
 
+    public function getMetadataVersion(int $versionNumber): DatasetVersion
+    {
+         return DatasetVersion::where('dataset_id', $this->id)
+                ->where('version',$versionNumber)
+                ->select('metadata')->first();
+    }
+
     /**
      * The very latest version of a DatasetVersion object that corresponds to this dataset.
      */
-    public function latestVersion(): DatasetVersion
+    /*public function latestVersion(): DatasetVersion
     {
         return DatasetVersion::where('dataset_id', $this->id)
             ->latest('version')->first();
-    }
+    }*/
 
     /**
      * The very latest version number that corresponds to this dataset.

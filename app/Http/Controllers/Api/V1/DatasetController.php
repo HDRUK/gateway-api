@@ -200,7 +200,7 @@ class DatasetController extends Controller
 
         // perform query for the matching datasets with ordering and pagination. 
         // Include soft-deleted versions.
-        $datasets = Dataset::with(['versions' => fn($version) => $version->withTrashed()->latest()])
+        $datasets = Dataset::with('latestVersion') 
             ->whereIn('id', $matches)
             ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                 function ($query) {
@@ -210,11 +210,130 @@ class DatasetController extends Controller
                 fn($query) => $query->orderByMetadata($sortField, $sortDirection),
                 fn($query) => $query->orderBy($sortField, $sortDirection)
             )
+            ->with(['versions' => function ($query) {
+                $query->latest()->take(1);
+            }])
             ->paginate($perPage, ['*'], 'page');
+
 
         return response()->json(
             $datasets
         );
+    }
+
+    public function updateMetadataLinkages(Request $request, string $pid): JsonResponse
+    {
+        $dataset =  Dataset::where("pid",$pid)->first();
+        $metadata = null;
+        $version = $request->query("version",null);
+        if($version){
+            $metadata = $dataset->getMetadataVersion((int)$version);
+        }
+        else{
+            $metadata = $dataset->latestMetadata();
+        }
+        $metadata = $metadata->metadata['metadata'];
+        $updatedLinkage = $request->all();
+        $updatedMetadata = $metadata;
+        $updatedMetadata['linkage'] = $updatedLinkage;
+
+        $updateRequest = new UpdateDataset();
+        $updateRequest->merge(
+            [
+                "metadata"=>["metadata"=>$updatedMetadata],
+                "team_id"=>$dataset->team_id,
+                "user_id"=>$dataset->user_id,
+                "create_origin"=>$dataset->create_origin,
+                "status"=>$dataset->status
+            ]
+        );
+        return $this->update($updateRequest,$dataset->id);
+    }
+
+
+    public function teamDatasetIds(Request $request, int $id): JsonResponse
+    {
+        $datasets = Dataset::where("team_id",$id)
+            ->pluck("pid");
+
+        return response()->json(["data"=>$datasets]);
+    }
+
+    public function getAllDatasetPids(Request $request): JsonResponse
+    {
+        $pids= Dataset::pluck("pid");
+        return response()->json(["data"=>$pids]);
+    }
+
+    public function getAllDatasetLinkages(Request $request): JsonResponse
+    {
+        $version = $request->query("version",null);
+
+        $whereCommand =  "WHERE (dataset_id, version) IN (
+                SELECT dataset_id, MAX(version) AS max_version
+                FROM dataset_versions
+                GROUP BY dataset_id
+            )";
+        if($version){
+            $whereCommand = "WHERE version=".$version;
+        }
+
+        $latestVersions = \DB::select("
+            SELECT (SELECT pid FROM datasets WHERE id = dataset_versions.dataset_id) AS pid, 
+                    JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.linkage') AS linkages,
+                    JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title') AS title
+            FROM dataset_versions
+        ".$whereCommand);
+        $data = [];
+        foreach ($latestVersions as $version) {
+            $linkages = json_decode($version->linkages);
+            if ($linkages !== null) {
+                $data[] = [
+                    "linkages" => $linkages,
+                    "pid" => $version->pid,
+                    "title" => json_decode($version->title)
+                ];
+            }
+        }
+
+        return response()->json(["data"=>$data]);
+    }
+
+    public function getAllDatasetTitles(Request $request): JsonResponse
+    {
+        $data = $this->getAllDatasetMetadata("summary.title");
+        return response()->json(["data"=>$data]);
+    }
+
+    private function getAllDatasetMetadata(string $path)
+    {
+        $latestVersions = \DB::select("
+            SELECT (SELECT pid FROM datasets WHERE id = dataset_versions.dataset_id) AS pid, 
+                    JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.".$path."') AS value
+            FROM dataset_versions
+            WHERE (dataset_id, version) IN (
+                SELECT dataset_id, MAX(version) AS max_version
+                FROM dataset_versions
+                GROUP BY dataset_id
+            )
+        ");
+        $data = [];
+        foreach ($latestVersions as $version) {
+            $value = json_decode($version->value);
+            if ($value !== null) {
+                $data[] = [
+                    "value" => $value,
+                    "pid" => $version->pid,
+                ];
+            }
+        }
+        return $data;
+    }
+
+    public function metadataByPid(Request $request, string $pid): JsonResponse
+    {
+        $metadata = Dataset::where("pid",$pid)->first()->latestMetadata();
+        return response()->json(["data"=>$metadata->metadata]);
     }
 
 
@@ -568,10 +687,10 @@ class DatasetController extends Controller
                 $this->mapCoverage($input['metadata'], $dataset);
 
                 // Dispatch term extraction to a subprocess as it may take some time
-                TermExtraction::dispatch(
-                    $dataset->id,
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
-                );
+                //TermExtraction::dispatch(
+                //    $dataset->id,
+               //     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
+                //);
 
                 return response()->json([
                     'message' => 'created',
