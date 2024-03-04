@@ -103,7 +103,6 @@ class FederationTest extends TestCase
             ],
             $this->header,
         );
-
         $responseFederation->assertStatus(201)
             ->assertJsonStructure([
                 'message',
@@ -123,7 +122,7 @@ class FederationTest extends TestCase
                     'id',
                     'federation_type',
                     'auth_type',
-                    'auth_secret_key',
+                    'auth_secret_key_location',
                     'endpoint_baseurl',
                     'endpoint_datasets',
                     'endpoint_dataset',
@@ -231,7 +230,7 @@ class FederationTest extends TestCase
             [
                 'federation_type' => 'federation type',
                 'auth_type' => 'BEARER',
-                'auth_secret_key' => 'secret/key/path',
+                'auth_secret_key' => 'secret-abc',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
@@ -264,7 +263,7 @@ class FederationTest extends TestCase
                 'id',
                 'federation_type',
                 'auth_type',
-                'auth_secret_key',
+                'auth_secret_key_location',
                 'endpoint_baseurl',
                 'endpoint_datasets',
                 'endpoint_dataset',
@@ -393,7 +392,7 @@ class FederationTest extends TestCase
                 'id',
                 'federation_type',
                 'auth_type',
-                'auth_secret_key',
+                'auth_secret_key_location',
                 'endpoint_baseurl',
                 'endpoint_datasets',
                 'endpoint_dataset',
@@ -541,7 +540,7 @@ class FederationTest extends TestCase
                 'id',
                 'federation_type',
                 'auth_type',
-                'auth_secret_key',
+                'auth_secret_key_location',
                 'endpoint_baseurl',
                 'endpoint_datasets',
                 'endpoint_dataset',
@@ -737,7 +736,7 @@ class FederationTest extends TestCase
                 'id',
                 'federation_type',
                 'auth_type',
-                'auth_secret_key',
+                'auth_secret_key_location',
                 'endpoint_baseurl',
                 'endpoint_datasets',
                 'endpoint_dataset',
@@ -866,8 +865,6 @@ class FederationTest extends TestCase
         $this->assertCount(2, $federationNotification, 'Response was successfully');
 
         $federations = Federation::where('id', $federationId)->first();
-
-        $this->assertTrue($federations->auth_secret_key === 'secret/key/path/test/update');
 
         // delete team
         $responseDeleteTeam = $this->json(
@@ -984,7 +981,7 @@ class FederationTest extends TestCase
                 'id',
                 'federation_type',
                 'auth_type',
-                'auth_secret_key',
+                'auth_secret_key_location',
                 'endpoint_baseurl',
                 'endpoint_datasets',
                 'endpoint_dataset',
@@ -1086,7 +1083,6 @@ class FederationTest extends TestCase
             ],
             $this->header,
         );
-
         $responseEditFederation->assertStatus(200)
             ->assertJsonStructure([
                 'message',
@@ -1114,7 +1110,6 @@ class FederationTest extends TestCase
 
         $federations = Federation::where('id', $federationId)->first();
 
-        $this->assertTrue($federations->auth_secret_key === 'secret/key/path/test/update');
         $this->assertTrue($federations->endpoint_baseurl === 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app/update');
 
         // delete

@@ -614,6 +614,16 @@ trait MockExternalApis
             )
         ]);
 
+         Http::fake([
+            env('FMA_SERVICE_URL').'*' => Http::response(
+                ['message'=>'success'], 
+                200,
+                ['application/json']
+            )
+        ]);
+
+
+
     }
 
     // Count requests made to the elastic mock client

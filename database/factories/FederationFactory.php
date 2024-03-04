@@ -20,6 +20,7 @@ class FederationFactory extends Factory
         return [
             'federation_type' => fake()->lexify('federation-type-????????'),
             'auth_type' => fake()->randomElement(['API_KEY', 'BEARER', 'NO_AUTH']),
+            'auth_secret_key_location' => null,
             'endpoint_baseurl' => fake()->url(),
             'endpoint_datasets' => '/' . $slug,
             'endpoint_dataset' => '/' . $slug . '/{id}',

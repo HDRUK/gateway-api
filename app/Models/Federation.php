@@ -60,9 +60,14 @@ class Federation extends Model
      */
     private $name = '';
 
+    private $pid = '';
+
+    private $auth_secret_key_location = '';
+
     protected $fillable = [
         'federation_type',
         'auth_type',
+        'auth_secret_key_location',
         'endpoint_baseurl',
         'endpoint_datasets',
         'endpoint_dataset',
