@@ -21,12 +21,18 @@ trait UserRolePermissions
         }
 
         $currentUserPermissions = array_unique(array_merge($rolePerms['extra']['perms'], $rolePerms['teams'][(string) $teamId]['perms']));
-        foreach ($checkPermissions as $key => $roles) {
+        foreach ($checkPermissions as $perm => $roles) {
             foreach ($roles as $role) {
-                if (in_array($role, $payloadRoles) && !in_array($key, $currentUserPermissions)) {
+                if (in_array($role, $payloadRoles) && !in_array($perm, $currentUserPermissions)) {
                     throw new UnauthorizedException('Not Enough Permissions.');
                 }
+
+                $payloadRoles = array_filter($payloadRoles, fn ($m) => $m != $role);
             }
+        }
+
+        if (count($payloadRoles)) {
+            throw new UnauthorizedException('Not Enough Permissions.');
         }
     }
 
