@@ -18,7 +18,6 @@ class FederationDemo extends Seeder
             1 => [
                 'federation_type' => 'dataset',
                 'auth_type' => 'BEARER',
-                'auth_secret_key' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/auth/datasets',
                 'endpoint_dataset' => '/api/v1/auth/datasets/{id}',
@@ -30,7 +29,6 @@ class FederationDemo extends Seeder
             2 => [
                 'federation_type' => 'dataset',
                 'auth_type' => 'API_KEY',
-                'auth_secret_key' => 'YGd50xWiaho6Aopx-Ti9eSCu2tByr7plSgUrNs87ikk',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/apilkey/datasets',
                 'endpoint_dataset' => '/api/v1/apilkey/datasets/{id}',
@@ -42,7 +40,6 @@ class FederationDemo extends Seeder
             3 => [
                 'federation_type' => 'dataset',
                 'auth_type' => 'NO_AUTH',
-                'auth_secret_key' => '',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
                 'endpoint_datasets' => '/api/v1/noauth/datasets',
                 'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',

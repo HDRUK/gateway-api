@@ -19,13 +19,12 @@ class FederationFactory extends Factory
         $slug = fake()->slug();
         return [
             'federation_type' => fake()->lexify('federation-type-????????'),
-            'auth_type' => fake()->randomElement(['api_key', 'bearer', 'no_auth']),
-            'auth_secret_key' => fake()->unique()->words(2, true),
+            'auth_type' => fake()->randomElement(['API_KEY', 'BEARER', 'NO_AUTH']),
             'endpoint_baseurl' => fake()->url(),
             'endpoint_datasets' => '/' . $slug,
             'endpoint_dataset' => '/' . $slug . '/{id}',
             'run_time_hour' => fake()->numberBetween(0,23),
-            'enabled' => fake()->randomElement([0, 1]),
+            'enabled' => 0,
             'tested' => fake()->randomElement([0, 1]),
         ];
     }

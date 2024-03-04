@@ -17,6 +17,7 @@ use App\Http\Requests\Federation\CreateFederation;
 use App\Http\Requests\Federation\DeleteFederation;
 use App\Http\Requests\Federation\GetAllFederation;
 use App\Http\Requests\Federation\UpdateFederation;
+use Illuminate\Support\Str;
 
 use Illuminate\Support\Facades\Http;
 
@@ -236,18 +237,57 @@ class FederationController extends Controller
         try {
             $input = $request->all();
 
-            $federation = Federation::create([
+            $path = env('GOOGLE_APPLICATION_PROJECT_PATH');
+            $payload = [
                 'federation_type' => $input['federation_type'],
                 'auth_type' => $input['auth_type'],
-                'auth_secret_key' => ($input['auth_type'] !== 'NO_AUTH' ? $input['auth_secret_key'] : ''),
                 'endpoint_baseurl' => $input['endpoint_baseurl'],
                 'endpoint_datasets' => $input['endpoint_datasets'],
                 'endpoint_dataset' => $input['endpoint_dataset'],
                 'run_time_hour' => $input['run_time_hour'],
                 'enabled' => $input['enabled'],
-                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0,
-            ]);
+                'tested' => array_key_exists('tested', $input) ? $input['tested'] : 0
+            ];
 
+            $federation = Federation::create($payload);
+
+            $secrets_payload = [];
+            $secret_key = $input['auth_secret_key'];
+            switch ($input['auth_type']) {
+                case "BEARER":
+                    $secrets_payload = [
+                        "bearer_token" => $secret_key
+                    ];
+                    break;  
+                case "API_KEY":
+                    $secrets_payload = [
+                        "api_key" => $secret_key,
+                        "client_id" => "", //something needs to happen here??
+                        "client_secret" => "" //something needs to happen here??
+                    ];
+                    break;
+                 case "NO_AUTH":
+                    $secrets_payload = null;
+                    break;
+            }
+
+            if($secrets_payload){
+                $payload = [
+                    "path" => $path,
+                    "secret_id" => Config::get('fma.secrets.prependname') . (string)$federation->pid,
+                    "payload" => json_encode($secrets_payload)
+                ];
+                $response = Http::post(env('FMA_SERVICE_URL') . '/federation', $payload);
+                
+                if (!$response->successful()) {
+                    Federation::where('id', $federation->id)->delete();
+                    return response()->json([
+                        'message' => 'failed to save secrets for this federation',
+                        'details' => $response->json(),
+                    ], 400);
+                }
+            }
+                      
             TeamHasFederation::create([
                 'federation_id' => $federation->id,
                 'team_id' => $teamId,
@@ -358,7 +398,7 @@ class FederationController extends Controller
             Federation::where('id', $federationId)->update([
                 'federation_type' => $input['federation_type'],
                 'auth_type' => $input['auth_type'],
-                'auth_secret_key' => ($input['auth_type'] !== 'NO_AUTH' ? $input['auth_secret_key'] : ''),
+                //'auth_secret_key' => ($input['auth_type'] !== 'NO_AUTH' ? $input['auth_secret_key'] : ''),
                 'endpoint_baseurl' => $input['endpoint_baseurl'],
                 'endpoint_datasets' => $input['endpoint_datasets'],
                 'endpoint_dataset' => $input['endpoint_dataset'],

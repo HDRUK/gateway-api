@@ -9,10 +9,21 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 class Federation extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        //create a pid for this team
+        static::creating(function ($model) {
+            $model->pid = (string) Str::uuid();
+        });
+    }
 
     /**
      * Table associated with this model
@@ -52,7 +63,6 @@ class Federation extends Model
     protected $fillable = [
         'federation_type',
         'auth_type',
-        'auth_secret_key',
         'endpoint_baseurl',
         'endpoint_datasets',
         'endpoint_dataset',
