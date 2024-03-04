@@ -29,19 +29,12 @@ class TeamUserController extends Controller
     use UserRolePermissions;
     
     private const ROLE_CUSTODIAN_TEAM_ADMIN = 'custodian.team.admin';
-    private const CHECK_PERMISSIONS_IN_CREATE = [
+    private const ASSIGN_PERMISSIONS_IN_TEAM = [
         'roles.dev.update' => ['developer'],
-        'roles.mdm.update' => ['hdruk.dar', 'custodian.metadata.manager'],
-        'roles.mde.update' => ['hdruk.dar', 'custodian.metadata.manager', 'metadata.editor'],
-        'roles.dar-m.update' => ['custodian.dar.manager'],
-        'roles.dar-r.update' => ['custodian.dar.manager', 'dar.reviewer']
-    ];
-    private const CHECK_PERMISSIONS_IN_UPDATE = [
-        'roles.dev.update' => ['developer'],
-        'roles.mdm.update' => ['custodian.metadata.manager'],
-        'roles.mde.update' => ['custodian.metadata.manager', 'metadata.editor'],
-        'roles.dar-m.update' => ['custodian.dar.manager'],
-        'roles.dar-r.update' => ['custodian.dar.manager', 'dar.reviewer'],
+        'roles.mdm.update' => ['hdruk.dar', 'custodian.metadata.manager', 'metadata.manager'],
+        'roles.mde.update' => ['hdruk.dar', 'custodian.metadata.manager', 'metadata.manager', 'metadata.editor'],
+        'roles.dar-m.update' => ['custodian.dar.manager', 'dar.manager'],
+        'roles.dar-r.update' => ['custodian.dar.manager', 'dar.manager', 'dar.reviewer']
     ];
 
     public function __construct()
@@ -129,7 +122,7 @@ class TeamUserController extends Controller
             $jwtUserRolePerms = $jwtUser['role_perms'];
 
             if (!$jwtUserIsAdmin) {
-                $this->checkUserPermissions($input['roles'], $jwtUserRolePerms, $teamId, self::CHECK_PERMISSIONS_IN_CREATE);
+                $this->checkUserPermissions($input['roles'], $jwtUserRolePerms, $teamId, self::ASSIGN_PERMISSIONS_IN_TEAM);
             }
 
             $userId = $input['userId'];
@@ -241,7 +234,7 @@ class TeamUserController extends Controller
             $jwtUserRolePerms = $jwtUser['role_perms'];
 
             if (!$jwtUserIsAdmin) {
-                $this->checkUserPermissions($input['roles'], $jwtUserRolePerms, $teamId, self::CHECK_PERMISSIONS_IN_UPDATE);
+                $this->checkUserPermissions($input['roles'], $jwtUserRolePerms, $teamId, self::ASSIGN_PERMISSIONS_IN_TEAM);
             }
 
             $res = $this->teamUserRoles($teamId, $userId, $input, $jwtUser);
@@ -356,7 +349,7 @@ class TeamUserController extends Controller
                     $roles = array_unique(array_merge($roles, $user['roles']));
                 }
 
-                $this->checkUserPermissions($roles, $jwtUserRolePerms, $teamId, self::CHECK_PERMISSIONS_IN_UPDATE);
+                $this->checkUserPermissions($roles, $jwtUserRolePerms, $teamId, self::ASSIGN_PERMISSIONS_IN_TEAM);
             }
 
             $response = [];
@@ -635,7 +628,7 @@ class TeamUserController extends Controller
         try {
             $assignRemove = $action ? 'assign' : 'remove';
             $role = $role . '.' . $assignRemove;
-            $template = EmailTemplate::where('identifier', '=', $role)->first();
+            $template = EmailTemplate::where('identifier', 'like', '%' . $role . '%')->first();
             $user = User::where('id', '=', $userId)->first();
             $team = Team::where('id', '=', $teamId)->first();
 

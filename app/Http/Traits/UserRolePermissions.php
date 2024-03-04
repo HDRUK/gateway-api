@@ -102,14 +102,14 @@ trait UserRolePermissions
     {
         $return = [];
         $userTeams = TeamHasUser::where('user_id', $userId)->get();
-        
+
         if (!$userTeams) {
             return [];
         }
 
         foreach ($userTeams as $userTeam) {
             $teamId = $userTeam->team_id;
-            $userTeamRoleIds = TeamUserHasRole::where('team_has_user_id', $teamId)->pluck('role_id')->toArray();
+            $userTeamRoleIds = TeamUserHasRole::where('team_has_user_id', $userTeam->id)->pluck('role_id')->toArray();
             $roles = Role::whereIn('id', $userTeamRoleIds)->pluck('name')->toArray();
             $return[$teamId] = $roles;
         }
