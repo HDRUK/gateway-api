@@ -1841,6 +1841,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,team-members.create',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
@@ -1854,6 +1855,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,team-members.update',
         ],
         'constraint' => [
             'teamId' => '[0-9]+', 
@@ -1868,6 +1870,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,team-members.update',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',
@@ -1881,6 +1884,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
+            'check.access:permissions,team-members.delete',
         ],
         'constraint' => [
             'teamId' => '[0-9]+',

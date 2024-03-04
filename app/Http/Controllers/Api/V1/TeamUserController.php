@@ -30,7 +30,6 @@ class TeamUserController extends Controller
     
     private const ROLE_CUSTODIAN_TEAM_ADMIN = 'custodian.team.admin';
     private const CHECK_PERMISSIONS_IN_CREATE = [
-        'team-members.create' => '*',
         'roles.cta.update' => 'custodian.team.admin',
         'roles.dev.update' => 'developer',
         'roles.mdm.update' => 'custodian.metadata.manager',
@@ -45,9 +44,6 @@ class TeamUserController extends Controller
         'roles.mde.update' => 'metadata.editor',
         'roles.dar-m.update' => 'custodian.dar.manager',
         'roles.dar-r.update' => 'dar.reviewer',
-    ];
-    private const CHECK_PERMISSIONS_IN_DELETE = [
-        'team-members.delete' => '*',
     ];
 
     public function __construct()
@@ -450,10 +446,6 @@ class TeamUserController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserIsAdmin = $jwtUser['is_admin'];
             $jwtUserRolePerms = $jwtUser['role_perms'];
-
-            if (!$jwtUserIsAdmin) {
-                $this->checkUserPermissions([],$jwtUserRolePerms, $teamId, self::CHECK_PERMISSIONS_IN_DELETE);
-            }
 
             if (!$this->checkIfAllowDeleteUserFromTeam($teamId, $userId)) {
                 throw new UnauthorizedException('You cannot remove last team admin role');

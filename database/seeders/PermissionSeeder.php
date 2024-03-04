@@ -69,6 +69,7 @@ class PermissionSeeder extends Seeder
                 'roles.dar-m.update',
                 'roles.dar-r.update',
                 'team-members.create',
+                'team-members.update',
                 'team-members.delete',
 
                 'custodians.create',
