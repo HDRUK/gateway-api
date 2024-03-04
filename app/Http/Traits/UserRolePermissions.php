@@ -16,7 +16,7 @@ trait UserRolePermissions
     private function checkUserPermissions($payloadRoles, array $rolePerms, $teamId, array $checkPermissions)
     {
         $currentUserRoles = array_unique(array_merge($rolePerms['extra']['roles'], $rolePerms['teams'][(string) $teamId]['roles']));
-        if (in_array('custodian.team.admin', $currentUserRoles) || in_array('hdruk.custodian', $current)) {
+        if (in_array('custodian.team.admin', $currentUserRoles) || in_array('hdruk.custodian', $currentUserRoles)) {
             return true;
         }
 
