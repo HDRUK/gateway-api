@@ -455,6 +455,10 @@ class TeamUserController extends Controller
                 $this->checkUserPermissions([],$jwtUserRolePerms, $teamId, self::CHECK_PERMISSIONS_IN_DELETE);
             }
 
+            if (!$this->checkIfAllowDeleteUserFromTeam($teamId, $userId)) {
+                throw new UnauthorizedException('You cannot remove last team admin role');
+            }
+
             $teamHasUsers = TeamHasUser::where([
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -480,6 +484,54 @@ class TeamUserController extends Controller
             return response()->json([
                 'message' => 'success',
             ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * check if the user is the last one with "custodian.team.admin" roles assigned
+     *
+     * @param integer $teamId
+     * @param integer $userId
+     * @return boolean
+     */
+    private function checkIfAllowDeleteUserFromTeam(int $teamId, int $userId): bool
+    {
+        try {
+            $role = Role::where('name', self::ROLE_CUSTODIAN_TEAM_ADMIN)->first();
+
+            $teamHasUsers = TeamHasUser::where([
+                'team_id' => $teamId,
+            ])->get();
+
+            $userIsTeamAdmin = false;
+            $countUserTeamAdmin = 0;
+            foreach ($teamHasUsers as $teamHasUser) {
+                $checkTeamAdminInTeam = TeamUserHasRole::where([
+                    'team_has_user_id' => $teamHasUser->id,
+                    'role_id' => $role->id,
+                ])->first();
+
+                if (!$checkTeamAdminInTeam) {
+                    continue;
+                }
+
+                if ($checkTeamAdminInTeam && $teamHasUser->user_id === $userId) {
+                    $userIsTeamAdmin = true;
+                    $countUserTeamAdmin = $countUserTeamAdmin + 1;
+                }
+
+                if ($checkTeamAdminInTeam && $teamHasUser->user_id !== $userId) {
+                    $countUserTeamAdmin = $countUserTeamAdmin + 1;
+                }
+            }
+
+            if ($userIsTeamAdmin && $countUserTeamAdmin === 1) {
+                return false;
+            }
+
+            return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
