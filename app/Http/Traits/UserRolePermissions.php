@@ -2,13 +2,14 @@
 
 namespace App\Http\Traits;
 
-use App\Models\Permission;
 use App\Models\Role;
-use App\Models\RoleHasPermission;
-use App\Models\TeamHasUser;
-use App\Models\TeamUserHasRole;
 use App\Models\User;
+use App\Models\Permission;
+use App\Models\TeamHasUser;
 use App\Models\UserHasRole;
+use App\Models\TeamUserHasRole;
+use App\Models\RoleHasPermission;
+use App\Exceptions\UnauthorizedException;
 
 trait UserRolePermissions
 {
