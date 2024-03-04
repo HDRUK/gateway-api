@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('linked_dataset', function (Blueprint $table) {
+        Schema::create('linked_datasets', function (Blueprint $table) {
             $table->bigIncrements('id'); // Optional if you want a primary key
 
             $table->unsignedBigInteger('dataset_1_id');
