@@ -49,7 +49,6 @@ class FederationSeeder extends Seeder
         $federation = Federation::create([
             'federation_type' => 'dataset',
             'auth_type' => 'api_key',
-            'auth_secret_key' => 'FMA_UAT_fma_test_team',
             'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
             'endpoint_datasets' => '/api/v1/datasets',
             'endpoint_dataset' => '/api/v1/datasets/{id}',
