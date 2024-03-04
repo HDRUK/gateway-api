@@ -30,19 +30,23 @@ class TeamUserController extends Controller
     
     private const ROLE_CUSTODIAN_TEAM_ADMIN = 'custodian.team.admin';
     private const CHECK_PERMISSIONS_IN_CREATE = [
-        'roles.cta.update' => 'custodian.team.admin',
         'roles.dev.update' => 'developer',
+        'roles.mdm.update' => 'hdruk.dar',
+        'roles.mde.update' => 'hdruk.dar',
         'roles.mdm.update' => 'custodian.metadata.manager',
+        'roles.mde.update' => 'custodian.metadata.manager',
         'roles.mde.update' => 'metadata.editor',
         'roles.dar-m.update' => 'custodian.dar.manager',
+        'roles.dar-r.update' => 'custodian.dar.manager',
         'roles.dar-r.update' => 'dar.reviewer',
     ];
     private const CHECK_PERMISSIONS_IN_UPDATE = [
-        'roles.cta.update' => 'custodian.team.admin',
         'roles.dev.update' => 'developer',
         'roles.mdm.update' => 'custodian.metadata.manager',
+        'roles.mde.update' => 'custodian.metadata.manager',
         'roles.mde.update' => 'metadata.editor',
         'roles.dar-m.update' => 'custodian.dar.manager',
+        'roles.dar-r.update' => 'custodian.dar.manager',
         'roles.dar-r.update' => 'dar.reviewer',
     ];
 

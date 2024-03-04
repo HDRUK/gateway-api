@@ -15,15 +15,15 @@ trait UserRolePermissions
 {
     private function checkUserPermissions($payloadRoles, array $rolePerms, $teamId, array $checkPermissions)
     {
+        $currentUserRoles = array_unique(array_merge($rolePerms['extra']['roles'], $rolePerms['teams'][(string) $teamId]['roles']));
+        if (in_array('custodian.team.admin', $currentUserRoles) || in_array('hdruk.custodian', $current)) {
+            return true;
+        }
+
         $currentUserPermissions = array_unique(array_merge($rolePerms['extra']['perms'], $rolePerms['teams'][(string) $teamId]['perms']));
-
         foreach ($checkPermissions as $key => $value) {
-            if ($value === '*') {
-                (!in_array($key, $currentUserPermissions)) ?: throw new UnauthorizedException('Not Enough Permissions.');
-            }
-
-            if ($value !== '*' && in_array($value, $payloadRoles)) {
-                (!in_array($key, $currentUserPermissions)) ?: throw new UnauthorizedException('Not Enough Permissions.');
+            if (in_array($value, $payloadRoles) && !in_array($key, $currentUserPermissions)) {
+                throw new UnauthorizedException('Not Enough Permissions.');
             }
         }
     }
