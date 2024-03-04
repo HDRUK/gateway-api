@@ -200,7 +200,7 @@ class DatasetController extends Controller
 
         // perform query for the matching datasets with ordering and pagination. 
         // Include soft-deleted versions.
-        $datasets = Dataset::with('latestVersion') 
+        $datasets = Dataset::with('latestMetadata') 
             ->whereIn('id', $matches)
             ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                 function ($query) {

@@ -256,13 +256,11 @@ class DatasetTest extends TestCase
         $responseCreateDataset3->assertStatus(201);
         $datasetId3 = $responseCreateDataset3['data'];
 
-
         $response = $this->json(
             'GET', self::TEST_URL_DATASET,
             [],
             $this->header
         );
-
         $response->assertStatus(200);
 
         $this->assertCount(3,$response['data']);
