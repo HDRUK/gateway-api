@@ -21,6 +21,7 @@ trait UserRolePermissions
         }
 
         $currentUserPermissions = array_unique(array_merge($rolePerms['extra']['perms'], $rolePerms['teams'][(string) $teamId]['perms']));
+
         foreach ($checkPermissions as $perm => $roles) {
             foreach ($roles as $role) {
                 if (in_array($role, $payloadRoles) && !in_array($perm, $currentUserPermissions)) {
@@ -32,7 +33,7 @@ trait UserRolePermissions
         }
 
         if (count($payloadRoles)) {
-            throw new UnauthorizedException('Not Enough Permissions.');
+            throw new UnauthorizedException('Not Enough Permissions2.');
         }
     }
 

@@ -6,7 +6,7 @@
 @apiVersion = v1
 @uFirstName = "John"
 @uLastName = "Doe"
-@uEmail = "gutkowski.ola@example.net"
+@uEmail = "teresa19@example.net"
 # @uEmail = "developers@hdruk.ac.uk"
 @uEmail2 = "john.for.doe.1234567890@example.com"
 @uPassword = "Watch26Task?"
