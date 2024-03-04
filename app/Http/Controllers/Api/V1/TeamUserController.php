@@ -30,25 +30,39 @@ class TeamUserController extends Controller
     
     private const ROLE_CUSTODIAN_TEAM_ADMIN = 'custodian.team.admin';
     private const CHECK_PERMISSIONS_IN_CREATE = [
-        'roles.dev.update' => 'developer',
-        'roles.mdm.update' => 'hdruk.dar',
-        'roles.mde.update' => 'hdruk.dar',
-        'roles.mdm.update' => 'custodian.metadata.manager',
-        'roles.mde.update' => 'custodian.metadata.manager',
-        'roles.mde.update' => 'metadata.editor',
-        'roles.dar-m.update' => 'custodian.dar.manager',
-        'roles.dar-r.update' => 'custodian.dar.manager',
-        'roles.dar-r.update' => 'dar.reviewer',
+        'roles.dev.update' => ['developer'],
+        'roles.mdm.update' => ['hdruk.dar', 'custodian.metadata.manager'],
+        'roles.mde.update' => ['hdruk.dar', 'custodian.metadata.manager', 'metadata.editor'],
+        'roles.dar-m.update' => ['custodian.dar.manager'],
+        'roles.dar-r.update' => ['custodian.dar.manager', 'dar.reviewer']
     ];
     private const CHECK_PERMISSIONS_IN_UPDATE = [
-        'roles.dev.update' => 'developer',
-        'roles.mdm.update' => 'custodian.metadata.manager',
-        'roles.mde.update' => 'custodian.metadata.manager',
-        'roles.mde.update' => 'metadata.editor',
-        'roles.dar-m.update' => 'custodian.dar.manager',
-        'roles.dar-r.update' => 'custodian.dar.manager',
-        'roles.dar-r.update' => 'dar.reviewer',
+        'roles.dev.update' => ['developer'],
+        'roles.mdm.update' => ['custodian.metadata.manager'],
+        'roles.mde.update' => ['custodian.metadata.manager', 'metadata.editor'],
+        'roles.dar-m.update' => ['custodian.dar.manager'],
+        'roles.dar-r.update' => ['custodian.dar.manager', 'dar.reviewer'],
     ];
+    // private const CHECK_PERMISSIONS_IN_CREATE = [
+    //     'roles.dev.update' => 'developer',
+    //     'roles.mdm.update' => 'hdruk.dar',
+    //     'roles.mde.update' => 'hdruk.dar',
+    //     'roles.mdm.update' => 'custodian.metadata.manager',
+    //     'roles.mde.update' => 'custodian.metadata.manager',
+    //     'roles.mde.update' => 'metadata.editor',
+    //     'roles.dar-m.update' => 'custodian.dar.manager',
+    //     'roles.dar-r.update' => 'custodian.dar.manager',
+    //     'roles.dar-r.update' => 'dar.reviewer',
+    // ];
+    // private const CHECK_PERMISSIONS_IN_UPDATE = [
+    //     'roles.dev.update' => 'developer',
+    //     'roles.mdm.update' => 'custodian.metadata.manager',
+    //     'roles.mde.update' => 'custodian.metadata.manager',
+    //     'roles.mde.update' => 'metadata.editor',
+    //     'roles.dar-m.update' => 'custodian.dar.manager',
+    //     'roles.dar-r.update' => 'custodian.dar.manager',
+    //     'roles.dar-r.update' => 'dar.reviewer',
+    // ];
 
     public function __construct()
     {
