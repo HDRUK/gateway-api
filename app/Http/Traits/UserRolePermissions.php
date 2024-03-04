@@ -12,6 +12,21 @@ use App\Models\UserHasRole;
 
 trait UserRolePermissions
 {
+    private function checkUserPermissions($payloadRoles, array $rolePerms, $teamId, array $checkPermissions)
+    {
+        $currentUserPermissions = array_unique(array_merge($rolePerms['extra']['perms'], $rolePerms['teams'][(string) $teamId]['perms']));
+
+        foreach ($checkPermissions as $key => $value) {
+            if ($value === '*') {
+                (!in_array($key, $currentUserPermissions)) ?: throw new UnauthorizedException('Not Enough Permissions.');
+            }
+
+            if ($value !== '*' && in_array($value, $payloadRoles)) {
+                (!in_array($key, $currentUserPermissions)) ?: throw new UnauthorizedException('Not Enough Permissions.');
+            }
+        }
+    }
+
     private function getUserRolePerms(int $userId, int $teamId = null): array
     {
         $return = [];

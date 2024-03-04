@@ -30,7 +30,7 @@ class TeamUserController extends Controller
     
     private const ROLE_CUSTODIAN_TEAM_ADMIN = 'custodian.team.admin';
     private const CHECK_PERMISSIONS_IN_CREATE = [
-        'team-members.create' => '',
+        'team-members.create' => '*',
         'roles.cta.update' => 'custodian.team.admin',
         'roles.dev.update' => 'developer',
         'roles.mdm.update' => 'custodian.metadata.manager',
@@ -47,7 +47,7 @@ class TeamUserController extends Controller
         'roles.dar-r.update' => 'dar.reviewer',
     ];
     private const CHECK_PERMISSIONS_IN_DELETE = [
-        'team-members.delete' => '',
+        'team-members.delete' => '*',
     ];
 
     public function __construct()
@@ -698,20 +698,5 @@ class TeamUserController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         } 
-    }
-
-    protected function checkUserPermissions($payloadRoles, array $rolePerms, $teamId, array $checkPermissions)
-    {
-        $currentUserPermissions = array_unique(array_merge($rolePerms['extra']['perms'], $rolePerms['teams'][(string) $teamId]['perms']));
-
-        foreach ($checkPermissions as $key => $value) {
-            if (!$value) {
-                (!in_array($key, $currentUserPermissions)) ?: throw new UnauthorizedException('Not Enough Permissions.');
-            }
-
-            if (in_array($value, $payloadRoles)) {
-                (!in_array($key, $currentUserPermissions)) ?: throw new UnauthorizedException('Not Enough Permissions.');
-            }
-        }
     }
 }
