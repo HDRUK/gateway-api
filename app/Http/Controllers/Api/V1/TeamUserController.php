@@ -234,7 +234,7 @@ class TeamUserController extends Controller
             $jwtUserRolePerms = $jwtUser['role_perms'];
 
             if (!$jwtUserIsAdmin) {
-                $this->checkUserPermissions($input['roles'], $jwtUserRolePerms, $teamId, self::ASSIGN_PERMISSIONS_IN_TEAM);
+                $this->checkUserPermissions(array_keys($input['roles']), $jwtUserRolePerms, $teamId, self::ASSIGN_PERMISSIONS_IN_TEAM);
             }
 
             $res = $this->teamUserRoles($teamId, $userId, $input, $jwtUser);
@@ -345,10 +345,9 @@ class TeamUserController extends Controller
 
             if (!$jwtUserIsAdmin) {
                 $roles = [];
-                foreach ($input as $user) {
-                    $roles = array_unique(array_merge($roles, $user['roles']));
+                foreach ($input['payload_data'] as $user) {
+                    $roles = array_unique(array_merge($roles, array_keys($user['roles'])));
                 }
-
                 $this->checkUserPermissions($roles, $jwtUserRolePerms, $teamId, self::ASSIGN_PERMISSIONS_IN_TEAM);
             }
 
