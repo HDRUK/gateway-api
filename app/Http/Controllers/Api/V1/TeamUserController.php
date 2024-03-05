@@ -627,7 +627,7 @@ class TeamUserController extends Controller
         try {
             $assignRemove = $action ? 'assign' : 'remove';
             $role = $role . '.' . $assignRemove;
-            $template = EmailTemplate::where('identifier', 'like', '%' . $role . '%')->first();
+            $template = EmailTemplate::where('identifier', '=', $role)->first();
             $user = User::where('id', '=', $userId)->first();
             $team = Team::where('id', '=', $teamId)->first();
 
