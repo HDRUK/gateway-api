@@ -31,10 +31,10 @@ class TeamUserController extends Controller
     private const ROLE_CUSTODIAN_TEAM_ADMIN = 'custodian.team.admin';
     private const ASSIGN_PERMISSIONS_IN_TEAM = [
         'roles.dev.update' => ['developer'],
-        'roles.mdm.update' => ['hdruk.dar', 'custodian.metadata.manager', 'metadata.manager'],
-        'roles.mde.update' => ['hdruk.dar', 'custodian.metadata.manager', 'metadata.manager', 'metadata.editor'],
-        'roles.dar-m.update' => ['custodian.dar.manager', 'dar.manager'],
-        'roles.dar-r.update' => ['custodian.dar.manager', 'dar.manager', 'dar.reviewer']
+        'roles.mdm.update' => ['hdruk.dar', 'custodian.metadata.manager'],
+        'roles.mde.update' => ['hdruk.dar', 'custodian.metadata.manager', 'metadata.editor'],
+        'roles.dar-m.update' => ['custodian.dar.manager'],
+        'roles.dar-r.update' => ['custodian.dar.manager', 'dar.reviewer']
     ];
 
     public function __construct()

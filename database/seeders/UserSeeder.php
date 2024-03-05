@@ -35,12 +35,12 @@ class UserSeeder extends Seeder
         $this->createUser('Dev', 'Eloper', 'hdrresearcher@gmail.com', 'London01!', false, ['developer']);
         $this->createUser('HDR', 'DarManager', 'hdrdarmanager@gmail.com', 'Gateway@123', false, ['hdruk.dar']);
 
-        $this->createUser('Metadata', 'Manager', 'hdrmetadatamanager@gmail.com', 'Gateway@123', false, ['metadata.manager']);
+        $this->createUser('Metadata', 'Manager', 'hdrmetadatamanager@gmail.com', 'Gateway@123', false, ['custodian.metadata.manager']);
         $this->createUser('Metadata', 'Editor', 'hdreditorhdr@gmail.com', 'London01!', false, ['metadata.editor']);
 
         $this->createUser('DarManager', 'MetadataManager', 'darmetadatamanager@gmail.com', 'London01!', false, [
-            'dar.manager',
-            'metadata.manager',
+            'custodian.dar.manager',
+            'custodian.metadata.manager',
         ]);
 
         $this->createUser('Dar', 'Reviewer', 'hdrreviewer@gmail.com', 'Gateway@123', false, ['dar.reviewer']);

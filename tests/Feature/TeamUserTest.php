@@ -379,7 +379,7 @@ class TeamUserTest extends TestCase
         $firstUserId = $this->createUser($firstUserEmail);
 
         $urlPost = 'api/v1/teams/' . $teamId . '/users';
-        $arrayPermissions = ["metadata.manager"];
+        $arrayPermissions = ["custodian.metadata.manager"];
         $payload = [
             "userId" => $firstUserId,
             "roles" => $arrayPermissions,
@@ -451,7 +451,7 @@ class TeamUserTest extends TestCase
         $firstUserId = $this->createUser($firstUserEmail);
 
         $urlPost = 'api/v1/teams/' . $teamId . '/users';
-        $arrayPermissions = ["metadata.manager"];
+        $arrayPermissions = ["custodian.metadata.manager"];
         $payload = [
             "userId" => $firstUserId,
             "roles" => $arrayPermissions,
@@ -496,7 +496,7 @@ class TeamUserTest extends TestCase
         $updateUrlPost = 'api/v1/teams/' . $teamId . '/users/' . $secondUserId;
         $uploadPayload = [
             'roles' => [
-                "metadata.manager" => true,
+                "custodian.metadata.manager" => true,
             ],
         ];
 
@@ -588,7 +588,6 @@ class TeamUserTest extends TestCase
                 "userId" => $secondUserId,
                 "roles" => [
                     "custodian.metadata.manager" => true,
-                    "metadata.manager" => true,
                     "dar.reviewer" => true,
                 ],
             ],
@@ -596,7 +595,7 @@ class TeamUserTest extends TestCase
                 "userId" => $thirdUserId,
                 "roles" => [
                     "metadata.editor" => false,
-                    "metadata.manager" => true,
+                    "custodian.metadata.manager" => true,
                     "dar.reviewer" => true,
                 ]
             ]
