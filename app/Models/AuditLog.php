@@ -21,6 +21,8 @@ class AuditLog extends Model
         'deleted_at',
         'user_id',
         'team_id',
+        'target_user_id',
+        'target_team_id',
         'action_type',
         'action_service',
         'description',
