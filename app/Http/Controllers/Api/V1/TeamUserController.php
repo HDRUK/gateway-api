@@ -130,8 +130,6 @@ class TeamUserController extends Controller
             $sendEmail = $request->has('email') ? $request->boolean('email') : true;
 
             $teamHasUsers = $this->teamHasUser($teamId, $userId);
-
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             
             $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser, $sendEmail);
 
