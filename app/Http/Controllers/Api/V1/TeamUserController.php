@@ -633,16 +633,14 @@ class TeamUserController extends Controller
         try {
             foreach ($payload['roles'] as $role)
             {
-                $log = [
+                Auditor::log([
                     'user_id' => $currentUserId,
                     'target_user_id' => $userId,
                     'target_team_id' => $teamId,
                     'action_type' => 'ASSIGN',
                     'action_service' => $actionService,
                     'description' => 'User role "' . $role . '" added',
-                ];
-    
-                Auditor::log($log);
+                ]);
             }
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -663,16 +661,14 @@ class TeamUserController extends Controller
         try {
             foreach ($payload['roles'] as $role => $action)
             {
-                $log = [
+                Auditor::log([
                     'user_id' => $currentUserId,
                     'target_user_id' => $userId,
                     'target_team_id' => $teamId,
                     'action_type' => 'UPDATE',
                     'action_service' => $actionService,
                     'description' => 'User role "' . $role . '" ' . ($action ? 'added' : 'removed'),
-                ];
-    
-                Auditor::log($log);
+                ]);
             }
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -696,16 +692,14 @@ class TeamUserController extends Controller
                 $roles = $item['roles'];
     
                 foreach ($roles as $role => $action) {
-                    $log = [
+                    Auditor::log([
                         'user_id' => $currentUserId,
                         'target_user_id' => $userId,
                         'target_team_id' => $teamId,
                         'action_type' => 'UPDATE',
                         'action_service' => $actionService,
                         'description' => 'User role "' . $role . '" ' . ($action ? 'added' : 'removed'),
-                    ];
-        
-                    Auditor::log($log);
+                    ]);
         
                 }
             }
@@ -726,14 +720,14 @@ class TeamUserController extends Controller
     private function destroyAuditLog(int $currentUserId, int $userId, int $teamId, string $actionService)
     {
         try {
-            $log = [
+            Auditor::log([
                 'user_id' => $currentUserId,
                 'target_user_id' => $userId,
                 'target_team_id' => $teamId,
                 'action_type' => 'REMOVE',
                 'action_service' => $actionService,
                 'description' => 'User was removed',
-            ];
+            ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
