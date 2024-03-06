@@ -13,7 +13,7 @@ class Auditor {
     /**
      * Logs an action to the audit trail
      * 
-     * @param array $input
+     * @param array $log
      * @return bool
      */
     public function log(array $log): bool
@@ -31,15 +31,13 @@ class Auditor {
     
             $data = $this->checkEditArray($log, $arrayKeys);
 
-            if ($data) {
-                $audit = AuditLog::create($data);
+            $audit = AuditLog::create($data);
 
-                if (!$audit) {
-                    return false;
-                }
-        
-                return true;        
+            if (!$audit) {
+                return false;
             }
+    
+            return true;        
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
