@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class LinkedDataset extends Model
+class LinkedDatasets extends Model
 {
     use HasFactory;
 
@@ -14,7 +14,7 @@ class LinkedDataset extends Model
      *
      * @var string
      */
-    protected $table = 'linked_dataset';
+    protected $table = 'linked_datasets';
 
     /**
      * The attributes that are mass assignable.
