@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Hash;
 use Config;
 use Exception;
@@ -255,6 +256,7 @@ class ApplicationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             // While it seems weak, random uses openssl_random_pseudo_bytes under the hood
             // which is cryptographically secure. Increasing the length of the string
@@ -291,6 +293,15 @@ class ApplicationController extends Controller
             if (array_key_exists('notifications', $input)) {
                 $this->applicationHasNotifications((int) $application->id, $input['notifications']);
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'target_user_id' => $input['user_id'],
+                'target_team_id' => $input['team_id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Application " . $application->id . " created",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
@@ -378,6 +389,7 @@ class ApplicationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $array = [
                 'name' => $input['name'],
@@ -403,6 +415,15 @@ class ApplicationController extends Controller
 
             $application = Application::with(['permissions','team','user','notifications'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'target_user_id' => $input['user_id'],
+                'target_team_id' => $input['team_id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Application " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -489,6 +510,7 @@ class ApplicationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $arrayKeys = ['name', 'image_link', 'description', 'team_id', 'user_id', 'enabled'];
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -505,7 +527,16 @@ class ApplicationController extends Controller
 
             $application = Application::with(['permissions','team','user','notifications'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
-            
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'target_user_id' => $application['user_id'],
+                'target_team_id' => $application['team_id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Application " . $id . " updated",
+            ]);
+ 
             return response()->json([
                 'message' => 'success',
                 'data' => $application
@@ -560,6 +591,8 @@ class ApplicationController extends Controller
     public function destroy(DeleteApplication $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             Application::where('id', $id)->delete();
             ApplicationHasPermission::where('application_id', $id)->delete();
 
@@ -569,6 +602,13 @@ class ApplicationController extends Controller
                 Notification::where('id', $applicationHasNotificationId)->delete();
                 ApplicationHasNotification::where('notification_id', $applicationHasNotificationId)->delete();
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Application " . $id . " deleted",
+            ]);
 
             return response()->json([
                 'message' => 'success',

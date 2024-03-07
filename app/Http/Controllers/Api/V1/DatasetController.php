@@ -923,16 +923,12 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $datasetModel = Dataset::withTrashed()
-                    ->where(['id' => $id])
-                    ->first();
 
             MMC::deleteDataset($id);
             MMC::deleteFromElastic($id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
-                'team_id' => $datasetModel['team_id'],
                 'action_type' => 'DELETE',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dataset " . $id . " deleted",
