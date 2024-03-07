@@ -574,13 +574,13 @@ class DatasetController extends Controller
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
                 );
 
-                $this->datasetAuditLog(
-                    $input['user_id'], 
-                    $input['team_id'], 
-                    'CREATE', 
-                    class_basename($this) . '@'.__FUNCTION__, 
-                    "Dataset " . $dataset->id . " with version " . $version->id . " created",
-                );
+                Auditor::log([
+                    'user_id' => $input['user_id'],
+                    'team_id' => $input['team_id'],
+                    'action_type' => 'CREATE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset " . $dataset->id . " with version " . $version->id . " created",
+                ]);
 
                 return response()->json([
                     'message' => 'created',
@@ -739,14 +739,14 @@ class DatasetController extends Controller
 
 
                 MMC::reindexElastic($currDataset->id);
-                
-                $this->datasetAuditLog(
-                    $userId, 
-                    $teamId, 
-                    'UPDATE', 
-                    class_basename($this) . '@'.__FUNCTION__, 
-                    "Dataset " . $id . " with version " . ($lastVersionNumber + 1) . " updated",
-                );
+
+                Auditor::log([
+                    'user_id' => $userId,
+                    'team_id' => $teamId,
+                    'action_type' => 'UPDATE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset " . $id . " with version " . ($lastVersionNumber + 1) . " updated",
+                ]);
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -825,14 +825,13 @@ class DatasetController extends Controller
                             MMC::reindexElastic($id);
                         }
 
-                        $this->datasetAuditLog(
-                            $jwtUser['id'], 
-                            $datasetModel['team_id'], 
-                            'UPDATE', 
-                            class_basename($this) . '@'.__FUNCTION__, 
-                            "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
-                        );
-
+                        Auditor::log([
+                            'user_id' => $jwtUser['id'],
+                            'team_id' => $datasetModel['team_id'],
+                            'action_type' => 'UPDATE',
+                            'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                        ]);
                     } else {
                         throw new Exception('unknown status type');
                     }
@@ -859,14 +858,14 @@ class DatasetController extends Controller
 
                 // TODO remaining edit steps e.g. if dataset appears in the request 
                 // body validate, translate if needed, update Mauro data model, etc. 
-                
-                $this->datasetAuditLog(
-                    $jwtUser['id'], 
-                    $datasetModel['team_id'], 
-                    'UPDATE', 
-                    class_basename($this) . '@'.__FUNCTION__, 
-                    "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
-                );
+
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'team_id' => $datasetModel['team_id'],
+                    'action_type' => 'UPDATE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                ]);
             }
 
             return response()->json([
@@ -931,13 +930,13 @@ class DatasetController extends Controller
             MMC::deleteDataset($id);
             MMC::deleteFromElastic($id);
 
-            $this->datasetAuditLog(
-                $jwtUser['id'], 
-                $datasetModel['team_id'], 
-                'DELETE', 
-                class_basename($this) . '@'.__FUNCTION__, 
-                "Dataset " . $id . " deleted",
-            );
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'team_id' => $datasetModel['team_id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dataset " . $id . " deleted",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -1126,20 +1125,4 @@ class DatasetController extends Controller
             }
         }
     }
-
-    private function datasetAuditLog(int $currentUserId, int $teamId, string $actionType, string $actionService, string $description)
-    {
-        try {
-            Auditor::log([
-                'user_id' => $currentUserId,
-                'target_team_id' => $teamId,
-                'action_type' => $actionType,
-                'action_service' => $actionService,
-                'description' => $description,
-            ]);
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
-    }
-
 }
