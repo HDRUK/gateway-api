@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('audit_logs', function (Blueprint $table) {
-            $table->integer('target_team_id')->default(-99)->after('target_user_id');
+            $table->integer('target_team_id')->nullable()->default(-99)->after('target_user_id');
         });
     }
 
