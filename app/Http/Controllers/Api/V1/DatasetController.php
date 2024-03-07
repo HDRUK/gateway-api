@@ -2,37 +2,37 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Mauro;
+use Auditor;
 use Config;
 use Exception;
 
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
+use Illuminate\Support\Str;
+use App\Jobs\TermExtraction;
+use Illuminate\Http\Request;
+
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
-use App\Models\DatasetHasSpatialCoverage;
+
+use Illuminate\Support\Carbon;
 use App\Models\SpatialCoverage;
 
-use App\Jobs\TermExtraction;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Http;
+use App\Exceptions\NotFoundException;
 use MetadataManagementController AS MMC;
 
-use App\Http\Controllers\Controller;
-use App\Exceptions\NotFoundException;
-
-use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
-
 use App\Http\Requests\Dataset\GetDataset;
+use App\Models\DatasetHasSpatialCoverage;
+use App\Http\Requests\Dataset\EditDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
+use App\Http\Requests\Dataset\DeleteDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
-use App\Http\Requests\Dataset\EditDataset;
-
-use Illuminate\Support\Facades\Http;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DatasetController extends Controller
 {
@@ -451,6 +451,7 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
 
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $teamId = (int)$input['team_id'];
 
             $team = Team::where('id', $teamId)->first()->toArray();
@@ -571,6 +572,14 @@ class DatasetController extends Controller
                 TermExtraction::dispatch(
                     $dataset->id,
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
+                );
+
+                $this->datasetAuditLog(
+                    $input['user_id'], 
+                    $input['team_id'], 
+                    'CREATE', 
+                    class_basename($this) . '@'.__FUNCTION__, 
+                    "Dataset " . $dataset->id . " with version " . $version->id . " created",
                 );
 
                 return response()->json([
@@ -730,6 +739,14 @@ class DatasetController extends Controller
 
 
                 MMC::reindexElastic($currDataset->id);
+                
+                $this->datasetAuditLog(
+                    $userId, 
+                    $teamId, 
+                    'UPDATE', 
+                    class_basename($this) . '@'.__FUNCTION__, 
+                    "Dataset " . $id . " with version " . ($lastVersionNumber + 1) . " updated",
+                );
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -783,6 +800,9 @@ class DatasetController extends Controller
     public function edit(EditDataset $request, int $id)
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             if ($request->has('unarchive')) {
                 $datasetModel = Dataset::withTrashed()
                     ->where(['id' => $id])
@@ -804,6 +824,15 @@ class DatasetController extends Controller
                         if ($request['status'] === Dataset::STATUS_ACTIVE) {
                             MMC::reindexElastic($id);
                         }
+
+                        $this->datasetAuditLog(
+                            $jwtUser['id'], 
+                            $datasetModel['team_id'], 
+                            'UPDATE', 
+                            class_basename($this) . '@'.__FUNCTION__, 
+                            "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                        );
+
                     } else {
                         throw new Exception('unknown status type');
                     }
@@ -829,7 +858,15 @@ class DatasetController extends Controller
                 }
 
                 // TODO remaining edit steps e.g. if dataset appears in the request 
-                // body validate, translate if needed, update Mauro data model, etc.   
+                // body validate, translate if needed, update Mauro data model, etc. 
+                
+                $this->datasetAuditLog(
+                    $jwtUser['id'], 
+                    $datasetModel['team_id'], 
+                    'UPDATE', 
+                    class_basename($this) . '@'.__FUNCTION__, 
+                    "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                );
             }
 
             return response()->json([
@@ -882,11 +919,25 @@ class DatasetController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, string $id) // softdelete
+    public function destroy(DeleteDataset $request, string $id) // softdelete
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $datasetModel = Dataset::withTrashed()
+                    ->where(['id' => $id])
+                    ->first();
+
             MMC::deleteDataset($id);
             MMC::deleteFromElastic($id);
+
+            $this->datasetAuditLog(
+                $jwtUser['id'], 
+                $datasetModel['team_id'], 
+                'DELETE', 
+                class_basename($this) . '@'.__FUNCTION__, 
+                "Dataset " . $id . " deleted",
+            );
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -1073,6 +1124,21 @@ class DatasetController extends Controller
                     'spatial_coverage_id' => (int) $worldId,
                 ]);
             }
+        }
+    }
+
+    private function datasetAuditLog(int $currentUserId, int $teamId, string $actionType, string $actionService, string $description)
+    {
+        try {
+            Auditor::log([
+                'user_id' => $currentUserId,
+                'target_team_id' => $teamId,
+                'action_type' => $actionType,
+                'action_service' => $actionService,
+                'description' => $description,
+            ]);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
     }
 
