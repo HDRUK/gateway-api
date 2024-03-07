@@ -749,6 +749,7 @@ class IntegrationDatasetController extends Controller
     public function edit(EditDataset $request, int $id)
     {
         try {
+            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             if ($request->has('unarchive')) {
@@ -873,6 +874,7 @@ class IntegrationDatasetController extends Controller
     public function destroy(Request $request, string $id) // softdelete
     {
         try {
+            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $dataset = Dataset::findOrFail($id);
