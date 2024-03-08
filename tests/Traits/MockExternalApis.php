@@ -544,7 +544,7 @@ trait MockExternalApis
 
         // Mock the search service - filters
         Http::fake([
-            '*/search/filters*' => Http::response(
+            '*search*/filters*' => Http::response(
                 [
                     'filters' => [
                         0 => [

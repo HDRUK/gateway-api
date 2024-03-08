@@ -43,7 +43,7 @@ class CreatePublication extends BaseFormRequest
                 'max:255',
             ],
             'abstract' => [
-                'required',
+                'nullable',
                 'string',
             ],
         ];
