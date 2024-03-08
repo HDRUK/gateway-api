@@ -406,7 +406,7 @@ class DurController extends Controller
             }
 
             if (array_key_exists('organisation_sector', $array)) {
-                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector'], $array);
+                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
 
             $dur = Dur::create($array);
@@ -654,7 +654,7 @@ class DurController extends Controller
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             if (array_key_exists('organisation_sector', $array)) {
-                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector'], $array);
+                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
 
             Dur::where('id', $id)->update($array);
@@ -913,9 +913,9 @@ class DurController extends Controller
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             if (array_key_exists('organisation_sector', $array)) {
-                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector'], $array);
+                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
-            
+
             Dur::where('id', $id)->update($array);
 
             // link/unlink dur with datasets
