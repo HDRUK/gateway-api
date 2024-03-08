@@ -11,6 +11,7 @@ use App\Models\Dur;
 use App\Models\Keyword;
 use App\Models\DurHasDataset;
 use App\Models\DurHasKeyword;
+use App\Models\Sector;
 use App\Models\Application;
 
 use Illuminate\Http\Request;
@@ -413,6 +414,10 @@ class IntegrationDurController extends Controller
                 throw new NotFoundException("Team Id not found in request.");
             }
 
+            if (array_key_exists('organisation_sector', $array)) {
+                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
+            }
+
             $dur = Dur::create($array);
             $durId = $dur->id;
 
@@ -656,6 +661,10 @@ class IntegrationDurController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+
+            if (array_key_exists('organisation_sector', $array)) {
+                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
+            }
 
             Dur::where('id', $id)->update($array);
 
@@ -911,6 +920,10 @@ class IntegrationDurController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+
+            if (array_key_exists('organisation_sector', $array)) {
+                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
+            }
 
             Dur::where('id', $id)->update($array);
 
@@ -1224,5 +1237,40 @@ class IntegrationDurController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * Map the input string to the index of one of the standard mapped sector names.
+     * 
+     * Return null if not found.
+     * @return ?int
+     */
+    private function mapOrganisationSector(string $organisationSector): ?int
+    {
+        $sector = strtolower($organisationSector);
+        $categories = Sector::all();
+
+        // default to null
+        $category_index = null;
+
+        if ((strcmp($sector, "academia") === 0) ||
+          (strcmp($sector, "academic institute") === 0)) {
+            $category_index = $categories->where('name', "Academia")->first()['id'];
+        }
+        elseif (strcmp($sector, "commercial") === 0) {
+            $category_index = $categories->where('name', "Industry")->first()['id'];
+        }
+        elseif (strcmp($sector, "cqc registered health or/and social care provider") === 0) {
+            $category_index = $categories->where('name', "NHS")->first()['id'];
+        }
+        elseif ((strcmp($sector, "government agency (health and adult social care)") === 0) ||
+          (strcmp($sector, "government agency (other)") === 0) ||
+          (strcmp($sector, "local authority") === 0)) {
+            $category_index = $categories->where('name', "Public")->first()['id'];
+        }
+        elseif (strcmp($sector, "independent sector organisation") === 0) {
+            $category_index = $categories->where('name', "Charity/Non-profit")->first()['id'];
+        }
+        return $category_index;
     }
 }

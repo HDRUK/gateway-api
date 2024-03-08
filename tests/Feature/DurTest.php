@@ -283,9 +283,9 @@ class DurTest extends TestCase
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
 
-         // Check that the sector has been correctly mapped.
-         $dur_index = $response->json()['data'];
-         $this->assertEquals(
+        // Check that the sector has been correctly mapped.
+        $dur_index = $response->json()['data'];
+        $this->assertEquals(
             Dur::where('id', $dur_index)->first()['sector_id'],
             Sector::where('name', 'Academia')->first()['id']
         );
