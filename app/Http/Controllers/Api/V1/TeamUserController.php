@@ -16,18 +16,27 @@ use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\TeamTransformation;
+use App\Models\TeamUserHasNotification;
+use App\Http\Traits\UserRolePermissions;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Requests\TeamUser\CreateTeamUser;
 use App\Http\Requests\TeamUser\DeleteTeamUser;
 use App\Http\Requests\TeamUser\UpdateTeamUser;
 use App\Http\Requests\TeamUser\UpdateBulkTeamUser;
-use App\Models\TeamUserHasNotification;
 
 class TeamUserController extends Controller
 {
     use TeamTransformation;
+    use UserRolePermissions;
     
-    private $roleAdmin = 'custodian.team.admin';
+    private const ROLE_CUSTODIAN_TEAM_ADMIN = 'custodian.team.admin';
+    private const ASSIGN_PERMISSIONS_IN_TEAM = [
+        'roles.dev.update' => ['developer'],
+        'roles.mdm.update' => ['hdruk.dar', 'custodian.metadata.manager'],
+        'roles.mde.update' => ['hdruk.dar', 'custodian.metadata.manager', 'metadata.editor'],
+        'roles.dar-m.update' => ['custodian.dar.manager'],
+        'roles.dar-r.update' => ['custodian.dar.manager', 'dar.reviewer']
+    ];
 
     public function __construct()
     {
@@ -109,13 +118,19 @@ class TeamUserController extends Controller
         try {
             $input = $request->all();
 
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUserIsAdmin = $jwtUser['is_admin'];
+            $jwtUserRolePerms = $jwtUser['role_perms'];
+
+            if (!$jwtUserIsAdmin) {
+                $this->checkUserPermissions($input['roles'], $jwtUserRolePerms, $teamId, self::ASSIGN_PERMISSIONS_IN_TEAM);
+            }
+
             $userId = $input['userId'];
             $permissions = $input['roles'];
             $sendEmail = $request->has('email') ? $request->boolean('email') : true;
 
             $teamHasUsers = $this->teamHasUser($teamId, $userId);
-
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             
             $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser, $sendEmail);
 
@@ -214,7 +229,14 @@ class TeamUserController extends Controller
     {
         try {
             $input = $request->all();
+
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUserIsAdmin = $jwtUser['is_admin'];
+            $jwtUserRolePerms = $jwtUser['role_perms'];
+
+            if (!$jwtUserIsAdmin) {
+                $this->checkUserPermissions(array_keys($input['roles']), $jwtUserRolePerms, $teamId, self::ASSIGN_PERMISSIONS_IN_TEAM);
+            }
 
             $res = $this->teamUserRoles($teamId, $userId, $input, $jwtUser);
 
@@ -338,6 +360,17 @@ class TeamUserController extends Controller
             $input = $request->all();
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUserIsAdmin = $jwtUser['is_admin'];
+            $jwtUserRolePerms = $jwtUser['role_perms'];
+
+            if (!$jwtUserIsAdmin) {
+                $roles = [];
+                foreach ($input['payload_data'] as $user) {
+                    $roles = array_unique(array_merge($roles, array_keys($user['roles'])));
+                }
+                $this->checkUserPermissions($roles, $jwtUserRolePerms, $teamId, self::ASSIGN_PERMISSIONS_IN_TEAM);
+            }
+
             $response = [];
 
             foreach ($input['payload_data'] as $item) {
@@ -423,6 +456,12 @@ class TeamUserController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUserIsAdmin = $jwtUser['is_admin'];
+            $jwtUserRolePerms = $jwtUser['role_perms'];
+
+            if (!$this->checkIfAllowDeleteUserFromTeam($teamId, $userId)) {
+                throw new UnauthorizedException('You cannot remove last team admin role');
+            }
 
             $teamHasUsers = TeamHasUser::where([
                 'team_id' => $teamId,
@@ -451,6 +490,54 @@ class TeamUserController extends Controller
             return response()->json([
                 'message' => 'success',
             ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * check if the user is the last one with "custodian.team.admin" roles assigned
+     *
+     * @param integer $teamId
+     * @param integer $userId
+     * @return boolean
+     */
+    private function checkIfAllowDeleteUserFromTeam(int $teamId, int $userId): bool
+    {
+        try {
+            $role = Role::where('name', self::ROLE_CUSTODIAN_TEAM_ADMIN)->first();
+
+            $teamHasUsers = TeamHasUser::where([
+                'team_id' => $teamId,
+            ])->get();
+
+            $userIsTeamAdmin = false;
+            $countUserTeamAdmin = 0;
+            foreach ($teamHasUsers as $teamHasUser) {
+                $checkTeamAdminInTeam = TeamUserHasRole::where([
+                    'team_has_user_id' => $teamHasUser->id,
+                    'role_id' => $role->id,
+                ])->first();
+
+                if (!$checkTeamAdminInTeam) {
+                    continue;
+                }
+
+                if ($checkTeamAdminInTeam && $teamHasUser->user_id === $userId) {
+                    $userIsTeamAdmin = true;
+                    $countUserTeamAdmin = $countUserTeamAdmin + 1;
+                }
+
+                if ($checkTeamAdminInTeam && $teamHasUser->user_id !== $userId) {
+                    $countUserTeamAdmin = $countUserTeamAdmin + 1;
+                }
+            }
+
+            if ($userIsTeamAdmin && $countUserTeamAdmin === 1) {
+                return false;
+            }
+
+            return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -541,7 +628,7 @@ class TeamUserController extends Controller
                         'role_id' => $roles->id,
                     ]);
                 } else {
-                    if ($roleName === $this->roleAdmin && count($this->listOfAdmin($teamId)) === 1) {
+                    if ($roleName === self::ROLE_CUSTODIAN_TEAM_ADMIN && count($this->listOfAdmin($teamId)) === 1) {
                         throw new UnauthorizedException('You cannot remove last team admin role');
                     }
                     TeamUserHasRole::where('team_has_user_id', $teamHasUsers->id)
@@ -607,7 +694,7 @@ class TeamUserController extends Controller
             foreach ($users as $user) {
                 $userName = $user['name'];
                 foreach ($user['roles'] as $role) {
-                    if ($role['name'] === $this->roleAdmin) {
+                    if ($role['name'] === self::ROLE_CUSTODIAN_TEAM_ADMIN) {
                         $admins[] = $userName;
                     }
                 }

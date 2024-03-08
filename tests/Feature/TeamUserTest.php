@@ -14,11 +14,7 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-use Illuminate\Support\Facades\Http;
-
-use Mauro;
 use Tests\Traits\MockExternalApis;
-use Tests\Unit\MauroTest;
 
 class TeamUserTest extends TestCase
 {
@@ -374,6 +370,280 @@ class TeamUserTest extends TestCase
         $this->deleteTeam($teamId);
     }
 
+    public function test_create_user_with_role_metadata_manager_with_success()
+    {
+        $teamId = $this->createTeam();
+
+        // create user
+        $firstUserEmail = fake()->unique()->safeEmail();
+        $firstUserId = $this->createUser($firstUserEmail);
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
+        $arrayPermissions = ["custodian.metadata.manager"];
+        $payload = [
+            "userId" => $firstUserId,
+            "roles" => $arrayPermissions,
+        ];
+
+        $firstResponsePost = $this->json('POST', $urlPost, $payload, $this->header);
+
+        $firstResponsePost->assertJsonStructure([
+            'message'
+        ]);
+        $firstResponsePost->assertStatus(201);
+
+        // create jwt token
+        $jwtData = [
+            'email' => $firstUserEmail,
+            'password' => 'Passw@rd1!',
+        ];
+        $jwtResponse = $this->json('POST', '/api/v1/auth', $jwtData, ['Accept' => 'application/json']);
+        $jwtBearer = $jwtResponse['access_token'];
+
+        // create second user
+        $secondUserEmail = fake()->unique()->safeEmail();
+        $secondUserId = $this->createUser($secondUserEmail);
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
+        $arrayPermissions = ["metadata.editor"];
+        $payload = [
+            "userId" => $secondUserId,
+            "roles" => $arrayPermissions,
+        ];
+
+        $secondResponsePost = $this->json('POST', $urlPost, $payload, [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwtBearer,
+        ]);
+        $secondResponsePost->assertJsonStructure([
+            'message'
+        ]);
+        $secondResponsePost->assertStatus(201);
+
+        // create third user - without success
+        $thirdUserEmail = fake()->unique()->safeEmail();
+        $thirdUserId = $this->createUser($thirdUserEmail);
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
+        $arrayPermissions = ["developer"];
+        $payload = [
+            "userId" => $thirdUserId,
+            "roles" => $arrayPermissions,
+        ];
+
+        $thirdResponsePost = $this->json('POST', $urlPost, $payload, [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwtBearer,
+        ]);
+        $thirdResponsePost->assertJsonStructure([
+            'code',
+            'message',
+            'details',
+        ]);
+    }
+
+    public function test_update_user_with_role_metadata_manager_with_success()
+    {
+        $teamId = $this->createTeam();
+
+        // create user
+        $firstUserEmail = fake()->unique()->safeEmail();
+        $firstUserId = $this->createUser($firstUserEmail);
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
+        $arrayPermissions = ["custodian.metadata.manager"];
+        $payload = [
+            "userId" => $firstUserId,
+            "roles" => $arrayPermissions,
+        ];
+
+        $firstResponsePost = $this->json('POST', $urlPost, $payload, $this->header);
+
+        $firstResponsePost->assertJsonStructure([
+            'message'
+        ]);
+        $firstResponsePost->assertStatus(201);
+
+        // create jwt token
+        $jwtData = [
+            'email' => $firstUserEmail,
+            'password' => 'Passw@rd1!',
+        ];
+        $jwtResponse = $this->json('POST', '/api/v1/auth', $jwtData, ['Accept' => 'application/json']);
+        $jwtBearer = $jwtResponse['access_token'];
+
+        // create second user
+        $secondUserEmail = fake()->unique()->safeEmail();
+        $secondUserId = $this->createUser($secondUserEmail);
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
+        $arrayPermissions = ["metadata.editor"];
+        $payload = [
+            "userId" => $secondUserId,
+            "roles" => $arrayPermissions,
+        ];
+
+        $secondResponsePost = $this->json('POST', $urlPost, $payload, [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwtBearer,
+        ]);
+        $secondResponsePost->assertJsonStructure([
+            'message'
+        ]);
+        $secondResponsePost->assertStatus(201);
+
+        // // update second user
+        $updateUrlPost = 'api/v1/teams/' . $teamId . '/users/' . $secondUserId;
+        $uploadPayload = [
+            'roles' => [
+                "custodian.metadata.manager" => true,
+            ],
+        ];
+
+        $updateResponsePost = $this->json('PUT', $updateUrlPost, $uploadPayload, [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwtBearer,
+        ]);
+
+        $updateResponsePost->assertJsonStructure([
+            'message'
+        ]);
+        $updateResponsePost->assertStatus(200);
+    }
+
+    public function test_update_user_with_multiple_roles_with_success()
+    {
+        $teamId = $this->createTeam();
+
+        // first user
+        $firstUserEmail = fake()->unique()->safeEmail();
+        $firstUserId = $this->createUser($firstUserEmail);
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
+        $arrayPermissions = ["custodian.team.admin"];
+        $payload = [
+            "userId" => $firstUserId,
+            "roles" => $arrayPermissions,
+        ];
+
+        $firstResponsePost = $this->json('POST', $urlPost, $payload, $this->header);
+
+        $firstResponsePost->assertJsonStructure([
+            'message'
+        ]);
+        $firstResponsePost->assertStatus(201);
+
+        // create jwt token
+        $jwtData = [
+            'email' => $firstUserEmail,
+            'password' => 'Passw@rd1!',
+        ];
+        $jwtResponse = $this->json('POST', '/api/v1/auth', $jwtData, ['Accept' => 'application/json']);
+        $jwtBearer = $jwtResponse['access_token'];
+
+        // second user
+        $secondUserEmail = fake()->unique()->safeEmail();
+        $secondUserId = $this->createUser($secondUserEmail);
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
+        $secondPermissions = ["metadata.editor"];
+        $payload = [
+            "userId" => $secondUserId,
+            "roles" => $secondPermissions,
+        ];
+
+        $secondResponsePost = $this->json('POST', $urlPost, $payload, [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwtBearer,
+        ]);
+        $secondResponsePost->assertJsonStructure([
+            'message'
+        ]);
+        $secondResponsePost->assertStatus(201);
+
+        // third user
+        $thirdUserEmail = fake()->unique()->safeEmail();
+        $thirdUserId = $this->createUser($thirdUserEmail);
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
+        $thirdPermissions = ["metadata.editor"];
+        $payload = [
+            "userId" => $thirdUserId,
+            "roles" => $thirdPermissions,
+        ];
+
+        $thirdResponsePost = $this->json('POST', $urlPost, $payload, [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwtBearer,
+        ]);
+        $thirdResponsePost->assertJsonStructure([
+            'message'
+        ]);
+        $thirdResponsePost->assertStatus(201);
+
+        // update bulk users
+        $multipleUrlPost = 'api/v1/teams/' . $teamId . '/roles';
+        $multiplePayload = [
+            [
+                "userId" => $secondUserId,
+                "roles" => [
+                    "custodian.metadata.manager" => true,
+                    "dar.reviewer" => true,
+                ],
+            ],
+            [
+                "userId" => $thirdUserId,
+                "roles" => [
+                    "metadata.editor" => false,
+                    "custodian.metadata.manager" => true,
+                    "dar.reviewer" => true,
+                ]
+            ]
+        ];
+        $multipleResponsePost = $this->json('PATCH', $multipleUrlPost, $multiplePayload, [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwtBearer,
+        ]);
+        $multipleResponsePost->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+        $multipleResponsePost->assertStatus(200);
+    }
+
+    public function test_delete_last_custodian_team_admin_from_team_without_success()
+    {
+        $teamId = $this->createTeam();
+
+        // first user
+        $firstUserEmail = fake()->unique()->safeEmail();
+        $firstUserId = $this->createUser($firstUserEmail);
+
+        $urlPost = 'api/v1/teams/' . $teamId . '/users';
+        $arrayPermissions = ["custodian.team.admin"];
+        $payload = [
+            "userId" => $firstUserId,
+            "roles" => $arrayPermissions,
+        ];
+
+        $firstResponsePost = $this->json('POST', $urlPost, $payload, $this->header);
+
+        $firstResponsePost->assertJsonStructure([
+            'message'
+        ]);
+        $firstResponsePost->assertStatus(201);
+
+        // delete the user with custodian team admin role
+        $urlDelete = 'api/v1/teams/' . $teamId . '/users/' . $firstUserId;
+        $responseDelete = $this->json('DELETE', $urlDelete, [], $this->header);
+        $responseDelete->assertJsonStructure([
+            'code',
+            'message',
+            'details',
+        ]);
+        $responseDelete->assertStatus(500);
+    }
+
     private function createTeam()
     {
         $responseNotification = $this->json(
@@ -436,7 +706,7 @@ class TeamUserTest extends TestCase
         ]);
     }
 
-    private function createUser()
+    private function createUser(string $email = null)
     {
         $responseNewUser = $this->json(
             'POST',
@@ -444,8 +714,8 @@ class TeamUserTest extends TestCase
             [
                 'firstname' => 'Firstname',
                 'lastname' => 'Lastname',
-                'email' => 'firstname.lastname.123456789@test.com',
-                'secondary_email' => 'just.test.1234567890@test.com',
+                'email' => $email ? $email : 'firstname.lastname.123456789@test.com',
+                'secondary_email' => fake()->unique()->safeEmail(),
                 'preferred_email' => 'primary',
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,

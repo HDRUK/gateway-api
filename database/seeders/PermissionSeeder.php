@@ -60,7 +60,17 @@ class PermissionSeeder extends Seeder
                 'dur.update',
                 'dur.delete',
 
-                'permissions.update',
+                // 'permissions.update',
+                'roles.read',
+                'roles.cta.update',
+                'roles.dev.update',
+                'roles.mdm.update',
+                'roles.mde.update',
+                'roles.dar-m.update',
+                'roles.dar-r.update',
+                'team-members.create',
+                'team-members.update',
+                'team-members.delete',
 
                 'custodians.create',
                 'custodians.read',
