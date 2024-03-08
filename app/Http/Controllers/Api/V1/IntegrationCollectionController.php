@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 
@@ -30,8 +31,7 @@ use MetadataManagementController AS MMC;
 
 class IntegrationCollectionController extends Controller
 {
-    use RequestTransformation;
-    use IntegrationOverride;
+    use RequestTransformation, IntegrationOverride, IntegrationOverride;
 
     /**
      * @OA\Get(
@@ -234,6 +234,7 @@ class IntegrationCollectionController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
             $appId = null;
@@ -285,6 +286,14 @@ class IntegrationCollectionController extends Controller
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $collectionId)->update(['updated_on' => $input['updated_on']]);
             }
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection " . $collectionId . " created",
+            ]);
 
             return response()->json([
                 'message' => 'created',
@@ -376,6 +385,7 @@ class IntegrationCollectionController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
             $appId = null;
@@ -425,6 +435,14 @@ class IntegrationCollectionController extends Controller
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
             }
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -526,6 +544,7 @@ class IntegrationCollectionController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
             $appId = null;
@@ -572,6 +591,14 @@ class IntegrationCollectionController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -636,9 +663,20 @@ class IntegrationCollectionController extends Controller
     public function destroy(DeleteCollection $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
             CollectionHasDataset::where(['collection_id' => $id])->delete();
             CollectionHasKeyword::where(['collection_id' => $id])->delete();
             Collection::where(['id' => $id])->delete();
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection " . $id . " deleted",
+            ]);
 
             return response()->json([
                 'message' => 'success',
