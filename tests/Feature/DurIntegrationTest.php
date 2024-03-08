@@ -21,6 +21,7 @@ use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\SectorSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DurIntegrationTest extends TestCase
@@ -51,6 +52,7 @@ class DurIntegrationTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             DurSeeder::class,
+            SectorSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();

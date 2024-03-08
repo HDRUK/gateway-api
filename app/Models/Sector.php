@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Dur;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sector extends Model
 {
@@ -45,4 +48,12 @@ class Sector extends Model
      * @var boolean
      */
     private $enabled = false;
+
+    /**
+     * The DURs that belong to the sector.
+     */
+    public function durs(): HasMany
+    {
+        return $this->hasMany(Dur::class);
+    }
 }

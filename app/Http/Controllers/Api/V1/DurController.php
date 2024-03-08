@@ -11,6 +11,7 @@ use App\Models\Keyword;
 use Illuminate\Http\Request;
 use App\Models\DurHasDataset;
 use App\Models\DurHasKeyword;
+use App\Models\Sector;
 use App\Http\Requests\Dur\GetDur;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
@@ -406,6 +407,10 @@ class DurController extends Controller
 
             $dur = Dur::create($array);
             $durId = $dur->id;
+
+            if (array_key_exists('organisation_sector', $array)) {
+                $this->mapOrganisationSector($array['organisation_sector'], $dur);
+            }
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
@@ -1216,6 +1221,44 @@ class DurController extends Controller
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
+        }
+    }
+
+    private function mapOrganisationSector(string $organisationSector, Dur $dur): void
+    {
+        $sector = strtolower($organisationSector);
+        $categories = Sector::all();
+        var_dump($categories);
+
+        # map each input value to output *id*
+        if ((strcmp($sector, "academia") === 0) ||
+          (strcmp($sector, "academic institute") === 0)) {
+
+        }
+        elseif (strcmp($sector, "commercial") === 0) {
+
+        }
+        elseif ((strcmp($sector, "cqc registered health or/and social care provider") === 0) ||
+          (strcmp($sector, "government agency (health and adult social care)") === 0) ||
+          (strcmp($sector, "government agency (other)") === 0)) {
+
+        }
+        elseif (strcmp($sector, "independent sector organisation") === 0) {
+
+        }
+
+
+
+
+        
+
+        foreach ($categories as $c) {
+            if (strcmp($sector, strtolower($c['name']))) {
+                DurHasSector::updateOrCreate([
+                    'dur_id' => (int) $dur['id'],
+                    'sector_id' => (int) $c['id'],
+                ]);
+            }
         }
     }
 }

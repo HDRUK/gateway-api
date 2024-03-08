@@ -17,6 +17,7 @@ use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\SectorSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -48,6 +49,7 @@ class DurTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             DurSeeder::class,
+            SectorSeeder::class,
         ]);
     }
     /**
