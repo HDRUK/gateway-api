@@ -2,31 +2,44 @@
 
 namespace App\Auditor;
 
-use Carbon\Carbon;
-use App\Models\User;
+use Exception;
 use App\Models\AuditLog;
+use App\Http\Traits\RequestTransformation;
 
 class Auditor {
+
+    use RequestTransformation;
 
     /**
      * Logs an action to the audit trail
      * 
+     * @param array $log
      * @return bool
      */
-    public function log(int $userId, int $teamId, string $actionType, string $actionService, string $description): bool
+    public function log(array $log): bool
     {
-        $audit = AuditLog::create([
-            'user_id' => $userId,
-            'team_id' => $teamId,
-            'action_type' => $actionType,
-            'action_service' => $actionService,
-            'description' => $description,
-        ]);
+        try {
+            $arrayKeys = [
+                'user_id',
+                'team_id',
+                'target_user_id',
+                'target_team_id',
+                'action_type',
+                'action_service',
+                'description',
+            ];
+    
+            $data = $this->checkEditArray($log, $arrayKeys);
 
-        if (!$audit) {
-            return false;
+            $audit = AuditLog::create($data);
+
+            if (!$audit) {
+                return false;
+            }
+    
+            return true;        
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return true;
     }
 }

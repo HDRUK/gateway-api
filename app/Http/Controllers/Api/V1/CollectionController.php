@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Keyword;
@@ -289,6 +290,14 @@ class CollectionController extends Controller
             }
             $this->indexElasticCollections((int)$collectionId);
 
+            Auditor::log([
+                'user_id' => $array['user_id'],
+                'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection " . $collectionId . " created",
+            ]);
+
             return response()->json([
                 'message' => 'created',
                 'data' => $collectionId,
@@ -434,6 +443,14 @@ class CollectionController extends Controller
                 Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
             }
             $this->indexElasticCollections($id);
+
+            Auditor::log([
+                'user_id' => $array['user_id'],
+                'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -588,6 +605,14 @@ class CollectionController extends Controller
             }
             $this->indexElasticCollections($id);
 
+            Auditor::log([
+                'user_id' => $userIdFinal,
+                'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection " . $id . " updated",
+            ]);
+
             return response()->json([
                 'message' => 'success',
                 'data' => Collection::where('id', $id)->with([
@@ -651,9 +676,19 @@ class CollectionController extends Controller
     public function destroy(DeleteCollection $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             CollectionHasDataset::where(['collection_id' => $id])->delete();
             CollectionHasKeyword::where(['collection_id' => $id])->delete();
             Collection::where(['id' => $id])->delete();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection " . $id . " deleted",
+            ]);
 
             return response()->json([
                 'message' => 'success',

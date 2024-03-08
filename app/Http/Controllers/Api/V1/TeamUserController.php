@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Role;
@@ -133,6 +134,8 @@ class TeamUserController extends Controller
             
             $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser, $sendEmail);
 
+            $this->storeAuditLog($jwtUser["id"], $input['userId'], $teamId, $input, class_basename($this) . '@'.__FUNCTION__);
+
             return response()->json([
                 'message' => 'success',
             ], 201);
@@ -237,6 +240,8 @@ class TeamUserController extends Controller
 
             $res = $this->teamUserRoles($teamId, $userId, $input, $jwtUser);
 
+            $this->updateAuditLog($jwtUser["id"], $userId, $teamId, $input, class_basename($this) . '@'.__FUNCTION__);
+
             return response()->json([
                 'message' => 'success',
                 'data' => $res,
@@ -245,6 +250,23 @@ class TeamUserController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    // private function updateAuditLog(int $currentUserId, int $teamId, array $payload, string $actionService)
+    // {
+    //     foreach ($payload['roles'] as $role)
+    //     {
+    //         $log = [
+    //             'user_id' => $currentUserId,
+    //             'target_user_id' => $payload['userId'],
+    //             'target_team_id' => $teamId,
+    //             'action_type' => 'ASSIGN',
+    //             'action_service' => $actionService,
+    //             'description' => 'User role "' . $role . '" added',
+    //         ];
+
+    //         Auditor::log($log);
+    //     }
+    // }
 
     /**
      * @OA\Patch(
@@ -358,6 +380,8 @@ class TeamUserController extends Controller
                 ];
             }
 
+            $this->updateBulkAuditLog($jwtUser["id"], $teamId, $input, class_basename($this) . '@'.__FUNCTION__);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $response,
@@ -460,6 +484,8 @@ class TeamUserController extends Controller
                 'team_id' => $teamHasUsers->team_id,
                 'user_id' => $teamHasUsers->user_id,
             ])->delete();
+
+            $this->destroyAuditLog($jwtUser["id"], $userId, $teamId, class_basename($this) . '@'.__FUNCTION__);
 
             return response()->json([
                 'message' => 'success',
@@ -678,5 +704,119 @@ class TeamUserController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         } 
+    }
+
+    /**
+     * Add Audit Log for store method
+     *
+     * @param integer $currentUserId
+     * @param integer $teamId
+     * @param array $payload
+     * @param string $actionService
+     * @return void
+     */
+    private function storeAuditLog(int $currentUserId, int $userId, int $teamId, array $payload, string $actionService)
+    {
+        try {
+            foreach ($payload['roles'] as $role)
+            {
+                Auditor::log([
+                    'user_id' => $currentUserId,
+                    'target_user_id' => $userId,
+                    'target_team_id' => $teamId,
+                    'action_type' => 'ASSIGN',
+                    'action_service' => $actionService,
+                    'description' => 'User role "' . $role . '" added',
+                ]);
+            }
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        } 
+    }
+
+    /**
+     * Add Audit Log for update method
+     *
+     * @param integer $currentUserId
+     * @param integer $teamId
+     * @param array $payload
+     * @param string $actionService
+     * @return void
+     */
+    private function updateAuditLog(int $currentUserId, int $userId, int $teamId, array $payload, string $actionService)
+    {
+        try {
+            foreach ($payload['roles'] as $role => $action)
+            {
+                Auditor::log([
+                    'user_id' => $currentUserId,
+                    'target_user_id' => $userId,
+                    'target_team_id' => $teamId,
+                    'action_type' => 'UPDATE',
+                    'action_service' => $actionService,
+                    'description' => 'User role "' . $role . '" ' . ($action ? 'added' : 'removed'),
+                ]);
+            }
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        } 
+    }
+
+    /**
+     * Add Audit Log for updateBulk method
+     *
+     * @param integer $currentUserId
+     * @param integer $teamId
+     * @param array $payload
+     * @param string $actionService
+     * @return void
+     */
+    private function updateBulkAuditLog(int $currentUserId, int $teamId, array $payload, string $actionService)
+    {
+        try {
+            foreach ($payload['payload_data'] as $item) {
+                $userId = $item['userId'];
+                $roles = $item['roles'];
+    
+                foreach ($roles as $role => $action) {
+                    Auditor::log([
+                        'user_id' => $currentUserId,
+                        'target_user_id' => $userId,
+                        'target_team_id' => $teamId,
+                        'action_type' => 'UPDATE',
+                        'action_service' => $actionService,
+                        'description' => 'User role "' . $role . '" ' . ($action ? 'added' : 'removed'),
+                    ]);
+        
+                }
+            }
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        } 
+    }
+
+    /**
+     * Add Audit Log for destroy method
+     *
+     * @param integer $currentUserId
+     * @param integer $userId
+     * @param integer $teamId
+     * @param string $actionService
+     * @return void
+     */
+    private function destroyAuditLog(int $currentUserId, int $userId, int $teamId, string $actionService)
+    {
+        try {
+            Auditor::log([
+                'user_id' => $currentUserId,
+                'target_user_id' => $userId,
+                'target_team_id' => $teamId,
+                'action_type' => 'REMOVE',
+                'action_service' => $actionService,
+                'description' => 'User was removed',
+            ]);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Mauro;
+use Auditor;
 use Config;
 use Exception;
 
@@ -515,6 +515,14 @@ class IntegrationDatasetController extends Controller
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
                 );
 
+                Auditor::log([
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                    'action_type' => 'CREATE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset " . $dataset->id . " with version " . $version->id . " created",
+                ]);
+
                 return response()->json([
                     'message' => 'created',
                     'data' => $dataset->id,
@@ -681,6 +689,14 @@ class IntegrationDatasetController extends Controller
 
                 MMC::reindexElastic($currDataset->id);
 
+                Auditor::log([
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                    'action_type' => 'UPDATE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset " . $id . " with version " . ($lastVersionNumber + 1) . " updated",
+                ]);
+
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                     'data' => Dataset::with('versions')->where('id', '=', $currDataset->id)->first(),
@@ -733,6 +749,9 @@ class IntegrationDatasetController extends Controller
     public function edit(EditDataset $request, int $id)
     {
         try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
             if ($request->has('unarchive')) {
                 $datasetModel = Dataset::withTrashed()
                     ->where(['id' => $id])
@@ -756,6 +775,14 @@ class IntegrationDatasetController extends Controller
                         if ($request['status'] === Dataset::STATUS_ACTIVE) {
                             MMC::reindexElastic($id);
                         }
+
+                        Auditor::log([
+                            'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                            'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                            'action_type' => 'UPDATE',
+                            'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                        ]);
                     } else {
                         throw new Exception('unknown status type');
                     }
@@ -783,7 +810,15 @@ class IntegrationDatasetController extends Controller
                 }
 
                 // TODO remaining edit steps e.g. if dataset appears in the request 
-                // body validate, translate if needed, update Mauro data model, etc.   
+                // body validate, translate if needed, update Mauro data model, etc.  
+
+                Auditor::log([
+                    'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                    'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                    'action_type' => 'UPDATE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                ]);
             }
 
             return response()->json([
@@ -839,12 +874,22 @@ class IntegrationDatasetController extends Controller
     public function destroy(Request $request, string $id) // softdelete
     {
         try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $dataset = Dataset::findOrFail($id);
             $this->checkAppCanHandleDataset($dataset->team_id,$request);
 
             MMC::deleteDataset($id);
             MMC::deleteFromElastic($id);
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dataset " . $id . " deleted",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),

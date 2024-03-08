@@ -106,13 +106,7 @@ class ServiceLayerController extends Controller
         $input = $request->all();
 
         try {
-            $retVal = Auditor::log(
-                $input['user_id'],
-                $input['team_id'],
-                $input['action_type'],
-                $input['action_service'],
-                $input['description']
-            );
+            $retVal = Auditor::log($input);
 
             if ($retVal) {
                 return response()->json([
