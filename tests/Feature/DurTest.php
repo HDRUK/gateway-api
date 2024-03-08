@@ -6,6 +6,7 @@ use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use Database\Seeders\DurSeeder;
@@ -17,7 +18,6 @@ use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\SectorSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -49,7 +49,6 @@ class DurTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             DurSeeder::class,
-            SectorSeeder::class,
         ]);
     }
     /**
@@ -224,6 +223,7 @@ class DurTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
         ];
 
         $response = $this->json(
@@ -236,9 +236,14 @@ class DurTest extends TestCase
 
         $countAfter = Dur::count();
         $countNewRow = $countAfter - $countBefore;
-
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
 
+        // Check that the sector has been correctly mapped.
+        $dur_index = $response->json()['data'];
+        $this->assertEquals(
+            Dur::where('id', $dur_index)->first()['sector_id'],
+            Sector::where('name', 'Academia')->first()['id']
+        );
         $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
         $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
@@ -261,6 +266,7 @@ class DurTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
         ];
 
         $response = $this->json(
@@ -277,6 +283,12 @@ class DurTest extends TestCase
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
 
+         // Check that the sector has been correctly mapped.
+         $dur_index = $response->json()['data'];
+         $this->assertEquals(
+            Dur::where('id', $dur_index)->first()['sector_id'],
+            Sector::where('name', 'Academia')->first()['id']
+        );
         // update
         $mockDataUpdate = [
             'datasets' => $this->generateDatasets(),
@@ -285,6 +297,7 @@ class DurTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01','External Dataset 02', 'External Dataset 03'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'Commercial',
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -293,6 +306,13 @@ class DurTest extends TestCase
             $this->header
         );
         $responseUpdate->assertStatus(200);
+
+        // Check that the sector has been correctly mapped.
+        $dur_index = $response->json()['data'];
+        $this->assertEquals(
+            Dur::where('id', $dur_index)->first()['sector_id'],
+            Sector::where('name', 'Industry')->first()['id']
+        );
     }
 
     /**
@@ -313,6 +333,7 @@ class DurTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
         ];
 
         $response = $this->json(
@@ -352,6 +373,7 @@ class DurTest extends TestCase
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
+            'organisation_sector' => 'Commercial',
         ];
         $responseEdit = $this->json(
             'PATCH',
@@ -360,6 +382,13 @@ class DurTest extends TestCase
             $this->header
         );
         $responseEdit->assertStatus(200);
+
+        // Check that the sector has been correctly mapped.
+        $dur_index = $response->json()['data'];
+        $this->assertEquals(
+            Dur::where('id', $dur_index)->first()['sector_id'],
+            Sector::where('name', 'Industry')->first()['id']
+        );
     }
 
     /**
