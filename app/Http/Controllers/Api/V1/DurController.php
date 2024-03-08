@@ -1243,27 +1243,9 @@ class DurController extends Controller
         $sector = strtolower($organisationSector);
         $categories = Sector::all();
 
-        // default to null
-        $category_index = null;
-
-        if ((strcmp($sector, "academia") === 0) ||
-          (strcmp($sector, "academic institute") === 0)) {
-            $category_index = $categories->where('name', "Academia")->first()['id'];
-        }
-        elseif (strcmp($sector, "commercial") === 0) {
-            $category_index = $categories->where('name', "Industry")->first()['id'];
-        }
-        elseif (strcmp($sector, "cqc registered health or/and social care provider") === 0) {
-            $category_index = $categories->where('name', "NHS")->first()['id'];
-        }
-        elseif ((strcmp($sector, "government agency (health and adult social care)") === 0) ||
-          (strcmp($sector, "government agency (other)") === 0) ||
-          (strcmp($sector, "local authority") === 0)) {
-            $category_index = $categories->where('name', "Public")->first()['id'];
-        }
-        elseif (strcmp($sector, "independent sector organisation") === 0) {
-            $category_index = $categories->where('name', "Charity/Non-profit")->first()['id'];
-        }
-        return $category_index;
+        // Look up mapped sector, with default to null
+        $category = Config::get('sectors.' . $sector, null);
+        
+        return (!is_null($category)) ? $categories->where('name', $category)->first()['id'] : null;
     }
 }
