@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Hash;
 use Config;
 use Exception;
@@ -22,8 +23,7 @@ use App\Http\Traits\RequestTransformation;
 
 class UserController extends Controller
 {
-    use UserTransformation;
-    use RequestTransformation;
+    use UserTransformation, RequestTransformation;
 
     /**
      * @OA\Get(
@@ -62,38 +62,50 @@ class UserController extends Controller
      */
     public function index(IndexUser $request): mixed
     {
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $response = [];
-        if (count($jwtUser)) { //should really always be a jwtUser
-            $userIsAdmin = (bool) $jwtUser['is_admin'];
-            if($userIsAdmin){ // if it's the superadmin return a bunch of information
-                $users = User::with(
-                    'roles',
-                    'roles.permissions',
-                    'teams',
-                    'notifications'
-                )->get()->toArray();
-                $response = $this->getUsers($users);
-            } else { 
-                // otherwise, for now, just return the ids and names 
-                // (filtered if appropriate)
-                if ($request->has('filterNames')) {
-                    $chars = $request->query('filterNames');
-                    $response = User::where('name', 'like', '%' . $chars . '%')
-                        ->select(['id', 'name'])
-                        ->get()
-                        ->toArray();
-                } else {
-                    $response = User::select(
-                        'id','name'
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $response = [];
+            if (count($jwtUser)) { //should really always be a jwtUser
+                $userIsAdmin = (bool) $jwtUser['is_admin'];
+                if($userIsAdmin){ // if it's the superadmin return a bunch of information
+                    $users = User::with(
+                        'roles',
+                        'roles.permissions',
+                        'teams',
+                        'notifications'
                     )->get()->toArray();
+                    $response = $this->getUsers($users);
+                } else { 
+                    // otherwise, for now, just return the ids and names 
+                    // (filtered if appropriate)
+                    if ($request->has('filterNames')) {
+                        $chars = $request->query('filterNames');
+                        $response = User::where('name', 'like', '%' . $chars . '%')
+                            ->select(['id', 'name'])
+                            ->get()
+                            ->toArray();
+                    } else {
+                        $response = User::select(
+                            'id','name'
+                        )->get()->toArray();
+                    }
                 }
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "User get all",
+            ]);
+
+            return response()->json([
+                'data' => $response,
+            ], Config::get('statuscodes.STATUS_OK.code'));    
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-        return response()->json([
-            'data' => $response,
-        ], Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**
@@ -153,26 +165,41 @@ class UserController extends Controller
      */
     public function show(GetUser $request, int $id): mixed
     {
-        $users = User::where([
-            'id' => $id,
-        ])->get();
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        if ($users->count()) {
-            $userTeam = User::where('id', $id)->with(
-                'roles',
-                'roles.permissions',
-                'teams',
-                'notifications'
-            )->get()->toArray();
+            $users = User::where([
+                'id' => $id,
+            ])->get();
+    
+            if ($users->count()) {
+                $userTeam = User::where('id', $id)->with(
+                    'roles',
+                    'roles.permissions',
+                    'teams',
+                    'notifications'
+                )->get()->toArray();
+
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "User get " . $id,
+                ]);
+
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $this->getUsers($userTeam),
+                ], 200);
+            }
+    
             return response()->json([
-                'message' => 'success',
-                'data' => $this->getUsers($userTeam),
-            ], 200);
+                'message' => 'not found',
+            ], 404);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
     }
 
     /**
@@ -225,6 +252,7 @@ class UserController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $array = [
                 'name' => $input['firstname'] . " " . $input['lastname'],
@@ -267,6 +295,13 @@ class UserController extends Controller
             } else {
                 throw new NotFoundException();
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "User " . $user->id . " created",
+            ]);
 
             return response()->json([
                 'message' => 'created',
@@ -364,6 +399,7 @@ class UserController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $user = User::findOrFail($id);
             if ($user) {
@@ -399,6 +435,13 @@ class UserController extends Controller
                 }
 
                 $user->update($array);
+
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'UPDATE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "User " . $id . " updated",
+                ]);
 
                 return response()->json([
                     'message' => 'success',
@@ -501,6 +544,7 @@ class UserController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $arrayKeys = [
                 'firstname',
                 'lastname',
@@ -542,6 +586,13 @@ class UserController extends Controller
                     'notification_id' => (int) $value,
                 ]);
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "User " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -604,9 +655,19 @@ class UserController extends Controller
     public function destroy(DeleteUser $request, int $id): mixed
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             UserHasNotification::where('user_id', $id)->delete();
             UserHasRole::where('user_id', $id)->delete();
             User::where('id', $id)->delete();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "User " . $id . " deleted",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
