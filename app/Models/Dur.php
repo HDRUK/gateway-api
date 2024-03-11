@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Application;
+use App\Models\Sector;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -44,6 +45,7 @@ class Dur extends Model
         'project_id_text',
         'organisation_name',
         'organisation_sector',
+        'sector_id',
         'lay_summary',
         'technical_summary',
         'latest_approval_date',
@@ -132,5 +134,10 @@ class Dur extends Model
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);
+    }
+
+    public function sector(): BelongsTo
+    {
+        return $this->belongsTo(Sector::class);
     }
 }

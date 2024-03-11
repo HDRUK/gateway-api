@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use Config;
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Application;
@@ -245,6 +245,7 @@ class DurIntegrationTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
         ];
 
         $response = $this->json(
@@ -259,6 +260,13 @@ class DurIntegrationTest extends TestCase
         $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+
+        // Check that the sector has been correctly mapped.
+        $dur_index = $response->json()['data'];
+        $this->assertEquals(
+            Dur::where('id', $dur_index)->first()['sector_id'],
+            Sector::where('name', 'Academia')->first()['id']
+        );
     }
 
     /**
@@ -279,6 +287,7 @@ class DurIntegrationTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
         ];
 
         $response = $this->json(
@@ -295,6 +304,12 @@ class DurIntegrationTest extends TestCase
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
 
+        // Check that the sector has been correctly mapped.
+        $dur_index = $response->json()['data'];
+        $this->assertEquals(
+           Dur::where('id', $dur_index)->first()['sector_id'],
+           Sector::where('name', 'Academia')->first()['id']
+        );
         // update
         $mockDataUpdate = [
             'datasets' => [$this->generateDatasets()],
@@ -303,6 +318,7 @@ class DurIntegrationTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02', 'External Dataset 03'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'Commercial',
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -311,6 +327,13 @@ class DurIntegrationTest extends TestCase
             $this->header
         );
         $responseUpdate->assertStatus(200);
+
+        // Check that the sector has been correctly mapped.
+        $dur_index = $response->json()['data'];
+        $this->assertEquals(
+            Dur::where('id', $dur_index)->first()['sector_id'],
+            Sector::where('name', 'Industry')->first()['id']
+        );
     }
 
     /**
