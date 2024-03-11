@@ -87,47 +87,56 @@ class ApplicationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $applications = Application::getAll('user_id', $jwtUser)->with(['permissions','team','user','notifications']);
-
-
-        $teamId = $request->query('team_id');
-        if ($teamId !== null) {
-            $applications = $applications->where('team_id',(int)$teamId);
-        }
-        
-        if ($request->has('status')) {
-            $applicationStatus = $request->query('status');
-            if ($applicationStatus === "1" || $applicationStatus === "0") {
-                $applications = $applications->where('enabled', (int) $applicationStatus);
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $applications = Application::getAll('user_id', $jwtUser)->with(['permissions','team','user','notifications']);
+    
+    
+            $teamId = $request->query('team_id');
+            if ($teamId !== null) {
+                $applications = $applications->where('team_id',(int)$teamId);
             }
-        }
-        
-        $textTerms = $request->query('text',[]);
-        if ($textTerms !== null) {
-            if (!is_array($textTerms)) {
-                $textTerms = [$textTerms];
+            
+            if ($request->has('status')) {
+                $applicationStatus = $request->query('status');
+                if ($applicationStatus === "1" || $applicationStatus === "0") {
+                    $applications = $applications->where('enabled', (int) $applicationStatus);
+                }
             }
-            foreach ($textTerms as $textTerm) {
-                $applications = $applications->where(function ($query) use ($textTerm) {
-                    $query->where('name', 'like', '%' . $textTerm . '%')
-                          ->orWhere('description', 'like', '%' . $textTerm . '%');
-                });
+            
+            $textTerms = $request->query('text',[]);
+            if ($textTerms !== null) {
+                if (!is_array($textTerms)) {
+                    $textTerms = [$textTerms];
+                }
+                foreach ($textTerms as $textTerm) {
+                    $applications = $applications->where(function ($query) use ($textTerm) {
+                        $query->where('name', 'like', '%' . $textTerm . '%')
+                              ->orWhere('description', 'like', '%' . $textTerm . '%');
+                    });
+                }
             }
+            
+            $perPage = request('per_page', Config::get('constants.per_page'));
+            $applications = $applications->paginate($perPage, ['*'], 'page');
+    
+            $applications->getCollection()->each(function ($application) {
+                $application->makeHidden(['client_secret']);
+            });
+    
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Application get all",
+            ]);
+
+            return response()->json(
+                $applications
+            );    
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-        
-        $perPage = request('per_page', Config::get('constants.per_page'));
-        $applications = $applications->paginate($perPage, ['*'], 'page');
-
-        $applications->getCollection()->each(function ($application) {
-            $application->makeHidden(['client_secret']);
-        });
-
-        return response()->json(
-            $applications
-        );
     }
 
     /**
@@ -183,6 +192,12 @@ class ApplicationController extends Controller
         try {
             $application = Application::with(['permissions','team','user','notifications'])->where('id', $id)->first();
             $application->makeHidden(['client_secret']);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Application get " . $id,
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
