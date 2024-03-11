@@ -218,7 +218,7 @@ class EmailTemplateController extends Controller
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Email template " . $id . " created",
+                'description' => "Email template " . $emailTemplate->id . " created",
             ]);
 
             return response()->json([
