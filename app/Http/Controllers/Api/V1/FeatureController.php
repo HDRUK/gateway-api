@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Feature;
@@ -170,10 +171,18 @@ class FeatureController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $feature = Feature::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Feature " . $feature->id . " created",
             ]);
 
             return response()->json([
@@ -258,10 +267,18 @@ class FeatureController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Feature::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Feature " . $id . " updated",
             ]);
 
             return response()->json([
@@ -350,6 +367,7 @@ class FeatureController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -358,6 +376,13 @@ class FeatureController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Feature::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Feature " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -420,6 +445,9 @@ class FeatureController extends Controller
     public function destroy(DeleteFeature $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $features = Feature::findOrFail($id);
             if ($features) {
                 $features->delete();
@@ -428,6 +456,13 @@ class FeatureController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Feature " . $id . " deleted",
+            ]);
 
             throw new NotFoundException();
         } catch (Exception $e) {

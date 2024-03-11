@@ -458,9 +458,9 @@ class TagController extends Controller
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
-                'action_type' => 'UPDATE',
+                'action_type' => 'DELETE',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Tag " . $id . " updated",
+                'description' => "Tag " . $id . " deleted",
             ]);
 
             return response()->json([
