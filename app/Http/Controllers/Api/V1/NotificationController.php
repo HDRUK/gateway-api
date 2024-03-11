@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
-
 use App\Models\Notification;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -52,11 +51,26 @@ class NotificationController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $perPage = request('perPage', Config::get('constants.per_page'));
-        $notifications = Notification::where('enabled', 1)->paginate($perPage);
-        return response()->json(
-            $notifications
-        );
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $notifications = Notification::where('enabled', 1)->paginate($perPage);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Notification get all",
+            ]);
+
+            return response()->json(
+                $notifications
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -106,17 +120,31 @@ class NotificationController extends Controller
      */
     public function show(GetNotification $request, int $id): JsonResponse
     {
-        $notification = Notification::findOrFail($id);
-        if ($notification) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $notification,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        }
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+            $notification = Notification::findOrFail($id);
+            if ($notification) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $notification,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Notification get " . $id,
+            ]);
+    
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -160,6 +188,7 @@ class NotificationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $notification = Notification::create([
                 'notification_type' => $input['notification_type'],
@@ -167,6 +196,13 @@ class NotificationController extends Controller
                 'opt_in' => $input['opt_in'],
                 'enabled' => $input['enabled'],
                 'email' => $input['email'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Notification " . $notification->id . " created",
             ]);
 
             return response()->json([
@@ -245,6 +281,7 @@ class NotificationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Notification::where('id', $id)->update([
                 'notification_type' => $input['notification_type'],
@@ -252,6 +289,13 @@ class NotificationController extends Controller
                 'opt_in' => $input['opt_in'],
                 'enabled' => $input['enabled'],
                 'email' => $input['email'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Notification " . $id . " updated",
             ]);
 
             return response()->json([
@@ -329,6 +373,8 @@ class NotificationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'notification_type',
                 'message',
@@ -340,6 +386,13 @@ class NotificationController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Notification::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Notification " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -395,10 +448,20 @@ class NotificationController extends Controller
     public function destroy(DeleteNotification $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $notification = Notification::findOrFail($id);
             if ($notification) {
                 $notification->delete();
 
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'DELETE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Notification " . $id . " deleted",
+                ]);
+    
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
