@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
-use App\Models\Category;
 use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Tool\GetTool;
 use App\Http\Controllers\Controller;
@@ -186,6 +185,8 @@ class ToolController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'mongo_object_id', 
                 'name', 
@@ -204,6 +205,13 @@ class ToolController extends Controller
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
 
             $this->indexElasticTools($input, (int) $tool->id);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tool " . $tool->id . " created",
+            ]);
 
             return response()->json([
                 'message' => 'created',
@@ -284,6 +292,8 @@ class ToolController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'mongo_object_id', 
                 'name', 
@@ -303,6 +313,13 @@ class ToolController extends Controller
 
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tool " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -390,6 +407,7 @@ class ToolController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $arrayKeys = [
                 'mongo_object_id',
                 'name',
@@ -411,6 +429,13 @@ class ToolController extends Controller
                 ToolHasTag::where('tool_id', $id)->delete();
                 $this->insertToolHasTag($input['tag'], (int) $id);
             };
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tool " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -480,9 +505,19 @@ class ToolController extends Controller
     public function destroy(DeleteTool $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             Tool::where('id', $id)->delete();
             ToolHasTag::where('tool_id', $id)->delete();
             
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tool " . $id . " deleted",
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
