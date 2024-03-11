@@ -49,17 +49,21 @@ class ToolController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tools = Tool::with([
-                'user', 
-                'tag',
-                'team',
-            ])
-            ->where('enabled', 1)
-            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        try {
+            $tools = Tool::with([
+                    'user', 
+                    'tag',
+                    'team',
+                ])
+                ->where('enabled', 1)
+                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
-        return response()->json(
-            $tools
-        );
+            return response()->json(
+                $tools
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
