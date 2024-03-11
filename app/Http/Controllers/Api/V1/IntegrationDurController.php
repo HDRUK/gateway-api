@@ -1196,7 +1196,7 @@ class IntegrationDurController extends Controller
         try {
 
             $durMatch = Dur::where(['id' => $id])
-                ->with(['datasets', 'keywords'])
+                ->with(['datasets', 'keywords', 'sector'])
                 ->first()
                 ->toArray();
 
@@ -1214,6 +1214,8 @@ class IntegrationDurController extends Controller
                 $keywords[] = $k['name'];
             }
 
+            $sector = ($durMatch['sector'] != null) ? Sector::where(['id' => $durMatch['sector']])->first()->name : null;
+
             $toIndex = [
                 'projectTitle' => $durMatch['project_title'],
                 'laySummary' => $durMatch['lay_summary'],
@@ -1221,7 +1223,8 @@ class IntegrationDurController extends Controller
                 'technicalSummary' => $durMatch['technical_summary'],
                 'fundersAndSponsors' => $durMatch['funders_and_sponsors'],
                 'datasetTitles' => $datasetTitles,
-                'keywords' => $keywords
+                'keywords' => $keywords,
+                'sector' => $sector,
             ];
 
             $params = [
