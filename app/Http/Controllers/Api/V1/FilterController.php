@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
-
 use Exception;
 use App\Models\Filter;
 use Illuminate\Support\Facades\Http;
@@ -209,11 +209,19 @@ class FilterController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $filter = Filter::create([
                 'type' => $input['type'],
                 'keys' => $input['keys'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $filter->id . " created",
             ]);
 
             return response()->json([
@@ -289,11 +297,19 @@ class FilterController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Filter::where('id', $id)->update([
                 'type' => $input['type'],
                 'keys' => $input['keys'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $id . " updated",
             ]);
 
             return response()->json([
@@ -368,11 +384,20 @@ class FilterController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = ['type', 'keys', 'enabled'];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Filter::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -428,6 +453,9 @@ class FilterController extends Controller
     public function destroy(DeleteFilter $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $filter = Filter::findOrFail($id);
             if ($filter) {
                 $filter->delete();
@@ -436,6 +464,13 @@ class FilterController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $id . " deleted",
+            ]);
 
             throw new NotFoundException();
         } catch (Exception $e) {
