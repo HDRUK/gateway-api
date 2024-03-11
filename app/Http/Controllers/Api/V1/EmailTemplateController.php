@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use Illuminate\Http\Request;
@@ -52,11 +53,25 @@ class EmailTemplateController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $emailTemplates = EmailTemplate::all()->toArray();
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        return response()->json(
-            $emailTemplates
-        );
+            $emailTemplates = EmailTemplate::all()->toArray();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Email template get all",
+            ]);
+
+            return response()->json(
+                $emailTemplates
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -112,19 +127,33 @@ class EmailTemplateController extends Controller
      */
     public function show(GetEmailTemplate $request, int $id): JsonResponse
     {
-        $emailTemplates = EmailTemplate::where([
-            'id' =>  $id,
-            'enabled' => 1,
-        ])->get();
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        if ($emailTemplates->count()) {
-            return response()->json([
-                'message' => 'success',
-                'data' => $emailTemplates,
-            ], 200);
+            $emailTemplates = EmailTemplate::where([
+                'id' =>  $id,
+                'enabled' => 1,
+            ])->get();
+    
+            if ($emailTemplates->count()) {
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $emailTemplates,
+                ], 200);
+            }
+    
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Email template get " . $id,
+            ]);
+
+            throw new NotFoundException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new NotFoundException();
     }
 
     /**
@@ -176,12 +205,20 @@ class EmailTemplateController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $emailTemplate = EmailTemplate::create([
                 'identifier' => $input['identifier'],
                 'subject' => html_entity_decode($input['subject']),
                 'body' => html_entity_decode($input['body']),
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Email template " . $id . " created",
             ]);
 
             return response()->json([
@@ -268,12 +305,20 @@ class EmailTemplateController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             EmailTemplate::where('id', $id)->update([
                 'identifier' => $input['identifier'],
                 'subject' => html_entity_decode($input['subject']),
                 'body' => html_entity_decode($input['body']),
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Email template " . $id . " updated",
             ]);
 
             return response()->json([
@@ -364,6 +409,7 @@ class EmailTemplateController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $array = [];
 
             if (array_key_exists('identifier', $input)) {
@@ -383,6 +429,13 @@ class EmailTemplateController extends Controller
             }
 
             EmailTemplate::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Email template " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -445,9 +498,19 @@ class EmailTemplateController extends Controller
     public function destroy(DeleteEmailTemplate $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $emailTemplates = EmailTemplate::findOrFail($id);
             if ($emailTemplates) {
                 $emailTemplates->delete();
+
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'DELETE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Email template " . $id . " deleted",
+                ]);
 
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
