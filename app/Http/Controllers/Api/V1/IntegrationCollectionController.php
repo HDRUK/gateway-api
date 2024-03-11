@@ -84,6 +84,9 @@ class IntegrationCollectionController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $collections = Collection::with([
                     'datasets',
@@ -97,6 +100,14 @@ class IntegrationCollectionController extends Controller
                     'team',
                 ])->paginate((int) $perPage, ['*'], 'page');
 
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection get all",
+            ]);
+            
             return response()->json(
                 $collections
             );
@@ -158,6 +169,9 @@ class IntegrationCollectionController extends Controller
     public function show(GetCollection $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
             $collections = Collection::where(['id' => $id])
                 ->with([
                     'datasets', 
@@ -170,6 +184,14 @@ class IntegrationCollectionController extends Controller
                     },
                     'team',
                 ])->get();
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection get " . $id,
+            ]);
 
             return response()->json([
                 'message' => 'success',
