@@ -617,6 +617,9 @@ class SearchController extends Controller
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
+            $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
+            $input['aggs'] = $aggs;
+
             $urlString = env('SEARCH_SERVICE_URL') . '/search/dur';
 
             $response = Http::post($urlString, $input);

@@ -1189,7 +1189,7 @@ class DurController extends Controller
         try {
 
             $durMatch = Dur::where(['id' => $id])
-                ->with(['datasets', 'keywords', 'sector'])
+                ->with(['datasets', 'keywords', 'team', 'sector'])
                 ->first()
                 ->toArray();
 
@@ -1215,6 +1215,9 @@ class DurController extends Controller
                 'publicBenefitStatement' => $durMatch['public_benefit_statement'],
                 'technicalSummary' => $durMatch['technical_summary'],
                 'fundersAndSponsors' => $durMatch['funders_and_sponsors'],
+                'publisherName' => $durMatch['team']['name'],
+                'organisationName' => $durMatch['organisation_name'],
+                'sector' => $sector,
                 'datasetTitles' => $datasetTitles,
                 'keywords' => $keywords,
                 'sector' => $sector,
