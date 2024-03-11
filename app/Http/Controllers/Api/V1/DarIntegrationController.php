@@ -74,7 +74,7 @@ class DarIntegrationController extends Controller
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'GET',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "DAR get all",
+                'description' => "Integration DAR get all",
             ]);
 
             return response()->json(
@@ -157,7 +157,7 @@ class DarIntegrationController extends Controller
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'GET',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "DAR get " . $id,
+                'description' => "Integration DAR get " . $id,
             ]);
     
             return response()->json([
@@ -241,7 +241,7 @@ class DarIntegrationController extends Controller
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'CREATE',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "DAR " . $dar->id . " created",
+                'description' => "Integration DAR " . $dar->id . " created",
             ]);
 
             return response()->json([
@@ -350,7 +350,7 @@ class DarIntegrationController extends Controller
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'UPDATE',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "DAR " . $id . " updated",
+                'description' => "Integration DAR " . $id . " updated",
             ]);
 
             return response()->json([
@@ -459,7 +459,7 @@ class DarIntegrationController extends Controller
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'UPDATE',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "DAR " . $id . " updated",
+                'description' => "Integration DAR " . $id . " updated",
             ]);
 
             return response()->json([
@@ -533,7 +533,7 @@ class DarIntegrationController extends Controller
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'DELETE',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "DAR " . $id . " deleted",
+                'description' => "Integration DAR " . $id . " deleted",
             ]);
 
             throw new NotFoundException();
