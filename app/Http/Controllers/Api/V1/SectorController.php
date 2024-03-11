@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Sector;
@@ -47,10 +48,25 @@ class SectorController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $sectors = Sector::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
-        return response()->json(
-            $sectors
-        );
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $sectors = Sector::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Sector get all",
+            ]);
+
+            return response()->json(
+                $sectors
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -97,17 +113,31 @@ class SectorController extends Controller
      */
     public function show(GetSector $request, int $id): JsonResponse
     {
-        $sector = Sector::findOrFail($id);
-        if ($sector) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $sector,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        }
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+            $sector = Sector::findOrFail($id);
+            if ($sector) {
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Sector get " . $id,
+                ]);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $sector,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+    
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -148,10 +178,18 @@ class SectorController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $sector = Sector::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Sector " . $sector->id . " created",
             ]);
 
             return response()->json([
@@ -225,10 +263,18 @@ class SectorController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Sector::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Sector " . $id . " updated",
             ]);
 
             return response()->json([
@@ -301,6 +347,8 @@ class SectorController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -309,6 +357,13 @@ class SectorController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Sector::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Sector " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -363,22 +418,36 @@ class SectorController extends Controller
      */
     public function destroy(DeleteSector $request, int $id): JsonResponse
     {
-        $sector = Sector::findOrFail($id);
-        if ($sector) {
-            $sector->enabled = false;
-            if ($sector->save()) {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+    
+            $sector = Sector::findOrFail($id);
+            if ($sector) {
+                $sector->enabled = false;
+                if ($sector->save()) {
+                    Auditor::log([
+                        'user_id' => $jwtUser['id'],
+                        'action_type' => 'DELETE',
+                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'description' => "Sector " . $id . " deleted",
+                    ]);
+
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    ], Config::get('statuscodes.STATUS_OK.code'));
+                }
+    
                 return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                ], Config::get('statuscodes.STATUS_OK.code'));
+                    'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+                ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
             }
-
+    
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 }
