@@ -40,7 +40,7 @@ class FilterSeeder extends Seeder
         $filters = [
             'publisherName',
             'organisationName',
-            'organisationSector',
+            'sector',
             'datasetTitles',
             'latestApprovalDate',
             'accessType'

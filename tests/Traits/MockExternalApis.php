@@ -487,7 +487,10 @@ trait MockExternalApis
                                     'technicalSummary' => '',
                                     'fundersAndSponsors' => '',
                                     'datasetTitles' => ['some', 'dataset', 'title'],
-                                    'keywords' => ['some', 'useful', 'keywords']
+                                    'keywords' => ['some', 'useful', 'keywords'],
+                                    'sector' => 'Academia',
+                                    'publisherName' => 'A Publisher',
+                                    'organisationName' => 'An Organisation'
                                 ],
                                 'highlight' => [
                                     'laySummary' => []
@@ -507,7 +510,10 @@ trait MockExternalApis
                                     'technicalSummary' => '',
                                     'fundersAndSponsors' => '',
                                     'datasetTitles' => ['some', 'dataset', 'title'],
-                                    'keywords' => ['some', 'useful', 'keywords']
+                                    'keywords' => ['some', 'useful', 'keywords'],
+                                    'sector' => 'Academia',
+                                    'publisherName' => 'A Publisher',
+                                    'organisationName' => 'An Organisation'
                                 ],
                                 'highlight' => [
                                     'laySummary' => []
@@ -527,7 +533,10 @@ trait MockExternalApis
                                     'technicalSummary' => '',
                                     'fundersAndSponsors' => '',
                                     'datasetTitles' => ['some', 'dataset', 'title'],
-                                    'keywords' => ['some', 'useful', 'keywords']
+                                    'keywords' => ['some', 'useful', 'keywords'],
+                                    'sector' => 'Academia',
+                                    'publisherName' => 'A Publisher',
+                                    'organisationName' => 'An Organisation'
                                 ],
                                 'highlight' => [
                                     'laySummary' => []

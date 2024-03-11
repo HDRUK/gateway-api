@@ -55,6 +55,9 @@ if cfg.get('fmaEnabled'):
 if cfg.get('searchEnabled'):
     include(cfg.get('searchServiceRoot') + '/Tiltfile')
 
+if cfg.get('elasticEnabled'):
+    include(cfg.get('elasticServiceRoot') + '/Tiltfile')
+
 docker_build(
     ref='hdruk/' + cfg.get('name'),
     context='.',

@@ -474,6 +474,9 @@ class SearchTest extends TestCase
                         'fundersAndSponsors',
                         'datasetTitles',
                         'keywords',
+                        'publisherName',
+                        'sector',
+                        'organisationName',
                         'created_at'
                     ],
                     'organisationName',
