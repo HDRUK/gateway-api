@@ -1970,7 +1970,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
-            'sanitize.input',
+            //'sanitize.input',
             'check.access:permissions,datasets.update',
         ],
         'constraint' => [
