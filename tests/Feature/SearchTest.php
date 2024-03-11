@@ -3,6 +3,9 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use App\Models\Dataset;
+use App\Models\Team;
+use App\Models\User;
 use Database\Seeders\DurSeeder;
 use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
@@ -52,6 +55,8 @@ class SearchTest extends TestCase
             CollectionHasKeywordSeeder::class,
             DurSeeder::class,
         ]);
+
+        $this->metadataUpdate = $this->getFakeUpdateDataset();
     }
 
     /**
@@ -459,6 +464,50 @@ class SearchTest extends TestCase
      */
     public function test_data_uses_search_with_success(): void
     {
+        // update dataset with id 1
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            '/api/v1/datasets/' . 1,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadataUpdate,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header,
+        );
+        // update dur with id 1 to include updated dataset and another
+        $mockData = [
+            'datasets' => [
+                0 => [
+                    'id' => 1,
+                    'reason' => 'something',
+                    'is_locked' => 0
+                ],
+                1 => [
+                    'id' => 2,
+                    'reason' => 'something',
+                    'is_locked' => 0
+                ]
+            ],
+            'keywords' => [],
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+        ];
+
+        $response = $this->json(
+            'PUT',
+            '/api/v1/dur/' . 1,
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(200);
+
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur", ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -499,6 +548,10 @@ class SearchTest extends TestCase
             'to',
             'total',                
         ]);
+        $this->assertTrue($response['data'][0]['_id'] === "1");
+        // Test dataset titles are alphabetical - "updated" will be at the end
+        $endTitle = array_key_last($response['data'][0]['datasetTitles']);
+        $this->assertTrue($response['data'][0]['datasetTitles'][$endTitle] === 'Updated HDR UK Papers & Preprints');
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
         $response->assertStatus(200);
