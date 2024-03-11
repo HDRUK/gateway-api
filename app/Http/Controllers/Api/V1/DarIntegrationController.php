@@ -157,7 +157,7 @@ class DarIntegrationController extends Controller
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'GET',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "DAR get by id " . $id,
+                'description' => "DAR get " . $id,
             ]);
     
             return response()->json([

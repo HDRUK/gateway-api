@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Mauro;
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Role;
@@ -79,6 +79,8 @@ class TeamController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $sort = [];
             $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
             foreach ($sortArray as $item) {
@@ -114,6 +116,13 @@ class TeamController extends Controller
                 ->toArray();
 
             $teams['data'] = $this->getTeams($teams['data']);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Get all",
+            ]);
 
             return response()->json(
                 $teams
@@ -178,7 +187,17 @@ class TeamController extends Controller
     public function show(GetTeam $request, int $teamId): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Get by " . $teamId,
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -248,6 +267,8 @@ class TeamController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayTeam = array_filter($input, function ($key) {
                 return $key !== 'notifications' || $key !== 'users';
             }, ARRAY_FILTER_USE_KEY);
@@ -279,6 +300,13 @@ class TeamController extends Controller
             } else {
                 throw new NotFoundException();
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Team " . $team->id . " created",
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -383,6 +411,8 @@ class TeamController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -413,6 +443,13 @@ class TeamController extends Controller
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Team " . $teamId . " updated",
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -503,6 +540,8 @@ class TeamController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -534,6 +573,13 @@ class TeamController extends Controller
 
             $users = array_key_exists('users', $input) ? $input['users'] : [];
             $this->updateTeamAdminUsers($teamId, $users);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Team " . $teamId . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -588,6 +634,9 @@ class TeamController extends Controller
     public function destroy(DeleteTeam $request, int $teamId): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $team = Team::findOrFail($teamId);
             if ($team) {
                 TeamHasNotification::where('team_id', $teamId)->delete();
@@ -603,6 +652,13 @@ class TeamController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Team " . $teamId . " deleted",
+            ]);
 
             throw new NotFoundException();
         } catch (Exception $e) {
