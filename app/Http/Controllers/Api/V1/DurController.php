@@ -1217,7 +1217,6 @@ class DurController extends Controller
                 'fundersAndSponsors' => $durMatch['funders_and_sponsors'],
                 'publisherName' => $durMatch['team']['name'],
                 'organisationName' => $durMatch['organisation_name'],
-                'sector' => $sector,
                 'datasetTitles' => $datasetTitles,
                 'keywords' => $keywords,
                 'sector' => $sector,
