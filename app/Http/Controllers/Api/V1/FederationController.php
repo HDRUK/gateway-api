@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Federation;
@@ -91,14 +92,29 @@ class FederationController extends Controller
      */
     public function index(GetAllFederation $request, int $teamId)
     {
-        $perPage = request('per_page', Config::get('constants.per_page'));
-        $federations = Federation::whereHas('team', function ($query) use ($teamId) {
-            $query->where('id', $teamId);
-        })->with(['notifications'])->paginate($perPage, ['*'], 'page');
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        return response()->json(
-            $federations
-        );
+            $perPage = request('per_page', Config::get('constants.per_page'));
+            $federations = Federation::whereHas('team', function ($query) use ($teamId) {
+                $query->where('id', $teamId);
+            })->with(['notifications'])->paginate($perPage, ['*'], 'page');
+    
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Federation get all",
+            ]);
+
+            return response()->json(
+                $federations
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -160,14 +176,29 @@ class FederationController extends Controller
      */
     public function show(GetFederation $request, int $teamId, int $federationId)
     {
-        $federations = Federation::whereHas('team', function ($query) use ($teamId) {
-            $query->where('id', $teamId);
-        })->where('id', $federationId)->with(['notifications'])->first()->toArray();
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $federations,
-        ], 200);
+            $federations = Federation::whereHas('team', function ($query) use ($teamId) {
+                $query->where('id', $teamId);
+            })->where('id', $federationId)->with(['notifications'])->first()->toArray();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Federation get " . $federationId,
+            ]);
+    
+            return response()->json([
+                'message' => 'success',
+                'data' => $federations,
+            ], 200);    
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -236,6 +267,8 @@ class FederationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $payload = [
                 'federation_type' => $input['federation_type'],
                 'auth_type' => $input['auth_type'],
@@ -293,6 +326,14 @@ class FederationController extends Controller
                     'notification_id' => $notification->id,
                 ]);
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Federation " . $federation->id . " created",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
@@ -380,6 +421,7 @@ class FederationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $updateArray = [
                 'federation_type' => $input['federation_type'],
@@ -441,6 +483,14 @@ class FederationController extends Controller
                     $query->where('id', $teamId);
                 })->with(['notifications'])->first();
 
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Federation " . $federationId . " updated",
+            ]);
+    
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $response,
@@ -527,8 +577,8 @@ class FederationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $input = $request->all();
             $arrayKeys = [
                 'federation_type',
                 'auth_type',
@@ -594,6 +644,14 @@ class FederationController extends Controller
             $response = Federation::where('id', '=', $federationId)->whereHas('team', function ($query) use ($teamId) {
                 $query->where('id', $teamId);
             })->with(['notifications'])->first();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Federation " . $federationId . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -667,6 +725,9 @@ class FederationController extends Controller
     public function destroy(DeleteFederation $request, int $teamId, int $federationId)
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $federationNotifications = FederationHasNotification::where([
                 'federation_id' => $federationId,
             ])->pluck('notification_id');
@@ -682,6 +743,14 @@ class FederationController extends Controller
                 'federation_id' => $federationId,
                 'team_id' => $teamId,
             ])->delete();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Federation " . $federationId . " deleted",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
