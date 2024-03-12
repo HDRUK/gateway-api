@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use DB;
+use Auditor;
 use Config;
 use Exception;
 
@@ -50,10 +50,25 @@ class PublicationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $publications = DB::table('publications')->paginate(Config::get('constants.per_page'), ['*'], 'page');
-        return response()->json(
-            $publications
-        );
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $publications = Publication::paginate(Config::get('constants.per_page'), ['*'], 'page');
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Publication get all",
+            ]);
+
+            return response()->json(
+                $publications
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -111,6 +126,9 @@ class PublicationController extends Controller
     public function show(GetPublication $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $publication = Publication::where('id', $id)->get();
             if ($publication) {
                 return response()->json([
@@ -118,6 +136,13 @@ class PublicationController extends Controller
                     'data' => $publication,
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Publication get " . $id,
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
@@ -173,6 +198,8 @@ class PublicationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $publication = Publication::create([
                 'paper_title' => $input['paper_title'],
                 'authors' => $input['authors'],
@@ -181,6 +208,13 @@ class PublicationController extends Controller
                 'publication_type' => $input['publication_type'],
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Publication " . $publication->id . " created",
             ]);
 
             return response()->json([
@@ -265,6 +299,8 @@ class PublicationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             Publication::where('id', $id)->update([
                 'paper_title' => $input['paper_title'],
                 'authors' => $input['authors'],
@@ -273,6 +309,13 @@ class PublicationController extends Controller
                 'publication_type' => $input['publication_type'],
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Publication " . $id . " updated",
             ]);
 
             return response()->json([
@@ -357,6 +400,8 @@ class PublicationController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $publication = Publication::where('id', $id)->update([
                 'paper_title' => $input['paper_title'],
                 'authors' => $input['authors'],
@@ -365,6 +410,13 @@ class PublicationController extends Controller
                 'publication_type' => $input['publication_type'],
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Publication " . $id . " updated",
             ]);
 
             return response()->json([
@@ -429,10 +481,20 @@ class PublicationController extends Controller
     public function destroy(DeletePublication $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $publication = Publication::findOrFail($id);
             if ($publication) {
                 $publication->delete();
 
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'DELETE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Publication " . $id . " deleted",
+                ]);
+    
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
