@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Category;
@@ -42,11 +43,26 @@ class CategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = request('perPage', Config::get('constants.per_page'));
-        $categories = Category::where('enabled', 1)->paginate($perPage);
-        return response()->json(
-            $categories
-        );
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $categories = Category::where('enabled', 1)->paginate($perPage);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Category get all",
+            ]);
+
+            return response()->json(
+                $categories
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -94,7 +110,17 @@ class CategoryController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $category = Category::where(['id' => $id,])->get();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Category get " . $id,
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -143,10 +169,18 @@ class CategoryController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $category = Category::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Category " . $category->id . " created",
             ]);
 
             return response()->json([
@@ -220,10 +254,18 @@ class CategoryController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Category::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Category " . $id . " updated",
             ]);
 
             return response()->json([
@@ -296,6 +338,8 @@ class CategoryController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -304,6 +348,13 @@ class CategoryController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Category::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Category " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -358,22 +409,37 @@ class CategoryController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        $category = Category::findOrFail($id);
-        if ($category) {
-            $category->enabled = false;
-            if ($category->save()) {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+    
+            $category = Category::findOrFail($id);
+            if ($category) {
+                $category->enabled = false;
+                if ($category->save()) {
+
+                    Auditor::log([
+                        'user_id' => $jwtUser['id'],
+                        'action_type' => 'DELETE',
+                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'description' => "Category " . $id . " deleted",
+                    ]);
+
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    ], Config::get('statuscodes.STATUS_OK.code'));
+                }
+    
                 return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                ], Config::get('statuscodes.STATUS_OK.code'));
+                    'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+                ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
             }
-
+    
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 }
