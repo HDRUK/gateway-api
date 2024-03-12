@@ -159,10 +159,20 @@ class SearchController extends Controller
             }
 
             if ($download && $downloadType === "list") {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search datasets export data - list",
+                ]);
                 return Excel::download(new DatasetListExport($datasetsArray), 'datasets.csv');
             }
 
             if ($download && $downloadType === "table") {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search datasets export data - table",
+                ]);
                 return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
             }
 
@@ -676,6 +686,11 @@ class SearchController extends Controller
             }
 
             if ($download) {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search dur export data",
+                ]);
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
 
