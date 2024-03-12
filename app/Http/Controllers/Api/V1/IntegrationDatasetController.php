@@ -123,107 +123,122 @@ class IntegrationDatasetController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $matches = [];
-        $teamId = $request->query('team_id',null);
-        $filterStatus = $request->query('status', null);
-        $datasetId = $request->query('dataset_id', null);
-        $mongoPId = $request->query('mongo_pid', null);
-
-        // Injection to override the team_id in the scenario that an integration
-        // is making the call, to only provide data the integration is allowed
-        // to see
-        $this->overrideTeamId($teamId, $request->headers->all());
-        
-        $sort = $request->query('sort', 'created:desc');
-        
-        $tmp = explode(":", $sort);
-        $sortField = $tmp[0];
-        $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
-
-        $sortOnMetadata = str_starts_with($sortField, 'metadata.');
-
-        $allFields = collect(Dataset::first())->keys()->toArray();
-        if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
-            return response()->json([
-                'message' => '\"' . $sortField .'\" is not a valid field to sort on'
-            ], 400);
-        }
-
-        $validDirections = ['desc', 'asc'];
-
-        if (!in_array($sortDirection, $validDirections)) {
-            //if the sort direction is not desc or asc then return a bad request
-            return response()->json([
-                'message' => 'Sort direction must be either: ' . 
-                    implode(' OR ',$validDirections) . 
-                    '. Not "' . $sortDirection .'"'
-                ], 400);
-        }
-
-        // apply any initial filters to get initial datasets 
-        $filterTitle = $request->query('title', null);
-
-        $initialDatasets = Dataset::when($teamId, function ($query) use ($teamId) {
-            return $query->where('team_id', '=', $teamId);
-        })->when($datasetId, function ($query) use ($datasetId) {
-                return $query->where('datasetid', '=', $datasetId);
-        })->when($mongoPId, function ($query) use ($mongoPId) {
-            return $query->where('mongo_pid', '=', $mongoPId);
-        })->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
-            function ($query) {
-                return $query->withTrashed();
-        })->when($filterStatus, 
-            function ($query) use ($filterStatus) {
-                return $query->where('status', '=', $filterStatus);
-        })->select(['id', 'updated'])->get();
-
-        // Map initially found datasets to just ids.
-        foreach ($initialDatasets as $ds) {
-            $matches[] = $ds->id;
-        }
-
-        if (!empty($filterTitle)) {
-            // If we've received a 'title' for the search, then only return
-            // datasets that match that title
-            $titleMatches = [];
+        try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
             
-            // For each of the initially found datasets matching previous
-            // filters and refine further on textual based matches.
-            foreach ($matches as $m) {
-                $version = DatasetVersion::where('dataset_id', $m)
-                ->filterTitle($filterTitle)
-                ->latest('version')->select('dataset_id')->first();
-
-                if ($version) {
-                    $titleMatches[] = $version->dataset_id;
-                }
+            $matches = [];
+            $teamId = $request->query('team_id',null);
+            $filterStatus = $request->query('status', null);
+            $datasetId = $request->query('dataset_id', null);
+            $mongoPId = $request->query('mongo_pid', null);
+    
+            // Injection to override the team_id in the scenario that an integration
+            // is making the call, to only provide data the integration is allowed
+            // to see
+            $this->overrideTeamId($teamId, $request->headers->all());
+            
+            $sort = $request->query('sort', 'created:desc');
+            
+            $tmp = explode(":", $sort);
+            $sortField = $tmp[0];
+            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+    
+            $sortOnMetadata = str_starts_with($sortField, 'metadata.');
+    
+            $allFields = collect(Dataset::first())->keys()->toArray();
+            if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
+                return response()->json([
+                    'message' => '\"' . $sortField .'\" is not a valid field to sort on'
+                ], 400);
             }
-
-            // Finally intersect our two arrays to find commonality between all
-            // filtering methods. This will return a much slimmer array of returned
-            // items
-            $matches = array_intersect($matches, $titleMatches);            
-        }
-
-        $perPage = request('per_page', Config::get('constants.per_page'));
-
-        // perform query for the matching datasets with ordering and pagination. 
-        // Include soft-deleted versions.
-        $datasets = Dataset::with(['versions' => fn($version) => $version->withTrashed()->latest()])
-            ->whereIn('id', $matches)
-            ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
+    
+            $validDirections = ['desc', 'asc'];
+    
+            if (!in_array($sortDirection, $validDirections)) {
+                //if the sort direction is not desc or asc then return a bad request
+                return response()->json([
+                    'message' => 'Sort direction must be either: ' . 
+                        implode(' OR ',$validDirections) . 
+                        '. Not "' . $sortDirection .'"'
+                    ], 400);
+            }
+    
+            // apply any initial filters to get initial datasets 
+            $filterTitle = $request->query('title', null);
+    
+            $initialDatasets = Dataset::when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
+            })->when($datasetId, function ($query) use ($datasetId) {
+                    return $query->where('datasetid', '=', $datasetId);
+            })->when($mongoPId, function ($query) use ($mongoPId) {
+                return $query->where('mongo_pid', '=', $mongoPId);
+            })->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                 function ($query) {
                     return $query->withTrashed();
-                })
-            ->when($sortOnMetadata, 
-                fn($query) => $query->orderByMetadata($sortField, $sortDirection),
-                fn($query) => $query->orderBy($sortField, $sortDirection)
-            )
-            ->paginate($perPage, ['*'], 'page');
+            })->when($filterStatus, 
+                function ($query) use ($filterStatus) {
+                    return $query->where('status', '=', $filterStatus);
+            })->select(['id', 'updated'])->get();
+    
+            // Map initially found datasets to just ids.
+            foreach ($initialDatasets as $ds) {
+                $matches[] = $ds->id;
+            }
+    
+            if (!empty($filterTitle)) {
+                // If we've received a 'title' for the search, then only return
+                // datasets that match that title
+                $titleMatches = [];
+                
+                // For each of the initially found datasets matching previous
+                // filters and refine further on textual based matches.
+                foreach ($matches as $m) {
+                    $version = DatasetVersion::where('dataset_id', $m)
+                    ->filterTitle($filterTitle)
+                    ->latest('version')->select('dataset_id')->first();
+    
+                    if ($version) {
+                        $titleMatches[] = $version->dataset_id;
+                    }
+                }
+    
+                // Finally intersect our two arrays to find commonality between all
+                // filtering methods. This will return a much slimmer array of returned
+                // items
+                $matches = array_intersect($matches, $titleMatches);            
+            }
+    
+            $perPage = request('per_page', Config::get('constants.per_page'));
+    
+            // perform query for the matching datasets with ordering and pagination. 
+            // Include soft-deleted versions.
+            $datasets = Dataset::with(['versions' => fn($version) => $version->withTrashed()->latest()])
+                ->whereIn('id', $matches)
+                ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
+                    function ($query) {
+                        return $query->withTrashed();
+                    })
+                ->when($sortOnMetadata, 
+                    fn($query) => $query->orderByMetadata($sortField, $sortDirection),
+                    fn($query) => $query->orderBy($sortField, $sortDirection)
+                )
+                ->paginate($perPage, ['*'], 'page');
+    
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dataset get all",
+            ]);
 
-        return response()->json(
-            $datasets
-        );
+            return response()->json(
+                $datasets
+            );    
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -294,6 +309,8 @@ class IntegrationDatasetController extends Controller
     {
 
         try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
             $dataset = Dataset::with(['namedEntities', 'collections','versions'])->findOrFail($id);
 
             $this->checkAppCanHandleDataset($dataset->team_id,$request);
@@ -333,6 +350,14 @@ class IntegrationDatasetController extends Controller
                 throw new Exception('You have given a schema_version but not schema_model');
             }
             
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dataset get " . $id,
+            ]);
+
             return response()->json([
                 'message' => 'success',
                 'data' => $dataset,

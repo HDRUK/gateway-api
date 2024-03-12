@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 
+use Auditor;
 use Config;
 use Exception;
 
@@ -34,8 +35,7 @@ use MetadataManagementController AS MMC;
 
 class IntegrationDurController extends Controller
 {
-    use RequestTransformation;
-    use IntegrationOverride;
+    use RequestTransformation, IntegrationOverride;
 
     /**
      * @OA\Get(
@@ -121,24 +121,40 @@ class IntegrationDurController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = request('perPage', Config::get('constants.per_page'));
-        $dur = Dur::where('enabled', 1)
-            ->with([
-                'datasets', 
-                'keywords',
-                'users' => function ($query) {
-                    $query->distinct('id');
-                },
-                'applications' => function ($query) {
-                    $query->distinct('id');
-                },
-                'user',
-                'team',
-                'application',
-                ])->paginate($perPage);
-        return response()->json(
-            $dur
-        );
+        try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $dur = Dur::where('enabled', 1)
+                ->with([
+                    'datasets', 
+                    'keywords',
+                    'users' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'applications' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'user',
+                    'team',
+                    'application',
+                    ])->paginate($perPage);
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur Integration get all",
+            ]);
+
+            return response()->json(
+                $dur
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -230,6 +246,9 @@ class IntegrationDurController extends Controller
     public function show(GetDur $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
             $dur = Dur::where(['id' => $id])
                 ->with([
                     'datasets',
@@ -244,6 +263,14 @@ class IntegrationDurController extends Controller
                     'team',
                     'application',
                 ])->get();
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur Integration get " . $id,
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -346,6 +373,7 @@ class IntegrationDurController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
             $appId = null;
@@ -440,6 +468,14 @@ class IntegrationDurController extends Controller
             }
 
             $this->indexElasticDur($durId);
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur Integration " . $durId . " created",
+            ]);
 
             return response()->json([
                 'message' => 'created',
@@ -607,6 +643,7 @@ class IntegrationDurController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
             $appId = null;
@@ -687,6 +724,14 @@ class IntegrationDurController extends Controller
             }
 
             $this->indexElasticDur($id);
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur Integration " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -866,6 +911,7 @@ class IntegrationDurController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
             $appId = null;
@@ -951,6 +997,14 @@ class IntegrationDurController extends Controller
 
             $this->indexElasticDur($id);
 
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur Integration " . $id . " updated",
+            ]);
+
             return response()->json([
                 'message' => 'success',
                 'data' => Dur::where('id', $id)->with([
@@ -1016,9 +1070,20 @@ class IntegrationDurController extends Controller
     public function destroy(DeleteDur $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
             DurHasDataset::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
             Dur::where(['id' => $id])->delete();
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur Integration " . $id . " deleted",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),

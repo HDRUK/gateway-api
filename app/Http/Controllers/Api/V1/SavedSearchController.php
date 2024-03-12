@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Exceptions\NotFoundException;
@@ -52,11 +53,26 @@ class SavedSearchController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = request('perPage', Config::get('constants.per_page'));
-        $saved_searches = SavedSearch::where('enabled', 1)->with('filters')->paginate($perPage);
-        return response()->json(
-            $saved_searches,
-        );
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $saved_searches = SavedSearch::where('enabled', 1)->with('filters')->paginate($perPage);
+            
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Saved Search get all",
+            ]);
+
+            return response()->json(
+                $saved_searches,
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -106,7 +122,17 @@ class SavedSearchController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $saved_search = SavedSearch::where(['id' => $id,])->with(['filters'])->get();
+            
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Saved Search get " . $id,
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -155,6 +181,8 @@ class SavedSearchController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arraySearch = array_filter($input, function ($key) {
                 return $key !== 'filters';
             }, ARRAY_FILTER_USE_KEY);
@@ -176,6 +204,13 @@ class SavedSearchController extends Controller
             } else {
                 throw new NotFoundException();
             }
+            
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Saved Search " . $saved_search->id . " created",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
@@ -250,6 +285,7 @@ class SavedSearchController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $saved_search = SavedSearch::where('id', $id)->update([
                 'name' => $input['name'],
@@ -265,6 +301,13 @@ class SavedSearchController extends Controller
                     'filter_id' => (int) $filter,
                 ]);
             }
+            
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Saved Search " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -338,6 +381,8 @@ class SavedSearchController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'name',
                 'search_term',
@@ -358,6 +403,13 @@ class SavedSearchController extends Controller
                     'filter_id' => (int) $filter,
                 ]);
             }
+            
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Saved Search " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -412,23 +464,37 @@ class SavedSearchController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        $saved_search = SavedSearch::findOrFail($id);
-        if ($saved_search) {
-            $saved_search->enabled = false;
-            if ($saved_search->save()) {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+    
+            $saved_search = SavedSearch::findOrFail($id);
+            if ($saved_search) {
+                $saved_search->enabled = false;
+                if ($saved_search->save()) {
+                    Auditor::log([
+                        'user_id' => $jwtUser['id'],
+                        'action_type' => 'DELETE',
+                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'description' => "Saved Search " . $id . " deleted",
+                    ]);
+
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    ], Config::get('statuscodes.STATUS_OK.code'));
+                }
+    
                 return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                ], Config::get('statuscodes.STATUS_OK.code'));
+                    'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+                ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
             }
-
+    
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
 }

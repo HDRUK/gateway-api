@@ -95,6 +95,12 @@ class CollectionController extends Controller
                     'team',
                 ])->paginate((int) $perPage, ['*'], 'page');
 
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection get all",
+            ]);
+
             return response()->json(
                 $collections
             );
@@ -169,6 +175,12 @@ class CollectionController extends Controller
                     'team',
                 ])->get();
 
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection get " . $id,
+            ]);
+    
             return response()->json([
                 'message' => 'success',
                 'data' => $collections,

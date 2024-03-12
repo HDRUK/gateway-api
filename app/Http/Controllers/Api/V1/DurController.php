@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use App\Exceptions\NotFoundException;
 use Config;
 use Exception;
@@ -112,24 +113,39 @@ class DurController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $perPage = request('perPage', Config::get('constants.per_page'));
-        $dur = Dur::where('enabled', 1)
-            ->with([
-                'datasets', 
-                'keywords',
-                'users' => function ($query) {
-                    $query->distinct('id');
-                },
-                'applications' => function ($query) {
-                    $query->distinct('id');
-                },
-                'user',
-                'team',
-                'application',
-                ])->paginate($perPage);
-        return response()->json(
-            $dur
-        );
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+    
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $dur = Dur::where('enabled', 1)
+                ->with([
+                    'datasets', 
+                    'keywords',
+                    'users' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'applications' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'user',
+                    'team',
+                    'application',
+                    ])->paginate($perPage);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur get all",
+            ]);
+
+            return response()->json(
+                $dur
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -221,6 +237,9 @@ class DurController extends Controller
     public function show(GetDur $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $dur = Dur::where(['id' => $id])
                 ->with([
                     'datasets',
@@ -236,6 +255,13 @@ class DurController extends Controller
                     'application',
                 ])->get();
 
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur get " . $id,
+            ]);
+    
             return response()->json([
                 'message' => 'success',
                 'data' => $dur,
@@ -337,6 +363,7 @@ class DurController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $userId = null;
             $appId = null;
@@ -431,6 +458,13 @@ class DurController extends Controller
             }
 
             $this->indexElasticDur($durId);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur " . $durId . " created",
+            ]);
 
             return response()->json([
                 'message' => 'created',
@@ -598,6 +632,7 @@ class DurController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $userId = null;
             $appId = null;
@@ -678,6 +713,13 @@ class DurController extends Controller
             }
 
             $this->indexElasticDur($id);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -857,6 +899,7 @@ class DurController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $userId = null;
             $appId = null;
@@ -942,6 +985,13 @@ class DurController extends Controller
 
             $this->indexElasticDur($id);
 
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur " . $id . " updated",
+            ]);
+
             return response()->json([
                 'message' => 'success',
                 'data' => Dur::where('id', $id)->with([
@@ -1007,9 +1057,19 @@ class DurController extends Controller
     public function destroy(DeleteDur $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             DurHasDataset::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
             Dur::where(['id' => $id])->delete();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur " . $id . " deleted",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),

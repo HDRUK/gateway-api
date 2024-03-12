@@ -2,32 +2,27 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
-
 use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
-
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-
 use App\Http\Requests\Tool\GetTool;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tool\EditTool;
 use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
-
 use App\Http\Traits\RequestTransformation;
 use App\Http\Traits\IntegrationOverride;
-
 use MetadataManagementController AS MMC;
 
 class IntegrationToolController extends Controller
 {
-    use RequestTransformation;
-    use IntegrationOverride;
+    use RequestTransformation, IntegrationOverride;
 
     /**
      * @OA\Get(
@@ -47,12 +42,28 @@ class IntegrationToolController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $tools = Tool::with(['user', 'tag', 'team'])->where('enabled', 1)
-            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
-        return response()->json(
-            $tools
-        );
+            $tools = Tool::with(['user', 'tag', 'team'])
+                ->where('enabled', 1)
+                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration Tool get all",
+            ]);
+            
+            return response()->json(
+                $tools
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -98,6 +109,9 @@ class IntegrationToolController extends Controller
     public function show(GetTool $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
             $tools = Tool::with([
                 'user', 
                 'tag',
@@ -106,6 +120,14 @@ class IntegrationToolController extends Controller
                 'id' => $id,
                 'enabled' => 1,
             ])->get();
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration Tool get " . $id,
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -178,6 +200,7 @@ class IntegrationToolController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = $input['user_id'];
             $teamId = isset($input['team_id']) ? $input['team_id'] : null;
@@ -198,6 +221,14 @@ class IntegrationToolController extends Controller
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
             $this->indexElasticTools($input, (int) $tool->id);
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration Tool " . $tool->id . " created",
+            ]);
 
             return response()->json([
                 'message' => 'created',
@@ -277,6 +308,7 @@ class IntegrationToolController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $arrayKeys = [
                 'mongo_object_id',
@@ -303,6 +335,14 @@ class IntegrationToolController extends Controller
 
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration Tool " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -382,6 +422,7 @@ class IntegrationToolController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
             $userId = (isset($input['user_id']) ? $input['user_id'] : null);
 
             $arrayKeys = [
@@ -411,6 +452,14 @@ class IntegrationToolController extends Controller
                 ToolHasTag::where('tool_id', $id)->delete();
                 $this->insertToolHasTag($input['tag'], (int) $id);
             };
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration Tool " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -474,6 +523,7 @@ class IntegrationToolController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             // Safe-guard to ensure no one can come along and delete anyone
             // else's uploaded Tool entries.
@@ -487,6 +537,14 @@ class IntegrationToolController extends Controller
                 ToolHasTag::where('tool_id', $id)->delete();
             }
             
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration Tool " . $id . " deleted",
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));

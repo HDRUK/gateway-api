@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Dur;
@@ -158,10 +159,20 @@ class SearchController extends Controller
             }
 
             if ($download && $downloadType === "list") {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search datasets export data - list",
+                ]);
                 return Excel::download(new DatasetListExport($datasetsArray), 'datasets.csv');
             }
 
             if ($download && $downloadType === "table") {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search datasets export data - table",
+                ]);
                 return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
             }
 
@@ -174,6 +185,13 @@ class SearchController extends Controller
             ]);
 
             $final = $aggs->merge($paginatedData);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Search datasets",
+            ]);
+
             return response()->json($final, 200);
 
         } catch (Exception $e) {
@@ -249,6 +267,12 @@ class SearchController extends Controller
                     }
                 }
             }
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Search similar datasets",
+            ]);
 
             return response()->json(['data' => $datasetsArray], 200);
 
@@ -387,6 +411,13 @@ class SearchController extends Controller
             ]);
 
             $final = $aggs->merge($paginatedData);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Search tools",
+            ]);
+
             return response()->json($final, 200);
 
         } catch (Exception $e) {
@@ -518,6 +549,13 @@ class SearchController extends Controller
             ]);
 
             $final = $aggs->merge($paginatedData);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Search collections",
+            ]);
+
             return response()->json($final, 200);
 
         } catch (Exception $e) {
@@ -651,6 +689,11 @@ class SearchController extends Controller
             }
 
             if ($download) {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search dur export data",
+                ]);
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
             }
 
@@ -663,6 +706,13 @@ class SearchController extends Controller
             ]);
 
             $final = $aggs->merge($paginatedData);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Search dur",
+            ]);
+
             return response()->json($final, 200);
 
         } catch (Exception $e) {

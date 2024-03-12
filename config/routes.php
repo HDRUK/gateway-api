@@ -2356,7 +2356,7 @@ return [
         'constraint' => [],
     ],
 
-// categories
+    // categories
     [
         'name' => 'categories',
         'method' => 'get',

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Config;
+use Auditor;
 use Exception;
 use Illuminate\Http\Request;
 use App\Models\DarIntegration;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\IntegrationOverride;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\DarIntegration\GetDARIntegration;
 use App\Http\Requests\DarIntegration\EditDARIntegration;
@@ -17,7 +19,7 @@ use App\Http\Requests\DarIntegration\UpdateDARIntegration;
 
 class DarIntegrationController extends Controller
 {
-    use RequestTransformation;
+    use RequestTransformation, IntegrationOverride;
     
     /**
      * @OA\Get(
@@ -61,10 +63,26 @@ class DarIntegrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $dars = DarIntegration::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
-        return response()->json(
-            $dars
-        );
+        try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+    
+            $dars = DarIntegration::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration DAR get all",
+            ]);
+
+            return response()->json(
+                $dars
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -122,17 +140,32 @@ class DarIntegrationController extends Controller
      */
     public function show(GetDARIntegration $request, int $id): JsonResponse
     {
-        $dar = DarIntegration::findOrFail($id);
-        if ($dar) {
+        try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+    
+            $dar = DarIntegration::findOrFail($id);
+            if ($dar) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $dar,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+    
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration DAR get " . $id,
+            ]);
+    
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $dar,
-            ], Config::get('statuscodes.STATUS_OK.code'));
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**
@@ -189,6 +222,7 @@ class DarIntegrationController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $dar = DarIntegration::create([
                 'enabled' => $input['enabled'],
@@ -200,6 +234,14 @@ class DarIntegrationController extends Controller
                 'outbound_endpoints_5safes' => $input['outbound_endpoints_5safes'],
                 'outbound_endpoints_5safes_files' => $input['outbound_endpoints_5safes_files'],
                 'inbound_service_account_id' => $input['inbound_service_account_id'],
+            ]);
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration DAR " . $dar->id . " created",
             ]);
 
             return response()->json([
@@ -289,6 +331,7 @@ class DarIntegrationController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             DarIntegration::where('id', $id)->update([
                 'enabled' => $input['enabled'],
@@ -300,6 +343,14 @@ class DarIntegrationController extends Controller
                 'outbound_endpoints_5safes' => $input['outbound_endpoints_5safes'],
                 'outbound_endpoints_5safes_files' => $input['outbound_endpoints_5safes_files'],
                 'inbound_service_account_id' => $input['inbound_service_account_id'],
+            ]);
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration DAR " . $id . " updated",
             ]);
 
             return response()->json([
@@ -386,6 +437,7 @@ class DarIntegrationController extends Controller
     {
         try {
             $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
             $arrayKeys = [
                 'enabled', 
                 'notification_email', 
@@ -401,6 +453,14 @@ class DarIntegrationController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             DarIntegration::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration DAR " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -456,6 +516,9 @@ class DarIntegrationController extends Controller
     public function destroy(DeleteDARIntegration $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
             $dar = DarIntegration::findOrFail($id);
             if ($dar) {
                 $dar->delete();
@@ -464,6 +527,14 @@ class DarIntegrationController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
+
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Integration DAR " . $id . " deleted",
+            ]);
 
             throw new NotFoundException();
         } catch (Exception $e) {

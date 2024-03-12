@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
-
 use Exception;
 use App\Models\Filter;
 use Illuminate\Support\Facades\Http;
@@ -68,29 +68,40 @@ class FilterController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $filters = Filter::where('enabled', 1)->orderBy('type')->get()->toArray();
+        try {
+            $filters = Filter::where('enabled', 1)->orderBy('type')->get()->toArray();
 
-        $urlString = env('SEARCH_SERVICE_URL') . '/filters';
-
-        $response = Http::withBody(
-            json_encode(['filters' => $filters]), 'application/json'
-        )->post($urlString);
-
-        $filterBuckets = isset($response->json()['filters']) ? $response->json()['filters'] : [];
-
-        foreach ($filters as $i => $f) {
-            $type = $f['type'];
-            $keys = $f['keys'];
-            if (isset($filterBuckets[$i][$type][$keys])) {
-                $filters[$i]['buckets'] = $filterBuckets[$i][$type][$keys]['buckets'];
-            } else {
-                $filters[$i]['buckets'] = [];
+            $urlString = env('SEARCH_SERVICE_URL') . '/filters';
+    
+            $response = Http::withBody(
+                json_encode(['filters' => $filters]), 'application/json'
+            )->post($urlString);
+    
+            $filterBuckets = isset($response->json()['filters']) ? $response->json()['filters'] : [];
+    
+            foreach ($filters as $i => $f) {
+                $type = $f['type'];
+                $keys = $f['keys'];
+                if (isset($filterBuckets[$i][$type][$keys])) {
+                    $filters[$i]['buckets'] = $filterBuckets[$i][$type][$keys]['buckets'];
+                } else {
+                    $filters[$i]['buckets'] = [];
+                }
             }
-        }
+    
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $paginatedData = $this->paginateArray($request, $filters, $perPage);
+                            
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter get all",
+            ]);
 
-        $perPage = request('perPage', Config::get('constants.per_page'));
-        $paginatedData = $this->paginateArray($request, $filters, $perPage);
-        return response()->json($paginatedData, 200);
+            return response()->json($paginatedData, 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -144,31 +155,41 @@ class FilterController extends Controller
      */
     public function show(GetFilter $request, int $id): JsonResponse
     {
-        $filter = Filter::findOrFail($id);
-        if ($filter) {
+        try {
+            $filter = Filter::findOrFail($id);
+            if ($filter) {
+    
+                $urlString = env('SEARCH_SERVICE_URL') . '/filters';
+    
+                $response = Http::withBody(
+                    json_encode(['filters' => [$filter->toArray()]]), 'application/json'
+                )->post($urlString);
+    
+                $filterBuckets = isset($response->json()['filters'][0]) ? $response->json()['filters'][0] : [];
+                if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
+                    $filter['buckets'] = $filterBuckets[$filter['type']][$filter['keys']]['buckets'];
+                } else {
+                    $filter['buckets'] = [];
+                }
+                
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Filter get " . $id,
+                ]);
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/filters';
-
-            $response = Http::withBody(
-                json_encode(['filters' => [$filter->toArray()]]), 'application/json'
-            )->post($urlString);
-
-            $filterBuckets = isset($response->json()['filters'][0]) ? $response->json()['filters'][0] : [];
-            if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
-                $filter['buckets'] = $filterBuckets[$filter['type']][$filter['keys']]['buckets'];
-            } else {
-                $filter['buckets'] = [];
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $filter,
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
-            
+    
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $filter,
-            ], Config::get('statuscodes.STATUS_OK.code'));
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
     }
 
     /**
@@ -209,11 +230,19 @@ class FilterController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $filter = Filter::create([
                 'type' => $input['type'],
                 'keys' => $input['keys'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $filter->id . " created",
             ]);
 
             return response()->json([
@@ -289,11 +318,19 @@ class FilterController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Filter::where('id', $id)->update([
                 'type' => $input['type'],
                 'keys' => $input['keys'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $id . " updated",
             ]);
 
             return response()->json([
@@ -368,11 +405,20 @@ class FilterController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = ['type', 'keys', 'enabled'];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Filter::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -428,6 +474,9 @@ class FilterController extends Controller
     public function destroy(DeleteFilter $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $filter = Filter::findOrFail($id);
             if ($filter) {
                 $filter->delete();
@@ -436,6 +485,13 @@ class FilterController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $id . " deleted",
+            ]);
 
             throw new NotFoundException();
         } catch (Exception $e) {
