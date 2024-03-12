@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use Exception;
 
+use Auditor;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -53,6 +54,13 @@ class UserOrganisationController extends Controller
                         ->distinct()
                         ->pluck('organisation')
                         ->toArray();
+
+                    Auditor::log([
+                        'user_id' => $jwtUser['id'],
+                        'action_type' => 'GET',
+                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'description' => "User Organisation get all",
+                    ]);
 
                     return response()->json([
                         'message' => 'success',
