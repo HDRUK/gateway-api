@@ -54,11 +54,21 @@ class TagController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tags = Tag::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        try {
+            $tags = Tag::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
-        return response()->json(
-            $tags
-        );
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tag get all",
+            ]);
+
+            return response()->json(
+                $tags
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -118,6 +128,12 @@ class TagController extends Controller
             $tags = Tag::where([
                 'id' => $id,
             ])->get();
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tag get " . $id,
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
