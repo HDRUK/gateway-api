@@ -7,6 +7,7 @@ use Config;
 use Exception;
 
 use App\Models\Keyword;
+use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Application;
 use App\Models\CollectionHasDataset;
@@ -286,6 +287,7 @@ class IntegrationCollectionController extends Controller
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $collectionId)->update(['updated_on' => $input['updated_on']]);
             }
+            $this->indexElasticCollections((int)$collectionId);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -435,6 +437,7 @@ class IntegrationCollectionController extends Controller
             if (array_key_exists('updated_on', $input)) {
                 Collection::where('id', $id)->update(['updated_on' => $input['updated_on']]);
             }
+            $this->indexElasticCollections((int)$id);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -591,6 +594,7 @@ class IntegrationCollectionController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
+            $this->indexElasticCollections((int)$id);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -840,5 +844,56 @@ class IntegrationCollectionController extends Controller
         }
 
         return $response;
+    }
+
+        /**
+     * Insert collection document into elastic index
+     *
+     * @param integer $collectionId
+     * @return void
+     */
+    private function indexElasticCollections(int $collectionId): void 
+    {
+        $collection = Collection::with(['team', 'datasets', 'keywords'])->where('id', $collectionId)->first()->toArray();
+        $team = $collection['team'];
+
+        $datasetTitles = array();
+        $datasetAbstracts = array();
+        foreach ($collection['datasets'] as $d) {
+            $metadata = Dataset::where(['id' => $d])
+                ->first()
+                ->latestVersion()
+                ->metadata;
+            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
+        }
+        
+        $keywords = array();
+        foreach ($collection['keywords'] as $k) {
+            $keywords[] = $k['name'];
+        }
+
+        try {
+            $toIndex = [
+                'publisherName' => isset($team['name']) ? $team['name'] : '',
+                'description' => $collection['description'],
+                'name' => $collection['name'],
+                'datasetTitles' => $datasetTitles,
+                'datasetAbstracts' => $datasetAbstracts,
+                'keywords' => $keywords
+            ];
+            $params = [
+                'index' => 'collection',
+                'id' => $collectionId,
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+
+            $client = MMC::getElasticClient();
+            $client->index($params);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 }

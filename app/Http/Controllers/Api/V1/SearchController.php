@@ -476,17 +476,20 @@ class SearchController extends Controller
     public function collections(Request $request): JsonResponse
     {
         try {
+            $input = $request->all();
+
             $sort = $request->query('sort',"score:desc");   
-        
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
-
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
+            $aggs = Filter::where('type', 'collection')->get()->toArray();
+            $input['aggs'] = $aggs;
+
             $urlString = env('SEARCH_SERVICE_URL') . '/search/collections';
         
-            $response = Http::post($urlString,$request->all());
+            $response = Http::post($urlString, $input);
 
             $collectionArray = $response['hits']['hits'];
             $matchedIds = [];
@@ -504,6 +507,7 @@ class SearchController extends Controller
                 foreach ($collectionModels as $model){
                     if ((int) $collection['_id'] === $model['id']) {
                         $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $collectionArray[$i]['name'] = $model['name'];
                         break;
                     }
                 }

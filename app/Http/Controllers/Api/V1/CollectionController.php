@@ -7,6 +7,7 @@ use Config;
 use Exception;
 use App\Models\Keyword;
 use App\Models\Collection;
+use App\Models\Dataset;
 use App\Models\Application;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -862,12 +863,33 @@ class CollectionController extends Controller
      */
     private function indexElasticCollections(int $collectionId): void 
     {
-        $collection = Collection::with("team")->where('id', $collectionId)->first()->toArray();
+        $collection = Collection::with(['team', 'datasets', 'keywords'])->where('id', $collectionId)->first()->toArray();
         $team = $collection['team'];
+
+        $datasetTitles = array();
+        $datasetAbstracts = array();
+        foreach ($collection['datasets'] as $d) {
+            $metadata = Dataset::where(['id' => $d])
+                ->first()
+                ->latestVersion()
+                ->metadata;
+            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
+        }
+        
+        $keywords = array();
+        foreach ($collection['keywords'] as $k) {
+            $keywords[] = $k['name'];
+        }
 
         try {
             $toIndex = [
-                'publisherName' => isset($team['name']) ? $team['name'] : ''
+                'publisherName' => isset($team['name']) ? $team['name'] : '',
+                'description' => $collection['description'],
+                'name' => $collection['name'],
+                'datasetTitles' => $datasetTitles,
+                'datasetAbstracts' => $datasetAbstracts,
+                'keywords' => $keywords
             ];
             $params = [
                 'index' => 'collection',
