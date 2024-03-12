@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Keyword;
@@ -72,8 +73,19 @@ class KeywordController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $keywords = Keyword::where('enabled', 1)->paginate((int) $perPage, ['*'], 'page');
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Keywords get all",
+            ]);
+
             return response()->json(
                 $keywords,
             );
@@ -127,7 +139,17 @@ class KeywordController extends Controller
     public function show(GetKeyword $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $keyword = Keyword::where(['id' => $id])->get();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Keywords get " . $id,
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -183,6 +205,7 @@ class KeywordController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $checkKeyword = Keyword::where([
                 'name' => $input['name'],
@@ -194,6 +217,13 @@ class KeywordController extends Controller
                     'enabled' => $input['enabled'],
                 ]);
 
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'CREATE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Keywords " . $keyword->id . " created",
+                ]);
+    
                 return response()->json([
                     'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                     'data' => $keyword->id,
@@ -268,10 +298,18 @@ class KeywordController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Keyword::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Keywords " . $id . " updated",
             ]);
 
             return response()->json([
@@ -344,6 +382,8 @@ class KeywordController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'name',
                 'enabled',
@@ -352,6 +392,13 @@ class KeywordController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Keyword::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Keywords " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -407,8 +454,18 @@ class KeywordController extends Controller
     public function destroy(DeleteKeyword $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             Keyword::where('id', '=', $id)->delete();
             CollectionHasKeyword::where('keyword_id', '=', $id)->delete();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Keywords " . $id . " deleted",
+            ]);
             
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
