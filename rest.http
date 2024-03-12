@@ -917,11 +917,11 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "roles" : [
+    "roles" : {
         "custodian.metadata.manager": false,
         "metadata.editor": true,
         "dar.reviewer": true
-    ]
+    }
 }
 
 #### update bulk team - user - role
