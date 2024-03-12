@@ -351,14 +351,10 @@ class SearchTest extends TestCase
                         'description',
 		                'name',
 		                'keywords',
-                        'relatedObjects' => [
-                            'keywords',
-		                    'title',
-		                    'name',
-		                    'description'
-                        ],
+                        'datasetTitles',
                         'created_at'
                     ],
+                    'name'
                 ],
             ],
             'aggregations',
@@ -383,7 +379,8 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'name'
                 ],
             ],
             'aggregations',
@@ -410,7 +407,8 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'name'
                 ],
             ],
             'aggregations',
@@ -437,7 +435,8 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'name'
                 ],
             ],
             'aggregations',

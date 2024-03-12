@@ -66,7 +66,8 @@ class FilterSeeder extends Seeder
     public function seed_collection_filters(): void
     {
         $filters = [
-            'publisherName'
+            'publisherName',
+            'datasetTitles'
         ];
 
         $this->seed_filter("collection",$filters);

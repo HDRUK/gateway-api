@@ -397,12 +397,7 @@ trait MockExternalApis
                                     'description' => 'a gateway collection',
                                     'name' => 'One Collection',
                                     'keywords' => 'some, useful, keywords',
-                                    'relatedObjects' => [
-                                        'keywords' => '',
-                                        'title' => '',
-                                        'name' => '',
-                                        'description' => ''
-                                    ]
+                                    'datasetTitles' => ['some', 'dataset', 'titles']
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -420,12 +415,7 @@ trait MockExternalApis
                                     'description' => 'a gateway collection',
                                     'name' => 'Another Collection',
                                     'keywords' => 'some, useful, keywords',
-                                    'relatedObjects' => [
-                                        'keywords' => '',
-                                        'title' => '',
-                                        'name' => '',
-                                        'description' => ''
-                                    ]
+                                    'datasetTitles' => ['some', 'dataset', 'titles']
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
@@ -443,12 +433,7 @@ trait MockExternalApis
                                     'description' => 'a gateway collection',
                                     'name' => 'Third Collection',
                                     'keywords' => 'some, useful, keywords',
-                                    'relatedObjects' => [
-                                        'keywords' => '',
-                                        'title' => '',
-                                        'name' => '',
-                                        'description' => ''
-                                    ]
+                                    'datasetTitles' => ['some', 'dataset', 'titles']
                                 ],
                                 'highlight' => [
                                     'abstract' => [],
