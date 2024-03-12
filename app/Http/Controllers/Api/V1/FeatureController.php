@@ -47,11 +47,21 @@ class FeatureController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $features = Feature::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+        try {
+            $features = Feature::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+    
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Feature get all",
+            ]);
 
-        return response()->json(
-            $features
-        );
+            return response()->json(
+                $features
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -107,21 +117,31 @@ class FeatureController extends Controller
      */
     public function show(GetFeature $request, int $id): JsonResponse
     {
-        $features = Feature::where([
-            'id' =>  $id,
-            'enabled' => 1,
-        ])->get();
+        try {
+            $features = Feature::where([
+                'id' =>  $id,
+                'enabled' => 1,
+            ])->get();
+    
+            if ($features->count()) {
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $features,
+                ], 200);
+            }
+    
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Feature get " . $id,
+            ]);
 
-        if ($features->count()) {
             return response()->json([
-                'message' => 'success',
-                'data' => $features,
-            ], 200);
+                'message' => 'not found',
+            ], 404);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
     }
 
     /**
