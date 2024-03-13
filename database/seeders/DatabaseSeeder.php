@@ -61,6 +61,7 @@ class DatabaseSeeder extends Seeder
             TeamSeederAddPid::class,
             SpatialCoverageSeeder::class,
             PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
         ]);
     }
 }
