@@ -5,7 +5,12 @@ namespace Tests\Feature;
 use Config;
 use App\Models\Publication;
 use Tests\TestCase;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\TeamHasUserSeeder;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -28,7 +33,12 @@ class PublicationTest extends TestCase
         parent::setUp();
 
         $this->seed([
+            MinimalUserSeeder::class,
+            TeamHasUserSeeder::class,
             PublicationSeeder::class,
+            DatasetSeeder::class,
+            DatasetVersionSeeder::class,
+            PublicationHasDatasetSeeder::class
         ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
@@ -121,6 +131,7 @@ class PublicationTest extends TestCase
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'datasets' => [1,2],
             ],
             $this->header,
         );

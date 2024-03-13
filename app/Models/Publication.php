@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Dataset;
+
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Model;
 
 class Publication extends Model
@@ -29,4 +32,12 @@ class Publication extends Model
         'journal_name',
         'abstract',
     ];
+
+    /**
+     * The datasets that belong to a publication.
+     */
+    public function datasets(): BelongsToMany
+    {
+        return $this->belongsToMany(Dataset::class, 'publication_has_dataset');
+    }
 }

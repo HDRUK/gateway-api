@@ -7,6 +7,7 @@ use Config;
 use Exception;
 
 use App\Models\Publication;
+use App\Models\PublicationHasDataset;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -167,6 +168,7 @@ class PublicationController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property(property="name", type="string", example="features"),
+     *             @OA\Property(property="datasets", type="array", example="[1,2]", @OA\Items()),
      *          ),
      *       ),
      *    ),
@@ -209,6 +211,18 @@ class PublicationController extends Controller
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
             ]);
+
+            $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
+            if ($publication) {
+                foreach ($datasetInput as $dataset) {
+                    PublicationHasDataset::updateOrCreate([
+                        'publication_id' => (int) $publication->id,
+                        'dataset_id' => (int) $dataset,
+                    ]);
+                }
+            } else {
+                throw new NotFoundException();
+            }
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -311,6 +325,15 @@ class PublicationController extends Controller
                 'abstract' => $input['abstract'],
             ]);
 
+            $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
+            PublicationHasDataset::where('publication_id', $id)->delete();
+            foreach ($datasetInput as $dataset) {
+                PublicationHasDataset::updateOrCreate([
+                    'publication_id' => (int) $id,
+                    'dataset_id' => (int) $dataset,
+                ]);
+            }
+
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -412,6 +435,15 @@ class PublicationController extends Controller
                 'abstract' => $input['abstract'],
             ]);
 
+            $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
+            PublicationHasDataset::where('publication_id', $id)->delete();
+            foreach ($datasetInput as $dataset) {
+                PublicationHasDataset::updateOrCreate([
+                    'publication_id' => (int) $id,
+                    'dataset_id' => (int) $dataset,
+                ]);
+            }
+
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -486,6 +518,7 @@ class PublicationController extends Controller
 
             $publication = Publication::findOrFail($id);
             if ($publication) {
+                PublicationHasDataset::where('publication_id', $id)->delete();
                 $publication->delete();
 
                 Auditor::log([

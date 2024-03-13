@@ -50,7 +50,14 @@ class UpdatePublication extends BaseFormRequest
             'abstract' => [
                 'nullable',
                 'string',
-            ],            
+            ],
+            'datasets' => [
+                'nullable', 
+                'array', 
+            ],
+            'datasets.*' => [
+                'integer',
+            ],        
         ];
     }
 
