@@ -22,15 +22,15 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
-        
+
     - name: Composer install
       run: "composer install"
 
     - name: Run static analysis
       run: "composer run phpstan"
   
-    # - name: Run unit tests #Unit tests are disabled for now due to some external api calls
-    #   run: "php artisan test --parallel"
+    - name: Run unit tests #Unit tests are disabled for now due to some external api calls
+      run: "./vendor/bin/pest"
 
     - name: Run code sniffer
       run: "composer run phpcs"
