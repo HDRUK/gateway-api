@@ -31,7 +31,7 @@ jobs:
   
     - name: Run unit tests
       # run: "php artisan test --parallel"
-      run: "php -d memory_limit=2048M ./vendor/bin/phpunit --testdox"
+      run: "./vendor/bin/pest"
 
     - name: Run code sniffer
       run: "composer run phpcs"
