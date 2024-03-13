@@ -6,6 +6,7 @@ use Auditor;
 use Config;
 use Exception;
 
+use App\Exceptions\NotFoundException;
 use App\Models\Publication;
 use App\Models\PublicationHasDataset;
 use Illuminate\Http\Request;
