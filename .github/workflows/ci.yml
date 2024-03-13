@@ -30,7 +30,8 @@ jobs:
       run: "composer run phpstan"
   
     - name: Run unit tests
-      run: "php artisan test --parallel"
+      # run: "php artisan test --parallel"
+      run: "php -d memory_limit=2048M ./vendor/bin/phpunit --testdox"
 
     - name: Run code sniffer
       run: "composer run phpcs"
