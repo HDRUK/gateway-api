@@ -536,6 +536,85 @@ trait MockExternalApis
             )
         ]);
 
+        // Mock the search service - publications
+        Http::fake([
+            '*/search/publications*' => Http::response(
+                [
+                    'took' => 1000,
+                    'timed_out' => false,
+                    '_shards' => [],
+                    'hits' => [
+                        'hits' => [
+                            0 => [
+                                '_explanation' => [],
+                                '_id' => '1',
+                                '_index' => 'publications',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 20.0,
+                                '_shard' => '[publication][0]',
+                                '_source' => [
+                                    'title' => 'One Data Use',
+                                    'journalName' => 'A Journal',
+                                    'abstract' => '',
+                                    'authors' => '',
+                                    'publicationDate' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'publicationType' => ['article', 'comment', 'letter'],
+                                ],
+                                'highlight' => [
+                                    'title' => [],
+                                    'abstract' => []
+                                ]
+                            ],
+                            1 => [
+                                '_explanation' => [],
+                                '_id' => '2',
+                                '_index' => 'data_uses',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 18.0,
+                                '_shard' => '[data_uses][0]',
+                                '_source' => [
+                                    'title' => 'Another Publication',
+                                    'journalName' => 'A Journal',
+                                    'abstract' => '',
+                                    'authors' => '',
+                                    'publicationDate' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'publicationType' => ['article', 'comment', 'letter'],
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
+                            ],
+                            2 => [
+                                '_explanation' => [],
+                                '_id' => '3',
+                                '_index' => 'data_uses',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[data_uses][0]',
+                                '_source' => [
+                                    'title' => 'Third Publication',
+                                    'journalName' => 'A Journal',
+                                    'abstract' => '',
+                                    'authors' => '',
+                                    'publicationDate' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'publicationType' => ['article', 'comment', 'letter'],
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
+                            ]
+                        ]
+                    ],
+                    'aggregations' => []
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
         // Mock the search service - filters
         Http::fake([
             '*search*/filters*' => Http::response(

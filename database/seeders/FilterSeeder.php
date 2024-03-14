@@ -17,6 +17,7 @@ class FilterSeeder extends Seeder
         $this->seed_datauses_filters();
         $this->seed_tools_filters();
         $this->seed_collection_filters();
+        $this->seed_publication_filters();
     }
 
     public function seed_dataset_filters(): void
@@ -71,6 +72,17 @@ class FilterSeeder extends Seeder
         ];
 
         $this->seed_filter("collection",$filters);
+    }
+
+    public function seed_publication_filters(): void
+    {
+        $filters = [
+            'publicationType',
+            'publicationDate',
+            'datasetTitles'
+        ];
+
+        $this->seed_filter("paper",$filters);
     }
 
     public function seed_filter(string $type, array $filters): void

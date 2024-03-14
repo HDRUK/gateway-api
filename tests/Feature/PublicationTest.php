@@ -12,12 +12,16 @@ use Database\Seeders\PublicationSeeder;
 use Database\Seeders\PublicationHasDatasetSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use Tests\Traits\Authorization;
+use Tests\Traits\MockExternalApis;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PublicationTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL = '/api/v1/publications';
 
@@ -30,7 +34,7 @@ class PublicationTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
@@ -40,12 +44,6 @@ class PublicationTest extends TestCase
             DatasetVersionSeeder::class,
             PublicationHasDatasetSeeder::class
         ]);
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
     }
 
     /**
@@ -120,6 +118,8 @@ class PublicationTest extends TestCase
      */
     public function test_create_publication_with_success(): void
     {
+        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
+
         $response = $this->json(
             'POST',
             self::TEST_URL,
@@ -141,6 +141,9 @@ class PublicationTest extends TestCase
             'message',
             'data'
         ]);
+
+        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
+        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
 
     /**
