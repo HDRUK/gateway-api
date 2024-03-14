@@ -19,6 +19,7 @@ use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
+use Database\Seeders\PublicationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SearchTest extends TestCase
@@ -54,6 +55,7 @@ class SearchTest extends TestCase
             CollectionHasDatasetSeeder::class,
             CollectionHasKeywordSeeder::class,
             DurSeeder::class,
+            PublicationSeeder::class,
         ]);
 
         $this->metadataUpdate = $this->getFakeUpdateDataset();
@@ -607,6 +609,132 @@ class SearchTest extends TestCase
 
         // Test sorting by created_at desc        
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur" . '?sort=created_at:desc', ["query" => "term"], ['Accept' => 'application/json']); 
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source'
+                ],
+            ],
+            'aggregations',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        $this->assertTrue($response['data'][0]['_id'] === '1');
+    }
+
+    /**
+     * Search using a query with success
+     * 
+     * @return void
+     */
+    public function test_publications_search_with_success(): void
+    {
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications", ["query" => "term"], ['Accept' => 'application/json']);
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source' => [
+                        'title',
+                        'journalName',
+                        'abstract',
+                        'authors',
+                        'publicationDate',
+                        'datasetTitles',
+                        'created_at'
+                    ],
+                    'paper_title',
+                    'abstract',
+                    'authors',
+                    'journal_name',
+                    'year_of_publication'
+                ],
+            ],
+            'aggregations',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source'
+                ],
+            ],
+            'aggregations',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        $this->assertTrue($response['data'][0]['_source']['title'] === 'Third Publication');
+
+        // Test sorting by dataset name (shortTitle)        
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications" . '?sort=title:asc', ["query" => "term"], ['Accept' => 'application/json']); 
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source'
+                ],
+            ],
+            'aggregations',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        $this->assertTrue($response['data'][0]['_source']['title'] === 'Another Publication');
+
+        // Test sorting by created_at desc        
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications" . '?sort=created_at:desc', ["query" => "term"], ['Accept' => 'application/json']); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [

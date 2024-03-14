@@ -11,6 +11,7 @@ use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Filter;
+use App\Models\Publication;
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
 
@@ -715,6 +716,171 @@ class SearchController extends Controller
                 'action_type' => 'GET',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search dur",
+            ]);
+
+            return response()->json($final, 200);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Examples(
+     *      example="filterPublicationsExample",
+     *      summary="Example Filters payload for searching publications",
+     *      value={
+     *          "filters": {
+     *               "paper": {
+     *                   "publicationType": {
+     *                        "Journal Article",
+     *                        "Preprint"
+     *                    },
+     *                    "publicationDate": {
+     *                        "2020", "2024"
+     *                    }
+     *               }
+     *           }
+     *       }
+     * ),
+     * @OA\Post(
+     *      path="/api/v1/search/publications",
+     *      summary="Keyword search across gateway hosted publications",
+     *      description="Returns gateway publications related to the provided query term(s)",
+     *      tags={"Search-Publications"},
+     *      summary="Search@publications",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Submit search query",
+     *          @OA\MediaType(
+     *              mediaType="application/json",
+     *              @OA\Schema(
+     *                  @OA\Property(property="query", type="string", example="diabetes publications"),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="sort",
+     *          in="query",
+     *          description="Field to sort by (default: 'score')",
+     *          example="created",
+     *          @OA\Schema(
+     *              type="string",
+     *              description="Field to sort by (score, created_at, title)",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="direction",
+     *          in="query",
+     *          description="Sort direction ('asc' or 'desc', default: 'desc')",
+     *          example="desc",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum={"asc", "desc"},
+     *              description="Sort direction",
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="current_page", type="integer", example="1"),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="_source", type="array",
+     *                          @OA\Items(
+     *                              @OA\Property(property="abstract", type="string"),
+     *                              @OA\Property(property="authors", type="string"),
+     *                              @OA\Property(property="datasetTitles", type="string"),
+     *                              @OA\Property(property="journalName", type="string"),
+     *                              @OA\Property(property="publicationDate", type="string"),
+     *                              @OA\Property(property="publicationType", type="array", @OA\Items()),
+     *                              @OA\Property(property="title", type="string")
+     *                          )
+     *                      ),
+     *                      @OA\Property(property="highlight", type="array",
+     *                          @OA\Items(
+     *                              @OA\Property(property="title", type="array", @OA\Items()),
+     *                              @OA\Property(property="abstract", type="array", @OA\Items())
+     *                          )
+     *                      )
+     *                  )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/dur?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/dur?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/dur"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
+     *          )
+     *      )
+     * )
+     */
+    public function publications(Request $request): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $sort = $request->query('sort',"score:desc");   
+        
+            $tmp = explode(":", $sort);
+            $sortField = $tmp[0];
+
+            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+            $filters = (isset($request['filters']) ? $request['filters'] : []);
+            $aggs = Filter::where('type', 'paper')->get()->toArray();
+            $input['aggs'] = $aggs;
+
+            $urlString = env('SEARCH_SERVICE_URL') . '/search/publications';
+
+            $response = Http::post($urlString, $input);
+
+            $pubArray = $response['hits']['hits'];
+            $matchedIds = [];
+            foreach (array_values($pubArray) as $i => $d) {
+                $matchedIds[] = $d['_id'];
+            }
+
+            $pubModels = Publication::whereIn('id', $matchedIds)->get();
+
+            foreach ($pubArray as $i => $p) {
+                if (!in_array($p['_id'], $matchedIds)) {
+                    unset($pubArray[$i]);
+                    continue;
+                }
+                foreach ($pubModels as $model){
+                    if ((int) $p['_id'] === $model['id']) {
+                        $pubArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $pubArray[$i]['paper_title'] = $model['paper_title'];
+                        $pubArray[$i]['abstract'] = $model['abstract'];
+                        $pubArray[$i]['authors'] = $model['authors'];
+                        $pubArray[$i]['journal_name'] = $model['journal_name'];
+                        $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
+                        break;
+                    }
+                }
+            }
+
+            $pubArraySorted = $this->sortSearchResult($pubArray, $sortField, $sortDirection);
+
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $paginatedData = $this->paginateArray($request, $pubArraySorted, $perPage);
+            $aggs = collect([
+                'aggregations' => $response['aggregations']
+            ]);
+
+            $final = $aggs->merge($paginatedData);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Search publications",
             ]);
 
             return response()->json($final, 200);

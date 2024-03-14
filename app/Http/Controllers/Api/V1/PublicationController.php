@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
+use MetadataManagementController AS MMC;
 
 use App\Exceptions\NotFoundException;
+use App\Models\Dataset;
 use App\Models\Publication;
 use App\Models\PublicationHasDataset;
 use Illuminate\Http\Request;
@@ -221,6 +223,7 @@ class PublicationController extends Controller
                         'dataset_id' => (int) $dataset,
                     ]);
                 }
+                $this->indexElasticPublication($publication->id);
             } else {
                 throw new NotFoundException();
             }
@@ -334,6 +337,7 @@ class PublicationController extends Controller
                     'dataset_id' => (int) $dataset,
                 ]);
             }
+            $this->indexElasticPublication((int) $id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -444,6 +448,7 @@ class PublicationController extends Controller
                     'dataset_id' => (int) $dataset,
                 ]);
             }
+            $this->indexElasticPublication((int) $id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -539,4 +544,58 @@ class PublicationController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    /**
+     * Calls a re-indexing of Elastic search when a publication is created or updated
+     * 
+     * @param string $id The publication id from the DB
+     * 
+     * @return void
+     */
+    public function indexElasticPublication(string $id): void
+    {
+        try {
+
+            $pubMatch = Publication::where(['id' => $id])
+                ->with('datasets')
+                ->first()
+                ->toArray();
+
+            $datasetTitles = array();
+            foreach ($pubMatch['datasets'] as $d) {
+                $metadata = Dataset::where(['id' => $d])
+                    ->first()
+                    ->latestVersion()
+                    ->metadata;
+                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+            }
+
+            // Split string to array of strings
+            $publicationTypes = explode(",", $pubMatch['publication_type']); 
+
+            $toIndex = [
+                'title' => $pubMatch['paper_title'],
+                'journalName' => $pubMatch['journal_name'],
+                'abstract' => $pubMatch['abstract'],
+                'authors' => $pubMatch['authors'],
+                'publicationDate' => $pubMatch['year_of_publication'],
+                'datasetTitles' => $datasetTitles,
+                'publicationType' => $publicationTypes,
+            ];
+
+            $params = [
+                'index' => 'publication',
+                'id' => $id,
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+            
+            $client = MMC::getElasticClient();
+            $response = $client->index($params);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
 }

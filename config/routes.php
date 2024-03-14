@@ -2355,6 +2355,15 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'search.publications',
+        'method' => 'post',
+        'path' => '/search/publications',
+        'methodController' => 'SearchController@publications',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
 
     // categories
     [
