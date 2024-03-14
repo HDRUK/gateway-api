@@ -1,4 +1,4 @@
-FROM php:8.2.3-fpm
+FROM php:8.3.3-fpm
 
 ARG TED_ENABLED
 ARG TRASER_ENABLED
