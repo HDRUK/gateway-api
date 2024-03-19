@@ -9,18 +9,6 @@ class LinkedDatasets extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
-    protected $table = 'linked_datasets';
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
     protected $fillable = [
         'dataset_1_id',
         'dataset_2_id',
@@ -30,14 +18,18 @@ class LinkedDatasets extends Model
     ];
 
     /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'linked_datasets';
+
+    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
-
-    // Define relationships here if needed
-    // For example, to define a relationship to the Dataset model
 
     /**
      * Get the first dataset linked by this linkage.
