@@ -6,6 +6,7 @@ use Auditor;
 use Config;
 use Exception;
 use App\Exceptions\NotFoundException;
+use App\Exceptions\UnauthorizedException;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\RequestTransformation;
 use App\Models\SavedSearch;
@@ -43,6 +44,7 @@ class SavedSearchController extends Controller
      *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="name", type="string", example="Name"),
      *                      @OA\Property(property="search_term", type="string", example="Example Search"),
+     *                      @OA\Property(property="search_endpoint", type="string", example="datasets"),
      *                      @OA\Property(property="enabled", type="boolean", example="1"),
      *                      @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
      *                  )
@@ -56,10 +58,23 @@ class SavedSearchController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUserIsAdmin = $jwtUser['is_admin'];
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $saved_searches = SavedSearch::where('enabled', 1)->with('filters')->paginate($perPage);
-            
+            if ($jwtUserIsAdmin) {
+                $savedSearches = SavedSearch::where('enabled', 1)->with('filters');
+            } else {
+                $savedSearches = SavedSearch::where('enabled', 1)
+                    ->where('user_id', $jwtUser['id'])
+                    ->with('filters');
+            }
+
+            $filterName = $request->query('name', null);
+            if (!empty($filterName)) {
+                $savedSearches = $savedSearches->where('name', 'like', '%' . $filterName . '%');
+            }
+            $savedSearches = $savedSearches->paginate($perPage);
+
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'GET',
@@ -68,7 +83,7 @@ class SavedSearchController extends Controller
             ]);
 
             return response()->json(
-                $saved_searches,
+                $savedSearches,
             );
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -105,6 +120,7 @@ class SavedSearchController extends Controller
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="name", type="string", example="Name"),
      *                  @OA\Property(property="search_term", type="string", example="Example Search"),
+     *                  @OA\Property(property="search_endpoint", type="string", example="datasets"),
      *                  @OA\Property(property="enabled", type="boolean", example="1"),
      *                  @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
      *              )
@@ -124,8 +140,12 @@ class SavedSearchController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $jwtUserIsAdmin = $jwtUser['is_admin'];
 
-            $saved_search = SavedSearch::where(['id' => $id,])->with(['filters'])->get();
+            $savedSearch = SavedSearch::where(['id' => $id,])->with(['filters'])->get();
+            if (!$jwtUserIsAdmin && $savedSearch['user_id'] != $jwtUser['id']) {
+                throw new UnauthorizedException('You do not have permission to view this saved search');
+            } 
             
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -136,7 +156,7 @@ class SavedSearchController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $saved_search,
+                'data' => $savedSearch,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -157,6 +177,13 @@ class SavedSearchController extends Controller
      *          @OA\JsonContent(
      *              required={"name", "enabled"},
      *              @OA\Property(property="name", type="string", example="Name"),
+     *              @OA\Property(property="search_endpoint", type="string", example="datasets"),
+     *              @OA\Property(property="filters", type="array",
+     *                  @OA\Items(type="object",
+     *                      @OA\Property(property="id", type="integer", example="1"),
+     *                      @OA\Property(property="terms", type="array", example="['A publisher']", @OA\Items()),
+     *                  ),
+     *              ),
      *              @OA\Property(property="enabled", type="boolean", example="true"),
      *          ),
      *      ),
@@ -188,17 +215,20 @@ class SavedSearchController extends Controller
             }, ARRAY_FILTER_USE_KEY);
             $arraySearchFilter = $input['filters'];
 
-            $saved_search = SavedSearch::create([
+            $savedSearch = SavedSearch::create([
                 'name' => $input['name'],
                 'search_term' => $input['search_term'],
+                'search_endpoint' => $input['search_endpoint'],
                 'enabled' => $input['enabled'],
+                'user_id' => $jwtUser['id'],
             ]);
 
-            if ($saved_search) {
+            if ($savedSearch) {
                 foreach ($arraySearchFilter as $filter) {
                     SavedSearchHasFilter::updateOrCreate([
-                        'saved_search_id' => (int) $saved_search->id,
-                        'filter_id' => (int) $filter,
+                        'saved_search_id' => (int) $savedSearch->id,
+                        'filter_id' => (int) $filter['id'],
+                        'terms' => $filter['terms'],
                     ]);
                 }
             } else {
@@ -209,12 +239,12 @@ class SavedSearchController extends Controller
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Saved Search " . $saved_search->id . " created",
+                'description' => "Saved Search " . $savedSearch->id . " created",
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $saved_search->id,
+                'data' => $savedSearch->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -246,6 +276,13 @@ class SavedSearchController extends Controller
      *          @OA\JsonContent(
      *              required={"name", "enabled"},
      *              @OA\Property(property="name", type="string", example="Name"),
+     *              @OA\Property(property="search_endpoint", type="string", example="datasets"),
+     *              @OA\Property(property="filters", type="array",
+     *                  @OA\Items(type="object",
+     *                      @OA\Property(property="id", type="integer", example="1"),
+     *                      @OA\Property(property="terms", type="array", example="['A publisher']", @OA\Items()),
+     *                  ),
+     *              ),
      *              @OA\Property(property="enabled", type="string", example="true"),
      *          ),
      *      ),
@@ -267,6 +304,7 @@ class SavedSearchController extends Controller
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="name", type="string", example="Name"),
      *                  @OA\Property(property="search_term", type="string", example="Example Search"),
+     *                  @OA\Property(property="search_endpoint", type="string", example="datasets"),
      *                  @OA\Property(property="enabled", type="boolean", example="1"),
      *                  @OA\Property(property="filters", type="array", example="[1,2]", @OA\Items()),
      *              )
@@ -287,10 +325,16 @@ class SavedSearchController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $saved_search = SavedSearch::where('id', $id)->update([
+            $savedSearch = SavedSearch::where('id', $id)->first();
+            if ($savedSearch['user_id'] != $jwtUser['id']) {
+                throw new UnauthorizedException('You do not have permission to edit this saved search');
+            }
+            $savedSearch->update([
                 'name' => $input['name'],
                 'search_term' => $input['search_term'],
+                'search_endpoint' => $input['search_endpoint'],
                 'enabled' => $input['enabled'],
+                'user_id' => $jwtUser['id'],
             ]);
 
             $arraySearchFilter = $input['filters'];
@@ -298,7 +342,8 @@ class SavedSearchController extends Controller
             foreach ($arraySearchFilter as $filter) {
                 SavedSearchHasFilter::updateOrCreate([
                     'saved_search_id' => (int) $id,
-                    'filter_id' => (int) $filter,
+                    'filter_id' => (int) $filter['id'],
+                    'terms' => $filter['terms'],
                 ]);
             }
             
@@ -342,6 +387,12 @@ class SavedSearchController extends Controller
      *          description="Saved search definition",
      *          @OA\JsonContent(
      *              @OA\Property(property="name", type="string", example="Name"),
+     *              @OA\Property(property="filters", type="array",
+     *                  @OA\Items(type="object",
+     *                      @OA\Property(property="id", type="integer", example="1"),
+     *                      @OA\Property(property="terms", type="array", example="['A publisher']", @OA\Items()),
+     *                  ),
+     *              ),
      *              @OA\Property(property="enabled", type="string", example="true"),
      *          ),
      *      ),
@@ -386,13 +437,19 @@ class SavedSearchController extends Controller
             $arrayKeys = [
                 'name',
                 'search_term',
+                'search_endpoint',
                 'enabled',
                 'filters',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            SavedSearch::where('id', $id)->update($array);
+            $savedSearch = SavedSearch::where('id', $id)->first();
+            if ($savedSearch['user_id'] != $jwtUser['id']) {
+                throw new UnauthorizedException('You do not have permission to edit this saved search');
+            }
+            
+            $savedSearch->update($array);
 
             $arraySearchFilter = array_key_exists('filters', $input) ? $input['filters'] : [];
 
@@ -400,7 +457,8 @@ class SavedSearchController extends Controller
             foreach ($arraySearchFilter as $filter) {
                 SavedSearchHasFilter::updateOrCreate([
                     'saved_search_id' => (int) $id,
-                    'filter_id' => (int) $filter,
+                    'filter_id' => (int) $filter['id'],
+                    'terms' => $filter['terms'],
                 ]);
             }
             
@@ -468,10 +526,15 @@ class SavedSearchController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
     
-            $saved_search = SavedSearch::findOrFail($id);
-            if ($saved_search) {
-                $saved_search->enabled = false;
-                if ($saved_search->save()) {
+            $savedSearch = SavedSearch::findOrFail($id);
+            if ($savedSearch) {
+
+                if ($savedSearch['user_id'] != $jwtUser['id']) {
+                    throw new UnauthorizedException('You do not have permission to delete this saved search');
+                }
+
+                $savedSearch->enabled = false;
+                if ($savedSearch->save()) {
                     Auditor::log([
                         'user_id' => $jwtUser['id'],
                         'action_type' => 'DELETE',
