@@ -7,6 +7,7 @@ use App\Models\Collection;
 use App\Models\DataVersion;
 use App\Models\Dur;
 use App\Models\NamedEntities;
+use App\Models\Publication;
 use App\Models\SpatialCoverage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -156,5 +157,13 @@ class Dataset extends Model
     public function durs(): BelongsToMany
     {
         return $this->belongsToMany(Dur::class, 'dur_has_datasets');
+    }
+
+    /**
+     * The publications that belong to a dataset.
+     */
+    public function publications(): BelongsToMany
+    {
+        return $this->belongsToMany(Publication::class, 'publication_has_dataset');
     }
 }

@@ -528,7 +528,12 @@ class DatasetTest extends TestCase
 
         $responseGetOne->assertJsonStructure([
             'message',
-            'data'
+            'data' => [
+                'named_entities',
+                'collections',
+                'publications',
+                'versions',
+            ]
         ]);
         $responseGetOne->assertStatus(200);
         
