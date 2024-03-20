@@ -365,6 +365,7 @@ class DatasetController extends Controller
         try {
             $dataset = Dataset::where(['id' => $id])
                 ->with(['namedEntities', 'collections', 'publications'])
+                ->withCount(['durs', 'publications'])
                 ->first();
 
             $outputSchemaModel = $request->query('schema_model');
