@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class linkedDatasets extends Model
+class LinkedDatasets extends Model
 {
     use HasFactory;
 
