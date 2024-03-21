@@ -1001,6 +1001,17 @@ class DatasetController extends Controller
      *          description="team id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="dataset_id",
+     *       in="query",
+     *       description="dataset id",
+     *       required=false,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="dataset id",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="CSV file",
@@ -1024,8 +1035,11 @@ class DatasetController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $teamId = $request->query('team_id',null);
+        $datasetId = $request->query('dataset_id', null);
         $datasets = Dataset::when($teamId, function ($query) use ($teamId){
             return $query->where('team_id', '=', $teamId);
+        })->when($datasetId, function ($query) use ($datasetId) {
+            return $query->where('id', '=', $datasetId);
         });
 
         $results = $datasets->select('datasets.*')->get();
@@ -1061,7 +1075,7 @@ class DatasetController extends Controller
                     $row = [
                         $metadata['metadata']['summary']['title'] !== null ? $metadata['metadata']['summary']['title'] : '',
                         $publisherName !== null ? $publisherName : '',
-                        $rowDetails['metadata']['updated_at'] !== null ? $rowDetails['metadata']['updated_at'] : '',
+                        $rowDetails['updated_at'] !== null ? $rowDetails['updated_at'] : '',
                         (string)strtoupper($rowDetails['create_origin']),
                         (string)strtoupper($rowDetails['status']),
                         $metadata['metadata'] !== null ? (string)json_encode($metadata['metadata']) : '',
