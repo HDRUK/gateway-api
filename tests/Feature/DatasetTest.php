@@ -1164,6 +1164,21 @@ class DatasetTest extends TestCase
             "Title"
         );
 
+        // test dataset_id query parameter
+        $responseDownload = $this->json(
+            'GET',
+            self::TEST_URL_DATASET . '/export?dataset_id=' . $datasetId,
+            [],
+            $this->header,
+        );
+        $responseDownload->assertStatus(200);
+        $content = $responseDownload->streamedContent();
+        $responseDownload->assertHeader('Content-Disposition', 'attachment;filename="Datasets.csv"');
+        $this->assertEquals(
+            substr($content, 0, 5),
+            "Title"
+        );
+
         // permanent delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
