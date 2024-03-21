@@ -533,6 +533,8 @@ class DatasetTest extends TestCase
                 'collections',
                 'publications',
                 'versions',
+                'durs_count',
+                'publications_count',
             ]
         ]);
         $responseGetOne->assertStatus(200);
