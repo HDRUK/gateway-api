@@ -36,7 +36,8 @@ use Tests\Traits\MockExternalApis;
  */
 class FeatureContext extends TestCase implements Context
 {
-    use DatabaseMigrations, MockExternalApis;
+    use DatabaseMigrations;
+    use MockExternalApis { setUp as commonSetUp; }
 
     protected $user = null;
     protected $team = null;
@@ -53,9 +54,11 @@ class FeatureContext extends TestCase implements Context
      */
     public function __construct()
     {
-        putenv('DB_CONNECTION=sqlite');
-        putenv('DB_DATABASE=:memory:');
+        // putenv('DB_CONNECTION=sqlite');
+        // putenv('DB_DATABASE=:memory:');
         parent::setUp();
+
+        $this->commonSetUp();
     }
 
     /** @BeforeScenario */
