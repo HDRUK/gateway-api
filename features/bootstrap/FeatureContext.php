@@ -16,6 +16,7 @@ use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 
 use Illuminate\Support\Str;
+
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
@@ -55,16 +56,16 @@ class FeatureContext extends TestCase implements Context
         putenv('DB_CONNECTION=sqlite');
         putenv('DB_DATABASE=:memory:');
         parent::setUp();
-
-        $this->seed([
-            SectorSeeder::class,
-        ]);
     }
 
     /** @BeforeScenario */
     public function before(BeforeScenarioScope $scope)
     {
         $this->artisan('migrate:fresh');
+
+        $this->seed([
+            SectorSeeder::class,
+        ]);
     }
 
     /**
