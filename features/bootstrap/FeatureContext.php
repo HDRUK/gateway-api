@@ -9,6 +9,8 @@ use App\Models\TeamHasUser;
 use App\Models\Permission;
 use App\Models\ApplicationHasPermission;
 
+use Database\Seeders\SectorSeeder;
+
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
@@ -53,6 +55,10 @@ class FeatureContext extends TestCase implements Context
         putenv('DB_CONNECTION=sqlite');
         putenv('DB_DATABASE=:memory:');
         parent::setUp();
+
+        $this->seed([
+            SectorSeeder::class,
+        ]);
     }
 
     /** @BeforeScenario */
