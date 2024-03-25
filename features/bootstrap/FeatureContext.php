@@ -37,7 +37,7 @@ use Tests\Traits\MockExternalApis;
 class FeatureContext extends TestCase implements Context
 {
     use DatabaseMigrations;
-    use MockExternalApis { setUp as commonSetUp; }
+    use MockExternalApis;
 
     protected $user = null;
     protected $team = null;
@@ -54,11 +54,9 @@ class FeatureContext extends TestCase implements Context
      */
     public function __construct()
     {
-        // putenv('DB_CONNECTION=sqlite');
-        // putenv('DB_DATABASE=:memory:');
+        putenv('DB_CONNECTION=sqlite');
+        putenv('DB_DATABASE=:memory:');
         parent::setUp();
-
-        $this->commonSetUp();
     }
 
     /** @BeforeScenario */
@@ -76,7 +74,21 @@ class FeatureContext extends TestCase implements Context
      */
     public function iAmARegisteredUserOnTheGateway()
     {
-        $this->user = User::factory(1)->create();
+        $this->user = User::create([
+            'name' => 'Test User',
+            'email' => 'test.user@test.com',
+            'password' => 'Passw@rd1!',
+            'sector_id' => 1,
+            'contact_feedback' => 1,
+            'contact_news' => 1,
+            'organisation' => 'Test Organisation',
+            'bio' => 'Test Biography',
+            'domain' => 'https://testdomain.com',
+            'link' => 'https://testlink.com/link',
+            'orcid' => "https://orcid.org/12345678",
+            'mongo_id' => 1234567,
+            'mongo_object_id' => "12345abcde",              
+        ]);
         $this->assertNotNull($this->user);
     }
 
@@ -92,14 +104,14 @@ class FeatureContext extends TestCase implements Context
 
         $teamHasUser = TeamHasUser::create([
             'team_id' => $this->team[0]->id,
-            'user_id' => $this->user[0]->id,
+            'user_id' => $this->user->id,
         ]);
 
         $this->assertNotNull($teamHasUser);
 
         $this->assertDatabaseHas('team_has_users', [
             'team_id' => $this->team[0]->id,
-            'user_id' => $this->user[0]->id,
+            'user_id' => $this->user->id,
         ]);
     }    
 
@@ -109,7 +121,7 @@ class FeatureContext extends TestCase implements Context
     public function iCanCreateAnApplicationToUseAutomationServices()
     {
         $this->app = Application::factory(1)->create([
-            'user_id' => $this->user[0]->id,
+            'user_id' => $this->user->id,
             'name' => 'My Application v1',
         ]);
 
