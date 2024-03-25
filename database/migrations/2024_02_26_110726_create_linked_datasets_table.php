@@ -29,11 +29,11 @@ return new class extends Migration
 
             // Foreign key constraints
             $table->foreign('dataset_1_id', 'ld_dataset_1_id_fk')
-                  ->references('id')->on('dataset')
+                  ->references('id')->on('datasets')
                   ->onDelete('cascade');
 
             $table->foreign('dataset_2_id', 'ld_dataset_2_id_fk')
-                  ->references('id')->on('dataset')
+                  ->references('id')->on('datasets')
                   ->onDelete('cascade');
         });
     }
