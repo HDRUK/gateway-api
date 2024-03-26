@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -23,6 +24,7 @@ class CollectionFactory extends Factory
             'enabled' => fake()->randomElement([0, 1]),
             'public' => fake()->randomElement([0, 1]),
             'counter' => fake()->randomNumber(5, true),
+            'team_id' => Team::all()->random()->id,
         ];
     }
 }

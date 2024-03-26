@@ -16,6 +16,7 @@ return new class extends Migration
             $table->bigInteger('tool_id')->unsigned();
             $table->bigInteger('user_id')->nullable()->default(null)->unsigned();
             $table->bigInteger('application_id')->nullable()->default(null)->unsigned();
+            $table->text('reason')->nullable();
 
             $table->foreign('collection_id')->references('id')->on('collections');
             $table->foreign('tool_id')->references('id')->on('tools');
