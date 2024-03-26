@@ -158,7 +158,7 @@ class TagTest extends TestCase
             [
                 'type' =>  'Tag-123456789',
                 'enabled' => 1,
-                'description' => 'type for test 2'
+                'description' => 'type for test'
             ],
             $this->header,
         );

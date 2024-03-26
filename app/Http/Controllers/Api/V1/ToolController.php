@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Auditor;
 use Config;
 use Exception;
+use App\Models\DatasetHasTool;
 use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
@@ -150,6 +151,7 @@ class ToolController extends Controller
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
      *       ),
@@ -207,6 +209,9 @@ class ToolController extends Controller
             $tool = Tool::create($array);
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
+            if (array_key_exists('dataset', $input)) {
+                $this->insertDatasetHasTool($input['dataset'], (int) $tool->id);
+            }
 
             $this->indexElasticTools($input, (int) $tool->id);
 
@@ -257,6 +262,7 @@ class ToolController extends Controller
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
      *       ),
@@ -318,6 +324,11 @@ class ToolController extends Controller
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
 
+            DatasetHasTool::where('tool_id', $id)->delete();
+            if (array_key_exists('dataset', $input)) {
+                $this->insertDatasetHasTool($input['dataset'], (int) $id);
+            }
+
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -372,6 +383,7 @@ class ToolController extends Controller
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
      *       ),
@@ -433,6 +445,11 @@ class ToolController extends Controller
                 ToolHasTag::where('tool_id', $id)->delete();
                 $this->insertToolHasTag($input['tag'], (int) $id);
             };
+
+            if (array_key_exists('dataset', $input)) {
+                DatasetHasTool::where('tool_id', $id)->delete();
+                $this->insertDatasetHasTool($input['dataset'], (int) $id);
+            }
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -514,6 +531,7 @@ class ToolController extends Controller
 
             Tool::where('id', $id)->delete();
             ToolHasTag::where('tool_id', $id)->delete();
+            DatasetHasTool::where('tool_id', $id)->delete();
             
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -544,6 +562,29 @@ class ToolController extends Controller
                 ToolHasTag::updateOrCreate([
                     'tool_id' => (int) $toolId,
                     'tag_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert data into DatasetHasTool
+     *
+     * @param array $datasets
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertDatasetHasTool(array $datasets, int $toolId): mixed
+    {
+        try {
+            foreach ($datasets as $value) {
+                DatasetHasTool::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'dataset_id' => (int) $value,
                 ]);
             }
 
