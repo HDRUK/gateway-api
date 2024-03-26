@@ -23,7 +23,6 @@ class EditTag extends BaseFormRequest
             ],
             'type' => [
                 'string',
-                'exists:tags,type',
             ],
             'description' => [
                 'string',
