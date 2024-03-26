@@ -1777,8 +1777,9 @@ Authorization: Bearer {{accessToken}}
 
 {
     "type": "dataset",
-    "keys" : "test",
-    "enabled": true
+    "value": "167cc04b-23b8-4a9e-9ff9-6c8e07d6a561",
+    "keys": "id",
+    "enabled": 1
 }
 
 #### update filter
