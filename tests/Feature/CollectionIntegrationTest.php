@@ -6,20 +6,25 @@ use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
+use App\Models\Tool;
 
-use App\Models\Application;
-use App\Models\ApplicationHasPermission;
 use App\Models\Permission;
+use App\Models\Application;
+use Database\Seeders\TagSeeder;
 
 use Tests\Traits\Authorization;
+use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use App\Models\ApplicationHasPermission;
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,8 +57,12 @@ class CollectionIntegrationTest extends TestCase
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
+            CategorySeeder::class,
+            ToolSeeder::class,
+            TagSeeder::class,
             CollectionHasKeywordSeeder::class,
             CollectionHasDatasetSeeder::class,
+            CollectionHasToolSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();
@@ -103,8 +112,9 @@ class CollectionIntegrationTest extends TestCase
                     'created_at',
                     'updated_at',
                     'deleted_at',
-                    'datasets',
                     'keywords',
+                    'datasets',
+                    'tools',
                     'users',
                     'applications',
                     'mongo_object_id',
@@ -137,28 +147,27 @@ class CollectionIntegrationTest extends TestCase
     {
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
 
-        $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
+            'message',
             'data' => [
-                0 => [
-                    'id',
-                    'name',
-                    'description',
-                    'image_link',
-                    'enabled',
-                    'public',
-                    'counter',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'mongo_object_id',
-                    'mongo_id',
-                    'datasets',
-                    'keywords',
-                    'users',
-                    'applications',
-                    'team',
-                ]
+                'id',
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'mongo_object_id',
+                'mongo_id',
+                'tools',
+                'datasets',
+                'keywords',
+                'users',
+                'applications',
+                'team',
             ]
         ]);
         $response->assertStatus(200);
@@ -180,6 +189,7 @@ class CollectionIntegrationTest extends TestCase
             "public" => true,
             "counter" => 123,
             "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
         ];
 
@@ -213,6 +223,7 @@ class CollectionIntegrationTest extends TestCase
             "public" => true,
             "counter" => 123,
             "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
         ];
         $responseIns = $this->json(
@@ -234,6 +245,7 @@ class CollectionIntegrationTest extends TestCase
             "public" => true,
             "counter" => 123,
             "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
         ];
         $responseUpdate = $this->json(
@@ -266,6 +278,7 @@ class CollectionIntegrationTest extends TestCase
             "public" => true,
             "counter" => 123,
             "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
         ];
         $responseIns = $this->json(
@@ -287,6 +300,7 @@ class CollectionIntegrationTest extends TestCase
             "public" => true,
             "counter" => 123,
             "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
         ];
         $responseUpdate = $this->json(
@@ -354,6 +368,7 @@ class CollectionIntegrationTest extends TestCase
             "public" => true,
             "counter" => 123,
             "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
         ];
         $responseIns = $this->json(
@@ -396,6 +411,21 @@ class CollectionIntegrationTest extends TestCase
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
             $temp['id'] = Dataset::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generateTools()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Tool::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $return[] = $temp;
         }

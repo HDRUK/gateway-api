@@ -105,12 +105,6 @@ class CollectionController extends Controller
                 'team',
             ])->paginate((int) $perPage, ['*'], 'page');
 
-            Auditor::log([
-                'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Collection get all",
-            ]);
-
             $collections->getCollection()->transform(function ($collection) {
                 $userDatasets = $collection->userDatasets;
                 $userTools = $collection->userTools;
@@ -127,6 +121,12 @@ class CollectionController extends Controller
 
                 return $collection;
             });
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection get all",
+            ]);
 
             return response()->json(
                 $collections

@@ -18,6 +18,7 @@ use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,11 +50,12 @@ class CollectionTest extends TestCase
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
-            CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetSeeder::class,
             CategorySeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
+            CollectionHasKeywordSeeder::class,
+            CollectionHasDatasetSeeder::class,
+            CollectionHasToolSeeder::class,
         ]);
     }
 
