@@ -170,8 +170,19 @@ class PublicationController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="name", type="string", example="features"),
-     *             @OA\Property(property="datasets", type="array", example="[1,2]", @OA\Items()),
+     *             @OA\Property(property="paper_title", type="string", example="A title"),
+     *             @OA\Property(property="authors", type="string", example="Author A., Author B."),
+     *             @OA\Property(property="year_of_publication", type="string", example="2024"),
+     *             @OA\Property(property="paper_doi", type="string", example="10.12345"),
+     *             @OA\Property(property="publication_type", type="string", example="Journal article, Book"),
+     *             @OA\Property(property="journal_name", type="integer", example="A Journal"),
+     *             @OA\Property(property="abstract", type="integer", example="A long description of the paper"),
+     *             @OA\Property(property="datasets", type="array", 
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                   @OA\Property(property="link_type", type="string"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -218,9 +229,11 @@ class PublicationController extends Controller
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             if ($publication) {
                 foreach ($datasetInput as $dataset) {
+                    $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'UNKNOWN';
                     PublicationHasDataset::updateOrCreate([
                         'publication_id' => (int) $publication->id,
-                        'dataset_id' => (int) $dataset,
+                        'dataset_id' => (int) $dataset['id'],
+                        'link_type' => $linkType,
                     ]);
                 }
                 $this->indexElasticPublication($publication->id);
@@ -269,7 +282,19 @@ class PublicationController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="name", type="string", example="fake_role"),
+     *             @OA\Property(property="paper_title", type="string", example="A title"),
+     *             @OA\Property(property="authors", type="string", example="Author A., Author B."),
+     *             @OA\Property(property="year_of_publication", type="string", example="2024"),
+     *             @OA\Property(property="paper_doi", type="string", example="10.12345"),
+     *             @OA\Property(property="publication_type", type="string", example="Journal article, Book"),
+     *             @OA\Property(property="journal_name", type="integer", example="A Journal"),
+     *             @OA\Property(property="abstract", type="integer", example="A long description of the paper"),
+     *             @OA\Property(property="datasets", type="array", 
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                   @OA\Property(property="link_type", type="string"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -332,9 +357,11 @@ class PublicationController extends Controller
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();
             foreach ($datasetInput as $dataset) {
+                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'UNKNOWN';
                 PublicationHasDataset::updateOrCreate([
                     'publication_id' => (int) $id,
-                    'dataset_id' => (int) $dataset,
+                    'dataset_id' => (int) $dataset['id'],
+                    'link_type' => $linkType,
                 ]);
             }
             $this->indexElasticPublication((int) $id);
@@ -380,7 +407,19 @@ class PublicationController extends Controller
      *       @OA\MediaType(
      *          mediaType="application/json",
      *          @OA\Schema(
-     *             @OA\Property(property="name", type="string", example="fake_role"),
+     *             @OA\Property(property="paper_title", type="string", example="A title"),
+     *             @OA\Property(property="authors", type="string", example="Author A., Author B."),
+     *             @OA\Property(property="year_of_publication", type="string", example="2024"),
+     *             @OA\Property(property="paper_doi", type="string", example="10.12345"),
+     *             @OA\Property(property="publication_type", type="string", example="Journal article, Book"),
+     *             @OA\Property(property="journal_name", type="integer", example="A Journal"),
+     *             @OA\Property(property="abstract", type="integer", example="A long description of the paper"),
+     *             @OA\Property(property="datasets", type="array", 
+     *                @OA\Items(type="object",
+     *                   @OA\Property(property="id", type="integer"),
+     *                   @OA\Property(property="link_type", type="string"),
+     *                )
+     *             ),
      *          ),
      *       ),
      *    ),
@@ -443,9 +482,11 @@ class PublicationController extends Controller
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();
             foreach ($datasetInput as $dataset) {
+                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'UNKNOWN';
                 PublicationHasDataset::updateOrCreate([
                     'publication_id' => (int) $id,
-                    'dataset_id' => (int) $dataset,
+                    'dataset_id' => (int) $dataset['id'],
+                    'link_type' => $linkType,
                 ]);
             }
             $this->indexElasticPublication((int) $id);
