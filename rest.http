@@ -273,6 +273,18 @@ Authorization: Bearer {{accessToken}}
 
 
 ### Tools
+#### get all tools
+# GET {{baseUrl}}/api/{{apiVersion}}/tools?mongo_id=19004 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/tools HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one tool by id
+GET {{baseUrl}}/api/{{apiVersion}}/tools/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+
 #### create a new tools
 POST {{baseUrl}}/api/{{apiVersion}}/tools HTTP/1.1
 Content-Type: application/json
