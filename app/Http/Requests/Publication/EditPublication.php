@@ -48,8 +48,13 @@ class EditPublication extends BaseFormRequest
                 'nullable', 
                 'array', 
             ],
-            'datasets.*' => [
+            'datasets.*.id'  => [
                 'integer',
+                'exists:datasets,id',
+            ],
+            'datasets.*.link_type'  => [
+                'string',
+                'nullable',
             ],
         ];
     }
