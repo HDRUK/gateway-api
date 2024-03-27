@@ -62,6 +62,9 @@ class DatabaseSeeder extends Seeder
             SpatialCoverageSeeder::class,
             PublicationSeeder::class,
             PublicationHasDatasetSeeder::class,
+            EnquiryThreadSeeder::class,
+            EnquiryMessagesSeeder::class,
+            CollectionHasToolSeeder::class,
         ]);
     }
 }

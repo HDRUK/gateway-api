@@ -13,7 +13,7 @@ class TeamSeeder extends Seeder
      */
     public function run(): void
     {
-        Team::factory(50)
+        Team::factory(10)
             ->hasNotifications(3)
             ->create();
     }

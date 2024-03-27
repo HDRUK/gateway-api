@@ -40,6 +40,7 @@ class EditTool extends BaseFormRequest
                 'string',
             ],
             'description' => [
+                'nullable', 
                 'string',
             ],
             'license' => [

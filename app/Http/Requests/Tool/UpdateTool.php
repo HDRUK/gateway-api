@@ -41,7 +41,7 @@ class UpdateTool extends BaseFormRequest
                 'string',
             ],
             'description' => [
-                'required',
+                'nullable', 
                 'string',
             ],
             'license' => [
