@@ -257,6 +257,11 @@ class MetadataManagementController {
                     $populationSize = $metadata['metadata']['summary']['populationSize'];
                 }
             }
+
+            $endDate = $metadata['metadata']['provenance']['temporal']['endDate'];
+            if (is_null($endDate)) {
+                $endDate = "2100-01-01";
+            }
             
             $toIndex = [
                 'abstract' => $metadata['metadata']['summary']['abstract'],
@@ -267,7 +272,7 @@ class MetadataManagementController {
                 'populationSize' => $populationSize,
                 'publisherName' => $publisherName,
                 'startDate' => $metadata['metadata']['provenance']['temporal']['startDate'],
-                'endDate' => $metadata['metadata']['provenance']['temporal']['endDate'],
+                'endDate' => $endDate,
                 'containsTissue' => $containsTissue,
                 'conformsTo' => explode(',', $metadata['metadata']['accessibility']['formatAndStandards']['conformsTo']),
                 'hasTechnicalMetadata' => (bool) $datasetMatch['has_technical_details'],
