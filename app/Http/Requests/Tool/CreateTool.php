@@ -34,7 +34,7 @@ class CreateTool extends BaseFormRequest
                 'string',
             ],
             'description' => [
-                'required', 
+                'nullable', 
                 'string',
             ],
             'license' => [

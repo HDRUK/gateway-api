@@ -248,9 +248,9 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "type": "Type Test",
-    "enabled": 1,
-    "description": "type for test"
+    "type": "features",
+    "description": "Modelling",
+    "enabled": 1
 }
 
 #### update tag
@@ -270,6 +270,28 @@ DELETE {{baseUrl}}/api/{{apiVersion}}/tags/2 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+
+### Tools
+#### create a new tools
+POST {{baseUrl}}/api/{{apiVersion}}/tools HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "mongo_object_id": "5ece82142abda8b3a06f1a20",
+    "name": "COVID-19 Phenomics",
+    "url": "http://covid19-phenomics.org/",
+    "description": "",
+    "license": "",
+    "tech_stack": "",
+    "category_id": 2,
+    "user_id": 1,
+    "tag": [0,0],
+    "enabled": 1,
+    "mongo_id": 19006
+}
 
 
 ### APPLICATIONS

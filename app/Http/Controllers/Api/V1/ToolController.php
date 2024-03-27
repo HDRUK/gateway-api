@@ -50,11 +50,15 @@ class ToolController extends Controller
     public function index(): JsonResponse
     {
         try {
+            $mongoId = $request->query('mongo_id', null);
             $tools = Tool::with([
                     'user', 
                     'tag',
                     'team',
                 ])
+                ->when($mongoId, function ($query) use ($mongoId) {
+                    return $query->where('mongo_id', '=', $mongoId);
+                })
                 ->where('enabled', 1)
                 ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
@@ -202,7 +206,9 @@ class ToolController extends Controller
                 'user_id',
                 'enabled',
                 'team_id', 
+                'mongo_id',
             ];
+
             $array = $this->checkEditArray($input, $arrayKeys);
             $tool = Tool::create($array);
 
@@ -309,6 +315,7 @@ class ToolController extends Controller
                 'user_id',
                 'enabled',
                 'team_id', 
+                'mongo_id',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -423,6 +430,7 @@ class ToolController extends Controller
                 'user_id',
                 'enabled',
                 'team_id',
+                'mongo_id',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -541,6 +549,9 @@ class ToolController extends Controller
     {
         try {
             foreach ($tags as $value) {
+                if ($value === 0) {
+                    continue;
+                }
                 ToolHasTag::updateOrCreate([
                     'tool_id' => (int) $toolId,
                     'tag_id' => (int) $value,
