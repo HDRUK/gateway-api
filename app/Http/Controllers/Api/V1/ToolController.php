@@ -16,7 +16,7 @@ use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
 use App\Http\Traits\RequestTransformation;
-
+use Illuminate\Http\Request;
 use MetadataManagementController AS MMC;
 
 class ToolController extends Controller
@@ -47,7 +47,7 @@ class ToolController extends Controller
      *    ),
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
             $mongoId = $request->query('mongo_id', null);
