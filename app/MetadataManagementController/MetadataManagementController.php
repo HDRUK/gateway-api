@@ -257,6 +257,14 @@ class MetadataManagementController {
                     $populationSize = $metadata['metadata']['summary']['populationSize'];
                 }
             }
+
+            $endDate = $metadata['metadata']['provenance']['temporal']['endDate'];
+            if (is_null($endDate)) {
+                // Note: danger that this approach is not future proof.
+                // Better approach would be to either keep elastic index updated regularly with
+                // the current date or for elastic to treat null values as the current date.
+                $endDate = Carbon::now()->addYears(180);
+            }
             
             $toIndex = [
                 'abstract' => $metadata['metadata']['summary']['abstract'],
@@ -267,7 +275,7 @@ class MetadataManagementController {
                 'populationSize' => $populationSize,
                 'publisherName' => $publisherName,
                 'startDate' => $metadata['metadata']['provenance']['temporal']['startDate'],
-                'endDate' => $metadata['metadata']['provenance']['temporal']['endDate'],
+                'endDate' => $endDate,
                 'containsTissue' => $containsTissue,
                 'conformsTo' => explode(',', $metadata['metadata']['accessibility']['formatAndStandards']['conformsTo']),
                 'hasTechnicalMetadata' => (bool) $datasetMatch['has_technical_details'],
