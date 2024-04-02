@@ -2,16 +2,17 @@
 
 namespace Tests\Feature;
 
-use Carbon\Carbon;
+use Mockery;
 
+use Carbon\Carbon;
 use App\Mail\Email;
 use Tests\TestCase;
-use App\Jobs\SendEmailJob;
 
+use App\Jobs\SendEmailJob;
 use App\Models\EmailTemplate;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Http;
 
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use App\Exceptions\EmailTemplateException;
 use Database\Seeders\EmailTemplatesSeeder;
@@ -22,7 +23,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class EmailServiceTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
-    const MJML_RENDER_URL = 'https://api.mjml.io/v1/render';
 
     public function setUp(): void
     {
@@ -41,6 +41,8 @@ class EmailServiceTest extends TestCase
 
     public function test_dispatch_email_job()
     {
+        Http::fake();
+        
         $to = [
             'to' => [
                 'email' => 'loki.sinclair@hdruk.ac.uk',
@@ -58,11 +60,29 @@ class EmailServiceTest extends TestCase
 
         Bus::assertNothingDispatched();
 
-        Http::fake([
-            self::MJML_RENDER_URL => Http::response([
-                'html' => '<p>Your HTML content here</p>',
-            ], 200),
-        ]);
+        // $username = env('MJML_API_APPLICATION_KEY');
+        // $password = env('MJML_API_KEY');
+
+        // Http::fake([
+        //     '*' => Http::response([
+        //         'html' => '<p>Your HTML content here</p>',
+        //     ], 200),
+        // ]);
+
+        $mockResponse = Mockery::mock(\Illuminate\Testing\TestResponse::class);
+        $mockResponse->shouldReceive('json')
+            ->andReturn(['html' => 'Mocked HTML content']);
+
+        Http::shouldReceive('withBasicAuth')
+            ->with(env('MJML_API_APPLICATION_KEY'), env('MJML_API_KEY'))
+            ->andReturnSelf(); // Allow chaining
+
+        Http::shouldReceive('post')
+            ->with(env('MJML_RENDER_URL'), [
+                'mjml' => 'Example MJML code',
+            ])
+            ->andReturn($mockResponse);
+
         SendEmailJob::dispatch($to, $template, $replacements);
 
         Bus::assertDispatched(SendEmailJob::class);
