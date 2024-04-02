@@ -39,7 +39,16 @@ class EmailServiceTest extends TestCase
 
     public function test_dispatch_email_job()
     {
-        Http::fake();
+        // Http::fake();
+        $applicationKey = env('MJML_API_APPLICATION_KEY');
+        $apiKey = env('MJML_API_KEY');
+        $basicAuth = base64_encode("{$applicationKey}:{$apiKey}");
+
+        Http::fake([
+            'api.mjml.io/*' => Http::response([
+                'html' => '<p>Your HTML content here</p>',
+            ], 200),
+        ]);
         
         $to = [
             'to' => [
@@ -61,13 +70,11 @@ class EmailServiceTest extends TestCase
         // $username = env('MJML_API_APPLICATION_KEY');
         // $password = env('MJML_API_KEY');
 
-        Http::fake([
-            env('MJML_RENDER_URL') => Http::response([
-                'html' => '<p>Your HTML content here</p>',
-            ], 200),
-        ]);
-
         SendEmailJob::dispatch($to, $template, $replacements);
+
+        // Http::assertSent(function ($request) use ($basicAuth) {
+        //     return $request->hasHeader('Authorization', "Basic {$basicAuth}");
+        // });
 
         Bus::assertDispatched(SendEmailJob::class);
     }
