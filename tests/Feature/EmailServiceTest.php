@@ -570,7 +570,7 @@ class EmailServiceTest extends TestCase
             '[[subheading_text]]' => 'Sub Heading Something or other',
         ];
 
-        // Bus::assertNothingDispatched();
+        Bus::assertNothingDispatched();
 
         SendEmailJob::dispatch($to, $template, $replacements);
 
@@ -584,7 +584,7 @@ class EmailServiceTest extends TestCase
                    strpos($mail->mjmlToHtml(), 'body template') === false; // Example assertion on content
         });
 
-        // Bus::assertDispatched(SendEmailJob::class);
+        Bus::assertDispatched(SendEmailJob::class);
     }
 
 }
