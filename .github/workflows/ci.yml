@@ -29,6 +29,9 @@ jobs:
     - name: Run static analysis
       run: "composer run phpstan"
   
+    - name: Run unit tests #Unit tests are disabled for now due to some external api calls
+      run: "php artisan test"
+  
     # - name: Run unit tests #Unit tests are disabled for now due to some external api calls
     #   run: "php artisan test --parallel"
 
