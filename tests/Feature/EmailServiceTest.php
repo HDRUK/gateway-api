@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use Mockery;
-
 use Carbon\Carbon;
 use App\Mail\Email;
 use Tests\TestCase;
@@ -63,25 +61,11 @@ class EmailServiceTest extends TestCase
         // $username = env('MJML_API_APPLICATION_KEY');
         // $password = env('MJML_API_KEY');
 
-        // Http::fake([
-        //     '*' => Http::response([
-        //         'html' => '<p>Your HTML content here</p>',
-        //     ], 200),
-        // ]);
-
-        $mockResponse = Mockery::mock(\Illuminate\Testing\TestResponse::class);
-        $mockResponse->shouldReceive('json')
-            ->andReturn(['html' => 'Mocked HTML content']);
-
-        Http::shouldReceive('withBasicAuth')
-            ->with(env('MJML_API_APPLICATION_KEY'), env('MJML_API_KEY'))
-            ->andReturnSelf(); // Allow chaining
-
-        Http::shouldReceive('post')
-            ->with(env('MJML_RENDER_URL'), [
-                'mjml' => 'Example MJML code',
-            ])
-            ->andReturn($mockResponse);
+        Http::fake([
+            env('MJML_RENDER_URL') => Http::response([
+                'html' => '<p>Your HTML content here</p>',
+            ], 200),
+        ]);
 
         SendEmailJob::dispatch($to, $template, $replacements);
 
