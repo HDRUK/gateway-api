@@ -22,6 +22,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 class EmailServiceTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
+    const MJML_RENDER_URL = 'https://api.mjml.io/v1/render';
 
     public function setUp(): void
     {
@@ -38,38 +39,8 @@ class EmailServiceTest extends TestCase
         Bus::fake();
     }
 
-    // public function test_dispatch_email_job()
-    // {
-    //     $to = [
-    //         'to' => [
-    //             'email' => 'loki.sinclair@hdruk.ac.uk',
-    //             'name' => 'Loki Sinclair',
-    //         ],
-    //     ];
-
-    //     $template = EmailTemplate::where('identifier', '=', 'example_template')->first();
-
-    //     $replacements = [
-    //         '[[header_text]]' => 'Health Data Research UK',
-    //         '[[button_text]]' => 'Click me!',
-    //         '[[subheading_text]]' => 'Sub Heading Something or other',
-    //     ];
-
-    //     Bus::assertNothingDispatched();
-
-    //     SendEmailJob::dispatch($to, $template, $replacements);
-
-    //     Bus::assertDispatched(SendEmailJob::class);
-    // }
-
-    public function testSendEmailJobDispatchesEmailCorrectly()
+    public function test_dispatch_email_job()
     {
-        Mail::fake();
-
-        Http::fake([
-            '*' => Http::response(['html' => '<p>Mocked MJML APi responses HTML Content</p>'], 200),
-        ]);
-
         $to = [
             'to' => [
                 'email' => 'loki.sinclair@hdruk.ac.uk',
@@ -85,19 +56,16 @@ class EmailServiceTest extends TestCase
             '[[subheading_text]]' => 'Sub Heading Something or other',
         ];
 
-        // Dispatch the job
         Bus::assertNothingDispatched();
-        dispatch(new SendEmailJob($to, $template, $replacements));
+
+        Http::fake([
+            self::MJML_RENDER_URL => Http::response([
+                'html' => '<p>Your HTML content here</p>',
+            ], 200),
+        ]);
+        SendEmailJob::dispatch($to, $template, $replacements);
+
         Bus::assertDispatched(SendEmailJob::class);
-
-        // Assert an email was sent to the correct recipient with the correct Mailable class
-        // Mail::assertSent(Email::class, function ($mail) use ($to) {
-        //     return $mail->hasTo($to['to']['email']);
-        // });
-
-        // // Assert that the HTTP client was called as expected (optional, depending on your test's focus)
-        // Http::assertSent(function ($request) {
-        //     return str_contains($request['mjml'], 'Hello, John Doe'); // Assert the request contains the replaced body text
-        // });
     }
+
 }
