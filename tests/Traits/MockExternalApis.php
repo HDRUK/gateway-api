@@ -452,7 +452,6 @@ trait MockExternalApis
             )
         ]);
         
-        
         // Mock the search service - data uses
         Http::fake([
             env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur' => Http::response(
