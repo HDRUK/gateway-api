@@ -55,7 +55,7 @@ class EmailServiceTest extends TestCase
                 'name' => 'Loki Sinclair',
             ],
         ];
-        
+
         $template = EmailTemplate::where('identifier', '=', 'example_template')->first();
 
         $replacements = [
@@ -67,15 +67,6 @@ class EmailServiceTest extends TestCase
         Bus::assertNothingDispatched();
 
         SendEmailJob::dispatch($to, $template, $replacements);
-
-        // Mail::assertSent(Email::class, function ($mail) use ($template) {
-        //     // var_dump($mail->to[0]['address']);
-        //     // exit();
-        //     // return $mail->hasTo('loki.sinclair@hdruk.ac.uk') &&
-        //     // $mail->subject === 'Example Template' && // Adjust according to your logic
-        //     // strpos($mail->mjmlToHtml(), 'body template') === false; // Example assertion on content
-        //     return $mail->subject === 'Example Template'; // Example assertion on content
-        // });
 
         Bus::assertDispatched(SendEmailJob::class);
     }
