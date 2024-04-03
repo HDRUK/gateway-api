@@ -109,7 +109,7 @@ trait MockExternalApis
 
         // Mock the search service - datasets
         Http::fake([
-            '*/search/datasets*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -205,7 +205,7 @@ trait MockExternalApis
 
         // Mock the search service - similar datasets
         Http::fake([
-            '*/similar/datasets*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/similar/datasets*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -301,7 +301,7 @@ trait MockExternalApis
 
         // Mock the search service - tools
         Http::fake([
-            '*/search/tools*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -382,7 +382,7 @@ trait MockExternalApis
 
         // Mock the search service - collections
         Http::fake([
-            '*/search/collections*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/collections*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -454,7 +454,7 @@ trait MockExternalApis
         
         // Mock the search service - data uses
         Http::fake([
-            '*/search/dur*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -620,7 +620,7 @@ trait MockExternalApis
 
         // Mock the search service - filters
         Http::fake([
-            '*search*/filters*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search*/filters*' => Http::response(
                 [
                     'filters' => [
                         0 => [
