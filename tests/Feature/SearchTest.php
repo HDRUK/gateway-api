@@ -33,6 +33,7 @@ class SearchTest extends TestCase
     const TEST_URL_SEARCH = '/api/v1/search';
 
     protected $header = [];
+    protected $metadataUpdate;
 
     /**
      * Set up the database

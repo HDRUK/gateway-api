@@ -833,7 +833,6 @@ class SearchController extends Controller
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications';
-
             $response = Http::post($urlString, $input);
 
             $pubArray = $response['hits']['hits'];
