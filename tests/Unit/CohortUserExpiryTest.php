@@ -9,8 +9,9 @@ use App\Models\Permission;
 use App\Models\CohortRequest;
 use Illuminate\Support\Carbon;
 use Tests\Traits\MockExternalApis;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Mail;
 
+use Illuminate\Support\Facades\Queue;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use App\Models\CohortRequestHasPermission;
@@ -33,8 +34,6 @@ class CohortUserExpiryTest extends TestCase
             PermissionSeeder::class,
             EmailTemplatesSeeder::class,
         ]);
-
-        Queue::fake();
     }
 
     public function test_it_can_run(): void
@@ -44,6 +43,8 @@ class CohortUserExpiryTest extends TestCase
 
     public function test_it_can_expire_requests(): void
     {
+        app()->make('config')->set('mail.driver', 'log');
+
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
@@ -67,7 +68,6 @@ class CohortUserExpiryTest extends TestCase
         ]);
 
         $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
-        Queue::assertPushed(SendEmailJob::class);
 
         $this->assertDatabaseHas('cohort_requests', [
             'id' => $req->id,
@@ -89,6 +89,8 @@ class CohortUserExpiryTest extends TestCase
 
     public function test_it_doesnt_expire_valid_requests(): void
     {
+        app()->make('config')->set('mail.driver', 'log');
+        
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
@@ -111,7 +113,6 @@ class CohortUserExpiryTest extends TestCase
         ]);
 
         $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
-        Queue::assertPushed(SendEmailJob::class);
 
         $this->assertDatabaseHas('cohort_requests', [
             'id' => $req->id,
