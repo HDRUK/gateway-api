@@ -840,6 +840,7 @@ class SearchController extends Controller
             $urlString = env('SEARCH_SERVICE_URL') . '/search/publications';
 
             $response = Http::post($urlString, $input);
+            dd($response);
 
             $pubArray = $response['hits']['hits'];
             $matchedIds = [];
