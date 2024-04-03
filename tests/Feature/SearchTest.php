@@ -719,9 +719,9 @@ class SearchTest extends TestCase
                 ['application/json']
             )
         ]);
-        
+
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications", ["query" => "term"], ['Accept' => 'application/json']);
-        // dd($response);
+        dd($response);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
