@@ -43,9 +43,6 @@ class CohortUserExpiryTest extends TestCase
 
     public function test_it_can_expire_requests(): void
     {
-        Mail::fake();
-        app()->make('config')->set('mail.driver', 'log');
-
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
@@ -90,9 +87,6 @@ class CohortUserExpiryTest extends TestCase
 
     public function test_it_doesnt_expire_valid_requests(): void
     {
-        Mail::fake();
-        app()->make('config')->set('mail.driver', 'log');
-
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
