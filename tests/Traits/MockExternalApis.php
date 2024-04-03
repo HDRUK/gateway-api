@@ -100,7 +100,7 @@ trait MockExternalApis
         $this->testElasticClient = $elasticClient;
 
         Http::fake([
-            'ted*' => Http::response(
+            env('TED_SERVICE_URL', 'http://localhost:8001') => Http::response(
                 ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
                 201,
                 ['application/json']
@@ -454,7 +454,7 @@ trait MockExternalApis
         
         // Mock the search service - data uses
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -541,7 +541,7 @@ trait MockExternalApis
 
         // Mock the search service - publications
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -620,7 +620,7 @@ trait MockExternalApis
 
         // Mock the search service - filters
         Http::fake([
-            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search*/filters*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/filters*' => Http::response(
                 [
                     'filters' => [
                         0 => [
