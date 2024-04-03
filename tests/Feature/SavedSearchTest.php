@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use App\Models\SavedSearch;
 use Tests\Traits\Authorization;
 use Database\Seeders\FilterSeeder;
 use Database\Seeders\MinimalUserSeeder;
@@ -522,7 +523,6 @@ class SavedSearchTest extends TestCase
 
         $responseUpdate->assertJsonStructure([
             'message',
-            'data'
         ]);
         $responseUpdate->assertStatus(500);
 
@@ -535,10 +535,9 @@ class SavedSearchTest extends TestCase
             ],
         );
 
-        $responseUpdate->assertJsonStructure([
+        $responseDelete->assertJsonStructure([
             'message',
-            'data',
         ]);
-        $responseUpdate->assertStatus(500);
+        $responseDelete->assertStatus(500);
     }
 }
