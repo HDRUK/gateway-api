@@ -470,7 +470,7 @@ class SearchTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $responseUpdateDataset = $this->json(
             'PUT',
-            '/api/v1/datasets/',
+            '/api/v1/datasets/1',
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -503,7 +503,7 @@ class SearchTest extends TestCase
 
         $response = $this->json(
             'PUT',
-            '/api/v1/dur/' . 1,
+            '/api/v1/dur/1',
             $mockData,
             $this->header
         );
