@@ -470,7 +470,7 @@ class SearchTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $responseUpdateDataset = $this->json(
             'PUT',
-            '/api/v1/datasets/' . 1,
+            '/api/v1/datasets/',
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
@@ -552,7 +552,7 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_id'] === "1");
         // Test dataset titles are alphabetical - "updated" will be at the end
         $endTitle = array_key_last($response['data'][0]['datasetTitles']);
-        dd($response['data'][0]['datasetTitles'][$endTitle]);
+        dd($response['data'][0]['datasetTitles'][$endTitle]); // HDR UK Papers & Preprints
         $this->assertTrue($response['data'][0]['datasetTitles'][$endTitle] === 'Updated HDR UK Papers & Preprints');
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
