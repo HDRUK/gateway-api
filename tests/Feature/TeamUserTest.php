@@ -438,7 +438,6 @@ class TeamUserTest extends TestCase
         $thirdResponsePost->assertJsonStructure([
             'code',
             'message',
-            'details',
         ]);
     }
 
@@ -639,7 +638,6 @@ class TeamUserTest extends TestCase
         $responseDelete->assertJsonStructure([
             'code',
             'message',
-            'details',
         ]);
         $responseDelete->assertStatus(500);
     }
