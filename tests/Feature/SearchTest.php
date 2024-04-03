@@ -510,7 +510,6 @@ class SearchTest extends TestCase
         $response->assertStatus(200);
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur", ["query" => "term"], ['Accept' => 'application/json']);
-        dd($response);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
