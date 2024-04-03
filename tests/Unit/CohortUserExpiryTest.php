@@ -4,15 +4,17 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 
+use App\Jobs\SendEmailJob;
 use App\Models\Permission;
 use App\Models\CohortRequest;
 use Illuminate\Support\Carbon;
-use Database\Seeders\EmailTemplatesSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\PermissionSeeder;
+use Illuminate\Support\Facades\Queue;
 
+use Database\Seeders\PermissionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use App\Models\CohortRequestHasPermission;
+use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CohortUserExpiryTest extends TestCase
@@ -31,6 +33,8 @@ class CohortUserExpiryTest extends TestCase
             PermissionSeeder::class,
             EmailTemplatesSeeder::class,
         ]);
+
+        Queue::fake();
     }
 
     public function test_it_can_run(): void
@@ -63,6 +67,7 @@ class CohortUserExpiryTest extends TestCase
         ]);
 
         $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
+        Queue::assertPushed(SendEmailJob::class);
 
         $this->assertDatabaseHas('cohort_requests', [
             'id' => $req->id,
@@ -106,6 +111,7 @@ class CohortUserExpiryTest extends TestCase
         ]);
 
         $this->artisan('app:cohort-user-expiry')->assertExitCode(0);
+        Queue::assertPushed(SendEmailJob::class);
 
         $this->assertDatabaseHas('cohort_requests', [
             'id' => $req->id,
