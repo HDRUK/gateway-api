@@ -3,17 +3,18 @@
 namespace Tests\Traits;
 
 
-use Database\Seeders\SectorSeeder;
-use Illuminate\Support\Facades\Http;
-
-use MetadataManagementController AS MMC;
+use Http\Mock\Client;
+use Nyholm\Psr7\Response;
 
 use Tests\Traits\Authorization;
 
+use Database\Seeders\SectorSeeder;
+
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Elastic\Elasticsearch\ClientBuilder;
+use MetadataManagementController AS MMC;
 use Elastic\Elasticsearch\Response\Elasticsearch;
-use Http\Mock\Client;
-use Nyholm\Psr7\Response;
 
 trait MockExternalApis
 {
@@ -63,6 +64,8 @@ trait MockExternalApis
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $jwt,
         ];
+
+        Mail::fake();
 
         // Define mock client and fake response for elasticsearch service
         $mockElastic = new Client();
