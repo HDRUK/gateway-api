@@ -837,7 +837,7 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'paper')->get()->toArray();
             $input['aggs'] = $aggs;
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/publications';
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications';
 
             $response = Http::post($urlString, $input);
             dd($response);

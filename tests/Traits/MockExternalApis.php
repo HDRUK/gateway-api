@@ -541,7 +541,7 @@ trait MockExternalApis
 
         // Mock the search service - publications
         Http::fake([
-            env('SEARCH_SERVICE_URL') . '/search/publications*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
