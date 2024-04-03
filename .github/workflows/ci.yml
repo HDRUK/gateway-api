@@ -30,7 +30,7 @@ jobs:
       run: "composer run phpstan"
   
     - name: Run unit tests #Unit tests are disabled for now due to some external api calls
-      run: "php artisan test"
+      run: "php artisan test --filter SearchTest"
   
     # - name: Run unit tests #Unit tests are disabled for now due to some external api calls
     #   run: "php artisan test --parallel"

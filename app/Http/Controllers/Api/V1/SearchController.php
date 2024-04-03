@@ -129,12 +129,11 @@ class SearchController extends Controller
             $sortField = ($sortInput === 'title') ? 'shortTitle' : $sortInput;
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/datasets';
-
             $filters = (isset($request['filters']) ? $request['filters'] : []);
             $aggs = Filter::where('type', 'dataset')->get()->toArray();
             $input['aggs'] = $aggs;
 
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
             $response = Http::post($urlString, $input);
 
             $datasetsArray = $response['hits']['hits'];
@@ -247,8 +246,7 @@ class SearchController extends Controller
     {
         try {
             $id = (string) $request['id'];
-            $urlString = env('SEARCH_SERVICE_URL') . '/similar/datasets';
-
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/similar/datasets';
             $response = Http::post($urlString, ['id' => $id]);
 
             $datasetsArray = $response['hits']['hits'];
@@ -371,8 +369,7 @@ class SearchController extends Controller
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/tools';
-
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools';
             $response = Http::post($urlString,$request->all());
            
             $toolsArray = $response['hits']['hits'];
@@ -519,8 +516,7 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'collection')->get()->toArray();
             $input['aggs'] = $aggs;
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/collections';
-        
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/collections';
             $response = Http::post($urlString, $input);
 
             $collectionArray = $response['hits']['hits'];
@@ -663,8 +659,7 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
             $input['aggs'] = $aggs;
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/dur';
-
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur';
             $response = Http::post($urlString, $input);
 
             $durArray = $response['hits']['hits'];
