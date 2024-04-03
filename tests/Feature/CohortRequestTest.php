@@ -9,6 +9,7 @@ use Tests\Traits\Authorization;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\SectorSeeder;
 use Tests\Traits\MockExternalApis;
+use Illuminate\Support\Facades\Mail;
 use Database\Seeders\CohortRequestSeed;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\EmailTemplatesSeeder;
@@ -118,6 +119,8 @@ class CohortRequestTest extends TestCase
      */
     public function test_create_cohort_request_with_success(): void
     {
+        Mail::fake();
+
         // create
         $responseCreate = $this->json(
             'POST',
@@ -127,7 +130,7 @@ class CohortRequestTest extends TestCase
             ],
             $this->header,
         );
-dd($responseCreate);
+
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
         ->assertJsonStructure([
             'message',
@@ -160,6 +163,8 @@ dd($responseCreate);
      */
     public function test_update_cohort_request_with_success(): void
     {
+        Mail::fake();
+
         // create
         $responseCreate = $this->json(
             'POST',
@@ -219,6 +224,8 @@ dd($responseCreate);
      */
     public function test_download_cohort_request_dashboard_with_success(): void
     {
+        Mail::fake();
+
         $responseDownload = $this->json(
             'GET',
             self::TEST_URL . '/export',
@@ -241,6 +248,8 @@ dd($responseCreate);
      */
     public function test_delete_cohort_request_with_success(): void
     {
+        Mail::fake();
+        
         // create
         $responseCreate = $this->json(
             'POST',
