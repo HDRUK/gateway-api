@@ -522,7 +522,7 @@ class SavedSearchTest extends TestCase
 
         $responseUpdate->assertJsonStructure([
             'message',
-            'details'
+            'data'
         ]);
         $responseUpdate->assertStatus(500);
 
