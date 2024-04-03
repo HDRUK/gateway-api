@@ -643,6 +643,7 @@ class SearchTest extends TestCase
     public function test_publications_search_with_success(): void
     {
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications", ["query" => "term"], ['Accept' => 'application/json']);
+        dd($response);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
