@@ -34,7 +34,7 @@ jobs:
     #   run: "php artisan test"
   
     - name: Run unit tests
-      run: "php artisan test --parallel"
+      run: "php artisan test --parallel --processes=4"
 
     - name: Run code sniffer
       run: "composer run phpcs"
