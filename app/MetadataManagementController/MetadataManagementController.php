@@ -67,7 +67,7 @@ class MetadataManagementController {
                 'validate_output' => $validateOutput ? "1" : 0 ,
             ];
 
-            $urlString = env('TRASER_SERVICE_URL') . '/translate?' . http_build_query($queryParams);
+            $urlString = env('TRASER_SERVICE_URL', 'http://localhost:8002') . '/translate?' . http_build_query($queryParams);
 
             // !! Dragons ahead !!
             // Suggest that no one change this, ever. Took hours
@@ -121,7 +121,7 @@ class MetadataManagementController {
     {
         try {
             $urlString = sprintf("%s/validate?input_schema=%s&input_version=%s",
-                env('TRASER_SERVICE_URL'),
+                env('TRASER_SERVICE_URL', 'http://localhost:8002'),
                 $input_schema,
                 $input_version
             );

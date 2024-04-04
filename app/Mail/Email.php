@@ -69,9 +69,9 @@ class Email extends Mailable
     {
         $this->replaceBodyText();
 
-        $response = Http::withBasicAuth(env('MJML_API_APPLICATION_KEY'),
-            env('MJML_API_KEY'))
-            ->post(env('MJML_RENDER_URL'), [
+        $response = Http::withBasicAuth(env('MJML_API_APPLICATION_KEY', ''),
+            env('MJML_API_KEY', ''))
+            ->post(env('MJML_RENDER_URL', ''), [
                 'mjml' => $this->template['body'],
             ]);
 

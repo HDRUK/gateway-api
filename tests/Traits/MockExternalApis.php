@@ -2,18 +2,19 @@
 
 namespace Tests\Traits;
 
-
-use Database\Seeders\SectorSeeder;
-use Illuminate\Support\Facades\Http;
-
-use MetadataManagementController AS MMC;
+use Config;
+use Http\Mock\Client;
+use Nyholm\Psr7\Response;
 
 use Tests\Traits\Authorization;
 
+use Database\Seeders\SectorSeeder;
+
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Elastic\Elasticsearch\ClientBuilder;
+use MetadataManagementController AS MMC;
 use Elastic\Elasticsearch\Response\Elasticsearch;
-use Http\Mock\Client;
-use Nyholm\Psr7\Response;
 
 trait MockExternalApis
 {
@@ -64,6 +65,8 @@ trait MockExternalApis
             'Authorization' => 'Bearer ' . $jwt,
         ];
 
+        Mail::fake();
+
         // Define mock client and fake response for elasticsearch service
         $mockElastic = new Client();
 
@@ -97,7 +100,7 @@ trait MockExternalApis
         $this->testElasticClient = $elasticClient;
 
         Http::fake([
-            'ted*' => Http::response(
+            env('TED_SERVICE_URL', 'http://localhost:8001') => Http::response(
                 ['id' => 11, 'extracted_terms' => ['test', 'fake']], 
                 201,
                 ['application/json']
@@ -106,7 +109,7 @@ trait MockExternalApis
 
         // Mock the search service - datasets
         Http::fake([
-            '*/search/datasets*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -202,7 +205,7 @@ trait MockExternalApis
 
         // Mock the search service - similar datasets
         Http::fake([
-            '*/similar/datasets*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/similar/datasets*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -298,7 +301,7 @@ trait MockExternalApis
 
         // Mock the search service - tools
         Http::fake([
-            '*/search/tools*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -379,7 +382,7 @@ trait MockExternalApis
 
         // Mock the search service - collections
         Http::fake([
-            '*/search/collections*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/collections*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -451,7 +454,7 @@ trait MockExternalApis
         
         // Mock the search service - data uses
         Http::fake([
-            '*/search/dur*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -538,7 +541,7 @@ trait MockExternalApis
 
         // Mock the search service - publications
         Http::fake([
-            '*/search/publications*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications*' => Http::response(
                 [
                     'took' => 1000,
                     'timed_out' => false,
@@ -617,7 +620,7 @@ trait MockExternalApis
 
         // Mock the search service - filters
         Http::fake([
-            '*search*/filters*' => Http::response(
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/filters*' => Http::response(
                 [
                     'filters' => [
                         0 => [
@@ -666,7 +669,18 @@ trait MockExternalApis
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::shouldReceive("translateDataModelType")->andReturnUsing(function(string $metadata){
+        // MMC::shouldReceive("translateDataModelType")
+        //     ->with(json_encode($this->getFakeDataset()), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
+        //     ->andReturnUsing(function(string $metadata){
+        //     return [
+        //         "traser_message" => "",
+        //         "wasTranslated" => true,
+        //         "metadata" => json_decode($metadata,true)["metadata"],
+        //         "statusCode" => "200",
+        //     ];
+        // });
+        MMC::shouldReceive("translateDataModelType")
+            ->andReturnUsing(function(string $metadata){
             return [
                 "traser_message" => "",
                 "wasTranslated" => true,
