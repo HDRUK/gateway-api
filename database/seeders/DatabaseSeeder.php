@@ -65,6 +65,7 @@ class DatabaseSeeder extends Seeder
             EnquiryThreadSeeder::class,
             EnquiryMessagesSeeder::class,
             CollectionHasToolSeeder::class,
+            CategorySeeder::class,
         ]);
     }
 }
