@@ -30,11 +30,8 @@ jobs:
     - name: Run static analysis
       run: "composer run phpstan"
   
-    # - name: Run unit tests
-    #   run: "php artisan test"
-  
     - name: Run unit tests
-      run: "php artisan test --parallel --processes=4"
+      run: "php artisan test"
 
     - name: Run code sniffer
       run: "composer run phpcs"
