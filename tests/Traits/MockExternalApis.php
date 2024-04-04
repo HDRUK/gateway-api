@@ -2,7 +2,7 @@
 
 namespace Tests\Traits;
 
-
+use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
 
@@ -669,7 +669,9 @@ trait MockExternalApis
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        MMC::shouldReceive("translateDataModelType")->andReturnUsing(function(string $metadata){
+        MMC::shouldReceive("translateDataModelType")
+            ->with($metadata, Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
+            ->andReturnUsing(function(string $metadata){
             return [
                 "traser_message" => "",
                 "wasTranslated" => true,
