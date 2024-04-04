@@ -2,7 +2,7 @@
 
 return [
     "GWDM" => [
-        "name" => env("GWDM"),
-        "version" => env("GWDM_CURRENT_VERSION")
+        "name" => env("GWDM", "GWDM"),
+        "version" => env("GWDM_CURRENT_VERSION", "1.1")
     ]
 ];
