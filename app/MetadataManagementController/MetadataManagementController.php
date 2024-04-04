@@ -48,7 +48,7 @@ class MetadataManagementController {
      */
     public function translateDataModelType(
         string $dataset,
-        string $outputSchema,
+        string $outputSchema = '',
         string $outputVersion,
         string $inputSchema = null,
         string $inputVersion = null,
