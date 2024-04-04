@@ -21,6 +21,8 @@ use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\PublicationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use MetadataManagementController AS MMC;
+use Config;
 
 class SearchTest extends TestCase
 {
@@ -469,6 +471,17 @@ class SearchTest extends TestCase
         // update dataset with id 1
         $userId = (int) User::all()->random()->id;
         $teamId = (int) Team::all()->random()->id;
+        $metadata = $this->metadataUpdate;
+        MMC::shouldReceive("translateDataModelType")
+            ->with(json_encode($this->metadataUpdate), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
+            ->andReturnUsing(function(string $metadata){
+            return [
+                "traser_message" => "",
+                "wasTranslated" => true,
+                "metadata" => json_decode($metadata,true)["metadata"],
+                "statusCode" => "200",
+            ];
+        });
         $responseUpdateDataset = $this->json(
             'PUT',
             '/api/v1/datasets/1',
@@ -481,6 +494,7 @@ class SearchTest extends TestCase
             ],
             $this->header,
         );
+        $metadata = $this->getFakeUpdateDataset();
 
         // update dur with id 1 to include updated dataset and another
         $mockData = [
