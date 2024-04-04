@@ -481,7 +481,7 @@ class SearchTest extends TestCase
             ],
             $this->header,
         );
-        dd($responseUpdateDataset);
+
         // update dur with id 1 to include updated dataset and another
         $mockData = [
             'datasets' => [
