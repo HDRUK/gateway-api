@@ -906,6 +906,7 @@ class DatasetController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v1/datasets/{id}",
+     *      operationId="delete_datasets",
      *      summary="Delete a dataset",
      *      description="Delete a dataset",
      *      tags={"Datasets"},
