@@ -14,6 +14,7 @@ use App\Models\Filter;
 use App\Models\Publication;
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
+use App\Exports\PublicationExport;
 
 use App\Models\DatasetVersion;
 use Illuminate\Http\JsonResponse;
