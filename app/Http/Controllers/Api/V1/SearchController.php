@@ -14,6 +14,7 @@ use App\Models\Filter;
 use App\Models\Publication;
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
+use App\Exports\PublicationExport;
 
 use App\Models\DatasetVersion;
 use Illuminate\Http\JsonResponse;
@@ -817,10 +818,12 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function publications(Request $request): JsonResponse
+    public function publications(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
             $input = $request->all();
+            
+            $download = array_key_exists('download', $input) ? $input['download'] : false;
             $sort = $request->query('sort',"score:desc");   
         
             $tmp = explode(":", $sort);
@@ -859,6 +862,15 @@ class SearchController extends Controller
                         break;
                     }
                 }
+            }
+
+            if ($download) {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search publications export data",
+                ]);
+                return Excel::download(new PublicationExport($pubArray), 'publications.csv');
             }
 
             $pubArraySorted = $this->sortSearchResult($pubArray, $sortField, $sortDirection);
