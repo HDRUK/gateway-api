@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - dev
+      - release
 jobs:
   test:
     timeout-minutes: 10
