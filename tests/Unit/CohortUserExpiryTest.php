@@ -4,15 +4,18 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 
+use App\Jobs\SendEmailJob;
 use App\Models\Permission;
 use App\Models\CohortRequest;
 use Illuminate\Support\Carbon;
-use Database\Seeders\EmailTemplatesSeeder;
 use Tests\Traits\MockExternalApis;
-use Database\Seeders\PermissionSeeder;
+use Illuminate\Support\Facades\Mail;
 
+use Illuminate\Support\Facades\Queue;
+use Database\Seeders\PermissionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use App\Models\CohortRequestHasPermission;
+use Database\Seeders\EmailTemplatesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CohortUserExpiryTest extends TestCase
@@ -40,6 +43,8 @@ class CohortUserExpiryTest extends TestCase
 
     public function test_it_can_expire_requests(): void
     {
+        Mail::fake();
+
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',
@@ -84,6 +89,8 @@ class CohortUserExpiryTest extends TestCase
 
     public function test_it_doesnt_expire_valid_requests(): void
     {
+        Mail::fake();
+
         $req = CohortRequest::create([
             'user_id' => 1,
             'request_status' => 'APPROVED',

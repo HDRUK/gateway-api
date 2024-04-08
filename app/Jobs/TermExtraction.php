@@ -61,10 +61,10 @@ class TermExtraction implements ShouldQueue
     private function postToTermExtractionDirector(string $dataset, string $datasetId): void
     {
         try {
-            $response = Http::withBody(
+            $response = Http::timeout(300)->withBody(
                 $dataset,
                 'application/json'
-            )->post(env('TED_SERVICE_URL'));
+            )->post(env('TED_SERVICE_URL', 'http://localhost:8001'));
 
             if ($response->json() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $n) {

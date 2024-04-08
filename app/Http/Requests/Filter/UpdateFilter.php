@@ -34,7 +34,7 @@ class UpdateFilter extends BaseFormRequest
                     $key = $this->input('keys');
                     $checkFilter = Filter::where([
                         'type' => $value,
-                        'key' => $key,
+                        'keys' => $key,
                     ])->where('id', '<>', $this->id)->first();
 
                     if ($checkFilter) {

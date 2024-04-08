@@ -67,6 +67,10 @@ class DatabaseSeeder extends Seeder
             DataAccessApplicationAnswerSeeder::class,
             DataAccessApplicationSeeder::class,
             DataAccessTemplateSeeder::class,
+            EnquiryThreadSeeder::class,
+            EnquiryMessagesSeeder::class,
+            CollectionHasToolSeeder::class,
+            CategorySeeder::class,
         ]);
     }
 }

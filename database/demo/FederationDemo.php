@@ -41,11 +41,25 @@ class FederationDemo extends Seeder
                 'federation_type' => 'dataset',
                 'auth_type' => 'NO_AUTH',
                 'endpoint_baseurl' => 'https://fma-custodian-test-server-pljgro4dzq-nw.a.run.app',
-                'endpoint_datasets' => '/api/v1/noauth/datasets',
-                'endpoint_dataset' => '/api/v1/noauth/datasets/{id}',
+                'endpoint_datasets' => '/api/v1/noauth/exemplar/datasets',
+                'endpoint_dataset' => '/api/v1/noauth/exemplar/datasets/{id}',
                 'run_time_hour' => 11,
                 'enabled' => true,
                 'notifications' => ['notaprguy@yahoo.ca', 'konst@gmail.com', 'offthelip@optonline.net'],
+                'tested' => true
+            ],
+        ];
+
+        $federations = [
+            39 => [
+                'federation_type' => 'dataset',
+                'auth_type' => 'NO_AUTH',
+                'endpoint_baseurl' => 'https://hdr-gateway-fma-test-server-dev-qmnkcg5qjq-ew.a.run.app',
+                'endpoint_datasets' => '/api/v1/noauth/exemplar/datasets',
+                'endpoint_dataset' => '/api/v1/noauth/exemplar/datasets/{id}',
+                'run_time_hour' => 11,
+                'enabled' => true,
+                'notifications' => ['calmacx@gmail.com'],
                 'tested' => true
             ],
         ];

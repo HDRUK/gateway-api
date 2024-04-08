@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Config;
 use App\Models\Publication;
+use App\Models\PublicationHasDataset;
 use Tests\TestCase;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
@@ -131,7 +132,12 @@ class PublicationTest extends TestCase
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
-                'datasets' => [1,2],
+                'datasets' => [
+                    0 => [
+                        'id' => 1,
+                        'link_type' => 'UNKNOWN',
+                    ],
+                ],
             ],
             $this->header,
         );
@@ -141,6 +147,11 @@ class PublicationTest extends TestCase
             'message',
             'data'
         ]);
+
+        $pubId = $response->decodeResponseJson()['data'];
+        $relation = PublicationHasDataset::where('publication_id', $pubId)->first();
+        $this->assertNotNull($relation);
+        $this->assertEquals($relation['link_type'], "UNKNOWN");
 
         $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
         $this->assertTrue($elasticCountAfter > $elasticCountBefore);
@@ -163,7 +174,13 @@ class PublicationTest extends TestCase
                 'paper_doi' => 'https://doi.org/10.1000/182',
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
-                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',                
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',  
+                'datasets' => [
+                    0 => [
+                        'id' => 1,
+                        'link_type' => 'UNKNOWN',
+                    ],
+                ],              
             ],
             $this->header,
         );
@@ -195,6 +212,12 @@ class PublicationTest extends TestCase
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'datasets' => [
+                    0 => [
+                        'id' => 1,
+                        'link_type' => 'UNKNOWN',
+                    ],
+                ],
             ],
             $this->header,
         );
@@ -222,6 +245,12 @@ class PublicationTest extends TestCase
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'datasets' => [
+                    0 => [
+                        'id' => 1,
+                        'link_type' => 'USING',
+                    ],
+                ],
             ],
             $this->header,
         );

@@ -857,6 +857,7 @@ class IntegrationDatasetController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v1/integrations/datasets/{id}",
+     *      operationId="delete_datasets_integrations",
      *      summary="Delete a dataset",
      *      description="Delete a dataset",
      *      tags={"Datasets"},

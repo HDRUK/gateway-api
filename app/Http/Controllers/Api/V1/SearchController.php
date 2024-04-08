@@ -14,6 +14,7 @@ use App\Models\Filter;
 use App\Models\Publication;
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
+use App\Exports\PublicationExport;
 
 use App\Models\DatasetVersion;
 use Illuminate\Http\JsonResponse;
@@ -129,12 +130,11 @@ class SearchController extends Controller
             $sortField = ($sortInput === 'title') ? 'shortTitle' : $sortInput;
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/datasets';
-
             $filters = (isset($request['filters']) ? $request['filters'] : []);
             $aggs = Filter::where('type', 'dataset')->get()->toArray();
             $input['aggs'] = $aggs;
 
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
             $response = Http::post($urlString, $input);
 
             $datasetsArray = $response['hits']['hits'];
@@ -247,8 +247,7 @@ class SearchController extends Controller
     {
         try {
             $id = (string) $request['id'];
-            $urlString = env('SEARCH_SERVICE_URL') . '/similar/datasets';
-
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/similar/datasets';
             $response = Http::post($urlString, ['id' => $id]);
 
             $datasetsArray = $response['hits']['hits'];
@@ -371,8 +370,7 @@ class SearchController extends Controller
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/tools';
-
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools';
             $response = Http::post($urlString,$request->all());
            
             $toolsArray = $response['hits']['hits'];
@@ -519,8 +517,7 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'collection')->get()->toArray();
             $input['aggs'] = $aggs;
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/collections';
-        
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/collections';
             $response = Http::post($urlString, $input);
 
             $collectionArray = $response['hits']['hits'];
@@ -663,8 +660,7 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'dataUseRegister')->get()->toArray();
             $input['aggs'] = $aggs;
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/dur';
-
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/dur';
             $response = Http::post($urlString, $input);
 
             $durArray = $response['hits']['hits'];
@@ -822,10 +818,12 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function publications(Request $request): JsonResponse
+    public function publications(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
             $input = $request->all();
+            
+            $download = array_key_exists('download', $input) ? $input['download'] : false;
             $sort = $request->query('sort',"score:desc");   
         
             $tmp = explode(":", $sort);
@@ -837,8 +835,7 @@ class SearchController extends Controller
             $aggs = Filter::where('type', 'paper')->get()->toArray();
             $input['aggs'] = $aggs;
 
-            $urlString = env('SEARCH_SERVICE_URL') . '/search/publications';
-
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications';
             $response = Http::post($urlString, $input);
 
             $pubArray = $response['hits']['hits'];
@@ -865,6 +862,15 @@ class SearchController extends Controller
                         break;
                     }
                 }
+            }
+
+            if ($download) {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search publications export data",
+                ]);
+                return Excel::download(new PublicationExport($pubArray), 'publications.csv');
             }
 
             $pubArraySorted = $this->sortSearchResult($pubArray, $sortField, $sortDirection);

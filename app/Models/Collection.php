@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Team;
+use App\Models\Tool;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Models\Keyword;
@@ -55,14 +56,30 @@ class Collection extends Model
         ->withPivot('collection_id', 'dataset_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
     }
 
-    public function users(): BelongsToMany
+    public function tools(): BelongsToMany
+    {
+        return $this->belongsToMany(Tool::class, 'collection_has_tools')
+        ->withPivot('collection_id', 'tool_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
+    }
+
+    public function userDatasets(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'collection_has_datasets');
     }
 
-    public function applications(): BelongsToMany
+    public function userTools(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'collection_has_tools');
+    }
+
+    public function applicationDatasets(): BelongsToMany
     {
         return $this->belongsToMany(Application::class, 'collection_has_datasets');
+    }
+
+    public function applicationTools(): BelongsToMany
+    {
+        return $this->belongsToMany(Application::class, 'collection_has_tools');
     }
 
     public function team(): BelongsTo

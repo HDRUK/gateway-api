@@ -32,6 +32,7 @@ class Tool extends Model
 
     protected $fillable = [
         'mongo_object_id', 
+        'mongo_id', 
         'name', 
         'url', 
         'description', 

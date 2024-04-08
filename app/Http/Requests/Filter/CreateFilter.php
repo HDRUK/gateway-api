@@ -29,7 +29,7 @@ class CreateFilter extends BaseFormRequest
                     $key = $this->input('keys');
                     $checkFilter = Filter::where([
                         'type' => $value,
-                        'key' => $key,
+                        'keys' => $key,
                     ])->first();
 
                     if ($checkFilter) {
