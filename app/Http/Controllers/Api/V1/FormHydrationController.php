@@ -21,7 +21,7 @@ class FormHydrationController extends Controller
      *      @OA\Parameter(
      *          name="model",
      *          in="query",
-     *          required=true,
+     *          required=false,
      *          description="The model for which form schema is requested.",
      *          @OA\Schema(
      *              type="string"
@@ -30,7 +30,7 @@ class FormHydrationController extends Controller
      *      @OA\Parameter(
      *          name="version",
      *          in="query",
-     *          required=true,
+     *          required=false,
      *          description="The version of the model for which form schema is requested.",
      *          @OA\Schema(
      *              type="string"
@@ -55,18 +55,20 @@ class FormHydrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $request->validate([
-            'model' => 'required',
-            'version' => 'required',
-        ]);
-
-        $model = $request->input('model');
-        $version = $request->input('version');
+        $model = $request->input('model','HDRUK');
+        $version = $request->input('version',Config::get('form_hydration.schema.latest_version'));
 
         $url = sprintf(Config::get('form_hydration.schema.url'), $model, $version);
 
-        $payload = Http::get($url)->json();
+        $response = Http::get($url);
+        if ($response->successful()) {
+            $payload = $response->json(); 
+            return response()->json(["data"=>$payload]);
+        } else {
+             return response()->json([
+                'message' => "Failed to retrieve form hydration from ".$url,
+            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+        }
 
-        return response()->json($payload);
     }
 }
