@@ -55,7 +55,7 @@ class FormHydrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $model = $request->input('model','HDRUK');
+        $model = $request->input('model',Config::get('form_hydration.schema.model'));
         $version = $request->input('version',Config::get('form_hydration.schema.latest_version'));
 
         $url = sprintf(Config::get('form_hydration.schema.url'), $model, $version);
