@@ -2751,4 +2751,16 @@ return [
         'middleware' => ['jwt.verify'],
         'constraint' => [],
     ],
+
+    // form hydration
+    [
+        'name' => 'form_hydration.schema',
+        'method' => 'get',
+        'path' => '/form_hydration/schema',
+        'methodController' => 'FormHydrationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
 ];
