@@ -192,7 +192,12 @@ class DurTest extends TestCase
                     'team_id',
                     'created_at',
                     'updated_at',
-                    'datasets',
+                    'datasets' => [
+                        0 => [
+                            'id',
+                            'shortTitle',
+                        ]
+                    ],
                     'keywords',
                     'applications',
                     'team',

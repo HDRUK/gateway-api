@@ -262,7 +262,12 @@ class IntegrationDurController extends Controller
                     'user',
                     'team',
                     'application',
-                ])->get();
+            ])->first();
+
+            foreach ($dur['datasets'] as $dataset) {
+                $title = $this->getDatasetTitle($dataset['id']);
+                $dataset['shortTitle'] = $title;
+            }
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -274,7 +279,7 @@ class IntegrationDurController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => $dur,
+                'data' => [$dur],
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -1322,5 +1327,22 @@ class IntegrationDurController extends Controller
         $category = Config::get('sectors.' . $sector, null);
         
         return (!is_null($category)) ? $categories->where('name', $category)->first()['id'] : null;
+    }
+
+    /**
+     * Find dataset title associated with a given dataset id.
+     * 
+     * @param int $id The dataset id
+     * 
+     * @return string
+     */
+    private function getDatasetTitle(int $id): string
+    {
+        $metadata = Dataset::where(['id' => $id])
+            ->first()
+            ->latestVersion()
+            ->metadata;
+        $title = $metadata['metadata']['summary']['shortTitle'];
+        return $title;
     }
 }
