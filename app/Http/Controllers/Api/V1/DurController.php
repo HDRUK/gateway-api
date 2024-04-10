@@ -1324,7 +1324,7 @@ class DurController extends Controller
      * 
      * @param int $id The dataset id
      * 
-     * @return array
+     * @return string
      */
     private function getDatasetTitle(int $id): string
     {
