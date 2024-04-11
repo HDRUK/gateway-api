@@ -776,5 +776,39 @@ class SearchTest extends TestCase
             'total',                
         ]);
         $this->assertTrue($response['data'][0]['_id'] === '1');
+
+        // Test federated search sorted by publication date       
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications" . '?sort=publicationDate:desc&source=FED', ["query" => "term"], ['Accept' => 'application/json']); 
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_source' => [
+                        'title',
+                        'publicationDate',
+                    ],
+                    'paper_title',
+                    'abstract',
+                    'authors',
+                    'journal_name',
+                    'year_of_publication'
+                ],
+            ],
+            'aggregations',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        $this->assertTrue($response['data'][0]['paper_title'] === 'Federated publication two');
+        $this->assertTrue($response['data'][1]['paper_title'] === 'Federated publication');
     }
 }
