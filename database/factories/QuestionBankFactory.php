@@ -21,11 +21,10 @@ class QuestionBankFactory extends Factory
         return [
             'section_id' => 1,
             'user_id' => 1,
-            'team_id' => 1,
-            'default' => fake()->randomElement([01, 1]),
-            'locked' => fake()->randomElement([0, 1]),
-            'required' => fake()->randomElement([0, 1]),
-            'question_json' => '{}',
+            'team_id' => null,
+            'locked' => 0,
+            'archived' => 0,
+            'archived_date' => null,
         ];
     }
 }

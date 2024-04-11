@@ -11,17 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('question_banks', function (Blueprint $table) {
+        Schema::create('question_bank_questions', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
             $table->softDeletes();
             $table->bigInteger('section_id');
-            $table->bigInteger('user_id');
-            $table->bigInteger('team_id');
-            $table->tinyInteger('default');
+            $table->bigInteger('user_id'); //needed?
+            $table->bigInteger('team_id')->nullable(); //null means not associated to any team
             $table->tinyInteger('locked');
-            $table->tinyInteger('required');
-            $table->json('question_json');
+            //$table->bigInteger('latest_version'); // question_bank_versions
+            $table->tinyInteger('archived');
+            $table->dateTime('archived_date')->nullable();
+            //may also need archived_comments
         });
     }
 
@@ -30,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('question_banks');
+        Schema::dropIfExists('question_bank_questions');
     }
 };

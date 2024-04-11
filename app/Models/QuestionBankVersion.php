@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class QuestionBank extends Model
+class QuestionBankVersion extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
 
@@ -20,22 +20,12 @@ class QuestionBank extends Model
      * @var string
      */
 
-     protected $table = 'question_bank_questions';
+     protected $table = 'question_bank_versions';
 
      protected $fillable = [
-        'section_id',
-        'user_id',
-        'team_id',
-        'locked',
+        'default',
+        'required',
+        'question_json',
      ];
 
-     public function user(): BelongsTo
-     {
-         return $this->belongsTo(User::class);
-     }
- 
-     public function team(): BelongsTo
-     {
-         return $this->belongsTo(Team::class);
-     }
 }

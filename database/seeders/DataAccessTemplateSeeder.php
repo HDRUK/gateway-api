@@ -20,13 +20,22 @@ class DataAccessTemplateSeeder extends Seeder
 
         DataAccessTemplate::all()->each(function ($model) {
 
-            DataAccessTemplateHasQuestion::create([
-                'template_id' => $model->id,
-                'question_id' =>  QuestionBank::all()->random()->id,
-                'guidance' => fake()->paragraph(),
-                'required' =>  fake()->randomElement([0, 1]),
-                'order' => fake()->randomNumber(10,true),
-            ]);
+            $nquestions = QuestionBank::count();
+            $n = fake()->numberBetween(3,$nquestions);
+
+            $numbers = range(1, $nquestions);
+            shuffle($numbers);
+            $count = 1;
+            foreach (array_slice($numbers, 0, $n) as $i) {
+                DataAccessTemplateHasQuestion::create([
+                    'template_id' => $model->id,
+                    'question_id' =>  $i,
+                    'guidance' => fake()->paragraph(),
+                    'required' =>  fake()->randomElement([0, 1]),
+                    'order' => $count
+                ]);
+                $count++;
+            }
           
         });
 
