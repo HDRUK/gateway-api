@@ -48,19 +48,19 @@ class PublicationExport implements WithHeadings, FromCollection, WithMapping
 
     public function exportable(array $data): array
     {
-        // Title		        '_source/title'
-        // Authors	            '_source/authors'
-        // Journal Title		'_source/journalName'
-        // Abstract Text		'_source/abstract'
-        // Date of Publication  '_source/publicationDate'
+        // Title		        'paper_title'
+        // Authors	            'authors'
+        // Journal Title		'journal_name'
+        // Abstract Text		'abstract'
+        // Date of Publication  'year_of_publication'
 
         $array = [];
         foreach ($data as $item) {
-            $title = $this->getValueFromPath($item, '_source/title');
-            $authors = $this->getValueFromPath($item, '_source/authors');
-            $journalTitle = $this->getValueFromPath($item, '_source/journalName');
-            $abstractText = $this->getValueFromPath($item, '_source/abstract');
-            $dateOfPublication = $this->getValueFromPath($item, '_source/publicationDate');
+            $title = $this->getValueFromPath($item, 'paper_title');
+            $authors = $this->getValueFromPath($item, 'authors');
+            $journalTitle = $this->getValueFromPath($item, 'journal_name');
+            $abstractText = $this->getValueFromPath($item, 'abstract');
+            $dateOfPublication = $this->getValueFromPath($item, 'year_of_publication');
             
             $array[] = [
                 'title' => $title,
