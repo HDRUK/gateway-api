@@ -6,6 +6,7 @@ use App\Models\Team;
 use App\Models\Tool;
 use App\Models\User;
 use App\Models\Dataset;
+use App\Models\Dur;
 use App\Models\Keyword;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -60,6 +61,12 @@ class Collection extends Model
     {
         return $this->belongsToMany(Tool::class, 'collection_has_tools')
         ->withPivot('collection_id', 'tool_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
+    }
+
+    public function dur(): BelongsToMany
+    {
+        return $this->belongsToMany(Dur::class, 'collection_has_durs')
+        ->withPivot('collection_id', 'dur_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
     }
 
     public function userDatasets(): BelongsToMany
