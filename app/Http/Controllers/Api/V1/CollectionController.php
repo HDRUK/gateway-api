@@ -10,6 +10,7 @@ use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
 use Illuminate\Http\Request;
+use App\Models\CollectionHasDur;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -62,6 +63,7 @@ class CollectionController extends Controller
      *                @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -90,6 +92,7 @@ class CollectionController extends Controller
                 'keywords',
                 'datasets',
                 'tools',
+                'dur',
                 'userDatasets' => function ($query) {
                     $query->distinct('id');
                 },
@@ -230,6 +233,7 @@ class CollectionController extends Controller
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -298,6 +302,9 @@ class CollectionController extends Controller
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($collectionId, $tools, $array['user_id'], $appId);
+
+            $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
+            $this->checkDurs($collectionId, $dur, $array['user_id'], $appId);
 
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($collectionId, $keywords);
@@ -370,6 +377,7 @@ class CollectionController extends Controller
      *             @OA\Property(property="enabled", type="boolean", example="true"),
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -402,6 +410,7 @@ class CollectionController extends Controller
      *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -455,6 +464,9 @@ class CollectionController extends Controller
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($id, $tools, $array['user_id'], $appId);
+
+            $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
+            $this->checkDurs($id, $dur, $array['user_id'], $appId);
 
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
@@ -527,6 +539,7 @@ class CollectionController extends Controller
      *             @OA\Property(property="enabled", type="boolean", example="true"),
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -559,6 +572,7 @@ class CollectionController extends Controller
      *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -613,6 +627,11 @@ class CollectionController extends Controller
             if (array_key_exists('tools', $input)) {
                 $tools = $input['tools'];
                 $this->checkTools($id, $tools, $userIdFinal, $appId);
+            }
+
+            if (array_key_exists('dur', $input)) {
+                $dur = $input['dur'];
+                $this->checkDurs($id, $dur, $userIdFinal, $appId);
             }
 
             if (array_key_exists('keywords', $input)) {
@@ -702,6 +721,7 @@ class CollectionController extends Controller
 
             CollectionHasDataset::where(['collection_id' => $id])->delete();
             CollectionHasTool::where(['collection_id' => $id])->delete();
+            CollectionHasDur::where(['collection_id' => $id])->delete();
             CollectionHasKeyword::where(['collection_id' => $id])->delete();
             Collection::where(['id' => $id])->delete();
 
@@ -728,6 +748,7 @@ class CollectionController extends Controller
             'keywords',
             'datasets', 
             'tools', 
+            'dur',
             'userDatasets' => function ($query) {
                 $query->distinct('id');
             }, 
@@ -921,6 +942,72 @@ class CollectionController extends Controller
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteCollectionHasTools :: " . $e->getMessage());
+        }
+    }
+
+
+    private function checkDurs(int $collectionId, array $inDurs, int $userId = null, int $appId = null) 
+    {
+        $cols = CollectionHasDur::where(['collection_id' => $collectionId])->get();
+        foreach ($cols as $col) {
+            if (!in_array($col->dur_id, $this->extractInputIdToArray($inDurs))) {
+                CollectionHasDur::where([
+                    'collection_id' => $collectionId,
+                    'dur_id' => $col->dur_id,
+                ])->delete();
+            }
+        }
+
+        foreach ($inDurs as $dur) {
+            $checking = CollectionHasDur::where([
+                'collection_id' => $collectionId,
+                'dur_id' => (int) $dur['id'],
+            ])->first();
+
+            if (!$checking) {
+                $this->addCollectionHasDur($collectionId, $dur, $userId, $appId);
+            }
+
+            // MMC::reindexElastic($tool['id']);
+        }
+    }
+
+    private function addCollectionHasDur(int $collectionId, array $dur, int $userId = null, int $appId = null)
+    {
+        try {
+            $arrCreate = [
+                'collection_id' => $collectionId,
+                'dur_id' => $dur['id'],
+            ];
+
+            if (array_key_exists('user_id', $dur)) {
+                $arrCreate['user_id'] = (int) $dur['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $dur)) {
+                $arrCreate['reason'] = $dur['reason'];
+            }
+
+            if (array_key_exists('updated_at', $dur)) { // special for migration
+                $arrCreate['created_at'] = $dur['updated_at'];
+                $arrCreate['updated_at'] = $dur['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return CollectionHasDur::updateOrCreate(
+                $arrCreate,
+                [
+                    'collection_id' => $collectionId,
+                    'dur_id' => $dur['id'],
+                ]
+            );
+        } catch (Exception $e) {
+            throw new Exception("addCollectionHasDur :: " . $e->getMessage());
         }
     }
 

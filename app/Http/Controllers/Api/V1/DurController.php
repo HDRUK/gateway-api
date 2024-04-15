@@ -116,10 +116,14 @@ class DurController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $mongoId = $request->query('mongo_id', null);
     
             $perPage = request('perPage', Config::get('constants.per_page'));
             $dur = Dur::where('enabled', 1)
-                ->with([
+                ->when($mongoId, function ($query) use ($mongoId) {
+                    return $query->where('mongo_id', '=', $mongoId);
+                })->with([
                     'datasets', 
                     'keywords',
                     'users' => function ($query) {
@@ -131,7 +135,7 @@ class DurController extends Controller
                     'user',
                     'team',
                     'application',
-                    ])->paginate($perPage);
+                ])->paginate($perPage);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],

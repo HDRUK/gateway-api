@@ -5,12 +5,14 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\Tool;
 use App\Models\Dataset;
+use App\Models\Dur;
 use App\Models\Keyword;
 use App\Models\Collection;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DurSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\CategorySeeder;
@@ -20,6 +22,7 @@ use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -53,9 +56,11 @@ class CollectionTest extends TestCase
             CategorySeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
+            DurSeeder::class,
             CollectionHasKeywordSeeder::class,
             CollectionHasDatasetSeeder::class,
             CollectionHasToolSeeder::class,
+            CollectionHasDurSeeder::class,
         ]);
     }
 
@@ -86,6 +91,7 @@ class CollectionTest extends TestCase
                     'keywords',
                     'datasets',
                     'tools',
+                    'dur',
                     'users',
                     'applications',
                     'team',
@@ -135,6 +141,7 @@ class CollectionTest extends TestCase
                 'keywords',
                 'datasets',
                 'tools',
+                'dur',
                 'users',
                 'applications',
                 'team',
@@ -162,6 +169,7 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
         ];
 
         $response = $this->json(
@@ -199,6 +207,7 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -221,6 +230,7 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -255,6 +265,7 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -277,6 +288,7 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -345,6 +357,7 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -401,6 +414,21 @@ class CollectionTest extends TestCase
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
             $temp['id'] = Tool::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generateDurs()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Dur::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $return[] = $temp;
         }
