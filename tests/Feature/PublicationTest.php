@@ -68,6 +68,7 @@ class PublicationTest extends TestCase
                     'publication_type',
                     'journal_name',
                     'abstract',
+                    'url',
                 ],
             ],
             'first_page_url',
@@ -106,6 +107,7 @@ class PublicationTest extends TestCase
                     'publication_type',
                     'journal_name',
                     'abstract',
+                    'url',
                 ]
             ]
         ]);
@@ -132,6 +134,7 @@ class PublicationTest extends TestCase
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
                 'datasets' => [
                     0 => [
                         'id' => 1,
@@ -174,7 +177,8 @@ class PublicationTest extends TestCase
                 'paper_doi' => 'https://doi.org/10.1000/182',
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
-                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',  
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.', 
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html', 
                 'datasets' => [
                     0 => [
                         'id' => 1,
@@ -212,6 +216,7 @@ class PublicationTest extends TestCase
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
                 'datasets' => [
                     0 => [
                         'id' => 1,
@@ -245,6 +250,7 @@ class PublicationTest extends TestCase
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
                 'datasets' => [
                     0 => [
                         'id' => 1,
