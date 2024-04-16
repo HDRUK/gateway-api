@@ -26,6 +26,7 @@ class PublicationFactory extends Factory
             'publication_type' => fake()->words(4, true),
             'journal_name' => fake()->sentence(),
             'abstract' => fake()->paragraph(),
+            'url' => fake()->url(),
         ];
     }
 }

@@ -31,6 +31,7 @@ class Publication extends Model
         'publication_type',
         'journal_name',
         'abstract',
+        'url',
     ];
 
     /**
