@@ -21,6 +21,9 @@ class TermExtraction implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $tries = 1;
+    public $timeout = 300;
+    
     private string $datasetId = '';
     private string $data = '';
 
