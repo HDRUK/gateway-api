@@ -30,6 +30,11 @@ class ToolFactory extends Factory
             'user_id' => User::all()->random()->id,
             'category_id' => fake()->randomElement($categories),
             'enabled' => fake()->randomElement([0, 1]),
+            'programming_language' => fake()->regexify('[A-Za-z0-9]{20}'), 
+            'programming_package' => fake()->regexify('[A-Za-z0-9]{20}'), 
+            'type_category' => fake()->regexify('[A-Za-z0-9]{20}'), 
+            'associated_authors' => fake()->regexify('[A-Za-z0-9]{20}'), 
+            'contact_address' => fake()->regexify('[A-Za-z0-9]{20}'),
         ];
     }
 }

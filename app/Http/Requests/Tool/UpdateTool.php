@@ -71,6 +71,26 @@ class UpdateTool extends BaseFormRequest
                 'required',
                 'boolean',
             ],
+            'programming_language' => [
+                'nullable', 
+                'string',
+            ],
+            'programming_package' => [
+                'nullable', 
+                'string',
+            ],
+            'type_category' => [
+                'nullable', 
+                'string',
+            ],
+            'associated_authors' => [
+                'nullable', 
+                'string',
+            ],
+            'contact_address' => [
+                'nullable', 
+                'string',
+            ],
         ];
     }
 
