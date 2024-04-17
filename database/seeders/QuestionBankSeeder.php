@@ -23,8 +23,18 @@ class QuestionBankSeeder extends Seeder
                 'version' => 1,
                 'required' => fake()->randomElement([0,1]),
                 'default' => 0,
+                'question_json' => '{}',
+                'deleted_at' => fake()->dateTime(),
+            ]);
+
+             QuestionBankVersion::create([
+                'question_parent_id' => $model->id,
+                'version' => 2,
+                'required' => fake()->randomElement([0,1]),
+                'default' => 0,
                 'question_json' => '{}'
             ]);
+
         });
     }
 }
