@@ -33,9 +33,14 @@ class Auditor {
     
             $data = $this->checkEditArray($log, $arrayKeys);
 
-            // $audit = AuditLog::create($data);
             if (Config::get('services.googlepubsub.pubsub_enabled')) {
                 SendAuditLogToPubSub::dispatch($data);
+            }
+
+            $audit = AuditLog::create($data);
+
+            if (!$audit) {
+                return false;
             }
     
             return true;        

@@ -49,6 +49,16 @@ class AuditorTest extends TestCase
             'description' => $description,
         ];
         Auditor::log($logInfo);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'target_user_id' => $targetUserId,
+            'target_team_id' => $targetTeamId,
+            'action_type' => $actionType,
+            'action_service' =>  $actionService,
+            'description' => $description,
+        ]);
     }
 
 }
