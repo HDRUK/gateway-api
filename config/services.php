@@ -50,4 +50,9 @@ return [
         'redirect' => env('AZURE_REDIRECT_URL'),
         'proxy' => env('AZURE_PROXY')
     ],
+
+    'googlepubsub' => [
+        'project_id' => env('GOOGLE_CLOUD_PROJECT_ID', 'gcp_pubsub_project_id'),
+        'pubsub_topic' => env('GOOGLE_CLOUD_PUBSUB_TOPIC', 'gcp_pubsub_pubsub_topic'),
+    ],
 ];
