@@ -27,7 +27,7 @@ return new class extends Migration
     {
         if (Schema::hasColumn('tools', 'programming_language'))
         {
-            Schema::table('tools', function(BLueprint $table)
+            Schema::table('tools', function(Blueprint $table)
             {
                 $table->dropColumn('programming_language');
             });
@@ -35,7 +35,7 @@ return new class extends Migration
 
         if (Schema::hasColumn('tools', 'programming_package'))
         {
-            Schema::table('tools', function(BLueprint $table)
+            Schema::table('tools', function(Blueprint $table)
             {
                 $table->dropColumn('programming_package');
             });
@@ -43,7 +43,7 @@ return new class extends Migration
 
         if (Schema::hasColumn('tools', 'type_category'))
         {
-            Schema::table('tools', function(BLueprint $table)
+            Schema::table('tools', function(Blueprint $table)
             {
                 $table->dropColumn('type_category');
             });
@@ -51,7 +51,7 @@ return new class extends Migration
 
         if (Schema::hasColumn('tools', 'associated_authors'))
         {
-            Schema::table('tools', function(BLueprint $table)
+            Schema::table('tools', function(Blueprint $table)
             {
                 $table->dropColumn('associated_authors');
             });
@@ -59,7 +59,7 @@ return new class extends Migration
 
         if (Schema::hasColumn('tools', 'contact_address'))
         {
-            Schema::table('tools', function(BLueprint $table)
+            Schema::table('tools', function(Blueprint $table)
             {
                 $table->dropColumn('contact_address');
             });
