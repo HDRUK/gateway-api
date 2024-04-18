@@ -25,14 +25,44 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tools', function (Blueprint $table) {
-            $table->dropColumn([
-                'programming_language', 
-                'programming_package', 
-                'type_category', 
-                'associated_authors', 
-                'contact_address',
-            ]);
-        });
+        if (Schema::hasColumn('tools', 'programming_language'))
+        {
+            Schema::table('tools', function(BLueprint $table)
+            {
+                $table->dropColumn('programming_language');
+            });
+        }
+
+        if (Schema::hasColumn('tools', 'programming_package'))
+        {
+            Schema::table('tools', function(BLueprint $table)
+            {
+                $table->dropColumn('programming_package');
+            });
+        }
+
+        if (Schema::hasColumn('tools', 'type_category'))
+        {
+            Schema::table('tools', function(BLueprint $table)
+            {
+                $table->dropColumn('type_category');
+            });
+        }
+
+        if (Schema::hasColumn('tools', 'associated_authors'))
+        {
+            Schema::table('tools', function(BLueprint $table)
+            {
+                $table->dropColumn('associated_authors');
+            });
+        }
+
+        if (Schema::hasColumn('tools', 'contact_address'))
+        {
+            Schema::table('tools', function(BLueprint $table)
+            {
+                $table->dropColumn('contact_address');
+            });
+        }
     }
 };
