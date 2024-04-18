@@ -2,8 +2,10 @@
 
 namespace App\Auditor;
 
+use Config;
 use Exception;
-use App\Models\AuditLog;
+// use App\Models\AuditLog;
+use App\Jobs\SendAuditLogToPubSub;
 use App\Http\Traits\RequestTransformation;
 
 class Auditor {
@@ -31,10 +33,9 @@ class Auditor {
     
             $data = $this->checkEditArray($log, $arrayKeys);
 
-            $audit = AuditLog::create($data);
-
-            if (!$audit) {
-                return false;
+            // $audit = AuditLog::create($data);
+            if (Config::get('services.googlepubsub.pubsub_enabled')) {
+                SendAuditLogToPubSub::dispatch($data);
             }
     
             return true;        
