@@ -4,7 +4,7 @@ namespace App\Auditor;
 
 use Config;
 use Exception;
-// use App\Models\AuditLog;
+use App\Models\AuditLog;
 use App\Jobs\SendAuditLogToPubSub;
 use App\Http\Traits\RequestTransformation;
 
