@@ -2756,5 +2756,4 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
-
 ];
