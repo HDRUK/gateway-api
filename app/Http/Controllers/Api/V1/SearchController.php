@@ -871,7 +871,9 @@ class SearchController extends Controller
                         if ((int) $p['_id'] === $model['id']) {
                             $pubArray[$i]['_source']['created_at'] = $model['created_at'];
                             $pubArray[$i]['paper_title'] = $model['paper_title'];
-                            $pubArray[$i]['abstract'] = $model['abstract'];
+                            // This is an in-transit workaround to remove header elements of the abstract text in the request.
+                            // This requires more thought, and only a temporary fix. LS.
+                            $pubArray[$i]['abstract'] = preg_replace('/<h4>(.*?)<\/h4>/', '', $model['abstract']);
                             $pubArray[$i]['authors'] = $model['authors'];
                             $pubArray[$i]['journal_name'] = $model['journal_name'];
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
@@ -890,7 +892,9 @@ class SearchController extends Controller
                     $pubArray[$i]['_source']['publicationDate'] = $paper['pubYear'];
                     $pubArray[$i]['_source']['title'] = $paper['title'];
                     $pubArray[$i]['paper_title'] = $paper['title'];
-                    $pubArray[$i]['abstract'] = $paper['abstractText'];
+                    // This is an in-transit workaround to remove header elements of the abstract text in the request.
+                    // This requires more thought, and only a temporary fix. LS.
+                    $pubArray[$i]['abstract'] = preg_replace('/<h4>(.*?)<\/h4>/', '', $paper['abstractText']);
                     $pubArray[$i]['authors'] = $paper['authorString'];
                     $pubArray[$i]['journal_name'] = isset($paper['journalInfo']) ? $paper['journalInfo']['journal']['title'] : '';
                     $pubArray[$i]['year_of_publication'] = $paper['pubYear'];
