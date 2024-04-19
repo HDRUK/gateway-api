@@ -2762,15 +2762,4 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
-
-    // testPubSubService
-    [
-        'name' => 'test.pubsub.service',
-        'method' => 'get',
-        'path' => '/test-pubsub-service',
-        'methodController' => 'TestController@testPubSubService',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [],
-        'constraint' => [],
-    ],
 ];
