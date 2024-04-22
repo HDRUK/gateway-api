@@ -17,15 +17,15 @@ class ProgrammingPackageSeeder extends Seeder
         $names = [
             'CI/CD automation',
             'CMS',
-            'Webpage',
-            'Data visualisation',
-            'Front End',
-            'Natural Langauge Processing',
-            'Database querying',
-            'Data modelling',
-            'ETL',
-            'Machine learning',
             'Data anonymization',
+            'Data modelling',
+            'Data visualisation',
+            'Database querying',
+            'ETL',
+            'Front End',
+            'Machine learning',
+            'Natural Langauge Processing',
+            'Webpage',
         ];
 
         foreach ($names as $name) {
