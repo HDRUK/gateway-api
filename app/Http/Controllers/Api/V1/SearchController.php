@@ -15,6 +15,7 @@ use App\Models\Publication;
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
 use App\Exports\PublicationExport;
+use App\Http\Requests\Search\PublicationSearch;
 
 use App\Models\DatasetVersion;
 use Illuminate\Http\JsonResponse;
@@ -138,6 +139,7 @@ class SearchController extends Controller
             $response = Http::post($urlString, $input);
 
             $datasetsArray = $response['hits']['hits'];
+            $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
             // join to created at from DB
             foreach (array_values($datasetsArray) as $i => $d) {
@@ -182,7 +184,8 @@ class SearchController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
             $aggs = collect([
-                'aggregations' => $response['aggregations']
+                'aggregations' => $response['aggregations'],
+                'elastic_total' => $totalResults,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -374,6 +377,7 @@ class SearchController extends Controller
             $response = Http::post($urlString,$request->all());
            
             $toolsArray = $response['hits']['hits'];
+            $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
             foreach (array_values($toolsArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
@@ -406,7 +410,8 @@ class SearchController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $toolsArraySorted, $perPage);
             $aggs = collect([
-                'aggregations' => $response['aggregations']
+                'aggregations' => $response['aggregations'],
+                'elastic_total' => $totalResults,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -521,6 +526,7 @@ class SearchController extends Controller
             $response = Http::post($urlString, $input);
 
             $collectionArray = $response['hits']['hits'];
+            $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
             foreach (array_values($collectionArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
@@ -547,7 +553,8 @@ class SearchController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $collectionArraySorted, $perPage);
             $aggs = collect([
-                'aggregations' => $response['aggregations']
+                'aggregations' => $response['aggregations'],
+                'elastic_total' => $totalResults,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -664,6 +671,7 @@ class SearchController extends Controller
             $response = Http::post($urlString, $input);
 
             $durArray = $response['hits']['hits'];
+            $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
             foreach (array_values($durArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
@@ -703,7 +711,8 @@ class SearchController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $durArraySorted, $perPage);
             $aggs = collect([
-                'aggregations' => $response['aggregations']
+                'aggregations' => $response['aggregations'],
+                'elastic_total' => $totalResults,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -777,6 +786,17 @@ class SearchController extends Controller
      *              description="Sort direction",
      *          ),
      *      ),
+     *      @OA\Parameter(
+     *          name="source",
+     *          in="query",
+     *          description="Which source to search ('GAT' or 'FED', default: 'GAT')",
+     *          example="GAT",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum={"GAT", "FED"},
+     *              description="Which source to search (GAT - Gateway or FED - federated e.g. EuropePMC)",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Success",
@@ -818,7 +838,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function publications(Request $request): JsonResponse|BinaryFileResponse
+    public function publications(PublicationSearch $request): JsonResponse|BinaryFileResponse
     {
         try {
             $input = $request->all();
@@ -831,36 +851,64 @@ class SearchController extends Controller
 
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
-            $filters = (isset($request['filters']) ? $request['filters'] : []);
-            $aggs = Filter::where('type', 'paper')->get()->toArray();
-            $input['aggs'] = $aggs;
+            $source = !is_null($input['source']) ? $input['source'] : 'GAT';
 
-            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications';
-            $response = Http::post($urlString, $input);
+            if ($source === 'GAT') {
 
-            $pubArray = $response['hits']['hits'];
-            $matchedIds = [];
-            foreach (array_values($pubArray) as $i => $d) {
-                $matchedIds[] = $d['_id'];
-            }
+                $filters = (isset($request['filters']) ? $request['filters'] : []);
+                $aggs = Filter::where('type', 'paper')->get()->toArray();
+                $input['aggs'] = $aggs;
 
-            $pubModels = Publication::whereIn('id', $matchedIds)->get();
+                $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/publications';
+                $response = Http::post($urlString, $input);
 
-            foreach ($pubArray as $i => $p) {
-                if (!in_array($p['_id'], $matchedIds)) {
-                    unset($pubArray[$i]);
-                    continue;
+                $pubArray = $response['hits']['hits'];
+                $totalResults = $response['hits']['total']['value'];
+                $matchedIds = [];
+                foreach (array_values($pubArray) as $i => $d) {
+                    $matchedIds[] = $d['_id'];
                 }
-                foreach ($pubModels as $model){
-                    if ((int) $p['_id'] === $model['id']) {
-                        $pubArray[$i]['_source']['created_at'] = $model['created_at'];
-                        $pubArray[$i]['paper_title'] = $model['paper_title'];
-                        $pubArray[$i]['abstract'] = $model['abstract'];
-                        $pubArray[$i]['authors'] = $model['authors'];
-                        $pubArray[$i]['journal_name'] = $model['journal_name'];
-                        $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
-                        break;
+
+                $pubModels = Publication::whereIn('id', $matchedIds)->get();
+
+                foreach ($pubArray as $i => $p) {
+                    if (!in_array($p['_id'], $matchedIds)) {
+                        unset($pubArray[$i]);
+                        continue;
                     }
+                    foreach ($pubModels as $model){
+                        if ((int) $p['_id'] === $model['id']) {
+                            $pubArray[$i]['_source']['created_at'] = $model['created_at'];
+                            $pubArray[$i]['paper_title'] = $model['paper_title'];
+                            // This is an in-transit workaround to remove header elements of the abstract text in the request.
+                            // This requires more thought, and only a temporary fix. LS.
+                            $pubArray[$i]['abstract'] = preg_replace('/<h4>(.*?)<\/h4>/', '', $model['abstract']);
+                            $pubArray[$i]['authors'] = $model['authors'];
+                            $pubArray[$i]['journal_name'] = $model['journal_name'];
+                            $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
+                            $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['doi'];
+                            break;
+                        }
+                    }
+                }
+            } else {
+                $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
+                $input['field'] = 'METHODS';
+                $response = Http::post($urlString, $input);
+
+                $pubArray = $response['resultList']['result'];
+                $totalResults = $response['hitCount'];
+                foreach ($pubArray as $i => $paper) {
+                    $pubArray[$i]['_source']['publicationDate'] = $paper['pubYear'];
+                    $pubArray[$i]['_source']['title'] = $paper['title'];
+                    $pubArray[$i]['paper_title'] = $paper['title'];
+                    // This is an in-transit workaround to remove header elements of the abstract text in the request.
+                    // This requires more thought, and only a temporary fix. LS.
+                    $pubArray[$i]['abstract'] = preg_replace('/<h4>(.*?)<\/h4>/', '', $paper['abstractText']);
+                    $pubArray[$i]['authors'] = $paper['authorString'];
+                    $pubArray[$i]['journal_name'] = isset($paper['journalInfo']) ? $paper['journalInfo']['journal']['title'] : '';
+                    $pubArray[$i]['year_of_publication'] = $paper['pubYear'];
+                    $pubArray[$i]['full_text_url'] = $paper['fullTextUrlList']['fullTextUrl'][0]['url'];
                 }
             }
 
@@ -878,7 +926,8 @@ class SearchController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $pubArraySorted, $perPage);
             $aggs = collect([
-                'aggregations' => $response['aggregations']
+                'aggregations' => isset($response['aggregations']) ? $response['aggregations'] : [],
+                'elastic_total' => $totalResults,
             ]);
 
             $final = $aggs->merge($paginatedData);

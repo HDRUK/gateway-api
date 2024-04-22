@@ -78,6 +78,11 @@ class ToolTest extends TestCase
                     'deleted_at',
                     'user',
                     'tag',
+                    'programming_language', 
+                    'programming_package', 
+                    'type_category', 
+                    'associated_authors', 
+                    'contact_address',
                 ]
             ],
             'current_page',
@@ -124,6 +129,11 @@ class ToolTest extends TestCase
                     'deleted_at',
                     'user',
                     'tag',
+                    'programming_language', 
+                    'programming_package', 
+                    'type_category', 
+                    'associated_authors', 
+                    'contact_address',
                 ]
             ]
         ]);

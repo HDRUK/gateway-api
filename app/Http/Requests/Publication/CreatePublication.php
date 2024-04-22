@@ -46,6 +46,10 @@ class CreatePublication extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'url' => [
+                'nullable',
+                'string',
+            ],
             'datasets' => [
                 'nullable', 
                 'array', 

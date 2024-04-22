@@ -175,8 +175,9 @@ class PublicationController extends Controller
      *             @OA\Property(property="year_of_publication", type="string", example="2024"),
      *             @OA\Property(property="paper_doi", type="string", example="10.12345"),
      *             @OA\Property(property="publication_type", type="string", example="Journal article, Book"),
-     *             @OA\Property(property="journal_name", type="integer", example="A Journal"),
-     *             @OA\Property(property="abstract", type="integer", example="A long description of the paper"),
+     *             @OA\Property(property="journal_name", type="string", example="A Journal"),
+     *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
+     *             @OA\Property(property="url", type="string", example="http://example"),
      *             @OA\Property(property="datasets", type="array", 
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
@@ -224,6 +225,7 @@ class PublicationController extends Controller
                 'publication_type' => $input['publication_type'],
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
+                'url' => $input['url'],
             ]);
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
@@ -287,8 +289,9 @@ class PublicationController extends Controller
      *             @OA\Property(property="year_of_publication", type="string", example="2024"),
      *             @OA\Property(property="paper_doi", type="string", example="10.12345"),
      *             @OA\Property(property="publication_type", type="string", example="Journal article, Book"),
-     *             @OA\Property(property="journal_name", type="integer", example="A Journal"),
-     *             @OA\Property(property="abstract", type="integer", example="A long description of the paper"),
+     *             @OA\Property(property="journal_name", type="string", example="A Journal"),
+     *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
+     *             @OA\Property(property="url", type="string", example="http://example"),
      *             @OA\Property(property="datasets", type="array", 
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
@@ -352,6 +355,7 @@ class PublicationController extends Controller
                 'publication_type' => $input['publication_type'],
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
+                'url' => $input['url'],
             ]);
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
@@ -412,8 +416,9 @@ class PublicationController extends Controller
      *             @OA\Property(property="year_of_publication", type="string", example="2024"),
      *             @OA\Property(property="paper_doi", type="string", example="10.12345"),
      *             @OA\Property(property="publication_type", type="string", example="Journal article, Book"),
-     *             @OA\Property(property="journal_name", type="integer", example="A Journal"),
-     *             @OA\Property(property="abstract", type="integer", example="A long description of the paper"),
+     *             @OA\Property(property="journal_name", type="string", example="A Journal"),
+     *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
+     *             @OA\Property(property="url", type="string", example="http://example"),
      *             @OA\Property(property="datasets", type="array", 
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
@@ -469,15 +474,18 @@ class PublicationController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $publication = Publication::where('id', $id)->update([
-                'paper_title' => $input['paper_title'],
-                'authors' => $input['authors'],
-                'year_of_publication' => $input['year_of_publication'],
-                'paper_doi' => $input['paper_doi'],
-                'publication_type' => $input['publication_type'],
-                'journal_name' => $input['journal_name'],
-                'abstract' => $input['abstract'],
-            ]);
+            $arrayKeys = [
+                'paper_title',
+                'authors',
+                'year_of_publication',
+                'paper_doi',
+                'publication_type',
+                'journal_name',
+                'abstract',
+                'url',
+            ];
+            $array = $this->checkEditArray($input, $arrayKeys);
+            $publication = Publication::where('id', $id)->update($array);
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();

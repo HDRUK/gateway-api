@@ -2608,10 +2608,7 @@ return [
         'path' => '/dur',
         'methodController' => 'DurController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.read',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -2620,10 +2617,7 @@ return [
         'path' => '/dur/{id}',
         'methodController' => 'DurController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.read',
-        ],
+        'middleware' => [],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -2983,5 +2977,4 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
-
 ];

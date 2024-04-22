@@ -41,6 +41,11 @@ class Tool extends Model
         'category_id', 
         'user_id', 
         'enabled',
+        'programming_language', 
+        'programming_package', 
+        'type_category', 
+        'associated_authors', 
+        'contact_address',
     ];
 
     /**

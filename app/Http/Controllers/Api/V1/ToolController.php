@@ -157,6 +157,11 @@ class ToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
+     *             @OA\Property( property="programming_language", type="string", example="string" ),
+     *             @OA\Property( property="programming_package", type="string", example="string" ),
+     *             @OA\Property( property="type_category", type="string", example="string" ),
+     *             @OA\Property( property="associated_authors", type="string", example="string" ),
+     *             @OA\Property( property="contact_address", type="string", example="string" ),
      *          ),
      *       ),
      *    ),
@@ -209,6 +214,11 @@ class ToolController extends Controller
                 'enabled',
                 'team_id', 
                 'mongo_id',
+                'programming_language', 
+                'programming_package', 
+                'type_category', 
+                'associated_authors', 
+                'contact_address',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -270,6 +280,11 @@ class ToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
+     *             @OA\Property( property="programming_language", type="string", example="string" ),
+     *             @OA\Property( property="programming_package", type="string", example="string" ),
+     *             @OA\Property( property="type_category", type="string", example="string" ),
+     *             @OA\Property( property="associated_authors", type="string", example="string" ),
+     *             @OA\Property( property="contact_address", type="string", example="string" ),
      *          ),
      *       ),
      *    ),
@@ -322,6 +337,11 @@ class ToolController extends Controller
                 'enabled',
                 'team_id', 
                 'mongo_id',
+                'programming_language', 
+                'programming_package', 
+                'type_category', 
+                'associated_authors', 
+                'contact_address',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -392,6 +412,11 @@ class ToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
+     *             @OA\Property( property="programming_language", type="string", example="string" ),
+     *             @OA\Property( property="programming_package", type="string", example="string" ),
+     *             @OA\Property( property="type_category", type="string", example="string" ),
+     *             @OA\Property( property="associated_authors", type="string", example="string" ),
+     *             @OA\Property( property="contact_address", type="string", example="string" ),
      *          ),
      *       ),
      *    ),
@@ -443,6 +468,11 @@ class ToolController extends Controller
                 'enabled',
                 'team_id',
                 'mongo_id',
+                'programming_language', 
+                'programming_package', 
+                'type_category', 
+                'associated_authors', 
+                'contact_address',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);

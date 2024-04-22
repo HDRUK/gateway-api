@@ -115,6 +115,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -211,6 +214,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -307,6 +313,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -388,6 +397,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -460,6 +472,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -547,6 +562,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -612,6 +630,94 @@ trait MockExternalApis
                         ]
                     ],
                     'aggregations' => []
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
+        // Mock the search service - publications
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search*' => Http::response(
+                [
+                    'version' => '10.1',
+                    'hitCount' => 2,
+                    'request' => [
+                        'queryString' => 'DOI:10.123/abc',
+                        'resultType' => 'core',
+                        'cursorMark' => '*',
+                        'pageSize' => 25,
+                        'sort' => '',
+                        'synonym' => false
+                    ],
+                    'resultList' => [
+                        'result' => [
+                            0 => [
+                                'id' => '0000000',
+                                'source' => 'MED',
+                                'pmid' => '000000',
+                                'pmcid' => 'PMC000000',
+                                'fullTextIdList' => [
+                                    'fullTextId' => [
+                                        0 => 'PMC000000'
+                                    ]
+                                ],
+                                'doi' => '10.123/abc',
+                                'title' => 'Federated publication',
+                                'authorString' => 'Monday A, Tuesday B, Wednesday C',
+                                'journalInfo' => [
+                                    'journal' => [
+                                        'title' => 'Journal of Health'
+                                    ]  
+                                ],
+                                'pubYear' => '2020',
+                                'abstractText' => 'A longer description of the paper',
+                                'pubTypeList' => [
+                                    'pubType' => [
+                                        'research-article',
+                                        'Journal Article'
+                                    ]
+                                ],
+                                'fullTextUrlList' => [
+                                    'fullTextUrl' => [
+                                        0 => [
+                                            'url' => 'https://doi.org/10.123/abc'
+                                        ]
+                                    ]
+                                ]
+                            ],
+                            1 => [
+                                'id' => '0000001',
+                                'source' => 'MED',
+                                'pmid' => '000001',
+                                'pmcid' => 'PMC000001',
+                                'fullTextIdList' => [
+                                    'fullTextId' => [
+                                        0 => 'PMC000001'
+                                    ]
+                                ],
+                                'doi' => '10.123/abc',
+                                'title' => 'Federated publication two',
+                                'authorString' => 'Monday A, Tuesday B, Wednesday C',
+                                'journalInfo' => null,
+                                'pubYear' => '2022',
+                                'abstractText' => 'A longer description of the paper',
+                                'pubTypeList' => [
+                                    'pubType' => [
+                                        'research-article',
+                                        'Journal Article'
+                                    ]
+                                ],
+                                'fullTextUrlList' => [
+                                    'fullTextUrl' => [
+                                        0 => [
+                                            'url' => 'https://doi.org/10.456/abc'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
                 ],
                 200,
                 ['application/json']
