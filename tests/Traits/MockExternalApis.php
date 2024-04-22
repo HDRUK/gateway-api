@@ -115,6 +115,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -211,6 +214,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -307,6 +313,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -388,6 +397,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -460,6 +472,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -547,6 +562,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -623,7 +641,7 @@ trait MockExternalApis
             env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search*' => Http::response(
                 [
                     'version' => '10.1',
-                    'hitCount' => 1,
+                    'hitCount' => 2,
                     'request' => [
                         'queryString' => 'DOI:10.123/abc',
                         'resultType' => 'core',
