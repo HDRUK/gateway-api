@@ -679,7 +679,9 @@ class SearchTest extends TestCase
                     'abstract',
                     'authors',
                     'journal_name',
-                    'year_of_publication'
+                    'year_of_publication',
+                    'full_text_url',
+                    'url'
                 ],
             ],
             'aggregations',
@@ -791,7 +793,9 @@ class SearchTest extends TestCase
                     'abstract',
                     'authors',
                     'journal_name',
-                    'year_of_publication'
+                    'year_of_publication',
+                    'full_text_url',
+                    'url'
                 ],
             ],
             'aggregations',
