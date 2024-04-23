@@ -1094,6 +1094,7 @@ class DurController extends Controller
         }
     }
 
+    // datasets
     private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null) 
     {
         $ds = DurHasDataset::where(['dur_id' => $durId])->get();
@@ -1169,6 +1170,7 @@ class DurController extends Controller
         }
     }
 
+    // publications
     private function checkPublications(int $durId, array $inPublications, int $userId = null, int $appId = null) 
     {
         $pubs = DurHasPublication::where(['publication_id' => $durId])->get();
@@ -1262,6 +1264,7 @@ class DurController extends Controller
         }
     }
 
+    // keywords
     private function checkKeywords(int $durId, array $inKeywords)
     {
         $kws = DurHasKeyword::where('dur_id', $durId)->get();
