@@ -886,7 +886,8 @@ class SearchController extends Controller
                             $pubArray[$i]['authors'] = $model['authors'];
                             $pubArray[$i]['journal_name'] = $model['journal_name'];
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
-                            $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['doi'];
+                            $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
+                            $pubArray[$i]['url'] = $model['url'];
                             break;
                         }
                     }
@@ -909,6 +910,7 @@ class SearchController extends Controller
                     $pubArray[$i]['journal_name'] = isset($paper['journalInfo']) ? $paper['journalInfo']['journal']['title'] : '';
                     $pubArray[$i]['year_of_publication'] = $paper['pubYear'];
                     $pubArray[$i]['full_text_url'] = $paper['fullTextUrlList']['fullTextUrl'][0]['url'];
+                    $pubArray[$i]['url'] = $paper['fullTextUrlList']['fullTextUrl'][0]['url'];
                 }
             }
 
