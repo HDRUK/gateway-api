@@ -230,7 +230,7 @@ class PublicationController extends Controller
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
-                'mongo_id' => $input['mongo_id'],
+                'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
             ]);
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
@@ -362,7 +362,7 @@ class PublicationController extends Controller
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
-                'mongo_id' => $input['mongo_id'],
+                'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
             ]);
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];

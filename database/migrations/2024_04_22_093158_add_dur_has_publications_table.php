@@ -16,7 +16,6 @@ return new class extends Migration
             $table->bigInteger('publication_id')->unsigned();
             $table->bigInteger('user_id')->nullable()->default(null)->unsigned();
             $table->bigInteger('application_id')->nullable()->default(null)->unsigned();
-            $table->boolean('is_locked')->default(1);
             $table->text('reason')->nullable();
 
             $table->foreign('dur_id')->references('id')->on('dur');

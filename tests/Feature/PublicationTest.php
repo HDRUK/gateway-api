@@ -186,7 +186,7 @@ class PublicationTest extends TestCase
                         'id' => 1,
                         'link_type' => 'UNKNOWN',
                     ],
-                ],              
+                ],
             ],
             $this->header,
         );
