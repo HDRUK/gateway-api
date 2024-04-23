@@ -17,8 +17,11 @@ use Database\Seeders\KeywordSeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
+use Database\Seeders\DurHasPublicationSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DurTest extends TestCase
@@ -49,6 +52,9 @@ class DurTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             DurSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
+            DurHasPublicationSeeder::class,
         ]);
     }
     /**
@@ -109,12 +115,11 @@ class DurTest extends TestCase
                     'created_at',
                     'updated_at',
                     'datasets',
+                    'publications',
                     'keywords',
-                    'applications',
+                    'application',
                     'team',
                     'user',
-                    'application',
-                    'applicant_id',
                 ],
             ],
             'current_page',
@@ -202,8 +207,8 @@ class DurTest extends TestCase
                     'applications',
                     'team',
                     'user',
-                    'application',
-                    'applicant_id',
+                    'application_id',
+                    'applications',
                 ]
             ]
         ]);

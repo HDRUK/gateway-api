@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Application;
-use App\Models\Sector;
+use App\Models\Publication;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -111,14 +112,30 @@ class Dur extends Model
             ->withPivot('dur_id', 'dataset_id', 'user_id', 'application_id', 'is_locked', 'reason', 'created_at', 'updated_at');
     }
 
-    public function users(): BelongsToMany
+    public function userDatasets(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'dur_has_datasets');
     }
 
-    public function applications(): BelongsToMany
+    public function applicationDatasets(): BelongsToMany
     {
         return $this->belongsToMany(Application::class, 'dur_has_datasets');
+    }
+
+    public function publications(): BelongsToMany
+    {
+        return $this->belongsToMany(Publication::class, 'dur_has_publications')
+            ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'is_locked', 'reason', 'created_at', 'updated_at');
+    }
+
+    public function userPublications(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'dur_has_publications');
+    }
+
+    public function applicationPublications(): BelongsToMany
+    {
+        return $this->belongsToMany(Application::class, 'dur_has_publications');
     }
     
     public function user(): BelongsTo

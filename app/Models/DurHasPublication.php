@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class DurHasDataset extends Model
+class DurHasPublication extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'dur_id',
-        'dataset_id',
+        'publication_id',
         'user_id',
         'application_id',
         'is_locked',
@@ -29,7 +29,7 @@ class DurHasDataset extends Model
      * 
      * @var string
      */
-    protected $table = 'dur_has_datasets';
+    protected $table = 'dur_has_publications';
 
     /**
      * Indicates if the model should be timestamped

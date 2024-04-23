@@ -90,10 +90,12 @@ class DurController extends Controller
      *                @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
-     *                @OA\Property(property="applicant_id", type="string", example=""),
+     *                @OA\Property(property="applicantion", type="string", example=""),
+     *                @OA\Property(property="applicantions", type="string", example=""),
      *             ),
      *          ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
@@ -119,22 +121,54 @@ class DurController extends Controller
             $mongoId = $request->query('mongo_id', null);
     
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $dur = Dur::where('enabled', 1)
+            $durs = Dur::where('enabled', 1)
                 ->when($mongoId, function ($query) use ($mongoId) {
                     return $query->where('mongo_id', '=', $mongoId);
                 })->with([
-                    'datasets', 
+                    'datasets',
+                    'publications', 
                     'keywords',
-                    'users' => function ($query) {
+                    'userDatasets' => function ($query) {
                         $query->distinct('id');
                     },
-                    'applications' => function ($query) {
+                    'userPublications' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'applicationDatasets' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'applicationPublications' => function ($query) {
                         $query->distinct('id');
                     },
                     'user',
                     'team',
                     'application',
-                ])->paginate($perPage);
+                ])->paginate((int) $perPage, ['*'], 'page')
+                ->through(function ($dur) {
+                    if ($dur->datasets) {
+                        $dur->datasets = $dur->datasets->map(function ($dataset) {
+                            $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
+                            return $dataset;
+                        });
+                    }
+                    return $dur;
+                });
+
+            $durs->getCollection()->transform(function ($dur) {
+                $userDatasets = $dur->userDatasets;
+                $userPublications = $dur->userPublications;
+                $users = $userDatasets->merge($userPublications)->unique('id');
+                $dur->setRelation('users', $users);
+
+                $applicationDatasets = $dur->applicationDatasets;
+                $applicationPublications = $dur->applicationPublications;
+                $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
+                $dur->setRelation('applications', $applications);
+
+                unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
+
+                return $dur;
+            });
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -143,7 +177,7 @@ class DurController extends Controller
             ]);
 
             return response()->json(
-                $dur
+                $durs
             );
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -222,13 +256,13 @@ class DurController extends Controller
      *                   @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
      *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
-     *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
-     *                   @OA\Property(property="applicant_id", type="string", example=""),
+     *                   @OA\Property(property="applications", type="array", example="{}", @OA\Items()),
      *                ),
      *             ),
      *          ),
@@ -239,27 +273,7 @@ class DurController extends Controller
     public function show(GetDur $request, int $id): JsonResponse
     {
         try {
-            $input = $request->all();
-
-            $dur = Dur::where(['id' => $id])
-                ->with([
-                    'datasets',
-                    'keywords',
-                    'users' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'user',
-                    'team',
-                    'application',
-                ])->first();
-
-            foreach ($dur['datasets'] as $dataset) {
-                $title = $this->getDatasetTitle($dataset['id']);
-                $dataset['shortTitle'] = $title;
-            }
+            $dur = $this->getDurById($id);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -728,19 +742,7 @@ class DurController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => Dur::where('id', $id)->with([
-                    'datasets',
-                    'keywords',
-                    'users' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'user',
-                    'team',
-                    'application',
-                ])->first(),
+                'data' => $this->getDurById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -999,19 +1001,7 @@ class DurController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => Dur::where('id', $id)->with([
-                    'datasets',
-                    'keywords',
-                    'users' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'user',
-                    'team',
-                    'application',
-                ])->first(),
+                'data' => $this->getDurById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -1334,5 +1324,56 @@ class DurController extends Controller
             ->metadata;
         $title = $metadata['metadata']['summary']['shortTitle'];
         return $title;
+    }
+
+    private function getDurById(int $durId)
+    {
+        $dur = Dur::where(['id' => $durId])
+            ->with([
+                'keywords',
+                'datasets' => function ($query) {
+                    $query->get()->each(function ($dataset) {
+                        // Assuming 'new_key' is derived from other attributes, or just a static value
+                        $dataset->new_key = 'Value or Computation here';
+                    });
+                },
+                'publications', 
+                'userDatasets' => function ($query) {
+                    $query->distinct('id');
+                }, 
+                'userPublications' => function ($query) {
+                    $query->distinct('id');
+                }, 
+                'applicationDatasets' => function ($query) {
+                    $query->distinct('id');
+                },
+                'applicationPublications' => function ($query) {
+                    $query->distinct('id');
+                },
+                'user',
+                'team',
+            ])->first();
+
+        $userDatasets = $dur->userDatasets;
+        $userPublications = $dur->userPublications;
+        $users = $userDatasets->merge($userPublications)->unique('id');
+        $dur->setRelation('users', $users);
+
+        $applicationDatasets = $dur->applicationDatasets;
+        $applicationPublications = $dur->applicationPublications;
+        $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
+        $dur->setRelation('applications', $applications);
+
+        unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
+
+        $dur = $dur->toArray();
+
+        if ($dur && $dur['datasets']) {
+            foreach ($dur['datasets'] as &$dataset) {
+              $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
+            }
+        }
+
+        return $dur;
     }
 }

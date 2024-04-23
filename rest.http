@@ -1543,7 +1543,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get by id
-GET {{baseUrl}}/api/{{apiVersion}}/dur/22 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/dur/6 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
