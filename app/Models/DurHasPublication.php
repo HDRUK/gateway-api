@@ -14,14 +14,9 @@ class DurHasPublication extends Model
         'publication_id',
         'user_id',
         'application_id',
-        'is_locked',
         'reason',
         'created_at',
         'updated_at',
-    ];
-
-    protected $casts = [
-        'is_locked' => 'boolean',
     ];
 
     /**
