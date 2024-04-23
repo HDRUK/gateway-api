@@ -68,6 +68,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             ProgrammingLanguageSeeder::class,
             ProgrammingPackageSeeder::class,
+            TypeCategorySeeder::class,
         ]);
     }
 }
