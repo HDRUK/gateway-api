@@ -7,6 +7,8 @@ use Config;
 use Exception;
 use App\Models\Tag;
 use App\Models\Tool;
+use App\Models\ToolHasProgrammingLanguage;
+use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -116,6 +118,8 @@ class IntegrationToolController extends Controller
                 'user', 
                 'tag',
                 'team',
+                'programmingLanguages',
+                'programmingPackages'
             ])->where([
                 'id' => $id,
                 'enabled' => 1,
@@ -161,6 +165,8 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
      *       ),
@@ -220,6 +226,13 @@ class IntegrationToolController extends Controller
             ]);
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
+            if (array_key_exists('programming_language', $input)) {
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
+            }
+            if (array_key_exists('programming_package', $input)) {
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $tool->id);
+            }
+
             $this->indexElasticTools($input, (int) $tool->id);
 
             Auditor::log([
@@ -269,6 +282,8 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
      *       ),
@@ -336,6 +351,15 @@ class IntegrationToolController extends Controller
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
 
+            if (array_key_exists('programming_language', $input)) {
+                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+            }
+            if (array_key_exists('programming_package', $input)) {
+                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
+            }
+
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
@@ -383,6 +407,8 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
      *       ),
@@ -452,6 +478,15 @@ class IntegrationToolController extends Controller
                 ToolHasTag::where('tool_id', $id)->delete();
                 $this->insertToolHasTag($input['tag'], (int) $id);
             };
+
+            if (array_key_exists('programming_language', $input)) {
+                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+            }
+            if (array_key_exists('programming_package', $input)) {
+                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
+            }
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -535,6 +570,8 @@ class IntegrationToolController extends Controller
 
             if ($tool) {
                 ToolHasTag::where('tool_id', $id)->delete();
+                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
             }
             
             Auditor::log([
@@ -567,6 +604,52 @@ class IntegrationToolController extends Controller
                 ToolHasTag::updateOrCreate([
                     'tool_id' => (int) $toolId,
                     'tag_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+        /**
+     * Insert data into ToolHasProgrammingLanguage
+     *
+     * @param array $programmingLanguages
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertToolHasProgrammingLanguage(array $programmingLanguages, int $toolId): mixed
+    {
+        try {
+            foreach ($programmingLanguages as $value) {
+                ToolHasProgrammingLanguage::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'programming_language_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert data into ToolHasProgrammingPackage
+     *
+     * @param array $programmingPackages
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertToolHasProgrammingPackage(array $programmingPackages, int $toolId): mixed
+    {
+        try {
+            foreach ($programmingPackages as $value) {
+                ToolHasProgrammingPackage::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'programming_package_id' => (int) $value,
                 ]);
             }
 

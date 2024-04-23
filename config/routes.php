@@ -2756,4 +2756,171 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+
+    // programming languages
+    [
+        'name' => 'programming_languages',
+        'method' => 'get',
+        'path' => '/programming_languages',
+        'methodController' => 'ProgrammingLanguageController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'programming_languages',
+        'method' => 'get',
+        'path' => '/programming_languages/{id}',
+        'methodController' => 'ProgrammingLanguageController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_languages',
+        'method' => 'post',
+        'path' => '/programming_languages',
+        'methodController' => 'ProgrammingLanguageController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'programming_languages',
+        'method' => 'put',
+        'path' => '/programming_languages/{id}',
+        'methodController' => 'ProgrammingLanguageController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_languages',
+        'method' => 'patch',
+        'path' => '/programming_languages/{id}',
+        'methodController' => 'ProgrammingLanguageController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_languages',
+        'method' => 'delete',
+        'path' => '/programming_languages/{id}',
+        'methodController' => 'ProgrammingLanguageController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // programming packages
+    [
+        'name' => 'programming_packages',
+        'method' => 'get',
+        'path' => '/programming_packages',
+        'methodController' => 'ProgrammingPackageController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'programming_packages',
+        'method' => 'get',
+        'path' => '/programming_packages/{id}',
+        'methodController' => 'ProgrammingPackageController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_packages',
+        'method' => 'post',
+        'path' => '/programming_packages',
+        'methodController' => 'ProgrammingPackageController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'programming_packages',
+        'method' => 'put',
+        'path' => '/programming_packages/{id}',
+        'methodController' => 'ProgrammingPackageController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_packages',
+        'method' => 'patch',
+        'path' => '/programming_packages/{id}',
+        'methodController' => 'ProgrammingPackageController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_packages',
+        'method' => 'delete',
+        'path' => '/programming_packages/{id}',
+        'methodController' => 'ProgrammingPackageController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    
 ];

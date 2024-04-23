@@ -8,6 +8,8 @@ use Exception;
 use App\Models\DatasetHasTool;
 use App\Models\Tag;
 use App\Models\Tool;
+use App\Models\ToolHasProgrammingLanguage;
+use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Tool\GetTool;
@@ -118,6 +120,8 @@ class ToolController extends Controller
                 'user', 
                 'tag',
                 'team',
+                'programmingLanguages',
+                'programmingPackages'
             ])->where([
                 'id' => $id,
                 'enabled' => 1,
@@ -157,8 +161,8 @@ class ToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
-     *             @OA\Property( property="programming_language", type="string", example="string" ),
-     *             @OA\Property( property="programming_package", type="string", example="string" ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
      *             @OA\Property( property="type_category", type="string", example="string" ),
      *             @OA\Property( property="associated_authors", type="string", example="string" ),
      *             @OA\Property( property="contact_address", type="string", example="string" ),
@@ -214,8 +218,6 @@ class ToolController extends Controller
                 'enabled',
                 'team_id', 
                 'mongo_id',
-                'programming_language', 
-                'programming_package', 
                 'type_category', 
                 'associated_authors', 
                 'contact_address',
@@ -227,6 +229,12 @@ class ToolController extends Controller
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
             if (array_key_exists('dataset', $input)) {
                 $this->insertDatasetHasTool($input['dataset'], (int) $tool->id);
+            }
+            if (array_key_exists('programming_language', $input)) {
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
+            }
+            if (array_key_exists('programming_package', $input)) {
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $tool->id);
             }
 
             $this->indexElasticTools($input, (int) $tool->id);
@@ -280,8 +288,8 @@ class ToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
-     *             @OA\Property( property="programming_language", type="string", example="string" ),
-     *             @OA\Property( property="programming_package", type="string", example="string" ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
      *             @OA\Property( property="type_category", type="string", example="string" ),
      *             @OA\Property( property="associated_authors", type="string", example="string" ),
      *             @OA\Property( property="contact_address", type="string", example="string" ),
@@ -337,8 +345,6 @@ class ToolController extends Controller
                 'enabled',
                 'team_id', 
                 'mongo_id',
-                'programming_language', 
-                'programming_package', 
                 'type_category', 
                 'associated_authors', 
                 'contact_address',
@@ -354,6 +360,15 @@ class ToolController extends Controller
             DatasetHasTool::where('tool_id', $id)->delete();
             if (array_key_exists('dataset', $input)) {
                 $this->insertDatasetHasTool($input['dataset'], (int) $id);
+            }
+
+            if (array_key_exists('programming_language', $input)) {
+                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+            }
+            if (array_key_exists('programming_package', $input)) {
+                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
             }
 
             Auditor::log([
@@ -412,8 +427,8 @@ class ToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
-     *             @OA\Property( property="programming_language", type="string", example="string" ),
-     *             @OA\Property( property="programming_package", type="string", example="string" ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
      *             @OA\Property( property="type_category", type="string", example="string" ),
      *             @OA\Property( property="associated_authors", type="string", example="string" ),
      *             @OA\Property( property="contact_address", type="string", example="string" ),
@@ -468,8 +483,6 @@ class ToolController extends Controller
                 'enabled',
                 'team_id',
                 'mongo_id',
-                'programming_language', 
-                'programming_package', 
                 'type_category', 
                 'associated_authors', 
                 'contact_address',
@@ -487,6 +500,15 @@ class ToolController extends Controller
             if (array_key_exists('dataset', $input)) {
                 DatasetHasTool::where('tool_id', $id)->delete();
                 $this->insertDatasetHasTool($input['dataset'], (int) $id);
+            }
+
+            if (array_key_exists('programming_language', $input)) {
+                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+            }
+            if (array_key_exists('programming_package', $input)) {
+                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
             }
 
             Auditor::log([
@@ -570,6 +592,8 @@ class ToolController extends Controller
             Tool::where('id', $id)->delete();
             ToolHasTag::where('tool_id', $id)->delete();
             DatasetHasTool::where('tool_id', $id)->delete();
+            ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+            ToolHasProgrammingPackage::where('tool_id', $id)->delete();
             
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -634,6 +658,53 @@ class ToolController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    /**
+     * Insert data into ToolHasProgrammingLanguage
+     *
+     * @param array $programmingLanguages
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertToolHasProgrammingLanguage(array $programmingLanguages, int $toolId): mixed
+    {
+        try {
+            foreach ($programmingLanguages as $value) {
+                ToolHasProgrammingLanguage::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'programming_language_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert data into ToolHasProgrammingPackage
+     *
+     * @param array $programmingPackages
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertToolHasProgrammingPackage(array $programmingPackages, int $toolId): mixed
+    {
+        try {
+            foreach ($programmingPackages as $value) {
+                ToolHasProgrammingPackage::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'programming_package_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
 
     /**
      * Insert tool document into elastic index

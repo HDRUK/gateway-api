@@ -139,6 +139,7 @@ class SearchController extends Controller
             $response = Http::post($urlString, $input);
 
             $datasetsArray = $response['hits']['hits'];
+            $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
             // join to created at from DB
             foreach (array_values($datasetsArray) as $i => $d) {
@@ -183,7 +184,8 @@ class SearchController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $datasetsArraySorted, $perPage);
             $aggs = collect([
-                'aggregations' => $response['aggregations']
+                'aggregations' => $response['aggregations'],
+                'elastic_total' => $totalResults,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -375,6 +377,7 @@ class SearchController extends Controller
             $response = Http::post($urlString,$request->all());
            
             $toolsArray = $response['hits']['hits'];
+            $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
             foreach (array_values($toolsArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
@@ -407,7 +410,8 @@ class SearchController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $toolsArraySorted, $perPage);
             $aggs = collect([
-                'aggregations' => $response['aggregations']
+                'aggregations' => $response['aggregations'],
+                'elastic_total' => $totalResults,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -522,6 +526,7 @@ class SearchController extends Controller
             $response = Http::post($urlString, $input);
 
             $collectionArray = $response['hits']['hits'];
+            $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
             foreach (array_values($collectionArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
@@ -548,7 +553,8 @@ class SearchController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $collectionArraySorted, $perPage);
             $aggs = collect([
-                'aggregations' => $response['aggregations']
+                'aggregations' => $response['aggregations'],
+                'elastic_total' => $totalResults,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -665,6 +671,7 @@ class SearchController extends Controller
             $response = Http::post($urlString, $input);
 
             $durArray = $response['hits']['hits'];
+            $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
             foreach (array_values($durArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
@@ -704,7 +711,8 @@ class SearchController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $durArraySorted, $perPage);
             $aggs = collect([
-                'aggregations' => $response['aggregations']
+                'aggregations' => $response['aggregations'],
+                'elastic_total' => $totalResults,
             ]);
 
             $final = $aggs->merge($paginatedData);
@@ -855,6 +863,7 @@ class SearchController extends Controller
                 $response = Http::post($urlString, $input);
 
                 $pubArray = $response['hits']['hits'];
+                $totalResults = $response['hits']['total']['value'];
                 $matchedIds = [];
                 foreach (array_values($pubArray) as $i => $d) {
                     $matchedIds[] = $d['_id'];
@@ -888,6 +897,7 @@ class SearchController extends Controller
                 $response = Http::post($urlString, $input);
 
                 $pubArray = $response['resultList']['result'];
+                $totalResults = $response['hitCount'];
                 foreach ($pubArray as $i => $paper) {
                     $pubArray[$i]['_source']['publicationDate'] = $paper['pubYear'];
                     $pubArray[$i]['_source']['title'] = $paper['title'];
@@ -916,7 +926,8 @@ class SearchController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $pubArraySorted, $perPage);
             $aggs = collect([
-                'aggregations' => isset($response['aggregations']) ? $response['aggregations'] : []
+                'aggregations' => isset($response['aggregations']) ? $response['aggregations'] : [],
+                'elastic_total' => $totalResults,
             ]);
 
             $final = $aggs->merge($paginatedData);
