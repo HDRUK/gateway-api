@@ -57,8 +57,11 @@ class PublicationController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $mongoId = $request->query('mongo_id', null);
 
-            $publications = Publication::paginate(Config::get('constants.per_page'), ['*'], 'page');
+            $publications = Publication::when($mongoId, function ($query) use ($mongoId) {
+                return $query->where('mongo_id', '=', $mongoId);
+            })->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -178,6 +181,7 @@ class PublicationController extends Controller
      *             @OA\Property(property="journal_name", type="string", example="A Journal"),
      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
      *             @OA\Property(property="url", type="string", example="http://example"),
+     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", 
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
@@ -226,6 +230,7 @@ class PublicationController extends Controller
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
+                'mongo_id' => $input['mongo_id'],
             ]);
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
@@ -292,6 +297,7 @@ class PublicationController extends Controller
      *             @OA\Property(property="journal_name", type="string", example="A Journal"),
      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
      *             @OA\Property(property="url", type="string", example="http://example"),
+     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", 
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
@@ -356,6 +362,7 @@ class PublicationController extends Controller
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
+                'mongo_id' => $input['mongo_id'],
             ]);
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
@@ -419,6 +426,7 @@ class PublicationController extends Controller
      *             @OA\Property(property="journal_name", type="string", example="A Journal"),
      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
      *             @OA\Property(property="url", type="string", example="http://example"),
+     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", 
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
@@ -483,6 +491,7 @@ class PublicationController extends Controller
                 'journal_name',
                 'abstract',
                 'url',
+                'mongo_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $publication = Publication::where('id', $id)->update($array);
