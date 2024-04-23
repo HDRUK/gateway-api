@@ -423,25 +423,23 @@ class ProgrammingPackageController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
     
             $programming_package = ProgrammingPackage::findOrFail($id);
-            if ($programming_package) {
-                $programming_package->enabled = false;
-                if ($programming_package->save()) {
-                    Auditor::log([
-                        'user_id' => $jwtUser['id'],
-                        'action_type' => 'DELETE',
-                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                        'description' => "ProgrammingPackage " . $id . " deleted",
-                    ]);
+            $programming_package->enabled = false;
+            if ($programming_package->save()) {
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'DELETE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "ProgrammingPackage " . $id . " deleted",
+                ]);
 
-                    return response()->json([
-                        'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    ], Config::get('statuscodes.STATUS_OK.code'));
-                }
-    
                 return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-                ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),

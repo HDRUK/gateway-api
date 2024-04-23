@@ -423,25 +423,23 @@ class ProgrammingLanguageController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
     
             $programming_language = ProgrammingLanguage::findOrFail($id);
-            if ($programming_language) {
-                $programming_language->enabled = false;
-                if ($programming_language->save()) {
-                    Auditor::log([
-                        'user_id' => $jwtUser['id'],
-                        'action_type' => 'DELETE',
-                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                        'description' => "ProgrammingLanguage " . $id . " deleted",
-                    ]);
+            $programming_language->enabled = false;
+            if ($programming_language->save()) {
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'DELETE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "ProgrammingLanguage " . $id . " deleted",
+                ]);
 
-                    return response()->json([
-                        'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    ], Config::get('statuscodes.STATUS_OK.code'));
-                }
-    
                 return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
-                ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_SERVER_ERROR.message'),
+            ], Config::get('statuscodes.STATUS_SERVER_ERROR.code'));
     
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
