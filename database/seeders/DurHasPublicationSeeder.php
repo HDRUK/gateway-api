@@ -33,7 +33,6 @@ class DurHasPublicationSeeder extends Seeder
                     'publication_id' => $publicationId,
                     'user_id' => $userId,
                     'reason' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'is_locked' => fake()->randomElement([0, 1])
                 ]);
             }
         }
@@ -54,7 +53,6 @@ class DurHasPublicationSeeder extends Seeder
                     'publication_id' => $publicationId,
                     'application_id' => $applicationId,
                     'reason' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'is_locked' => fake()->randomElement([0, 1])
                 ]);
             }
         }
