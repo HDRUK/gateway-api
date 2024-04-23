@@ -1184,8 +1184,6 @@ class DurController extends Controller
             if (!$checking) {
                 $this->addDurHasDataset($durId, $publication, $userId, $appId);
             }
-
-            MMC::reindexElastic($publication['id']);
         }
     }
 
