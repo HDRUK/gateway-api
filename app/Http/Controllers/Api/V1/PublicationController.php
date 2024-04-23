@@ -56,7 +56,6 @@ class PublicationController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $mongoId = $request->query('mongo_id', null);
 
             $publications = Publication::when($mongoId, function ($query) use ($mongoId) {
@@ -64,7 +63,6 @@ class PublicationController extends Controller
             })->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
                 'action_type' => 'GET',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Publication get all",
@@ -134,7 +132,6 @@ class PublicationController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $publication = Publication::where('id', $id)->get();
             if ($publication) {
@@ -145,7 +142,6 @@ class PublicationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
                 'action_type' => 'GET',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Publication get " . $id,

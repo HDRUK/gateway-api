@@ -1184,7 +1184,7 @@ class DurController extends Controller
             $checking = $this->checkInDurHasPublications($durId, (int) $publication['id']);
 
             if (!$checking) {
-                $this->addDurHasDataset($durId, $publication, $userId, $appId);
+                $this->addDurHasPublication($durId, $publication, $userId, $appId);
             }
         }
     }
