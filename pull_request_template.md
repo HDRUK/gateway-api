@@ -8,7 +8,7 @@
 
 ## Requires migrations being run?
 
-## If not using the pre-push hook. Confirm tests pass:
+## If not using the pre-push hook. Confirm tests pass:
 
 ## Checklist before requesting a review
 
