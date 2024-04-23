@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
+use App\Models\Publication;
 use Database\Seeders\DurSeeder;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
@@ -228,6 +229,7 @@ class DurTest extends TestCase
         $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $mockData = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -242,6 +244,7 @@ class DurTest extends TestCase
             $mockData,
             $this->header
         );
+
         $response->assertStatus(201);
 
         $countAfter = Dur::count();
@@ -271,6 +274,7 @@ class DurTest extends TestCase
         $countBefore = Dur::count();
         $mockData = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -302,6 +306,7 @@ class DurTest extends TestCase
         // update
         $mockDataUpdate = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -338,6 +343,7 @@ class DurTest extends TestCase
         $countBefore = Dur::count();
         $mockData = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -363,6 +369,7 @@ class DurTest extends TestCase
         // update
         $mockDataUpdate = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -380,6 +387,7 @@ class DurTest extends TestCase
         // update
         $mockDataEdit = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -414,6 +422,7 @@ class DurTest extends TestCase
         $countBefore = Dur::count();
         $mockData = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -467,6 +476,20 @@ class DurTest extends TestCase
             $temp['id'] = Dataset::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $temp['is_locked'] = fake()->randomElement([0, 1]);
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generatePublications()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Publication::all()->random()->id;
             $return[] = $temp;
         }
 
