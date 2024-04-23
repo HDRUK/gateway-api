@@ -877,7 +877,7 @@ class SearchController extends Controller
                             $pubArray[$i]['authors'] = $model['authors'];
                             $pubArray[$i]['journal_name'] = $model['journal_name'];
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
-                            $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['doi'];
+                            $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
                             $pubArray[$i]['url'] = $model['url'];
                             break;
                         }
