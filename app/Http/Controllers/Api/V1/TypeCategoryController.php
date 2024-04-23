@@ -118,23 +118,18 @@ class TypeCategoryController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $typeCategory = TypeCategory::findOrFail($id);
-            if ($typeCategory) {
-                Auditor::log([
-                    'user_id' => $jwtUser['id'],
-                    'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Type Category get " . $id,
-                ]);
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Type Category get " . $id,
+            ]);
 
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => $typeCategory,
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
-    
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $typeCategory,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+    
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
