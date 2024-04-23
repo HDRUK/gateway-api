@@ -89,4 +89,14 @@ class Tool extends Model
     {
         return $this->belongsTo(Team::class);
     }
+
+    public function programmingLanguages(): BelongsToMany
+    {
+        return $this->belongsToMany(ProgrammingLanguage::class, 'tool_has_programming_language');
+    }
+
+    public function programmingPackages(): BelongsToMany
+    {
+        return $this->belongsToMany(ProgrammingPackage::class, 'tool_has_programming_package');
+    }
 }

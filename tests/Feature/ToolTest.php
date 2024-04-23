@@ -9,10 +9,14 @@ use Tests\TestCase;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\ProgrammingLanguageSeeder;
+use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\ToolSeeder;
 use Database\Seeders\TagSeeder;
 
 use App\Models\Tool;
+use App\Models\ToolHasProgrammingLanguage;
+use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
 use App\Http\Requests\ToolRequest;
 use App\Http\Controllers\Api\V1\ToolController;
@@ -45,6 +49,8 @@ class ToolTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             CategorySeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
         ]);
@@ -78,8 +84,6 @@ class ToolTest extends TestCase
                     'deleted_at',
                     'user',
                     'tag',
-                    'programming_language', 
-                    'programming_package', 
                     'type_category', 
                     'associated_authors', 
                     'contact_address',
@@ -129,8 +133,8 @@ class ToolTest extends TestCase
                     'deleted_at',
                     'user',
                     'tag',
-                    'programming_language', 
-                    'programming_package', 
+                    'programming_languages', 
+                    'programming_packages', 
                     'type_category', 
                     'associated_authors', 
                     'contact_address',
@@ -159,6 +163,8 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
             "enabled" => 1,
         );
 
@@ -232,6 +238,8 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
             "enabled" => 1,
         );
         $responseIns = $this->json(
@@ -269,6 +277,8 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
             "enabled" => 1,
         );
 
@@ -299,6 +309,14 @@ class ToolTest extends TestCase
         $this->assertEquals(count($toolHasTags), 1);
 
         $this->assertEquals($toolHasTags[0]['tag_id'], 2);
+
+        $toolHasProgrammingLanguages = ToolHasProgrammingLanguage::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasProgrammingLanguages), 1);
+        $this->assertEquals($toolHasProgrammingLanguages[0]['programming_language_id'], 1);
+
+        $toolHasProgrammingPackages = ToolHasProgrammingPackage::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasProgrammingPackages), 1);
+        $this->assertEquals($toolHasProgrammingPackages[0]['programming_package_id'], 1);
     }
 
     /**
@@ -319,6 +337,8 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
             "enabled" => 1,
         );
         $responseIns = $this->json(
@@ -451,6 +471,8 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
             "enabled" => 1,
         );
         $id = 10000;

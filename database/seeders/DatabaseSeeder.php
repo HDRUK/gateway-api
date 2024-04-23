@@ -66,6 +66,8 @@ class DatabaseSeeder extends Seeder
             EnquiryMessagesSeeder::class,
             CollectionHasToolSeeder::class,
             CategorySeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
         ]);
     }
 }

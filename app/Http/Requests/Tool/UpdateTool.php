@@ -73,11 +73,17 @@ class UpdateTool extends BaseFormRequest
             ],
             'programming_language' => [
                 'nullable', 
-                'string',
+                'array',
+            ],
+            'programming_language.*' => [
+                'integer',
             ],
             'programming_package' => [
                 'nullable', 
-                'string',
+                'array',
+            ],
+            'programming_package.*' => [
+                'integer',
             ],
             'type_category' => [
                 'nullable', 
