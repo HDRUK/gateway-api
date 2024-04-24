@@ -2922,5 +2922,88 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // tool type categories
+    [
+        'name' => 'type_categories',
+        'method' => 'get',
+        'path' => '/type_categories',
+        'methodController' => 'TypeCategoryController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'type_categories',
+        'method' => 'get',
+        'path' => '/type_categories/{id}',
+        'methodController' => 'TypeCategoryController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'type_categories',
+        'method' => 'post',
+        'path' => '/type_categories',
+        'methodController' => 'TypeCategoryController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'type_categories',
+        'method' => 'put',
+        'path' => '/type_categories/{id}',
+        'methodController' => 'TypeCategoryController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'type_categories',
+        'method' => 'patch',
+        'path' => '/type_categories/{id}',
+        'methodController' => 'TypeCategoryController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'type_categories',
+        'method' => 'delete',
+        'path' => '/type_categories/{id}',
+        'methodController' => 'TypeCategoryController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
     
 ];

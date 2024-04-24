@@ -41,9 +41,6 @@ class Tool extends Model
         'category_id', 
         'user_id', 
         'enabled',
-        'programming_language', 
-        'programming_package', 
-        'type_category', 
         'associated_authors', 
         'contact_address',
     ];
@@ -98,5 +95,10 @@ class Tool extends Model
     public function programmingPackages(): BelongsToMany
     {
         return $this->belongsToMany(ProgrammingPackage::class, 'tool_has_programming_package');
+    }
+
+    public function typeCategory(): BelongsToMany
+    {
+        return $this->belongsToMany(TypeCategory::class, 'tool_has_type_category');
     }
 }

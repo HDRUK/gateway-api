@@ -10,6 +10,7 @@ use App\Models\Tool;
 use App\Models\ToolHasProgrammingLanguage;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
+use App\Models\ToolHasTypeCategory;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Tool\GetTool;
@@ -119,7 +120,8 @@ class IntegrationToolController extends Controller
                 'tag',
                 'team',
                 'programmingLanguages',
-                'programmingPackages'
+                'programmingPackages',
+                'typeCategory',
             ])->where([
                 'id' => $id,
                 'enabled' => 1,
@@ -167,6 +169,7 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
      *       ),
@@ -232,6 +235,9 @@ class IntegrationToolController extends Controller
             if (array_key_exists('programming_package', $input)) {
                 $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $tool->id);
             }
+            if (array_key_exists('type_category', $input)) {
+                $this->insertToolHasTypeCategory($input['type_category'], (int) $tool->id);
+            }
 
             $this->indexElasticTools($input, (int) $tool->id);
 
@@ -284,6 +290,7 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
      *       ),
@@ -359,6 +366,10 @@ class IntegrationToolController extends Controller
                 ToolHasProgrammingPackage::where('tool_id', $id)->delete();
                 $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
             }
+            if (array_key_exists('type_category', $input)) {
+                ToolHasTypeCategory::where('tool_id', $id)->delete();
+                $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
+            }
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -409,6 +420,7 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *          ),
      *       ),
@@ -486,6 +498,10 @@ class IntegrationToolController extends Controller
             if (array_key_exists('programming_package', $input)) {
                 ToolHasProgrammingPackage::where('tool_id', $id)->delete();
                 $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
+            }
+            if (array_key_exists('type_category', $input)) {
+                ToolHasTypeCategory::where('tool_id', $id)->delete();
+                $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
             }
 
             Auditor::log([
@@ -572,6 +588,7 @@ class IntegrationToolController extends Controller
                 ToolHasTag::where('tool_id', $id)->delete();
                 ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
                 ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+                ToolHasTypeCategory::where('tool_id', $id)->delete();
             }
             
             Auditor::log([
@@ -650,6 +667,29 @@ class IntegrationToolController extends Controller
                 ToolHasProgrammingPackage::updateOrCreate([
                     'tool_id' => (int) $toolId,
                     'programming_package_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert data into ToolHasTypeCategory
+     *
+     * @param array $typeCategories
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertToolHasTypeCategory(array $typeCategories, int $toolId): mixed
+    {
+        try {
+            foreach ($typeCategories as $value) {
+                ToolHasTypeCategory::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'type_category_id' => (int) $value,
                 ]);
             }
 

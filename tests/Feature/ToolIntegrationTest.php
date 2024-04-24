@@ -15,6 +15,7 @@ use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\ToolSeeder;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ApplicationSeeder;
+use Database\Seeders\TypeCategorySeeder;
 
 use App\Models\Application;
 use App\Models\Permission;
@@ -23,6 +24,7 @@ use App\Models\ToolHasProgrammingLanguage;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
+use App\Models\ToolHasTypeCategory;
 use App\Http\Requests\ToolRequest;
 use App\Http\Controllers\Api\V1\ToolController;
 
@@ -57,6 +59,7 @@ class ToolIntegrationTest extends TestCase
             ProgrammingPackageSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
+            TypeCategorySeeder::class,
             ApplicationSeeder::class,
         ]);
 
@@ -157,6 +160,7 @@ class ToolIntegrationTest extends TestCase
                     'tag',
                     'programming_languages', 
                     'programming_packages',
+                    'type_category',
                 ]
             ]
         ]);
@@ -184,6 +188,7 @@ class ToolIntegrationTest extends TestCase
             'tag' => array(1, 2),
             'programming_language' => array(1, 2),
             'programming_package' => array(1, 2),
+            'type_category' => array(1, 2),
             'enabled' => 1,
         );
 
@@ -259,6 +264,7 @@ class ToolIntegrationTest extends TestCase
             'tag' => array(1),
             'programming_language' => array(1, 2),
             'programming_package' => array(1, 2),
+            'type_category' => array(1, 2),
             'enabled' => 1,
         );
         $responseIns = $this->json(
@@ -298,6 +304,7 @@ class ToolIntegrationTest extends TestCase
             'tag' => array(2),
             'programming_language' => array(1),
             'programming_package' => array(1),
+            'type_category' => array(1),
             'enabled' => 1,
         );
 
@@ -336,6 +343,9 @@ class ToolIntegrationTest extends TestCase
         $this->assertEquals(count($toolHasProgrammingPackages), 1);
         $this->assertEquals($toolHasProgrammingPackages[0]['programming_package_id'], 1);
 
+        $toolHasTypeCategories = ToolHasTypeCategory::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasTypeCategories), 1);
+        $this->assertEquals($toolHasTypeCategories[0]['type_category_id'], 1);
     }
 
     /**
@@ -358,6 +368,7 @@ class ToolIntegrationTest extends TestCase
             'tag' => array(1),
             'programming_language' => array(1),
             'programming_package' => array(1),
+            'type_category' => array(1),
             'enabled' => 1,
         );
         $responseIns = $this->json(
@@ -494,6 +505,7 @@ class ToolIntegrationTest extends TestCase
             "tag" => array(1, 2),
             "programming_language" => array(1),
             "programming_package" => array(1),
+            "type_category" => array(1),
             "enabled" => 1,
         );
         $id = 10000;
