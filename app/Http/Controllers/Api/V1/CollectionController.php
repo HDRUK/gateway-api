@@ -1058,8 +1058,6 @@ class CollectionController extends Controller
             if (!$checking) {
                 $this->addCollectionHasPublication($collectionId, $publication, $userId, $appId);
             }
-
-            // MMC::reindexElastic($dataset['id']);
         }
     }
 
