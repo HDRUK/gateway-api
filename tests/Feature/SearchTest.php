@@ -191,8 +191,8 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_id'] === '1');
 
-        // Test sorting by created_at desc        
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?view_type=min&sort=created_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']); 
+        // Test minimal payload for searching datasets        
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?view_type=mii&sort=created_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']); 
         $response->assertStatus(200);
 
         $metadata = $response['data'][0]['metadata'];
