@@ -192,7 +192,7 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_id'] === '1');
 
         // Test minimal payload for searching datasets        
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?view_type=mii&sort=created_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']); 
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?view_type=mini&sort=created_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']); 
         $response->assertStatus(200);
 
         $metadata = $response['data'][0]['metadata'];
