@@ -262,7 +262,6 @@ class DurController extends Controller
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
-     *                   @OA\Property(property="applications", type="array", example="{}", @OA\Items()),
      *                ),
      *             ),
      *          ),
