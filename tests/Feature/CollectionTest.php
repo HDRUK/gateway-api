@@ -2,29 +2,32 @@
 
 namespace Tests\Feature;
 
+use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
 use App\Models\Dataset;
-use App\Models\Dur;
 use App\Models\Keyword;
 use App\Models\Collection;
+use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DurSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
-use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\CollectionHasPublicationSeeder;
 
 class CollectionTest extends TestCase
 {
@@ -61,6 +64,9 @@ class CollectionTest extends TestCase
             CollectionHasDatasetSeeder::class,
             CollectionHasToolSeeder::class,
             CollectionHasDurSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
+            CollectionHasPublicationSeeder::class,
         ]);
     }
 
@@ -92,6 +98,7 @@ class CollectionTest extends TestCase
                     'datasets',
                     'tools',
                     'dur',
+                    'publications',
                     'users',
                     'applications',
                     'team',
@@ -142,6 +149,7 @@ class CollectionTest extends TestCase
                 'datasets',
                 'tools',
                 'dur',
+                'publications',
                 'users',
                 'applications',
                 'team',

@@ -66,6 +66,7 @@ class IntegrationCollectionController extends Controller
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -98,34 +99,38 @@ class IntegrationCollectionController extends Controller
                 'datasets',
                 'tools',
                 'dur',
-                'userDatasets' => function ($query) {
-                    $query->distinct('id');
-                },
-                'userTools' => function ($query) {
-                    $query->distinct('id');
-                },
-                'applicationDatasets' => function ($query) {
-                    $query->distinct('id');
-                },
-                'applicationTools' => function ($query) {
-                    $query->distinct('id');
-                },
+                'publications',
+                'userDatasets',
+                'userTools',
+                'userPublications',
+                'applicationDatasets',
+                'applicationTools',
+                'applicationPublications',
                 'team',
             ])->paginate((int) $perPage, ['*'], 'page');
 
             $collections->getCollection()->transform(function ($collection) {
                 $userDatasets = $collection->userDatasets;
                 $userTools = $collection->userTools;
-                $users = $userDatasets->merge($userTools)->unique('id');
+                $userPublications = $collection->userPublications;
+                $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
                 $collection->setRelation('users', $users);
 
                 $applicationDatasets = $collection->applicationDatasets;
                 $applicationTools = $collection->applicationTools;
-                $applications = $applicationDatasets->merge($applicationTools)->unique('id');
+                $applicationPublications = $collection->applicationPublications;
+                $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
                 $collection->setRelation('applications', $applications);
 
                 // Remove unwanted relations
-                unset($collection->userDatasets, $collection->userTools, $collection->applicationDatasets, $collection->applicationTools);
+                unset(
+                    $collection->userDatasets, 
+                    $collection->userTools, 
+                    $collection->userPublications, 
+                    $collection->applicationDatasets, 
+                    $collection->applicationTools, 
+                    $collection->applicationPublications
+                );
 
                 return $collection;
             });
@@ -188,6 +193,7 @@ class IntegrationCollectionController extends Controller
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -1105,32 +1111,36 @@ class IntegrationCollectionController extends Controller
             'datasets', 
             'tools', 
             'dur',
-            'userDatasets' => function ($query) {
-                $query->distinct('id');
-            }, 
-            'userTools' => function ($query) {
-                $query->distinct('id');
-            }, 
-            'applicationDatasets' => function ($query) {
-                $query->distinct('id');
-            },
-            'applicationTools' => function ($query) {
-                $query->distinct('id');
-            },
+            'publications',
+            'userDatasets', 
+            'userTools', 
+            'userPublications',
+            'applicationDatasets',
+            'applicationTools',
+            'applicationPublications',
             'team',
         ])->first();
 
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
-        $users = $userDatasets->merge($userTools)->unique('id');
+        $userPublications = $collection->userPublications;
+        $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
         $collection->setRelation('users', $users);
 
         $applicationDatasets = $collection->applicationDatasets;
         $applicationTools = $collection->applicationTools;
-        $applications = $applicationDatasets->merge($applicationTools)->unique('id');
+        $applicationPublications = $collection->applicationPublications;
+        $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
         $collection->setRelation('applications', $applications);
 
-        unset($collection->userDatasets, $collection->userTools, $collection->applicationDatasets, $collection->applicationTools);
+        unset(
+            $collection->userDatasets, 
+            $collection->userTools, 
+            $collection->userPublications, 
+            $collection->applicationDatasets, 
+            $collection->applicationTools, 
+            $collection->applicationPublications
+        );
 
         return $collection;
     }
