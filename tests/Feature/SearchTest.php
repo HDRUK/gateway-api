@@ -190,6 +190,18 @@ class SearchTest extends TestCase
             'total',                
         ]);
         $this->assertTrue($response['data'][0]['_id'] === '1');
+
+        // Test sorting by created_at desc        
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?view_type=min&sort=created_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']); 
+        $response->assertStatus(200);
+
+        $metadata = $response['data'][0]['metadata'];
+
+        $this->assertFalse(isset($metadata['coverage']));
+        $this->assertFalse(isset($metadata['accessibility']));
+        $this->assertFalse(isset($metadata['linkage']));
+        $this->assertFalse(isset($metadata['observations']));
+        $this->assertFalse(isset($metadata['structuralMetadata']));
     }
 
     /**
