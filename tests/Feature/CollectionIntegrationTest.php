@@ -207,6 +207,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
 
         $response = $this->json(
@@ -242,6 +243,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -299,6 +301,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -391,6 +394,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -455,6 +459,21 @@ class CollectionIntegrationTest extends TestCase
     }
 
     private function generateDurs()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Dur::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generatePublications()
     {
         $return = [];
         $iterations = rand(1, 5);

@@ -2,35 +2,36 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 
-use App\Models\Keyword;
 use App\Models\Dataset;
+use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
-use App\Models\CollectionHasDataset;
-use App\Models\CollectionHasDur;
-use App\Models\CollectionHasKeyword;
-use App\Models\CollectionHasTool;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Collection\GetCollection;
-use App\Http\Requests\Collection\EditCollection;
-use App\Http\Requests\Collection\CreateCollection;
-use App\Http\Requests\Collection\DeleteCollection;
-use App\Http\Requests\Collection\UpdateCollection;
-
-use App\Exceptions\NotFoundException;
-
-use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\IntegrationOverride;
-
 use Illuminate\Http\Request;
+use App\Models\CollectionHasDur;
+use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 
+use App\Http\Controllers\Controller;
+use App\Models\CollectionHasDataset;
+use App\Models\CollectionHasKeyword;
+use App\Exceptions\NotFoundException;
+use App\Http\Traits\IntegrationOverride;
+use App\Models\CollectionHasPublication;
+
 use MetadataManagementController AS MMC;
+
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\Collection\GetCollection;
+
+use App\Http\Requests\Collection\EditCollection;
+use App\Http\Requests\Collection\CreateCollection;
+
+use App\Http\Requests\Collection\DeleteCollection;
+use App\Http\Requests\Collection\UpdateCollection;
 
 class IntegrationCollectionController extends Controller
 {
@@ -252,6 +253,7 @@ class IntegrationCollectionController extends Controller
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -325,6 +327,9 @@ class IntegrationCollectionController extends Controller
             $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
             $this->checkDurs($collectionId, $dur, $array['user_id'], $appId);
 
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($collectionId, $publications, $array['user_id'], $appId);
+
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($collectionId, $keywords);
 
@@ -392,6 +397,7 @@ class IntegrationCollectionController extends Controller
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -425,6 +431,7 @@ class IntegrationCollectionController extends Controller
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -482,6 +489,9 @@ class IntegrationCollectionController extends Controller
 
             $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
             $this->checkDurs($id, $dur, $array['user_id'], $appId);
+
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($id, $publications, $array['user_id'], $appId);
 
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
@@ -550,6 +560,7 @@ class IntegrationCollectionController extends Controller
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -583,6 +594,7 @@ class IntegrationCollectionController extends Controller
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -643,6 +655,11 @@ class IntegrationCollectionController extends Controller
             if (array_key_exists('dur', $input)) {
                 $dur = $input['dur'];
                 $this->checkDurs($id, $dur, $userIdFinal, $appId);
+            }
+
+            if (array_key_exists('publications', $input)) {
+                $publications = $input['publications'];
+                $this->checkPublications($id, $publications, $userIdFinal, $appId);
             }
 
             if (array_key_exists('keywords', $input)) {
@@ -729,6 +746,7 @@ class IntegrationCollectionController extends Controller
             CollectionHasTool::where(['collection_id' => $id])->delete();
             CollectionHasDur::where(['collection_id' => $id])->delete();
             CollectionHasKeyword::where(['collection_id' => $id])->delete();
+            CollectionHasPublication::where(['collection_id' => $id])->delete();
             Collection::where(['id' => $id])->delete();
 
             Auditor::log([
@@ -748,7 +766,7 @@ class IntegrationCollectionController extends Controller
         }
     }
 
-
+    // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null) 
     {
         $cols = CollectionHasDataset::where(['collection_id' => $collectionId])->get();
@@ -832,6 +850,7 @@ class IntegrationCollectionController extends Controller
         }
     }
 
+    // tools
     private function checkTools(int $collectionId, array $inTools, int $userId = null, int $appId = null) 
     {
         $cols = CollectionHasTool::where(['collection_id' => $collectionId])->get();
@@ -908,14 +927,14 @@ class IntegrationCollectionController extends Controller
         try {
             return CollectionHasTool::where([
                 'collection_id' => $collectionId,
-                'tools_id' => $toolId,
+                'tool_id' => $toolId,
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteCollectionHasTools :: " . $e->getMessage());
         }
     }
 
-
+    // durs
     private function checkDurs(int $collectionId, array $inDurs, int $userId = null, int $appId = null) 
     {
         $cols = CollectionHasDur::where(['collection_id' => $collectionId])->get();
@@ -981,6 +1000,91 @@ class IntegrationCollectionController extends Controller
         }
     }
 
+    // publications
+    private function checkPublications(int $collectionId, array $inPublications, int $userId = null, int $appId = null) 
+    {
+        $cols = CollectionHasPublication::where(['collection_id' => $collectionId])->get();
+        foreach ($cols as $col) {
+            if (!in_array($col->publication_id, $this->extractInputIdToArray($inPublications))) {
+                $this->deleteCollectionHasPublications($collectionId, $col->publication_id);
+            }
+        }
+
+        foreach ($inPublications as $publication) {
+            $checking = $this->checkInCollectionHasPublications($collectionId, (int) $publication['id']);
+
+            if (!$checking) {
+                $this->addCollectionHasPublication($collectionId, $publication, $userId, $appId);
+            }
+
+            // MMC::reindexElastic($dataset['id']);
+        }
+    }
+
+    private function addCollectionHasPublication(int $collectionId, array $publication, int $userId = null, int $appId = null)
+    {
+        try {
+            $arrCreate = [
+                'collection_id' => $collectionId,
+                'publication_id' => $publication['id'],
+            ];
+
+            if (array_key_exists('user_id', $publication)) {
+                $arrCreate['user_id'] = (int) $publication['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $publication)) {
+                $arrCreate['reason'] = $publication['reason'];
+            }
+
+            if (array_key_exists('updated_at', $publication)) { // special for migration
+                $arrCreate['created_at'] = $publication['updated_at'];
+                $arrCreate['updated_at'] = $publication['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return CollectionHasPublication::updateOrCreate(
+                $arrCreate,
+                [
+                    'collection_id' => $collectionId,
+                    'publication_id' => $publication['id'],
+                ]
+            );
+        } catch (Exception $e) {
+            throw new Exception("addCollectionHasPublication :: " . $e->getMessage());
+        }
+    }
+
+    private function checkInCollectionHasPublications(int $collectionId, int $publicationId)
+    {
+        try {
+            return CollectionHasPublication::where([
+                'collection_id' => $collectionId,
+                'publication_id' => $publicationId,
+            ])->first();
+        } catch (Exception $e) {
+            throw new Exception("checkInCollectionHasPublications :: " . $e->getMessage());
+        }
+    }
+
+    private function deleteCollectionHasPublications(int $collectionId, int $publicationId)
+    {
+        try {
+            return CollectionHasPublication::where([
+                'collection_id' => $collectionId,
+                'publication_id' => $publicationId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deleteCollectionHasPublications :: " . $e->getMessage());
+        }
+    }
+
+    // keywords
     private function checkKeywords(int $collectionId, array $inKeywords)
     {
         $kws = CollectionHasKeyword::where('collection_id', $collectionId)->get();
