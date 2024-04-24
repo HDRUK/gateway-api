@@ -102,8 +102,7 @@ class IntegrationDurController extends Controller
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
-     *                @OA\Property(property="application", type="string", example=""),
-     *                @OA\Property(property="application", type="string", example=""),
+     *                @OA\Property(property="application", type="string", example="")
      *             ),
      *          ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
