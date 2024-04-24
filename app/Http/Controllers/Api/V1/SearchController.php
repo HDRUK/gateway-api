@@ -124,7 +124,8 @@ class SearchController extends Controller
 
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : "list";
-            $sort = $request->query('sort',"score:desc");   
+            $sort = $request->query('sort',"score:desc");
+            $viewType = $request->query('view_type', "full");
         
             $tmp = explode(":", $sort);
             $sortInput = $tmp[0];
@@ -155,7 +156,11 @@ class SearchController extends Controller
                 foreach ($datasetsModels as $model) {
                     if ((int) $dataset['_id'] === $model['id']) {
                         $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
-                        $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                        if ($viewType === 'mini') {
+                            $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata']);
+                        } else {
+                            $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                        }
                         $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
                     }
                 }
@@ -1001,5 +1006,23 @@ class SearchController extends Controller
             );
         }
         return $resultArray;
+    }
+
+    private function trimPayload(array &$input): array
+    {
+        $miniMetadata = $input['metadata'];
+
+        $minimumKeys = [
+            'summary',
+            'provenance',
+        ];
+
+        foreach ($miniMetadata as $key => $value) {
+            if (!in_array($key, $minimumKeys)) {
+                unset($miniMetadata[$key]);
+            }
+        }
+
+        return $miniMetadata;
     }
 }
