@@ -998,8 +998,6 @@ class CollectionController extends Controller
             if (!$checking) {
                 $this->addCollectionHasDur($collectionId, $dur, $userId, $appId);
             }
-
-            // MMC::reindexElastic($tool['id']);
         }
     }
 
