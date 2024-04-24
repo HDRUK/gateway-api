@@ -2697,7 +2697,7 @@ return [
         'path' => 'publications',
         'methodController' => 'PublicationController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -2706,7 +2706,7 @@ return [
         'path' => 'publications/{id}',
         'methodController' => 'PublicationController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [],
         'constraint' => [],
     ],
     [

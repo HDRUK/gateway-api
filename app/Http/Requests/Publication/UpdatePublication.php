@@ -66,6 +66,10 @@ class UpdatePublication extends BaseFormRequest
             'datasets.*.link_type'  => [
                 'string',
                 'nullable',
+            ],
+            'mongo_id' => [
+                'nullable',
+                'string',
             ],       
         ];
     }

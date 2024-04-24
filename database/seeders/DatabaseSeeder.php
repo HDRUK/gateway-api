@@ -66,6 +66,7 @@ class DatabaseSeeder extends Seeder
             EnquiryMessagesSeeder::class,
             CollectionHasToolSeeder::class,
             CategorySeeder::class,
+            DurHasPublicationSeeder::class,
             ProgrammingLanguageSeeder::class,
             ProgrammingPackageSeeder::class,
             TypeCategorySeeder::class,

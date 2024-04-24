@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dur_has_datasets', function (Blueprint $table) {
+        Schema::create('dur_has_publications', function (Blueprint $table) {
             $table->bigInteger('dur_id')->unsigned();
-            $table->bigInteger('dataset_id')->unsigned();
+            $table->bigInteger('publication_id')->unsigned();
             $table->bigInteger('user_id')->nullable()->default(null)->unsigned();
             $table->bigInteger('application_id')->nullable()->default(null)->unsigned();
+            $table->text('reason')->nullable();
 
             $table->foreign('dur_id')->references('id')->on('dur');
-            $table->foreign('dataset_id')->references('id')->on('datasets');
+            $table->foreign('publication_id')->references('id')->on('publications');
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('application_id')->references('id')->on('applications');
 
@@ -31,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dur_has_datasets');
+        Schema::dropIfExists('dur_has_publications');
     }
 };

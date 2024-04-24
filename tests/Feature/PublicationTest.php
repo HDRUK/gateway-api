@@ -69,6 +69,7 @@ class PublicationTest extends TestCase
                     'journal_name',
                     'abstract',
                     'url',
+                    'mongo_id',
                 ],
             ],
             'first_page_url',
@@ -108,6 +109,7 @@ class PublicationTest extends TestCase
                     'journal_name',
                     'abstract',
                     'url',
+                    'mongo_id',
                 ]
             ]
         ]);
@@ -184,7 +186,7 @@ class PublicationTest extends TestCase
                         'id' => 1,
                         'link_type' => 'UNKNOWN',
                     ],
-                ],              
+                ],
             ],
             $this->header,
         );

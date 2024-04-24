@@ -62,6 +62,10 @@ class CreatePublication extends BaseFormRequest
                 'string',
                 'nullable',
             ],
+            'mongo_id' => [
+                'nullable',
+                'string',
+            ],
         ];
     }
 }

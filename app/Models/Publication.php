@@ -32,6 +32,7 @@ class Publication extends Model
         'journal_name',
         'abstract',
         'url',
+        'mongo_id',
     ];
 
     /**
