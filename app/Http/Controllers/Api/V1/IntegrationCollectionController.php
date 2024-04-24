@@ -866,8 +866,6 @@ class IntegrationCollectionController extends Controller
             if (!$checking) {
                 $this->addCollectionHasTool($collectionId, $tool, $userId, $appId);
             }
-
-            // MMC::reindexElastic($tool['id']);
         }
     }
 
@@ -956,8 +954,6 @@ class IntegrationCollectionController extends Controller
             if (!$checking) {
                 $this->addCollectionHasDur($collectionId, $dur, $userId, $appId);
             }
-
-            // MMC::reindexElastic($tool['id']);
         }
     }
 
