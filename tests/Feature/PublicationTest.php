@@ -5,13 +5,16 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Publication;
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
+use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use App\Models\PublicationHasDataset;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
+use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\PublicationHasDatasetSeeder;
@@ -45,6 +48,9 @@ class PublicationTest extends TestCase
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             PublicationHasDatasetSeeder::class,
+            ToolSeeder::class,
+            TagSeeder::class,
+            TypeCategorySeeder::class,
             PublicationHasToolSeeder::class,
         ]);
     }
