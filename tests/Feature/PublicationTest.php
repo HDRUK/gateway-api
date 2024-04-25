@@ -3,17 +3,18 @@
 namespace Tests\Feature;
 
 use Config;
-use App\Models\Publication;
-use App\Models\PublicationHasDataset;
 use Tests\TestCase;
-use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\PublicationSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
-use Database\Seeders\TeamHasUserSeeder;
+use App\Models\Publication;
 use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
+use Database\Seeders\DatasetSeeder;
+use App\Models\PublicationHasDataset;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
+use Database\Seeders\TeamHasUserSeeder;
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PublicationTest extends TestCase
