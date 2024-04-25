@@ -70,6 +70,7 @@ class DatabaseSeeder extends Seeder
             ProgrammingLanguageSeeder::class,
             ProgrammingPackageSeeder::class,
             TypeCategorySeeder::class,
+            CollectionHasPublicationSeeder::class,
         ]);
     }
 }
