@@ -908,8 +908,6 @@ class CollectionController extends Controller
             if (!$checking) {
                 $this->addCollectionHasTool($collectionId, $tool, $userId, $appId);
             }
-
-            // MMC::reindexElastic($tool['id']);
         }
     }
 
