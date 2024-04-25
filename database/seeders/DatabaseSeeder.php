@@ -71,6 +71,7 @@ class DatabaseSeeder extends Seeder
             ProgrammingPackageSeeder::class,
             TypeCategorySeeder::class,
             CollectionHasPublicationSeeder::class,
+            PublicationHasToolSeeder::class,
         ]);
     }
 }

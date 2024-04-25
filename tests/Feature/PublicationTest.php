@@ -43,7 +43,8 @@ class PublicationTest extends TestCase
             PublicationSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
-            PublicationHasDatasetSeeder::class
+            PublicationHasDatasetSeeder::class,
+            PublicationHasToolSeeder::class,
         ]);
     }
 
