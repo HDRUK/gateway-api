@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use App\Models\Tool;
 use App\Models\Publication;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
@@ -151,6 +152,7 @@ class PublicationTest extends TestCase
                         'link_type' => 'UNKNOWN',
                     ],
                 ],
+                'tools' => $this->generateTools(),
             ],
             $this->header,
         );
@@ -195,6 +197,7 @@ class PublicationTest extends TestCase
                         'link_type' => 'UNKNOWN',
                     ],
                 ],
+                'tools' => $this->generateTools(),
             ],
             $this->header,
         );
@@ -233,6 +236,7 @@ class PublicationTest extends TestCase
                         'link_type' => 'UNKNOWN',
                     ],
                 ],
+                'tools' => $this->generateTools(),
             ],
             $this->header,
         );
@@ -296,5 +300,19 @@ class PublicationTest extends TestCase
 
         $this->assertTrue($countTrashed === 1);
         $this->assertTrue($countAfter < $countBefore);
+    }
+
+    private function generateTools()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Tool::all()->random()->id;
+            $return[] = $temp;
+        }
+
+        return $return;
     }
 }
