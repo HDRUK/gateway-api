@@ -2,27 +2,28 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
-use App\Models\DatasetHasTool;
 use App\Models\Tag;
 use App\Models\Tool;
-use App\Models\ToolHasProgrammingLanguage;
-use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasTag;
-use App\Models\ToolHasTypeCategory;
+use App\Models\Application;
+use Illuminate\Http\Request;
+use App\Models\DatasetHasTool;
 use Illuminate\Http\JsonResponse;
+use App\Models\PublicationHasTool;
 use App\Http\Requests\Tool\GetTool;
+use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tool\EditTool;
 use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
-use App\Http\Traits\RequestTransformation;
-use App\Models\PublicationHasTool;
-use Illuminate\Http\Request;
 use MetadataManagementController AS MMC;
+use App\Models\ToolHasProgrammingPackage;
+use App\Http\Traits\RequestTransformation;
+use App\Models\ToolHasProgrammingLanguage;
 
 class ToolController extends Controller
 {

@@ -8,6 +8,7 @@ use Exception;
 use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
+use App\Models\Application;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\PublicationHasTool;
