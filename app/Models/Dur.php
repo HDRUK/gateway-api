@@ -157,4 +157,54 @@ class Dur extends Model
     {
         return $this->belongsTo(Sector::class);
     }
+
+    public static function exportHeadings(): array
+    {
+        return [
+            'Non-Gateway Datasets',
+            'Non-Gateway Applicants',
+            'Funders And Sponsors',
+            'Other Approval Committees',
+            'Gateway Outputs - Tools',
+            'Gateway Outputs - Papers',
+            'Non-Gateway Outputs',
+            'Project Title',
+            'Project ID',
+            'Organisation Name',
+            'Organisation Sector',
+            'Lay Summary',
+            'Technical Summary',
+            'Latest Approval Date',
+            'Manual Upload',
+            'Rejection Reason',
+            'Sublicence Arrangements',
+            'Public Benefit Statement',
+            'Data Sensitivity Level',
+            'Project Start Date',
+            'Project End Data',
+            'Access Date',
+            'Accredited Researcher Status',
+            'Confidential Data Description',
+            'Dataset Linkage Description',
+            'Duty of Confidentiality',
+            'Legal basis for Data Article 6',
+            'Legal basis for Data Article 9',
+            'National Data Opt-out',
+            'Organisation ID',
+            'Privacy Enhancements',
+            'Request Category Type',
+            'Request Frequency',
+            'Access Type',
+            'Enabled',
+            'Last Activity',
+            'Counter',
+            'ID1', // Intentionally renamed to not reveal our internal field names
+            'ID2', // Intentionally renamed to not reveal our internal field names
+            'UID', // Intentionally renamed to not reveal our internal field names
+            'TID', // Intentionally renamed to not reveal our internal field names
+            'Created At',
+            'Updated At',
+            'Applicant ID',
+        ];
+    }
 }

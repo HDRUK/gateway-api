@@ -2603,6 +2603,17 @@ return [
 
     // data use registers
     [
+        'name' => 'dur.export',
+        'method' => 'get',
+        'path' => '/dur/export',
+        'methodController' => 'DurController@export',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
         'name' => 'dur.get',
         'method' => 'get',
         'path' => '/dur',

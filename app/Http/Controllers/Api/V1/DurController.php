@@ -25,6 +25,8 @@ use App\Models\Application;
 use App\Models\DurHasPublication;
 use MetadataManagementController AS MMC;
 
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
 class DurController extends Controller
 {
     use RequestTransformation;
@@ -1091,6 +1093,113 @@ class DurController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+/**
+     * @OA\Get(
+     *    path="/api/v1/dur/export",
+     *    operationId="export_dur",
+     *    tags={"Datasets"},
+     *    summary="DurController@export",
+     *    description="Export CSV Of All Dur's",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="dur_id",
+     *       in="query",
+     *       description="dur id",
+     *       required=false,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="dur id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="CSV file",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema(
+     *             type="string"
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       )
+     *    )
+     * )
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $teamId = $request->query('team_id',null);
+        $durId = $request->query('dur_id', null);
+        $durs = Dur::when($teamId, function ($query) use ($teamId){
+            return $query->where('team_id', '=', $teamId);
+        })->when($durId, function ($query) use ($durId) {
+            return $query->where('id', '=', $durId);
+        })->get();
+
+        // callback function that writes to php://output
+        $response = new StreamedResponse(
+            function() use ($durs) {
+
+                // Open output stream
+                $handle = fopen('php://output', 'w');
+                
+                // Call the model for specific headings to include
+                $headerRow = Dur::exportHeadings();
+
+                // Add CSV headers
+                fputcsv($handle, $headerRow);
+        
+                foreach ($durs as $rowDetails) {
+                    $fieldNames = $rowDetails->getFillable();
+                    $dataRow = [];
+
+                    foreach ($fieldNames as $name) {
+                        switch (gettype($rowDetails->{$name})) {
+                            case 'array':
+                                // For arrays, join elements and produce a single string
+                                $dataRow[] = implode('|', $rowDetails->{$name});
+                                break;
+                            default:
+                                // Otherwise just ensure we replace nulls with an empty string
+                                if ($rowDetails->{$name} !== null) {
+                                    $dataRow[] = $rowDetails->{$name};
+                                } else {
+                                    $dataRow[] = '';
+                                }
+                                break;       
+                        }
+                    }
+                    fputcsv($handle, $dataRow);
+                }
+                
+                // Close the output stream
+                fclose($handle);
+            }
+        );
+
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-Disposition', 'attachment;filename="Datasets.csv"');
+        $response->headers->set('Cache-Control','max-age=0');
+        
+        return $response;
     }
 
     // datasets
