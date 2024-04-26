@@ -61,7 +61,12 @@ class PublicationController extends Controller
 
             $publications = Publication::when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
-            })->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            })
+            ->with([
+                'datasets',
+                'tools',
+            ])
+            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -132,15 +137,7 @@ class PublicationController extends Controller
     public function show(GetPublication $request, int $id): JsonResponse
     {
         try {
-            $input = $request->all();
-
-            $publication = Publication::where('id', $id)->get();
-            if ($publication) {
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => $publication,
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
+            $publication = $this->getPublicationById($id);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -149,9 +146,10 @@ class PublicationController extends Controller
             ]);
 
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
-        } catch (Exception $e) {
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $publication,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+    } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
@@ -185,6 +183,7 @@ class PublicationController extends Controller
      *                   @OA\Property(property="link_type", type="string"),
      *                )
      *             ),
+     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *          ),
      *       ),
      *    ),
@@ -306,6 +305,7 @@ class PublicationController extends Controller
      *                   @OA\Property(property="link_type", type="string"),
      *                )
      *             ),
+     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *          ),
      *       ),
      *    ),
@@ -392,7 +392,7 @@ class PublicationController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Publication::where('id', $id)->get()[0],
+                'data' => $this->getPublicationById($id),
             ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -439,6 +439,7 @@ class PublicationController extends Controller
      *                   @OA\Property(property="link_type", type="string"),
      *                )
      *             ),
+     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *          ),
      *       ),
      *    ),
@@ -500,7 +501,7 @@ class PublicationController extends Controller
                 'mongo_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            $publication = Publication::where('id', $id)->update($array);
+            Publication::where('id', $id)->update($array);
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();
@@ -529,7 +530,7 @@ class PublicationController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $publication,
+                'data' => $this->getPublicationById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -626,7 +627,6 @@ class PublicationController extends Controller
     public function indexElasticPublication(string $id): void
     {
         try {
-
             $pubMatch = Publication::where(['id' => $id])
                 ->with('datasets')
                 ->first()
@@ -662,11 +662,23 @@ class PublicationController extends Controller
             ];
             
             $client = MMC::getElasticClient();
-            $response = $client->index($params);
+            $client->index($params);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function getPublicationById(int $publicationId)
+    {
+        $publication = Publication::with([
+            'datasets', 
+            'tools', 
+        ])->where([
+            'id' => $publicationId
+        ])->first();
+
+        return $publication;
     }
 
     // tools

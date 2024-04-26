@@ -79,6 +79,8 @@ class PublicationTest extends TestCase
                     'abstract',
                     'url',
                     'mongo_id',
+                    'datasets',
+                    'tools',
                 ],
             ],
             'first_page_url',
@@ -105,21 +107,20 @@ class PublicationTest extends TestCase
     {
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
 
-        $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
             'data' => [
-                0 => [
-                    'id',
-                    'paper_title',
-                    'authors',
-                    'year_of_publication',
-                    'paper_doi',
-                    'publication_type',
-                    'journal_name',
-                    'abstract',
-                    'url',
-                    'mongo_id',
-                ]
+                'id',
+                'paper_title',
+                'authors',
+                'year_of_publication',
+                'paper_doi',
+                'publication_type',
+                'journal_name',
+                'abstract',
+                'url',
+                'mongo_id',
+                'datasets',
+                'tools',
             ]
         ]);
         $response->assertStatus(200);
