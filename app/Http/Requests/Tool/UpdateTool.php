@@ -100,6 +100,25 @@ class UpdateTool extends BaseFormRequest
                 'nullable', 
                 'string',
             ],
+            'publications' => [
+                'array',
+            ],
+            'publications.*.id'  => [
+                'integer',
+                'exists:publications,id',
+            ],
+            'publications.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'publications.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'publications.*.reason'  => [
+                'nullable',
+                'string',
+            ],
         ];
     }
 
