@@ -396,6 +396,11 @@ class SearchController extends Controller
                     unset($toolsArray[$i]);
                     continue;
                 }
+
+                $toolsArray[$i]['name'] =  $toolsArray[$i]['_source']['name'];
+                $toolsArray[$i]['description'] =  $toolsArray[$i]['_source']['description'];
+                $toolsArray[$i]['created_at'] =  Tool::all()->random()->created_at;
+
                 foreach ($toolModels as $model){
                     if ((int) $tool['_id'] === $model['id']) {
                         $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
@@ -403,8 +408,11 @@ class SearchController extends Controller
                         if( $model->category){
                             $category = $model->category['name'];
                         }
-                        $toolsArray[$i]['_source']['category'] = $category;
-                        $toolsArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $toolsArray[$i]['category'] = $category;
+                        $toolsArray[$i]['created_at'] = $model['created_at'];
+
+                        $toolsArray[$i]['name'] = $model['name'];
+                        $toolsArray[$i]['description'] = $model['description'];
                         break;
                     }
                 }
