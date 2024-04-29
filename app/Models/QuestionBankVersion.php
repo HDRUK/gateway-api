@@ -28,4 +28,6 @@ class QuestionBankVersion extends Model
         'question_json',
      ];
 
+     private $required = '';
+
 }
