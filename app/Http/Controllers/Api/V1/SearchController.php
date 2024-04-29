@@ -360,7 +360,7 @@ class SearchController extends Controller
      *                          @OA\Items(
      *                              @OA\Property(property="description", type="array", @OA\Items())
      *                          )
-     *                      )
+     *                      ),
      *                      @OA\Property(property="uploader", type="string"),
      *                      @OA\Property(property="tean", type="string"),
      *                      @OA\Property(property="type_category", type="array", @OA\Items()),
