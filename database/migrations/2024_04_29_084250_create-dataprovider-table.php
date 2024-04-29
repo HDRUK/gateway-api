@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('publications', function (Blueprint $table) {
-            $table->text('abstract')->nullable()->change();
+        Schema::create('data_providers', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+            $table->softDeletes();
+            $table->tinyInteger('enabled')->default(1);
+            $table->string('name');
+            $table->text('img_url')->nullable();
         });
     }
 
@@ -21,8 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('publications', function (Blueprint $table) {
-            $table->dropColumn('abstract');
-        });
+        Schema::dropIfExists('data_providers');
     }
 };

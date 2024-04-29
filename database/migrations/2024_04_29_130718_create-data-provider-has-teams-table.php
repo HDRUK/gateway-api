@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('publications', function (Blueprint $table) {
-            $table->text('abstract')->nullable()->change();
+        Schema::create('data_provider_has_teams', function (Blueprint $table) {
+            $table->bigInteger('data_provider_id');
+            $table->bigInteger('team_id');
         });
     }
 
@@ -21,8 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('publications', function (Blueprint $table) {
-            $table->dropColumn('abstract');
-        });
+        Schema::dropIfExists('data_provider_has_teams');
     }
 };

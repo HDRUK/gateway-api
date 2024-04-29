@@ -3016,5 +3016,84 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+
+    // DataProviders
+    [
+        'name' => 'data_providers',
+        'method' => 'get',
+        'path' => '/data_providers',
+        'methodController' => 'DataProviderController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data_providers',
+        'method' => 'get',
+        'path' => '/data_providers/{id}',
+        'methodController' => 'DataProviderController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_providers',
+        'method' => 'post',
+        'path' => '/data_providers',
+        'methodController' => 'DataProviderController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data_providers',
+        'method' => 'put',
+        'path' => '/data_providers/{id}',
+        'methodController' => 'DataProviderController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_providers',
+        'method' => 'patch',
+        'path' => '/data_providers/{id}',
+        'methodController' => 'DataProviderController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_providers',
+        'method' => 'delete',
+        'path' => '/data_providers/{id}',
+        'methodController' => 'DataProviderController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],    
     
 ];
