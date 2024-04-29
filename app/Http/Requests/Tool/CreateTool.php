@@ -102,6 +102,7 @@ class CreateTool extends BaseFormRequest
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],
             'publications.*.user_id'  => [
+                'nullable',
                 'integer',
                 'exists:users,id',
             ],
