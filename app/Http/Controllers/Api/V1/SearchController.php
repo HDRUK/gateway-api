@@ -362,7 +362,7 @@ class SearchController extends Controller
      *                          )
      *                      ),
      *                      @OA\Property(property="uploader", type="string"),
-     *                      @OA\Property(property="tean", type="string"),
+     *                      @OA\Property(property="team_name", type="string"),
      *                      @OA\Property(property="type_category", type="array", @OA\Items()),
      *                      @OA\Property(property="license", type="string"),
      *                      @OA\Property(property="programming_language", type="array", @OA\Items()),
@@ -425,7 +425,7 @@ class SearchController extends Controller
 
                         // team
                         $team = Team::where('id', $model['team_id'])->first();
-                        $toolsArray[$i]['team'] = $team ? $team->name : '';
+                        $toolsArray[$i]['team_name'] = $team ? $team->name : '';
 
                         // type_category
                         $toolHasTypeCategoryIds = ToolHasTypeCategory::where('tool_id', $model['id'])->pluck('type_category_id')->all();
