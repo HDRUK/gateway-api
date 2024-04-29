@@ -59,6 +59,12 @@ class SearchTest extends TestCase
             CollectionHasKeywordSeeder::class,
             DurSeeder::class,
             PublicationSeeder::class,
+            CategorySeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
+            TagSeeder::class,
+            TypeCategorySeeder::class,
+            PublicationHasToolSeeder::class,
         ]);
 
         $this->metadataUpdate = $this->getFakeUpdateDataset();
@@ -256,6 +262,13 @@ class SearchTest extends TestCase
                         'tags',
                         'created_at'
                     ],
+                    'uploader',
+                    'team',
+                    'type_category',
+                    'license',
+                    'programming_language',
+                    'programming_package',
+                    'datasets',
                 ],
             ],
             'aggregations',
@@ -281,7 +294,14 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'uploader',
+                    'team',
+                    'type_category',
+                    'license',
+                    'programming_language',
+                    'programming_package',
+                    'datasets',
                 ],
             ],
             'aggregations',
@@ -309,7 +329,14 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'uploader',
+                    'team',
+                    'type_category',
+                    'license',
+                    'programming_language',
+                    'programming_package',
+                    'datasets',
                 ],
             ],
             'aggregations',
@@ -337,7 +364,14 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'uploader',
+                    'team',
+                    'type_category',
+                    'license',
+                    'programming_language',
+                    'programming_package',
+                    'datasets',
                 ],
             ],
             'aggregations',

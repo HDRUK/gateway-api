@@ -1979,6 +1979,15 @@ Authorization: Bearer {{accessToken}}
     "download": true
 }
 
+#### search for tools
+POST {{baseUrl}}/api/{{apiVersion}}/search/tools HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "query": "asthma"
+}
 
 ### Filters
 #### get all filters

@@ -2,33 +2,44 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\Dur;
-use App\Models\Tool;
+use App\Models\Team;
 
+use App\Models\Tool;
+use App\Models\User;
+use App\Models\Filter;
 use App\Models\Dataset;
 use App\Models\Collection;
-use App\Models\Filter;
 use App\Models\Publication;
+use App\Models\TypeCategory;
 use Illuminate\Http\Request;
-use App\Exports\DataUseExport;
-use App\Exports\PublicationExport;
-use App\Http\Requests\Search\PublicationSearch;
 
+use App\Exports\DataUseExport;
 use App\Models\DatasetVersion;
+use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Exports\DatasetListExport;
+use App\Exports\PublicationExport;
+
+use App\Models\ProgrammingPackage;
+use App\Models\PublicationHasTool;
 use App\Exports\DatasetTableExport;
+use App\Models\ProgrammingLanguage;
+use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
-
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exceptions\NotFoundException;
 use App\Http\Traits\PaginateFromArray;
 use MetadataManagementController as MMC;
+use App\Models\ToolHasProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
 use Illuminate\Database\Eloquent\Casts\Json;
+use App\Http\Requests\Search\PublicationSearch;
+use App\Models\DatasetHasTool;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
@@ -370,6 +381,9 @@ class SearchController extends Controller
     public function tools(Request $request): JsonResponse
     {
         try {
+            // $xxx = CollectionHasTool::where('collection_id', 20)->pluck('tool_id')->all();
+            // var_dump($xxx);
+            // exit();
             $sort = $request->query('sort',"score:desc");   
         
             $tmp = explode(":", $sort);
@@ -398,9 +412,36 @@ class SearchController extends Controller
                 }
                 foreach ($toolModels as $model){
                     if ((int) $tool['_id'] === $model['id']) {
+                        // uploader
+                        $user = User::where('id', $model['user_id'])->first();
+                        $toolsArray[$i]['uploader'] = $user ? $user->name : '';
+
+                        // team
+                        $team = Team::where('id', $model['team_id'])->first();
+                        $toolsArray[$i]['team'] = $team ? $team->name : '';
+
+                        // type_category
+                        $toolHasTypeCategoryIds = ToolHasTypeCategory::where('tool_id', $model['id'])->pluck('type_category_id')->all();
+                        $toolsArray[$i]['type_category'] = $toolHasTypeCategoryIds ? TypeCategory::whereIn('id', $toolHasTypeCategoryIds)->pluck('name')->all() : [];
+
+                        // license
+                        $toolsArray[$i]['license'] = $model['license'];
+
+                        // programming_language
+                        $toolHasProgrammingLangIds = ToolHasProgrammingLanguage::where('tool_id', $model['id'])->pluck('programming_language_id')->all();
+                        $toolsArray[$i]['programming_language'] = $toolHasProgrammingLangIds ? ProgrammingLanguage::whereIn('id', $toolHasProgrammingLangIds)->pluck('name')->all() : [];
+
+                        // programming_package
+                        $toolHasProgrammingPackageIds = ToolHasProgrammingPackage::where('tool_id', $model['id'])->pluck('programming_package_id')->all();
+                        $toolsArray[$i]['programming_package'] = $toolHasProgrammingPackageIds ? ProgrammingPackage::whereIn('id', $toolHasProgrammingPackageIds)->pluck('name')->all() : [];
+
+                        // datasets
+                        $datasetHasToolIds = DatasetHasTool::where('tool_id', $model['id'])->pluck('dataset_id')->all();
+                        $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
+
                         $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
                         $category = null;
-                        if( $model->category){
+                        if($model->category){
                             $category = $model->category['name'];
                         }
                         $toolsArray[$i]['_source']['category'] = $category;
@@ -1025,4 +1066,21 @@ class SearchController extends Controller
 
         return $miniMetadata;
     }
+
+    private function getDatasetTitle(array $datasetIds): array
+    {
+        $response = [];
+
+        foreach ($datasetIds as $datasetId) {
+            $metadata = Dataset::where(['id' => $d['id']])
+                ->first()
+                ->latestVersion()
+                ->metadata;
+            $response[] = $metadata['metadata']['summary']['shortTitle'];
+        }
+
+        usort($response, 'strcasecmp');
+        return $response;
+    }
+
 }
