@@ -2,27 +2,33 @@
 
 namespace Tests\Feature;
 
+use Config;
 use Tests\TestCase;
-use App\Models\Dataset;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Dataset;
 use Database\Seeders\DurSeeder;
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\CategorySeeder;
 use Illuminate\Support\Facades\Http;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
+use Database\Seeders\TypeCategorySeeder;
+use MetadataManagementController AS MMC;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\ProgrammingPackageSeeder;
+use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\PublicationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use MetadataManagementController AS MMC;
-use Config;
 
 class SearchTest extends TestCase
 {
