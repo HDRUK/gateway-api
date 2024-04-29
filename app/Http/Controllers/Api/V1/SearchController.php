@@ -388,9 +388,6 @@ class SearchController extends Controller
     public function tools(Request $request): JsonResponse
     {
         try {
-            // $xxx = CollectionHasTool::where('collection_id', 20)->pluck('tool_id')->all();
-            // var_dump($xxx);
-            // exit();
             $sort = $request->query('sort',"score:desc");   
         
             $tmp = explode(":", $sort);
