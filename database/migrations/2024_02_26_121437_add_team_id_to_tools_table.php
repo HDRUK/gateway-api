@@ -24,6 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tools', function (Blueprint $table) {
+            Schema::disableForeignKeyConstraints();
+            
             $table->dropColumn('team_id');
         });
     }
