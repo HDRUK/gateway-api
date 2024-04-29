@@ -361,6 +361,13 @@ class SearchController extends Controller
      *                              @OA\Property(property="description", type="array", @OA\Items())
      *                          )
      *                      )
+     *                      @OA\Property(property="uploader", type="string"),
+     *                      @OA\Property(property="tean", type="string"),
+     *                      @OA\Property(property="type_category", type="array", @OA\Items()),
+     *                      @OA\Property(property="license", type="string"),
+     *                      @OA\Property(property="programming_language", type="array", @OA\Items()),
+     *                      @OA\Property(property="programming_package", type="array", @OA\Items()),
+     *                      @OA\Property(property="datasets", type="array", @OA\Items()),
      *                  )
      *              ),
      *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/tools?page=1"),
@@ -1072,7 +1079,7 @@ class SearchController extends Controller
         $response = [];
 
         foreach ($datasetIds as $datasetId) {
-            $metadata = Dataset::where(['id' => $d['id']])
+            $metadata = Dataset::where(['id' => $datasetId])
                 ->first()
                 ->latestVersion()
                 ->metadata;
