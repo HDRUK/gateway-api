@@ -33,6 +33,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exceptions\NotFoundException;
+use App\Exports\ToolListExport;
 use App\Http\Traits\PaginateFromArray;
 use MetadataManagementController as MMC;
 use App\Models\ToolHasProgrammingPackage;
@@ -188,7 +189,7 @@ class SearchController extends Controller
 
             if ($download && $downloadType === "table") {
                 Auditor::log([
-                    'action_type' => 'GET',
+                    'action_type' => 'POST',
                     'action_service' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Search datasets export data - table",
                 ]);
@@ -207,7 +208,7 @@ class SearchController extends Controller
             $final = $aggs->merge($paginatedData);
 
             Auditor::log([
-                'action_type' => 'GET',
+                'action_type' => 'POST',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search datasets",
             ]);
@@ -385,9 +386,13 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function tools(Request $request): JsonResponse
+    public function tools(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
+            $input = $request->all();
+
+            $download = array_key_exists('download', $input) ? $input['download'] : false;
+
             $sort = $request->query('sort',"score:desc");   
         
             $tmp = explode(":", $sort);
@@ -457,6 +462,15 @@ class SearchController extends Controller
      
             $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
 
+            if ($download) {
+                Auditor::log([
+                    'action_type' => 'POST',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search tools export data - list",
+                ]);
+                return Excel::download(new ToolListExport($toolsArraySorted), 'tools.csv');
+            }
+
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $toolsArraySorted, $perPage);
             $aggs = collect([
@@ -467,7 +481,7 @@ class SearchController extends Controller
             $final = $aggs->merge($paginatedData);
 
             Auditor::log([
-                'action_type' => 'GET',
+                'action_type' => 'POST',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search tools",
             ]);
