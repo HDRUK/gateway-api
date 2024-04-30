@@ -1987,7 +1987,7 @@ Authorization: Bearer {{accessToken}}
 
 {
     "query": "asthma",
-    "download": false
+    "download": true
 }
 
 ### Filters

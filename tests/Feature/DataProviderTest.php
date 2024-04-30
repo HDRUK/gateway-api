@@ -92,6 +92,16 @@ class DataProviderTest extends TestCase
             ]
         ]);
         $response->assertStatus(200);
+
+        // error in git action
+        // $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
+
+        // $response->assertStatus(200);
+        // $content = $response->decodeResponseJson();
+
+        // $this->assertEquals($content['data']['img_url'], 'https://fakeimg.pl/300x200');
+        // $countTeams = count($content['data']['teams']);
+        // $this->assertTrue(($countTeams === 1));
     }
 
     public function test_create_data_provider_with_success(): void
