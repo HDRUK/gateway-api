@@ -1986,7 +1986,8 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "query": "asthma"
+    "query": "asthma",
+    "download": true
 }
 
 ### Filters
