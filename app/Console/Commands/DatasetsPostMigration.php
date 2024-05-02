@@ -14,7 +14,7 @@ class DatasetsPostMigration extends Command
      *
      * @var string
      */
-    protected $signature = 'app:datasets-post-migration';
+    protected $signature = 'app:datasets-post-migration {reindex?}';
 
     private $csvData = [];
 
@@ -36,6 +36,9 @@ class DatasetsPostMigration extends Command
      */
     public function handle()
     {
+        $reindex = $this->argument('reindex');
+        $reindexEnabled = $reindex !== null;
+
         $progressbar = $this->output->createProgressBar(count($this->csvData));
         $progressbar->start();
 
@@ -63,7 +66,9 @@ class DatasetsPostMigration extends Command
                     ]);
                 }
 
-                MMC::reindexElastic($dataset->id);
+                if ($reindexEnabled) {
+                    MMC::reindexElastic($dataset->id);
+                }                
             }
             $progressbar->advance();
             sleep(1); // to not kill ElasticSearch
