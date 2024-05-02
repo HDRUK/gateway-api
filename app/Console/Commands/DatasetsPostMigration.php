@@ -54,9 +54,7 @@ class DatasetsPostMigration extends Command
                 if ($datasetVersion) {
                     $metadata = $datasetVersion->metadata;
 
-                    if(array_key_exists( 'accessServiceCategory', $metadata['metadata']['accessibility']['access'])) {
-                        $metadata['metadata']['accessibility']['access']['accessServiceCategory'] = $mapped;
-                    }
+                    $metadata['metadata']['accessibility']['access']['accessServiceCategory'] = $mapped;
 
                     DatasetVersion::where('id', $dataset->id)->update([
                         'metadata' => json_encode(json_encode($metadata)),
