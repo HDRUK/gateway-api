@@ -214,6 +214,7 @@ class ToolController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            
             $userId = null;
             $appId = null;
             if (array_key_exists('user_id', $input)) {
@@ -262,7 +263,7 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($tool->id, $publications, $array['user_id'], $appId);
 
-            $this->indexElasticTools($input, (int) $tool->id);
+            //$this->indexElasticTools($input, (int) $tool->id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
