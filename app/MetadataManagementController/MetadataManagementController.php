@@ -2,23 +2,24 @@
 
 namespace App\MetadataManagementController;
 
-use Config;
 use Mauro;
+use Config;
 use Exception;
 
 use App\Models\Filter;
 use App\Models\Dataset;
+use Http\Client\HttpClient;
+
 use App\Models\DatasetVersion;
 
+use Illuminate\Support\Carbon;
 use App\Exceptions\MMCException;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Carbon;
-
 use Elastic\Elasticsearch\Client;
-use Elastic\Elasticsearch\ClientBuilder;
-
 use Illuminate\Support\Facades\DB;
+
+use Illuminate\Support\Facades\Http;
+use Elastic\Elasticsearch\ClientBuilder;
 
 class MetadataManagementController {
 
@@ -242,6 +243,7 @@ class MetadataManagementController {
             $publisherName = '';
             $containsTissue = false;
             $populationSize = -1;
+            $accessServiceCategory = '';
 
             if(version_compare($metadataModelVersion,"1.1","<")){
                 $publisherName = $metadata['metadata']['summary']['publisher']['publisherName'];
@@ -255,6 +257,9 @@ class MetadataManagementController {
                 }
                 if (array_key_exists('populationSize', $metadata['metadata']['summary'])){
                     $populationSize = $metadata['metadata']['summary']['populationSize'];
+                }
+                if (array_key_exists('accessServiceCategory', $metadata['metadata']['accessibility']['access'])){
+                    $accessServiceCategory = $metadata['metadata']['accessibility']['access']['accessServiceCategory'];
                 }
             }
 
@@ -282,7 +287,8 @@ class MetadataManagementController {
                 'named_entities' => $namedEntities,
                 'collectionName' => $collections,
                 'dataUseTitles' => $durs,
-                'geographicLocation' => $geographicLocations
+                'geographicLocation' => $geographicLocations,
+                'accessServiceCategory' => $accessServiceCategory
             ];
 
             $params = [
