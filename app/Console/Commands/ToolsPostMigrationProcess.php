@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Exception;
+
 use App\Models\Tool;
 use App\Models\TypeCategory;
 use App\Models\ProgrammingLanguage;
@@ -117,7 +119,7 @@ class ToolsPostMigrationProcess extends Command
                     echo 'no tool matching ' . $csv['_id'] . " ignoring\n";
                 }
             } catch (Exception $e) {
-                echo 'unable to process ' . $csv['_id'] . ' because ' . $e->getMessage . "\n";
+                echo 'unable to process ' . $csv['_id'] . ' because ' . $e->getMessage() . "\n";
             }
         }
     }
