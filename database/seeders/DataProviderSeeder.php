@@ -2,11 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\Team;
 use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\DataProviderHasTeam;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class DataProviderSeeder extends Seeder
 {

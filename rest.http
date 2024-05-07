@@ -1986,7 +1986,8 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "query": "asthma"
+    "query": "asthma",
+    "download": true
 }
 
 ### Filters
@@ -2037,4 +2038,10 @@ Authorization: Bearer {{accessToken}}
 ### Tests
 #### test pubsub service
 GET {{baseUrl}}/api/{{apiVersion}}/test-pubsub-service HTTP/1.1
+Content-Type: application/json
+
+
+### Data Provider
+#### get all data provider
+GET {{baseUrl}}/api/{{apiVersion}}/data_providers HTTP/1.1
 Content-Type: application/json
