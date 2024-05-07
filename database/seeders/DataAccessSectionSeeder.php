@@ -2,17 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\DarSection;
+use App\Models\DataAccessSection;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class SectionSeeder extends Seeder
+class DataAccessSectionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
-    public function run(): void
+   public function run(): void
     {
         $sections = [
             [
@@ -153,7 +153,7 @@ class SectionSeeder extends Seeder
         ];
 
         foreach ($sections as $s) {
-            DarSection::create([
+            DataAccessSection::create([
                 'name' => $s['name'],
                 'sub_section' => $s['sub_section'],
                 'order' => $s['order'],
