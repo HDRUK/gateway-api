@@ -10,6 +10,8 @@ use App\Models\Filter;
 use App\Models\Dataset;
 use Http\Client\HttpClient;
 
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 use App\Models\DatasetVersion;
 
 use Illuminate\Support\Carbon;
@@ -235,6 +237,13 @@ class MetadataManagementController {
 
             $metadataModelVersion = $metadata['gwdmVersion'];
 
+            $dataProviderId = DataProviderHasTeam::where('team_id', $datasetMatch['team_id'])
+                ->pluck('data_provider_id')
+                ->all();
+            $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+                ->pluck('name')
+                ->all();
+
             // ------------------------------------------------------
             // WARNING....
             //  - this part of the code may need updating when the GWDM is changed 
@@ -288,7 +297,8 @@ class MetadataManagementController {
                 'collectionName' => $collections,
                 'dataUseTitles' => $durs,
                 'geographicLocation' => $geographicLocations,
-                'accessServiceCategory' => $accessServiceCategory
+                'accessServiceCategory' => $accessServiceCategory,
+                'dataProvider' => $dataProvider
             ];
 
             $params = [

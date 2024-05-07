@@ -10,6 +10,8 @@ use App\Models\Dataset;
 use App\Models\Dur;
 use App\Models\Keyword;
 use Illuminate\Http\Request;
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 use App\Models\DurHasDataset;
 use App\Models\DurHasKeyword;
 use App\Models\Sector;
@@ -1486,6 +1488,13 @@ class DurController extends Controller
 
             $sector = ($durMatch['sector'] != null) ? Sector::where(['id' => $durMatch['sector']])->first()->name : null;
 
+            $dataProviderId = DataProviderHasTeam::where('team_id', $durMatch['team_id'])
+                ->pluck('data_provider_id')
+                ->all();
+            $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+                ->pluck('name')
+                ->all();
+            
             $toIndex = [
                 'projectTitle' => $durMatch['project_title'],
                 'laySummary' => $durMatch['lay_summary'],
@@ -1497,6 +1506,7 @@ class DurController extends Controller
                 'datasetTitles' => $datasetTitles,
                 'keywords' => $keywords,
                 'sector' => $sector,
+                'dataProvider' => $dataProvider
             ];
 
             $params = [

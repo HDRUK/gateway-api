@@ -12,6 +12,8 @@ use App\Models\Application;
 use Illuminate\Http\Request;
 use App\Models\CollectionHasDur;
 use App\Models\CollectionHasTool;
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\CollectionHasDataset;
@@ -1201,7 +1203,6 @@ class CollectionController extends Controller
     private function indexElasticCollections(int $collectionId): void 
     {
         $collection = Collection::with(['team', 'datasets', 'keywords'])->where('id', $collectionId)->first()->toArray();
-        $team = $collection['team'];
 
         $datasetTitles = array();
         $datasetAbstracts = array();
@@ -1219,6 +1220,13 @@ class CollectionController extends Controller
             $keywords[] = $k['name'];
         }
 
+        $dataProviderId = DataProviderHasTeam::where('team_id', $collection['team_id'])
+            ->pluck('data_provider_id')
+            ->all();
+        $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+            ->pluck('name')
+            ->all();        
+
         try {
             $toIndex = [
                 'publisherName' => isset($team['name']) ? $team['name'] : '',
@@ -1226,7 +1234,8 @@ class CollectionController extends Controller
                 'name' => $collection['name'],
                 'datasetTitles' => $datasetTitles,
                 'datasetAbstracts' => $datasetAbstracts,
-                'keywords' => $keywords
+                'keywords' => $keywords,
+                'dataProvider' => $dataProvider
             ];
             $params = [
                 'index' => 'collection',
