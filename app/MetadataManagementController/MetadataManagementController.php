@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Elastic\Elasticsearch\ClientBuilder;
 
+use Illuminate\Http\JsonResponse;
+
 class MetadataManagementController {
 
     /**
@@ -327,6 +329,26 @@ class MetadataManagementController {
             $client = $this->getElasticClient();
             $response = $client->delete($params);
 
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function getOnboardingFormHydrated(string $name, string $version): JsonResponse
+    {
+        try {
+            $queryParams = [
+                'name' => $name,
+                'version' => $version,
+            ];
+
+            $urlString = env('TRASER_SERVICE_URL') . '/get/form_hydration?' . http_build_query($queryParams);
+            $response = Http::get($urlString);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => $response->json(),
+            ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
