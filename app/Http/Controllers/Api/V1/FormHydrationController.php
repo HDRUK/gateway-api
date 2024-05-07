@@ -1,12 +1,15 @@
 <?php
 
 namespace App\Http\Controllers\Api\V1;
+
+use Config;
+use MetadataManagementController as MMC;
+
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
-use Config;
 use Illuminate\Support\Facades\Http;
 
 class FormHydrationController extends Controller
@@ -71,4 +74,12 @@ class FormHydrationController extends Controller
         }
 
     }
+
+    public function onboardingFormHydration(Request $request): JsonResponse
+    {
+        $model = $request->input('model',Config::get('form_hydration.schema.model'));
+        $version = $request->input('version',Config::get('form_hydration.schema.latest_version'));
+
+        return MMC::getOnboardingFormHydrated($model, $version);
+    }    
 }
