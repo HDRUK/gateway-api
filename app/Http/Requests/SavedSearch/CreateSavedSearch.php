@@ -34,8 +34,11 @@ class CreateSavedSearch extends BaseFormRequest
                 'required',
                 'string',
                 Rule::in([
-                    SortOrderSavedSearch::ASCENDENT,
-                    SortOrderSavedSearch::DESCENDENT,
+                    SortOrderSavedSearch::MOST_RELEVANT,
+                    SortOrderSavedSearch::SORT_TITLE_ASC,
+                    SortOrderSavedSearch::SORT_TITLE_DESC,
+                    SortOrderSavedSearch::MOST_RECENTLY_UPDATED,
+                    SortOrderSavedSearch::LEAST_RECENTLY_UPDATED,
                 ]),
             ],
         ];

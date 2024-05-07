@@ -9,6 +9,7 @@ use Tests\Traits\Authorization;
 use Database\Seeders\FilterSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SavedSearchSeeder;
+use App\Http\Enums\SortOrderSavedSearch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SavedSearchTest extends TestCase
@@ -119,7 +120,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'ASC',
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -198,7 +199,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'ASC',
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -253,7 +254,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'ASC',
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -289,7 +290,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'ASC',
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -332,7 +333,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'ASC',
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -368,7 +369,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'ASC',
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -432,7 +433,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'ASC',
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -495,7 +496,7 @@ class SavedSearchTest extends TestCase
                 'search_endpoint' => 'datasets',
                 'enabled' => false,
                 'filters' => [],
-                'sort_order' => 'ASC',
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             $headerNonAdmin,
         );
@@ -524,7 +525,7 @@ class SavedSearchTest extends TestCase
                 'search_endpoint' => 'datasets',
                 'enabled' => true,
                 'filters' => [],
-                'sort_order' => 'ASC',
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
