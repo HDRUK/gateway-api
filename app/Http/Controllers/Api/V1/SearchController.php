@@ -2,33 +2,45 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\Dur;
-use App\Models\Tool;
+use App\Models\Team;
 
+use App\Models\Tool;
+use App\Models\User;
+use App\Models\Filter;
 use App\Models\Dataset;
 use App\Models\Collection;
-use App\Models\Filter;
 use App\Models\Publication;
+use App\Models\TypeCategory;
 use Illuminate\Http\Request;
-use App\Exports\DataUseExport;
-use App\Exports\PublicationExport;
-use App\Http\Requests\Search\PublicationSearch;
 
+use App\Exports\DataUseExport;
 use App\Models\DatasetVersion;
+use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Exports\DatasetListExport;
+use App\Exports\PublicationExport;
+
+use App\Models\ProgrammingPackage;
+use App\Models\PublicationHasTool;
 use App\Exports\DatasetTableExport;
+use App\Models\ProgrammingLanguage;
+use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
-
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exceptions\NotFoundException;
+use App\Exports\ToolListExport;
 use App\Http\Traits\PaginateFromArray;
 use MetadataManagementController as MMC;
+use App\Models\ToolHasProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
 use Illuminate\Database\Eloquent\Casts\Json;
+use App\Http\Requests\Search\PublicationSearch;
+use App\Models\DatasetHasTool;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
@@ -124,7 +136,8 @@ class SearchController extends Controller
 
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : "list";
-            $sort = $request->query('sort',"score:desc");   
+            $sort = $request->query('sort',"score:desc");
+            $viewType = $request->query('view_type', "full");
         
             $tmp = explode(":", $sort);
             $sortInput = $tmp[0];
@@ -155,7 +168,11 @@ class SearchController extends Controller
                 foreach ($datasetsModels as $model) {
                     if ((int) $dataset['_id'] === $model['id']) {
                         $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
-                        $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                        if ($viewType === 'mini') {
+                            $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata']);
+                        } else {
+                            $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
+                        }
                         $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
                     }
                 }
@@ -172,7 +189,7 @@ class SearchController extends Controller
 
             if ($download && $downloadType === "table") {
                 Auditor::log([
-                    'action_type' => 'GET',
+                    'action_type' => 'POST',
                     'action_service' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Search datasets export data - table",
                 ]);
@@ -191,7 +208,7 @@ class SearchController extends Controller
             $final = $aggs->merge($paginatedData);
 
             Auditor::log([
-                'action_type' => 'GET',
+                'action_type' => 'POST',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search datasets",
             ]);
@@ -344,7 +361,14 @@ class SearchController extends Controller
      *                          @OA\Items(
      *                              @OA\Property(property="description", type="array", @OA\Items())
      *                          )
-     *                      )
+     *                      ),
+     *                      @OA\Property(property="uploader", type="string"),
+     *                      @OA\Property(property="team_name", type="string"),
+     *                      @OA\Property(property="type_category", type="array", @OA\Items()),
+     *                      @OA\Property(property="license", type="string"),
+     *                      @OA\Property(property="programming_language", type="array", @OA\Items()),
+     *                      @OA\Property(property="programming_package", type="array", @OA\Items()),
+     *                      @OA\Property(property="datasets", type="array", @OA\Items()),
      *                  )
      *              ),
      *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/tools?page=1"),
@@ -362,9 +386,13 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function tools(Request $request): JsonResponse
+    public function tools(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
+            $input = $request->all();
+
+            $download = array_key_exists('download', $input) ? $input['download'] : false;
+
             $sort = $request->query('sort',"score:desc");   
         
             $tmp = explode(":", $sort);
@@ -391,21 +419,65 @@ class SearchController extends Controller
                     unset($toolsArray[$i]);
                     continue;
                 }
+
+                $toolsArray[$i]['name'] =  $toolsArray[$i]['_source']['name'];
+                $toolsArray[$i]['description'] =  $toolsArray[$i]['_source']['description'];
+                $toolsArray[$i]['created_at'] =  Tool::all()->random()->created_at;
+
                 foreach ($toolModels as $model){
                     if ((int) $tool['_id'] === $model['id']) {
+                        // uploader
+                        $user = User::where('id', $model['user_id'])->first();
+                        $toolsArray[$i]['uploader'] = $user ? $user->name : '';
+
+                        // team
+                        $team = Team::where('id', $model['team_id'])->first();
+                        $toolsArray[$i]['team_name'] = $team ? $team->name : '';
+
+                        // type_category
+                        $toolHasTypeCategoryIds = ToolHasTypeCategory::where('tool_id', $model['id'])->pluck('type_category_id')->all();
+                        $toolsArray[$i]['type_category'] = $toolHasTypeCategoryIds ? TypeCategory::whereIn('id', $toolHasTypeCategoryIds)->pluck('name')->all() : [];
+
+                        // license
+                        $toolsArray[$i]['license'] = $model['license'];
+
+                        // programming_language
+                        $toolHasProgrammingLangIds = ToolHasProgrammingLanguage::where('tool_id', $model['id'])->pluck('programming_language_id')->all();
+                        $toolsArray[$i]['programming_language'] = $toolHasProgrammingLangIds ? ProgrammingLanguage::whereIn('id', $toolHasProgrammingLangIds)->pluck('name')->all() : [];
+
+                        // programming_package
+                        $toolHasProgrammingPackageIds = ToolHasProgrammingPackage::where('tool_id', $model['id'])->pluck('programming_package_id')->all();
+                        $toolsArray[$i]['programming_package'] = $toolHasProgrammingPackageIds ? ProgrammingPackage::whereIn('id', $toolHasProgrammingPackageIds)->pluck('name')->all() : [];
+
+                        // datasets
+                        $datasetHasToolIds = DatasetHasTool::where('tool_id', $model['id'])->pluck('dataset_id')->all();
+                        $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
+
                         $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
                         $category = null;
-                        if( $model->category){
+                        if($model->category){
                             $category = $model->category['name'];
                         }
-                        $toolsArray[$i]['_source']['category'] = $category;
-                        $toolsArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $toolsArray[$i]['category'] = $category;
+                        $toolsArray[$i]['created_at'] = $model['created_at'];
+
+                        $toolsArray[$i]['name'] = $model['name'];
+                        $toolsArray[$i]['description'] = $model['description'];
                         break;
                     }
                 }
             }
      
             $toolsArraySorted = $this->sortSearchResult($toolsArray, $sortField, $sortDirection);
+
+            if ($download) {
+                Auditor::log([
+                    'action_type' => 'POST',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search tools export data - list",
+                ]);
+                return Excel::download(new ToolListExport($toolsArraySorted), 'tools.csv');
+            }
 
             $perPage = request('perPage', Config::get('constants.per_page'));
             $paginatedData = $this->paginateArray($request, $toolsArraySorted, $perPage);
@@ -417,7 +489,7 @@ class SearchController extends Controller
             $final = $aggs->merge($paginatedData);
 
             Auditor::log([
-                'action_type' => 'GET',
+                'action_type' => 'POST',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search tools",
             ]);
@@ -886,7 +958,8 @@ class SearchController extends Controller
                             $pubArray[$i]['authors'] = $model['authors'];
                             $pubArray[$i]['journal_name'] = $model['journal_name'];
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
-                            $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['doi'];
+                            $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
+                            $pubArray[$i]['url'] = $model['url'];
                             break;
                         }
                     }
@@ -909,6 +982,7 @@ class SearchController extends Controller
                     $pubArray[$i]['journal_name'] = isset($paper['journalInfo']) ? $paper['journalInfo']['journal']['title'] : '';
                     $pubArray[$i]['year_of_publication'] = $paper['pubYear'];
                     $pubArray[$i]['full_text_url'] = $paper['fullTextUrlList']['fullTextUrl'][0]['url'];
+                    $pubArray[$i]['url'] = $paper['fullTextUrlList']['fullTextUrl'][0]['url'];
                 }
             }
 
@@ -1000,4 +1074,39 @@ class SearchController extends Controller
         }
         return $resultArray;
     }
+
+    private function trimPayload(array &$input): array
+    {
+        $miniMetadata = $input['metadata'];
+
+        $minimumKeys = [
+            'summary',
+            'provenance',
+        ];
+
+        foreach ($miniMetadata as $key => $value) {
+            if (!in_array($key, $minimumKeys)) {
+                unset($miniMetadata[$key]);
+            }
+        }
+
+        return $miniMetadata;
+    }
+
+    private function getDatasetTitle(array $datasetIds): array
+    {
+        $response = [];
+
+        foreach ($datasetIds as $datasetId) {
+            $metadata = Dataset::where(['id' => $datasetId])
+                ->first()
+                ->latestVersion()
+                ->metadata;
+            $response[] = $metadata['metadata']['summary']['shortTitle'];
+        }
+
+        usort($response, 'strcasecmp');
+        return $response;
+    }
+
 }

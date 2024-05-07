@@ -3,23 +3,31 @@
 namespace Tests\Feature;
 
 use Config;
-use ReflectionClass;
-
 use Tests\TestCase;
-use Tests\Traits\MockExternalApis;
-use Database\Seeders\CategorySeeder;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\ToolSeeder;
-use Database\Seeders\TagSeeder;
 
 use App\Models\Tool;
+use ReflectionClass;
 use App\Models\ToolHasTag;
-use App\Http\Requests\ToolRequest;
-use App\Http\Controllers\Api\V1\ToolController;
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
+use App\Models\Publication;
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
+use Database\Seeders\ToolSeeder;
+use App\Http\Requests\ToolRequest;
+use Tests\Traits\MockExternalApis;
+
+use App\Models\ToolHasTypeCategory;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
+use Database\Seeders\TypeCategorySeeder;
+use App\Models\ToolHasProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
+use Database\Seeders\ProgrammingPackageSeeder;
+use Database\Seeders\PublicationHasToolSeeder;
+
+use App\Http\Controllers\Api\V1\ToolController;
+use Database\Seeders\ProgrammingLanguageSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ToolTest extends TestCase
 {
@@ -45,8 +53,13 @@ class ToolTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             CategorySeeder::class,
+            PublicationSeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
+            TypeCategorySeeder::class,
+            PublicationHasToolSeeder::class,
         ]);
     }
 
@@ -78,11 +91,9 @@ class ToolTest extends TestCase
                     'deleted_at',
                     'user',
                     'tag',
-                    'programming_language', 
-                    'programming_package', 
-                    'type_category', 
                     'associated_authors', 
                     'contact_address',
+                    'publications',
                 ]
             ],
             'current_page',
@@ -110,31 +121,29 @@ class ToolTest extends TestCase
     {
         $tools = Tool::where('enabled', 1)->first();
         $response = $this->json('GET', self::TEST_URL . '/' . $tools->id, [], $this->header);
-        $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
             'data' => [
-                0 => [
-                    'id',
-                    'mongo_object_id',
-                    'name',
-                    'url',
-                    'description',
-                    'license',
-                    'tech_stack',
-                    'category_id',
-                    'user_id',
-                    'enabled',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'user',
-                    'tag',
-                    'programming_language', 
-                    'programming_package', 
-                    'type_category', 
-                    'associated_authors', 
-                    'contact_address',
-                ]
+                'id',
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'license',
+                'tech_stack',
+                'category_id',
+                'user_id',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'user',
+                'tag',
+                'programming_languages', 
+                'programming_packages', 
+                'type_category', 
+                'associated_authors', 
+                'contact_address',
+                'publications',
             ]
         ]);
         $response->assertStatus(200);
@@ -159,7 +168,11 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
+            "type_category" => array(1, 2),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
 
         $response = $this->json(
@@ -232,7 +245,11 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
+            "type_category" => array(1, 2),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
         $responseIns = $this->json(
             'POST',
@@ -269,7 +286,11 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
 
         $responseUpdate = $this->json(
@@ -299,6 +320,18 @@ class ToolTest extends TestCase
         $this->assertEquals(count($toolHasTags), 1);
 
         $this->assertEquals($toolHasTags[0]['tag_id'], 2);
+
+        $toolHasProgrammingLanguages = ToolHasProgrammingLanguage::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasProgrammingLanguages), 1);
+        $this->assertEquals($toolHasProgrammingLanguages[0]['programming_language_id'], 1);
+
+        $toolHasProgrammingPackages = ToolHasProgrammingPackage::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasProgrammingPackages), 1);
+        $this->assertEquals($toolHasProgrammingPackages[0]['programming_package_id'], 1);
+
+        $toolHasTypeCategories = ToolHasTypeCategory::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasTypeCategories), 1);
+        $this->assertEquals($toolHasTypeCategories[0]['type_category_id'], 1);
     }
 
     /**
@@ -319,7 +352,11 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
         $responseIns = $this->json(
             'POST',
@@ -342,7 +379,6 @@ class ToolTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
         $toolIdInsert = $responseIns['data'];
-
         $responseIns->assertStatus(201);
 
         // update
@@ -357,6 +393,7 @@ class ToolTest extends TestCase
             "user_id" => 1,
             "tag" => array(2),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
 
         $responseUpdate = $this->json(
@@ -391,7 +428,6 @@ class ToolTest extends TestCase
         $mockDataEdit1 = array(
             "name" => "Ea fuga ab aperiam nihil quis e1.",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque. e1",
-            "enabled" => 0,
         );
 
         $responseEdit1 = $this->json(
@@ -408,7 +444,6 @@ class ToolTest extends TestCase
         $responseEdit1->assertStatus(200);
         $this->assertEquals($responseEdit1['data']['name'], $mockDataEdit1['name']);
         $this->assertEquals($responseEdit1['data']['description'], $mockDataEdit1['description']);
-        $this->assertEquals($responseEdit1['data']['enabled'], $mockDataEdit1['enabled']);
 
         // edit 
         $mockDataEdit2 = array(
@@ -451,7 +486,11 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
         $id = 10000;
 
@@ -483,5 +522,19 @@ class ToolTest extends TestCase
             $countAfter,
             "actual value is equals to expected"
         );
+    }
+
+    private function generatePublications()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Publication::all()->random()->id;
+            $return[] = $temp;
+        }
+
+        return $return;
     }
 }

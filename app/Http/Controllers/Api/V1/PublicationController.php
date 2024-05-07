@@ -22,6 +22,7 @@ use App\Http\Requests\Publication\DeletePublication;
 use App\Http\Requests\Publication\UpdatePublication;
 
 use App\Http\Traits\RequestTransformation;
+use App\Models\PublicationHasTool;
 
 class PublicationController extends Controller
 {
@@ -56,12 +57,18 @@ class PublicationController extends Controller
     {
         try {
             $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $mongoId = $request->query('mongo_id', null);
 
-            $publications = Publication::paginate(Config::get('constants.per_page'), ['*'], 'page');
+            $publications = Publication::when($mongoId, function ($query) use ($mongoId) {
+                return $query->where('mongo_id', '=', $mongoId);
+            })
+            ->with([
+                'datasets',
+                'tools',
+            ])
+            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
                 'action_type' => 'GET',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Publication get all",
@@ -130,28 +137,19 @@ class PublicationController extends Controller
     public function show(GetPublication $request, int $id): JsonResponse
     {
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-            $publication = Publication::where('id', $id)->get();
-            if ($publication) {
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                    'data' => $publication,
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
+            $publication = $this->getPublicationById($id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
                 'action_type' => 'GET',
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Publication get " . $id,
             ]);
 
             return response()->json([
-                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
-        } catch (Exception $e) {
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => $publication,
+            ], Config::get('statuscodes.STATUS_OK.code'));
+    } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
@@ -178,12 +176,14 @@ class PublicationController extends Controller
      *             @OA\Property(property="journal_name", type="string", example="A Journal"),
      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
      *             @OA\Property(property="url", type="string", example="http://example"),
+     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", 
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
      *                   @OA\Property(property="link_type", type="string"),
      *                )
      *             ),
+     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *          ),
      *       ),
      *    ),
@@ -226,22 +226,28 @@ class PublicationController extends Controller
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
+                'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
             ]);
+            $publicationId = (int) $publication->id;
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             if ($publication) {
                 foreach ($datasetInput as $dataset) {
                     $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'UNKNOWN';
                     PublicationHasDataset::updateOrCreate([
-                        'publication_id' => (int) $publication->id,
+                        'publication_id' => (int) $publicationId,
                         'dataset_id' => (int) $dataset['id'],
                         'link_type' => $linkType,
                     ]);
                 }
-                $this->indexElasticPublication($publication->id);
             } else {
                 throw new NotFoundException();
             }
+
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($publicationId, $tools, (int) $jwtUser['id']);
+
+            $this->indexElasticPublication($publicationId);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -292,12 +298,14 @@ class PublicationController extends Controller
      *             @OA\Property(property="journal_name", type="string", example="A Journal"),
      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
      *             @OA\Property(property="url", type="string", example="http://example"),
+     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", 
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
      *                   @OA\Property(property="link_type", type="string"),
      *                )
      *             ),
+     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *          ),
      *       ),
      *    ),
@@ -356,6 +364,7 @@ class PublicationController extends Controller
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
+                'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
             ]);
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
@@ -368,6 +377,10 @@ class PublicationController extends Controller
                     'link_type' => $linkType,
                 ]);
             }
+
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($id, $tools, (int) $jwtUser['id']);
+
             $this->indexElasticPublication((int) $id);
 
             Auditor::log([
@@ -379,7 +392,7 @@ class PublicationController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Publication::where('id', $id)->get()[0],
+                'data' => $this->getPublicationById($id),
             ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -419,12 +432,14 @@ class PublicationController extends Controller
      *             @OA\Property(property="journal_name", type="string", example="A Journal"),
      *             @OA\Property(property="abstract", type="string", example="A long description of the paper"),
      *             @OA\Property(property="url", type="string", example="http://example"),
+     *             @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *             @OA\Property(property="datasets", type="array", 
      *                @OA\Items(type="object",
      *                   @OA\Property(property="id", type="integer"),
      *                   @OA\Property(property="link_type", type="string"),
      *                )
      *             ),
+     *             @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *          ),
      *       ),
      *    ),
@@ -483,9 +498,10 @@ class PublicationController extends Controller
                 'journal_name',
                 'abstract',
                 'url',
+                'mongo_id',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            $publication = Publication::where('id', $id)->update($array);
+            Publication::where('id', $id)->update($array);
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();
@@ -497,6 +513,12 @@ class PublicationController extends Controller
                     'link_type' => $linkType,
                 ]);
             }
+
+            if (array_key_exists('tools', $input)) {
+                $tools = $input['tools'];
+                $this->checkTools($id, $tools, $jwtUser['id']);
+            }
+
             $this->indexElasticPublication((int) $id);
 
             Auditor::log([
@@ -508,7 +530,7 @@ class PublicationController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $publication,
+                'data' => $this->getPublicationById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -574,6 +596,7 @@ class PublicationController extends Controller
             $publication = Publication::findOrFail($id);
             if ($publication) {
                 PublicationHasDataset::where('publication_id', $id)->delete();
+                PublicationHasTool::where(['publication_id' => $id])->delete();
                 $publication->delete();
 
                 Auditor::log([
@@ -604,7 +627,6 @@ class PublicationController extends Controller
     public function indexElasticPublication(string $id): void
     {
         try {
-
             $pubMatch = Publication::where(['id' => $id])
                 ->with('datasets')
                 ->first()
@@ -640,11 +662,106 @@ class PublicationController extends Controller
             ];
             
             $client = MMC::getElasticClient();
-            $response = $client->index($params);
+            $client->index($params);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
 
+    private function getPublicationById(int $publicationId)
+    {
+        $publication = Publication::with([
+            'datasets', 
+            'tools', 
+        ])->where([
+            'id' => $publicationId
+        ])->first();
+
+        return $publication;
+    }
+
+    // tools
+    private function checkTools(int $publicationId, array $inTools, int $userId = null) 
+    {
+        $pubs = PublicationHasTool::where(['publication_id' => $publicationId])->get();
+        foreach ($pubs as $pub) {
+            if (!in_array($pub->tool_id, $this->extractInputIdToArray($inTools))) {
+                $this->deletePublicationHasTools($publicationId, $pub->tool_id);
+            }
+        }
+
+        foreach ($inTools as $tool) {
+            $checking = $this->checkInPublicationHasTools($publicationId, (int) $tool['id']);
+
+            if (!$checking) {
+                $this->addPublicationHasTool($publicationId, $tool, $userId);
+            }
+        }
+    }
+
+    private function addPublicationHasTool(int $publicationId, array $tool, int $userId = null)
+    {
+        try {
+            $arrCreate = [
+                'publication_id' => $publicationId,
+                'tool_id' => $tool['id'],
+            ];
+
+            if (array_key_exists('user_id', $tool)) {
+                $arrCreate['user_id'] = (int) $tool['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('updated_at', $tool)) { // special for migration
+                $arrCreate['created_at'] = $tool['updated_at'];
+                $arrCreate['updated_at'] = $tool['updated_at'];
+            }
+
+            return PublicationHasTool::updateOrCreate(
+                $arrCreate,
+                [
+                    'publication_id' => $publicationId,
+                    'tool_id' => $tool['id'],
+                ]
+            );
+        } catch (Exception $e) {
+            throw new Exception("addPublicationHasTool :: " . $e->getMessage());
+        }
+    }
+
+    private function checkInPublicationHasTools(int $publicationId, int $toolId)
+    {
+        try {
+            return PublicationHasTool::where([
+                'publication_id' => $publicationId,
+                'tool_id' => $toolId,
+            ])->first();
+        } catch (Exception $e) {
+            throw new Exception("checkInPublicationHasTools :: " . $e->getMessage());
+        }
+    }
+
+    private function deletePublicationHasTools(int $publicationId, int $toolId)
+    {
+        try {
+            return PublicationHasTool::where([
+                'publication_id' => $publicationId,
+                'tool_id' => $toolId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deletePublicationHasTools :: " . $e->getMessage());
+        }
+    }
+
+    private function extractInputIdToArray(array $input): Array
+    {
+        $response = [];
+        foreach ($input as $value) {
+            $response[] = $value['id'];
+        }
+
+        return $response;
+    }
 }

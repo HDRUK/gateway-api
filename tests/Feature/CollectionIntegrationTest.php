@@ -2,35 +2,38 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
-use App\Models\Dataset;
 use App\Models\Dur;
+use Tests\TestCase;
+use App\Models\Tool;
+use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
-use App\Models\Tool;
 
 use App\Models\Permission;
 use App\Models\Application;
-use Database\Seeders\TagSeeder;
+use Database\Seeders\DurSeeder;
 
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DurSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
-use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\CollectionHasPublicationSeeder;
 
 class CollectionIntegrationTest extends TestCase
 {
@@ -68,6 +71,9 @@ class CollectionIntegrationTest extends TestCase
             CollectionHasDatasetSeeder::class,
             CollectionHasToolSeeder::class,
             CollectionHasDurSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
+            CollectionHasPublicationSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();
@@ -121,6 +127,7 @@ class CollectionIntegrationTest extends TestCase
                     'datasets',
                     'tools',
                     'dur',
+                    'publications',
                     'users',
                     'applications',
                     'mongo_object_id',
@@ -172,6 +179,7 @@ class CollectionIntegrationTest extends TestCase
                 'datasets',
                 'dur',
                 'keywords',
+                'publications',
                 'users',
                 'applications',
                 'team',
@@ -199,6 +207,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
 
         $response = $this->json(
@@ -234,6 +243,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -291,6 +301,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -383,6 +394,7 @@ class CollectionIntegrationTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -447,6 +459,21 @@ class CollectionIntegrationTest extends TestCase
     }
 
     private function generateDurs()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Dur::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generatePublications()
     {
         $return = [];
         $iterations = rand(1, 5);

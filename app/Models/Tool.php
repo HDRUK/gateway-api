@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Tag;
 use App\Models\Category;
+use App\Models\Publication;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -41,9 +42,6 @@ class Tool extends Model
         'category_id', 
         'user_id', 
         'enabled',
-        'programming_language', 
-        'programming_package', 
-        'type_category', 
         'associated_authors', 
         'contact_address',
     ];
@@ -88,5 +86,28 @@ class Tool extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function programmingLanguages(): BelongsToMany
+    {
+        return $this->belongsToMany(ProgrammingLanguage::class, 'tool_has_programming_language');
+    }
+
+    public function programmingPackages(): BelongsToMany
+    {
+        return $this->belongsToMany(ProgrammingPackage::class, 'tool_has_programming_package');
+    }
+
+    public function typeCategory(): BelongsToMany
+    {
+        return $this->belongsToMany(TypeCategory::class, 'tool_has_type_category');
+    }
+
+    /**
+     * The publication that belong to a tool.
+     */
+    public function publications(): BelongsToMany
+    {
+        return $this->belongsToMany(Publication::class, 'publication_has_tools');
     }
 }

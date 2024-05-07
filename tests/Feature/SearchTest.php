@@ -2,27 +2,34 @@
 
 namespace Tests\Feature;
 
+use Config;
 use Tests\TestCase;
-use App\Models\Dataset;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Dataset;
+use App\Models\DatasetHasTool;
 use Database\Seeders\DurSeeder;
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\CategorySeeder;
 use Illuminate\Support\Facades\Http;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
+use Database\Seeders\TypeCategorySeeder;
+use MetadataManagementController AS MMC;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\ProgrammingPackageSeeder;
+use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\PublicationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use MetadataManagementController AS MMC;
-use Config;
 
 class SearchTest extends TestCase
 {
@@ -59,6 +66,12 @@ class SearchTest extends TestCase
             CollectionHasKeywordSeeder::class,
             DurSeeder::class,
             PublicationSeeder::class,
+            CategorySeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
+            TagSeeder::class,
+            TypeCategorySeeder::class,
+            PublicationHasToolSeeder::class,
         ]);
 
         $this->metadataUpdate = $this->getFakeUpdateDataset();
@@ -190,6 +203,18 @@ class SearchTest extends TestCase
             'total',                
         ]);
         $this->assertTrue($response['data'][0]['_id'] === '1');
+
+        // Test minimal payload for searching datasets        
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?view_type=mini&sort=created_at:desc', ["query" => "asthma"], ['Accept' => 'application/json']); 
+        $response->assertStatus(200);
+
+        $metadata = $response['data'][0]['metadata'];
+
+        $this->assertFalse(isset($metadata['coverage']));
+        $this->assertFalse(isset($metadata['accessibility']));
+        $this->assertFalse(isset($metadata['linkage']));
+        $this->assertFalse(isset($metadata['observations']));
+        $this->assertFalse(isset($metadata['structuralMetadata']));
     }
 
     /**
@@ -244,6 +269,13 @@ class SearchTest extends TestCase
                         'tags',
                         'created_at'
                     ],
+                    'uploader',
+                    'team_name',
+                    'type_category',
+                    'license',
+                    'programming_language',
+                    'programming_package',
+                    'datasets',
                 ],
             ],
             'aggregations',
@@ -269,7 +301,14 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'uploader',
+                    'team_name',
+                    'type_category',
+                    'license',
+                    'programming_language',
+                    'programming_package',
+                    'datasets',
                 ],
             ],
             'aggregations',
@@ -297,7 +336,14 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'uploader',
+                    'team_name',
+                    'type_category',
+                    'license',
+                    'programming_language',
+                    'programming_package',
+                    'datasets',
                 ],
             ],
             'aggregations',
@@ -325,7 +371,14 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'uploader',
+                    'team_name',
+                    'type_category',
+                    'license',
+                    'programming_language',
+                    'programming_package',
+                    'datasets',
                 ],
             ],
             'aggregations',
@@ -695,7 +748,9 @@ class SearchTest extends TestCase
                     'abstract',
                     'authors',
                     'journal_name',
-                    'year_of_publication'
+                    'year_of_publication',
+                    'full_text_url',
+                    'url'
                 ],
             ],
             'aggregations',
@@ -811,7 +866,9 @@ class SearchTest extends TestCase
                     'abstract',
                     'authors',
                     'journal_name',
-                    'year_of_publication'
+                    'year_of_publication',
+                    'full_text_url',
+                    'url'
                 ],
             ],
             'aggregations',
