@@ -103,6 +103,7 @@ class SearchTest extends TestCase
                         'populationSize',
                         'created_at'
                     ],
+                    'dataProvider',
                 ],
             ],
             'aggregations',
@@ -184,7 +185,8 @@ class SearchTest extends TestCase
                 0 => [
                     '_id',
                     'highlight',
-                    '_source'
+                    '_source',
+                    'dataProvider',
                 ],
             ],
             'aggregations',
@@ -242,7 +244,7 @@ class SearchTest extends TestCase
                         'populationSize',
                         'created_at'
                     ],
-                    'metadata'
+                    'metadata',
                 ]
             ]              
         ]);
@@ -276,6 +278,7 @@ class SearchTest extends TestCase
                     'programming_language',
                     'programming_package',
                     'datasets',
+                    'dataProvider',
                 ],
             ],
             'aggregations',
@@ -309,6 +312,7 @@ class SearchTest extends TestCase
                     'programming_language',
                     'programming_package',
                     'datasets',
+                    'dataProvider',
                 ],
             ],
             'aggregations',
@@ -344,6 +348,7 @@ class SearchTest extends TestCase
                     'programming_language',
                     'programming_package',
                     'datasets',
+                    'dataProvider',
                 ],
             ],
             'aggregations',
@@ -379,6 +384,7 @@ class SearchTest extends TestCase
                     'programming_language',
                     'programming_package',
                     'datasets',
+                    'dataProvider',
                 ],
             ],
             'aggregations',
@@ -420,7 +426,8 @@ class SearchTest extends TestCase
                         'datasetTitles',
                         'created_at'
                     ],
-                    'name'
+                    'name',
+                    'dataProvider',
                 ],
             ],
             'aggregations',
@@ -447,7 +454,8 @@ class SearchTest extends TestCase
                     '_id',
                     'highlight',
                     '_source',
-                    'name'
+                    'name',
+                    'dataProvider',
                 ],
             ],
             'aggregations',
@@ -476,7 +484,8 @@ class SearchTest extends TestCase
                     '_id',
                     'highlight',
                     '_source',
-                    'name'
+                    'name',
+                    'dataProvider',
                 ],
             ],
             'aggregations',
@@ -505,7 +514,8 @@ class SearchTest extends TestCase
                     '_id',
                     'highlight',
                     '_source',
-                    'name'
+                    'name',
+                    'dataProvider',
                 ],
             ],
             'aggregations',
@@ -613,7 +623,8 @@ class SearchTest extends TestCase
                     'organisationName',
                     'projectTitle',
                     'datasetTitles',
-                    'team'
+                    'team',
+                    'dataProvider',
                 ],
             ],
             'aggregations',

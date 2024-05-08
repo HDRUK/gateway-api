@@ -11,6 +11,8 @@ use App\Models\Team;
 use App\Models\Tool;
 use App\Models\User;
 use App\Models\Filter;
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Publication;
@@ -174,6 +176,7 @@ class SearchController extends Controller
                             $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
                         }
                         $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
+                        $datasetsArray[$i]['dataProvider'] = $this->getDataProvider($model);
                     }
                 }
             }
@@ -448,6 +451,8 @@ class SearchController extends Controller
                         $datasetHasToolIds = DatasetHasTool::where('tool_id', $model['id'])->pluck('dataset_id')->all();
                         $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
 
+                        $toolsArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
+
                         $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
                         $category = null;
                         if($model->category){
@@ -607,6 +612,7 @@ class SearchController extends Controller
                     if ((int) $collection['_id'] === $model['id']) {
                         $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
                         $collectionArray[$i]['name'] = $model['name'];
+                        $collectionArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
                         break;
                     }
                 }
@@ -756,6 +762,7 @@ class SearchController extends Controller
                         $durArray[$i]['team'] = $model['team'];
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
                         $durArray[$i]['datasetTitles'] = $this->durDatasetTitles($model);
+                        $durArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
                         break;
                     }
                 }
@@ -1099,6 +1106,19 @@ class SearchController extends Controller
 
         usort($response, 'strcasecmp');
         return $response;
+    }
+
+    private function getDataProvider(array $model): array
+    {
+        $dataProviderId = DataProviderHasTeam::where('team_id', $model['team_id'])
+            ->pluck('data_provider_id')
+            ->all();
+
+        $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+            ->pluck('name')
+            ->all();
+
+        return $dataProvider;
     }
 
 }
