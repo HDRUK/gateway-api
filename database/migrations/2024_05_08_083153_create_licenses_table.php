@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('licences', function (Blueprint $table) {
+        Schema::create('licenses', function (Blueprint $table) {
             $table->id();
 
             $table->char('code');
@@ -19,6 +19,8 @@ return new class extends Migration
             $table->timestamp('valid_since')->nullable();
             $table->timestamp('valid_until')->nullable();
             $table->text('definition')->nullable();
+            $table->boolean('verified')->default(1);
+            $table->char('origin')->default('HDR');
 
             $table->timestamps();
             $table->softDeletes();

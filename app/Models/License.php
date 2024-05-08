@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Licence extends Model
+class License extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
 
-    protected $table = 'licences';
+    protected $table = 'licenses';
 
     public $timestamps = true;
 
@@ -23,5 +23,7 @@ class Licence extends Model
         'valid_until',
         'definition',
         'deleted_at',
+        'verified',
+        'origin',
     ];
 }
