@@ -32,7 +32,6 @@ class UpdateLicences extends Command
         try {
             $getVocabulariesLicence = Http::timeout(5)->get($urlVocabulariesLicence);
 
-            // $count = 1;
             foreach ($getVocabulariesLicence['result']['results'] as $licence) {
                 // dd($licence);
                 if (!array_key_exists('en', $licence['pref_label'])) {
@@ -48,9 +47,7 @@ class UpdateLicences extends Command
                 ]);
                 
                 // exit();
-                // $count++;
             }
-            // print_r($count);
 
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage());
