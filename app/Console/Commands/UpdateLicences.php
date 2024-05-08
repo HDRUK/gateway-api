@@ -50,10 +50,15 @@ class UpdateLicences extends Command
                 // exit();
                 // $count++;
             }
-            print_r($count);
+            // print_r($count);
 
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage());
         }
+    }
+
+    public function getVocabulariesLicence()
+    {
+
     }
 }
