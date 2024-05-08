@@ -21,6 +21,13 @@ class DataProvidersPostMigration extends Command
     protected $signature = 'app:data-providers-post-migration';
 
     /**
+     * The file of migration mappings translated to CSV array
+     * 
+     * @var array
+     */
+    private $csvData = [];
+
+    /**
      * The console command description.
      *
      * @var string

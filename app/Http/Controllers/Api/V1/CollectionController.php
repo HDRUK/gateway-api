@@ -1203,6 +1203,7 @@ class CollectionController extends Controller
     private function indexElasticCollections(int $collectionId): void 
     {
         $collection = Collection::with(['team', 'datasets', 'keywords'])->where('id', $collectionId)->first()->toArray();
+        $team = $collection['team'];
 
         $datasetTitles = array();
         $datasetAbstracts = array();
