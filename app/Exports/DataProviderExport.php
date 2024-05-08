@@ -51,7 +51,7 @@ class DataProviderExport implements WithHeadings, FromCollection, WithMapping
             $geographicLocations = $this->getValueFromPath($item, 'geographicLocations');
             
             $array[] = [
-                'name' => $projectTitle,
+                'name' => $name,
                 'datasetTitles' => !is_array($datasetTitles) ? $datasetTitles : (count($datasetTitles) ? implode(', ', $datasetTitles) : ''),
                 'geographicLocations' => !is_array($geographicLocations) ? $geographicLocations : (count($geographicLocations) ? implode(', ', $geographicLocations) : ''),
             ];

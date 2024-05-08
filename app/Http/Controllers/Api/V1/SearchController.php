@@ -25,6 +25,7 @@ use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Exports\DatasetListExport;
 use App\Exports\PublicationExport;
+use App\Exports\DataProviderExport;
 
 use App\Models\ProgrammingPackage;
 use App\Models\PublicationHasTool;
