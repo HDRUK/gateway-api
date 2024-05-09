@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use Config;
 use Exception;
+use Auditor;
 
 use App\Models\DataAccessApplication;
+use Illuminate\Http\JsonResponse;
 
 use Illuminate\Http\Request;
 
