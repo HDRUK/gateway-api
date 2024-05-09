@@ -14,14 +14,14 @@ class UpdateLicenses extends Command
      *
      * @var string
      */
-    protected $signature = 'app:update-licenses';
+    protected $signature = 'app:update-eu-licenses';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command integrate EU license list with Gateway';
+    protected $description = 'Command update EU license in Gateway';
 
     protected $urlVocabularies = 'https://data.europa.eu/api/hub/search/vocabularies/licence';
     protected $urlLicense = 'http://publications.europa.eu/resource/authority/licence/';

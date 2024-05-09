@@ -22,7 +22,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:alias-reply-scanner')->dailyAt('03:00');
 
         // update license information from EU server
-        $schedule->command('app:update-licenses')->twiceYearly(1,7, '01:00');
+        $schedule->command('app:update-licenses')->cron('0 1 1 5,11 *');
     }
 
     /**

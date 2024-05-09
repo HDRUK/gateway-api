@@ -2045,3 +2045,69 @@ Content-Type: application/json
 #### get all data provider
 GET {{baseUrl}}/api/{{apiVersion}}/data_providers HTTP/1.1
 Content-Type: application/json
+
+
+### LICENSES
+#### get all licenses
+GET {{baseUrl}}/api/{{apiVersion}}/licenses HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one license by id
+GET {{baseUrl}}/api/{{apiVersion}}/licenses/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create a new license
+POST {{baseUrl}}/api/{{apiVersion}}/licenses HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "code": "TEST",
+    "label": "test label",
+    "valid_since": "2013-11-26",
+    "definition": "test definition",
+    "origin": "HDR"
+}
+
+// "valid_until" - not required | same format as "valid_since"
+
+#### update license
+PUT {{baseUrl}}/api/{{apiVersion}}/licenses/1 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "code": "TEST",
+    "label": "test label",
+    "valid_since": "2013-11-26",
+    "definition": "test definition",
+    "origin": "HDR"
+}
+
+// "valid_until" - not required | same format as "valid_since"
+
+#### edit license
+PATCH {{baseUrl}}/api/{{apiVersion}}/licenses/17 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "code": "TEST",
+    "label": "test label",
+    "valid_since": "2013-11-26",
+    "definition": "test definition",
+    "origin": "HDR"
+}
+
+// "valid_until" - not required | same format as "valid_since"
+
+#### delete license by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/licenses/2 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
