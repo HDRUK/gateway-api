@@ -150,6 +150,14 @@ class SearchTest extends TestCase
             'total',                
         ]);
         $this->assertTrue($response['data'][0]['_source']['shortTitle'] === 'Third asthma dataset');
+        
+        // Test search result with id not in db is not returned
+        $content = $response->decodeResponseJson();
+        $elasticIds = array();
+        foreach ($content['data'] as $res) {
+            $elasticIds[] = $res['_id'];
+        }
+        $this->assertTrue(!in_array('1111', $elasticIds));
 
         // Test sorting by dataset name (shortTitle)        
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/datasets" . '?sort=title:asc', ["query" => "asthma"], ['Accept' => 'application/json']); 
@@ -299,6 +307,14 @@ class SearchTest extends TestCase
             'total',                
         ]);
 
+        // Test search result with id not in db is not returned
+        $content = $response->decodeResponseJson();
+        $elasticIds = array();
+        foreach ($content['data'] as $res) {
+            $elasticIds[] = $res['_id'];
+        }
+        $this->assertTrue(!in_array('1111', $elasticIds));
+
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/tools" . '?sort=score:asc', ["query" => "nlp"], ['Accept' => 'application/json']);   
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -447,6 +463,14 @@ class SearchTest extends TestCase
             'to',
             'total',                
         ]);
+
+        // Test search result with id not in db is not returned
+        $content = $response->decodeResponseJson();
+        $elasticIds = array();
+        foreach ($content['data'] as $res) {
+            $elasticIds[] = $res['_id'];
+        }
+        $this->assertTrue(!in_array('1111', $elasticIds));
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/collections" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
         $response->assertStatus(200);
@@ -650,6 +674,14 @@ class SearchTest extends TestCase
         // dd($response['data'][0]['datasetTitles'][$endTitle]); // HDR UK Papers & Preprints
         $this->assertTrue($response['data'][0]['datasetTitles'][$endTitle] === 'Updated HDR UK Papers & Preprints');
 
+        // Test search result with id not in db is not returned
+        $content = $response->decodeResponseJson();
+        $elasticIds = array();
+        foreach ($content['data'] as $res) {
+            $elasticIds[] = $res['_id'];
+        }
+        $this->assertTrue(!in_array('1111', $elasticIds));
+
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/dur" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
         $response->assertStatus(200);
         $response->assertJsonStructure([
@@ -781,6 +813,14 @@ class SearchTest extends TestCase
             'to',
             'total',                
         ]);
+
+        // Test search result with id not in db is not returned
+        $content = $response->decodeResponseJson();
+        $elasticIds = array();
+        foreach ($content['data'] as $res) {
+            $elasticIds[] = $res['_id'];
+        }
+        $this->assertTrue(!in_array('1111', $elasticIds));
         
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/publications" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
         $response->assertStatus(200);
@@ -943,6 +983,14 @@ class SearchTest extends TestCase
             'to',
             'total',                
         ]);
+
+        // Test search result with id not in db is not returned
+        $content = $response->decodeResponseJson();
+        $elasticIds = array();
+        foreach ($content['data'] as $res) {
+            $elasticIds[] = $res['_id'];
+        }
+        $this->assertTrue(!in_array('1111', $elasticIds));
 
         $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
         $response->assertStatus(200);

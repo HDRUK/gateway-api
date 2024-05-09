@@ -187,6 +187,29 @@ trait MockExternalApis
                                     'abstract' => [],
                                     'description' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 15.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Fourth asthma dataset',
+                                    'title' => 'Fourth asthma dataset',
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
                             ]
                         ]
                     ],
@@ -379,6 +402,27 @@ trait MockExternalApis
                                     'abstract' => [],
                                     'description' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'tools',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[tools][0]',
+                                '_source' => [
+                                    'category' => 'NLP System',
+                                    'description' => 'Yet another NLP tool',
+                                    'name' => 'D tool',
+                                    'tags' => [
+                                        'nlp',
+                                        'machine learning'
+                                    ]
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
                             ]
                         ]
                     ],
@@ -447,6 +491,24 @@ trait MockExternalApis
                                 '_source' => [
                                     'description' => 'a gateway collection',
                                     'name' => 'Third Collection',
+                                    'keywords' => 'some, useful, keywords',
+                                    'datasetTitles' => ['some', 'dataset', 'titles']
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'collections',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[collections][0]',
+                                '_source' => [
+                                    'description' => 'a gateway collection',
+                                    'name' => 'Fourth Collection',
                                     'keywords' => 'some, useful, keywords',
                                     'datasetTitles' => ['some', 'dataset', 'titles']
                                 ],
@@ -544,6 +606,29 @@ trait MockExternalApis
                                 'highlight' => [
                                     'laySummary' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'data_uses',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[data_uses][0]',
+                                '_source' => [
+                                    'projectTitle' => 'Fourth Data Use',
+                                    'laySummary' => 'a gateway data use',
+                                    'publicBenefitStatement' => '',
+                                    'technicalSummary' => '',
+                                    'fundersAndSponsors' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'keywords' => ['some', 'useful', 'keywords'],
+                                    'sector' => 'Academia',
+                                    'publisherName' => 'A Publisher',
+                                    'organisationName' => 'An Organisation'
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
                             ]
                         ]
                     ],
@@ -616,6 +701,26 @@ trait MockExternalApis
                                 '_shard' => '[data_uses][0]',
                                 '_source' => [
                                     'title' => 'Third Publication',
+                                    'journalName' => 'A Journal',
+                                    'abstract' => '',
+                                    'authors' => '',
+                                    'publicationDate' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'publicationType' => ['article', 'comment', 'letter'],
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'data_uses',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[data_uses][0]',
+                                '_source' => [
+                                    'title' => 'Fourth Publication',
                                     'journalName' => 'A Journal',
                                     'abstract' => '',
                                     'authors' => '',
@@ -773,6 +878,20 @@ trait MockExternalApis
                                 '_shard' => '[dataprovider][0]',
                                 '_source' => [
                                     'name' => 'Third Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales']
+                                ],
+                                'highlight' => null,
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'Fourth Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
                                     'geographicLocations' => ['Scotland', 'Wales']
                                 ],
