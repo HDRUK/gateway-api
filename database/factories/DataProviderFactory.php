@@ -17,7 +17,7 @@ class DataProviderFactory extends Factory
     public function definition(): array
     {
         return [
-            'enabled' => fake()->randomElement([0, 1]),
+            'enabled' => 1,
             'name' => fake()->word(),
             'img_url' => 'https://fakeimg.pl/300x200',
         ];

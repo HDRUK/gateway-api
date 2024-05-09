@@ -10,6 +10,8 @@ use App\Models\Tool;
 use App\Models\ToolHasTag;
 use App\Models\Application;
 use Illuminate\Http\Request;
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 use App\Models\DatasetHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Models\PublicationHasTool;
@@ -262,7 +264,7 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($tool->id, $publications, $array['user_id'], $appId);
 
-            $this->indexElasticTools($input, (int) $tool->id);
+            $this->indexElasticTools((int) $tool->id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -414,6 +416,8 @@ class ToolController extends Controller
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($id, $publications, $array['user_id'], $appId);
+
+            $this->indexElasticTools((int) $id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -567,6 +571,8 @@ class ToolController extends Controller
                 $publications = $input['publications'];
                 $this->checkPublications($id, $publications, $userIdFinal, $appId);
             }
+
+            $this->indexElasticTools((int) $id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -892,25 +898,36 @@ class ToolController extends Controller
     /**
      * Insert tool document into elastic index
      *
-     * @param array $input
      * @param integer $toolId
      * @return void
      */
-    private function indexElasticTools(array $input, int $toolId): void 
+    private function indexElasticTools(int $toolId): void 
     {
         try {
-
-            $tags = Tag::whereIn('id', $input['tag'])->get()->toArray();
+            $tool = Tool::where('id', $toolId)
+                ->with(['tag'])
+                ->first();
+            $tags = $tool['tag']->toArray();
             $tagsDescription = array();
             foreach ($tags as $t) {
                 $tagsDescription[] = $t['description'];
             }
 
+            $dataProviderId = DataProviderHasTeam::where('team_id', $tool['team_id'])
+                ->pluck('data_provider_id')
+                ->all();
+
+            $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+                ->pluck('name')
+                ->all();
+
             $toIndex = [
-                'name' => $input['name'],
-                'description' => $input['description'],
-                'tags' => $tagsDescription
+                'name' => $tool['name'],
+                'description' => $tool['description'],
+                'tags' => $tagsDescription,
+                'dataProvider' => $dataProvider
             ];
+
             $params = [
                 'index' => 'tool',
                 'id' => $toolId,

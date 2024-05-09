@@ -2364,6 +2364,15 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'search.data_providers',
+        'method' => 'post',
+        'path' => '/search/data_providers',
+        'methodController' => 'SearchController@dataProviders',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
 
     // categories
     [
@@ -3316,5 +3325,18 @@ return [
             'id' => '[0-9]+',
         ],
     ],    
+
+    // Form hydration - metadata onboarding
+    [
+        'name' => 'form_hydration',
+        'method' => 'get',
+        'path' => '/form_hydration',
+        'methodController' => 'FormHydrationController@onboardingFormHydration',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ]
     
 ];

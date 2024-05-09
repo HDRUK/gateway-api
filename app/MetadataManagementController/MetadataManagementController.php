@@ -10,6 +10,8 @@ use App\Models\Filter;
 use App\Models\Dataset;
 use Http\Client\HttpClient;
 
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 use App\Models\DatasetVersion;
 
 use Illuminate\Support\Carbon;
@@ -20,6 +22,8 @@ use Illuminate\Support\Facades\DB;
 
 use Illuminate\Support\Facades\Http;
 use Elastic\Elasticsearch\ClientBuilder;
+
+use Illuminate\Http\JsonResponse;
 
 class MetadataManagementController {
 
@@ -235,6 +239,13 @@ class MetadataManagementController {
 
             $metadataModelVersion = $metadata['gwdmVersion'];
 
+            $dataProviderId = DataProviderHasTeam::where('team_id', $datasetMatch['team_id'])
+                ->pluck('data_provider_id')
+                ->all();
+            $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+                ->pluck('name')
+                ->all();
+
             // ------------------------------------------------------
             // WARNING....
             //  - this part of the code may need updating when the GWDM is changed 
@@ -288,7 +299,8 @@ class MetadataManagementController {
                 'collectionName' => $collections,
                 'dataUseTitles' => $durs,
                 'geographicLocation' => $geographicLocations,
-                'accessServiceCategory' => $accessServiceCategory
+                'accessServiceCategory' => $accessServiceCategory,
+                'dataProvider' => $dataProvider
             ];
 
             $params = [
@@ -327,6 +339,26 @@ class MetadataManagementController {
             $client = $this->getElasticClient();
             $response = $client->delete($params);
 
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function getOnboardingFormHydrated(string $name, string $version): JsonResponse
+    {
+        try {
+            $queryParams = [
+                'name' => $name,
+                'version' => $version,
+            ];
+
+            $urlString = env('TRASER_SERVICE_URL') . '/get/form_hydration?' . http_build_query($queryParams);
+            $response = Http::get($urlString);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => $response->json(),
+            ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

@@ -23,6 +23,7 @@ class SavedSearch extends Model
         'search_endpoint',
         'enabled',
         'user_id',
+        'sort_order',
     ];
 
     /**

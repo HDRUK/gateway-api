@@ -11,6 +11,8 @@ use App\Models\Team;
 use App\Models\Tool;
 use App\Models\User;
 use App\Models\Filter;
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 use App\Models\Dataset;
 use App\Models\Collection;
 use App\Models\Publication;
@@ -23,6 +25,7 @@ use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Exports\DatasetListExport;
 use App\Exports\PublicationExport;
+use App\Exports\DataProviderExport;
 
 use App\Models\ProgrammingPackage;
 use App\Models\PublicationHasTool;
@@ -174,6 +177,7 @@ class SearchController extends Controller
                             $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
                         }
                         $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
+                        $datasetsArray[$i]['dataProvider'] = $this->getDataProvider($model);
                     }
                 }
             }
@@ -453,6 +457,8 @@ class SearchController extends Controller
                         $datasetHasToolIds = DatasetHasTool::where('tool_id', $model['id'])->pluck('dataset_id')->all();
                         $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
 
+                        $toolsArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
+
                         $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
                         $category = null;
                         if($model->category){
@@ -615,6 +621,7 @@ class SearchController extends Controller
                     if ((int) $collection['_id'] === $model['id']) {
                         $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
                         $collectionArray[$i]['name'] = $model['name'];
+                        $collectionArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
                         break;
                     }
                 }
@@ -764,6 +771,7 @@ class SearchController extends Controller
                         $durArray[$i]['team'] = $model['team'];
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
                         $durArray[$i]['datasetTitles'] = $this->durDatasetTitles($model);
+                        $durArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
                         break;
                     }
                 }
@@ -1020,6 +1028,158 @@ class SearchController extends Controller
     }
 
     /**
+     * @OA\Post(
+     *      path="/api/v1/search/data_providers",
+     *      summary="Keyword search across gateway data providers",
+     *      description="Returns gateway data providers related to the provided query term(s)",
+     *      tags={"Search-DataProviders"},
+     *      summary="Search@data_providers",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Submit search query",
+     *          @OA\MediaType(
+     *              mediaType="application/json",
+     *              @OA\Schema(
+     *                  @OA\Property(property="query", type="string", example="national data providers"),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Parameter(
+     *          name="sort",
+     *          in="query",
+     *          description="Field to sort by (default: 'score')",
+     *          example="created",
+     *          @OA\Schema(
+     *              type="string",
+     *              description="Field to sort by (score, updated_at, name)",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="direction",
+     *          in="query",
+     *          description="Sort direction ('asc' or 'desc', default: 'desc')",
+     *          example="desc",
+     *          @OA\Schema(
+     *              type="string",
+     *              enum={"asc", "desc"},
+     *              description="Sort direction",
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="current_page", type="integer", example="1"),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="_source", type="array",
+     *                          @OA\Items(
+     *                              @OA\Property(property="name", type="string"),
+     *                              @OA\Property(property="datasetTitles", type="array", @OA\Items()),
+     *                              @OA\Property(property="geographicLocation", type="array", @OA\Items())
+     *                          )
+     *                      ),
+     *                      @OA\Property(property="highlight", type="array",
+     *                          @OA\Items(
+     *                              @OA\Property(property="laySummary", type="array", @OA\Items())
+     *                          )
+     *                      )
+     *                  )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/dur?page=1"),
+     *              @OA\Property(property="from", type="integer", example="1"),
+     *              @OA\Property(property="last_page", type="integer", example="1"),
+     *              @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/dur?page=1"),
+     *              @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *              @OA\Property(property="next_page_url", type="string", example="null"),
+     *              @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/dur"),
+     *              @OA\Property(property="per_page", type="integer", example="25"),
+     *              @OA\Property(property="prev_page_url", type="string", example="null"),
+     *              @OA\Property(property="to", type="integer", example="3"),
+     *              @OA\Property(property="total", type="integer", example="3"),
+     *          )
+     *      )
+     * )
+     */
+    public function dataProviders(Request $request): JsonResponse|BinaryFileResponse
+    {
+        try {
+            $input = $request->all();
+            $download = array_key_exists('download', $input) ? $input['download'] : false;
+            $sort = $request->query('sort',"score:desc");   
+        
+            $tmp = explode(":", $sort);
+            $sortField = $tmp[0];
+
+            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+
+            $filters = (isset($request['filters']) ? $request['filters'] : []);
+            $aggs = Filter::where('type', 'dataProvider')->get()->toArray();
+            $input['aggs'] = $aggs;
+
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers';
+            $response = Http::post($urlString, $input);
+
+            $dataProviderArray = $response['hits']['hits'];
+            $totalResults = $response['hits']['total']['value'];
+            $matchedIds = [];
+            foreach (array_values($dataProviderArray) as $i => $d) {
+                $matchedIds[] = $d['_id'];
+            }
+
+            $dataProviderModels = DataProvider::whereIn('id', $matchedIds)->with('teams')->get();
+
+            foreach ($dataProviderArray as $i => $dp) {
+                if (!in_array($dp['_id'], $matchedIds)) {
+                    unset($dataProviderArray[$i]);
+                    continue;
+                }
+                foreach ($dataProviderModels as $model){
+                    if ((int) $dp['_id'] === $model['id']) {
+                        $dataProviderArray[$i]['_source']['updated_at'] = $model['updated_at'];
+                        $dataProviderArray[$i]['name'] = $model['name'];
+                        $dataProviderArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
+                        $dataProviderArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
+                        break;
+                    }
+                }
+            }
+
+            if ($download) {
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Search data provider export data",
+                ]);
+                return Excel::download(new DataProviderExport($dataProviderArray), 'dataProvider.csv');
+            }
+
+            $dataProviderArraySorted = $this->sortSearchResult($dataProviderArray, $sortField, $sortDirection);
+
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $paginatedData = $this->paginateArray($request, $dataProviderArraySorted, $perPage);
+            $aggs = collect([
+                'aggregations' => $response['aggregations'],
+                'elastic_total' => $totalResults,
+            ]);
+
+            $final = $aggs->merge($paginatedData);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Search data provider",
+            ]);
+
+            return response()->json($final, 200);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * Find dataset titles associated with a given Dur model instance.
      * Returns an array of titles.
      * 
@@ -1108,5 +1268,48 @@ class SearchController extends Controller
         usort($response, 'strcasecmp');
         return $response;
     }
+
+    private function getDataProvider(array $model): array
+    {
+        $dataProviderId = DataProviderHasTeam::where('team_id', $model['team_id'])
+            ->pluck('data_provider_id')
+            ->all();
+
+        $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+            ->pluck('name')
+            ->all();
+
+        return $dataProvider;
+    }
+
+    private function dataProviderDatasetTitles(DataProvider $provider): array
+    {
+        $datasetTitles = array();
+        foreach ($provider['teams'] as $team) {
+            $datasets = Dataset::where('team_id', $team['id'])->with('versions')->get();
+            foreach ($datasets as $dataset) {
+                $metadata = $dataset['versions'][0];
+                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
+            }
+        }
+        usort($datasetTitles, 'strcasecmp');
+        return $datasetTitles;
+    }
+
+    private function dataProviderLocations(DataProvider $provider): array
+    {
+        $locations = array();
+        foreach ($provider['teams'] as $team) {
+            $datasets = Dataset::where('team_id', $team['id'])->with('spatialCoverage')->get();
+            foreach ($datasets as $dataset) {
+                foreach ($dataset['spatialCoverage'] as $loc) {
+                    if (!in_array($loc['region'], $locations)) {
+                        $locations[] = $loc['region'];
+                    }
+                }
+            }
+        }
+        return $locations;
+    }    
 
 }

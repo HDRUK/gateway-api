@@ -18,6 +18,7 @@ class FilterSeeder extends Seeder
         $this->seed_tools_filters();
         $this->seed_collection_filters();
         $this->seed_publication_filters();
+        $this->seed_data_provider_filters();
     }
 
     public function seed_dataset_filters(): void
@@ -30,7 +31,8 @@ class FilterSeeder extends Seeder
             'dataUseTitles',
             'dateRange',
             'populationSize',
-            'geographicLocation'
+            'geographicLocation',
+            'dataProvider'
         ];
 
         $this->seed_filter("dataset",$filters);
@@ -44,7 +46,8 @@ class FilterSeeder extends Seeder
             'sector',
             'datasetTitles',
             'latestApprovalDate',
-            'accessType'
+            'accessType',
+            'dataProvider'
         ];
 
 
@@ -57,7 +60,8 @@ class FilterSeeder extends Seeder
             'programmingLanguage',
             'category',
             'category_id',
-            'license'
+            'license',
+            'dataProvider'
         ];
 
         $this->seed_filter("tool",$filters);
@@ -68,7 +72,8 @@ class FilterSeeder extends Seeder
     {
         $filters = [
             'publisherName',
-            'datasetTitles'
+            'datasetTitles',
+            'dataProvider'
         ];
 
         $this->seed_filter("collection",$filters);
@@ -83,6 +88,16 @@ class FilterSeeder extends Seeder
         ];
 
         $this->seed_filter("paper",$filters);
+    }
+
+    public function seed_data_provider_filters(): void
+    {
+        $filters = [
+            'geographicLocation',
+            'datasetTitles'
+        ];
+
+        $this->seed_filter("dataProvider",$filters);
     }
 
     public function seed_filter(string $type, array $filters): void

@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 
 use Illuminate\Support\Carbon;
 use App\Models\SpatialCoverage;
