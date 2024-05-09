@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Review;
+use App\Models\License;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
