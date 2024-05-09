@@ -15,6 +15,7 @@ use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Illuminate\Support\Facades\Http;
 use Database\Seeders\CollectionSeeder;
@@ -59,6 +60,7 @@ class SearchTest extends TestCase
             KeywordSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
+            LicenseSeeder::class,
             ToolSeeder::class,
             CollectionSeeder::class,
             KeywordSeeder::class,

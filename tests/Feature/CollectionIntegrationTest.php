@@ -64,6 +64,7 @@ class CollectionIntegrationTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             CategorySeeder::class,
+            LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
             DurSeeder::class,

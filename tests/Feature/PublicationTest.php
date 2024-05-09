@@ -11,6 +11,7 @@ use Tests\Traits\Authorization;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
+use Database\Seeders\LicenseSeeder;
 use App\Models\PublicationHasDataset;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
@@ -49,6 +50,7 @@ class PublicationTest extends TestCase
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             PublicationHasDatasetSeeder::class,
+            LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
             TypeCategorySeeder::class,
