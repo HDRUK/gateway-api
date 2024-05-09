@@ -164,10 +164,7 @@ class SearchController extends Controller
 
             $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
             foreach ($datasetsArray as $i => $dataset) {
-                if (!in_array($dataset['_id'], $matchedIds)) {
-                    unset($datasetsArray[$i]);
-                    continue;
-                }
+                $foundFlag = false;
                 foreach ($datasetsModels as $model) {
                     if ((int) $dataset['_id'] === $model['id']) {
                         $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
@@ -178,7 +175,12 @@ class SearchController extends Controller
                         }
                         $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
                         $datasetsArray[$i]['dataProvider'] = $this->getDataProvider($model);
+                        $foundFlag = true;
                     }
+                }
+                if (!$foundFlag) {
+                    unset($datasetsArray[$i]);
+                    continue;
                 }
             }
 
@@ -419,10 +421,7 @@ class SearchController extends Controller
             $toolModels = Tool::whereIn('id', $matchedIds)->get();
 
             foreach ($toolsArray as $i => $tool) {
-                if (!in_array($tool['_id'], $matchedIds)) {
-                    unset($toolsArray[$i]);
-                    continue;
-                }
+                $foundFlag = false;
                 foreach ($toolModels as $model){
                     if ((int) $tool['_id'] === $model['id']) {
                         // uploader
@@ -461,8 +460,13 @@ class SearchController extends Controller
                         }
                         $toolsArray[$i]['_source']['category'] = $category;
                         $toolsArray[$i]['_source']['created_at'] = $model['created_at'];
+                        $foundFlag = true;
                         break;
                     }
+                }
+                if (!$foundFlag) {
+                    unset($toolsArray[$i]);
+                    continue;
                 }
             }
      
@@ -605,17 +609,19 @@ class SearchController extends Controller
             $collectionModels = Collection::whereIn('id', $matchedIds)->get();
 
             foreach ($collectionArray as $i => $collection) {
-                if (!in_array($collection['_id'], $matchedIds)) {
-                    unset($collectionArray[$i]);
-                    continue;
-                }
+                $foundFlag = false;
                 foreach ($collectionModels as $model){
                     if ((int) $collection['_id'] === $model['id']) {
                         $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
                         $collectionArray[$i]['name'] = $model['name'];
                         $collectionArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
+                        $foundFlag = true;
                         break;
                     }
+                }
+                if (!$foundFlag) {
+                    unset($collectionArray[$i]);
+                    continue;
                 }
             }
 
@@ -751,10 +757,7 @@ class SearchController extends Controller
             $durModels = Dur::whereIn('id', $matchedIds)->with('datasets')->get();
 
             foreach ($durArray as $i => $dur) {
-                if (!in_array($dur['_id'], $matchedIds)) {
-                    unset($durArray[$i]);
-                    continue;
-                }
+                $foundFlag = false;
                 foreach ($durModels as $model){
                     if ((int) $dur['_id'] === $model['id']) {
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
@@ -764,8 +767,13 @@ class SearchController extends Controller
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
                         $durArray[$i]['datasetTitles'] = $this->durDatasetTitles($model);
                         $durArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
+                        $foundFlag = true;
                         break;
                     }
+                }
+                if (!$foundFlag) {
+                    unset($durArray[$i]);
+                    continue;
                 }
             }
 
@@ -944,10 +952,7 @@ class SearchController extends Controller
                 $pubModels = Publication::whereIn('id', $matchedIds)->get();
 
                 foreach ($pubArray as $i => $p) {
-                    if (!in_array($p['_id'], $matchedIds)) {
-                        unset($pubArray[$i]);
-                        continue;
-                    }
+                    $foundFlag = false;
                     foreach ($pubModels as $model){
                         if ((int) $p['_id'] === $model['id']) {
                             $pubArray[$i]['_source']['created_at'] = $model['created_at'];
@@ -960,8 +965,13 @@ class SearchController extends Controller
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
                             $pubArray[$i]['url'] = $model['url'];
+                            $foundFlag = true;
                             break;
                         }
+                    }
+                    if (!$foundFlag) {
+                        unset($pubArray[$i]);
+                        continue;
                     }
                 }
             } else {
@@ -1123,18 +1133,20 @@ class SearchController extends Controller
             $dataProviderModels = DataProvider::whereIn('id', $matchedIds)->with('teams')->get();
 
             foreach ($dataProviderArray as $i => $dp) {
-                if (!in_array($dp['_id'], $matchedIds)) {
-                    unset($dataProviderArray[$i]);
-                    continue;
-                }
+                $foundFlag = false;
                 foreach ($dataProviderModels as $model){
                     if ((int) $dp['_id'] === $model['id']) {
                         $dataProviderArray[$i]['_source']['updated_at'] = $model['updated_at'];
                         $dataProviderArray[$i]['name'] = $model['name'];
                         $dataProviderArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
                         $dataProviderArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
+                        $foundFlag = true;
                         break;
                     }
+                }
+                if (!$foundFlag) {
+                    unset($dataProviderArray[$i]);
+                    continue;
                 }
             }
 
