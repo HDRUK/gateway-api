@@ -724,6 +724,69 @@ trait MockExternalApis
             )
         ]);
 
+        // Mock the search service - data providers
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers*' => Http::response(
+                [
+                    'took' => 1000,
+                    'timed_out' => false,
+                    '_shards' => [],
+                    'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
+                        'hits' => [
+                            0 => [
+                                '_explanation' => [],
+                                '_id' => '1',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 20.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'One Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales']
+                                ],
+                                'highlight' => null,
+                            ],
+                            1 => [
+                                '_explanation' => [],
+                                '_id' => '2',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 18.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'Another Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales']
+                                ],
+                                'highlight' => null,
+                            ],
+                            2 => [
+                                '_explanation' => [],
+                                '_id' => '3',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'Third Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales']
+                                ],
+                                'highlight' => null,
+                            ]
+                        ]
+                    ],
+                    'aggregations' => []
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
         // Mock the search service - filters
         Http::fake([
             env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/filters*' => Http::response(

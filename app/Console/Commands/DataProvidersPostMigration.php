@@ -9,6 +9,8 @@ use App\Models\DataProviderHasTeam;
 use App\Models\Dataset;
 use App\Models\Team;
 
+use MetadataManagementController AS MMC;
+
 use Illuminate\Console\Command;
 
 class DataProvidersPostMigration extends Command
@@ -57,6 +59,8 @@ class DataProvidersPostMigration extends Command
                         'data_provider_id' => $newProvider['id'],
                         'team_id' => $team['id']
                     ]);
+
+                    $this->indexElasticDataProvider($newProvider->id);
                 }
             } catch (Exception $e) {
                 echo 'unable to process ' . $csv['name'] . ' because ' . $e->getMessage() . "\n";
@@ -80,5 +84,52 @@ class DataProvidersPostMigration extends Command
         }
 
         fclose($file);        
+    }
+
+    /**
+     * Insert data provider document into elastic index
+     *
+     * @param integer $id
+     * @return void
+     */
+    private function indexElasticDataProvider(int $id): void 
+    {
+        $provider = DataProvider::where('id', $id)->with('teams')->first();
+
+        $datasetTitles = array();
+        $locations = array();
+        foreach ($provider['teams'] as $team) {
+            $datasets = Dataset::where('team_id', $team['id'])->with(['versions', 'spatialCoverage'])->get();
+            foreach ($datasets as $dataset) {
+                $metadata = $dataset['versions'][0];
+                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
+                foreach ($dataset['spatialCoverage'] as $loc) {
+                    if (!in_array($loc['region'], $locations)) {
+                        $locations[] = $loc['region'];
+                    }
+                }
+            }
+        }
+        usort($datasetTitles, 'strcasecmp');
+
+        try {
+            $toIndex = [
+                'name' => $provider['name'],
+                'datasetTitles' => $datasetTitles,
+                'geographicLocation' => $locations,
+            ];
+            $params = [
+                'index' => 'dataprovider',
+                'id' => $id,
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+
+            $client = MMC::getElasticClient();
+            $client->index($params);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 }

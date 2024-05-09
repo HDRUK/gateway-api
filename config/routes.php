@@ -2364,6 +2364,15 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'search.data_providers',
+        'method' => 'post',
+        'path' => '/search/data_providers',
+        'methodController' => 'SearchController@dataProviders',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
 
     // categories
     [

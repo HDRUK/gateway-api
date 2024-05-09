@@ -16,7 +16,7 @@ class DataProviderSeeder extends Seeder
      */
     public function run(): void
     {
-        DataProvider::factory(1)->create();
+        DataProvider::factory(3)->create();
 
         DataProviderHasTeam::create([
             'data_provider_id' => 1,

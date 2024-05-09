@@ -102,6 +102,7 @@ class DataProviderTest extends TestCase
 
     public function test_create_data_provider_with_success(): void
     {
+        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',
@@ -131,10 +132,14 @@ class DataProviderTest extends TestCase
         $relations = DataProviderHasTeam::where('data_provider_id', $dpsId)->get();
         $this->assertNotNull($relations);
         $this->assertEquals(count($relations), 3);
+
+        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
+        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
 
     public function test_update_data_provider_with_success(): void
     {
+        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',
@@ -174,6 +179,9 @@ class DataProviderTest extends TestCase
         $content = $response->decodeResponseJson()['data'];
 
         $this->assertEquals($content['name'], 'Loki Updated Data Provider');
+
+        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
+        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
 
     public function test_delete_data_provider_with_success(): void

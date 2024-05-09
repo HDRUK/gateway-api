@@ -18,6 +18,7 @@ class FilterSeeder extends Seeder
         $this->seed_tools_filters();
         $this->seed_collection_filters();
         $this->seed_publication_filters();
+        $this->seed_data_provider_filters();
     }
 
     public function seed_dataset_filters(): void
@@ -87,6 +88,16 @@ class FilterSeeder extends Seeder
         ];
 
         $this->seed_filter("paper",$filters);
+    }
+
+    public function seed_data_provider_filters(): void
+    {
+        $filters = [
+            'geographicLocation',
+            'datasetTitles'
+        ];
+
+        $this->seed_filter("dataProvider",$filters);
     }
 
     public function seed_filter(string $type, array $filters): void

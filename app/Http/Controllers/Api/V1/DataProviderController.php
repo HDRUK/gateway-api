@@ -8,9 +8,13 @@ use Exception;
 
 use App\Models\DataProvider;
 use App\Models\DataProviderHasTeam;
+use App\Models\Dataset;
+use App\Models\Team;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+
+use MetadataManagementController as MMC;
 
 use App\Http\Controllers\Controller;
 
@@ -206,6 +210,8 @@ class DataProviderController extends Controller
                 ]);
             }
 
+            $this->indexElasticDataProvider((int) $dps->id);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $dps->id,
@@ -302,6 +308,8 @@ class DataProviderController extends Controller
                     ]);
                 }
             }
+
+            $this->indexElasticDataProvider((int) $id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -400,6 +408,8 @@ class DataProviderController extends Controller
                 }
             }
 
+            $this->indexElasticDataProvider((int) $id);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $dps,
@@ -472,6 +482,53 @@ class DataProviderController extends Controller
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
             
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert data provider document into elastic index
+     *
+     * @param integer $id
+     * @return void
+     */
+    private function indexElasticDataProvider(int $id): void 
+    {
+        $provider = DataProvider::where('id', $id)->with('teams')->first();
+
+        $datasetTitles = array();
+        $locations = array();
+        foreach ($provider['teams'] as $team) {
+            $datasets = Dataset::where('team_id', $team['id'])->with(['versions', 'spatialCoverage'])->get();
+            foreach ($datasets as $dataset) {
+                $metadata = $dataset['versions'][0];
+                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
+                foreach ($dataset['spatialCoverage'] as $loc) {
+                    if (!in_array($loc['region'], $locations)) {
+                        $locations[] = $loc['region'];
+                    }
+                }
+            }
+        }
+        usort($datasetTitles, 'strcasecmp');
+
+        try {
+            $toIndex = [
+                'name' => $provider['name'],
+                'datasetTitles' => $datasetTitles,
+                'geographicLocation' => $locations,
+            ];
+            $params = [
+                'index' => 'dataprovider',
+                'id' => $id,
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+
+            $client = MMC::getElasticClient();
+            $client->index($params);
+
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
