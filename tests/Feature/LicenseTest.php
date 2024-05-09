@@ -365,6 +365,6 @@ class LicenseTest extends TestCase
 
         $licenseEdit = License::where(['id' => $licenseCreateId])->first();
 
-        $this->assertFalse($licenseEdit, 'response is null');
+        $this->assertTrue(!$licenseEdit, 'response is null');
     }
 }

@@ -39,7 +39,8 @@ class CreateTool extends BaseFormRequest
             ],
             'license' => [
                 'nullable', 
-                'string',
+                'int',
+                'exists:licenses,id',
             ],
             'tech_stack' => [
                 'nullable', 
