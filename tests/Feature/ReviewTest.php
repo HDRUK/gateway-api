@@ -132,6 +132,7 @@ class ReviewTest extends TestCase
      */
     public function test_add_new_review_with_success(): void
     {    
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // tool
         $responseTool = $this->json(
             'POST',
@@ -141,7 +142,7 @@ class ReviewTest extends TestCase
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-                "license" => "Inventore omnis aut laudantium vel alias.",
+                "license" => $licenseId,
                 "tech_stack" => "Cumque molestias excepturi quam at.",
                 "category_id" => 1,
                 "user_id" => 1,
@@ -206,6 +207,7 @@ class ReviewTest extends TestCase
      */
     public function test_update_review_with_success(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // tool
         $responseTool = $this->json(
             'POST',
@@ -215,7 +217,7 @@ class ReviewTest extends TestCase
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-                "license" => "Inventore omnis aut laudantium vel alias.",
+                "license" => $licenseId,
                 "tech_stack" => "Cumque molestias excepturi quam at.",
                 "category_id" => 1,
                 "user_id" => 1,
@@ -304,6 +306,7 @@ class ReviewTest extends TestCase
      */
     public function test_edit_review_with_success(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // tool
         $responseTool = $this->json(
             'POST',
@@ -313,7 +316,7 @@ class ReviewTest extends TestCase
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-                "license" => "Inventore omnis aut laudantium vel alias.",
+                "license" => $licenseId,
                 "tech_stack" => "Cumque molestias excepturi quam at.",
                 "category_id" => 1,
                 "user_id" => 1,
@@ -453,6 +456,7 @@ class ReviewTest extends TestCase
     {
         $countBefore = Review::onlyTrashed()->count();
 
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // tool
         $responseTool = $this->json(
             'POST',
@@ -462,7 +466,7 @@ class ReviewTest extends TestCase
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-                "license" => "Inventore omnis aut laudantium vel alias.",
+                "license" => $licenseId,
                 "tech_stack" => "Cumque molestias excepturi quam at.",
                 "category_id" => 1,
                 "user_id" => 1,

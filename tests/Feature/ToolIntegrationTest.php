@@ -180,13 +180,13 @@ class ToolIntegrationTest extends TestCase
      */
     public function test_add_new_tool_with_success(): void
     {
-        $licenceId = License::where('valid_until', null)->get()->random()->id;
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
             'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
-            'license' => $licenceId,
+            'license' => $licenseId,
             'tech_stack' => 'Cumque molestias excepturi quam at.',
             'category_id' => 1,
             'user_id' => $this->integration['user_id'],
@@ -247,13 +247,13 @@ class ToolIntegrationTest extends TestCase
     public function test_update_tool_with_success(): void 
     {
         // insert
-        $licenceId = License::where('valid_until', null)->get()->random()->id;
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockDataIns = array(
             'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
-            'license' => $licenceId,
+            'license' => $licenseId,
             'tech_stack' => 'Cumque molestias excepturi quam at.',
             'category_id' => 1,
             'user_id' => $this->integration['user_id'],
@@ -294,7 +294,7 @@ class ToolIntegrationTest extends TestCase
             'name' => 'Ea fuga ab aperiam nihil quis.',
             'url' => 'http://dach.com/odio-facilis-ex-culpa',
             'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.',
-            'license' => $licenceId,
+            'license' => $licenseId,
             'tech_stack' => 'Dolor accusamus rerum numquam et.',
             'category_id' => 1,
             'user_id' => $this->integration['user_id'],
@@ -355,14 +355,14 @@ class ToolIntegrationTest extends TestCase
      */
     public function test_edit_tool_with_success(): void
     {
-        $licenceId = License::where('valid_until', null)->get()->random()->id;
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
             'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
-            'license' => $licenceId,
+            'license' => $licenseId,
             'tech_stack' => 'Cumque molestias excepturi quam at.',
             'category_id' => 1,
             'user_id' => $this->integration['user_id'],
@@ -403,7 +403,7 @@ class ToolIntegrationTest extends TestCase
             'name' => 'Ea fuga ab aperiam nihil quis.',
             'url' => 'http://dach.com/odio-facilis-ex-culpa',
             'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.',
-            'license' => $licenceId,
+            'license' => $licenseId,
             'tech_stack' => 'Dolor accusamus rerum numquam et.',
             'category_id' => 1,
             'user_id' => $this->integration['user_id'],
@@ -464,7 +464,7 @@ class ToolIntegrationTest extends TestCase
         // edit 
         $mockDataEdit2 = array(
             'url' => 'http://dach.com/odio-facilis-ex-culpa-e2',
-            'license' => $licenceId,
+            'license' => $licenseId,
             'tech_stack' => 'Dolor accusamus rerum numquam et. e2',
             'user_id' => $this->integration['user_id'],
         );
@@ -493,13 +493,13 @@ class ToolIntegrationTest extends TestCase
      */
     public function test_update_tool_and_generate_exception(): void
     {
-        $licenceId = License::where('valid_until', null)->get()->random()->id;
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => $licenceId,
+            "license" => $licenseId,
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
             "user_id" => $this->integration['user_id'],
@@ -527,13 +527,13 @@ class ToolIntegrationTest extends TestCase
      */
     public function test_soft_delete_tool_with_success(): void
     {
-        $licenceId = License::where('valid_until', null)->get()->random()->id;
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
             'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
-            'license' => $licenceId,
+            'license' => $licenseId,
             'tech_stack' => 'Cumque molestias excepturi quam at.',
             'category_id' => 1,
             'user_id' => $this->integration['user_id'],

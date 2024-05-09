@@ -20,6 +20,7 @@ use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
