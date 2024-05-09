@@ -35,8 +35,6 @@ class UpdateLicenses extends Command
             $getVocabulariesLicense = $this->getVocabulariesLicense();
             $vocabulariesLicence = $getVocabulariesLicense['result']['results'];
 
-            License::where(['verified' => 1, 'origin' => 'EU'])->update(['verified' => 0]);
-
             // EU
             foreach ($vocabulariesLicence as $license) {
                 if (!array_key_exists('en', $license['pref_label'])) {
@@ -70,12 +68,6 @@ class UpdateLicenses extends Command
                     $data
                 );
             }
-
-            License::where([
-                'verified' => 0, 
-                'origin' => 'EU',
-            ])->delete();
-
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage());
         }
@@ -94,9 +86,10 @@ class UpdateLicenses extends Command
     {
         $url = $this->urlLicense . trim($code);
         try {
-            $getlLicense = Http::retry(3, 100)->timeout(5)->get($url);
-            if ($getlLicense->ok()) {
-                return $this->convertXmlRdfToArray($getlLicense->body());
+            $getLicense = Http::retry(3, 100)->timeout(5)->get($url);
+
+            if ($getLicense->ok()) {
+                return $this->convertXmlRdfToArray($getLicense->body());
             } else {
                 return null;
             }
