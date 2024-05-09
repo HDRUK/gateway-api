@@ -61,6 +61,7 @@ class ToolController extends Controller
                     'user', 
                     'tag',
                     'team',
+                    'license',
                     'publications',
                 ])
                 ->when($mongoId, function ($query) use ($mongoId) {
@@ -668,6 +669,7 @@ class ToolController extends Controller
             'user', 
             'tag',
             'team',
+            'license',
             'programmingLanguages',
             'programmingPackages',
             'typeCategory',

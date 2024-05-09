@@ -309,12 +309,12 @@ class ToolTest extends TestCase
             'message',
             'data',
         ]);
-        
+
         $responseUpdate->assertStatus(200);
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
-        $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
+        $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
         $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
         $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
@@ -418,7 +418,7 @@ class ToolTest extends TestCase
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
-        $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
+        $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
         $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
         $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
@@ -471,7 +471,7 @@ class ToolTest extends TestCase
         ]);
         $responseEdit2->assertStatus(200);
         $this->assertEquals($responseEdit2['data']['url'], $mockDataEdit2['url']);
-        $this->assertEquals($responseEdit2['data']['license'], $mockDataEdit2['license']);
+        $this->assertEquals($responseEdit2['data']['license']['id'], $mockDataEdit2['license']);
         $this->assertEquals($responseEdit2['data']['tech_stack'], $mockDataEdit2['tech_stack']);
     }
 

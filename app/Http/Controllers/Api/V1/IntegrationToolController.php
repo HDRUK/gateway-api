@@ -51,7 +51,7 @@ class IntegrationToolController extends Controller
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
-            $tools = Tool::with(['user', 'tag', 'team', 'publications'])
+            $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications'])
                 ->where('enabled', 1)
                 ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
@@ -649,6 +649,7 @@ class IntegrationToolController extends Controller
             'user', 
             'tag',
             'team',
+            'license',
             'programmingLanguages',
             'programmingPackages',
             'typeCategory',

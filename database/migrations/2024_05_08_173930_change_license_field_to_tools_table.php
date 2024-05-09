@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tools', function (Blueprint $table) {
-            $table->integer('license')->nullable()->change();
+            $table->bigInteger('license')->unsigned()->nullable()->change();
+
+            $table->foreign('license')->references('id')->on('licenses');
         });
     }
 
@@ -22,6 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tools', function (Blueprint $table) {
+            $table->dropForeign(['license']);
             $table->char('license', 45)->nullable()->change();
         });
     }
