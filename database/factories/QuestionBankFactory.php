@@ -19,7 +19,6 @@ class QuestionBankFactory extends Factory
     public function definition(): array
     {
         return [
-            'section_id' => 1,
             'user_id' => 1,
             'team_id' => null,
             'locked' => 0,

@@ -29,9 +29,10 @@ class QuestionBankSeeder extends Seeder
                 'section_id' => $section->id,
             ]);
 
-            //for each question, generate a version of the question
-            QuestionBank::all()->each(function ($model) {
+            $questions = QuestionBank::where('section_id', $section->id)->get();
 
+            //for each question, generate a version of the question
+            foreach ($questions as $model) {
                 $first = QuestionBankVersion::create([
                     'question_parent_id' => $model->id,
                     'version' => 1,
@@ -56,7 +57,7 @@ class QuestionBankSeeder extends Seeder
                     ]);
                 }
 
-            });
+            }
         });
     }
 
