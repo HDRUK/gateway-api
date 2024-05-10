@@ -316,10 +316,7 @@ class ToolIntegrationTest extends TestCase
             'message',
             'data',
         ]);
-        // var_dump($mockDataUpdate);
-        // var_dump($responseUpdate['data']['license']);
-        // exit();
-        
+
         $responseUpdate->assertStatus(200);
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
