@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             TeamSeeder::class,
             UserSeeder::class,
+            LicenseSeeder::class,
             ToolSeeder::class,
             ToolHasTagSeeder::class,
             // This one we do in order to ensure data is linked for

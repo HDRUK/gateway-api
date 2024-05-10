@@ -8,6 +8,7 @@ use Tests\TestCase;
 use App\Models\Tool;
 use ReflectionClass;
 
+use App\Models\License;
 use App\Models\Permission;
 use App\Models\ToolHasTag;
 use App\Models\Application;
@@ -15,9 +16,10 @@ use App\Models\Publication;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use App\Http\Requests\ToolRequest;
-use Tests\Traits\MockExternalApis;
 
+use Tests\Traits\MockExternalApis;
 use App\Models\ToolHasTypeCategory;
+use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
@@ -25,9 +27,9 @@ use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
 use Database\Seeders\TypeCategorySeeder;
 use App\Models\ToolHasProgrammingPackage;
+
 use App\Models\ToolHasProgrammingLanguage;
 use Database\Seeders\ProgrammingPackageSeeder;
-
 use Database\Seeders\PublicationHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
@@ -61,6 +63,7 @@ class ToolIntegrationTest extends TestCase
             PublicationSeeder::class,
             ProgrammingLanguageSeeder::class,
             ProgrammingPackageSeeder::class,
+            LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
             TypeCategorySeeder::class,
@@ -177,15 +180,16 @@ class ToolIntegrationTest extends TestCase
      */
     public function test_add_new_tool_with_success(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
             'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
-            'license' => 'Inventore omnis aut laudantium vel alias.',
+            'license' => $licenseId,
             'tech_stack' => 'Cumque molestias excepturi quam at.',
             'category_id' => 1,
-            'user_id' => $this->integration->user_id,
+            'user_id' => $this->integration['user_id'],
             'tag' => array(1, 2),
             'programming_language' => array(1, 2),
             'programming_package' => array(1, 2),
@@ -243,15 +247,16 @@ class ToolIntegrationTest extends TestCase
     public function test_update_tool_with_success(): void 
     {
         // insert
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockDataIns = array(
             'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
-            'license' => 'Inventore omnis aut laudantium vel alias.',
+            'license' => $licenseId,
             'tech_stack' => 'Cumque molestias excepturi quam at.',
             'category_id' => 1,
-            'user_id' => $this->integration->user_id,
+            'user_id' => $this->integration['user_id'],
             'tag' => array(1),
             'programming_language' => array(1, 2),
             'programming_package' => array(1, 2),
@@ -289,10 +294,10 @@ class ToolIntegrationTest extends TestCase
             'name' => 'Ea fuga ab aperiam nihil quis.',
             'url' => 'http://dach.com/odio-facilis-ex-culpa',
             'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.',
-            'license' => 'Modi tenetur et et perferendis.',
+            'license' => $licenseId,
             'tech_stack' => 'Dolor accusamus rerum numquam et.',
             'category_id' => 1,
-            'user_id' => $this->integration->user_id,
+            'user_id' => $this->integration['user_id'],
             'tag' => array(2),
             'programming_language' => array(1),
             'programming_package' => array(1),
@@ -311,12 +316,12 @@ class ToolIntegrationTest extends TestCase
             'message',
             'data',
         ]);
-        
+
         $responseUpdate->assertStatus(200);
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
-        $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
+        $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
         $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
         $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
@@ -347,16 +352,17 @@ class ToolIntegrationTest extends TestCase
      */
     public function test_edit_tool_with_success(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
             'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
-            'license' => 'Inventore omnis aut laudantium vel alias.',
+            'license' => $licenseId,
             'tech_stack' => 'Cumque molestias excepturi quam at.',
             'category_id' => 1,
-            'user_id' => $this->integration->user_id,
+            'user_id' => $this->integration['user_id'],
             'tag' => array(1),
             'programming_language' => array(1),
             'programming_package' => array(1),
@@ -394,10 +400,10 @@ class ToolIntegrationTest extends TestCase
             'name' => 'Ea fuga ab aperiam nihil quis.',
             'url' => 'http://dach.com/odio-facilis-ex-culpa',
             'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.',
-            'license' => 'Modi tenetur et et perferendis.',
+            'license' => $licenseId,
             'tech_stack' => 'Dolor accusamus rerum numquam et.',
             'category_id' => 1,
-            'user_id' => $this->integration->user_id,
+            'user_id' => $this->integration['user_id'],
             'tag' => array(2),
             'enabled' => 1,
         );
@@ -418,7 +424,7 @@ class ToolIntegrationTest extends TestCase
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
-        $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
+        $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
         $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
         $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
@@ -434,7 +440,7 @@ class ToolIntegrationTest extends TestCase
         $mockDataEdit1 = array(
             'name' => 'Ea fuga ab aperiam nihil quis e1.',
             'description' => 'Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque. e1',
-            'user_id' => $this->integration->user_id,
+            'user_id' => $this->integration['user_id'],
         );
 
         $responseEdit1 = $this->json(
@@ -455,9 +461,9 @@ class ToolIntegrationTest extends TestCase
         // edit 
         $mockDataEdit2 = array(
             'url' => 'http://dach.com/odio-facilis-ex-culpa-e2',
-            'license' => 'Modi tenetur et et perferendis. e2',
+            'license' => $licenseId,
             'tech_stack' => 'Dolor accusamus rerum numquam et. e2',
-            'user_id' => $this->integration->user_id,
+            'user_id' => $this->integration['user_id'],
         );
 
         $responseEdit2 = $this->json(
@@ -473,7 +479,7 @@ class ToolIntegrationTest extends TestCase
         ]);
         $responseEdit2->assertStatus(200);
         $this->assertEquals($responseEdit2['data']['url'], $mockDataEdit2['url']);
-        $this->assertEquals($responseEdit2['data']['license'], $mockDataEdit2['license']);
+        $this->assertEquals($responseEdit2['data']['license']['id'], $mockDataEdit2['license']);
         $this->assertEquals($responseEdit2['data']['tech_stack'], $mockDataEdit2['tech_stack']);
     }
 
@@ -484,15 +490,16 @@ class ToolIntegrationTest extends TestCase
      */
     public function test_update_tool_and_generate_exception(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => "Inventore omnis aut laudantium vel alias.",
+            "license" => $licenseId,
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
-            "user_id" => $this->integration->user_id,
+            "user_id" => $this->integration['user_id'],
             "tag" => array(1, 2),
             "programming_language" => array(1),
             "programming_package" => array(1),
@@ -517,15 +524,16 @@ class ToolIntegrationTest extends TestCase
      */
     public function test_soft_delete_tool_with_success(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
             'mongo_object_id' => '5ece82082abda8b3a06f1941',
             'name' => 'Similique sapiente est vero eum.',
             'url' => 'http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim',
             'description' => 'Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.',
-            'license' => 'Inventore omnis aut laudantium vel alias.',
+            'license' => $licenseId,
             'tech_stack' => 'Cumque molestias excepturi quam at.',
             'category_id' => 1,
-            'user_id' => $this->integration->user_id,
+            'user_id' => $this->integration['user_id'],
             'tag' => array(1, 2),
             'enabled' => 1,
             'publications' => $this->generatePublications(),

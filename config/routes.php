@@ -3116,6 +3116,84 @@ return [
             'sanitize.input',
         ],
         'constraint' => [],
-    ]
+    ],
     
+    // licences
+    [
+        'name' => 'licences',
+        'method' => 'get',
+        'path' => '/licenses',
+        'methodController' => 'LicenseController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'licences',
+        'method' => 'get',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'licenses',
+        'method' => 'post',
+        'path' => '/licenses',
+        'methodController' => 'LicenseController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'licences',
+        'method' => 'put',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'licenses',
+        'method' => 'patch',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'licenses',
+        'method' => 'delete',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];

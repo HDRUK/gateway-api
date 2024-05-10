@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Tag;
+use App\Models\License;
 use App\Models\Category;
 use App\Models\Publication;
 use Illuminate\Database\Eloquent\Model;
@@ -53,18 +54,12 @@ class Tool extends Model
         'enabled' => 'boolean',
     ];
 
-    /**
-     * Get the ids associated with the user.
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)
             ->select('firstname', 'lastname');
     }
 
-    /**
-     * The tags that belong to the tool.
-     */
     public function tag(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'tool_has_tags');
@@ -75,9 +70,6 @@ class Tool extends Model
         return $this->hasMany(Review::class);
     }
 
-    /**
-     * @mixin BelongsTo
-     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class,'category_id', 'id');
@@ -103,11 +95,13 @@ class Tool extends Model
         return $this->belongsToMany(TypeCategory::class, 'tool_has_type_category');
     }
 
-    /**
-     * The publication that belong to a tool.
-     */
     public function publications(): BelongsToMany
     {
         return $this->belongsToMany(Publication::class, 'publication_has_tools');
+    }
+
+    public function license(): BelongsTo
+    {
+        return $this->belongsTo(License::class, 'license', 'id');
     }
 }
