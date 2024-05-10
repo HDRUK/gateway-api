@@ -2617,9 +2617,7 @@ return [
         'path' => '/dur/export',
         'methodController' => 'DurController@export',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
