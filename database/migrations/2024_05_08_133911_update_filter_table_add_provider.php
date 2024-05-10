@@ -13,6 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('filters', function (Blueprint $table) {
+            $table->dropUnique(['type', 'keys']);
             $table->renameColumn('type', 'type_old');
         });
 
@@ -24,6 +25,7 @@ return new class extends Migration
 
         Schema::table('filters', function (Blueprint $table) {
             $table->dropColumn('type_old');
+            $table->unique(['type', 'keys']);
         });        
     }
 
@@ -33,6 +35,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('filters', function (Blueprint $table) {
+            $table->dropUnique(['type', 'keys']);
             $table->enum('type_old', [
                 'dataset',
                 'collection',
@@ -52,6 +55,7 @@ return new class extends Migration
 
         Schema::table('filters', function (Blueprint $table) {
             $table->renameColumn('type_old', 'type');
+            $table->unique(['type', 'keys']);
         }); 
     }
 };
