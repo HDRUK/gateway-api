@@ -11,6 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
+        DB::table('tools')->update(['license' => null]);
+
         Schema::table('tools', function (Blueprint $table) {
             $table->bigInteger('license')->unsigned()->nullable()->change();
 
