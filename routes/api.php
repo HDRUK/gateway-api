@@ -77,12 +77,15 @@ Route::any('/services/quba{any}', function(Request $request) {
     $response = Http::send($request->method(), $url, [
         'headers' => $request->headers->all(),
         'query' => $request->query(),
-        'json' => $request->json(),
         'body' => $request->getContent(),
         'follow_redirects' => false, 
     ]);
 
-    return $response->json();
+    $statusCode = $response->status();
+
+    $responseData = $response->json();
+
+    return response()->json($responseData, $statusCode);
 })->where('any', '.*');
 
 // stop all all other routes
