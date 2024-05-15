@@ -299,7 +299,7 @@ class MetadataManagementController {
                 'collectionName' => $collections,
                 'dataUseTitles' => $durs,
                 'geographicLocation' => $geographicLocations,
-                'accessServiceCategory' => $accessServiceCategory,
+                'accessService' => $accessServiceCategory,
                 'dataProvider' => $dataProvider
             ];
 

@@ -32,7 +32,8 @@ class FilterSeeder extends Seeder
             'dateRange',
             'populationSize',
             'geographicLocation',
-            'dataProvider'
+            'dataProvider',
+            'accessService'
         ];
 
         $this->seed_filter("dataset",$filters);
