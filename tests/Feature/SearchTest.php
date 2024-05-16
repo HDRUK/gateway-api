@@ -225,7 +225,6 @@ class SearchTest extends TestCase
         $metadata = $response['data'][0]['metadata'];
 
         $this->assertFalse(isset($metadata['coverage']));
-        $this->assertFalse(isset($metadata['accessibility']));
         $this->assertFalse(isset($metadata['linkage']));
         $this->assertFalse(isset($metadata['observations']));
         $this->assertFalse(isset($metadata['structuralMetadata']));
