@@ -1246,6 +1246,7 @@ class SearchController extends Controller
         $minimumKeys = [
             'summary',
             'provenance',
+            'accessibility',
         ];
 
         foreach ($miniMetadata as $key => $value) {
