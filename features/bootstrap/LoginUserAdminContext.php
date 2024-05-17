@@ -87,14 +87,11 @@ class LoginUserAdminContext implements Context
      */
     public function iVerifyTheAccessTokenExistsInTheAuthorisationCodesTable()
     {
-        // $authorisationCodes = AuthorisationCode::where([
-        //     'jwt' => $this->accessToken,
-        // ])->first();
-        // dd([
-        //     $authorisationCodes,
-        //     $this->accessToken,
-        // ]);
-        // Assert::assertTrue((bool) $authorisationCodes, 'we should verify the access token');
+        $authorisationCodes = AuthorisationCode::where([
+            'jwt' => $this->accessToken,
+        ])->first();
+        Assert::assertTrue((bool) $authorisationCodes, 'we should verify the access token');
+        
         $jwtController = new JwtController();
         $jwtController->setJwt($this->accessToken);
         $isValidJwt = $jwtController->isValid();
