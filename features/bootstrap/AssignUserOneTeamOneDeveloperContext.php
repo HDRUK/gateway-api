@@ -41,9 +41,9 @@ class AssignUserOneTeamOneDeveloperContext implements Context
     }
 
     /**
-     * @Given I send a POST request to path with team one and user one and assing :role role
+     * @Given I send a POST request to path with team one and user one and assigning :role role
      */
-    public function iSendAPostRequestToPathWithTeamOneAndUserOneAndAssingRole($role)
+    public function iSendAPostRequestToPathWithTeamOneAndUserOneAndAssigningRole($role)
     {
         try {
             $arrayRole = [$role];

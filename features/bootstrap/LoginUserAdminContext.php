@@ -91,7 +91,7 @@ class LoginUserAdminContext implements Context
             'jwt' => $this->accessToken,
         ])->first();
         Assert::assertTrue((bool) $authorisationCodes, 'we should verify the access token');
-        
+
         $jwtController = new JwtController();
         $jwtController->setJwt($this->accessToken);
         $isValidJwt = $jwtController->isValid();
