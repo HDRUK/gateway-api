@@ -24,7 +24,8 @@ class CreateAppUserOneTeamOneContext implements Context
     private $accessToken;
     private $faker;
     private $response;
-    private $applicationId;
+    private $userOne;
+    private $teamOne;
 
     /**
      * Initializes context.

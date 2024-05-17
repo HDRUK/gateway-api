@@ -12,7 +12,7 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'register',
+        'name' => 'api.v1.auth.register',
         'method' => 'post',
         'path' => '/auth',
         'methodController' => 'AuthController@checkAuthorization',
