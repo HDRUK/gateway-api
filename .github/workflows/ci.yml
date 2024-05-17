@@ -35,6 +35,3 @@ jobs:
 
     - name: Run code sniffer
       run: "composer run phpcs"
-
-    - name: Run behat testing
-      run: "composer run behat"

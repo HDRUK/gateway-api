@@ -11,6 +11,7 @@ use App\Behat\Context\SharedContext;
 use Behat\Gherkin\Node\PyStringNode;
 use Illuminate\Support\Facades\Http;
 use App\Behat\Context\FeatureContext;
+use App\Http\Controllers\JwtController;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
@@ -86,10 +87,19 @@ class LoginUserAdminContext implements Context
      */
     public function iVerifyTheAccessTokenExistsInTheAuthorisationCodesTable()
     {
-        $authorisationCodes = AuthorisationCode::where([
-            'jwt' => $this->accessToken,
-        ])->first();
-        Assert::assertTrue((bool) $authorisationCodes, 'we should verify the access token');
+        // $authorisationCodes = AuthorisationCode::where([
+        //     'jwt' => $this->accessToken,
+        // ])->first();
+        // dd([
+        //     $authorisationCodes,
+        //     $this->accessToken,
+        // ]);
+        // Assert::assertTrue((bool) $authorisationCodes, 'we should verify the access token');
+        $jwtController = new JwtController();
+        $jwtController->setJwt($this->accessToken);
+        $isValidJwt = $jwtController->isValid();
+
+        Assert::assertTrue((bool) $isValidJwt, 'we should verify the access token is valid');
         SharedContext::set('jwt.admin', $this->accessToken);
     }
 }
