@@ -1109,6 +1109,21 @@ Authorization: Bearer {{accessToken}}
     ]
 }
 
+
+#### create notifications
+POST {{baseUrl}}/api/{{apiVersion}}/notifications HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "notification_type": "team_user_notification",
+    "message": "neque et rerum aspernatur sit",
+    "opt_in": 1,
+    "enabled": 1,
+    "email": "shodkiewicz@example.com"
+}
+
 ### Federation Team Notifications
 #### get all federations for team
 GET {{baseUrl}}/api/{{apiVersion}}/teams/13/federations HTTP/1.1
