@@ -1,0 +1,33 @@
+default:
+  extensions:
+    Soulcodex\Behat:
+      kernel: # Default values
+        bootstrap_path: '/bootstrap/app.php'
+        environment_path: '.env.behat'
+    Behat\MinkExtension: # Default mink extension configuration
+      default_session: laravel
+      laravel: ~
+      sessions:
+        default:
+          laravel: ~
+  suites:
+    management_dataset+with_applications:
+      paths: 
+        - /features/user/login_user_admin.feature
+        - /features/notification/create_notification.feature
+        - /features/team/create_team_one.feature
+        - /features/user/create_user_one.feature
+        - /features/team/assign_userone_to_teamone_with_developer.feature
+        - /features/user/login_user_one.feature
+        - /features/application/create_app_user_one_team_one.feature
+        - /features/dataset/manage_dataset_with_application.feature
+      contexts:
+        - App\Behat\Context\FeatureContext
+        - App\Behat\Context\LoginUserAdminContext
+        - App\Behat\Context\CreateNotificationContext
+        - App\Behat\Context\CreateTeamOneContext
+        - App\Behat\Context\CreateUserOneContext
+        - App\Behat\Context\AssignUserOneTeamOneDeveloperContext
+        - App\Behat\Context\LoginUserOneContext
+        - App\Behat\Context\CreateAppUserOneTeamOneContext
+        - App\Behat\Context\ManageDatasetWithApplicationContext

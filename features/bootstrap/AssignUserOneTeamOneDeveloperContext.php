@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Behat\Context;
+
+use Exception;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\TeamHasUser;
+use Faker\Factory as Faker;
+use PHPUnit\Framework\Assert;
+use App\Models\TeamUserHasRole;
+use Behat\Behat\Context\Context;
+use Behat\Gherkin\Node\TableNode;
+use App\Behat\Context\SharedContext;
+use Behat\Gherkin\Node\PyStringNode;
+use Illuminate\Support\Facades\Http;
+use Behat\Behat\Hook\Scope\BeforeScenarioScope;
+
+/**
+ * Defines assign user one to team one with developer role features from the specific context.
+ */
+class AssignUserOneTeamOneDeveloperContext implements Context
+{
+    private $baseUri;
+    private $accessToken;
+    private $userOne;
+    private $teamOne;
+    private $faker;
+    private $response;
+
+    /**
+     * Initializes context.
+     */
+    public function __construct()
+    {
+        $this->baseUri = env('APP_URL');
+        $this->faker = Faker::create();
+        $this->accessToken = SharedContext::get('jwt.admin');
+        $this->userOne = SharedContext::get('user.one');
+        $this->teamOne = SharedContext::get('team.one');
+    }
+
+    /**
+     * @Given I send a POST request to path with team one and user one and assing :role role
+     */
+    public function iSendAPostRequestToPathWithTeamOneAndUserOneAndAssingRole($role)
+    {
+        try {
+            $arrayRole = [$role];
+            $payload = [
+                "userId" => $this->userOne['id'],
+                "roles" => $arrayRole,
+            ];
+
+            $url = $this->baseUri . '/api/v1/teams/' . $this->teamOne['id'] . '/users';
+
+            $this->response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->accessToken,
+                'Accept' => 'application/json',
+            ])->post($url, $payload);
+        } catch (GuzzleException $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @Then I should receive a successful response with status code :statusCode after user one was assigned to the team one like developer
+     */
+    public function iShouldReceiveASuccessfulResponseWithStatusCodeAfterUserOneWasAssignedToTheTeamOneLikeDeveloper($statusCode)
+    {
+        Assert::assertEquals(
+            $statusCode, 
+            $this->response->getStatusCode(), 
+            "Expected status code {$statusCode}, and received {$this->response->getStatusCode()}."
+        );
+    }
+
+    /**
+     * @Then I verify that the user one should be a member of team one
+     */
+    public function iVerifyThatTheUserOneShouldBeAMemberOfTeamOne()
+    {
+        $userTeam = TeamHasUser::where([
+            'user_id' => $this->userOne['id'],
+            'team_id' => $this->teamOne['id'],
+        ])->first();
+
+        if (!$userTeam) {
+            throw new Exception("The user one assinged to team one was not found in the database.");
+        }
+    }
+
+    /**
+     * @Then I verify that the user one assigned to team one should have the :role role
+     */
+    public function iVerifyThatTheUserOneAssignedToTeamOneShouldHaveTheRole($role)
+    {
+        $roles = Role::where([
+            'name' => $role,
+        ])->first();
+        
+        $found = false;
+        if ($roles) {
+            $userTeam = TeamHasUser::where([
+                'user_id' => $this->userOne['id'],
+                'team_id' => $this->teamOne['id'],
+            ])->get();
+
+            foreach ($userTeam as $ut) {
+                $userTeamRole = TeamUserHasRole::where([
+                    'team_has_user_id' => $ut['id'],
+                    'role_id' => $roles->id,
+                ])->first();
+
+                if ($userTeamRole) {
+                    $found = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$found) {
+            throw new Exception("The user one assinged to team one with role was not found in the database.");
+        }
+    }
+}
+
+
+// Given I send a POST request to path with team one and user one and assing "developer" role
+// Then I should receive a successful response with status code 200 after user one was assigned to the team one like developer
+// Then I verify that the user one should be a member of team one
+// And I verify that the user one assigned to team one should have the "developer" role
