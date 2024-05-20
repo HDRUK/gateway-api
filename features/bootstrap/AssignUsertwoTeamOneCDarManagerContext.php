@@ -20,13 +20,13 @@ use Illuminate\Support\Facades\Http;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
- * Defines assign user one to team one with developer role features from the specific context.
+ * Defines assign user two to team one with custodian dar manager role features from the specific context.
  */
-class AssignUserOneTeamOneDeveloperContext implements Context
+class AssignUsertwoTeamOneCDarManagerContext implements Context
 {
     private $baseUri;
     private $accessToken;
-    private $userOne;
+    private $userTwo;
     private $teamOne;
     private $faker;
     private $response;
@@ -38,22 +38,22 @@ class AssignUserOneTeamOneDeveloperContext implements Context
     {
         $this->baseUri = env('APP_URL');
         $this->faker = Faker::create();
-        $this->accessToken = SharedContext::get('jwt.admin');
-        $this->userOne = SharedContext::get('user.one');
+        $this->accessToken = SharedContext::get('jwt.user.one');
+        $this->userTwo = SharedContext::get('user.two');
         $this->teamOne = SharedContext::get('team.one');
     }
 
     /**
-     * @Given I send a POST request to path with team one and user one and assigning :role role
+     * @Given I send a POST request to path with team one and user two and assigning :role role custodian dar manager
      */
-    public function iSendAPostRequestToPathWithTeamOneAndUserOneAndAssigningRole($role)
+    public function iSendAPostRequestToPathWithTeamOneAndUserTwoAndAssigningRoleCustodianDarManager($role)
     {
         try {
             File::put(storage_path('logs/email.log'), '');
             
             $arrayRole = [$role];
             $payload = [
-                "userId" => $this->userOne['id'],
+                "userId" => $this->userTwo['id'],
                 "roles" => $arrayRole,
             ];
 
@@ -69,9 +69,9 @@ class AssignUserOneTeamOneDeveloperContext implements Context
     }
 
     /**
-     * @Then I should receive a successful response with status code :statusCode after user one was assigned to the team one like developer
+     * @Then I should receive a successful response with status code :statusCode after user two was assigned to the team one like custodian dar manager
      */
-    public function iShouldReceiveASuccessfulResponseWithStatusCodeAfterUserOneWasAssignedToTheTeamOneLikeDeveloper($statusCode)
+    public function iShouldReceiveASuccessfulResponseWithStatusCodeAfterUserTwoWasAssignedToTheTeamOneLikeCustodianDarManager($statusCode)
     {
         Assert::assertEquals(
             $statusCode, 
@@ -81,13 +81,13 @@ class AssignUserOneTeamOneDeveloperContext implements Context
     }
 
     /**
-     * @Then I verify that the user one assigned to team one with role developer should receive an email
+     * @Then I verify that the user one assigned to team one with role custodian dar manager should receive an email
      */
-    public function iVerifyThatTheUserOneAssignedToTeamOneWithRoleDeveloperShouldReceiveAnEmail()
+    public function iVerifyThatTheUserOneAssignedToTeamOneWithRoleCustodianDarManagerShouldReceiveAnEmail()
     {
         sleep(1); // Give some time for the queue to process
 
-        $recipient = $this->userOne['email'];
+        $recipient = $this->userTwo['email'];
         $log = File::get(storage_path('logs/email.log'));
         if (!str_contains($log, $recipient)) {
             throw new \Exception("Email to {$recipient} not found in log");
@@ -95,24 +95,24 @@ class AssignUserOneTeamOneDeveloperContext implements Context
     }
 
     /**
-     * @Then I verify that the user one should be a member of team one
+     * @Then I verify that the user two should be a member of team one like custodian dar manager
      */
-    public function iVerifyThatTheUserOneShouldBeAMemberOfTeamOne()
+    public function iVerifyThatTheUserTwoShouldBeAMemberOfTeamOneLikeCustodianDarManager()
     {
         $userTeam = TeamHasUser::where([
-            'user_id' => $this->userOne['id'],
+            'user_id' => $this->userTwo['id'],
             'team_id' => $this->teamOne['id'],
         ])->first();
 
         if (!$userTeam) {
-            throw new Exception("The user one assinged to team one was not found in the database.");
+            throw new Exception("The user two assinged to team one was not found in the database.");
         }
     }
 
     /**
-     * @Then I verify that the user one assigned to team one should have the :role role
+     * @Then I verify that the user two assigned to team one should have the :role role custodian dar manager
      */
-    public function iVerifyThatTheUserOneAssignedToTeamOneShouldHaveTheRole($role)
+    public function iVerifyThatTheUserTwoAssignedToTeamOneShouldHaveTheRoleCustodianDarManager($role)
     {
         $roles = Role::where([
             'name' => $role,
@@ -121,7 +121,7 @@ class AssignUserOneTeamOneDeveloperContext implements Context
         $found = false;
         if ($roles) {
             $userTeam = TeamHasUser::where([
-                'user_id' => $this->userOne['id'],
+                'user_id' => $this->userTwo['id'],
                 'team_id' => $this->teamOne['id'],
             ])->get();
 
@@ -139,13 +139,7 @@ class AssignUserOneTeamOneDeveloperContext implements Context
         }
 
         if (!$found) {
-            throw new Exception("The user one assinged to team one with role was not found in the database.");
+            throw new Exception("The user two assinged to team one with role was not found in the database.");
         }
     }
 }
-
-
-// Given I send a POST request to path with team one and user one and assing "developer" role
-// Then I should receive a successful response with status code 200 after user one was assigned to the team one like developer
-// Then I verify that the user one should be a member of team one
-// And I verify that the user one assigned to team one should have the "developer" role

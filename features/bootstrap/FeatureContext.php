@@ -7,6 +7,7 @@ use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
 use App\Behat\Context\SharedContext;
 use Behat\Gherkin\Node\PyStringNode;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Contracts\Console\Kernel;
 use Behat\Behat\Hook\Scope\BeforeFeatureScope;
@@ -20,6 +21,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithDatabase;
 class FeatureContext implements Context
 {
     use RefreshDatabase, InteractsWithDatabase;
+
     private $sharedContext;
 
     /**
@@ -39,16 +41,23 @@ class FeatureContext implements Context
      */
     public static function before(BeforeSuiteScope $scope)
     {
+        $behatMigrateAndSeed = env('BEHAT_MIGRATE_AND_SEED', false);
+
         echo "Run a new suite ...\n";
         echo "Initializing test environment...\n";
         echo "Reset shared context ...\n";
         SharedContext::reset();
 
-        echo "Setting up database...\n";
-        Artisan::call('migrate:fresh');
-        echo Artisan::output();
-        Artisan::call('db:seed');
-        echo Artisan::output();
+        if ((bool) $behatMigrateAndSeed) {
+            echo "Setting up database...\n";
+            Artisan::call('migrate:fresh');
+            echo Artisan::output();
+            Artisan::call('db:seed');
+            echo Artisan::output();
+        }
+        
+        // empty 'logs/email.log'
+        File::put(storage_path('logs/email.log'), '');
     }
 
     // /**
