@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Dur;
 use App\Models\Team;
 use App\Models\Tool;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Models\Keyword;
+use App\Models\Publication;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -62,6 +64,18 @@ class Collection extends Model
         ->withPivot('collection_id', 'tool_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
     }
 
+    public function dur(): BelongsToMany
+    {
+        return $this->belongsToMany(Dur::class, 'collection_has_durs')
+        ->withPivot('collection_id', 'dur_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
+    }
+
+    public function publications(): BelongsToMany
+    {
+        return $this->belongsToMany(Publication::class, 'collection_has_publications')
+        ->withPivot('collection_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
+    }
+
     public function userDatasets(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'collection_has_datasets');
@@ -72,6 +86,11 @@ class Collection extends Model
         return $this->belongsToMany(User::class, 'collection_has_tools');
     }
 
+    public function userPublications(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'collection_has_publications');
+    }
+
     public function applicationDatasets(): BelongsToMany
     {
         return $this->belongsToMany(Application::class, 'collection_has_datasets');
@@ -80,6 +99,11 @@ class Collection extends Model
     public function applicationTools(): BelongsToMany
     {
         return $this->belongsToMany(Application::class, 'collection_has_tools');
+    }
+
+    public function applicationPublications(): BelongsToMany
+    {
+        return $this->belongsToMany(Application::class, 'collection_has_publications');
     }
 
     public function team(): BelongsTo

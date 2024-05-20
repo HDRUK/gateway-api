@@ -2,23 +2,28 @@
 
 namespace App\MetadataManagementController;
 
-use Config;
 use Mauro;
+use Config;
 use Exception;
 
 use App\Models\Filter;
 use App\Models\Dataset;
+use Http\Client\HttpClient;
+
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 use App\Models\DatasetVersion;
 
+use Illuminate\Support\Carbon;
 use App\Exceptions\MMCException;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Carbon;
-
 use Elastic\Elasticsearch\Client;
+use Illuminate\Support\Facades\DB;
+
+use Illuminate\Support\Facades\Http;
 use Elastic\Elasticsearch\ClientBuilder;
 
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
 class MetadataManagementController {
 
@@ -234,6 +239,13 @@ class MetadataManagementController {
 
             $metadataModelVersion = $metadata['gwdmVersion'];
 
+            $dataProviderId = DataProviderHasTeam::where('team_id', $datasetMatch['team_id'])
+                ->pluck('data_provider_id')
+                ->all();
+            $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+                ->pluck('name')
+                ->all();
+
             // ------------------------------------------------------
             // WARNING....
             //  - this part of the code may need updating when the GWDM is changed 
@@ -242,6 +254,7 @@ class MetadataManagementController {
             $publisherName = '';
             $containsTissue = false;
             $populationSize = -1;
+            $accessServiceCategory = '';
 
             if(version_compare($metadataModelVersion,"1.1","<")){
                 $publisherName = $metadata['metadata']['summary']['publisher']['publisherName'];
@@ -255,6 +268,9 @@ class MetadataManagementController {
                 }
                 if (array_key_exists('populationSize', $metadata['metadata']['summary'])){
                     $populationSize = $metadata['metadata']['summary']['populationSize'];
+                }
+                if (array_key_exists('accessServiceCategory', $metadata['metadata']['accessibility']['access'])){
+                    $accessServiceCategory = $metadata['metadata']['accessibility']['access']['accessServiceCategory'];
                 }
             }
 
@@ -282,7 +298,9 @@ class MetadataManagementController {
                 'named_entities' => $namedEntities,
                 'collectionName' => $collections,
                 'dataUseTitles' => $durs,
-                'geographicLocation' => $geographicLocations
+                'geographicLocation' => $geographicLocations,
+                'accessService' => $accessServiceCategory,
+                'dataProvider' => $dataProvider
             ];
 
             $params = [
@@ -321,6 +339,26 @@ class MetadataManagementController {
             $client = $this->getElasticClient();
             $response = $client->delete($params);
 
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function getOnboardingFormHydrated(string $name, string $version): JsonResponse
+    {
+        try {
+            $queryParams = [
+                'name' => $name,
+                'version' => $version,
+            ];
+
+            $urlString = env('TRASER_SERVICE_URL') . '/get/form_hydration?' . http_build_query($queryParams);
+            $response = Http::get($urlString);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => $response->json(),
+            ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

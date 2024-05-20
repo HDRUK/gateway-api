@@ -2,26 +2,33 @@
 
 namespace Tests\Feature;
 
+use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
+use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\CollectionHasPublicationSeeder;
 
 class CollectionTest extends TestCase
 {
@@ -51,11 +58,17 @@ class CollectionTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             CategorySeeder::class,
+            LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
+            DurSeeder::class,
             CollectionHasKeywordSeeder::class,
             CollectionHasDatasetSeeder::class,
             CollectionHasToolSeeder::class,
+            CollectionHasDurSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
+            CollectionHasPublicationSeeder::class,
         ]);
     }
 
@@ -86,6 +99,8 @@ class CollectionTest extends TestCase
                     'keywords',
                     'datasets',
                     'tools',
+                    'dur',
+                    'publications',
                     'users',
                     'applications',
                     'team',
@@ -135,6 +150,8 @@ class CollectionTest extends TestCase
                 'keywords',
                 'datasets',
                 'tools',
+                'dur',
+                'publications',
                 'users',
                 'applications',
                 'team',
@@ -162,6 +179,8 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
 
         $response = $this->json(
@@ -199,6 +218,8 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -221,6 +242,7 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -255,6 +277,8 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -277,6 +301,7 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -345,6 +370,8 @@ class CollectionTest extends TestCase
             "datasets" => $this->generateDatasets(),
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -394,6 +421,36 @@ class CollectionTest extends TestCase
     }
 
     private function generateTools()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Tool::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generateDurs()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Dur::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generatePublications()
     {
         $return = [];
         $iterations = rand(1, 5);

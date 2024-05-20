@@ -2,17 +2,22 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
-use App\Exceptions\NotFoundException;
-use App\Exceptions\UnauthorizedException;
-use App\Http\Controllers\Controller;
-use App\Http\Traits\RequestTransformation;
 use App\Models\SavedSearch;
-use App\Models\SavedSearchHasFilter;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
+use App\Models\SavedSearchHasFilter;
+use App\Exceptions\NotFoundException;
+use App\Exceptions\UnauthorizedException;
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\SavedSearch\EditSavedSearch;
+use App\Http\Requests\SavedSearch\CreateSavedSearch;
+use App\Http\Requests\SavedSearch\DeleteSavedSearch;
+use App\Http\Requests\SavedSearch\GetSavedSearch;
+use App\Http\Requests\SavedSearch\UpdateSavedSearch;
 
 class SavedSearchController extends Controller
 {
@@ -135,7 +140,7 @@ class SavedSearchController extends Controller
      *      )
      * )
      */
-    public function show(Request $request, int $id): JsonResponse
+    public function show(GetSavedSearch $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -204,7 +209,7 @@ class SavedSearchController extends Controller
      *      )
      * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(CreateSavedSearch $request): JsonResponse
     {
         try {
             $input = $request->all();
@@ -220,6 +225,7 @@ class SavedSearchController extends Controller
                 'search_term' => $input['search_term'],
                 'search_endpoint' => $input['search_endpoint'],
                 'enabled' => $input['enabled'],
+                'sort_order' => $input['sort_order'],
                 'user_id' => $jwtUser['id'],
             ]);
 
@@ -319,7 +325,7 @@ class SavedSearchController extends Controller
      *      )
      * )
      */
-    public function update(Request $request, int $id): JsonResponse
+    public function update(UpdateSavedSearch $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -334,6 +340,7 @@ class SavedSearchController extends Controller
                 'search_term' => $input['search_term'],
                 'search_endpoint' => $input['search_endpoint'],
                 'enabled' => $input['enabled'],
+                'sort_order' => $input['sort_order'],
                 'user_id' => $jwtUser['id'],
             ]);
 
@@ -428,7 +435,7 @@ class SavedSearchController extends Controller
      *      )
      * )
      */
-    public function edit(Request $request, int $id): JsonResponse
+    public function edit(EditSavedSearch $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -440,6 +447,7 @@ class SavedSearchController extends Controller
                 'search_endpoint',
                 'enabled',
                 'filters',
+                'sort_order',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -520,7 +528,7 @@ class SavedSearchController extends Controller
      *      )
      * )
      */
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(DeleteSavedSearch $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();

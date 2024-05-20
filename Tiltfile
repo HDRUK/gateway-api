@@ -58,6 +58,10 @@ if cfg.get('searchEnabled'):
 if cfg.get('elasticEnabled'):
     include(cfg.get('elasticServiceRoot') + '/Tiltfile')
 
+if cfg.get('qbEnabled'):
+    include(cfg.get('qbServiceRoot') + '/Tiltfile')
+
+
 docker_build(
     ref='hdruk/' + cfg.get('name'),
     context='.',

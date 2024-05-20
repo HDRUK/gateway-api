@@ -9,6 +9,7 @@ use Tests\Traits\Authorization;
 use Database\Seeders\FilterSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SavedSearchSeeder;
+use App\Http\Enums\SortOrderSavedSearch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SavedSearchTest extends TestCase
@@ -63,6 +64,7 @@ class SavedSearchTest extends TestCase
                         'enabled',
                         'filters',
                         'user_id',
+                        'sort_order',
                     ],
                 ],
                 'first_page_url',
@@ -118,7 +120,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'user_id',
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -149,6 +151,7 @@ class SavedSearchTest extends TestCase
                         'enabled',
                         'filters',
                         'user_id',
+                        'sort_order',
                     ]
                 ],
             ]);
@@ -196,6 +199,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -250,6 +254,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -285,6 +290,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -327,6 +333,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -362,6 +369,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -425,6 +433,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -487,6 +496,7 @@ class SavedSearchTest extends TestCase
                 'search_endpoint' => 'datasets',
                 'enabled' => false,
                 'filters' => [],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             $headerNonAdmin,
         );
@@ -514,7 +524,8 @@ class SavedSearchTest extends TestCase
                 'search_term' => 'Some Test Query',
                 'search_endpoint' => 'datasets',
                 'enabled' => true,
-                'filters' => []
+                'filters' => [],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
