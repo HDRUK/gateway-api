@@ -9,18 +9,21 @@ use App\Models\User;
 use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
-use App\Models\Application;
-use App\Models\ApplicationHasPermission;
 use App\Models\Permission;
-
+use App\Models\Application;
 use Database\Seeders\DurSeeder;
+
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
+use App\Models\ApplicationHasPermission;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\DurHasPublicationSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DurIntegrationTest extends TestCase
@@ -51,6 +54,9 @@ class DurIntegrationTest extends TestCase
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
             DurSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
+            DurHasPublicationSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();
@@ -138,6 +144,7 @@ class DurIntegrationTest extends TestCase
                     'team',
                     'user',
                     'applicant_id',
+                    'applications',
                 ],
             ],
             'current_page',
@@ -215,13 +222,17 @@ class DurIntegrationTest extends TestCase
                     'team_id',
                     'created_at',
                     'updated_at',
-                    'datasets',
+                    'datasets' => [
+                        0 => [
+                            'id',
+                            'shortTitle',
+                        ]
+                    ],
                     'keywords',
-                    'applications',
                     'team',
                     'user',
-                    'application',
-                    'applicant_id',
+                    'application_id',
+                    'applications',
                 ]
             ]
         ]);

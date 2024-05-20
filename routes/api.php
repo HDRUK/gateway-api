@@ -58,6 +58,36 @@ Route::get('/services/traser', function(Request $request) {
     );
 });
 
+
+Route::any('/services/quba{any}', function(Request $request) {
+    // Extract the request path
+    $path = $request->path();
+
+    // Get the base URL of the external API service
+    $baseUrl = env("QUBA_SERVICE");
+
+
+    // Build the full URL by appending the request path to the base URL
+    $apiPath =  "api/services/quba/";
+    
+    $subPath = substr($path, strpos($path,$apiPath) + strlen($apiPath));
+    $url = $baseUrl . "/" . $subPath;
+
+    // Forward the request to the external API service
+    $response = Http::send($request->method(), $url, [
+        'headers' => $request->headers->all(),
+        'query' => $request->query(),
+        'body' => $request->getContent(),
+        'follow_redirects' => false, 
+    ]);
+
+    $statusCode = $response->status();
+
+    $responseData = $response->json();
+
+    return response()->json($responseData, $statusCode);
+})->where('any', '.*');
+
 // stop all all other routes
 Route::any('{path}', function() {
     $response = [

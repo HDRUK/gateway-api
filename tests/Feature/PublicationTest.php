@@ -3,17 +3,23 @@
 namespace Tests\Feature;
 
 use Config;
-use App\Models\Publication;
-use App\Models\PublicationHasDataset;
 use Tests\TestCase;
+use App\Models\Tool;
+use App\Models\Publication;
+use Database\Seeders\TagSeeder;
+use Tests\Traits\Authorization;
+use Database\Seeders\ToolSeeder;
+use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
-use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\LicenseSeeder;
+use App\Models\PublicationHasDataset;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
 use Database\Seeders\TeamHasUserSeeder;
-use Tests\Traits\Authorization;
-use Tests\Traits\MockExternalApis;
+use Database\Seeders\TypeCategorySeeder;
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PublicationTest extends TestCase
@@ -43,7 +49,12 @@ class PublicationTest extends TestCase
             PublicationSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
-            PublicationHasDatasetSeeder::class
+            PublicationHasDatasetSeeder::class,
+            LicenseSeeder::class,
+            ToolSeeder::class,
+            TagSeeder::class,
+            TypeCategorySeeder::class,
+            PublicationHasToolSeeder::class,
         ]);
     }
 
@@ -68,6 +79,10 @@ class PublicationTest extends TestCase
                     'publication_type',
                     'journal_name',
                     'abstract',
+                    'url',
+                    'mongo_id',
+                    'datasets',
+                    'tools',
                 ],
             ],
             'first_page_url',
@@ -94,19 +109,20 @@ class PublicationTest extends TestCase
     {
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
 
-        $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
             'data' => [
-                0 => [
-                    'id',
-                    'paper_title',
-                    'authors',
-                    'year_of_publication',
-                    'paper_doi',
-                    'publication_type',
-                    'journal_name',
-                    'abstract',
-                ]
+                'id',
+                'paper_title',
+                'authors',
+                'year_of_publication',
+                'paper_doi',
+                'publication_type',
+                'journal_name',
+                'abstract',
+                'url',
+                'mongo_id',
+                'datasets',
+                'tools',
             ]
         ]);
         $response->assertStatus(200);
@@ -128,16 +144,18 @@ class PublicationTest extends TestCase
                 'paper_title' => 'Test Paper Title',
                 'authors' => 'Einstein, Albert, Yankovich, Al',
                 'year_of_publication' => '2013',
-                'paper_doi' => 'https://doi.org/10.1000/182',
+                'paper_doi' => '10.1000/182',
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
                 'datasets' => [
                     0 => [
                         'id' => 1,
                         'link_type' => 'UNKNOWN',
                     ],
                 ],
+                'tools' => $this->generateTools(),
             ],
             $this->header,
         );
@@ -171,16 +189,18 @@ class PublicationTest extends TestCase
                 // omit paper title which is a required field
                 'authors' => 'Einstein, Albert, Yankovich, Al',
                 'year_of_publication' => '2013',
-                'paper_doi' => 'https://doi.org/10.1000/182',
+                'paper_doi' => '10.1000/182',
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
-                'abstract' => 'Some blurb about this made up paper written by people who should never meet.',  
+                'abstract' => 'Some blurb about this made up paper written by people who should never meet.', 
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html', 
                 'datasets' => [
                     0 => [
                         'id' => 1,
                         'link_type' => 'UNKNOWN',
                     ],
-                ],              
+                ],
+                'tools' => $this->generateTools(),
             ],
             $this->header,
         );
@@ -208,16 +228,18 @@ class PublicationTest extends TestCase
                 'paper_title' => 'Test Paper Title',
                 'authors' => 'Einstein, Albert, Yankovich, Al',
                 'year_of_publication' => '2013',
-                'paper_doi' => 'https://doi.org/10.1000/182',
+                'paper_doi' => '10.1000/182',
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
                 'datasets' => [
                     0 => [
                         'id' => 1,
                         'link_type' => 'UNKNOWN',
                     ],
                 ],
+                'tools' => $this->generateTools(),
             ],
             $this->header,
         );
@@ -241,10 +263,11 @@ class PublicationTest extends TestCase
                 'paper_title' => 'Not A Test Paper Title',
                 'authors' => 'Einstein, Albert, Yankovich, Al',
                 'year_of_publication' => '2022',
-                'paper_doi' => 'https://doi.org/10.1000/182',
+                'paper_doi' => '10.1000/182',
                 'publication_type' => 'Paper and such',
                 'journal_name' => 'Something Journal-y here',
                 'abstract' => 'Some blurb about this made up paper written by people who should never meet.',
+                'url' => 'http://smith.com/cumque-sint-molestiae-minima-corporis-quaerat.html',
                 'datasets' => [
                     0 => [
                         'id' => 1,
@@ -280,5 +303,19 @@ class PublicationTest extends TestCase
 
         $this->assertTrue($countTrashed === 1);
         $this->assertTrue($countAfter < $countBefore);
+    }
+
+    private function generateTools()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Tool::all()->random()->id;
+            $return[] = $temp;
+        }
+
+        return $return;
     }
 }

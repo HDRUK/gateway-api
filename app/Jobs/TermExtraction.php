@@ -21,16 +21,23 @@ class TermExtraction implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $tries = 1;
+    public $timeout = 300;
+    
     private string $datasetId = '';
     private string $data = '';
+
+    private bool $reIndexElastic = false;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, string $data)
+    public function __construct(string $datasetId, string $data, ?string $elasticIndex = "on")
     {
         $this->datasetId = $datasetId;
         $this->data = $data;
+
+        $this->reIndexElastic = ($elasticIndex === "on" ? true : false);
     }
 
     /**
@@ -48,7 +55,9 @@ class TermExtraction implements ShouldQueue
 
         $this->postToTermExtractionDirector(json_encode($data['metadata']), $this->datasetId);
 
-        MMC::reindexElastic($this->datasetId);
+        if ($this->reIndexElastic) {
+            MMC::reindexElastic($this->datasetId);
+        }
     }
 
     /**

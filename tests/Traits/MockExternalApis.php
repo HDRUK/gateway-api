@@ -115,6 +115,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -184,6 +187,29 @@ trait MockExternalApis
                                     'abstract' => [],
                                     'description' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'datasets',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 15.0,
+                                '_shard' => '[datasets][0]',
+                                '_source' => [
+                                    'abstract' => '',
+                                    'description' => '',
+                                    'keywords' => '',
+                                    'named_entities' => [],
+                                    'publisherName' => '',
+                                    'shortTitle' => 'Fourth asthma dataset',
+                                    'title' => 'Fourth asthma dataset',
+                                    'dataUseTitles' => [],
+                                    'populationSize'=> 1000,
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
                             ]
                         ]
                     ],
@@ -211,6 +237,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -307,6 +336,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -370,6 +402,27 @@ trait MockExternalApis
                                     'abstract' => [],
                                     'description' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'tools',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[tools][0]',
+                                '_source' => [
+                                    'category' => 'NLP System',
+                                    'description' => 'Yet another NLP tool',
+                                    'name' => 'D tool',
+                                    'tags' => [
+                                        'nlp',
+                                        'machine learning'
+                                    ]
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
                             ]
                         ]
                     ],
@@ -388,6 +441,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -442,6 +498,24 @@ trait MockExternalApis
                                     'abstract' => [],
                                     'description' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'collections',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[collections][0]',
+                                '_source' => [
+                                    'description' => 'a gateway collection',
+                                    'name' => 'Fourth Collection',
+                                    'keywords' => 'some, useful, keywords',
+                                    'datasetTitles' => ['some', 'dataset', 'titles']
+                                ],
+                                'highlight' => [
+                                    'abstract' => [],
+                                    'description' => []
+                                ]
                             ]
                         ]
                     ],
@@ -460,6 +534,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -529,6 +606,29 @@ trait MockExternalApis
                                 'highlight' => [
                                     'laySummary' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'data_uses',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[data_uses][0]',
+                                '_source' => [
+                                    'projectTitle' => 'Fourth Data Use',
+                                    'laySummary' => 'a gateway data use',
+                                    'publicBenefitStatement' => '',
+                                    'technicalSummary' => '',
+                                    'fundersAndSponsors' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'keywords' => ['some', 'useful', 'keywords'],
+                                    'sector' => 'Academia',
+                                    'publisherName' => 'A Publisher',
+                                    'organisationName' => 'An Organisation'
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
                             ]
                         ]
                     ],
@@ -547,6 +647,9 @@ trait MockExternalApis
                     'timed_out' => false,
                     '_shards' => [],
                     'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
                         'hits' => [
                             0 => [
                                 '_explanation' => [],
@@ -608,6 +711,191 @@ trait MockExternalApis
                                 'highlight' => [
                                     'laySummary' => []
                                 ]
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'data_uses',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[data_uses][0]',
+                                '_source' => [
+                                    'title' => 'Fourth Publication',
+                                    'journalName' => 'A Journal',
+                                    'abstract' => '',
+                                    'authors' => '',
+                                    'publicationDate' => '',
+                                    'datasetTitles' => ['some', 'dataset', 'title'],
+                                    'publicationType' => ['article', 'comment', 'letter'],
+                                ],
+                                'highlight' => [
+                                    'laySummary' => []
+                                ]
+                            ]
+                        ]
+                    ],
+                    'aggregations' => []
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
+        // Mock the search service - publications
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search*' => Http::response(
+                [
+                    'version' => '10.1',
+                    'hitCount' => 2,
+                    'request' => [
+                        'queryString' => 'DOI:10.123/abc',
+                        'resultType' => 'core',
+                        'cursorMark' => '*',
+                        'pageSize' => 25,
+                        'sort' => '',
+                        'synonym' => false
+                    ],
+                    'resultList' => [
+                        'result' => [
+                            0 => [
+                                'id' => '0000000',
+                                'source' => 'MED',
+                                'pmid' => '000000',
+                                'pmcid' => 'PMC000000',
+                                'fullTextIdList' => [
+                                    'fullTextId' => [
+                                        0 => 'PMC000000'
+                                    ]
+                                ],
+                                'doi' => '10.123/abc',
+                                'title' => 'Federated publication',
+                                'authorString' => 'Monday A, Tuesday B, Wednesday C',
+                                'journalInfo' => [
+                                    'journal' => [
+                                        'title' => 'Journal of Health'
+                                    ]  
+                                ],
+                                'pubYear' => '2020',
+                                'abstractText' => 'A longer description of the paper',
+                                'pubTypeList' => [
+                                    'pubType' => [
+                                        'research-article',
+                                        'Journal Article'
+                                    ]
+                                ],
+                                'fullTextUrlList' => [
+                                    'fullTextUrl' => [
+                                        0 => [
+                                            'url' => 'https://doi.org/10.123/abc'
+                                        ]
+                                    ]
+                                ]
+                            ],
+                            1 => [
+                                'id' => '0000001',
+                                'source' => 'MED',
+                                'pmid' => '000001',
+                                'pmcid' => 'PMC000001',
+                                'fullTextIdList' => [
+                                    'fullTextId' => [
+                                        0 => 'PMC000001'
+                                    ]
+                                ],
+                                'doi' => '10.123/abc',
+                                'title' => 'Federated publication two',
+                                'authorString' => 'Monday A, Tuesday B, Wednesday C',
+                                'journalInfo' => null,
+                                'pubYear' => '2022',
+                                'abstractText' => 'A longer description of the paper',
+                                'pubTypeList' => [
+                                    'pubType' => [
+                                        'research-article',
+                                        'Journal Article'
+                                    ]
+                                ],
+                                'fullTextUrlList' => [
+                                    'fullTextUrl' => [
+                                        0 => [
+                                            'url' => 'https://doi.org/10.456/abc'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                200,
+                ['application/json']
+            )
+        ]);
+
+        // Mock the search service - data providers
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers*' => Http::response(
+                [
+                    'took' => 1000,
+                    'timed_out' => false,
+                    '_shards' => [],
+                    'hits' => [
+                        'total' => [
+                            'value' => 3
+                        ],
+                        'hits' => [
+                            0 => [
+                                '_explanation' => [],
+                                '_id' => '1',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 20.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'One Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales']
+                                ],
+                                'highlight' => null,
+                            ],
+                            1 => [
+                                '_explanation' => [],
+                                '_id' => '2',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 18.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'Another Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales']
+                                ],
+                                'highlight' => null,
+                            ],
+                            2 => [
+                                '_explanation' => [],
+                                '_id' => '3',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'Third Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales']
+                                ],
+                                'highlight' => null,
+                            ],
+                            3 => [
+                                '_explanation' => [],
+                                '_id' => '1111',
+                                '_index' => 'dataprovider',
+                                '_node' => 'abcd-123-efgh',
+                                '_score' => 16.0,
+                                '_shard' => '[dataprovider][0]',
+                                '_source' => [
+                                    'name' => 'Fourth Provider',
+                                    'datasetTitles' => ['some', 'dataset', 'titles'],
+                                    'geographicLocations' => ['Scotland', 'Wales']
+                                ],
+                                'highlight' => null,
                             ]
                         ]
                     ],

@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('data_use_register_has_datasets');
+        Schema::dropIfExists('dur_has_datasets');
     }
 };

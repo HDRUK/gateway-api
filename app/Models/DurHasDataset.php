@@ -13,6 +13,7 @@ class DurHasDataset extends Model
         'dur_id',
         'dataset_id',
         'user_id',
+        'application_id',
         'is_locked',
         'reason',
         'created_at',

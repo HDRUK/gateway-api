@@ -24,7 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('dur', function (Blueprint $table) {
-            $table->dropColumn('sector_id');
+            $table->dropConstrainedForeignId('sector_id');
+            $table->dropIfExists('sector_id');
         });
     }
 };
