@@ -79,6 +79,7 @@ class DatabaseSeeder extends Seeder
             CollectionHasPublicationSeeder::class,
             PublicationHasToolSeeder::class,
             DataProviderSeeder::class,
+            DurHasToolSeeder::class,
         ]);
     }
 }

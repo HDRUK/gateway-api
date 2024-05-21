@@ -98,6 +98,7 @@ class IntegrationDurController extends Controller
      *                @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="user", type="array", example="{}", @OA\Items()),
@@ -131,6 +132,7 @@ class IntegrationDurController extends Controller
                 ->with([
                     'datasets',
                     'publications', 
+                    'tools', 
                     'keywords',
                     'userDatasets' => function ($query) {
                         $query->distinct('id');
@@ -263,6 +265,7 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
@@ -1345,6 +1348,7 @@ class IntegrationDurController extends Controller
                 'keywords',
                 'datasets', 
                 'publications', 
+                'tools', 
                 'userDatasets' => function ($query) {
                     $query->distinct('id');
                 }, 

@@ -23,6 +23,7 @@ use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\DurHasPublicationSeeder;
+use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -57,6 +58,7 @@ class DurIntegrationTest extends TestCase
             PublicationSeeder::class,
             PublicationHasDatasetSeeder::class,
             DurHasPublicationSeeder::class,
+            DurHasToolSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();
@@ -140,6 +142,8 @@ class DurIntegrationTest extends TestCase
                     'created_at',
                     'updated_at',
                     'datasets',
+                    'publications',
+                    'tools',
                     'keywords',
                     'team',
                     'user',
@@ -222,6 +226,8 @@ class DurIntegrationTest extends TestCase
                     'team_id',
                     'created_at',
                     'updated_at',
+                    'publications',
+                    'tools',
                     'datasets' => [
                         0 => [
                             'id',

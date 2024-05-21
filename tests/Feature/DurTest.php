@@ -12,13 +12,14 @@ use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Publication;
-use App\Http\Enums\TeamMemberOf;
 use Database\Seeders\DurSeeder;
 use Tests\Traits\Authorization;
+use App\Http\Enums\TeamMemberOf;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\CollectionSeeder;
+use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
@@ -62,6 +63,7 @@ class DurTest extends TestCase
             PublicationSeeder::class,
             PublicationHasDatasetSeeder::class,
             DurHasPublicationSeeder::class,
+            DurHasToolSeeder::class,
         ]);
     }
     /**
@@ -123,6 +125,7 @@ class DurTest extends TestCase
                     'updated_at',
                     'datasets',
                     'publications',
+                    'tools',
                     'keywords',
                     'application',
                     'team',
@@ -210,6 +213,8 @@ class DurTest extends TestCase
                             'shortTitle',
                         ]
                     ],
+                    'publications',
+                    'tools',
                     'keywords',
                     'applications',
                     'team',
