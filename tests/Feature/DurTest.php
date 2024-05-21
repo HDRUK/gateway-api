@@ -13,19 +13,27 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Publication;
 use Database\Seeders\DurSeeder;
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
+use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
+use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
 use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
+use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\DurHasPublicationSeeder;
+use Database\Seeders\ProgrammingPackageSeeder;
+use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -54,17 +62,29 @@ class DurTest extends TestCase
 
         $this->seed([
             MinimalUserSeeder::class,
+            CategorySeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
+            LicenseSeeder::class,
+            TagSeeder::class,
+            TypeCategorySeeder::class,
             ApplicationSeeder::class,
             CollectionSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
+            ToolSeeder::class,
             DurSeeder::class,
             PublicationSeeder::class,
             PublicationHasDatasetSeeder::class,
+            PublicationHasToolSeeder::class,
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
         ]);
+        
+        
+        
+        
     }
     /**
      * Get All Data Use Registers with success
