@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\Http;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
 /**
- * Defines assign user one to team one with developer role features from the specific context.
+ * Defines assign user one to team one with "custodian.team.admin" role features from the specific context.
  */
-class AssignUserOneTeamOneDeveloperContext implements Context
+class AssignUserOneTeamOneAdminContext implements Context
 {
     private $baseUri;
     private $accessToken;
@@ -44,13 +44,13 @@ class AssignUserOneTeamOneDeveloperContext implements Context
     }
 
     /**
-     * @Given I send a POST request to path with team one and user one and assigning :role role
+     * @Given I send a POST request to path with team one and user one and assigning :role role admin
      */
-    public function iSendAPostRequestToPathWithTeamOneAndUserOneAndAssigningRole($role)
+    public function iSendAPostRequestToPathWithTeamOneAndUserOneAndAssigningRoleAdmin($role)
     {
         try {
             File::put(storage_path('logs/email.log'), '');
-            
+
             $arrayRole = [$role];
             $payload = [
                 "userId" => $this->userOne['id'],
@@ -63,15 +63,16 @@ class AssignUserOneTeamOneDeveloperContext implements Context
                 'Authorization' => 'Bearer ' . $this->accessToken,
                 'Accept' => 'application/json',
             ])->post($url, $payload);
+
         } catch (GuzzleException $e) {
             throw new Exception($e->getMessage());
         }
     }
 
     /**
-     * @Then I should receive a successful response with status code :statusCode after user one was assigned to the team one like developer
+     * @Then I should receive a successful response with status code :statusCode after user one was assigned to the team one like admin
      */
-    public function iShouldReceiveASuccessfulResponseWithStatusCodeAfterUserOneWasAssignedToTheTeamOneLikeDeveloper($statusCode)
+    public function iShouldReceiveASuccessfulResponseWithStatusCodeAfterUserOneWasAssignedToTheTeamOneLikeAdmin($statusCode)
     {
         Assert::assertEquals(
             $statusCode, 
@@ -81,9 +82,9 @@ class AssignUserOneTeamOneDeveloperContext implements Context
     }
 
     /**
-     * @Then I verify that the user one assigned to team one with role developer should receive an email
+     * @Then I verify that the user one assigned to team one with role admin should receive an email
      */
-    public function iVerifyThatTheUserOneAssignedToTeamOneWithRoleDeveloperShouldReceiveAnEmail()
+    public function iVerifyThatTheUserOneAssignedToTeamOneWithRoleAdminShouldReceiveAnEmail()
     {
         sleep(1); // Give some time for the queue to process
 
@@ -95,9 +96,9 @@ class AssignUserOneTeamOneDeveloperContext implements Context
     }
 
     /**
-     * @Then I verify that the user one should be a member of team one
+     * @Then I verify that the user one should be a member of team one like admin
      */
-    public function iVerifyThatTheUserOneShouldBeAMemberOfTeamOne()
+    public function iVerifyThatTheUserOneShouldBeAMemberOfTeamOneLikeAdmin()
     {
         $userTeam = TeamHasUser::where([
             'user_id' => $this->userOne['id'],
@@ -110,9 +111,9 @@ class AssignUserOneTeamOneDeveloperContext implements Context
     }
 
     /**
-     * @Then I verify that the user one assigned to team one should have the :role role
+     * @Then I verify that the user one assigned to team one should have the :role role admin
      */
-    public function iVerifyThatTheUserOneAssignedToTeamOneShouldHaveTheRole($role)
+    public function iVerifyThatTheUserOneAssignedToTeamOneShouldHaveTheRoleAdmin($role)
     {
         $roles = Role::where([
             'name' => $role,
@@ -143,9 +144,3 @@ class AssignUserOneTeamOneDeveloperContext implements Context
         }
     }
 }
-
-
-// Given I send a POST request to path with team one and user one and assing "developer" role
-// Then I should receive a successful response with status code 200 after user one was assigned to the team one like developer
-// Then I verify that the user one should be a member of team one
-// And I verify that the user one assigned to team one should have the "developer" role
