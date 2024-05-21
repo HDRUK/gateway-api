@@ -31,6 +31,7 @@ use App\Models\ProgrammingPackage;
 use App\Models\PublicationHasTool;
 use App\Exports\DatasetTableExport;
 use App\Models\ProgrammingLanguage;
+use App\Models\License;
 use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
@@ -437,7 +438,8 @@ class SearchController extends Controller
                         $toolsArray[$i]['type_category'] = $toolHasTypeCategoryIds ? TypeCategory::whereIn('id', $toolHasTypeCategoryIds)->pluck('name')->all() : [];
 
                         // license
-                        $toolsArray[$i]['license'] = $model['license'];
+                        $license = License::where('id', $model['license'])->first();
+                        $toolsArray[$i]['license'] = $license ? $license->label : '';
 
                         // programming_language
                         $toolHasProgrammingLangIds = ToolHasProgrammingLanguage::where('tool_id', $model['id'])->pluck('programming_language_id')->all();
