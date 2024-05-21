@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Dur;
-use App\Models\DurHasTools;
+use App\Models\DurHasTool;
 use App\Models\Tool;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -19,13 +19,13 @@ class DurHasToolSeeder extends Seeder
             $durId = Dur::all()->random()->id;
             $toolId = Tool::all()->random()->id;
 
-            $durHasTool = DurHasTools::where([
+            $durHasTool = DurHasTool::where([
                 'dur_id' => $durId,
                 'tool_id' => $toolId,
             ])->first();
 
             if (!$durHasTool) {
-                DurHasTools::create([
+                DurHasTool::create([
                     'dur_id' => $durId,
                     'tool_id' => $toolId,
                 ]);

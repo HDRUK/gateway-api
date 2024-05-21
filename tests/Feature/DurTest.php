@@ -16,6 +16,7 @@ use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
+use App\Models\Tool;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
@@ -262,6 +263,7 @@ class DurTest extends TestCase
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -376,6 +378,7 @@ class DurTest extends TestCase
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -455,6 +458,7 @@ class DurTest extends TestCase
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -574,6 +578,7 @@ class DurTest extends TestCase
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -613,6 +618,18 @@ class DurTest extends TestCase
 
         for ($i = 1; $i <= $iterations; $i++) {
             $return[] = Keyword::where(['enabled' => 1])->get()->random()->name;
+        }
+
+        return array_unique($return);
+    }
+
+    private function generateTools()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $return[] = Tool::where(['enabled' => 1])->get()->random()->id;
         }
 
         return array_unique($return);
