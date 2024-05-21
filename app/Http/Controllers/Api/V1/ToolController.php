@@ -25,6 +25,7 @@ use App\Http\Requests\Tool\UpdateTool;
 use MetadataManagementController AS MMC;
 use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
+use App\Models\DurHasTool;
 use App\Models\ToolHasProgrammingLanguage;
 
 class ToolController extends Controller
@@ -65,6 +66,7 @@ class ToolController extends Controller
                     'team',
                     'license',
                     'publications',
+                    'durs',
                 ])
                 ->when($mongoId, function ($query) use ($mongoId) {
                     return $query->where('mongo_id', '=', $mongoId);
@@ -652,6 +654,7 @@ class ToolController extends Controller
             ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
             ToolHasProgrammingPackage::where('tool_id', $id)->delete();
             ToolHasTypeCategory::where('tool_id', $id)->delete();
+            DurHasTool::where('tool_id', $id)->delete();
             PublicationHasTool::where('tool_id', $id)->delete();
             
             Auditor::log([
@@ -680,6 +683,7 @@ class ToolController extends Controller
             'programmingPackages',
             'typeCategory',
             'publications',
+            'durs',
         ])->where([
             'id' => $toolId,
         ])->first();

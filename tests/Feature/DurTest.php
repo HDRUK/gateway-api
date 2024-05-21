@@ -82,10 +82,6 @@ class DurTest extends TestCase
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
         ]);
-        
-        
-        
-        
     }
     /**
      * Get All Data Use Registers with success

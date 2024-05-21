@@ -1091,6 +1091,7 @@ class IntegrationDurController extends Controller
 
             DurHasDataset::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
+            DurHasTool::where(['dur_id' => $id])->delete();
             Dur::where(['id' => $id])->delete();
 
             Auditor::log([
