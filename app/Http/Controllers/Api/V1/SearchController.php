@@ -44,6 +44,7 @@ use App\Models\ToolHasProgrammingLanguage;
 use Illuminate\Database\Eloquent\Casts\Json;
 use App\Http\Requests\Search\PublicationSearch;
 use App\Models\DatasetHasTool;
+use App\Models\DurHasTool;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
@@ -453,6 +454,8 @@ class SearchController extends Controller
 
                         $toolsArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
 
+                        $toolsArray[$i]['durTitles'] = $this->toolDurTitles($model['id']);
+
                         $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
                         $category = null;
                         if($model->category){
@@ -767,6 +770,7 @@ class SearchController extends Controller
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
                         $durArray[$i]['datasetTitles'] = $this->durDatasetTitles($model);
                         $durArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
+                        $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $foundFlag = true;
                         break;
                     }
@@ -1315,6 +1319,29 @@ class SearchController extends Controller
             }
         }
         return $locations;
-    }    
+    }
 
+    private function durToolNames(int $durId): array
+    {
+        $toolNames = [];
+
+        $toolIds = DurHasTool::where('dur_id', $durId)->pluck('tool_id')->all();
+        if (!count($toolIds)) return [];
+        
+        $toolNames = Tool::whereIn('id', $toolIds)->pluck('name')->all();
+        
+        return $toolNames;
+    }
+
+    private function toolDurTitles(int $toolId): array
+    {
+        $durNames = [];
+
+        $durIds = DurHasTool::where('tool_id', $toolId)->pluck('dur_id')->all();
+        if (!count($durIds)) return [];
+
+        $durNames = Dur::whereIn('id', $durIds)->pluck('project_title')->all();
+
+        return $durNames;
+    }
 }

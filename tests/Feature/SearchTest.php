@@ -8,6 +8,7 @@ use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
 use App\Models\DatasetHasTool;
+use App\Models\DurHasTool;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
@@ -31,6 +32,7 @@ use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\DataProviderSeeder;
+use Database\Seeders\DurHasToolSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SearchTest extends TestCase
@@ -76,6 +78,7 @@ class SearchTest extends TestCase
             TypeCategorySeeder::class,
             PublicationHasToolSeeder::class,
             DataProviderSeeder::class,
+            DurHasToolSeeder::class,
         ]);
 
         $this->metadataUpdate = $this->getFakeUpdateDataset();
@@ -290,6 +293,7 @@ class SearchTest extends TestCase
                     'programming_package',
                     'datasets',
                     'dataProvider',
+                    'durTitles',
                 ],
             ],
             'aggregations',
@@ -652,6 +656,7 @@ class SearchTest extends TestCase
                     'datasetTitles',
                     'team',
                     'dataProvider',
+                    'toolNames',
                 ],
             ],
             'aggregations',
