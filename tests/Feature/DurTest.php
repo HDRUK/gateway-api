@@ -12,19 +12,29 @@ use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Publication;
-use App\Http\Enums\TeamMemberOf;
 use Database\Seeders\DurSeeder;
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
+use App\Http\Enums\TeamMemberOf;
+use App\Models\Tool;
+use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
+use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
+use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
+use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Database\Seeders\DurHasPublicationSeeder;
+use Database\Seeders\ProgrammingPackageSeeder;
+use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -53,15 +63,24 @@ class DurTest extends TestCase
 
         $this->seed([
             MinimalUserSeeder::class,
+            CategorySeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
+            LicenseSeeder::class,
+            TagSeeder::class,
+            TypeCategorySeeder::class,
             ApplicationSeeder::class,
             CollectionSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
+            ToolSeeder::class,
             DurSeeder::class,
             PublicationSeeder::class,
             PublicationHasDatasetSeeder::class,
+            PublicationHasToolSeeder::class,
             DurHasPublicationSeeder::class,
+            DurHasToolSeeder::class,
         ]);
     }
     /**
@@ -123,6 +142,7 @@ class DurTest extends TestCase
                     'updated_at',
                     'datasets',
                     'publications',
+                    'tools',
                     'keywords',
                     'application',
                     'team',
@@ -210,6 +230,8 @@ class DurTest extends TestCase
                             'shortTitle',
                         ]
                     ],
+                    'publications',
+                    'tools',
                     'keywords',
                     'applications',
                     'team',
@@ -237,6 +259,7 @@ class DurTest extends TestCase
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -351,6 +374,7 @@ class DurTest extends TestCase
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -430,6 +454,7 @@ class DurTest extends TestCase
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -549,6 +574,7 @@ class DurTest extends TestCase
             'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -588,6 +614,18 @@ class DurTest extends TestCase
 
         for ($i = 1; $i <= $iterations; $i++) {
             $return[] = Keyword::where(['enabled' => 1])->get()->random()->name;
+        }
+
+        return array_unique($return);
+    }
+
+    private function generateTools()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $return[] = Tool::where(['enabled' => 1])->get()->random()->id;
         }
 
         return array_unique($return);

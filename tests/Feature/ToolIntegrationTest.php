@@ -13,26 +13,34 @@ use App\Models\Permission;
 use App\Models\ToolHasTag;
 use App\Models\Application;
 use App\Models\Publication;
+use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
-use App\Http\Requests\ToolRequest;
 
+use App\Http\Requests\ToolRequest;
 use Tests\Traits\MockExternalApis;
 use App\Models\ToolHasTypeCategory;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
+use Database\Seeders\DurHasToolSeeder;
+use Database\Seeders\ToolHasTagSeeder;
 use Database\Seeders\ApplicationSeeder;
+
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
 use Database\Seeders\TypeCategorySeeder;
 use App\Models\ToolHasProgrammingPackage;
-
 use App\Models\ToolHasProgrammingLanguage;
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ToolIntegrationTest extends TestCase
@@ -60,15 +68,23 @@ class ToolIntegrationTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             CategorySeeder::class,
-            PublicationSeeder::class,
             ProgrammingLanguageSeeder::class,
             ProgrammingPackageSeeder::class,
             LicenseSeeder::class,
-            ToolSeeder::class,
             TagSeeder::class,
+            KeywordSeeder::class,
             TypeCategorySeeder::class,
-            ApplicationSeeder::class,
+            DatasetSeeder::class,
+            DatasetVersionSeeder::class,
+            ToolSeeder::class,
+            ToolHasTagSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
             PublicationHasToolSeeder::class,
+            ApplicationSeeder::class,
+            DurSeeder::class,
+            DurHasPublicationSeeder::class,
+            DurHasToolSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();
@@ -99,7 +115,7 @@ class ToolIntegrationTest extends TestCase
      * 
      * @return void
      */
-    public function test_get_all_tools_with_success(): void
+    public function test_integration_get_all_tools_with_success(): void
     {
         $countTool = Tool::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
@@ -121,6 +137,7 @@ class ToolIntegrationTest extends TestCase
                     'deleted_at',
                     'user',
                     'tag',
+                    'durs',
                 ]
             ],
             'current_page',
@@ -144,7 +161,7 @@ class ToolIntegrationTest extends TestCase
      * 
      * @return void
      */
-    public function test_get_tool_by_id_with_success(): void
+    public function test_integration_get_tool_by_id_with_success(): void
     {
         $tools = Tool::where('enabled', 1)->first();
         $response = $this->json('GET', self::TEST_URL . '/' . $tools->id, [], $this->header);
@@ -168,6 +185,7 @@ class ToolIntegrationTest extends TestCase
                 'programming_packages',
                 'type_category',
                 'publications',
+                'durs',
             ]
         ]);
         $response->assertStatus(200);
@@ -178,7 +196,7 @@ class ToolIntegrationTest extends TestCase
      * 
      * @return void
      */
-    public function test_add_new_tool_with_success(): void
+    public function test_integration_add_new_tool_with_success(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
@@ -213,7 +231,7 @@ class ToolIntegrationTest extends TestCase
      * 
      * @return void
      */
-    public function test_insert_data_in_tool_has_tags(): void
+    public function test_integration_insert_data_in_tool_has_tags(): void
     {
         ToolHasTag::truncate();
 
@@ -244,7 +262,7 @@ class ToolIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_update_tool_with_success(): void 
+    public function test_integration_update_tool_with_success(): void 
     {
         // insert
         $licenseId = License::where('valid_until', null)->get()->random()->id;
@@ -350,7 +368,7 @@ class ToolIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_edit_tool_with_success(): void
+    public function test_integration_edit_tool_with_success(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
@@ -488,7 +506,7 @@ class ToolIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_update_tool_and_generate_exception(): void
+    public function test_integration_update_tool_and_generate_exception(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
@@ -522,7 +540,7 @@ class ToolIntegrationTest extends TestCase
      *
      * @return void
      */
-    public function test_soft_delete_tool_with_success(): void
+    public function test_integration_soft_delete_tool_with_success(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
