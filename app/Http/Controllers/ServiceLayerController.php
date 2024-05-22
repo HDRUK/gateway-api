@@ -119,8 +119,21 @@ class ServiceLayerController extends Controller
         }
     }
 
+    public function quba(Request $request){
+        return $this->forwardRequest($request, 
+            env("QUBA_SERVICE"), 
+            "api/services/quba/"
+        );
+    }
 
-    public function forwardRequest(Request $request, string $baseUrl, string $apiPath) {
+     public function daras(Request $request){
+        return $this->forwardRequest($request, 
+           env("DARAS_SERVICE"), 
+           "api/services/daras/"
+        );
+    }
+
+    private function forwardRequest(Request $request, string $baseUrl, string $apiPath) {
         // Extract the request path
         $path = $request->path();
 
@@ -133,7 +146,7 @@ class ServiceLayerController extends Controller
             'headers' => $request->headers->all(),
             'query' => $request->query(),
             'body' => $request->getContent(),
-            'follow_redirects' => false, 
+            'follow_redirects' => true, 
         ]);
 
         $statusCode = $response->status();
