@@ -132,7 +132,7 @@ class DurController extends Controller
             $durs = Dur::where('enabled', 1)
                 ->when($mongoId, function ($query) use ($mongoId) {
                     return $query->where('mongo_id', '=', $mongoId);
-                })->when($projectTitle, function ($query) use ($mongoId) {
+                })->when($projectTitle, function ($query) use ($projectTitle) {
                     return $query->where('project_title', 'like', '%'. $projectTitle .'%');
                 })->with([
                     'datasets',
