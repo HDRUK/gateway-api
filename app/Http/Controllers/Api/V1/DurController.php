@@ -126,11 +126,14 @@ class DurController extends Controller
             $input = $request->all();
 
             $mongoId = $request->query('mongo_id', null);
+            $projectTitle = $request->query('project_title', null);
     
             $perPage = request('perPage', Config::get('constants.per_page'));
             $durs = Dur::where('enabled', 1)
                 ->when($mongoId, function ($query) use ($mongoId) {
                     return $query->where('mongo_id', '=', $mongoId);
+                })->when($projectTitle, function ($query) use ($mongoId) {
+                    return $query->where('project_title', 'like', '%'. $projectTitle .'%');
                 })->with([
                     'datasets',
                     'publications', 
