@@ -8,6 +8,8 @@ use Tests\TestCase;
 use App\Models\Upload;
 use Tests\Traits\Authorization;
 
+use Database\Seeders\MinimalUserSeeder;
+
 use Tests\Traits\MockExternalApis;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -48,7 +50,7 @@ class UploadTest extends TestCase
     {
         $file = UploadedFile::fake()->create('test_file.csv');
         // post file to files endpoint
-        $response = $this->request(
+        $response = $this->json(
             'POST', 
             self::TEST_URL, 
             [
@@ -57,7 +59,7 @@ class UploadTest extends TestCase
             [
                 'Accept' => 'application/json',
                 'Content-Type' => 'multipart/form-data',
-                'Authorization' => 'Bearer ' . $jwt,
+                'Authorization' => $this->header['Authorization']
             ]
         );
         
@@ -85,7 +87,7 @@ class UploadTest extends TestCase
     {
         $file = UploadedFile::fake()->create('test_file.csv');
         // post file to files endpoint
-        $response = $this->request(
+        $response = $this->json(
             'POST', 
             self::TEST_URL, 
             [
@@ -94,13 +96,13 @@ class UploadTest extends TestCase
             [
                 'Accept' => 'application/json',
                 'Content-Type' => 'multipart/form-data',
-                'Authorization' => 'Bearer ' . $jwt,
+                'Authorization' => $this->header['Authorization']
             ]
         );
         
         $id = $response->decodeResponseJson()['data']['id'];
 
-        $response = $this->json('GET', self::TEST_URL . '/' . $id);
+        $response = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
 
         $response->assertJsonStructure([
             'data' => [
@@ -126,7 +128,7 @@ class UploadTest extends TestCase
     {
         $file = UploadedFile::fake()->create('test_file.csv');
         // post file to files endpoint
-        $response = $this->request(
+        $response = $this->json(
             'POST', 
             self::TEST_URL, 
             [
@@ -135,7 +137,7 @@ class UploadTest extends TestCase
             [
                 'Accept' => 'application/json',
                 'Content-Type' => 'multipart/form-data',
-                'Authorization' => 'Bearer ' . $jwt,
+                'Authorization' => $this->header['Authorization']
             ]
         );
         
@@ -147,7 +149,8 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/', $id,
+            self::TEST_URL . '/processed' . '/' . $id,
+            [],
             $this->header
         );
         $response->assertJsonStructure(['message']);
@@ -158,7 +161,8 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/', $id,
+            self::TEST_URL . '/processed' . '/' . $id,
+            [],
             $this->header
         );
         $response->assertJsonStructure(['message']);
@@ -169,7 +173,8 @@ class UploadTest extends TestCase
         ]);
         $response = $this->json(
             'GET',
-            self::TEST_URL . '/processed' . '/', $id,
+            self::TEST_URL . '/processed' . '/' . $id,
+            [],
             $this->header
         );
         $response->assertJsonStructure([
