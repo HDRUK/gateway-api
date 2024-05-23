@@ -61,6 +61,9 @@ if cfg.get('elasticEnabled'):
 if cfg.get('qbEnabled'):
     include(cfg.get('qbServiceRoot') + '/Tiltfile')
 
+if cfg.get('clamavEnabled'):
+    include(cfg.get('clamavServiceRoot') + '/Tiltfile')
+
 
 docker_build(
     ref='hdruk/' + cfg.get('name'),

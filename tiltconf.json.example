@@ -8,10 +8,12 @@
     "fmaServiceRoot": "/Users/lokisinclair/Development/HDRUK/federated_metadata_mk2",
     "searchServiceRoot": "/Users/lokisinclair/Development/HDRUK/search-service",
     "qbServiceRoot": "/Users/lokisinclair/Development/HDRUK/qb-service-poc",
+    "clamavServiceRoot": "/Users/lokisinclair/Development/HDRUK/clamav_deployment",
 
     "traserEnabled": true,
     "tedEnabled": true,
     "fmaEnabled": true,
     "searchEnabled": true,
-    "qbEnabled": true
+    "qbEnabled": true,
+    "clamavEnabled": true
 }
