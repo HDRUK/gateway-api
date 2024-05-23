@@ -4,13 +4,20 @@ namespace App\Console\Commands;
 
 use Exception;
 
+use App\Models\Dataset;
+use App\Models\License;
+use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\TypeCategory;
 use App\Models\ProgrammingLanguage;
+use App\Models\ProgrammingPackage;
+use App\Models\DatasetHasTool;
+use App\Models\ToolHasTag;
 use App\Models\ToolHasTypeCategory;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 
+use MetadataManagementController AS MMC;
 
 use Illuminate\Console\Command;
 
@@ -114,6 +121,8 @@ class ToolsPostMigrationProcess extends Command
                     $tool->license = $csv['License MK2'];
                     $tool->save();
 
+                    $this->indexElasticTool($tool->id);
+
                     echo 'completed post-process of migration for tool ' . $tool->id . "\n";
                 } else {
                     echo 'no tool matching ' . $csv['_id'] . " ignoring\n";
@@ -139,5 +148,96 @@ class ToolsPostMigrationProcess extends Command
         }
 
         fclose($file);        
+    }
+
+    /**
+     * Insert tool document into elastic index
+     *
+     * @param integer $id
+     * @return void
+     */
+    private function indexElasticTool(int $id): void 
+    {
+        $tool = Tool::where('id', $id)
+            ->with(['programmingLanguages', 'programmingPackages', 'tag', 'category', 'typeCategory', 'license'])
+            ->first();
+
+        $license = License::where('id', $tool['license'])->first();
+
+        $typeCategoriesIDs = ToolHasTypeCategory::where('tool_id', $id)
+            ->pluck('type_category_id')
+            ->all();
+
+        $typeCategories = TypeCategory::where('id', $typeCategoriesIDs)
+            ->pluck('name')
+            ->all();
+
+        $programmingLanguagesIDs = ToolHasProgrammingLanguage::where('tool_id', $id)
+            ->pluck('programming_language_id')
+            ->all();
+
+        $programmingLanguages = ProgrammingLanguage::where('id', $programmingLanguagesIDs)
+            ->pluck('name')
+            ->all();
+
+        $programmingPackagesIDs = ToolHasProgrammingPackage::where('tool_id', $id)
+            ->pluck('programming_package_id')
+            ->all();
+
+        $programmingPackages = ProgrammingPackage::where('id', $programmingPackagesIDs)
+            ->pluck('name')
+            ->all();
+
+        $tagIDs = ToolHasTag::where('tool_id', $id)
+            ->pluck('tag_id')
+            ->all();
+
+        $tags = Tag::where('id', $tagIDs)
+            ->pluck('description')
+            ->all();
+
+        $datasetIDs = DatasetHasTool::where('tool_id', $id)
+            ->pluck('dataset_id')
+            ->all();
+
+        $datasets = Dataset::where('id', $datasetIDs)
+            ->with('versions')
+            ->get();
+
+        $datasetTitles = array();
+        foreach ($datasets as $dataset) {
+            $metadata = $dataset['versions'][0];
+            $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
+        }
+        usort($datasetTitles, 'strcasecmp');
+
+        try {
+            $toIndex = [
+                'name' => $tool['name'],
+                'description' => $tool['description'],
+                'license' => $license ? $license['label'] : null,
+                'techStack' => $tool['tech_stack'],
+                'category' => $tool['category']['name'],
+                'typeCategory' => $typeCategories,
+                'associatedAuthors' => $tool['associated_authors'],
+                'programmingLanguages' => $programmingLanguages,
+                'programmingPackages' => $programmingPackages,
+                'tags' => $tags,
+                'datasetTitles' => $datasetTitles,
+            ];
+
+            $params = [
+                'index' => 'tool',
+                'id' => $id,
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+
+            $client = MMC::getElasticClient();
+            $client->index($params);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 }
