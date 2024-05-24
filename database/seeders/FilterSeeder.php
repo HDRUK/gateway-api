@@ -59,8 +59,6 @@ class FilterSeeder extends Seeder
     {
         $filters = [
             'programmingLanguages',
-            'category',
-            'category_id',
             'license',
             'dataProvider',
             'datasetTitles',

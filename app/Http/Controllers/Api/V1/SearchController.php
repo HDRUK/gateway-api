@@ -409,9 +409,12 @@ class SearchController extends Controller
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
+            $aggs = Filter::where('type', 'tool')->get()->toArray();
+            $input['aggs'] = $aggs;
+
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools';
-            $response = Http::post($urlString,$request->all());
-           
+            $response = Http::post($urlString, $input);
+
             $toolsArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
