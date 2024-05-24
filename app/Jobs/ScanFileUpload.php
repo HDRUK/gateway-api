@@ -42,6 +42,7 @@ class ScanFileUpload implements ShouldQueue
         $upload = Upload::findOrFail($this->uploadId);
         $filePath = $upload->file_location;
 
+        var_dump(env('CLAMAV_API_URL', 'http://clamav:3001'));
         $response = Http::post(
             env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
             ['file' => $filePath, 'storage' => $this->fileSystem]
