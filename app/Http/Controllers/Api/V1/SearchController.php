@@ -426,6 +426,11 @@ class SearchController extends Controller
                 $foundFlag = false;
                 foreach ($toolModels as $model){
                     if ((int) $tool['_id'] === $model['id']) {
+
+                        $toolsArray[$i]['name'] = $model['name'];
+
+                        $toolsArray[$i]['description'] = $model['description'];
+
                         // uploader
                         $user = User::where('id', $model['user_id'])->first();
                         $toolsArray[$i]['uploader'] = $user ? $user->name : '';
