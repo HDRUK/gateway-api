@@ -204,6 +204,14 @@ class ToolsPostMigrationProcess extends Command
             ->with('versions')
             ->get();
 
+        $dataProviderId = DataProviderHasTeam::where('team_id', $tool['team_id'])
+            ->pluck('data_provider_id')
+            ->all();
+
+        $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+            ->pluck('name')
+            ->all();
+
         $datasetTitles = array();
         foreach ($datasets as $dataset) {
             $metadata = $dataset['versions'][0];
@@ -224,6 +232,7 @@ class ToolsPostMigrationProcess extends Command
                 'programmingPackages' => $programmingPackages,
                 'tags' => $tags,
                 'datasetTitles' => $datasetTitles,
+                'dataProvider' => $dataProvider,
             ];
 
             $params = [

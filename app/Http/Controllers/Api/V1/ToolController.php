@@ -911,13 +911,50 @@ class ToolController extends Controller
     {
         try {
             $tool = Tool::where('id', $toolId)
-                ->with(['tag'])
+                ->with(['programmingLanguages', 'programmingPackages', 'tag', 'category', 'typeCategory', 'license'])
                 ->first();
-            $tags = $tool['tag']->toArray();
-            $tagsDescription = array();
-            foreach ($tags as $t) {
-                $tagsDescription[] = $t['description'];
-            }
+
+            $license = License::where('id', $tool['license'])->first();
+
+            $typeCategoriesIDs = ToolHasTypeCategory::where('tool_id', $toolId)
+                ->pluck('type_category_id')
+                ->all();
+
+            $typeCategories = TypeCategory::where('id', $typeCategoriesIDs)
+                ->pluck('name')
+                ->all();
+
+            $programmingLanguagesIDs = ToolHasProgrammingLanguage::where('tool_id', $toolId)
+                ->pluck('programming_language_id')
+                ->all();
+
+            $programmingLanguages = ProgrammingLanguage::where('id', $programmingLanguagesIDs)
+                ->pluck('name')
+                ->all();
+
+            $programmingPackagesIDs = ToolHasProgrammingPackage::where('tool_id', $toolId)
+                ->pluck('programming_package_id')
+                ->all();
+
+            $programmingPackages = ProgrammingPackage::where('id', $programmingPackagesIDs)
+                ->pluck('name')
+                ->all();
+
+            $tagIDs = ToolHasTag::where('tool_id', $toolId)
+                ->pluck('tag_id')
+                ->all();
+
+            $tags = Tag::where('id', $tagIDs)
+                ->pluck('description')
+                ->all();
+
+            $datasetIDs = DatasetHasTool::where('tool_id', $toolId)
+                ->pluck('dataset_id')
+                ->all();
+
+            $datasets = Dataset::where('id', $datasetIDs)
+                ->with('versions')
+                ->get();
 
             $dataProviderId = DataProviderHasTeam::where('team_id', $tool['team_id'])
                 ->pluck('data_provider_id')
@@ -927,11 +964,27 @@ class ToolController extends Controller
                 ->pluck('name')
                 ->all();
 
+            $datasetTitles = array();
+            foreach ($datasets as $dataset) {
+                $metadata = $dataset['versions'][0];
+                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
+            }
+            usort($datasetTitles, 'strcasecmp');
+
+
             $toIndex = [
                 'name' => $tool['name'],
                 'description' => $tool['description'],
-                'tags' => $tagsDescription,
-                'dataProvider' => $dataProvider
+                'license' => $license ? $license['label'] : null,
+                'techStack' => $tool['tech_stack'],
+                'category' => $tool['category']['name'],
+                'typeCategory' => $typeCategories,
+                'associatedAuthors' => $tool['associated_authors'],
+                'programmingLanguages' => $programmingLanguages,
+                'programmingPackages' => $programmingPackages,
+                'tags' => $tags,
+                'datasetTitles' => $datasetTitles,
+                'dataProvider' => $dataProvider,
             ];
 
             $params = [
