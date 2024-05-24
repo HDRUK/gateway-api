@@ -46,6 +46,7 @@ class ScanFileUpload implements ShouldQueue
             env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
             ['file' => $filePath, 'storage' => $this->fileSystem]
         );
+        var_dump($response->json());
         $isInfected = $response['isInfected'];
 
         // Check if the file is infected
