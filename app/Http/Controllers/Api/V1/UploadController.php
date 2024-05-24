@@ -58,6 +58,11 @@ class UploadController extends Controller
         ScanFileUpload::dispatch((int) $upload->id, $fileSystem);
 
         // audit log
+        Auditor::log([
+            'action_type' => 'POST',
+            'action_service' => class_basename($this) . '@'.__FUNCTION__,
+            'description' => "File upload",
+        ]);
 
         return response()->json([
             'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -104,6 +109,12 @@ class UploadController extends Controller
     {
         $upload = Upload::findOrFail($id);
 
+        Auditor::log([
+            'action_type' => 'GET',
+            'action_service' => class_basename($this) . '@'.__FUNCTION__,
+            'description' => "Show uploaded file",
+        ]);
+
         return response()->json([
             'message' => Config::get('statuscodes.STATUS_OK.message'),
             'data' => $upload
@@ -146,16 +157,32 @@ class UploadController extends Controller
     {
         $upload = Upload::findOrFail($id);
         if ($upload->status === 'PENDING') {
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Get uploaded file content failed due to pending malware scan",
+            ]);
             return response()->json([
                 'message' => 'File scan is pending'
             ]);
         } else if ($upload->status === 'FAILED') {
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Get uploaded file content failed due to failed malware scan",
+            ]);
             return response()->json([
                 'message' => 'File failed scan, content cannot be retrieved'
             ]);
         } else {
             $contents = Storage::disk(env('FILESYSTEM_DISK', 'local_scan') . '.scanned')
                 ->get($upload->file_location);
+                
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Get uploaded file content",
+            ]);
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [

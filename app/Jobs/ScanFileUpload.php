@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Auditor;
 use Exception;
 
 use App\Models\Upload;
@@ -55,6 +56,12 @@ class ScanFileUpload implements ShouldQueue
             ]);
             Storage::disk($this->fileSystem . '.unscanned')
                 ->delete($upload->file_location);
+            
+            Auditor::log([
+                'action_type' => 'SCAN',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Uploaded file failed malware scan",
+            ]);
         } else {
             $loc = $upload->file_location;
             $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
@@ -64,6 +71,12 @@ class ScanFileUpload implements ShouldQueue
             $upload->update([
                 'status' => 'PROCESSED',
                 'file_location' => $loc
+            ]);
+
+            Auditor::log([
+                'action_type' => 'SCAN',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Uploaded file passed malware scan",
             ]);
         }
     }
