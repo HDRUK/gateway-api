@@ -38,7 +38,7 @@ class UploadController extends Controller
         $input = $request->all();
         $file  = $request->file('file');
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $fileSystem = env('FILESYSTEM_DISK', 'local_scan');
+        $fileSystem = env('SCANNING_FILESYSTEM_DISK', 'local_scan');
 
         // store unscanned
         $storedFilename = time() . '_' . $file->getClientOriginalName();
@@ -175,7 +175,7 @@ class UploadController extends Controller
                 'message' => 'File failed scan, content cannot be retrieved'
             ]);
         } else {
-            $contents = Storage::disk(env('FILESYSTEM_DISK', 'local_scan') . '.scanned')
+            $contents = Storage::disk(env('SCANNING_FILESYSTEM_DISK', 'local_scan') . '.scanned')
                 ->get($upload->file_location);
                 
             Auditor::log([
