@@ -27,6 +27,11 @@ use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
 use App\Models\DurHasTool;
 use App\Models\ToolHasProgrammingLanguage;
+use App\Models\Dataset;
+use App\Models\License;
+use App\Models\TypeCategory;
+use App\Models\ProgrammingLanguage;
+use App\Models\ProgrammingPackage;
 
 class ToolController extends Controller
 {

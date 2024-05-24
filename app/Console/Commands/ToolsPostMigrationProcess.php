@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Exception;
 
 use App\Models\Dataset;
+use App\Models\DataProvider;
 use App\Models\License;
 use App\Models\Tag;
 use App\Models\Tool;
@@ -12,6 +13,7 @@ use App\Models\TypeCategory;
 use App\Models\ProgrammingLanguage;
 use App\Models\ProgrammingPackage;
 use App\Models\DatasetHasTool;
+use App\Models\DataProviderHasTeam;
 use App\Models\ToolHasTag;
 use App\Models\ToolHasTypeCategory;
 use App\Models\ToolHasProgrammingPackage;
