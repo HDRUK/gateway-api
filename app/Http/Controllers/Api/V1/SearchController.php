@@ -1047,11 +1047,11 @@ class SearchController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v1/search/data_providers",
+     *      path="/api/v1/search/data_provider_colls",
      *      summary="Keyword search across gateway data providers",
-     *      description="Returns gateway data providers related to the provided query term(s)",
-     *      tags={"Search-DataProviders"},
-     *      summary="Search@data_providers",
+     *      description="Returns gateway data provider colls related to the provided query term(s)",
+     *      tags={"Search-DataProviderColls"},
+     *      summary="Search@data_provider_colls",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
@@ -1059,7 +1059,7 @@ class SearchController extends Controller
      *          @OA\MediaType(
      *              mediaType="application/json",
      *              @OA\Schema(
-     *                  @OA\Property(property="query", type="string", example="national data providers"),
+     *                  @OA\Property(property="query", type="string", example="national data provider colls"),
      *              )
      *          )
      *      ),
@@ -1120,7 +1120,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function dataProviders(Request $request): JsonResponse|BinaryFileResponse
+    public function dataProviderColls(Request $request): JsonResponse|BinaryFileResponse
     {
         try {
             $input = $request->all();

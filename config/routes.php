@@ -2365,10 +2365,10 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'search.data_providers',
+        'name' => 'search.data_provider_colls',
         'method' => 'post',
-        'path' => '/search/data_providers',
-        'methodController' => 'SearchController@dataProviders',
+        'path' => '/search/data_provider_colls',
+        'methodController' => 'SearchController@dataProviderColls',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],

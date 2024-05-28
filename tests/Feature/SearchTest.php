@@ -955,9 +955,9 @@ class SearchTest extends TestCase
      * 
      * @return void
      */
-    public function test_data_providers_search_with_success(): void
+    public function test_data_provider_colls_search_with_success(): void
     {
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers", ["query" => "term"], ['Accept' => 'application/json']);
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls", ["query" => "term"], ['Accept' => 'application/json']);
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -999,7 +999,7 @@ class SearchTest extends TestCase
         }
         $this->assertTrue(!in_array('1111', $elasticIds));
 
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -1030,7 +1030,7 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Third Provider');
 
         // Test sorting by name    
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=name:asc', ["query" => "term"], ['Accept' => 'application/json']); 
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls" . '?sort=name:asc', ["query" => "term"], ['Accept' => 'application/json']); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
@@ -1061,7 +1061,7 @@ class SearchTest extends TestCase
         $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Provider');
 
         // Test sorting by created_at desc        
-        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']); 
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_provider_colls" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']); 
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'data' => [
