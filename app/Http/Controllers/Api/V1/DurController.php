@@ -2,33 +2,34 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
-use App\Exceptions\NotFoundException;
 use Config;
+use Auditor;
 use Exception;
-use App\Models\Dataset;
 use App\Models\Dur;
+use App\Models\Tool;
+use App\Models\Sector;
+use App\Models\Dataset;
 use App\Models\Keyword;
-use Illuminate\Http\Request;
+use App\Models\DurHasTool;
+use App\Models\Application;
 use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
+use Illuminate\Http\Request;
 use App\Models\DurHasDataset;
 use App\Models\DurHasKeyword;
-use App\Models\Sector;
 use App\Http\Requests\Dur\GetDur;
+use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
+use App\Models\DataProviderHasTeam;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dur\CreateDur;
 use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
-use App\Http\Traits\RequestTransformation;
-use App\Models\Application;
-use App\Models\DurHasPublication;
-use App\Models\DurHasTool;
-use App\Models\Tool;
+use App\Http\Requests\Dur\UploadDur;
+use App\Exceptions\NotFoundException;
 use MetadataManagementController AS MMC;
 
+use App\Http\Traits\RequestTransformation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DurController extends Controller
@@ -1120,7 +1121,7 @@ class DurController extends Controller
         }
     }
 
-/**
+    /**
      * @OA\Get(
      *    path="/api/v1/dur/export",
      *    operationId="export_dur",
@@ -1225,6 +1226,154 @@ class DurController extends Controller
         $response->headers->set('Cache-Control','max-age=0');
         
         return $response;
+    }
+
+    /**
+     * @OA\Post(
+     *    path="/api/v1/dur/upload",
+     *    operationId="upload_dur",
+     *    tags={"Data Use Registers"},
+     *    summary="DurController@upload",
+     *    description="Create a new dur with upload data",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\RequestBody(
+     *       required=true,
+     *       description="Pass user credentials",
+     *       @OA\MediaType(
+     *          mediaType="application/json",
+     *          @OA\Schema(
+     *             @OA\Property(property="user_id", type="integer", example=1),
+     *             @OA\Property(property="team_id", type="integer", example=1),
+     *             @OA\Property(property="project_title", type="string", example=""),
+     *             @OA\Property(property="project_id_text", type="string", example=""),
+     *             @OA\Property(property="organisation_name", type="string", example=""),
+     *             @OA\Property(property="organisation_id", type="string", example=""),
+     *             @OA\Property(property="organisation_sector", type="string", example=""),
+     *             @OA\Property(property="non_gateway_applicants", type="string", example=""),
+     *             @OA\Property(property="applicant_id", type="integer", example=1),
+     *             @OA\Property(property="funders_and_sponsors", type="string", example=""),
+     *             @OA\Property(property="accredited_researcher_status", type="string", example=""),
+     *             @OA\Property(property="sublicence_arrangements", type="string", example=""),
+     *             @OA\Property(property="lay_summary", type="string", example=""),
+     *             @OA\Property(property="public_benefit_statement", type="string", example=""),
+     *             @OA\Property(property="request_category_type", type="string", example=""),
+     *             @OA\Property(property="technical_summary", type="string", example=""),
+     *             @OA\Property(property="other_approval_committees", type="string", example=""),
+     *             @OA\Property(property="project_start_date", type="string", example=""),
+     *             @OA\Property(property="project_end_date", type="string", example=""),
+     *             @OA\Property(property="latest_approval_date", type="string", example=""),
+     *             @OA\Property(property="data_sensitivity_level", type="string", example=""),
+     *             @OA\Property(property="legal_basis_for_data_article6", type="string", example=""),
+     *             @OA\Property(property="legal_basis_for_data_article9", type="string", example=""),
+     *             @OA\Property(property="duty_of_confidentiality", type="string", example=""),
+     *             @OA\Property(property="national_data_optout", type="string", example=""),
+     *             @OA\Property(property="request_frequency", type="string", example=""),
+     *             @OA\Property(property="dataset_linkage_description", type="string", example=""),
+     *             @OA\Property(property="confidential_data_description", type="string", example=""),
+     *             @OA\Property(property="access_date", type="string", example=""),
+     *             @OA\Property(property="access_type", type="string", example=""),
+     *             @OA\Property(property="privacy_enhancements", type="string", example=""),
+     *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *          ),
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=201,
+     *       description="Created",
+     *       @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="success"),
+     *           @OA\Property(property="data", type="integer", example="100")
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *           @OA\Property(property="message", type="string", example="unauthorized")
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=500,
+     *       description="Error",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="error"),
+     *       )
+     *    )
+     * )
+     */
+    public function upload(UploadDur $request): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $arrayKeys = [
+                'user_id', // similar with application id
+                'team_id', // is required if we create a new dur with jwt token
+                'project_title', // projectTitle - Project title
+                'project_id_text', // projectIdText - Project ID
+                'organisation_name', // organisationName - Organisation name*
+                'organisation_id', // organisationId - Organisation ID*
+                'organisation_sector', // organisationSector - Organisation sector
+                'non_gateway_applicants', // Applicant name(s) - I guess is about non_gateway_applicants
+                'applicant_id', // Applicant ID - I guess is about user_id
+                'funders_and_sponsors', // fundersAndSponsors - Funders/ Sponsors
+                'accredited_researcher_status', // accreditedResearcherStatus - DEA accredited researcher?
+                'sublicence_arrangements', // sublicenceArrangements - Sub-licence arrangements (if any)?
+                'lay_summary', // laySummary - Lay summary
+                'public_benefit_statement', // publicBenefitStatement - Public benefit statement
+                'request_category_type', // requestCategoryType - Request category type
+                'technical_summary', // technicalSummary - Technical summary
+                'other_approval_committees', // otherApprovalCommittees - Other approval committees
+                'project_start_date', // projectStartDate - Project start date
+                'project_end_date', // projectEndDate - Project end date
+                'latest_approval_date', // latestApprovalDate - Latest approval date
+                'data_sensitivity_level', // dataSensitivityLevel- Data sensitivity level
+                'legal_basis_for_data_article6', // legalBasisForDataArticle6 - Legal basis for provision of data under Article 6
+                'legal_basis_for_data_article9', // legalBasisForDataArticle9 - Lawful conditions for provision of data under Article 9
+                'duty_of_confidentiality', // dutyOfConfidentiality - Common Law Duty of Confidentiality
+                'national_data_optout',  // nationalDataOptOut - National data opt-out applied?
+                'request_frequency', // requestFrequency - Request frequency
+                'dataset_linkage_description', // datasetLinkageDescription - For linked datasets, specify how the linkage will take place
+                'confidential_data_description', // confidentialDataDescription - Description of the confidential data being used
+                'access_date', // accessDate - Release/Access date
+                'access_type', // accessType - Access type
+                'privacy_enhancements', // privacyEnhancements - How has data been processed to enhance privacy?
+            ];
+            $array = $this->checkEditArray($input, $arrayKeys);
+
+            $nonGatewayApplicants = array_key_exists('non_gateway_applicants', $input) ? explode("|", $input['non_gateway_applicants']) : [];
+            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+
+            if (count($nonGatewayApplicants)) {
+                $array['non_gateway_applicants'] = $nonGatewayApplicants;
+            }
+
+            $dur = Dur::create($array);
+            $durId = $dur->id;
+
+            foreach ($datasets as $datasetId) {
+                DurHasDataset::create([
+                    'dur_id' => $durId,
+                    'dataset_id' => $datasetId,
+                    'user_id' => $array['user_id'],
+                ]);
+            }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPLOAD',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Dur " . $durId . " uploaded",
+            ]);
+
+            return response()->json([
+                'message' => 'created',
+                'data' => $durId,
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     // datasets

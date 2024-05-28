@@ -2696,6 +2696,18 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'dur.post.upload',
+        'method' => 'post',
+        'path' => '/dur/upload',
+        'methodController' => 'DurController@upload',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+
 
     // organisations
     [
