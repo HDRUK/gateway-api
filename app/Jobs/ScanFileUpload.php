@@ -47,13 +47,11 @@ class ScanFileUpload implements ShouldQueue
             'storage' => (string) $this->fileSystem
         ];
         $url = env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file';
+        
         $response = Http::post(
             env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
             ['file' => $filePath, 'storage' => $this->fileSystem]
         );
-        
-        var_dump($response->body());
-        var_dump($response->status());
         $isInfected = $response['isInfected'];
 
         // Check if the file is infected

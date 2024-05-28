@@ -63,8 +63,6 @@ class UploadTest extends TestCase
             ]
         );
         
-        var_dump($response->json());
-        
         $response->assertJsonStructure([
             'data' => [
                 'id',
