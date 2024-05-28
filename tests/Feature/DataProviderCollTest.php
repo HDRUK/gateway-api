@@ -5,8 +5,9 @@ namespace Tests\Feature;
 use Tests\TestCase;
 
 use App\Models\DataProvider;
+use App\Models\DataProviderCollHasTeam;
 use App\Models\DataProviderHasTeam;
-
+use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\TeamSeeder;
 use Database\Seeders\TeamHasUserSeeder;
@@ -18,14 +19,14 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use Tests\Traits\MockExternalApis;
 
-class DataProviderTest extends TestCase
+class DataProviderCollTest extends TestCase
 {
     use RefreshDatabase;
     use MockExternalApis {
         setUp as commonSetUp;
     }
 
-    const TEST_URL = '/api/v1/data_providers';
+    const TEST_URL = '/api/v1/data_provider_colls';
 
     protected $header = [];
 
@@ -37,11 +38,11 @@ class DataProviderTest extends TestCase
             MinimalUserSeeder::class,
             TeamSeeder::class,
             TeamHasUserSeeder::class,
-            DataProviderSeeder::class,
+            DataProviderCollsSeeder::class,
         ]);
     }
 
-    public function test_get_all_data_providers_with_success(): void
+    public function test_get_all_data_provider_colls_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
@@ -74,7 +75,7 @@ class DataProviderTest extends TestCase
         ]);
     }
 
-    public function test_get_data_provider_by_id_with_success(): void
+    public function test_get_data_provider_coll_by_id_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
 
@@ -100,7 +101,7 @@ class DataProviderTest extends TestCase
     }
 
 
-    public function test_create_data_provider_with_success(): void
+    public function test_create_data_provider_coll_with_success(): void
     {
         $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $payload = [
@@ -129,7 +130,7 @@ class DataProviderTest extends TestCase
 
         $dpsId = $response->decodeResponseJson()['data'];
 
-        $relations = DataProviderHasTeam::where('data_provider_id', $dpsId)->get();
+        $relations = DataProviderCollHasTeam::where('data_provider_coll_id', $dpsId)->get();
         $this->assertNotNull($relations);
         $this->assertEquals(count($relations), 3);
 
@@ -184,7 +185,7 @@ class DataProviderTest extends TestCase
         $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
 
-    public function test_delete_data_provider_with_success(): void
+    public function test_delete_data_provider_coll_with_success(): void
     {
         $payload = [
             'enabled' => true,

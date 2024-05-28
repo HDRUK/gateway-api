@@ -10,8 +10,8 @@ use App\Models\Filter;
 use App\Models\Dataset;
 use Http\Client\HttpClient;
 
-use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
+use App\Models\DataProviderColl;
+use App\Models\DataProviderCollHasTeam;
 use App\Models\DatasetVersion;
 
 use Illuminate\Support\Carbon;
@@ -239,10 +239,10 @@ class MetadataManagementController {
 
             $metadataModelVersion = $metadata['gwdmVersion'];
 
-            $dataProviderId = DataProviderHasTeam::where('team_id', $datasetMatch['team_id'])
-                ->pluck('data_provider_id')
+            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $datasetMatch['team_id'])
+                ->pluck('data_provider_coll_id')
                 ->all();
-            $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
                 ->pluck('name')
                 ->all();
 
@@ -300,7 +300,7 @@ class MetadataManagementController {
                 'dataUseTitles' => $durs,
                 'geographicLocation' => $geographicLocations,
                 'accessService' => $accessServiceCategory,
-                'dataProvider' => $dataProvider
+                'dataProviderColl' => $dataProviderColl
             ];
 
             $params = [

@@ -11,41 +11,43 @@ use App\Models\Team;
 use App\Models\Tool;
 use App\Models\User;
 use App\Models\Filter;
-use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
 use App\Models\Dataset;
+use App\Models\License;
 use App\Models\Collection;
+use App\Models\DurHasTool;
 use App\Models\Publication;
+use App\Models\DataProvider;
 use App\Models\TypeCategory;
-use Illuminate\Http\Request;
 
+use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
+use App\Models\DatasetHasTool;
 use App\Models\DatasetVersion;
+use App\Exports\ToolListExport;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
+
 use App\Exports\DatasetListExport;
 use App\Exports\PublicationExport;
-use App\Exports\DataProviderExport;
-
 use App\Models\ProgrammingPackage;
 use App\Models\PublicationHasTool;
+use App\Exports\DataProviderExport;
 use App\Exports\DatasetTableExport;
+use App\Models\DataProviderHasTeam;
 use App\Models\ProgrammingLanguage;
-use App\Models\License;
 use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exceptions\NotFoundException;
-use App\Exports\ToolListExport;
 use App\Http\Traits\PaginateFromArray;
+use App\Models\DataProviderCollHasTeam;
 use MetadataManagementController as MMC;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 use Illuminate\Database\Eloquent\Casts\Json;
 use App\Http\Requests\Search\PublicationSearch;
-use App\Models\DatasetHasTool;
-use App\Models\DurHasTool;
+use App\Models\DataProviderColl;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
@@ -176,7 +178,7 @@ class SearchController extends Controller
                             $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
                         }
                         $datasetsArray[$i]['isCohortDiscovery'] = $model['is_cohort_discovery'];
-                        $datasetsArray[$i]['dataProvider'] = $this->getDataProvider($model);
+                        $datasetsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model);
                         $foundFlag = true;
                     }
                 }
@@ -462,7 +464,7 @@ class SearchController extends Controller
                         $datasetHasToolIds = DatasetHasTool::where('tool_id', $model['id'])->pluck('dataset_id')->all();
                         $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
 
-                        $toolsArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
+                        $toolsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
 
                         $toolsArray[$i]['durTitles'] = $this->toolDurTitles($model['id']);
 
@@ -627,7 +629,7 @@ class SearchController extends Controller
                     if ((int) $collection['_id'] === $model['id']) {
                         $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
                         $collectionArray[$i]['name'] = $model['name'];
-                        $collectionArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
+                        $collectionArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $foundFlag = true;
                         break;
                     }
@@ -779,7 +781,7 @@ class SearchController extends Controller
                         $durArray[$i]['team'] = $model['team'];
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
                         $durArray[$i]['datasetTitles'] = $this->durDatasetTitles($model);
-                        $durArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
+                        $durArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
                         $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $foundFlag = true;
                         break;
@@ -1131,35 +1133,35 @@ class SearchController extends Controller
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
-            $aggs = Filter::where('type', 'dataProvider')->get()->toArray();
+            $aggs = Filter::where('type', 'dataProviderColl')->get()->toArray();
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers';
             $response = Http::post($urlString, $input);
 
-            $dataProviderArray = $response['hits']['hits'];
+            $dataProviderCollArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
-            foreach (array_values($dataProviderArray) as $i => $d) {
+            foreach (array_values($dataProviderCollArray) as $i => $d) {
                 $matchedIds[] = $d['_id'];
             }
 
-            $dataProviderModels = DataProvider::whereIn('id', $matchedIds)->with('teams')->get();
+            $dataProviderCollModels = DataProviderColl::whereIn('id', $matchedIds)->with('teams')->get();
 
-            foreach ($dataProviderArray as $i => $dp) {
+            foreach ($dataProviderCollArray as $i => $dp) {
                 $foundFlag = false;
-                foreach ($dataProviderModels as $model){
+                foreach ($dataProviderCollModels as $model){
                     if ((int) $dp['_id'] === $model['id']) {
-                        $dataProviderArray[$i]['_source']['updated_at'] = $model['updated_at'];
-                        $dataProviderArray[$i]['name'] = $model['name'];
-                        $dataProviderArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
-                        $dataProviderArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
+                        $dataProviderCollArray[$i]['_source']['updated_at'] = $model['updated_at'];
+                        $dataProviderCollArray[$i]['name'] = $model['name'];
+                        $dataProviderCollArray[$i]['datasetTitles'] = $this->dataProviderDatasetTitles($model);
+                        $dataProviderCollArray[$i]['geographicLocations'] = $this->dataProviderLocations($model);
                         $foundFlag = true;
                         break;
                     }
                 }
                 if (!$foundFlag) {
-                    unset($dataProviderArray[$i]);
+                    unset($dataProviderCollArray[$i]);
                     continue;
                 }
             }
@@ -1170,13 +1172,13 @@ class SearchController extends Controller
                     'action_service' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Search data provider export data",
                 ]);
-                return Excel::download(new DataProviderExport($dataProviderArray), 'dataProvider.csv');
+                return Excel::download(new DataProviderExport($dataProviderCollArray), 'dataProviderColl.csv');
             }
 
-            $dataProviderArraySorted = $this->sortSearchResult($dataProviderArray, $sortField, $sortDirection);
+            $dataProviderCollArraySorted = $this->sortSearchResult($dataProviderCollArray, $sortField, $sortDirection);
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $paginatedData = $this->paginateArray($request, $dataProviderArraySorted, $perPage);
+            $paginatedData = $this->paginateArray($request, $dataProviderCollArraySorted, $perPage);
             $aggs = collect([
                 'aggregations' => $response['aggregations'],
                 'elastic_total' => $totalResults,
@@ -1288,20 +1290,20 @@ class SearchController extends Controller
         return $response;
     }
 
-    private function getDataProvider(array $model): array
+    private function getDataProviderColl(array $model): array
     {
-        $dataProviderId = DataProviderHasTeam::where('team_id', $model['team_id'])
-            ->pluck('data_provider_id')
+        $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $model['team_id'])
+            ->pluck('data_provider_coll_id')
             ->all();
 
-        $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+        $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
             ->pluck('name')
             ->all();
 
-        return $dataProvider;
+        return $dataProviderColl;
     }
 
-    private function dataProviderDatasetTitles(DataProvider $provider): array
+    private function dataProviderDatasetTitles(DataProviderColl $provider): array
     {
         $datasetTitles = array();
         foreach ($provider['teams'] as $team) {
@@ -1315,7 +1317,7 @@ class SearchController extends Controller
         return $datasetTitles;
     }
 
-    private function dataProviderLocations(DataProvider $provider): array
+    private function dataProviderLocations(DataProviderColl $provider): array
     {
         $locations = array();
         foreach ($provider['teams'] as $team) {

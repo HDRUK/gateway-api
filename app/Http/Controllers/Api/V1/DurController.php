@@ -12,23 +12,23 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\DurHasTool;
 use App\Models\Application;
-use App\Models\DataProvider;
 use Illuminate\Http\Request;
 use App\Models\DurHasDataset;
 use App\Models\DurHasKeyword;
+use App\Models\DataProviderColl;
 use App\Http\Requests\Dur\GetDur;
 use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
-use App\Models\DataProviderHasTeam;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dur\CreateDur;
 use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Requests\Dur\UploadDur;
 use App\Exceptions\NotFoundException;
-use MetadataManagementController AS MMC;
 
+use App\Models\DataProviderCollHasTeam;
+use MetadataManagementController AS MMC;
 use App\Http\Traits\RequestTransformation;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -1714,10 +1714,10 @@ class DurController extends Controller
 
             $sector = ($durMatch['sector'] != null) ? Sector::where(['id' => $durMatch['sector']])->first()->name : null;
 
-            $dataProviderId = DataProviderHasTeam::where('team_id', $durMatch['team_id'])
-                ->pluck('data_provider_id')
+            $dataProviderId = DataProviderCollHasTeam::where('team_id', $durMatch['team_id'])
+                ->pluck('data_provider_coll_id')
                 ->all();
-            $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+            $dataProvider = DataProviderColl::whereIn('id', $dataProviderId)
                 ->pluck('name')
                 ->all();
             

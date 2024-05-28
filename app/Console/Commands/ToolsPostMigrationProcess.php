@@ -4,24 +4,26 @@ namespace App\Console\Commands;
 
 use Exception;
 
-use App\Models\Dataset;
-use App\Models\DataProvider;
-use App\Models\License;
 use App\Models\Tag;
 use App\Models\Tool;
-use App\Models\TypeCategory;
-use App\Models\ProgrammingLanguage;
-use App\Models\ProgrammingPackage;
-use App\Models\DatasetHasTool;
-use App\Models\DataProviderHasTeam;
+use App\Models\Dataset;
+use App\Models\License;
 use App\Models\ToolHasTag;
+use App\Models\DataProvider;
+use App\Models\TypeCategory;
+use App\Models\DatasetHasTool;
+use Illuminate\Console\Command;
+use App\Models\DataProviderColl;
+use App\Models\ProgrammingPackage;
+use App\Models\DataProviderHasTeam;
+use App\Models\ProgrammingLanguage;
 use App\Models\ToolHasTypeCategory;
-use App\Models\ToolHasProgrammingPackage;
-use App\Models\ToolHasProgrammingLanguage;
+
+use App\Models\DataProviderCollHasTeam;
 
 use MetadataManagementController AS MMC;
-
-use Illuminate\Console\Command;
+use App\Models\ToolHasProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
 
 class ToolsPostMigrationProcess extends Command
 {
@@ -206,11 +208,11 @@ class ToolsPostMigrationProcess extends Command
             ->with('versions')
             ->get();
 
-        $dataProviderId = DataProviderHasTeam::where('team_id', $tool['team_id'])
-            ->pluck('data_provider_id')
+        $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
+            ->pluck('data_provider_coll_id')
             ->all();
 
-        $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+        $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
             ->pluck('name')
             ->all();
 
@@ -234,7 +236,7 @@ class ToolsPostMigrationProcess extends Command
                 'programmingPackages' => $programmingPackages,
                 'tags' => $tags,
                 'datasetTitles' => $datasetTitles,
-                'dataProvider' => $dataProvider,
+                'dataProviderColl' => $dataProviderColl,
             ];
 
             $params = [

@@ -31,6 +31,7 @@ use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
+use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\DataProviderSeeder;
 use Database\Seeders\DurHasToolSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -77,7 +78,7 @@ class SearchTest extends TestCase
             TagSeeder::class,
             TypeCategorySeeder::class,
             PublicationHasToolSeeder::class,
-            DataProviderSeeder::class,
+            DataProviderCollsSeeder::class,
             DurHasToolSeeder::class,
         ]);
 
@@ -110,7 +111,7 @@ class SearchTest extends TestCase
                         'populationSize',
                         'created_at'
                     ],
-                    'dataProvider',
+                    'dataProviderColl',
                 ],
             ],
             'aggregations',
@@ -201,7 +202,7 @@ class SearchTest extends TestCase
                     '_id',
                     'highlight',
                     '_source',
-                    'dataProvider',
+                    'dataProviderColl',
                 ],
             ],
             'aggregations',
@@ -292,7 +293,7 @@ class SearchTest extends TestCase
                     'programming_language',
                     'programming_package',
                     'datasets',
-                    'dataProvider',
+                    'dataProviderColl',
                     'durTitles',
                 ],
             ],
@@ -335,7 +336,7 @@ class SearchTest extends TestCase
                     'programming_language',
                     'programming_package',
                     'datasets',
-                    'dataProvider',
+                    'dataProviderColl',
                 ],
             ],
             'aggregations',
@@ -371,7 +372,7 @@ class SearchTest extends TestCase
                     'programming_language',
                     'programming_package',
                     'datasets',
-                    'dataProvider',
+                    'dataProviderColl',
                 ],
             ],
             'aggregations',
@@ -407,7 +408,7 @@ class SearchTest extends TestCase
                     'programming_language',
                     'programming_package',
                     'datasets',
-                    'dataProvider',
+                    'dataProviderColl',
                 ],
             ],
             'aggregations',
@@ -450,7 +451,7 @@ class SearchTest extends TestCase
                         'created_at'
                     ],
                     'name',
-                    'dataProvider',
+                    'dataProviderColl',
                 ],
             ],
             'aggregations',
@@ -486,7 +487,7 @@ class SearchTest extends TestCase
                     'highlight',
                     '_source',
                     'name',
-                    'dataProvider',
+                    'dataProviderColl',
                 ],
             ],
             'aggregations',
@@ -516,7 +517,7 @@ class SearchTest extends TestCase
                     'highlight',
                     '_source',
                     'name',
-                    'dataProvider',
+                    'dataProviderColl',
                 ],
             ],
             'aggregations',
@@ -546,7 +547,7 @@ class SearchTest extends TestCase
                     'highlight',
                     '_source',
                     'name',
-                    'dataProvider',
+                    'dataProviderColl',
                 ],
             ],
             'aggregations',
@@ -655,7 +656,7 @@ class SearchTest extends TestCase
                     'projectTitle',
                     'datasetTitles',
                     'team',
-                    'dataProvider',
+                    'dataProviderColl',
                     'toolNames',
                 ],
             ],
