@@ -981,15 +981,15 @@ trait MockExternalApis
 
         $this->dataset_store = [];
 
-        Http::fake([
-            env('MJML_RENDER_URL') => Http::response(
-                ["html"=>"<html>content</html>"], 
-                201,
-                ['application/json']
-            )
-        ]);
+        // Http::fake([
+        //     env('MJML_RENDER_URL') => Http::response(
+        //         ["html"=>"<html>content</html>"], 
+        //         201,
+        //         ['application/json']
+        //     )
+        // ]);
 
-         Http::fake([
+        Http::fake([
             env('FMA_SERVICE_URL').'*' => Http::response(
                 ['message'=>'success'], 
                 200,
