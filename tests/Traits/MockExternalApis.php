@@ -998,9 +998,9 @@ trait MockExternalApis
         ]);
 
         Http::fake([
-            env('CLAMAV_API_URL', 'http://clamav:3001').'*' => Http::response(
+            env('CLAMAV_API_URL', 'http://clamav:3001') . '*' => Http::response(
                 [
-                    'isInfected'=> false,
+                    'isInfected' => false,
                     'file' => '1716469707_test_file.csv',
                     'viruses' => [],
                 ], 
