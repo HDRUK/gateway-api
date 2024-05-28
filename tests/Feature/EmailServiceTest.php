@@ -35,7 +35,7 @@ class EmailServiceTest extends TestCase
     public function tearDown(): void
     {
         Bus::fake();
-        parent::tearDown();
+        // parent::tearDown();
     }
 
     public function test_dispatch_email_job()
