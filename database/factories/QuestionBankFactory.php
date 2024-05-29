@@ -24,6 +24,8 @@ class QuestionBankFactory extends Factory
             'locked' => 0,
             'archived' => 0,
             'archived_date' => null,
+            'force_required' => fake()->randomElement([0,1]),
+            'allow_guidance_override' => fake()->randomElement([0,1])
         ];
     }
 }

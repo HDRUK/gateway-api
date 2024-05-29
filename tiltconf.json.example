@@ -7,13 +7,14 @@
     "tedServiceRoot": "/Users/lokisinclair/Development/HDRUK/term-extraction-director",
     "fmaServiceRoot": "/Users/lokisinclair/Development/HDRUK/federated_metadata_mk2",
     "searchServiceRoot": "/Users/lokisinclair/Development/HDRUK/search-service",
-    "qbServiceRoot": "/Users/lokisinclair/Development/HDRUK/qb-service-poc",
+    "qbServiceRoot": "/Users/lokisinclair/Development/HDRUK/qb-service",
+    "darasServiceRoot": "/Users/lokisinclair/Development/HDRUK/dar-service",
     "clamavServiceRoot": "/Users/lokisinclair/Development/HDRUK/clamav-scanner",
-
     "traserEnabled": true,
     "tedEnabled": true,
     "fmaEnabled": true,
     "searchEnabled": true,
-    "qbEnabled": true,
+    "qbEnabled": true
+    "darasEnabled": true
     "clamavEnabled": true
 }

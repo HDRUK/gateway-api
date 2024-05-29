@@ -27,6 +27,8 @@ class QuestionBank extends Model
         'user_id',
         'team_id',
         'locked',
+        'force_required',
+        'allow_guidance'
      ];
 
      public function user(): BelongsTo
