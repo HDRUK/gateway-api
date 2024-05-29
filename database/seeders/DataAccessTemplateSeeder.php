@@ -29,6 +29,7 @@ class DataAccessTemplateSeeder extends Seeder
             shuffle($numbers);
             $count = 1;
             foreach (array_slice($numbers, 0, $n) as $i) {
+                
                 DataAccessTemplateHasQuestion::create([
                     'template_id' => $model->id,
                     'question_id' =>  $i,
