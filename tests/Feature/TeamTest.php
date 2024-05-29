@@ -69,6 +69,7 @@ class TeamTest extends TestCase
                         'users',
                         'notifications',
                         'is_question_bank',
+                        'is_provider',
                     ],
                 ],               
             ]);

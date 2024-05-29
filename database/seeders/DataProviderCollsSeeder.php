@@ -2,24 +2,22 @@
 
 namespace Database\Seeders;
 
-use App\Models\Team;
-use App\Models\DataProvider;
-
 use Illuminate\Database\Seeder;
-use App\Models\DataProviderHasTeam;
+use App\Models\DataProviderColl;
+use App\Models\DataProviderCollHasTeam;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class DataProviderSeeder extends Seeder
+class DataProviderCollsSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        DataProvider::factory(3)->create();
+        DataProviderColl::factory(3)->create();
 
-        DataProviderHasTeam::create([
-            'data_provider_id' => 1,
+        DataProviderCollHasTeam::create([
+            'data_provider_coll_id' => 1,
             'team_id' => 1,
         ]);
     }

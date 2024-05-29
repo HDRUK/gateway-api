@@ -2365,10 +2365,10 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'search.data_providers',
+        'name' => 'search.data_provider_colls',
         'method' => 'post',
-        'path' => '/search/data_providers',
-        'methodController' => 'SearchController@dataProviders',
+        'path' => '/search/data_provider_colls',
+        'methodController' => 'SearchController@dataProviderColls',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
@@ -3038,19 +3038,19 @@ return [
 
     // DataProviders
     [
-        'name' => 'data_providers',
+        'name' => 'data_provider_colls',
         'method' => 'get',
-        'path' => '/data_providers',
-        'methodController' => 'DataProviderController@index',
+        'path' => '/data_provider_colls',
+        'methodController' => 'DataProviderCollController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
     ],
     [
-        'name' => 'data_providers',
+        'name' => 'data_provider_colls',
         'method' => 'get',
-        'path' => '/data_providers/{id}',
-        'methodController' => 'DataProviderController@show',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
@@ -3058,10 +3058,10 @@ return [
         ],
     ],
     [
-        'name' => 'data_providers',
+        'name' => 'data_provider_colls',
         'method' => 'post',
-        'path' => '/data_providers',
-        'methodController' => 'DataProviderController@store',
+        'path' => '/data_provider_colls',
+        'methodController' => 'DataProviderCollController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3071,10 +3071,10 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'data_providers',
+        'name' => 'data_provider_colls',
         'method' => 'put',
-        'path' => '/data_providers/{id}',
-        'methodController' => 'DataProviderController@update',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3086,10 +3086,10 @@ return [
         ],
     ],
     [
-        'name' => 'data_providers',
+        'name' => 'data_provider_colls',
         'method' => 'patch',
-        'path' => '/data_providers/{id}',
-        'methodController' => 'DataProviderController@edit',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3101,10 +3101,10 @@ return [
         ],
     ],
     [
-        'name' => 'data_providers',
+        'name' => 'data_provider_colls',
         'method' => 'delete',
-        'path' => '/data_providers/{id}',
-        'methodController' => 'DataProviderController@destroy',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',

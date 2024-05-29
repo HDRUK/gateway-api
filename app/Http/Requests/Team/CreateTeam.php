@@ -85,6 +85,9 @@ class CreateTeam extends BaseFormRequest
                 'distinct',
                 'exists:users,id',
             ],
+            'is_provider' => [
+                'boolean',
+            ],
         ];
     }
 }

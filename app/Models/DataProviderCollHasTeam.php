@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DataProviderHasTeam extends Model
+class DataProviderCollHasTeam extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'data_provider_id',
+        'data_provider_coll_id',
         'team_id',
     ];
 
@@ -19,7 +19,7 @@ class DataProviderHasTeam extends Model
      * 
      * @var string
      */
-    protected $table = 'data_provider_has_teams';
+    protected $table = 'data_provider_coll_has_teams';
 
     /**
      * Indicates if this model is timestamped

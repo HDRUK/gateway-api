@@ -7,31 +7,31 @@ use Auditor;
 use Exception;
 use App\Models\Tag;
 use App\Models\Tool;
+use App\Models\Dataset;
+use App\Models\License;
+use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Application;
+use App\Models\TypeCategory;
 use Illuminate\Http\Request;
-use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
 use App\Models\DatasetHasTool;
+use App\Models\DataProviderColl;
 use Illuminate\Http\JsonResponse;
+use App\Models\ProgrammingPackage;
 use App\Models\PublicationHasTool;
 use App\Http\Requests\Tool\GetTool;
+use App\Models\ProgrammingLanguage;
 use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tool\EditTool;
 use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
+use App\Models\DataProviderCollHasTeam;
 use MetadataManagementController AS MMC;
 use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
-use App\Models\DurHasTool;
 use App\Models\ToolHasProgrammingLanguage;
-use App\Models\Dataset;
-use App\Models\License;
-use App\Models\TypeCategory;
-use App\Models\ProgrammingLanguage;
-use App\Models\ProgrammingPackage;
 
 class ToolController extends Controller
 {
@@ -961,11 +961,11 @@ class ToolController extends Controller
                 ->with('versions')
                 ->get();
 
-            $dataProviderId = DataProviderHasTeam::where('team_id', $tool['team_id'])
-                ->pluck('data_provider_id')
+            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
+                ->pluck('data_provider_coll_id')
                 ->all();
 
-            $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
                 ->pluck('name')
                 ->all();
 
@@ -975,7 +975,6 @@ class ToolController extends Controller
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
             }
             usort($datasetTitles, 'strcasecmp');
-
 
             $toIndex = [
                 'name' => $tool['name'],
@@ -989,7 +988,7 @@ class ToolController extends Controller
                 'programmingPackages' => $programmingPackages,
                 'tags' => $tags,
                 'datasetTitles' => $datasetTitles,
-                'dataProvider' => $dataProvider,
+                'dataProviderColl' => $dataProviderColl,
             ];
 
             $params = [
