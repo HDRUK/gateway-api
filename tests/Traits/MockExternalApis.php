@@ -954,6 +954,18 @@ trait MockExternalApis
             )
         ]);
 
+        Http::fake([
+            env('CLAMAV_API_URL', 'http://clamav:3001') . '*' => Http::response(
+                [
+                    'isInfected' => false,
+                    'file' => '1716469707_test_file.csv',
+                    'viruses' => [],
+                ], 
+                200,
+                ['application/json']
+            )
+        ]);
+
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
@@ -989,15 +1001,13 @@ trait MockExternalApis
             )
         ]);
 
-         Http::fake([
+        Http::fake([
             env('FMA_SERVICE_URL').'*' => Http::response(
                 ['message'=>'success'], 
                 200,
                 ['application/json']
             )
         ]);
-
-
 
     }
 

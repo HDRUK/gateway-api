@@ -58,11 +58,11 @@ class FilterSeeder extends Seeder
     public function seed_tools_filters(): void
     {
         $filters = [
-            'programmingLanguage',
-            'category',
-            'category_id',
+            'programmingLanguages',
             'license',
-            'dataProvider'
+            'dataProvider',
+            'datasetTitles',
+            'typeCategory'
         ];
 
         $this->seed_filter("tool",$filters);

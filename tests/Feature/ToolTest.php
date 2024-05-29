@@ -8,27 +8,37 @@ use Tests\TestCase;
 use App\Models\Tool;
 use ReflectionClass;
 use App\Models\License;
+use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
+use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
+
 use Database\Seeders\ToolSeeder;
 use App\Http\Requests\ToolRequest;
-
 use Tests\Traits\MockExternalApis;
 use App\Models\ToolHasTypeCategory;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
+use Database\Seeders\DurHasToolSeeder;
+
+use Database\Seeders\ToolHasTagSeeder;
+use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
-
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ToolTest extends TestCase
@@ -55,14 +65,23 @@ class ToolTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             CategorySeeder::class,
-            PublicationSeeder::class,
             ProgrammingLanguageSeeder::class,
             ProgrammingPackageSeeder::class,
             LicenseSeeder::class,
-            ToolSeeder::class,
             TagSeeder::class,
+            KeywordSeeder::class,
             TypeCategorySeeder::class,
+            DatasetSeeder::class,
+            DatasetVersionSeeder::class,
+            ToolSeeder::class,
+            ToolHasTagSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
             PublicationHasToolSeeder::class,
+            ApplicationSeeder::class,
+            DurSeeder::class,
+            DurHasPublicationSeeder::class,
+            DurHasToolSeeder::class,
         ]);
     }
 
@@ -97,6 +116,7 @@ class ToolTest extends TestCase
                     'associated_authors', 
                     'contact_address',
                     'publications',
+                    'durs',
                 ]
             ],
             'current_page',
@@ -122,8 +142,8 @@ class ToolTest extends TestCase
      */
     public function test_get_tool_by_id_with_success(): void
     {
-        $tools = Tool::where('enabled', 1)->first();
-        $response = $this->json('GET', self::TEST_URL . '/' . $tools->id, [], $this->header);
+        $toolId = Tool::where('enabled', 1)->get()->random()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $toolId, [], $this->header);
         $response->assertJsonStructure([
             'data' => [
                 'id',
@@ -147,6 +167,7 @@ class ToolTest extends TestCase
                 'associated_authors', 
                 'contact_address',
                 'publications',
+                'durs',
             ]
         ]);
         $response->assertStatus(200);

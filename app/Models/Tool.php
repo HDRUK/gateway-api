@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Dur;
 use App\Models\Tag;
 use App\Models\License;
 use App\Models\Category;
@@ -103,5 +104,10 @@ class Tool extends Model
     public function license(): BelongsTo
     {
         return $this->belongsTo(License::class, 'license', 'id');
+    }
+
+    public function durs(): BelongsToMany
+    {
+        return $this->belongsToMany(Dur::class, 'dur_has_tools');
     }
 }

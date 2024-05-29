@@ -23,6 +23,7 @@ use App\Http\Traits\IntegrationOverride;
 use MetadataManagementController AS MMC;
 use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
+use App\Models\DurHasTool;
 use App\Models\ToolHasProgrammingLanguage;
 
 class IntegrationToolController extends Controller
@@ -51,7 +52,7 @@ class IntegrationToolController extends Controller
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
-            $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications'])
+            $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications', 'durs'])
                 ->where('enabled', 1)
                 ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
@@ -625,6 +626,7 @@ class IntegrationToolController extends Controller
                 ToolHasProgrammingPackage::where('tool_id', $id)->delete();
                 ToolHasTypeCategory::where('tool_id', $id)->delete();
                 PublicationHasTool::where('tool_id', $id)->delete();
+                DurHasTool::where('tool_id', $id)->delete();
             }
             
             Auditor::log([
@@ -654,6 +656,7 @@ class IntegrationToolController extends Controller
             'programmingPackages',
             'typeCategory',
             'publications',
+            'durs',
         ])->where([
             'id' => $toolId,
             'enabled' => 1,

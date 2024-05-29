@@ -77,6 +77,9 @@ if cfg.get("qbEnabled"):
 if cfg.get("darasEnabled"):
     include(cfg.get("darasServiceRoot") + "/Tiltfile")
 
+if cfg.get('clamavEnabled'):
+    include(cfg.get('clamavServiceRoot') + '/Tiltfile')
+
 
 docker_build(
     ref="hdruk/" + cfg.get("name"),

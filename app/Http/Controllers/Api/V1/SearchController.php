@@ -45,6 +45,7 @@ use App\Models\ToolHasProgrammingLanguage;
 use Illuminate\Database\Eloquent\Casts\Json;
 use App\Http\Requests\Search\PublicationSearch;
 use App\Models\DatasetHasTool;
+use App\Models\DurHasTool;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SearchController extends Controller
@@ -408,9 +409,12 @@ class SearchController extends Controller
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
+            $aggs = Filter::where('type', 'tool')->get()->toArray();
+            $input['aggs'] = $aggs;
+
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/tools';
-            $response = Http::post($urlString,$request->all());
-           
+            $response = Http::post($urlString, $input);
+
             $toolsArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
             $matchedIds = [];
@@ -425,6 +429,11 @@ class SearchController extends Controller
                 $foundFlag = false;
                 foreach ($toolModels as $model){
                     if ((int) $tool['_id'] === $model['id']) {
+
+                        $toolsArray[$i]['name'] = $model['name'];
+
+                        $toolsArray[$i]['description'] = $model['description'];
+
                         // uploader
                         $user = User::where('id', $model['user_id'])->first();
                         $toolsArray[$i]['uploader'] = $user ? $user->name : '';
@@ -454,6 +463,8 @@ class SearchController extends Controller
                         $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
 
                         $toolsArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
+
+                        $toolsArray[$i]['durTitles'] = $this->toolDurTitles($model['id']);
 
                         $toolsArray[$i]['_source']['programmingLanguage'] = $model['tech_stack'];
                         $category = null;
@@ -769,6 +780,7 @@ class SearchController extends Controller
                         $durArray[$i]['mongoObjectId'] = $model['mongo_object_id']; // remove
                         $durArray[$i]['datasetTitles'] = $this->durDatasetTitles($model);
                         $durArray[$i]['dataProvider'] = $this->getDataProvider($model->toArray());
+                        $durArray[$i]['toolNames'] = $this->durToolNames($model['id']);
                         $foundFlag = true;
                         break;
                     }
@@ -1317,6 +1329,29 @@ class SearchController extends Controller
             }
         }
         return $locations;
-    }    
+    }
 
+    private function durToolNames(int $durId): array
+    {
+        $toolNames = [];
+
+        $toolIds = DurHasTool::where('dur_id', $durId)->pluck('tool_id')->all();
+        if (!count($toolIds)) return [];
+        
+        $toolNames = Tool::whereIn('id', $toolIds)->pluck('name')->all();
+        
+        return $toolNames;
+    }
+
+    private function toolDurTitles(int $toolId): array
+    {
+        $durNames = [];
+
+        $durIds = DurHasTool::where('tool_id', $toolId)->pluck('dur_id')->all();
+        if (!count($durIds)) return [];
+
+        $durNames = Dur::whereIn('id', $durIds)->pluck('project_title')->all();
+
+        return $durNames;
+    }
 }

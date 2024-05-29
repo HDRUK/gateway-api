@@ -2696,6 +2696,18 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'dur.post.upload',
+        'method' => 'post',
+        'path' => '/dur/upload',
+        'methodController' => 'DurController@upload',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+
 
     // organisations
     [
@@ -3193,5 +3205,40 @@ return [
         'constraint' => [
             'id' => '[0-9]+',
         ],
+    ],
+
+    // uploads
+    [
+        'name' => 'uploads',
+        'method' => 'post',
+        'path' => '/files',
+        'methodController' => 'UploadController@upload',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'uploads',
+        'method' => 'get',
+        'path' => '/files/{id}',
+        'methodController' => 'UploadController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'uploads',
+        'method' => 'get',
+        'path' => '/files/processed/{id}',
+        'methodController' => 'UploadController@content',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
     ],
 ];
