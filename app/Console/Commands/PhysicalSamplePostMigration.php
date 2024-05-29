@@ -60,9 +60,9 @@ class PhysicalSamplePostMigration extends Command
 
                     if (array_key_exists('tissuesSampleCollection', $metadata['metadata'])) {
                         if (is_null($metadata['metadata']['tissuesSampleCollection'])) {
-                            $metadata['metadata']['tissuesSampleCollection'] = ['materialType' => $samplesList];
+                            $metadata['metadata']['tissuesSampleCollection'] = [['materialType' => $samplesList]];
                         } else {
-                            $metadata['metadata']['tissuesSampleCollection']['materialType'] = $samplesList;
+                            $metadata['metadata']['tissuesSampleCollection'][0]['materialType'] = $samplesList;
                         }
                     }
 
