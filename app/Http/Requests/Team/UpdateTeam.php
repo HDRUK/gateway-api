@@ -89,6 +89,9 @@ class UpdateTeam extends BaseFormRequest
                 'distinct',
                 'exists:users,id',
             ],
+            'is_provider' => [
+                'boolean',
+            ],
         ];
     }
 

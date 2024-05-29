@@ -58,6 +58,7 @@ class TeamController extends Controller
      *                    @OA\Property(property="users", type="array", example="[]", @OA\Items()), 
      *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()), 
      *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
+     *                    @OA\Property(property="is_provider", type="boolean", example="1"),
      *                ),
      *             ),
      *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -172,6 +173,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *                  @OA\Property(property="notifications", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
+     *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *              )
      *          ),
      *      ),
@@ -244,6 +246,7 @@ class TeamController extends Controller
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="users", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
+     *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -365,6 +368,7 @@ class TeamController extends Controller
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="users", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
+     *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -395,6 +399,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
+     *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *              )
      *          ),
      *      ),
@@ -426,6 +431,7 @@ class TeamController extends Controller
                 'application_form_updated_by',
                 'application_form_updated_on',
                 'is_question_bank',
+                'is_provider',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -494,6 +500,7 @@ class TeamController extends Controller
      *              @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
+     *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -524,6 +531,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="application_form_updated_on", type="datetime", example="2023-04-11"),
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
+     *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *              )
      *          ),
      *      ),
@@ -555,6 +563,7 @@ class TeamController extends Controller
                 'application_form_updated_by',
                 'application_form_updated_on',
                 'is_question_bank',
+                'is_provider',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
