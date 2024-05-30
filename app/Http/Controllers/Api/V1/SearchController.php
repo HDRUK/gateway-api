@@ -22,7 +22,7 @@ use App\Models\TypeCategory;
 
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
-use App\Models\DatasetHasTool;
+use App\Models\DatasetVersionHasTool;
 use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
 use App\Models\CollectionHasTool;
@@ -462,7 +462,9 @@ class SearchController extends Controller
                         $toolsArray[$i]['programming_package'] = $toolHasProgrammingPackageIds ? ProgrammingPackage::whereIn('id', $toolHasProgrammingPackageIds)->pluck('name')->all() : [];
 
                         // datasets
-                        $datasetHasToolIds = DatasetHasTool::where('tool_id', $model['id'])->pluck('dataset_id')->all();
+                        $datasetVersionsIDs = DatasetVersionHasTool::where('tool_id', $id)->pluck('dataset_version_id')->all();
+                        $datasetHasToolIds = DatasetVersion::where('id', $datasetVersionsIDs)->pluck('dataset_id')->all();
+
                         $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
 
                         $toolsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
