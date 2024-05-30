@@ -3241,4 +3241,83 @@ return [
         ],
         'constraint' => [],
     ],
+
+    // short lists
+    [
+        'name' => 'short_lists',
+        'method' => 'get',
+        'path' => '/short_lists',
+        'methodController' => 'ShortListController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'short_lists',
+        'method' => 'get',
+        'path' => '/short_lists/{id}',
+        'methodController' => 'ShortListController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'short_lists',
+        'method' => 'post',
+        'path' => '/short_lists',
+        'methodController' => 'ShortListController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'short_lists',
+        'method' => 'put',
+        'path' => '/short_lists/{id}',
+        'methodController' => 'ShortListController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'short_lists',
+        'method' => 'patch',
+        'path' => '/short_lists/{id}',
+        'methodController' => 'ShortListController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'short_lists',
+        'method' => 'delete',
+        'path' => '/short_lists/{id}',
+        'methodController' => 'ShortListController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 ];
