@@ -12,6 +12,7 @@ use App\Models\ToolHasTag;
 use App\Models\DataProvider;
 use App\Models\TypeCategory;
 use App\Models\DatasetVersionHasTool;
+use App\Models\DatasetVersion;
 use Illuminate\Console\Command;
 use App\Models\DataProviderColl;
 use App\Models\ProgrammingPackage;
