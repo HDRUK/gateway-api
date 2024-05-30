@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> Migrated LinkedDataset to DatasetVersionHasDatasetVersion
 <<<<<<< HEAD:database/migrations/2023_12_15_144311_create_dataset_versions_table.php
         Schema::create('dataset_versions', function (Blueprint $table) {
             $table->id();
@@ -23,6 +26,9 @@ return new class extends Migration
             $table->json('metadata');
             $table->integer('version');
 =======
+<<<<<<< HEAD
+>>>>>>> Migrated LinkedDataset to DatasetVersionHasDatasetVersion
+=======
 >>>>>>> Migrated LinkedDataset to DatasetVersionHasDatasetVersion
         Schema::create('dataset_version_has_tools', function (Blueprint $table) {
             $table->bigInteger('dataset_version_id')->unsigned();
@@ -32,8 +38,14 @@ return new class extends Migration
             $table->foreign('dataset_version_id')->references('id')->on('dataset_versions')->onDelete('cascade');
             $table->foreign('tool_id')->references('id')->on('tools')->onDelete('cascade');
 <<<<<<< HEAD
+<<<<<<< HEAD
 
             $table->timestamps();
+=======
+>>>>>>> Migrated LinkedDataset to DatasetVersionHasDatasetVersion:database/migrations/2024_03_07_104300_create_dataset_version_has_tool_table.php
+
+            $table->foreign('dataset_id')->references('id')->on('datasets');
+>>>>>>> Migrated LinkedDataset to DatasetVersionHasDatasetVersion
 =======
 >>>>>>> Migrated LinkedDataset to DatasetVersionHasDatasetVersion:database/migrations/2024_03_07_104300_create_dataset_version_has_tool_table.php
 
@@ -48,13 +60,19 @@ return new class extends Migration
     public function down(): void
     {
 <<<<<<< HEAD
+<<<<<<< HEAD
         Schema::dropIfExists('dataset_version_has_tools');
 =======
+=======
+>>>>>>> Migrated LinkedDataset to DatasetVersionHasDatasetVersion
 <<<<<<< HEAD:database/migrations/2023_12_15_144311_create_dataset_versions_table.php
         Schema::dropIfExists('dataset_versions');
 =======
         Schema::dropIfExists('dataset_version_has_tools');
 >>>>>>> Migrated LinkedDataset to DatasetVersionHasDatasetVersion:database/migrations/2024_03_07_104300_create_dataset_version_has_tool_table.php
+<<<<<<< HEAD
+>>>>>>> Migrated LinkedDataset to DatasetVersionHasDatasetVersion
+=======
 >>>>>>> Migrated LinkedDataset to DatasetVersionHasDatasetVersion
     }
 };
