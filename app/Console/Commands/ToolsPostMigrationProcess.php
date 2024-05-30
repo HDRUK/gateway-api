@@ -12,7 +12,6 @@ use App\Models\ToolHasTag;
 use App\Models\DataProvider;
 use App\Models\TypeCategory;
 use App\Models\DatasetVersionHasTool;
-use App\Models\DatasetVersionHasDatasetVersion;
 use Illuminate\Console\Command;
 use App\Models\DataProviderColl;
 use App\Models\ProgrammingPackage;
@@ -201,7 +200,11 @@ class ToolsPostMigrationProcess extends Command
             ->pluck('description')
             ->all();
 
-        $datasetIDs = DatasetHasTool::where('tool_id', $id)
+        $datasetVersionsIDs = DatasetVersionHasTool::where('tool_id', $id)
+            ->pluck('dataset_version_id')
+            ->all();
+
+        $datasetIDs = DatasetVersion::where('id', $datasetVersionsIDs)
             ->pluck('dataset_id')
             ->all();
 
