@@ -30,7 +30,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin',
+            'provider' => 'google|azure|linkedin|openathens',
         ],
     ],
     [
@@ -41,7 +41,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin',
+            'provider' => 'google|azure|linkedin|openathens',
         ],
     ],
 
