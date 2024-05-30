@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Auditor;
+use Config;
 use Exception;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\JwtController;
 use Laravel\Socialite\Facades\Socialite;
+use Jumbojett\OpenIDConnectClient;
 
 class SocialLoginController extends Controller
 {
@@ -89,8 +91,16 @@ class SocialLoginController extends Controller
         }
 
         session(['redirectUrl' => $redirectUrl]);
-        return Socialite::driver($provider)
+
+        if ($provider === 'openathens') {
+            return redirect()->action(
+                [SocialLoginController::class, 'callback'], 
+                ['provider' => 'openathens']
+            );
+        } else {
+            return Socialite::driver($provider)
                 ->redirect();
+        }
     }
 
     /**
@@ -134,21 +144,32 @@ class SocialLoginController extends Controller
             if ($provider === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
-            $socialUser = Socialite::driver($provider)->user();
+            if ($provider === 'openathens') {
+                $oidc = new OpenIDConnectClient(
+                    Config::get('services.openathens.issuer'),
+                    Config::get('services.openathens.client_id'),
+                    Config::get('services.openathens.client_secret')
+                );
+                $oidc->authenticate();
+                $socialUser = $oidc->requestUserInfo();
+                $socialUserDetails = $this->openathensResponse($socialUser, $provider);
+            } else {
+                $socialUser = Socialite::driver($provider)->user();
 
-            $socialUserDetails = [];
-            switch ($provider) {
-                case 'google':
-                    $socialUserDetails = $this->googleResponse($socialUser, $provider);
-                    break;
+                $socialUserDetails = [];
+                switch ($provider) {
+                    case 'google':
+                        $socialUserDetails = $this->googleResponse($socialUser, $provider);
+                        break;
 
-                case 'linkedin-openid':
-                    $socialUserDetails = $this->linkedinOpenIdResponse($socialUser, $provider);
-                    break;
+                    case 'linkedin-openid':
+                        $socialUserDetails = $this->linkedinOpenIdResponse($socialUser, $provider);
+                        break;
 
-                case 'azure':
-                    $socialUserDetails = $this->azureResponse($socialUser, $provider);
-                    break;
+                    case 'azure':
+                        $socialUserDetails = $this->azureResponse($socialUser, $provider);
+                        break;
+                }
             }
 
             $user = User::where([
@@ -237,6 +258,26 @@ class SocialLoginController extends Controller
             'firstname' => $data->offsetGet('givenName'),
             'lastname' => $data->offsetGet('surname'),
             'email' => $emailAddress,
+            'provider' => $provider,
+            'password' => Hash::make(json_encode($data)),
+        ];
+    }
+
+    /**
+     * Uniform response from OpenAthens
+     *
+     * @param object $data
+     * @param string $provider
+     * @return array
+     */
+    private function openathensResponse(object $data, string $provider): array
+    {
+        return [
+            'providerid' => $data['sub'],
+            'name' => $data['name'],
+            'firstname' => $data['given_name'],
+            'lastname' => $data['family_name'],
+            'email' => $data['email'],
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
