@@ -24,7 +24,7 @@ class UpdateFilter extends BaseFormRequest
                 'required',
                 'string',
                 function ($attribute, $value, $fail) {
-                    $type = ['dataset', 'collection', 'tool', 'course', 'project', 'paper', 'dataUseRegister'];
+                    $type = \Config::get('filters.types');
 
                     if (!in_array($value, $type)) {
                         $fail('The selected value is invalid.');
@@ -34,7 +34,7 @@ class UpdateFilter extends BaseFormRequest
                     $key = $this->input('keys');
                     $checkFilter = Filter::where([
                         'type' => $value,
-                        'key' => $key,
+                        'keys' => $key,
                     ])->where('id', '<>', $this->id)->first();
 
                     if ($checkFilter) {

@@ -416,7 +416,7 @@ class DatasetIntegrationTest extends TestCase
             [],
             $this->header
         );
-        $responseDeleteDataset->assertStatus(400)
+        $responseDeleteDataset->assertStatus(500)
                               ->assertSeeText("This Application is not allowed to interact with datasets from another team!");
 
     }
@@ -430,7 +430,7 @@ class DatasetIntegrationTest extends TestCase
             $this->metadata,
             $this->header
         );
-        $responseDeleteDataset->assertStatus(400)
+        $responseDeleteDataset->assertStatus(500)
                               ->assertSeeText("This Application is not allowed to interact with datasets from another team!");
 
     }

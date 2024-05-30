@@ -528,7 +528,14 @@ class DatasetTest extends TestCase
 
         $responseGetOne->assertJsonStructure([
             'message',
-            'data'
+            'data' => [
+                'named_entities',
+                'collections',
+                'publications',
+                'versions',
+                'durs_count',
+                'publications_count',
+            ]
         ]);
         $responseGetOne->assertStatus(200);
         
@@ -1150,6 +1157,21 @@ class DatasetTest extends TestCase
             $this->header,
         );
 
+        $content = $responseDownload->streamedContent();
+        $responseDownload->assertHeader('Content-Disposition', 'attachment;filename="Datasets.csv"');
+        $this->assertEquals(
+            substr($content, 0, 5),
+            "Title"
+        );
+
+        // test dataset_id query parameter
+        $responseDownload = $this->json(
+            'GET',
+            self::TEST_URL_DATASET . '/export?dataset_id=' . $datasetId,
+            [],
+            $this->header,
+        );
+        $responseDownload->assertStatus(200);
         $content = $responseDownload->streamedContent();
         $responseDownload->assertHeader('Content-Disposition', 'attachment;filename="Datasets.csv"');
         $this->assertEquals(

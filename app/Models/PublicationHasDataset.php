@@ -17,7 +17,7 @@ class PublicationHasDataset extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'publication_id', 'dataset_id',
+        'publication_id', 'dataset_id', 'link_type'
     ];
 
     /**

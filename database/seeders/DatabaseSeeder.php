@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             TeamSeeder::class,
             UserSeeder::class,
+            LicenseSeeder::class,
             ToolSeeder::class,
             ToolHasTagSeeder::class,
             // This one we do in order to ensure data is linked for
@@ -62,6 +63,23 @@ class DatabaseSeeder extends Seeder
             SpatialCoverageSeeder::class,
             PublicationSeeder::class,
             PublicationHasDatasetSeeder::class,
+            DataAccessSectionSeeder::class,
+            QuestionBankSeeder::class,
+            DataAccessApplicationAnswerSeeder::class,
+            DataAccessApplicationSeeder::class,
+            DataAccessTemplateSeeder::class,
+            EnquiryThreadSeeder::class,
+            EnquiryMessagesSeeder::class,
+            CollectionHasToolSeeder::class,
+            CategorySeeder::class,
+            DurHasPublicationSeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
+            TypeCategorySeeder::class,
+            CollectionHasPublicationSeeder::class,
+            PublicationHasToolSeeder::class,
+            DataProviderCollsSeeder::class,
+            DurHasToolSeeder::class,
         ]);
     }
 }

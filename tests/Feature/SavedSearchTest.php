@@ -4,14 +4,19 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use App\Models\SavedSearch;
+use Tests\Traits\Authorization;
 use Database\Seeders\FilterSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\SavedSearchSeeder;
+use App\Http\Enums\SortOrderSavedSearch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class SavedSearchTest extends TestCase
 {
     use RefreshDatabase;
+    use Authorization;
+    
     private $accessToken = '';    
 
     public function setUp() :void
@@ -55,8 +60,11 @@ class SavedSearchTest extends TestCase
                         'updated_at',
                         'name',
                         'search_term',
+                        'search_endpoint',
                         'enabled',
                         'filters',
+                        'user_id',
+                        'sort_order',
                     ],
                 ],
                 'first_page_url',
@@ -72,6 +80,20 @@ class SavedSearchTest extends TestCase
                 'total',                
             ]);
 
+        $content = $response->decodeResponseJson();
+        $numResults = count($content['data']);
+
+        // filter by name
+        $response = $this->get('api/v1/saved_searches?name=in', [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        $contentFilter = $response->decodeResponseJson();
+        $numResultsFilter = count($contentFilter['data']);
+
+        $this->assertTrue($numResultsFilter < $numResults);
     }
 
     /**
@@ -87,8 +109,18 @@ class SavedSearchTest extends TestCase
             [
                 'name' => 'Test Saved Search',
                 'search_term' => 'Some Test Query',
+                'search_endpoint' => 'datasets',
                 'enabled' => false,
-                'filters' => [],
+                'filters' => [
+                    0 => [
+                        'id' => 1,
+                        'terms' => [
+                            'term a',
+                            'term b',
+                        ]
+                    ]
+                ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -115,8 +147,11 @@ class SavedSearchTest extends TestCase
                         'updated_at',
                         'name',
                         'search_term',
+                        'search_endpoint',
                         'enabled',
                         'filters',
+                        'user_id',
+                        'sort_order',
                     ]
                 ],
             ]);
@@ -153,8 +188,18 @@ class SavedSearchTest extends TestCase
             [
                 'name' => 'Test Saved Search',
                 'search_term' => 'Some Test Query',
+                'search_endpoint' => 'datasets',
                 'enabled' => false,
-                'filters' => [$filterId],
+                'filters' => [
+                    0 => [
+                        'id' => $filterId,
+                        'terms' => [
+                            'term a',
+                            'term b',
+                        ]
+                    ]
+                ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -198,8 +243,18 @@ class SavedSearchTest extends TestCase
             [
                 'name' => 'Test Saved Search',
                 'search_term' => 'Some Test Query',
+                'search_endpoint' => 'datasets',
                 'enabled' => false,
-                'filters' => [],
+                'filters' => [
+                    0 => [
+                        'id' => 1,
+                        'terms' => [
+                            'term a',
+                            'term b',
+                        ]
+                    ]
+                ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -224,8 +279,18 @@ class SavedSearchTest extends TestCase
             [
                 'name' => 'Updated Test Saved Search',
                 'search_term' => 'Some Test Query',
+                'search_endpoint' => 'datasets',
                 'enabled' => true,
-                'filters' => [],
+                'filters' => [
+                    0 => [
+                        'id' => 1,
+                        'terms' => [
+                            'term a',
+                            'term b',
+                        ]
+                    ]
+                ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -257,8 +322,18 @@ class SavedSearchTest extends TestCase
             [
                 'name' => 'Test Saved Search',
                 'search_term' => 'Some Test Query',
+                'search_endpoint' => 'datasets',
                 'enabled' => false,
-                'filters' => [],
+                'filters' => [
+                    0 => [
+                        'id' => 1,
+                        'terms' => [
+                            'term a',
+                            'term b',
+                        ]
+                    ]
+                ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -283,8 +358,18 @@ class SavedSearchTest extends TestCase
             [
                 'name' => 'Edited Test Saved Search',
                 'search_term' => 'Some Test Query',
+                'search_endpoint' => 'datasets',
                 'enabled' => true,
-                'filters' => [],
+                'filters' => [
+                    0 => [
+                        'id' => 1,
+                        'terms' => [
+                            'term a',
+                            'term b',
+                        ]
+                    ]
+                ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -337,8 +422,18 @@ class SavedSearchTest extends TestCase
             [
                 'name' => 'Test Saved Search',
                 'search_term' => 'Some Test Query',
+                'search_endpoint' => 'datasets',
                 'enabled' => false,
-                'filters' => [],
+                'filters' => [
+                    0 => [
+                        'id' => 1,
+                        'terms' => [
+                            'term a',
+                            'term b',
+                        ]
+                    ]
+                ],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -376,5 +471,84 @@ class SavedSearchTest extends TestCase
         $this->assertEquals($content['message'],
             Config::get('statuscodes.STATUS_OK.message')
         );
+    }
+
+    /**
+     * Tests user permissions with a new saved search
+     * 
+     * @return void
+     */
+    public function test_user_can_create_update_delete_a_saved_search()
+    {
+        $this->authorisationUser(false);
+        $nonAdminJwt = $this->getAuthorisationJwt(false);
+        $headerNonAdmin = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $nonAdminJwt,
+        ];
+
+        $response = $this->json(
+            'POST',
+            'api/v1/saved_searches',
+            [
+                'name' => 'Test Saved Search',
+                'search_term' => 'Some Test Query',
+                'search_endpoint' => 'datasets',
+                'enabled' => false,
+                'filters' => [],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
+            ],
+            $headerNonAdmin,
+        );
+
+        $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
+        $content = $response->decodeResponseJson();
+        $newSearchId = $content['data'];
+        
+        // test admin can view saved search
+        $responseGet = $this->get('api/v1/saved_searches/' . $newSearchId, [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
+        $responseGet->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+
+        // test admin cannot edit or delete
+        $responseUpdate = $this->json(
+            'PUT',
+            'api/v1/saved_searches/' . $newSearchId,
+            [
+                'name' => 'Edited Test Saved Search',
+                'search_term' => 'Some Test Query',
+                'search_endpoint' => 'datasets',
+                'enabled' => true,
+                'filters' => [],
+                'sort_order' => SortOrderSavedSearch::MOST_RELEVANT->value,
+            ],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseUpdate->assertJsonStructure([
+            'message',
+        ]);
+        $responseUpdate->assertStatus(500);
+
+        $responseDelete = $this->json(
+            'DELETE',
+            'api/v1/saved_searches/' . $newSearchId,
+            [],
+            [
+                'Authorization' => 'bearer ' . $this->accessToken,
+            ],
+        );
+
+        $responseDelete->assertJsonStructure([
+            'message',
+        ]);
+        $responseDelete->assertStatus(500);
     }
 }

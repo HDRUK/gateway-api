@@ -12,7 +12,7 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'register',
+        'name' => 'api.v1.auth.register',
         'method' => 'post',
         'path' => '/auth',
         'methodController' => 'AuthController@checkAuthorization',
@@ -2364,6 +2364,15 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'search.data_provider_colls',
+        'method' => 'post',
+        'path' => '/search/data_provider_colls',
+        'methodController' => 'SearchController@dataProviderColls',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
 
     // categories
     [
@@ -2603,15 +2612,21 @@ return [
 
     // data use registers
     [
+        'name' => 'dur.export',
+        'method' => 'get',
+        'path' => '/dur/export',
+        'methodController' => 'DurController@export',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'dur.get',
         'method' => 'get',
         'path' => '/dur',
         'methodController' => 'DurController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.read',
-        ],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -2620,10 +2635,7 @@ return [
         'path' => '/dur/{id}',
         'methodController' => 'DurController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-            'jwt.verify',
-            'check.access:permissions,dur.read',
-        ],
+        'middleware' => [],
         'constraint' => [
             'id' => '[0-9]+',
         ],
@@ -2684,6 +2696,18 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    [
+        'name' => 'dur.post.upload',
+        'method' => 'post',
+        'path' => '/dur/upload',
+        'methodController' => 'DurController@upload',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+
 
     // organisations
     [
@@ -2703,7 +2727,7 @@ return [
         'path' => 'publications',
         'methodController' => 'PublicationController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -2712,7 +2736,7 @@ return [
         'path' => 'publications/{id}',
         'methodController' => 'PublicationController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => ['jwt.verify'],
+        'middleware' => [],
         'constraint' => [],
     ],
     [
@@ -2749,6 +2773,472 @@ return [
         'methodController' => 'PublicationController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => ['jwt.verify'],
+        'constraint' => [],
+    ],
+
+    // form hydration
+    [
+        'name' => 'form_hydration.schema',
+        'method' => 'get',
+        'path' => '/form_hydration/schema',
+        'methodController' => 'FormHydrationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
+    // programming languages
+    [
+        'name' => 'programming_languages',
+        'method' => 'get',
+        'path' => '/programming_languages',
+        'methodController' => 'ProgrammingLanguageController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'programming_languages',
+        'method' => 'get',
+        'path' => '/programming_languages/{id}',
+        'methodController' => 'ProgrammingLanguageController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_languages',
+        'method' => 'post',
+        'path' => '/programming_languages',
+        'methodController' => 'ProgrammingLanguageController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'programming_languages',
+        'method' => 'put',
+        'path' => '/programming_languages/{id}',
+        'methodController' => 'ProgrammingLanguageController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_languages',
+        'method' => 'patch',
+        'path' => '/programming_languages/{id}',
+        'methodController' => 'ProgrammingLanguageController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_languages',
+        'method' => 'delete',
+        'path' => '/programming_languages/{id}',
+        'methodController' => 'ProgrammingLanguageController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // programming packages
+    [
+        'name' => 'programming_packages',
+        'method' => 'get',
+        'path' => '/programming_packages',
+        'methodController' => 'ProgrammingPackageController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'programming_packages',
+        'method' => 'get',
+        'path' => '/programming_packages/{id}',
+        'methodController' => 'ProgrammingPackageController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_packages',
+        'method' => 'post',
+        'path' => '/programming_packages',
+        'methodController' => 'ProgrammingPackageController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'programming_packages',
+        'method' => 'put',
+        'path' => '/programming_packages/{id}',
+        'methodController' => 'ProgrammingPackageController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_packages',
+        'method' => 'patch',
+        'path' => '/programming_packages/{id}',
+        'methodController' => 'ProgrammingPackageController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'programming_packages',
+        'method' => 'delete',
+        'path' => '/programming_packages/{id}',
+        'methodController' => 'ProgrammingPackageController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // tool type categories
+    [
+        'name' => 'type_categories',
+        'method' => 'get',
+        'path' => '/type_categories',
+        'methodController' => 'TypeCategoryController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'type_categories',
+        'method' => 'get',
+        'path' => '/type_categories/{id}',
+        'methodController' => 'TypeCategoryController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'type_categories',
+        'method' => 'post',
+        'path' => '/type_categories',
+        'methodController' => 'TypeCategoryController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'type_categories',
+        'method' => 'put',
+        'path' => '/type_categories/{id}',
+        'methodController' => 'TypeCategoryController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'type_categories',
+        'method' => 'patch',
+        'path' => '/type_categories/{id}',
+        'methodController' => 'TypeCategoryController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'type_categories',
+        'method' => 'delete',
+        'path' => '/type_categories/{id}',
+        'methodController' => 'TypeCategoryController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // DataProviders
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'get',
+        'path' => '/data_provider_colls',
+        'methodController' => 'DataProviderCollController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'get',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'post',
+        'path' => '/data_provider_colls',
+        'methodController' => 'DataProviderCollController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'put',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'patch',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'data_provider_colls',
+        'method' => 'delete',
+        'path' => '/data_provider_colls/{id}',
+        'methodController' => 'DataProviderCollController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],    
+
+    // Form hydration - metadata onboarding
+    [
+        'name' => 'form_hydration',
+        'method' => 'get',
+        'path' => '/form_hydration',
+        'methodController' => 'FormHydrationController@onboardingFormHydration',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+    
+    // licences
+    [
+        'name' => 'licences',
+        'method' => 'get',
+        'path' => '/licenses',
+        'methodController' => 'LicenseController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'licences',
+        'method' => 'get',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'licenses',
+        'method' => 'post',
+        'path' => '/licenses',
+        'methodController' => 'LicenseController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'licences',
+        'method' => 'put',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@update',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'licenses',
+        'method' => 'patch',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'licenses',
+        'method' => 'delete',
+        'path' => '/licenses/{id}',
+        'methodController' => 'LicenseController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+
+    // uploads
+    [
+        'name' => 'uploads',
+        'method' => 'post',
+        'path' => '/files',
+        'methodController' => 'UploadController@upload',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'uploads',
+        'method' => 'get',
+        'path' => '/files/{id}',
+        'methodController' => 'UploadController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'uploads',
+        'method' => 'get',
+        'path' => '/files/processed/{id}',
+        'methodController' => 'UploadController@content',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
         'constraint' => [],
     ],
 ];

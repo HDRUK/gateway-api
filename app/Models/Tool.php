@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Dur;
 use App\Models\Tag;
+use App\Models\License;
 use App\Models\Category;
+use App\Models\Publication;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -32,6 +35,7 @@ class Tool extends Model
 
     protected $fillable = [
         'mongo_object_id', 
+        'mongo_id', 
         'name', 
         'url', 
         'description', 
@@ -40,6 +44,8 @@ class Tool extends Model
         'category_id', 
         'user_id', 
         'enabled',
+        'associated_authors', 
+        'contact_address',
     ];
 
     /**
@@ -49,18 +55,12 @@ class Tool extends Model
         'enabled' => 'boolean',
     ];
 
-    /**
-     * Get the ids associated with the user.
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)
             ->select('firstname', 'lastname');
     }
 
-    /**
-     * The tags that belong to the tool.
-     */
     public function tag(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'tool_has_tags');
@@ -71,9 +71,6 @@ class Tool extends Model
         return $this->hasMany(Review::class);
     }
 
-    /**
-     * @mixin BelongsTo
-     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class,'category_id', 'id');
@@ -82,5 +79,35 @@ class Tool extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function programmingLanguages(): BelongsToMany
+    {
+        return $this->belongsToMany(ProgrammingLanguage::class, 'tool_has_programming_language');
+    }
+
+    public function programmingPackages(): BelongsToMany
+    {
+        return $this->belongsToMany(ProgrammingPackage::class, 'tool_has_programming_package');
+    }
+
+    public function typeCategory(): BelongsToMany
+    {
+        return $this->belongsToMany(TypeCategory::class, 'tool_has_type_category');
+    }
+
+    public function publications(): BelongsToMany
+    {
+        return $this->belongsToMany(Publication::class, 'publication_has_tools');
+    }
+
+    public function license(): BelongsTo
+    {
+        return $this->belongsTo(License::class, 'license', 'id');
+    }
+
+    public function durs(): BelongsToMany
+    {
+        return $this->belongsToMany(Dur::class, 'dur_has_tools');
     }
 }

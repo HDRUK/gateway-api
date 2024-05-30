@@ -23,7 +23,6 @@ class UpdateTag extends BaseFormRequest
             'type' => [
                 'required',
                 'string',
-                'unique:tags,type',
             ],
             'description' => [
                 'required',

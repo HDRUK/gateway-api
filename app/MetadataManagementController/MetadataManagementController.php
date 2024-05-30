@@ -2,23 +2,28 @@
 
 namespace App\MetadataManagementController;
 
-use Config;
 use Mauro;
+use Config;
 use Exception;
 
 use App\Models\Filter;
 use App\Models\Dataset;
+use Http\Client\HttpClient;
+
+use App\Models\DataProviderColl;
+use App\Models\DataProviderCollHasTeam;
 use App\Models\DatasetVersion;
 
+use Illuminate\Support\Carbon;
 use App\Exceptions\MMCException;
 
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Carbon;
-
 use Elastic\Elasticsearch\Client;
+use Illuminate\Support\Facades\DB;
+
+use Illuminate\Support\Facades\Http;
 use Elastic\Elasticsearch\ClientBuilder;
 
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
 class MetadataManagementController {
 
@@ -67,7 +72,7 @@ class MetadataManagementController {
                 'validate_output' => $validateOutput ? "1" : 0 ,
             ];
 
-            $urlString = env('TRASER_SERVICE_URL') . '/translate?' . http_build_query($queryParams);
+            $urlString = env('TRASER_SERVICE_URL', 'http://localhost:8002') . '/translate?' . http_build_query($queryParams);
 
             // !! Dragons ahead !!
             // Suggest that no one change this, ever. Took hours
@@ -121,7 +126,7 @@ class MetadataManagementController {
     {
         try {
             $urlString = sprintf("%s/validate?input_schema=%s&input_version=%s",
-                env('TRASER_SERVICE_URL'),
+                env('TRASER_SERVICE_URL', 'http://localhost:8002'),
                 $input_schema,
                 $input_version
             );
@@ -234,6 +239,13 @@ class MetadataManagementController {
 
             $metadataModelVersion = $metadata['gwdmVersion'];
 
+            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $datasetMatch['team_id'])
+                ->pluck('data_provider_coll_id')
+                ->all();
+            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
+                ->pluck('name')
+                ->all();
+
             // ------------------------------------------------------
             // WARNING....
             //  - this part of the code may need updating when the GWDM is changed 
@@ -242,6 +254,7 @@ class MetadataManagementController {
             $publisherName = '';
             $containsTissue = false;
             $populationSize = -1;
+            $accessServiceCategory = '';
 
             if(version_compare($metadataModelVersion,"1.1","<")){
                 $publisherName = $metadata['metadata']['summary']['publisher']['publisherName'];
@@ -256,6 +269,17 @@ class MetadataManagementController {
                 if (array_key_exists('populationSize', $metadata['metadata']['summary'])){
                     $populationSize = $metadata['metadata']['summary']['populationSize'];
                 }
+                if (array_key_exists('accessServiceCategory', $metadata['metadata']['accessibility']['access'])){
+                    $accessServiceCategory = $metadata['metadata']['accessibility']['access']['accessServiceCategory'];
+                }
+            }
+
+            $endDate = $metadata['metadata']['provenance']['temporal']['endDate'];
+            if (is_null($endDate)) {
+                // Note: danger that this approach is not future proof.
+                // Better approach would be to either keep elastic index updated regularly with
+                // the current date or for elastic to treat null values as the current date.
+                $endDate = Carbon::now()->addYears(180);
             }
             
             $toIndex = [
@@ -267,14 +291,16 @@ class MetadataManagementController {
                 'populationSize' => $populationSize,
                 'publisherName' => $publisherName,
                 'startDate' => $metadata['metadata']['provenance']['temporal']['startDate'],
-                'endDate' => $metadata['metadata']['provenance']['temporal']['endDate'],
+                'endDate' => $endDate,
                 'containsTissue' => $containsTissue,
                 'conformsTo' => explode(',', $metadata['metadata']['accessibility']['formatAndStandards']['conformsTo']),
                 'hasTechnicalMetadata' => (bool) $datasetMatch['has_technical_details'],
                 'named_entities' => $namedEntities,
                 'collectionName' => $collections,
                 'dataUseTitles' => $durs,
-                'geographicLocation' => $geographicLocations
+                'geographicLocation' => $geographicLocations,
+                'accessService' => $accessServiceCategory,
+                'dataProviderColl' => $dataProviderColl
             ];
 
             $params = [
@@ -313,6 +339,26 @@ class MetadataManagementController {
             $client = $this->getElasticClient();
             $response = $client->delete($params);
 
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function getOnboardingFormHydrated(string $name, string $version): JsonResponse
+    {
+        try {
+            $queryParams = [
+                'name' => $name,
+                'version' => $version,
+            ];
+
+            $urlString = env('TRASER_SERVICE_URL') . '/get/form_hydration?' . http_build_query($queryParams);
+            $response = Http::get($urlString);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => $response->json(),
+            ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

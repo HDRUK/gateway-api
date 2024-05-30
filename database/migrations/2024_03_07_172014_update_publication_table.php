@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('publications', function (Blueprint $table) {
-            $table->text('abstract');
+            $table->dropColumn('abstract');
         });
     }
 };

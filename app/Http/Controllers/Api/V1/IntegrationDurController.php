@@ -3,35 +3,37 @@
 namespace App\Http\Controllers\Api\V1;
 
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 
-use App\Models\Dataset;
 use App\Models\Dur;
-use App\Models\Keyword;
-use App\Models\DurHasDataset;
-use App\Models\DurHasKeyword;
+use App\Models\Tool;
 use App\Models\Sector;
+use App\Models\Dataset;
+use App\Models\Keyword;
 use App\Models\Application;
+use App\Models\DurHasTool;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use App\Models\DurHasDataset;
 
-use App\Http\Controllers\Controller;
+use App\Models\DurHasKeyword;
 
 use App\Http\Requests\Dur\GetDur;
+use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Dur\CreateDur;
+
 use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 
-use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\IntegrationOverride;
-
 use App\Exceptions\NotFoundException;
 
+use App\Http\Traits\IntegrationOverride;
 use MetadataManagementController AS MMC;
+use App\Http\Traits\RequestTransformation;
 
 class IntegrationDurController extends Controller
 {
@@ -97,11 +99,13 @@ class IntegrationDurController extends Controller
      *                @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
      *                @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
-     *                @OA\Property(property="applicant_id", type="string", example=""),
+     *                @OA\Property(property="application", type="string", example="")
      *             ),
      *          ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
@@ -126,20 +130,53 @@ class IntegrationDurController extends Controller
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $dur = Dur::where('enabled', 1)
+            $durs = Dur::where('enabled', 1)
                 ->with([
-                    'datasets', 
+                    'datasets',
+                    'publications', 
+                    'tools', 
                     'keywords',
-                    'users' => function ($query) {
+                    'userDatasets' => function ($query) {
                         $query->distinct('id');
                     },
-                    'applications' => function ($query) {
+                    'userPublications' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'applicationDatasets' => function ($query) {
+                        $query->distinct('id');
+                    },
+                    'applicationPublications' => function ($query) {
                         $query->distinct('id');
                     },
                     'user',
                     'team',
                     'application',
-                    ])->paginate($perPage);
+                ])->paginate((int) $perPage, ['*'], 'page')
+                ->through(function ($dur) {
+                    if ($dur->datasets) {
+                        $dur->datasets = $dur->datasets->map(function ($dataset) {
+                            $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
+                            return $dataset;
+                        });
+                    }
+                    return $dur;
+                });
+
+            $durs->getCollection()->transform(function ($dur) {
+                $userDatasets = $dur->userDatasets;
+                $userPublications = $dur->userPublications;
+                $users = $userDatasets->merge($userPublications)->unique('id');
+                $dur->setRelation('users', $users);
+
+                $applicationDatasets = $dur->applicationDatasets;
+                $applicationPublications = $dur->applicationPublications;
+                $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
+                $dur->setRelation('applications', $applications);
+
+                unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
+
+                return $dur;
+            });
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -150,7 +187,7 @@ class IntegrationDurController extends Controller
             ]);
 
             return response()->json(
-                $dur
+                $durs
             );
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -229,13 +266,15 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="mongo_object_id", type="string", example="5f32a7d53b1d85c427e97c01"),
      *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
-     *                   @OA\Property(property="applicant_id", type="string", example=""),
+     *                   @OA\Property(property="applicantions", type="string", example=""),
      *                ),
      *             ),
      *          ),
@@ -249,20 +288,7 @@ class IntegrationDurController extends Controller
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
-            $dur = Dur::where(['id' => $id])
-                ->with([
-                    'datasets',
-                    'keywords',
-                    'users' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'user',
-                    'team',
-                    'application',
-                ])->get();
+            $dur = $this->getDurById($id);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -274,7 +300,7 @@ class IntegrationDurController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => $dur,
+                'data' => [$dur],
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -456,6 +482,10 @@ class IntegrationDurController extends Controller
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($durId, $keywords);
+
+            // link/unlink dur with tools
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($durId, $tools);
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
@@ -713,6 +743,10 @@ class IntegrationDurController extends Controller
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
 
+            // link/unlink dur with tools
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($id, $tools);
+
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
                 Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
@@ -735,19 +769,7 @@ class IntegrationDurController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => Dur::where('id', $id)->with([
-                    'datasets',
-                    'keywords',
-                    'users' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'user',
-                    'team',
-                    'application',
-                ])->first(),
+                'data' => $this->getDurById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -985,6 +1007,12 @@ class IntegrationDurController extends Controller
                 $this->checkKeywords($id, $keywords);
             }
 
+            // link/unlink dur with tools
+            if (array_key_exists('tools', $input)) {
+                $tools = $input['tools'];
+                $this->checkKeywords($id, $tools);
+            }
+
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
                 Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
@@ -1007,19 +1035,7 @@ class IntegrationDurController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => Dur::where('id', $id)->with([
-                    'datasets',
-                    'keywords',
-                    'users' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'user',
-                    'team',
-                    'application',
-                ])->first(),
+                'data' => $this->getDurById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -1075,6 +1091,7 @@ class IntegrationDurController extends Controller
 
             DurHasDataset::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
+            DurHasTool::where(['dur_id' => $id])->delete();
             Dur::where(['id' => $id])->delete();
 
             Auditor::log([
@@ -1178,6 +1195,7 @@ class IntegrationDurController extends Controller
         }
     }
 
+    // keywords
     private function checkKeywords(int $durId, array $inKeywords)
     {
         $kws = DurHasKeyword::where('dur_id', $durId)->get();
@@ -1236,6 +1254,60 @@ class IntegrationDurController extends Controller
             return DurHasKeyword::where(['keyword_id' => $keywordId])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+        }
+    }
+
+    // tools
+    private function checkTools(int $durId, array $inTools)
+    {
+        $tools = DurHasTool::where('dur_id', $durId)->get();
+
+        foreach($tools as $tool) {
+            $toolId = $tool->tool_id;
+            $checkTool = Tool::where('id', $toolId)->first();
+
+            if (!$checkTool) {
+                $this->deleteDurHasTools($durId, $toolId);
+                continue;
+            }
+
+            if (in_array($checkTool->id, $inTools)) continue;
+
+            if (!in_array($checkTool->id, $inTools)) {
+                $this->deleteDurHasTools($durId, $toolId);
+            }
+        }
+
+        foreach ($inTools as $inTool) {
+            $this->updateOrCreateDurHasTools($durId, $inTool);
+        }
+    }
+
+    private function updateOrCreateDurHasTools(int $durId, int $toolId)
+    {
+        try {
+            return DurHasTool::firstOrCreate([
+                'dur_id' => $durId,
+                'tool_id' => $toolId,
+            ],[
+                'dur_id' => $durId,
+                'tool_id' => $toolId,
+            ]
+        );
+        } catch (Exception $e) {
+            throw new Exception("updateOrCreateDurHasTools :: " . $e->getMessage());
+        }
+    }
+
+    private function deleteDurHasTools(int $dId, int $tId)
+    {
+        try {
+            return DurHasTool::where([
+                'dur_id' => $dId,
+                'tool_id' => $tId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deleteDurHasTools :: " . $e->getMessage());
         }
     }
 
@@ -1322,5 +1394,69 @@ class IntegrationDurController extends Controller
         $category = Config::get('sectors.' . $sector, null);
         
         return (!is_null($category)) ? $categories->where('name', $category)->first()['id'] : null;
+    }
+
+    /**
+     * Find dataset title associated with a given dataset id.
+     * 
+     * @param int $id The dataset id
+     * 
+     * @return string
+     */
+    private function getDatasetTitle(int $id): string
+    {
+        $metadata = Dataset::where(['id' => $id])
+            ->first()
+            ->latestVersion()
+            ->metadata;
+        $title = $metadata['metadata']['summary']['shortTitle'];
+        return $title;
+    }
+
+    private function getDurById(int $durId)
+    {
+        $dur = Dur::where(['id' => $durId])
+            ->with([
+                'keywords',
+                'datasets', 
+                'publications', 
+                'tools', 
+                'userDatasets' => function ($query) {
+                    $query->distinct('id');
+                }, 
+                'userPublications' => function ($query) {
+                    $query->distinct('id');
+                }, 
+                'applicationDatasets' => function ($query) {
+                    $query->distinct('id');
+                },
+                'applicationPublications' => function ($query) {
+                    $query->distinct('id');
+                },
+                'user',
+                'team',
+            ])->first();
+
+        $userDatasets = $dur->userDatasets;
+        $userPublications = $dur->userPublications;
+        $users = $userDatasets->merge($userPublications)->unique('id');
+        $dur->setRelation('users', $users);
+
+        $applicationDatasets = $dur->applicationDatasets;
+        $applicationPublications = $dur->applicationPublications;
+        $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
+        $dur->setRelation('applications', $applications);
+
+        unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
+
+        $dur = $dur->toArray();
+
+        if ($dur && $dur['datasets']) {
+            foreach ($dur['datasets'] as &$dataset) {
+              $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
+            }
+        }
+
+        return $dur;
     }
 }

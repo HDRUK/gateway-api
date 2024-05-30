@@ -158,7 +158,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get one team by id
-GET {{baseUrl}}/api/{{apiVersion}}/teams/50 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/teams/13 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -248,9 +248,9 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "type": "Type Test",
-    "enabled": 1,
-    "description": "type for test"
+    "type": "features",
+    "description": "Modelling",
+    "enabled": 1
 }
 
 #### update tag
@@ -270,6 +270,81 @@ DELETE {{baseUrl}}/api/{{apiVersion}}/tags/2 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+
+### Tools
+#### get all tools
+# GET {{baseUrl}}/api/{{apiVersion}}/tools?mongo_id=19004 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/tools HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one tool by id
+GET {{baseUrl}}/api/{{apiVersion}}/tools/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create a new tools
+POST {{baseUrl}}/api/{{apiVersion}}/tools HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "mongo_object_id": "649d6a39d30c534553c7fb8d",
+    "name": "Effectiveness of COVID-19 Vaccination in Brazil Using Mobile Data - Github repository",
+    "url": "https://github.com/noispuc/ICODA_EFFECT_Brazil",
+    "description": "ICODA Grand Challenge - Drive Project\nThis is the code repository of the EFFECT-Brazil driver project from the ICODA Grand Challenge.\n\nThe project is driven by a multiprofessional team of researchers from the Center for Healthcare Operations and Intelligence (Núcleo de Operações e Inteligência em Saúde) (NOIS), of the Department of Industrial Engineering @ PUC-Rio\n\nContact us at:\nTwitter: @NOIS_PUCRio\nnois [at] puc-rio [dot] br",
+    "license": "",
+    "tech_stack": "R",
+    "category_id": 74,
+    "user_id": 1,
+    "tag": [303],
+    "dataset": [842,842],
+    "enabled": true,
+    "mongo_id": 2895357616393892,
+    "programming_language": [9],
+    "programming_package": [],
+    "publications": [
+        {
+            "id": 2776
+        },
+        {
+            "id": 2742
+        },
+        {
+            "id": 2812
+        }
+    ]
+}
+
+
+# {
+#     "mongo_object_id": "5ece82142abda8b3a06f1a20",
+#     "name": "COVID-19 Phenomics",
+#     "url": "http://covid19-phenomics.org/",
+#     "description": "",
+#     "license": "",
+#     "tech_stack": "",
+#     "category_id": 2,
+#     "user_id": 1,
+#     "tag": [0,0],
+#     "enabled": 1,
+#     "mongo_id": 19006
+# }
+
+#### edit tools
+PATCH {{baseUrl}}/api/{{apiVersion}}/tools/2 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "mongo_object_id": "649d6a39d30c534553c7fb8d",
+    "name": "Effectiveness of COVID-19 Vaccination in Brazil Using Mobile Data - Github repository",
+    "url": "https://github.com/noispuc/ICODA_EFFECT_Brazil",
+    "description": "ICODA Grand Challenge - Drive Project\nThis is the code repository of ..."
+}
 
 
 ### APPLICATIONS
@@ -897,16 +972,15 @@ Authorization: Bearer {{accessToken}}
 
 ### TEAMS - USERS - ROLES
 #### add new user in team
-POST {{baseUrl}}/api/{{apiVersion}}/teams/1/users HTTP/1.1
+POST {{baseUrl}}/api/{{apiVersion}}/teams/21/users HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "userId": 12,
+    "userId": 40,
     "roles" : [
-        "custodian.team.admin",
-        "custodian.metadata.manager"
+        "dar.manager"
     ]
 }
 
@@ -1032,6 +1106,21 @@ Authorization: Bearer {{accessToken}}
         "willis.rice.bla@example.net",
         "amir.swift.bla@example.org"
     ]
+}
+
+
+#### create notifications
+POST {{baseUrl}}/api/{{apiVersion}}/notifications HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "notification_type": "team_user_notification",
+    "message": "neque et rerum aspernatur sit",
+    "opt_in": 1,
+    "enabled": 1,
+    "email": "shodkiewicz@example.com"
 }
 
 ### Federation Team Notifications
@@ -1504,12 +1593,13 @@ Authorization: Bearer {{accessToken}}
 
 ### Data Use Registers 
 #### get all
-GET {{baseUrl}}/api/{{apiVersion}}/dur HTTP/1.1
+# GET {{baseUrl}}/api/{{apiVersion}}/dur HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/dur?project_title=study HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get by id
-GET {{baseUrl}}/api/{{apiVersion}}/dur/22 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/dur/3 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -1520,32 +1610,32 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "mongo_object_id": "61bb5ec330d14c38ea0a23c2",
-    "mongo_id": "8039193255591979",
-    "counter": 0,
-    "non_gateway_datasets": [],
-    "non_gateway_applicants": ["Oliver Rivero Arias"],
-    "funders_and_sponsors": ["The Medical Research Council"],
-    "other_approval_committees": ["REC reference: 15/SW/0294"],
+    "mongo_object_id": "62792f1ff1c353ea952a95ac",
+    "mongo_id": "6406865803342279",
+    "counter": 19,
+    "non_gateway_datasets": ["SICSAG (Scottish Intensive Care Society Audit Group)", "COVID19 test"],
+    "non_gateway_applicants": ["Richard Haynes"],
+    "funders_and_sponsors": [],
+    "other_approval_committees": [],
     "gateway_outputs_tools": [],
     "gateway_outputs_papers": [],
-    "non_gateway_outputs": [],
-    "project_title": "Tracking the Impact of Gestational Age on Health, Educational and Economic outcomes: a Longitudinal Record Linkage Study (TIGAR)",
-    "project_id_text": "nnrd18",
+    "non_gateway_outputs": ["https://www.recoverytrial.net/results"],
+    "project_title": "RECOVERY (Randomised Evaluation of Covid 19 Therapy)",
+    "project_id_text": "eDRIS-1920-0282",
     "organisation_name": "University of Oxford",
     "organisation_sector": "Academic Institute",
     "manual_upload": true,
-    "team_id": 8,
-    "user_id": 1557,
-    "enabled": false,
-    "rejection_reason": "test",
+    "team_id": 42,
+    "user_id": 2335,
+    "enabled": true,
+    "rejection_reason": "",
     "accredited_researcher_status": "",
     "applicant_id": "",
     "confidential_data_description": "",
     "data_sensitivity_level": "",
     "dataset_linkage_description": "",
     "duty_of_confidentiality": "",
-    "lay_summary": "The overall aim of the study is to investigate the effect of gestational age on health, educational and economic outcomes up to age 11 years. the study will estimate the NHS health care costs of the original birth admission and subsequent readmissions up to 10 years follow-up of all babies born in England in 2005/2006 across all gestational age groups.",
+    "lay_summary": "This international clinical trial aims to identify treatments that may be beneficial for people hospitalised with suspected or confirmed COVID-19. A range of potential treatments have been suggested for COVID-19 but nobody knows if any of them will turn out to be more effective in helping people recover than the usual standard of hospital care which all patients will receive. The RECOVERY Trial is currently testing some of these suggested treatments:  - high-dose vs standard corticosteroids - empagliflozin (a drug for diabetes and heart and kidney disease) - sotrovimab (a monoclonal antibody treatment against the spike protein) - molnupiravir (an antiviral treatment) - paxlovid (an antiviral treatment) Data from the trial are regularly reviewed so that any effective treatment can be identified quickly and made available to all patients ",
     "legal_basis_for_data_article6": "",
     "legal_basis_for_data_article9": "",
     "national_data_optout": "",
@@ -1557,13 +1647,65 @@ Authorization: Bearer {{accessToken}}
     "access_type": "Release",
     "sublicence_arrangements": "",
     "technical_summary": "",
-    "keywords": [],
-    "datasets": [],
-    "project_start_date": "2017-05-01T00:00:00",
-    "project_end_date": "2021-08-31T00:00:00",
-    "last_activity": "2022-01-17T14:49:53",
-    "created_at": "2021-12-16T15:44:03",
-    "updated_at": "2022-01-17T14:49:53"
+    "keywords": ["COVID-19", "National Core Study"],
+    "datasets": [
+        {
+            "id": 345,
+            "is_locked": true,
+            "updated_at": "2022-05-09T00:00:00",
+            "user_id": 2335,
+            "reason": "This dataset was added via an edit of this data use register"
+        },
+        {
+            "id": 356,
+            "is_locked": true,
+            "updated_at": "2022-05-09T00:00:00",
+            "user_id": 2335,
+            "reason": "This dataset was added via an edit of this data use register"
+        }],
+    "publications": [
+        {
+            "id": 1375,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1107,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 815,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 998,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1006,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1554,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1302,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1607,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1203,
+            "updated_at": "2022-05-09T00:00:00"
+        }],
+    "project_start_date": "2020-03-23T00:00:00",
+    "project_end_date": "2025-04-30T00:00:00",
+    "latest_approval_date": "2020-04-14T00:00:00",
+    "last_activity": "2023-08-21T12:51:31",
+    "created_at": "2022-05-09T15:11:28",
+    "updated_at": "2023-08-21T12:51:31"
 }
 
 
@@ -1574,59 +1716,24 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "mongo_object_id": "62792f1ff1c3535d3b2a95a4",
-    "mongo_id": "5821916388794208",
-    "counter": 100,
-    "non_gateway_datasets": ["NRS Census Data", "SCI-Diabetes (Diabetes Register)", "SCCRS (Cervical screening)", "Screening Data", "COVID19 test", "Albasoft", "Scottish Cancer Registry (SMR06)"],
-    "non_gateway_applicants": ["Sally-Ann Cooper"],
+    "mongo_object_id": "62792f1ff1c353ea952a95ac",
+    "mongo_id": "6406865803342279",
+    "counter": 19,
+    "non_gateway_datasets": ["SICSAG (Scottish Intensive Care Society Audit Group)", "COVID19 test"],
+    "non_gateway_applicants": ["Richard Haynes"],
     "funders_and_sponsors": [],
     "other_approval_committees": [],
     "gateway_outputs_tools": [],
     "gateway_outputs_papers": [],
-    "non_gateway_outputs": [],
-    "project_title": "Health, death, and cancers in people with learning disabilities and people with autism.",
-    "project_id_text": "eDRIS-1819-0051",
-    "organisation_name": "University of Glasgow",
-    "organisation_sector": "Academia",
-    "project_start_date": "2018-05-09T00:00:00",
-    "project_end_date": "2023-01-30T00:00:00",
-    "latest_approval_date": "2020-07-21T00:00:00",
-    "datasets": [
-            {
-                    "id": 2,
-                    "is_locked": true,
-                    "updated_at": "2022-05-09T00:00:00",
-                    "user_id": 5,
-                    "reason": "This dataset was added via an edit of this data use register"
-            },
-            {
-                    "id": 4,
-                    "is_locked": true,
-                    "updated_at": "2022-05-09T00:00:00",
-                    "user_id": 5,
-                    "reason": "This dataset was added via an edit of this data use register"
-            },
-            {
-                    "id": 6,
-                    "is_locked": true,
-                    "updated_at": "2022-05-09T00:00:00",
-                    "user_id": 5,
-                    "reason": "This dataset was added via an edit of this data use register"
-            },
-            {
-                    "id": 8,
-                    "is_locked": true,
-                    "updated_at": "2022-05-09T00:00:00",
-                    "user_id": 5,
-                    "reason": "This dataset was added via an edit of this data use register"
-            }],
-    "last_activity": "2023-05-11T12:31:28",
+    "non_gateway_outputs": ["https://www.recoverytrial.net/results"],
+    "project_title": "RECOVERY (Randomised Evaluation of Covid 19 Therapy)",
+    "project_id_text": "eDRIS-1920-0282",
+    "organisation_name": "University of Oxford",
+    "organisation_sector": "Academic Institute",
     "manual_upload": true,
-    "team_id": 9,
-    "user_id": 4,
-    "enabled": false,
-    "created_at": "2022-05-09T15:11:28",
-    "updated_at": "2023-05-11T12:31:28",
+    "team_id": 42,
+    "user_id": 2335,
+    "enabled": true,
     "rejection_reason": "",
     "accredited_researcher_status": "",
     "applicant_id": "",
@@ -1634,7 +1741,7 @@ Authorization: Bearer {{accessToken}}
     "data_sensitivity_level": "",
     "dataset_linkage_description": "",
     "duty_of_confidentiality": "",
-    "lay_summary": "",
+    "lay_summary": "This international clinical trial aims to identify treatments that may be beneficial for people hospitalised with suspected or confirmed COVID-19. A range of potential treatments have been suggested for COVID-19 but nobody knows if any of them will turn out to be more effective in helping people recover than the usual standard of hospital care which all patients will receive. The RECOVERY Trial is currently testing some of these suggested treatments:  - high-dose vs standard corticosteroids - empagliflozin (a drug for diabetes and heart and kidney disease) - sotrovimab (a monoclonal antibody treatment against the spike protein) - molnupiravir (an antiviral treatment) - paxlovid (an antiviral treatment) Data from the trial are regularly reviewed so that any effective treatment can be identified quickly and made available to all patients ",
     "legal_basis_for_data_article6": "",
     "legal_basis_for_data_article9": "",
     "national_data_optout": "",
@@ -1643,10 +1750,152 @@ Authorization: Bearer {{accessToken}}
     "public_benefit_statement": "",
     "request_category_type": "",
     "request_frequency": "",
-    "access_type": "TRE",
+    "access_type": "Release",
     "sublicence_arrangements": "",
-    "technical_summary": ""
+    "technical_summary": "",
+    "keywords": ["COVID-19", "National Core Study"],
+    "datasets": [
+        {
+            "id": 345,
+            "is_locked": true,
+            "updated_at": "2022-05-09T00:00:00",
+            "user_id": 2335,
+            "reason": "This dataset was added via an edit of this data use register"
+        },
+        {
+            "id": 356,
+            "is_locked": true,
+            "updated_at": "2022-05-09T00:00:00",
+            "user_id": 2335,
+            "reason": "This dataset was added via an edit of this data use register"
+        }],
+    "publications": [
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        },
+        {
+            "id": 1,
+            "updated_at": "2022-05-09T00:00:00"
+        }],
+    "project_start_date": "2020-03-23T00:00:00",
+    "project_end_date": "2025-04-30T00:00:00",
+    "latest_approval_date": "2020-04-14T00:00:00",
+    "last_activity": "2023-08-21T12:51:31",
+    "created_at": "2022-05-09T15:11:28",
+    "updated_at": "2023-08-21T12:51:31"
 }
+
+# {
+#     "mongo_object_id": "62792f1ff1c3535d3b2a95a4",
+#     "mongo_id": "5821916388794208",
+#     "counter": 100,
+#     "non_gateway_datasets": ["NRS Census Data", "SCI-Diabetes (Diabetes Register)", "SCCRS (Cervical screening)", "Screening Data", "COVID19 test", "Albasoft", "Scottish Cancer Registry (SMR06)"],
+#     "non_gateway_applicants": ["Sally-Ann Cooper"],
+#     "funders_and_sponsors": [],
+#     "other_approval_committees": [],
+#     "gateway_outputs_tools": [],
+#     "gateway_outputs_papers": [],
+#     "non_gateway_outputs": [],
+#     "project_title": "Health, death, and cancers in people with learning disabilities and people with autism.",
+#     "project_id_text": "eDRIS-1819-0051",
+#     "organisation_name": "University of Glasgow",
+#     "organisation_sector": "Academia",
+#     "project_start_date": "2018-05-09T00:00:00",
+#     "project_end_date": "2023-01-30T00:00:00",
+#     "latest_approval_date": "2020-07-21T00:00:00",
+#     "datasets": [
+#             {
+#                     "id": 2,
+#                     "is_locked": true,
+#                     "updated_at": "2022-05-09T00:00:00",
+#                     "user_id": 5,
+#                     "reason": "This dataset was added via an edit of this data use register"
+#             },
+#             {
+#                     "id": 4,
+#                     "is_locked": true,
+#                     "updated_at": "2022-05-09T00:00:00",
+#                     "user_id": 5,
+#                     "reason": "This dataset was added via an edit of this data use register"
+#             },
+#             {
+#                     "id": 6,
+#                     "is_locked": true,
+#                     "updated_at": "2022-05-09T00:00:00",
+#                     "user_id": 5,
+#                     "reason": "This dataset was added via an edit of this data use register"
+#             },
+#             {
+#                     "id": 8,
+#                     "is_locked": true,
+#                     "updated_at": "2022-05-09T00:00:00",
+#                     "user_id": 5,
+#                     "reason": "This dataset was added via an edit of this data use register"
+#             }],
+#     "last_activity": "2023-05-11T12:31:28",
+#     "manual_upload": true,
+#     "team_id": 9,
+#     "user_id": 4,
+#     "enabled": false,
+#     "created_at": "2022-05-09T15:11:28",
+#     "updated_at": "2023-05-11T12:31:28",
+#     "rejection_reason": "",
+#     "accredited_researcher_status": "",
+#     "applicant_id": "",
+#     "confidential_data_description": "",
+#     "data_sensitivity_level": "",
+#     "dataset_linkage_description": "",
+#     "duty_of_confidentiality": "",
+#     "lay_summary": "",
+#     "legal_basis_for_data_article6": "",
+#     "legal_basis_for_data_article9": "",
+#     "national_data_optout": "",
+#     "organisation_id": "",
+#     "privacy_enhancements": "",
+#     "public_benefit_statement": "",
+#     "request_category_type": "",
+#     "request_frequency": "",
+#     "access_type": "TRE",
+#     "sublicence_arrangements": "",
+#     "technical_summary": ""
+# }
 
 #### update
 PUT {{baseUrl}}/api/{{apiVersion}}/dur/22 HTTP/1.1
@@ -1690,7 +1939,7 @@ Authorization: Bearer {{accessToken}}
     ]
 }
 
-#### edit
+#### dur edit
 PATCH {{baseUrl}}/api/{{apiVersion}}/dur/21 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
@@ -1702,11 +1951,54 @@ Authorization: Bearer {{accessToken}}
     "keywords": ["COVID-19 test 2", "National Core Study test"]
 }
 
-#### delete
+#### dur delete
 DELETE {{baseUrl}}/api/{{apiVersion}}/dur/1 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+#### dur upload
+POST {{baseUrl}}/api/{{apiVersion}}/dur/upload HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "user_id": 1,
+    "team_id": 2,
+    "project_title": "Upload - Health, death, and cancers in people with learning disabilities and people with autism.",
+    "project_id_text": "eDRIS-1819-0051",
+    "organisation_name": "University of Glasgow",
+    "organisation_id": "",
+    "organisation_sector": "Academia",
+    "non_gateway_applicants": "Skye Harvey | Leora Bartell",
+    "applicant_id": 1,
+    "funders_and_sponsors": "",
+    "accredited_researcher_status": "",
+    "sublicence_arrangements": "",
+    "lay_summary": "upload lay_summary ",
+    "public_benefit_statement": "",
+    "request_category_type": "",
+    "technical_summary": "",
+    "other_approval_committees": "",
+    "project_start_date": "2020-03-23T00:00:00",
+    "project_end_date": "2025-04-30T00:00:00",
+    "latest_approval_date": "2020-04-14T00:00:00",
+    "data_sensitivity_level": "",
+    "legal_basis_for_data_article6": "",
+    "legal_basis_for_data_article9": "",
+    "duty_of_confidentiality": "",
+    "national_data_optout": "",
+    "request_frequency": "",
+    "dataset_linkage_description": "",
+    "confidential_data_description": "",
+    "access_date": "",
+    "access_type": "",
+    "privacy_enhancements": "",
+    "datasets": [1,2,3]
+}
+
+
 
 
 ### Search
@@ -1757,6 +2049,16 @@ Authorization: Bearer {{accessToken}}
     "download": true
 }
 
+#### search for tools
+POST {{baseUrl}}/api/{{apiVersion}}/search/tools HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "query": "asthma",
+    "download": true
+}
 
 ### Filters
 #### get all filters
@@ -1777,8 +2079,9 @@ Authorization: Bearer {{accessToken}}
 
 {
     "type": "dataset",
-    "keys" : "test",
-    "enabled": true
+    "value": "167cc04b-23b8-4a9e-9ff9-6c8e07d6a561",
+    "keys": "id",
+    "enabled": 1
 }
 
 #### update filter
@@ -1797,6 +2100,84 @@ Authorization: Bearer {{accessToken}}
 
 #### update filter
 DELETE {{baseUrl}}/api/{{apiVersion}}/filters/11 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
+### Tests
+#### test pubsub service
+GET {{baseUrl}}/api/{{apiVersion}}/test-pubsub-service HTTP/1.1
+Content-Type: application/json
+
+
+### Data Provider
+#### get all data provider
+GET {{baseUrl}}/api/{{apiVersion}}/data_providers HTTP/1.1
+Content-Type: application/json
+
+
+### LICENSES
+#### get all licenses
+GET {{baseUrl}}/api/{{apiVersion}}/licenses HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one license by id
+GET {{baseUrl}}/api/{{apiVersion}}/licenses/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create a new license
+POST {{baseUrl}}/api/{{apiVersion}}/licenses HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "code": "TEST",
+    "label": "test label",
+    "valid_since": "2013-11-26",
+    "definition": "test definition",
+    "origin": "HDR"
+}
+
+// "valid_until" - not required | same format as "valid_since"
+
+#### update license
+PUT {{baseUrl}}/api/{{apiVersion}}/licenses/1 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "code": "TEST",
+    "label": "test label",
+    "valid_since": "2013-11-26",
+    "definition": "test definition",
+    "origin": "HDR"
+}
+
+// "valid_until" - not required | same format as "valid_since"
+
+#### edit license
+PATCH {{baseUrl}}/api/{{apiVersion}}/licenses/17 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "code": "TEST",
+    "label": "test label",
+    "valid_since": "2013-11-26",
+    "definition": "test definition",
+    "origin": "HDR"
+}
+
+// "valid_until" - not required | same format as "valid_since"
+
+#### delete license by id
+DELETE {{baseUrl}}/api/{{apiVersion}}/licenses/2 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}

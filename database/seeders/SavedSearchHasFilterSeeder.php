@@ -14,6 +14,8 @@ class SavedSearchHasFilterSeeder extends Seeder
      */
     public function run(): void
     {
+        $fakeTerms = ['fake', 'search', 'terms'];
+        
         for ($count = 1; $count <= 10; $count++) {
             $savedSearchId = SavedSearch::all()->random()->id;
             $filterId = Filter::all()->random()->id;
@@ -27,6 +29,7 @@ class SavedSearchHasFilterSeeder extends Seeder
                 SavedSearchHasFilter::create([
                     'saved_search_id' => $savedSearchId,
                     'filter_id' => $filterId,
+                    'terms' => [fake()->randomElement($fakeTerms)],
                 ]);
             }
         }

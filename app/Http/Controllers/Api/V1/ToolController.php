@@ -2,22 +2,36 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\Tag;
 use App\Models\Tool;
+use App\Models\Dataset;
+use App\Models\License;
+use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
+use App\Models\Application;
+use App\Models\TypeCategory;
+use Illuminate\Http\Request;
+use App\Models\DatasetHasTool;
+use App\Models\DataProviderColl;
 use Illuminate\Http\JsonResponse;
+use App\Models\ProgrammingPackage;
+use App\Models\PublicationHasTool;
 use App\Http\Requests\Tool\GetTool;
+use App\Models\ProgrammingLanguage;
+use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tool\EditTool;
 use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
-use App\Http\Traits\RequestTransformation;
-
+use App\Models\DataProviderCollHasTeam;
 use MetadataManagementController AS MMC;
+use App\Models\ToolHasProgrammingPackage;
+use App\Http\Traits\RequestTransformation;
+use App\Models\ToolHasProgrammingLanguage;
 
 class ToolController extends Controller
 {
@@ -47,16 +61,30 @@ class ToolController extends Controller
      *    ),
      * )
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
+            $mongoId = $request->query('mongo_id', null);
             $tools = Tool::with([
                     'user', 
                     'tag',
                     'team',
+                    'license',
+                    'publications',
+                    'durs',
                 ])
+                ->when($mongoId, function ($query) use ($mongoId) {
+                    return $query->where('mongo_id', '=', $mongoId);
+                })
                 ->where('enabled', 1)
                 ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tool get all",
+            ]);
 
             return response()->json(
                 $tools
@@ -109,18 +137,17 @@ class ToolController extends Controller
     public function show(GetTool $request, int $id): JsonResponse
     {
         try {
-            $tools = Tool::with([
-                'user', 
-                'tag',
-                'team',
-            ])->where([
-                'id' => $id,
-                'enabled' => 1,
-            ])->get();
+            $tool = $this->getToolById($id);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tool get " . $id,
+            ]);
 
             return response()->json([
                 'message' => 'success',
-                'data' => $tools,
+                'data' => $tool,
             ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -144,13 +171,20 @@ class ToolController extends Controller
      *             @OA\Property( property="name", type="string", example="Similique sapiente est vero eum." ),
      *             @OA\Property( property="url", type="string", example="http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim" ),
      *             @OA\Property( property="description", type="string", example="Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel." ),
-     *             @OA\Property( property="license", type="string", example="Inventore omnis aut laudantium vel alias." ),
+     *             @OA\Property( property="license", type="integer", example="1" ),
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
+     *             @OA\Property( property="associated_authors", type="string", example="string" ),
+     *             @OA\Property( property="contact_address", type="string", example="string" ),
+     *             @OA\Property( property="publications", type="array", @OA\Items() ),
      *          ),
      *       ),
      *    ),
@@ -190,6 +224,17 @@ class ToolController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $userId = null;
+            $appId = null;
+            if (array_key_exists('user_id', $input)) {
+                $userId = (int) $input['user_id'];
+            } elseif (array_key_exists('jwt_user', $input)) {
+                $userId = (int) $input['jwt_user']['id'];
+            } elseif (array_key_exists('app_user', $input)) {
+                $appId = (int) $input['app']['id'];
+                $app = Application::where(['id' => $appId])->first();
+                $userId = (int) $app->user_id;
+            }
 
             $arrayKeys = [
                 'mongo_object_id', 
@@ -202,13 +247,32 @@ class ToolController extends Controller
                 'user_id',
                 'enabled',
                 'team_id', 
+                'mongo_id',
+                'associated_authors', 
+                'contact_address',
             ];
+
             $array = $this->checkEditArray($input, $arrayKeys);
             $tool = Tool::create($array);
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
+            if (array_key_exists('dataset', $input)) {
+                $this->insertDatasetHasTool($input['dataset'], (int) $tool->id);
+            }
+            if (array_key_exists('programming_language', $input)) {
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
+            }
+            if (array_key_exists('programming_package', $input)) {
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $tool->id);
+            }
+            if (array_key_exists('type_category', $input)) {
+                $this->insertToolHasTypeCategory($input['type_category'], (int) $tool->id);
+            }
 
-            $this->indexElasticTools($input, (int) $tool->id);
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($tool->id, $publications, $array['user_id'], $appId);
+
+            $this->indexElasticTools((int) $tool->id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -251,13 +315,20 @@ class ToolController extends Controller
      *             @OA\Property( property="name", type="string", example="Similique sapiente est vero eum." ),
      *             @OA\Property( property="url", type="string", example="http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim" ),
      *             @OA\Property( property="description", type="string", example="Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel." ),
-     *             @OA\Property( property="license", type="string", example="Inventore omnis aut laudantium vel alias." ),
+     *             @OA\Property( property="license", type="integer", example="1" ),
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
+     *             @OA\Property( property="associated_authors", type="string", example="string" ),
+     *             @OA\Property( property="contact_address", type="string", example="string" ),
+     *             @OA\Property( property="publications", type="array", @OA\Items() ),
      *          ),
      *       ),
      *    ),
@@ -298,6 +369,18 @@ class ToolController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+            $userId = null;
+            $appId = null;
+            if (array_key_exists('user_id', $input)) {
+                $userId = (int) $input['user_id'];
+            } elseif (array_key_exists('jwt_user', $input)) {
+                $userId = (int) $input['jwt_user']['id'];
+            } elseif (array_key_exists('app_user', $input)) {
+                $appId = (int) $input['app']['id'];
+                $app = Application::where(['id' => $appId])->first();
+                $userId = (int) $app->user_id;
+            }
+
             $arrayKeys = [
                 'mongo_object_id', 
                 'name', 
@@ -309,6 +392,9 @@ class ToolController extends Controller
                 'user_id',
                 'enabled',
                 'team_id', 
+                'mongo_id',
+                'associated_authors', 
+                'contact_address',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -317,6 +403,29 @@ class ToolController extends Controller
 
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
+
+            DatasetHasTool::where('tool_id', $id)->delete();
+            if (array_key_exists('dataset', $input)) {
+                $this->insertDatasetHasTool($input['dataset'], (int) $id);
+            }
+
+            if (array_key_exists('programming_language', $input)) {
+                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+            }
+            if (array_key_exists('programming_package', $input)) {
+                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
+            }
+            if (array_key_exists('type_category', $input)) {
+                ToolHasTypeCategory::where('tool_id', $id)->delete();
+                $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
+            }
+
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($id, $publications, $array['user_id'], $appId);
+
+            $this->indexElasticTools((int) $id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -327,14 +436,7 @@ class ToolController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Tool::with([
-                            'user', 
-                            'tag',
-                            'team',
-                        ])
-                        ->withTrashed()
-                        ->where('id', $id)
-                        ->first(),
+                'data' => $this->getToolById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -366,13 +468,19 @@ class ToolController extends Controller
      *             @OA\Property( property="name", type="string", example="Similique sapiente est vero eum." ),
      *             @OA\Property( property="url", type="string", example="http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim" ),
      *             @OA\Property( property="description", type="string", example="Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel." ),
-     *             @OA\Property( property="license", type="string", example="Inventore omnis aut laudantium vel alias." ),
+     *             @OA\Property( property="license", type="integer", example="1" ),
      *             @OA\Property( property="tech_stack", type="string", example="Cumque molestias excepturi quam at." ),
      *             @OA\Property( property="category_id", type="integer", example=1 ),
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
+     *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
+     *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
+     *             @OA\Property( property="type_category", type="array", @OA\Items() ),
+     *             @OA\Property( property="associated_authors", type="string", example="string" ),
+     *             @OA\Property( property="contact_address", type="string", example="string" ),
      *          ),
      *       ),
      *    ),
@@ -412,6 +520,17 @@ class ToolController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $userId = null;
+            $appId = null;
+            if ($request->has('userId')) {
+                $userId = (int) $input['userId'];
+            } elseif (array_key_exists('jwt_user', $input)) {
+                $userId = (int) $input['jwt_user']['id'];
+            } elseif (array_key_exists('app_user', $input)) {
+                $appId = (int) $input['app']['id'];
+            }
+
             $arrayKeys = [
                 'mongo_object_id',
                 'name',
@@ -423,6 +542,9 @@ class ToolController extends Controller
                 'user_id',
                 'enabled',
                 'team_id',
+                'mongo_id',
+                'associated_authors', 
+                'contact_address',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -434,6 +556,32 @@ class ToolController extends Controller
                 $this->insertToolHasTag($input['tag'], (int) $id);
             };
 
+            if (array_key_exists('dataset', $input)) {
+                DatasetHasTool::where('tool_id', $id)->delete();
+                $this->insertDatasetHasTool($input['dataset'], (int) $id);
+            }
+
+            if (array_key_exists('programming_language', $input)) {
+                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+            }
+            if (array_key_exists('programming_package', $input)) {
+                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
+            }
+            if (array_key_exists('type_category', $input)) {
+                ToolHasTypeCategory::where('tool_id', $id)->delete();
+                $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
+            }
+
+            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+            if (array_key_exists('publications', $input)) {
+                $publications = $input['publications'];
+                $this->checkPublications($id, $publications, $userIdFinal, $appId);
+            }
+
+            $this->indexElasticTools((int) $id);
+
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -443,14 +591,7 @@ class ToolController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Tool::with([
-                            'user', 
-                            'tag',
-                            'team',
-                        ])
-                        ->withTrashed()
-                        ->where('id', $id)
-                        ->first(),
+                'data' => $this->getToolById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -514,6 +655,12 @@ class ToolController extends Controller
 
             Tool::where('id', $id)->delete();
             ToolHasTag::where('tool_id', $id)->delete();
+            DatasetHasTool::where('tool_id', $id)->delete();
+            ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+            ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+            ToolHasTypeCategory::where('tool_id', $id)->delete();
+            DurHasTool::where('tool_id', $id)->delete();
+            PublicationHasTool::where('tool_id', $id)->delete();
             
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -530,6 +677,25 @@ class ToolController extends Controller
         }
     }
 
+    private function getToolById(int $toolId)
+    {
+        $tool = Tool::with([
+            'user', 
+            'tag',
+            'team',
+            'license',
+            'programmingLanguages',
+            'programmingPackages',
+            'typeCategory',
+            'publications',
+            'durs',
+        ])->where([
+            'id' => $toolId,
+        ])->first();
+
+        return $tool;
+    }
+
     /**
      * Insert data into ToolHasTag
      *
@@ -541,6 +707,9 @@ class ToolController extends Controller
     {
         try {
             foreach ($tags as $value) {
+                if ($value === 0) {
+                    continue;
+                }
                 ToolHasTag::updateOrCreate([
                     'tool_id' => (int) $toolId,
                     'tag_id' => (int) $value,
@@ -554,27 +723,274 @@ class ToolController extends Controller
     }
 
     /**
+     * Insert data into DatasetHasTool
+     *
+     * @param array $datasets
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertDatasetHasTool(array $datasets, int $toolId): mixed
+    {
+        try {
+            foreach ($datasets as $value) {
+                DatasetHasTool::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'dataset_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert data into ToolHasProgrammingLanguage
+     *
+     * @param array $programmingLanguages
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertToolHasProgrammingLanguage(array $programmingLanguages, int $toolId): mixed
+    {
+        try {
+            foreach ($programmingLanguages as $value) {
+                ToolHasProgrammingLanguage::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'programming_language_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert data into ToolHasProgrammingPackage
+     *
+     * @param array $programmingPackages
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertToolHasProgrammingPackage(array $programmingPackages, int $toolId): mixed
+    {
+        try {
+            foreach ($programmingPackages as $value) {
+                ToolHasProgrammingPackage::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'programming_package_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert data into ToolHasTypeCategory
+     *
+     * @param array $typeCategories
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertToolHasTypeCategory(array $typeCategories, int $toolId): mixed
+    {
+        try {
+            foreach ($typeCategories as $value) {
+                ToolHasTypeCategory::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'type_category_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    // publications
+    private function checkPublications(int $toolId, array $inPublications, int $userId = null, int $appId = null) 
+    {
+        $pubs = PublicationHasTool::where(['tool_id' => $toolId])->get();
+        foreach ($pubs as $pub) {
+            if (!in_array($pub->publication_id, $this->extractInputIdToArray($inPublications))) {
+                $this->deletePublicationHasTools($toolId, $pub->publication_id);
+            }
+        }
+
+        foreach ($inPublications as $publication) {
+            $checking = $this->checkInPublicationHasTools($toolId, (int) $publication['id']);
+
+            if (!$checking) {
+                $this->addPublicationHasTool($toolId, $publication, $userId, $appId);
+            }
+        }
+    }
+
+    private function addPublicationHasTool(int $toolId, array $publication, int $userId = null, int $appId = null)
+    {
+        try {
+            $arrCreate = [
+                'tool_id' => $toolId,
+                'publication_id' => $publication['id'],
+            ];
+
+            if (array_key_exists('user_id', $publication)) {
+                $arrCreate['user_id'] = (int) $publication['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $publication)) {
+                $arrCreate['reason'] = $publication['reason'];
+            }
+
+            if (array_key_exists('updated_at', $publication)) { // special for migration
+                $arrCreate['created_at'] = $publication['updated_at'];
+                $arrCreate['updated_at'] = $publication['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return PublicationHasTool::updateOrCreate(
+                $arrCreate,
+                [
+                    'tool_id' => $toolId,
+                    'publication_id' => $publication['id'],
+                ]
+            );
+        } catch (Exception $e) {
+            throw new Exception("addPublicationHasTool :: " . $e->getMessage());
+        }
+    }
+
+    private function checkInPublicationHasTools(int $toolId, int $publicationId)
+    {
+        try {
+            return PublicationHasTool::where([
+                'tool_id' => $toolId,
+                'publication_id' => $publicationId,
+            ])->first();
+        } catch (Exception $e) {
+            throw new Exception("checkInPublicationHasTools :: " . $e->getMessage());
+        }
+    }
+
+    private function deletePublicationHasTools(int $toolId, int $publicationId)
+    {
+        try {
+            return PublicationHasTool::where([
+                'tool_id' => $toolId,
+                'publication_id' => $publicationId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deletePublicationHasTools :: " . $e->getMessage());
+        }
+    }
+
+    private function extractInputIdToArray(array $input): Array
+    {
+        $response = [];
+        foreach ($input as $value) {
+            $response[] = $value['id'];
+        }
+
+        return $response;
+    }
+    
+    /**
      * Insert tool document into elastic index
      *
-     * @param array $input
      * @param integer $toolId
      * @return void
      */
-    private function indexElasticTools(array $input, int $toolId): void 
+    private function indexElasticTools(int $toolId): void 
     {
         try {
+            $tool = Tool::where('id', $toolId)
+                ->with(['programmingLanguages', 'programmingPackages', 'tag', 'category', 'typeCategory', 'license'])
+                ->first();
 
-            $tags = Tag::whereIn('id', $input['tag'])->get()->toArray();
-            $tagsDescription = array();
-            foreach ($tags as $t) {
-                $tagsDescription[] = $t['description'];
+            $license = License::where('id', $tool['license'])->first();
+
+            $typeCategoriesIDs = ToolHasTypeCategory::where('tool_id', $toolId)
+                ->pluck('type_category_id')
+                ->all();
+
+            $typeCategories = TypeCategory::where('id', $typeCategoriesIDs)
+                ->pluck('name')
+                ->all();
+
+            $programmingLanguagesIDs = ToolHasProgrammingLanguage::where('tool_id', $toolId)
+                ->pluck('programming_language_id')
+                ->all();
+
+            $programmingLanguages = ProgrammingLanguage::where('id', $programmingLanguagesIDs)
+                ->pluck('name')
+                ->all();
+
+            $programmingPackagesIDs = ToolHasProgrammingPackage::where('tool_id', $toolId)
+                ->pluck('programming_package_id')
+                ->all();
+
+            $programmingPackages = ProgrammingPackage::where('id', $programmingPackagesIDs)
+                ->pluck('name')
+                ->all();
+
+            $tagIDs = ToolHasTag::where('tool_id', $toolId)
+                ->pluck('tag_id')
+                ->all();
+
+            $tags = Tag::where('id', $tagIDs)
+                ->pluck('description')
+                ->all();
+
+            $datasetIDs = DatasetHasTool::where('tool_id', $toolId)
+                ->pluck('dataset_id')
+                ->all();
+
+            $datasets = Dataset::where('id', $datasetIDs)
+                ->with('versions')
+                ->get();
+
+            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
+                ->pluck('data_provider_coll_id')
+                ->all();
+
+            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
+                ->pluck('name')
+                ->all();
+
+            $datasetTitles = array();
+            foreach ($datasets as $dataset) {
+                $metadata = $dataset['versions'][0];
+                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
             }
+            usort($datasetTitles, 'strcasecmp');
 
             $toIndex = [
-                'name' => $input['name'],
-                'description' => $input['description'],
-                'tags' => $tagsDescription
+                'name' => $tool['name'],
+                'description' => $tool['description'],
+                'license' => $license ? $license['label'] : null,
+                'techStack' => $tool['tech_stack'],
+                'category' => $tool['category']['name'],
+                'typeCategory' => $typeCategories,
+                'associatedAuthors' => $tool['associated_authors'],
+                'programmingLanguages' => $programmingLanguages,
+                'programmingPackages' => $programmingPackages,
+                'tags' => $tags,
+                'datasetTitles' => $datasetTitles,
+                'dataProviderColl' => $dataProviderColl,
             ];
+
             $params = [
                 'index' => 'tool',
                 'id' => $toolId,

@@ -10,7 +10,7 @@ class SavedSearchHasFilter extends Model
     use HasFactory;
 
     protected $fillable = [
-        'saved_search_id', 'filter_id',
+        'saved_search_id', 'filter_id', 'terms'
     ];
 
     /**
@@ -19,6 +19,15 @@ class SavedSearchHasFilter extends Model
      * @var string
      */
     protected $table = 'saved_search_has_filters';
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'terms' => 'array',
+    ];
 
     /**
      * Indicates if the model should be timestamped

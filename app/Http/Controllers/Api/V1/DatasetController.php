@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 
 use Illuminate\Support\Carbon;
 use App\Models\SpatialCoverage;
@@ -364,7 +366,8 @@ class DatasetController extends Controller
     {
         try {
             $dataset = Dataset::where(['id' => $id])
-                ->with(['namedEntities', 'collections'])
+                ->with(['namedEntities', 'collections', 'publications'])
+                ->withCount(['durs', 'publications'])
                 ->first();
 
             $outputSchemaModel = $request->query('schema_model');
@@ -476,6 +479,8 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
+
+            $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $teamId = (int)$input['team_id'];
@@ -597,7 +602,8 @@ class DatasetController extends Controller
                 // Dispatch term extraction to a subprocess as it may take some time
                 TermExtraction::dispatch(
                     $dataset->id,
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
+                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
+                    $elasticIndexing
                 );
 
                 Auditor::log([
@@ -905,6 +911,7 @@ class DatasetController extends Controller
     /**
      * @OA\Delete(
      *      path="/api/v1/datasets/{id}",
+     *      operationId="delete_datasets",
      *      summary="Delete a dataset",
      *      description="Delete a dataset",
      *      tags={"Datasets"},
@@ -1000,6 +1007,17 @@ class DatasetController extends Controller
      *          description="team id",
      *       ),
      *    ),
+     *    @OA\Parameter(
+     *       name="dataset_id",
+     *       in="query",
+     *       description="dataset id",
+     *       required=false,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="dataset id",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="CSV file",
@@ -1023,8 +1041,11 @@ class DatasetController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $teamId = $request->query('team_id',null);
+        $datasetId = $request->query('dataset_id', null);
         $datasets = Dataset::when($teamId, function ($query) use ($teamId){
             return $query->where('team_id', '=', $teamId);
+        })->when($datasetId, function ($query) use ($datasetId) {
+            return $query->where('id', '=', $datasetId);
         });
 
         $results = $datasets->select('datasets.*')->get();
@@ -1060,7 +1081,7 @@ class DatasetController extends Controller
                     $row = [
                         $metadata['metadata']['summary']['title'] !== null ? $metadata['metadata']['summary']['title'] : '',
                         $publisherName !== null ? $publisherName : '',
-                        $rowDetails['metadata']['updated_at'] !== null ? $rowDetails['metadata']['updated_at'] : '',
+                        $rowDetails['updated_at'] !== null ? $rowDetails['updated_at'] : '',
                         (string)strtoupper($rowDetails['create_origin']),
                         (string)strtoupper($rowDetails['status']),
                         $metadata['metadata'] !== null ? (string)json_encode($metadata['metadata']) : '',

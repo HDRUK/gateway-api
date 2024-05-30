@@ -17,16 +17,19 @@ class PublicationHasDatasetSeeder extends Seeder
         for ($count = 1; $count <= 10; $count++) {
             $pubId = Publication::all()->random()->id;
             $datasetId = Dataset::all()->random()->id;
+            $type = fake()->randomElement(['ABOUT', 'USING', 'UNKNOWN']);
 
             $pubHasDataset = PublicationHasDataset::where([
                 'publication_id' => $pubId,
                 'dataset_id' => $datasetId,
+                'link_type' => $type,
             ])->first();
 
             if (!$pubHasDataset) {
                 PublicationHasDataset::create([
                     'publication_id' => $pubId,
                     'dataset_id' => $datasetId,
+                    'link_type' => $type,
                 ]);
             }
         }

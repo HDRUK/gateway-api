@@ -21,16 +21,23 @@ class TermExtraction implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $tries = 1;
+    public $timeout = 300;
+    
     private string $datasetId = '';
     private string $data = '';
+
+    private bool $reIndexElastic = false;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, string $data)
+    public function __construct(string $datasetId, string $data, ?string $elasticIndex = "on")
     {
         $this->datasetId = $datasetId;
         $this->data = $data;
+
+        $this->reIndexElastic = ($elasticIndex === "on" ? true : false);
     }
 
     /**
@@ -48,7 +55,9 @@ class TermExtraction implements ShouldQueue
 
         $this->postToTermExtractionDirector(json_encode($data['metadata']), $this->datasetId);
 
-        MMC::reindexElastic($this->datasetId);
+        if ($this->reIndexElastic) {
+            MMC::reindexElastic($this->datasetId);
+        }
     }
 
     /**
@@ -61,10 +70,10 @@ class TermExtraction implements ShouldQueue
     private function postToTermExtractionDirector(string $dataset, string $datasetId): void
     {
         try {
-            $response = Http::withBody(
+            $response = Http::timeout(300)->withBody(
                 $dataset,
                 'application/json'
-            )->post(env('TED_SERVICE_URL'));
+            )->post(env('TED_SERVICE_URL', 'http://localhost:8001'));
 
             if ($response->json() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $n) {

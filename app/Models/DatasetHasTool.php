@@ -20,7 +20,7 @@ class DatasetHasTool extends Model
      * 
      * @var string
      */
-    protected $table = 'dataset_has_tool';
+    protected $table = 'dataset_has_tools';
 
     /**
      * Indicates if the model should be timestamped or not

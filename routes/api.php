@@ -58,6 +58,18 @@ Route::get('/services/traser', function(Request $request) {
     );
 });
 
+
+Route::any('/services/quba{any}', 
+    [ServiceLayerController::class, 
+    'quba', 
+] )->where('any', '.*');
+
+
+Route::any('/services/daras{any}', 
+    [ServiceLayerController::class, 
+    'daras', 
+] )->where('any', '.*');
+
 // stop all all other routes
 Route::any('{path}', function() {
     $response = [

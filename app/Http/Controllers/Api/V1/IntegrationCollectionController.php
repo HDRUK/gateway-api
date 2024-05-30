@@ -2,33 +2,36 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 
-use App\Models\Keyword;
 use App\Models\Dataset;
+use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
-use App\Models\CollectionHasDataset;
-use App\Models\CollectionHasKeyword;
-
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Collection\GetCollection;
-use App\Http\Requests\Collection\EditCollection;
-use App\Http\Requests\Collection\CreateCollection;
-use App\Http\Requests\Collection\DeleteCollection;
-use App\Http\Requests\Collection\UpdateCollection;
-
-use App\Exceptions\NotFoundException;
-
-use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\IntegrationOverride;
-
 use Illuminate\Http\Request;
+use App\Models\CollectionHasDur;
+use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 
+use App\Http\Controllers\Controller;
+use App\Models\CollectionHasDataset;
+use App\Models\CollectionHasKeyword;
+use App\Exceptions\NotFoundException;
+use App\Http\Traits\IntegrationOverride;
+use App\Models\CollectionHasPublication;
+
 use MetadataManagementController AS MMC;
+
+use App\Http\Traits\RequestTransformation;
+use App\Http\Requests\Collection\GetCollection;
+
+use App\Http\Requests\Collection\EditCollection;
+use App\Http\Requests\Collection\CreateCollection;
+
+use App\Http\Requests\Collection\DeleteCollection;
+use App\Http\Requests\Collection\UpdateCollection;
 
 class IntegrationCollectionController extends Controller
 {
@@ -62,6 +65,9 @@ class IntegrationCollectionController extends Controller
      *                @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -90,16 +96,45 @@ class IntegrationCollectionController extends Controller
 
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $collections = Collection::with([
-                    'datasets',
-                    'users' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'keywords',
-                    'applications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'team',
-                ])->paginate((int) $perPage, ['*'], 'page');
+                'keywords',
+                'datasets',
+                'tools',
+                'dur',
+                'publications',
+                'userDatasets',
+                'userTools',
+                'userPublications',
+                'applicationDatasets',
+                'applicationTools',
+                'applicationPublications',
+                'team',
+            ])->paginate((int) $perPage, ['*'], 'page');
+
+            $collections->getCollection()->transform(function ($collection) {
+                $userDatasets = $collection->userDatasets;
+                $userTools = $collection->userTools;
+                $userPublications = $collection->userPublications;
+                $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
+                $collection->setRelation('users', $users);
+
+                $applicationDatasets = $collection->applicationDatasets;
+                $applicationTools = $collection->applicationTools;
+                $applicationPublications = $collection->applicationPublications;
+                $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
+                $collection->setRelation('applications', $applications);
+
+                // Remove unwanted relations
+                unset(
+                    $collection->userDatasets, 
+                    $collection->userTools, 
+                    $collection->userPublications, 
+                    $collection->applicationDatasets, 
+                    $collection->applicationTools, 
+                    $collection->applicationPublications
+                );
+
+                return $collection;
+            });
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -157,6 +192,9 @@ class IntegrationCollectionController extends Controller
      *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -173,18 +211,7 @@ class IntegrationCollectionController extends Controller
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
-            $collections = Collection::where(['id' => $id])
-                ->with([
-                    'datasets', 
-                    'users' => function ($query) {
-                        $query->distinct('id');
-                    }, 
-                    'keywords',
-                    'applications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'team',
-                ])->get();
+            $collections = $this->getCollectionById($id);
 
             Auditor::log([
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
@@ -225,6 +252,8 @@ class IntegrationCollectionController extends Controller
      *             @OA\Property(property="enabled", type="boolean", example="true"),
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -292,6 +321,15 @@ class IntegrationCollectionController extends Controller
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($collectionId, $datasets, $array['user_id'], $appId);
 
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($collectionId, $tools, $array['user_id'], $appId);
+
+            $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
+            $this->checkDurs($collectionId, $dur, $array['user_id'], $appId);
+
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($collectionId, $publications, $array['user_id'], $appId);
+
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($collectionId, $keywords);
 
@@ -358,6 +396,8 @@ class IntegrationCollectionController extends Controller
      *             @OA\Property(property="enabled", type="boolean", example="true"),
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -390,6 +430,8 @@ class IntegrationCollectionController extends Controller
      *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -442,6 +484,15 @@ class IntegrationCollectionController extends Controller
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($id, $datasets, $array['user_id'], $appId);
 
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($id, $tools, $array['user_id'], $appId);
+
+            $dur = array_key_exists('dur', $input) ? $input['dur'] : [];
+            $this->checkDurs($id, $dur, $array['user_id'], $appId);
+
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($id, $publications, $array['user_id'], $appId);
+
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
 
@@ -471,17 +522,7 @@ class IntegrationCollectionController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => Collection::where('id', $id)->with([
-                        'datasets',
-                        'users' => function ($query) {
-                            $query->distinct('id');
-                        }, 
-                        'keywords',
-                        'applications' => function ($query) {
-                            $query->distinct('id');
-                        },
-                        'team',
-                    ])->first(),
+                'data' => $this->getCollectionById($id),
             ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -518,6 +559,8 @@ class IntegrationCollectionController extends Controller
      *             @OA\Property(property="enabled", type="boolean", example="true"),
      *             @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
      *          ),
      *       ),
@@ -550,6 +593,8 @@ class IntegrationCollectionController extends Controller
      *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
@@ -602,6 +647,21 @@ class IntegrationCollectionController extends Controller
                 $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
             }
 
+            if (array_key_exists('tools', $input)) {
+                $tools = $input['tools'];
+                $this->checkTools($id, $tools, $userIdFinal, $appId);
+            }
+
+            if (array_key_exists('dur', $input)) {
+                $dur = $input['dur'];
+                $this->checkDurs($id, $dur, $userIdFinal, $appId);
+            }
+
+            if (array_key_exists('publications', $input)) {
+                $publications = $input['publications'];
+                $this->checkPublications($id, $publications, $userIdFinal, $appId);
+            }
+
             if (array_key_exists('keywords', $input)) {
                 $keywords = $input['keywords'];
                 $this->checkKeywords($id, $keywords);
@@ -628,17 +688,7 @@ class IntegrationCollectionController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => Collection::where('id', $id)->with([
-                    'datasets',
-                    'users' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'keywords',
-                    'applications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'team',
-                ])->first(),
+                'data' => $this->getCollectionById($id),
             ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -693,7 +743,10 @@ class IntegrationCollectionController extends Controller
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             CollectionHasDataset::where(['collection_id' => $id])->delete();
+            CollectionHasTool::where(['collection_id' => $id])->delete();
+            CollectionHasDur::where(['collection_id' => $id])->delete();
             CollectionHasKeyword::where(['collection_id' => $id])->delete();
+            CollectionHasPublication::where(['collection_id' => $id])->delete();
             Collection::where(['id' => $id])->delete();
 
             Auditor::log([
@@ -713,12 +766,12 @@ class IntegrationCollectionController extends Controller
         }
     }
 
-
+    // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null) 
     {
         $cols = CollectionHasDataset::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
-            if (!in_array($col->dataset_id, $this->extractInputDatasetIdToArray($inDatasets))) {
+            if (!in_array($col->dataset_id, $this->extractInputIdToArray($inDatasets))) {
                 $this->deleteCollectionHasDatasets($collectionId, $col->dataset_id);
             }
         }
@@ -797,6 +850,235 @@ class IntegrationCollectionController extends Controller
         }
     }
 
+    // tools
+    private function checkTools(int $collectionId, array $inTools, int $userId = null, int $appId = null) 
+    {
+        $cols = CollectionHasTool::where(['collection_id' => $collectionId])->get();
+        foreach ($cols as $col) {
+            if (!in_array($col->tool_id, $this->extractInputIdToArray($inTools))) {
+                $this->deleteCollectionHasTools($collectionId, $col->tool_id);
+            }
+        }
+
+        foreach ($inTools as $tool) {
+            $checking = $this->checkInCollectionHasTools($collectionId, (int) $tool['id']);
+
+            if (!$checking) {
+                $this->addCollectionHasTool($collectionId, $tool, $userId, $appId);
+            }
+        }
+    }
+
+    private function addCollectionHasTool(int $collectionId, array $tool, int $userId = null, int $appId = null)
+    {
+        try {
+            $arrCreate = [
+                'collection_id' => $collectionId,
+                'tool_id' => $tool['id'],
+            ];
+
+            if (array_key_exists('user_id', $tool)) {
+                $arrCreate['user_id'] = (int) $tool['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $tool)) {
+                $arrCreate['reason'] = $tool['reason'];
+            }
+
+            if (array_key_exists('updated_at', $tool)) { // special for migration
+                $arrCreate['created_at'] = $tool['updated_at'];
+                $arrCreate['updated_at'] = $tool['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return CollectionHasTool::updateOrCreate(
+                $arrCreate,
+                [
+                    'collection_id' => $collectionId,
+                    'tool_id' => $tool['id'],
+                ]
+            );
+        } catch (Exception $e) {
+            throw new Exception("addCollectionHasTool :: " . $e->getMessage());
+        }
+    }
+
+    private function checkInCollectionHasTools(int $collectionId, int $toolId)
+    {
+        try {
+            return CollectionHasTool::where([
+                'collection_id' => $collectionId,
+                'tool_id' => $toolId,
+            ])->first();
+        } catch (Exception $e) {
+            throw new Exception("checkInCollectionHasTools :: " . $e->getMessage());
+        }
+    }
+
+    private function deleteCollectionHasTools(int $collectionId, int $toolId)
+    {
+        try {
+            return CollectionHasTool::where([
+                'collection_id' => $collectionId,
+                'tool_id' => $toolId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deleteCollectionHasTools :: " . $e->getMessage());
+        }
+    }
+
+    // durs
+    private function checkDurs(int $collectionId, array $inDurs, int $userId = null, int $appId = null) 
+    {
+        $cols = CollectionHasDur::where(['collection_id' => $collectionId])->get();
+        foreach ($cols as $col) {
+            if (!in_array($col->dur_id, $this->extractInputIdToArray($inDurs))) {
+                CollectionHasDur::where([
+                    'collection_id' => $collectionId,
+                    'dur_id' => $col->dur_id,
+                ])->delete();
+            }
+        }
+
+        foreach ($inDurs as $dur) {
+            $checking = CollectionHasDur::where([
+                'collection_id' => $collectionId,
+                'dur_id' => (int) $dur['id'],
+            ])->first();
+
+            if (!$checking) {
+                $this->addCollectionHasDur($collectionId, $dur, $userId, $appId);
+            }
+        }
+    }
+
+    private function addCollectionHasDur(int $collectionId, array $dur, int $userId = null, int $appId = null)
+    {
+        try {
+            $arrCreate = [
+                'collection_id' => $collectionId,
+                'dur_id' => $dur['id'],
+            ];
+
+            if (array_key_exists('user_id', $dur)) {
+                $arrCreate['user_id'] = (int) $dur['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $dur)) {
+                $arrCreate['reason'] = $dur['reason'];
+            }
+
+            if (array_key_exists('updated_at', $dur)) { // special for migration
+                $arrCreate['created_at'] = $dur['updated_at'];
+                $arrCreate['updated_at'] = $dur['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return CollectionHasDur::updateOrCreate(
+                $arrCreate,
+                [
+                    'collection_id' => $collectionId,
+                    'dur_id' => $dur['id'],
+                ]
+            );
+        } catch (Exception $e) {
+            throw new Exception("addCollectionHasDur :: " . $e->getMessage());
+        }
+    }
+
+    // publications
+    private function checkPublications(int $collectionId, array $inPublications, int $userId = null, int $appId = null) 
+    {
+        $cols = CollectionHasPublication::where(['collection_id' => $collectionId])->get();
+        foreach ($cols as $col) {
+            if (!in_array($col->publication_id, $this->extractInputIdToArray($inPublications))) {
+                $this->deleteCollectionHasPublications($collectionId, $col->publication_id);
+            }
+        }
+
+        foreach ($inPublications as $publication) {
+            $checking = $this->checkInCollectionHasPublications($collectionId, (int) $publication['id']);
+
+            if (!$checking) {
+                $this->addCollectionHasPublication($collectionId, $publication, $userId, $appId);
+            }
+        }
+    }
+
+    private function addCollectionHasPublication(int $collectionId, array $publication, int $userId = null, int $appId = null)
+    {
+        try {
+            $arrCreate = [
+                'collection_id' => $collectionId,
+                'publication_id' => $publication['id'],
+            ];
+
+            if (array_key_exists('user_id', $publication)) {
+                $arrCreate['user_id'] = (int) $publication['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $publication)) {
+                $arrCreate['reason'] = $publication['reason'];
+            }
+
+            if (array_key_exists('updated_at', $publication)) { // special for migration
+                $arrCreate['created_at'] = $publication['updated_at'];
+                $arrCreate['updated_at'] = $publication['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return CollectionHasPublication::updateOrCreate(
+                $arrCreate,
+                [
+                    'collection_id' => $collectionId,
+                    'publication_id' => $publication['id'],
+                ]
+            );
+        } catch (Exception $e) {
+            throw new Exception("addCollectionHasPublication :: " . $e->getMessage());
+        }
+    }
+
+    private function checkInCollectionHasPublications(int $collectionId, int $publicationId)
+    {
+        try {
+            return CollectionHasPublication::where([
+                'collection_id' => $collectionId,
+                'publication_id' => $publicationId,
+            ])->first();
+        } catch (Exception $e) {
+            throw new Exception("checkInCollectionHasPublications :: " . $e->getMessage());
+        }
+    }
+
+    private function deleteCollectionHasPublications(int $collectionId, int $publicationId)
+    {
+        try {
+            return CollectionHasPublication::where([
+                'collection_id' => $collectionId,
+                'publication_id' => $publicationId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deleteCollectionHasPublications :: " . $e->getMessage());
+        }
+    }
+
+    // keywords
     private function checkKeywords(int $collectionId, array $inKeywords)
     {
         $kws = CollectionHasKeyword::where('collection_id', $collectionId)->get();
@@ -858,11 +1140,11 @@ class IntegrationCollectionController extends Controller
         }
     }
 
-    private function extractInputDatasetIdToArray(array $inputDatasets): Array
+    private function extractInputIdToArray(array $input): Array
     {
         $response = [];
-        foreach ($inputDatasets as $inputDataset) {
-            $response[] = $inputDataset['id'];
+        foreach ($input as $value) {
+            $response[] = $value['id'];
         }
 
         return $response;
@@ -917,5 +1199,47 @@ class IntegrationCollectionController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function getCollectionById(int $collectionId)
+    {
+        $collection = Collection::where(['id' => $collectionId])
+        ->with([
+            'keywords',
+            'datasets', 
+            'tools', 
+            'dur',
+            'publications',
+            'userDatasets', 
+            'userTools', 
+            'userPublications',
+            'applicationDatasets',
+            'applicationTools',
+            'applicationPublications',
+            'team',
+        ])->first();
+
+        $userDatasets = $collection->userDatasets;
+        $userTools = $collection->userTools;
+        $userPublications = $collection->userPublications;
+        $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
+        $collection->setRelation('users', $users);
+
+        $applicationDatasets = $collection->applicationDatasets;
+        $applicationTools = $collection->applicationTools;
+        $applicationPublications = $collection->applicationPublications;
+        $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
+        $collection->setRelation('applications', $applications);
+
+        unset(
+            $collection->userDatasets, 
+            $collection->userTools, 
+            $collection->userPublications, 
+            $collection->applicationDatasets, 
+            $collection->applicationTools, 
+            $collection->applicationPublications
+        );
+
+        return $collection;
     }
 }

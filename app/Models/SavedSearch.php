@@ -20,7 +20,10 @@ class SavedSearch extends Model
         'deleted_at',
         'name',
         'search_term',
+        'search_endpoint',
         'enabled',
+        'user_id',
+        'sort_order',
     ];
 
     /**
@@ -52,6 +55,13 @@ class SavedSearch extends Model
     private $search_term = '';
 
     /**
+     * Indicates the search endpoint of the saved search
+     * 
+     * @var string
+     */
+    private $search_endpoint = '';
+
+    /**
      * Indicates whether this model is enabled or disabled
      * 
      * @var bool
@@ -63,6 +73,7 @@ class SavedSearch extends Model
      */
     public function filters(): BelongsToMany
     {
-        return $this->belongsToMany(Filter::class, 'saved_search_has_filters');
+        return $this->belongsToMany(Filter::class, 'saved_search_has_filters')
+            ->withPivot('saved_search_id', 'filter_id', 'terms');
     }
 }
