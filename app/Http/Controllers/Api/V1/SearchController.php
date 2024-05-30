@@ -462,8 +462,13 @@ class SearchController extends Controller
                         $toolsArray[$i]['programming_package'] = $toolHasProgrammingPackageIds ? ProgrammingPackage::whereIn('id', $toolHasProgrammingPackageIds)->pluck('name')->all() : [];
 
                         // datasets
+<<<<<<< HEAD
                         $datasetVersionHasToolIds = DatasetVersionHasTool::where('tool_id', $model['id'])->pluck('dataset_version_id')->all();
                         $datasetHasToolIds = DatasetVersion::whereIn('id', $datasetVersionHasToolIds)->pluck('dataset_id')->all();
+=======
+                        $datasetVersionsIDs = DatasetVersionHasTool::where('tool_id', $id)->pluck('dataset_version_id')->all();
+                        $datasetHasToolIds = DatasetVersion::where('id', $datasetVersionsIDs)->pluck('dataset_id')->all();
+>>>>>>> UpdatedSearchController
 
                         $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
 
