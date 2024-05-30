@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::table('dar_sections', function (Blueprint $table) {
             $table->text('description')->after('name');
+            $table->unsignedBigInteger('sub_section')->nullable()->change();
+        });
+        
+        Schema::table('dar_sections', function (Blueprint $table) {
             $table->renameColumn('sub_section', 'parent_section');
         });
     }
@@ -25,6 +29,10 @@ return new class extends Migration
         Schema::table('dar_sections', function (Blueprint $table) {
             $table->dropColumn('description');
             $table->renameColumn('parent_section', 'sub_section');
+        });
+
+        Schema::table('dar_sections', function (Blueprint $table) {
+            $table->string('sub_section')->nullable()->change();
         });
     }
 };
