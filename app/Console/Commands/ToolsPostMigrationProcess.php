@@ -205,7 +205,7 @@ class ToolsPostMigrationProcess extends Command
             ->pluck('dataset_version_id')
             ->all();
 
-        $datasetIDs = DatasetVersion::where('id', $datasetVersionsIDs)
+        $datasetIDs = DatasetVersion::where('dataset_version_id', $datasetVersionsIDs)
             ->pluck('dataset_id')
             ->all();
 
