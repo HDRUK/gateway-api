@@ -78,7 +78,8 @@ class DatabaseSeeder extends Seeder
             TypeCategorySeeder::class,
             CollectionHasPublicationSeeder::class,
             PublicationHasToolSeeder::class,
-            DataProviderSeeder::class,
+            DataProviderCollsSeeder::class,
+            DurHasToolSeeder::class,
         ]);
     }
 }

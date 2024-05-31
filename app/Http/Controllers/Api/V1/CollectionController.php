@@ -9,16 +9,19 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
+use App\Models\DataProvider;
 use Illuminate\Http\Request;
 use App\Models\CollectionHasDur;
+use App\Models\DataProviderColl;
 use App\Models\CollectionHasTool;
-use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
 use Illuminate\Http\JsonResponse;
+use App\Models\DataProviderHasTeam;
 use App\Http\Controllers\Controller;
 use App\Models\CollectionHasDataset;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
+use App\Models\DataProviderCollHasTeam;
+use App\Models\CollectionHasPublication;
 use MetadataManagementController AS MMC;
 use App\Http\Traits\RequestTransformation;
 use App\Http\Requests\Collection\GetCollection;
@@ -26,7 +29,6 @@ use App\Http\Requests\Collection\EditCollection;
 use App\Http\Requests\Collection\CreateCollection;
 use App\Http\Requests\Collection\DeleteCollection;
 use App\Http\Requests\Collection\UpdateCollection;
-use App\Models\CollectionHasPublication;
 
 class CollectionController extends Controller
 {
@@ -1221,10 +1223,10 @@ class CollectionController extends Controller
             $keywords[] = $k['name'];
         }
 
-        $dataProviderId = DataProviderHasTeam::where('team_id', $collection['team_id'])
+        $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $collection['team_id'])
             ->pluck('data_provider_id')
             ->all();
-        $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+        $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
             ->pluck('name')
             ->all();        
 
@@ -1236,7 +1238,7 @@ class CollectionController extends Controller
                 'datasetTitles' => $datasetTitles,
                 'datasetAbstracts' => $datasetAbstracts,
                 'keywords' => $keywords,
-                'dataProvider' => $dataProvider
+                'dataProviderColl' => $dataProviderColl
             ];
             $params = [
                 'index' => 'collection',

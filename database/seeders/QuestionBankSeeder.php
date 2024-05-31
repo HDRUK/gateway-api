@@ -36,7 +36,7 @@ class QuestionBankSeeder extends Seeder
                 $first = QuestionBankVersion::create([
                     'question_parent_id' => $model->id,
                     'version' => 1,
-                    'required' => fake()->randomElement([0,1]),
+                    'required' => $model->force_required ? 1 : fake()->randomElement([0,1]),
                     'default' => 0,
                     'question_json' => $this->get_question_json(),
                     'deleted_at' => null,

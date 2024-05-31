@@ -32,7 +32,7 @@ class FilterSeeder extends Seeder
             'dateRange',
             'populationSize',
             'geographicLocation',
-            'dataProvider',
+            'dataProviderColl',
             'accessService'
         ];
 
@@ -48,7 +48,7 @@ class FilterSeeder extends Seeder
             'datasetTitles',
             'latestApprovalDate',
             'accessType',
-            'dataProvider'
+            'dataProviderColl'
         ];
 
 
@@ -58,11 +58,11 @@ class FilterSeeder extends Seeder
     public function seed_tools_filters(): void
     {
         $filters = [
-            'programmingLanguage',
-            'category',
-            'category_id',
+            'programmingLanguages',
             'license',
-            'dataProvider'
+            'dataProviderColl',
+            'datasetTitles',
+            'typeCategory'
         ];
 
         $this->seed_filter("tool",$filters);
@@ -74,7 +74,7 @@ class FilterSeeder extends Seeder
         $filters = [
             'publisherName',
             'datasetTitles',
-            'dataProvider'
+            'dataProviderColl'
         ];
 
         $this->seed_filter("collection",$filters);

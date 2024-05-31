@@ -5,14 +5,17 @@ namespace App\Behat\Context;
 use Exception;
 use App\Models\Role;
 use App\Models\User;
+use App\Jobs\SendEmailJob;
 use App\Models\TeamHasUser;
 use Faker\Factory as Faker;
+use App\Models\EmailTemplate;
 use PHPUnit\Framework\Assert;
 use App\Models\TeamUserHasRole;
 use Behat\Behat\Context\Context;
 use Behat\Gherkin\Node\TableNode;
 use App\Behat\Context\SharedContext;
 use Behat\Gherkin\Node\PyStringNode;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 
@@ -46,6 +49,8 @@ class AssignUserOneTeamOneDeveloperContext implements Context
     public function iSendAPostRequestToPathWithTeamOneAndUserOneAndAssigningRole($role)
     {
         try {
+            File::put(storage_path('logs/email.log'), '');
+            
             $arrayRole = [$role];
             $payload = [
                 "userId" => $this->userOne['id'],
@@ -73,6 +78,20 @@ class AssignUserOneTeamOneDeveloperContext implements Context
             $this->response->getStatusCode(), 
             "Expected status code {$statusCode}, and received {$this->response->getStatusCode()}."
         );
+    }
+
+    /**
+     * @Then I verify that the user one assigned to team one with role developer should receive an email
+     */
+    public function iVerifyThatTheUserOneAssignedToTeamOneWithRoleDeveloperShouldReceiveAnEmail()
+    {
+        sleep(1); // Give some time for the queue to process
+
+        $recipient = $this->userOne['email'];
+        $log = File::get(storage_path('logs/email.log'));
+        if (!str_contains($log, $recipient)) {
+            throw new \Exception("Email to {$recipient} not found in log");
+        }
     }
 
     /**

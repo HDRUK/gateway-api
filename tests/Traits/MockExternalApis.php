@@ -844,10 +844,10 @@ trait MockExternalApis
                             0 => [
                                 '_explanation' => [],
                                 '_id' => '1',
-                                '_index' => 'dataprovider',
+                                '_index' => 'dataprovidercoll',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 20.0,
-                                '_shard' => '[dataprovider][0]',
+                                '_shard' => '[dataprovidercoll][0]',
                                 '_source' => [
                                     'name' => 'One Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
@@ -858,10 +858,10 @@ trait MockExternalApis
                             1 => [
                                 '_explanation' => [],
                                 '_id' => '2',
-                                '_index' => 'dataprovider',
+                                '_index' => 'dataprovidercoll',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 18.0,
-                                '_shard' => '[dataprovider][0]',
+                                '_shard' => '[dataprovidercoll][0]',
                                 '_source' => [
                                     'name' => 'Another Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
@@ -872,10 +872,10 @@ trait MockExternalApis
                             2 => [
                                 '_explanation' => [],
                                 '_id' => '3',
-                                '_index' => 'dataprovider',
+                                '_index' => 'dataprovidercoll',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 16.0,
-                                '_shard' => '[dataprovider][0]',
+                                '_shard' => '[dataprovidercoll][0]',
                                 '_source' => [
                                     'name' => 'Third Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
@@ -886,10 +886,10 @@ trait MockExternalApis
                             3 => [
                                 '_explanation' => [],
                                 '_id' => '1111',
-                                '_index' => 'dataprovider',
+                                '_index' => 'dataprovidercoll',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 16.0,
-                                '_shard' => '[dataprovider][0]',
+                                '_shard' => '[dataprovidercoll][0]',
                                 '_source' => [
                                     'name' => 'Fourth Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
@@ -954,6 +954,18 @@ trait MockExternalApis
             )
         ]);
 
+        Http::fake([
+            env('CLAMAV_API_URL', 'http://clamav:3001') . '*' => Http::response(
+                [
+                    'isInfected' => false,
+                    'file' => '1716469707_test_file.csv',
+                    'viruses' => [],
+                ], 
+                200,
+                ['application/json']
+            )
+        ]);
+
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
@@ -989,15 +1001,13 @@ trait MockExternalApis
             )
         ]);
 
-         Http::fake([
+        Http::fake([
             env('FMA_SERVICE_URL').'*' => Http::response(
                 ['message'=>'success'], 
                 200,
                 ['application/json']
             )
         ]);
-
-
 
     }
 

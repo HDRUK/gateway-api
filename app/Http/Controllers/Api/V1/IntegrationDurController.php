@@ -3,35 +3,37 @@
 namespace App\Http\Controllers\Api\V1;
 
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 
-use App\Models\Dataset;
 use App\Models\Dur;
-use App\Models\Keyword;
-use App\Models\DurHasDataset;
-use App\Models\DurHasKeyword;
+use App\Models\Tool;
 use App\Models\Sector;
+use App\Models\Dataset;
+use App\Models\Keyword;
 use App\Models\Application;
+use App\Models\DurHasTool;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use App\Models\DurHasDataset;
 
-use App\Http\Controllers\Controller;
+use App\Models\DurHasKeyword;
 
 use App\Http\Requests\Dur\GetDur;
+use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Dur\CreateDur;
+
 use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 
-use App\Http\Traits\RequestTransformation;
-use App\Http\Traits\IntegrationOverride;
-
 use App\Exceptions\NotFoundException;
 
+use App\Http\Traits\IntegrationOverride;
 use MetadataManagementController AS MMC;
+use App\Http\Traits\RequestTransformation;
 
 class IntegrationDurController extends Controller
 {
@@ -98,6 +100,7 @@ class IntegrationDurController extends Controller
      *                @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                @OA\Property(property="user", type="array", example="{}", @OA\Items()),
@@ -131,6 +134,7 @@ class IntegrationDurController extends Controller
                 ->with([
                     'datasets',
                     'publications', 
+                    'tools', 
                     'keywords',
                     'userDatasets' => function ($query) {
                         $query->distinct('id');
@@ -263,6 +267,7 @@ class IntegrationDurController extends Controller
      *                   @OA\Property(property="mongo_id", type="string", example="38873389090594430"),
      *                   @OA\Property(property="datasets", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="tools", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="keywords", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
@@ -477,6 +482,10 @@ class IntegrationDurController extends Controller
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($durId, $keywords);
+
+            // link/unlink dur with tools
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($durId, $tools);
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
@@ -733,6 +742,10 @@ class IntegrationDurController extends Controller
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
             $this->checkKeywords($id, $keywords);
+
+            // link/unlink dur with tools
+            $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+            $this->checkTools($id, $tools);
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
@@ -994,6 +1007,12 @@ class IntegrationDurController extends Controller
                 $this->checkKeywords($id, $keywords);
             }
 
+            // link/unlink dur with tools
+            if (array_key_exists('tools', $input)) {
+                $tools = $input['tools'];
+                $this->checkKeywords($id, $tools);
+            }
+
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
                 Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
@@ -1072,6 +1091,7 @@ class IntegrationDurController extends Controller
 
             DurHasDataset::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
+            DurHasTool::where(['dur_id' => $id])->delete();
             Dur::where(['id' => $id])->delete();
 
             Auditor::log([
@@ -1175,6 +1195,7 @@ class IntegrationDurController extends Controller
         }
     }
 
+    // keywords
     private function checkKeywords(int $durId, array $inKeywords)
     {
         $kws = DurHasKeyword::where('dur_id', $durId)->get();
@@ -1233,6 +1254,60 @@ class IntegrationDurController extends Controller
             return DurHasKeyword::where(['keyword_id' => $keywordId])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+        }
+    }
+
+    // tools
+    private function checkTools(int $durId, array $inTools)
+    {
+        $tools = DurHasTool::where('dur_id', $durId)->get();
+
+        foreach($tools as $tool) {
+            $toolId = $tool->tool_id;
+            $checkTool = Tool::where('id', $toolId)->first();
+
+            if (!$checkTool) {
+                $this->deleteDurHasTools($durId, $toolId);
+                continue;
+            }
+
+            if (in_array($checkTool->id, $inTools)) continue;
+
+            if (!in_array($checkTool->id, $inTools)) {
+                $this->deleteDurHasTools($durId, $toolId);
+            }
+        }
+
+        foreach ($inTools as $inTool) {
+            $this->updateOrCreateDurHasTools($durId, $inTool);
+        }
+    }
+
+    private function updateOrCreateDurHasTools(int $durId, int $toolId)
+    {
+        try {
+            return DurHasTool::firstOrCreate([
+                'dur_id' => $durId,
+                'tool_id' => $toolId,
+            ],[
+                'dur_id' => $durId,
+                'tool_id' => $toolId,
+            ]
+        );
+        } catch (Exception $e) {
+            throw new Exception("updateOrCreateDurHasTools :: " . $e->getMessage());
+        }
+    }
+
+    private function deleteDurHasTools(int $dId, int $tId)
+    {
+        try {
+            return DurHasTool::where([
+                'dur_id' => $dId,
+                'tool_id' => $tId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deleteDurHasTools :: " . $e->getMessage());
         }
     }
 
@@ -1345,6 +1420,7 @@ class IntegrationDurController extends Controller
                 'keywords',
                 'datasets', 
                 'publications', 
+                'tools', 
                 'userDatasets' => function ($query) {
                     $query->distinct('id');
                 }, 

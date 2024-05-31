@@ -7,21 +7,27 @@ use Auditor;
 use Exception;
 use App\Models\Tag;
 use App\Models\Tool;
+use App\Models\Dataset;
+use App\Models\License;
+use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Application;
+use App\Models\TypeCategory;
 use Illuminate\Http\Request;
-use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
 use App\Models\DatasetHasTool;
+use App\Models\DataProviderColl;
 use Illuminate\Http\JsonResponse;
+use App\Models\ProgrammingPackage;
 use App\Models\PublicationHasTool;
 use App\Http\Requests\Tool\GetTool;
+use App\Models\ProgrammingLanguage;
 use App\Models\ToolHasTypeCategory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tool\EditTool;
 use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
+use App\Models\DataProviderCollHasTeam;
 use MetadataManagementController AS MMC;
 use App\Models\ToolHasProgrammingPackage;
 use App\Http\Traits\RequestTransformation;
@@ -65,6 +71,7 @@ class ToolController extends Controller
                     'team',
                     'license',
                     'publications',
+                    'durs',
                 ])
                 ->when($mongoId, function ($query) use ($mongoId) {
                     return $query->where('mongo_id', '=', $mongoId);
@@ -652,6 +659,7 @@ class ToolController extends Controller
             ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
             ToolHasProgrammingPackage::where('tool_id', $id)->delete();
             ToolHasTypeCategory::where('tool_id', $id)->delete();
+            DurHasTool::where('tool_id', $id)->delete();
             PublicationHasTool::where('tool_id', $id)->delete();
             
             Auditor::log([
@@ -680,6 +688,7 @@ class ToolController extends Controller
             'programmingPackages',
             'typeCategory',
             'publications',
+            'durs',
         ])->where([
             'id' => $toolId,
         ])->first();
@@ -907,27 +916,79 @@ class ToolController extends Controller
     {
         try {
             $tool = Tool::where('id', $toolId)
-                ->with(['tag'])
+                ->with(['programmingLanguages', 'programmingPackages', 'tag', 'category', 'typeCategory', 'license'])
                 ->first();
-            $tags = $tool['tag']->toArray();
-            $tagsDescription = array();
-            foreach ($tags as $t) {
-                $tagsDescription[] = $t['description'];
-            }
 
-            $dataProviderId = DataProviderHasTeam::where('team_id', $tool['team_id'])
-                ->pluck('data_provider_id')
+            $license = License::where('id', $tool['license'])->first();
+
+            $typeCategoriesIDs = ToolHasTypeCategory::where('tool_id', $toolId)
+                ->pluck('type_category_id')
                 ->all();
 
-            $dataProvider = DataProvider::whereIn('id', $dataProviderId)
+            $typeCategories = TypeCategory::where('id', $typeCategoriesIDs)
                 ->pluck('name')
                 ->all();
+
+            $programmingLanguagesIDs = ToolHasProgrammingLanguage::where('tool_id', $toolId)
+                ->pluck('programming_language_id')
+                ->all();
+
+            $programmingLanguages = ProgrammingLanguage::where('id', $programmingLanguagesIDs)
+                ->pluck('name')
+                ->all();
+
+            $programmingPackagesIDs = ToolHasProgrammingPackage::where('tool_id', $toolId)
+                ->pluck('programming_package_id')
+                ->all();
+
+            $programmingPackages = ProgrammingPackage::where('id', $programmingPackagesIDs)
+                ->pluck('name')
+                ->all();
+
+            $tagIDs = ToolHasTag::where('tool_id', $toolId)
+                ->pluck('tag_id')
+                ->all();
+
+            $tags = Tag::where('id', $tagIDs)
+                ->pluck('description')
+                ->all();
+
+            $datasetIDs = DatasetHasTool::where('tool_id', $toolId)
+                ->pluck('dataset_id')
+                ->all();
+
+            $datasets = Dataset::where('id', $datasetIDs)
+                ->with('versions')
+                ->get();
+
+            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
+                ->pluck('data_provider_coll_id')
+                ->all();
+
+            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
+                ->pluck('name')
+                ->all();
+
+            $datasetTitles = array();
+            foreach ($datasets as $dataset) {
+                $metadata = $dataset['versions'][0];
+                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
+            }
+            usort($datasetTitles, 'strcasecmp');
 
             $toIndex = [
                 'name' => $tool['name'],
                 'description' => $tool['description'],
-                'tags' => $tagsDescription,
-                'dataProvider' => $dataProvider
+                'license' => $license ? $license['label'] : null,
+                'techStack' => $tool['tech_stack'],
+                'category' => $tool['category']['name'],
+                'typeCategory' => $typeCategories,
+                'associatedAuthors' => $tool['associated_authors'],
+                'programmingLanguages' => $programmingLanguages,
+                'programmingPackages' => $programmingPackages,
+                'tags' => $tags,
+                'datasetTitles' => $datasetTitles,
+                'dataProviderColl' => $dataProviderColl,
             ];
 
             $params = [

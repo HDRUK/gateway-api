@@ -6,8 +6,6 @@ use Config;
 use Auditor;
 use Exception;
 
-use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
 use App\Models\Dataset;
 use App\Models\Team;
 
@@ -17,16 +15,18 @@ use Illuminate\Http\JsonResponse;
 use MetadataManagementController as MMC;
 
 use App\Http\Controllers\Controller;
+use App\Models\DataProviderColl;
+use App\Models\DataProviderCollHasTeam;
 
-class DataProviderController extends Controller
+class DataProviderCollController extends Controller
 {
     /**
      * @OA\Get(
-     *      path="/api/v1/data_providers",
-     *      summary="List of DataProvider's",
-     *      description="Returns a list of DataProviders enabled on the system",
-     *      tags={"DataProvider"},
-     *      summary="DataProvider@index",
+     *      path="/api/v1/data_provider_colls",
+     *      summary="List of DataProviderColl's",
+     *      description="Returns a list of DataProviderColls enabled on the system",
+     *      tags={"DataProviderColl"},
+     *      summary="DataProviderColl@index",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
      *          response=200,
@@ -53,7 +53,7 @@ class DataProviderController extends Controller
             $input = $request->all();
 
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $dps = DataProvider::with([
+            $dps = DataProviderColl::with([
                 'teams'
                 ])->where('enabled', 1)
                 ->paginate((int) $perPage, ['*'], 'page');
@@ -61,7 +61,7 @@ class DataProviderController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_service' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'DataProvider list'
+                'description' => 'DataProviderColl list'
             ]);
 
             return response()->json(
@@ -75,21 +75,21 @@ class DataProviderController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/data_providers/{id}",
-     *      summary="Return a single DataProvider",
-     *      description="Return a single DataProvider",
-     *      tags={"DataProvider"},
-     *      summary="DataProvider@show",
+     *      path="/api/v1/data_provider_colls/{id}",
+     *      summary="Return a single DataProviderColl",
+     *      description="Return a single DataProviderColl",
+     *      tags={"DataProviderColl"},
+     *      summary="DataProviderColl@show",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="DataProvider ID",
+     *         description="DataProviderColl ID",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="DataProvider ID",
+     *            description="DataProviderColl ID",
      *         ),
      *      ),
      *      @OA\Response(
@@ -119,14 +119,14 @@ class DataProviderController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         try {
-            $dps = DataProvider::with([
+            $dps = DataProviderColl::with([
                 'teams',
                 ])->where('id', $id)->firstOrFail();
 
             Auditor::log([
                 'action_type' => 'GET',
                 'action_service' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'DataProvider get ' . $id,
+                'description' => 'DataProviderColl get ' . $id,
             ]);
 
             return response()->json([
@@ -140,15 +140,15 @@ class DataProviderController extends Controller
 
     /**
      * @OA\Post(
-     *      path="/api/v1/data_providers",
-     *      summary="Create a new DataProvider",
-     *      description="Creates a new DataProvider",
-     *      tags={"DataProvider"},
-     *      summary="DataProvider@store",
+     *      path="/api/v1/data_provider_colls",
+     *      summary="Create a new DataProviderColl",
+     *      description="Creates a new DataProviderColl",
+     *      tags={"DataProviderColl"},
+     *      summary="DataProviderColl@store",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
-     *          description="DataProvider definition",
+     *          description="DataProviderColl definition",
      *          @OA\JsonContent(
      *              required={"name", "enabled", "team_ids"},
      *              @OA\Property(property="name", type="string", example="Name"),
@@ -183,7 +183,7 @@ class DataProviderController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $dps = DataProvider::create([
+            $dps = DataProviderColl::create([
                 'enabled' => $input['enabled'],
                 'name' => $input['name'],
                 'img_url' => $input['img_url'],
@@ -197,8 +197,8 @@ class DataProviderController extends Controller
             ]);
 
             foreach ($input['team_ids'] as $teamId) {
-                DataProviderHasTeam::create([
-                    'data_provider_id' => $dps->id,
+                DataProviderCollHasTeam::create([
+                    'data_provider_coll_id' => $dps->id,
                     'team_id' => $teamId,
                 ]);
 
@@ -206,11 +206,11 @@ class DataProviderController extends Controller
                     'user_id' => $jwtUser['id'],
                     'action_type' => 'CREATE',
                     'action_service' => class_basename($this) . '@' . __FUNCTION__,
-                    'description' => 'DataProviderHasTeam ' . $dps->id . '/' . $teamId . ' created',
+                    'description' => 'DataProviderCollHasTeam ' . $dps->id . '/' . $teamId . ' created',
                 ]);
             }
 
-            $this->indexElasticDataProvider((int) $dps->id);
+            $this->indexElasticDataProviderColl((int) $dps->id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
@@ -223,26 +223,26 @@ class DataProviderController extends Controller
 
     /**
      * @OA\Put(
-     *      path="/api/v1/data_providers/{id}",
-     *      summary="Update a DataProvider",
-     *      description="Update a DataProvider",
-     *      tags={"DataProvider"},
-     *      summary="DataProvider@update",
+     *      path="/api/v1/data_provider_colls/{id}",
+     *      summary="Update a DataProviderColl",
+     *      description="Update a DataProviderColl",
+     *      tags={"DataProviderColl"},
+     *      summary="DataProviderColl@update",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="DataProvider ID",
+     *         description="DataProviderColl ID",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="DataProvider ID",
+     *            description="DataProviderColl ID",
      *         ),
      *      ),
      *      @OA\RequestBody(
      *          required=true,
-     *          description="DataProvider definition",
+     *          description="DataProviderColl definition",
      *          @OA\JsonContent(
      *              required={"name", "enabled", "team_ids"},
      *              @OA\Property(property="name", type="string", example="Name"),
@@ -291,7 +291,7 @@ class DataProviderController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $dps = DataProvider::where('id', $id)->first();
+            $dps = DataProviderColl::where('id', $id)->first();
 
             $dps->enabled = $input['enabled'];
             $dps->name = $input['name'];
@@ -299,17 +299,17 @@ class DataProviderController extends Controller
             $dps->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
-                DataProviderHasTeam::where('data_provider_id', $dps->id)->delete();
+                DataProviderCollHasTeam::where('data_provider_coll_id', $dps->id)->delete();
 
                 foreach ($input['team_ids'] as $teamId) {
-                    DataProviderHasTeam::create([
-                        'data_provider_id' => $dps->id,
+                    DataProviderCollHasTeam::create([
+                        'data_provider_coll_id' => $dps->id,
                         'team_id' => $teamId,
                     ]);
                 }
             }
 
-            $this->indexElasticDataProvider((int) $id);
+            $this->indexElasticDataProviderColl((int) $id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -323,26 +323,26 @@ class DataProviderController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="/api/v1/data_providers/{id}",
-     *      summary="Edit a DataProvider",
-     *      description="Edit a DataProvider",
-     *      tags={"DataProvider"},
-     *      summary="DataProvider@edit",
+     *      path="/api/v1/data_provider_colls/{id}",
+     *      summary="Edit a DataProviderColl",
+     *      description="Edit a DataProviderColl",
+     *      tags={"DataProviderColl"},
+     *      summary="DataProviderColl@edit",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="DataProvider ID",
+     *         description="DataProviderColl ID",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="DataProvider ID",
+     *            description="DataProviderColl ID",
      *         ),
      *      ),
      *      @OA\RequestBody(
      *          required=true,
-     *          description="DataProvider definition",
+     *          description="DataProviderColl definition",
      *          @OA\JsonContent(
      *              @OA\Property(property="name", type="string", example="Name"),
      *              @OA\Property(property="enabled", type="string", example="true"),
@@ -390,7 +390,7 @@ class DataProviderController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $dps = DataProvider::where('id', $id)->first();
+            $dps = DataProviderColl::where('id', $id)->first();
 
             $dps->enabled = (isset($input['enabled']) ? $input['enabled'] : $dps->enabled);
             $dps->name = (isset($input['name']) ? $input['name'] : $dps->name);
@@ -398,17 +398,17 @@ class DataProviderController extends Controller
             $dps->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
-                DataProviderHasTeam::where('data_provider_id', $dps->id)->delete();
+                DataProviderCollHasTeam::where('data_provider_coll_id', $dps->id)->delete();
 
                 foreach ($input['team_ids'] as $teamId) {
-                    DataProviderHasTeam::create([
-                        'data_provider_id' => $dps->id,
+                    DataProviderCollHasTeam::create([
+                        'data_provider_coll_id' => $dps->id,
                         'team_id' => $teamId,
                     ]);
                 }
             }
 
-            $this->indexElasticDataProvider((int) $id);
+            $this->indexElasticDataProviderColl((int) $id);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -422,21 +422,21 @@ class DataProviderController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="/api/v1/data_providers/{id}",
-     *      summary="Delete a DataProvider",
-     *      description="Delete a DataProvider",
-     *      tags={"DataProvider"},
-     *      summary="DataProvider@destroy",
+     *      path="/api/v1/data_provider_colls/{id}",
+     *      summary="Delete a DataProviderColl",
+     *      description="Delete a DataProviderColl",
+     *      tags={"DataProviderColl"},
+     *      summary="DataProviderColl@destroy",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="DataProvider ID",
+     *         description="DataProviderColl ID",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="DataProvider ID",
+     *            description="DataProviderColl ID",
      *         ),
      *      ),
      *      @OA\Response(
@@ -468,8 +468,8 @@ class DataProviderController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            DataProviderHasTeam::where(['data_provider_id' => $id])->delete();
-            DataProvider::where(['id' => $id])->delete();
+            DataProviderCollHasTeam::where(['data_provider_coll_id' => $id])->delete();
+            DataProviderColl::where(['id' => $id])->delete();
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -493,9 +493,9 @@ class DataProviderController extends Controller
      * @param integer $id
      * @return void
      */
-    private function indexElasticDataProvider(int $id): void 
+    private function indexElasticDataProviderColl(int $id): void 
     {
-        $provider = DataProvider::where('id', $id)->with('teams')->first();
+        $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 
         $datasetTitles = array();
         $locations = array();
@@ -520,7 +520,7 @@ class DataProviderController extends Controller
                 'geographicLocation' => $locations,
             ];
             $params = [
-                'index' => 'dataprovider',
+                'index' => 'dataprovidercoll',
                 'id' => $id,
                 'body' => $toIndex,
                 'headers' => 'application/json'

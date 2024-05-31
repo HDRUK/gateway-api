@@ -5,13 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DataProviderHasTeam extends Model
+class Upload extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'data_provider_id',
-        'team_id',
+        'filename',
+        'file_location',
+        'user_id',
+        'status',
+        'error'
     ];
 
     /**
@@ -19,12 +22,13 @@ class DataProviderHasTeam extends Model
      * 
      * @var string
      */
-    protected $table = 'data_provider_has_teams';
+    public $table = 'uploads';
 
     /**
-     * Indicates if this model is timestamped
+     * Indicates if the model should be timestamped
      * 
      * @var bool
      */
-    public $timestamps = false;
+    public $timestamps = true;
+
 }

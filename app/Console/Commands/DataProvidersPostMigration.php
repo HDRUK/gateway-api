@@ -4,14 +4,16 @@ namespace App\Console\Commands;
 
 use Exception;
 
-use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
-use App\Models\Dataset;
 use App\Models\Team;
-
-use MetadataManagementController AS MMC;
-
+use App\Models\Dataset;
+use App\Models\DataProvider;
 use Illuminate\Console\Command;
+use App\Models\DataProviderColl;
+
+use App\Models\DataProviderHasTeam;
+
+use App\Models\DataProviderCollHasTeam;
+use MetadataManagementController AS MMC;
 
 class DataProvidersPostMigration extends Command
 {
@@ -49,14 +51,14 @@ class DataProvidersPostMigration extends Command
                 $isDataProvider = $csv['data_provider'] === 'Yes' ? true : false;
                 if ($isDataProvider) {
                     // Create a new provider with the team name
-                    $newProvider = DataProvider::create([
+                    $newProvider = DataProviderColl::create([
                         'name' => $csv['name'],
                         'img_url' => 'http://placeholder.com',
                         'enabled' => true
                     ]);
                     $team = Team::where('name', $csv['name'])->first();
-                    DataProviderHasTeam::create([
-                        'data_provider_id' => $newProvider['id'],
+                    DataProviderCollHasTeam::create([
+                        'data_provider_coll_id' => $newProvider['id'],
                         'team_id' => $team['id']
                     ]);
 
@@ -66,7 +68,7 @@ class DataProvidersPostMigration extends Command
                 echo 'unable to process ' . $csv['name'] . ' because ' . $e->getMessage() . "\n";
             }
         }
-        echo 'completed seeding of data providers';
+        echo 'completed seeding of data provider colls';
     }
 
     private function readMigrationFile(string $migrationFile): void
@@ -94,7 +96,7 @@ class DataProvidersPostMigration extends Command
      */
     private function indexElasticDataProvider(int $id): void 
     {
-        $provider = DataProvider::where('id', $id)->with('teams')->first();
+        $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 
         $datasetTitles = array();
         $locations = array();

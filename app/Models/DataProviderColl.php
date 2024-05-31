@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class DataProvider extends Model
+class DataProviderColl extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -23,7 +23,7 @@ class DataProvider extends Model
      * 
      * @var string
     */
-    protected $table = 'data_providers';
+    protected $table = 'data_provider_colls';
 
     /**
      * Indicates if this model is timestamped
@@ -64,7 +64,7 @@ class DataProvider extends Model
     {
         return $this->belongsToMany(
             Team::class,
-            'data_provider_has_teams'
+            'data_provider_coll_has_teams'
         );
     }
 }
