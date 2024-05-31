@@ -47,6 +47,8 @@ class UserSeeder extends Seeder
 
         $this->createUser('HDR', 'Cohort-Admin', 'hdrcohortadmin@gmail.com', 'Flood15?Voice', false, ['hdruk.cohort.admin']);
 
+        $this->createUser('HDR', 'Admin', 'hdrukadmin@gmail.com', '123P4ssword', false, ['hdruk.admin']);
+
         User::factory(10)->create();
     }
 

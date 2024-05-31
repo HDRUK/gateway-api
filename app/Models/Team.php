@@ -68,6 +68,7 @@ class Team extends Model
         'is_admin' => 'boolean',
         'notification_status' => 'boolean',
         'is_question_bank' => 'boolean',
+        'is_provider' => 'boolean',
     ];
 
     /**

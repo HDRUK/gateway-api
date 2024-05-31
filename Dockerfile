@@ -66,6 +66,9 @@ RUN composer install \
 # Generate Swagger
 RUN php artisan l5-swagger:generate
 
+# Add symbolic link for public file storage
+RUN php artisan storage:link
+
 # Starts both, laravel server and job queue
 CMD ["/var/www/docker/start.sh"]
 

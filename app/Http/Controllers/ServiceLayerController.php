@@ -11,6 +11,7 @@ use App\Models\Dataset;
 use App\Http\Controllers\Api\V1\DatasetController;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http; 
 
 
 
@@ -117,4 +118,43 @@ class ServiceLayerController extends Controller
             throw new Exception($e->getMessage());
         }
     }
+
+    public function quba(Request $request){
+        return $this->forwardRequest($request, 
+            env("QUBA_SERVICE"), 
+            "api/services/quba/"
+        );
+    }
+
+     public function daras(Request $request){
+        return $this->forwardRequest($request, 
+           env("DARAS_SERVICE"), 
+           "api/services/daras/"
+        );
+    }
+
+    private function forwardRequest(Request $request, string $baseUrl, string $apiPath) {
+        // Extract the request path
+        $path = $request->path();
+
+        // Build the full URL by appending the request path to the base URL
+        $subPath = substr($path, strpos($path,$apiPath) + strlen($apiPath));
+        $url = $baseUrl . "/" . $subPath;
+
+        // Forward the request to the external API service
+        $response = Http::send($request->method(), $url, [
+            'headers' => $request->headers->all(),
+            'query' => $request->query(),
+            'body' => $request->getContent(),
+            'follow_redirects' => true, 
+        ]);
+
+        $statusCode = $response->status();
+
+        $responseData = $response->json();
+
+        return response()->json($responseData, $statusCode);
+    }
+
+
 }

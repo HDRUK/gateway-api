@@ -11,7 +11,7 @@ default:
         default:
           laravel: ~
   suites:
-    management_dataset+with_applications:
+    management_dataset_with_applications:
       paths: 
         - /features/user/login_user_admin.feature
         - /features/notification/create_notification.feature
@@ -31,3 +31,27 @@ default:
         - App\Behat\Context\LoginUserOneContext
         - App\Behat\Context\CreateAppUserOneTeamOneContext
         - App\Behat\Context\ManageDatasetWithApplicationContext
+    management_team_with_dar_manager:
+      paths: 
+        - /features/user/login_user_admin.feature
+        - /features/notification/create_notification.feature
+        - /features/team/create_team_one.feature
+        - /features/user/create_user_one.feature
+        - /features/user/create_user_two.feature
+        - /features/team/assign_userone_to_teamone_with_admin.feature
+        - /features/user/login_user_one.feature
+        - /features/team/assign_usertwo_to_teamone_with_cdarmanager.feature
+        - /features/team/remove_role_usertwo_from_teamone_by_userone.feature
+        - /features/team/remove_usertwo_from_teamone_by_userone.feature
+      contexts:
+        - App\Behat\Context\FeatureContext
+        - App\Behat\Context\LoginUserAdminContext
+        - App\Behat\Context\CreateNotificationContext
+        - App\Behat\Context\CreateTeamOneContext
+        - App\Behat\Context\CreateUserOneContext
+        - App\Behat\Context\CreateUserTwoContext
+        - App\Behat\Context\AssignUserOneTeamOneAdminContext
+        - App\Behat\Context\LoginUserOneContext
+        - App\Behat\Context\AssignUsertwoTeamOneCDarManagerContext
+        - App\Behat\Context\RemoveRoleUserTwoFromTeamOneByUserOneContext
+        - App\Behat\Context\RemoveUserTwoFromTeamOneByUserOneContext

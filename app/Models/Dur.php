@@ -158,6 +158,11 @@ class Dur extends Model
         return $this->belongsTo(Sector::class);
     }
 
+    public function tools(): BelongsToMany
+    {
+        return $this->belongsToMany(Tool::class, 'dur_has_tools');
+    }
+
     public static function exportHeadings(): array
     {
         return [

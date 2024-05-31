@@ -8,5 +8,6 @@ Feature: Assign user to a team and role
   Scenario: Assign a user one to a team one with a developer role with valid access token
     Given I send a POST request to path with team one and user one and assigning "developer" role
     Then I should receive a successful response with status code 201 after user one was assigned to the team one like developer
-    Then I verify that the user one should be a member of team one
+    And I verify that the user one assigned to team one with role developer should receive an email
+    And I verify that the user one should be a member of team one
     And I verify that the user one assigned to team one should have the "developer" role
