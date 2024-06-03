@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+session_start();
+
 use Auditor;
 use Config;
 use Exception;
@@ -91,6 +93,8 @@ class SocialLoginController extends Controller
         }
 
         session(['redirectUrl' => $redirectUrl]);
+        $CONFIG['http.cookie.samesite'] = 'None';
+        // session(['same_site' => 'none']);
 
         if ($provider === 'openathens') {
             return redirect()->action(
@@ -140,6 +144,8 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
+        // session(['same_site' => 'none']);
+        $CONFIG['http.cookie.samesite'] = 'None';
         try {
             if ($provider === 'linkedin') {
                 $provider = 'linkedin-openid';
@@ -150,9 +156,16 @@ class SocialLoginController extends Controller
                     Config::get('services.openathens.client_id'),
                     Config::get('services.openathens.client_secret')
                 );
+                var_dump('client defined');
+                $oidc->addScope(array('openid'));
+                $oidc->setAllowImplicitFlow(true);
+                $oidc->addAuthParam(array('response_mode' => 'form_post'));
                 $oidc->authenticate();
+                var_dump('oidc authenticated');
                 $socialUser = $oidc->requestUserInfo();
+                var_dump('social user retrieved');
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
+                var_dump('social use details');
             } else {
                 $socialUser = Socialite::driver($provider)->user();
 
