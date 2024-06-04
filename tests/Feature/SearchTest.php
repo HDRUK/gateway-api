@@ -228,6 +228,10 @@ class SearchTest extends TestCase
 
         $metadata = $response['data'][0]['metadata'];
 
+        $this->assertTrue(isset($metadata['additional']['containsTissue']));
+        $this->assertTrue(isset($metadata['accessibility']['access']['accessServiceCategory']));
+        $this->assertTrue(isset($metadata['additional']['hasTechnicalMetadata']));
+
         $this->assertFalse(isset($metadata['coverage']));
         $this->assertFalse(isset($metadata['linkage']));
         $this->assertFalse(isset($metadata['observations']));
