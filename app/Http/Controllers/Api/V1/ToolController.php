@@ -735,11 +735,18 @@ class ToolController extends Controller
     {
         try {
             foreach ($dataset as $value) {
-                $datasetVersionID = DatasetVersion::where('dataset_id', $value)->pluck('dataset_version_id')->all();
-                DatasetVersionHasTool::updateOrCreate([
-                    'tool_id' => (int) $toolId,
-                    'dataset_version_id' => (int) $datasetVersionID,
-                ]);
+                $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
+                if (!empty($datasetVersionIDs)) {
+                    foreach ($datasetVersionIDs as $datasetVersionID) {
+                        DatasetVersionHasTool::updateOrCreate([
+                            'tool_id' => $toolId,
+                            'dataset_version_id' => $datasetVersionID,
+                        ]);
+                    }
+                } else {
+                    // Handle the case where no dataset version IDs were found if necessary
+                    throw new Exception("No dataset versions found for dataset_id: $value");
+                }
             }
 
             return true;
