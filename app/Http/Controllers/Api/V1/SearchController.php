@@ -462,7 +462,7 @@ class SearchController extends Controller
 
                         // datasets
                         $datasetVersionHasToolIds = DatasetVersionHasTool::where('tool_id', $model['id'])->pluck('dataset_version_id')->all();
-                        $datasetHasToolIds = DatasetVersion::where('dataset_version_id', $datasetVersionHasToolIds)->pluck('dataset_id')->all();
+                        $datasetHasToolIds = DatasetVersion::whereIn('id', $datasetVersionHasToolIds)->pluck('dataset_id')->all();
 
                         $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
 
