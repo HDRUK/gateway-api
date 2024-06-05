@@ -52,6 +52,11 @@ cmd_button(
 # Load in any locally set config
 cfg = read_json("tiltconf.json")
 
+# Check if the current directory is not equal to gatewayWeb2Root
+if os.getcwd() != cfg.get("gatewayWeb2Root"):
+    # Include the Tiltfile from gatewayWeb2Root
+    include(cfg.get("gatewayWeb2Root") + "/Tiltfile")
+
 #include(cfg.get("gatewayWeb2Root") + "/Tiltfile")
 
 # Load our service layer for deployment - if enabled
