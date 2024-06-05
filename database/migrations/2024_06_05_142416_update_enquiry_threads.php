@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('enquiry_threads', function (Blueprint $table) {
+        Schema::table('enquiry_thread', function (Blueprint $table) {
             $table->boolean('is_dar_dialogue')->default(false)->after('unique_key'); 
             $table->boolean('is_dar_status')->default(false)->after('is_dar_dialogue');
         });
@@ -22,7 +22,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('enquiry_threads', function (Blueprint $table) {
+        Schema::table('enquiry_thread', function (Blueprint $table) {
             $table->dropColumn('is_dar_dialogue');
             $table->dropColumn('is_dar_status');
         });
