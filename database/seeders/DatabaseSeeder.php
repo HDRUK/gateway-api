@@ -79,6 +79,8 @@ class DatabaseSeeder extends Seeder
             PublicationHasToolSeeder::class,
             DataProviderCollsSeeder::class,
             DurHasToolSeeder::class,
+            DatasetVersionHasDatasetVersionSeeder::class,
+            DatasetVersionHasToolSeeder::class,
         ]);
     }
 }
