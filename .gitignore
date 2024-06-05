@@ -23,5 +23,5 @@ composer.lock
 .phpunit.result.cache
 tiltconf.json
 _ide_helper.php
-.Rhistory
-.DS_Store
+#.Rhistory
+#.DS_Store
