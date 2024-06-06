@@ -97,22 +97,22 @@ class ToolsPostMigrationProcessTest extends TestCase
         $toolsPostMigrationProcess->handle();
 
         // Assert that the tool has the expected relationships and data
-        $this->assertDatabaseHas('tool_has_programming_languages', [
+        $this->assertDatabaseHas('tool_has_programming_language', [
             'tool_id' => $tool->id,
             'programming_language_id' => $programmingLanguage1->id,
         ]);
 
-        $this->assertDatabaseHas('tool_has_programming_languages', [
+        $this->assertDatabaseHas('tool_has_programming_language', [
             'tool_id' => $tool->id,
             'programming_language_id' => $programmingLanguage2->id,
         ]);
 
-        $this->assertDatabaseHas('tool_has_type_categories', [
+        $this->assertDatabaseHas('tool_has_type_category', [
             'tool_id' => $tool->id,
             'type_category_id' => $typeCategory1->id,
         ]);
 
-        $this->assertDatabaseHas('tool_has_type_categories', [
+        $this->assertDatabaseHas('tool_has_type_category', [
             'tool_id' => $tool->id,
             'type_category_id' => $typeCategory2->id,
         ]);
