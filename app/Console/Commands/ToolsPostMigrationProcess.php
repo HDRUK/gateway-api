@@ -156,6 +156,16 @@ class ToolsPostMigrationProcess extends Command
     }
 
     /**
+     * Get the CSV data for testing purposes.
+     *
+     * @return array
+     */
+    public function getCsvData(): array
+    {
+        return $this->csvData;
+    }
+
+    /**
      * Insert tool document into elastic index
      *
      * @param integer $id
@@ -209,7 +219,7 @@ class ToolsPostMigrationProcess extends Command
             ->pluck('dataset_id')
             ->all();
 
-        $datasets = Dataset::where('id', $datasetIDs)
+        $datasets = Dataset::whereIn('id', $datasetIDs)
             ->with('versions')
             ->get(); 
 
@@ -257,17 +267,5 @@ class ToolsPostMigrationProcess extends Command
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
-    }
-
-    /**
-     * Check if a dataset version has a specific tool.
-     *
-     * @param DatasetVersion $datasetVersion
-     * @param Tool $tool
-     * @return bool
-     */
-    public function datasetVersionHasTool(DatasetVersion $datasetVersion, Tool $tool): bool
-    {
-        return $datasetVersion->tools()->where('tool_id', $tool->id)->exists();
     }
 }
