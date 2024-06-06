@@ -202,16 +202,16 @@ class ToolsPostMigrationProcess extends Command
             ->all();
 
         $datasetVersionsIDs = DatasetVersionHasTool::where('tool_id', $id)
-            ->pluck('id')
+            ->pluck('dataset_version_id')
             ->all();
 
-        $datasetIDs = DatasetVersion::where('id', $datasetVersionsIDs)
+        $datasetIDs = DatasetVersion::whereIn('id', $datasetVersionsIDs)
             ->pluck('dataset_id')
             ->all();
 
         $datasets = Dataset::where('id', $datasetIDs)
             ->with('versions')
-            ->get();
+            ->get(); 
 
         $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
             ->pluck('data_provider_coll_id')
@@ -257,5 +257,17 @@ class ToolsPostMigrationProcess extends Command
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * Check if a dataset version has a specific tool.
+     *
+     * @param DatasetVersion $datasetVersion
+     * @param Tool $tool
+     * @return bool
+     */
+    public function datasetVersionHasTool(DatasetVersion $datasetVersion, Tool $tool): bool
+    {
+        return $datasetVersion->tools()->where('tool_id', $tool->id)->exists();
     }
 }

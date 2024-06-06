@@ -4,9 +4,14 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Tool;
-use App\Models\DatasetVersion;
+use App\Models\Sector;
+use App\Models\License;
+use App\Models\Category;
+use App\Models\Team;
+use App\Models\User;
+use App\Models\Collection;
 use App\Models\Dataset;
-use App\Models\DatasetVersionHasTool;
+use App\Models\DatasetVersion;
 use App\Console\Commands\ToolsPostMigrationProcess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -16,9 +21,20 @@ class LinkTest extends TestCase
 
     public function testDatasetVersionHasTool()
     {
-        $dataset = Dataset::factory()->create();
+        $sector = Sector::factory()->create();
+        $user = User::factory()->create(['sector_id' => $sector->id]);
+        $team = Team::factory()->create();
+        $team->users()->attach($user->id);
+        $license = License::factory()->create();
+        $category = Category::factory()->create();
+        $collection = Collection::factory()->create(['team_id' => $team->id]);
+        $dataset = Dataset::factory()->create(['team_id' => $team->id, 'user_id' => $user->id]);
         $datasetVersion = DatasetVersion::factory()->create(['dataset_id' => $dataset->id]);
-        $tool = Tool::factory()->create();
+        $tool = Tool::factory()->create([
+            'user_id' => $user->id,
+            'license' => $license->id,
+            'category_id' => $category->id
+        ]);
 
         $toolsPostMigrationProcess = new ToolsPostMigrationProcess();
 
@@ -32,9 +48,20 @@ class LinkTest extends TestCase
 
     public function testDatasetVersionDoesNotHaveTool()
     {
-        $dataset = Dataset::factory()->create();
+        $sector = Sector::factory()->create();
+        $user = User::factory()->create(['sector_id' => $sector->id]);
+        $team = Team::factory()->create();
+        $team->users()->attach($user->id);
+        $license = License::factory()->create();
+        $category = Category::factory()->create();
+        $collection = Collection::factory()->create(['team_id' => $team->id]);
+        $dataset = Dataset::factory()->create(['team_id' => $team->id, 'user_id' => $user->id]);
         $datasetVersion = DatasetVersion::factory()->create(['dataset_id' => $dataset->id]);
-        $tool = Tool::factory()->create();
+        $tool = Tool::factory()->create([
+            'user_id' => $user->id,
+            'license' => $license->id,
+            'category_id' => $category->id
+        ]);
 
         $toolsPostMigrationProcess = new ToolsPostMigrationProcess();
 
@@ -43,10 +70,25 @@ class LinkTest extends TestCase
 
     public function testDatasetVersionHasMultipleTools()
     {
-        $dataset = Dataset::factory()->create();
+        $sector = Sector::factory()->create();
+        $user = User::factory()->create(['sector_id' => $sector->id]);
+        $team = Team::factory()->create();
+        $team->users()->attach($user->id);
+        $license = License::factory()->create();
+        $category = Category::factory()->create();
+        $collection = Collection::factory()->create(['team_id' => $team->id]);
+        $dataset = Dataset::factory()->create(['team_id' => $team->id, 'user_id' => $user->id]);
         $datasetVersion = DatasetVersion::factory()->create(['dataset_id' => $dataset->id]);
-        $tool1 = Tool::factory()->create();
-        $tool2 = Tool::factory()->create();
+        $tool1 = Tool::factory()->create([
+            'user_id' => $user->id,
+            'license' => $license->id,
+            'category_id' => $category->id
+        ]);
+        $tool2 = Tool::factory()->create([
+            'user_id' => $user->id,
+            'license' => $license->id,
+            'category_id' => $category->id
+        ]);
 
         $toolsPostMigrationProcess = new ToolsPostMigrationProcess();
 
