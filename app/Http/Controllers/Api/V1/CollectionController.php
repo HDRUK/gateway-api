@@ -1223,12 +1223,15 @@ class CollectionController extends Controller
             $keywords[] = $k['name'];
         }
 
-        $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $collection['team_id'])
-            ->pluck('data_provider_id')
-            ->all();
-        $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
-            ->pluck('name')
-            ->all();        
+        $dataProviderColl = [];
+        if (array_key_exists('team_id', $collection)) {
+            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $collection['team_id'])
+                ->pluck('data_provider_coll_id')
+                ->all();
+            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
+                ->pluck('name')
+                ->all();   
+        }
 
         try {
             $toIndex = [
