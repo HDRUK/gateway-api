@@ -1,0 +1,986 @@
+[
+    {
+        "title": "Safe people",
+        "description": "Who is going to be accessing the data?\n\nSafe People should have the right motivations for accessing research data and understand the legal and ethical considerations when using data that may be sensitive or confidential. Safe People should also have sufficient skills, knowledge and experience to work with the data effectively.  Researchers may need to undergo specific training or accreditation before accessing certain data or research environments and demonstrate that they are part of a bona fide research organisation.\n\nThe purpose of this section is to ensure that:\n- details of people who will be accessing the data and the people who are responsible for completing the application are identified\n- any individual or organisation that intends to access  the data requested is identified\n- all identified individuals have the necessary accreditation and/or expertise to work with the data effectively.",
+        "subSections": [
+            {
+                "name": "Applicant",
+                "description": "Please list all individuals who will have access to the data requested, or are responsible for helping complete this application form. \n\nThis section should include key contact details for the person who is leading the project; key contact details for the person(s) who (are) leading the project from other organisations. Only one contact from each organisation is needed. \n\nThe 'Primary applicant' is the person filling out the application form and principal contact for the application. This is usually the person with operational responsibility for the proposal. Each application must have details for at least one person.\n\n",
+                "sub_section": "safepeople",
+                "questions": [
+                    {
+                        "title": "Full name",
+                        "guidance": "Full name is the applicant's first and last name",
+                        "required": true,
+                        "field": {
+                            "component": "TextField"
+                        }
+                    },
+                    {
+                        "title": "Job title",
+                        "guidance": "Job Title is the name of the position the applicant holds within their organisation.",
+                        "required": true,
+                        "field": {
+                            "component": "TextField"
+                        }
+                    },
+                    {
+                        "title": "Telephone",
+                        "guidance": "Please include a contact telephone number that the applicant can be contacted on.",
+                        "required": false,
+                        "field": {
+                            "component": "TextField"
+                        }
+                    },
+                    {
+                        "title": "ORCID",
+                        "guidance": "ORCID provides a persistent digital identifier (an ORCID iD) that you own and control, and that distinguishes you from every other researcher. You can create an ORCID profile at  https://orcid.org/. If you have an ORCID iD please include it here. ",
+                        "required": false,
+                        "field": {
+                            "component": "TextField"
+                        }
+                    },
+                    {
+                        "title": "Email",
+                        "guidance": "Please include an email address that the applicant can receive communications through.",
+                        "required": true,
+                        "field": {
+                            "component": "TextField"
+                        }
+                    },
+                    {
+                        "title": "Will you access the data requested?",
+                        "guidance": "Please confirm whether the applicant will be accessing the data that is being requested.",
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Are you an accredited researcher under the Digital Economy Act 2017?",
+                        "guidance": "Depending on the type of data you are requesting, you might be required to become an accredited researcher. Most access to data in the Secure Research Service (SRS) will be by researchers accredited under the Digital Economy Act 2017 (DEA). \n\nThe UK Statistics Authority has published further information on the criteria to be met in a Research Code of Practice and Accreditation criteria. Researchers can apply for accreditation through the Research Accreditation Service (RAS).\n\nFull accredited researcher status is valid for five years. Provisional accredited researcher status is valid for one year.\n\nMore information here: https://www.gov.uk/government/publications/digital-economy-act-2017-part-5-codes-of-practice/research-code-of-practice-and-accreditation-criteria#section-b-accreditation-of-researchers-and-peer-reviewers",
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Have you undertaken professional training or education on the topic of Information Governance?",
+                        "guidance": "Evidence of Information Governance training is an important aspect of most applications, giving assurance that individuals are aware of the privacy, confidentiality, data protection and Caldicott implications of working with personal data. \n\nPlease ensure you have checked with the data custodian if training is required for your application.",
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Your organisation name",
+                        "guidance": "Please give the full name of the organisation on whose behalf you are making the application or within which you work in your professional capacity as an applicant. This should include a parent organisation, and sub-division or department if appropriate (for example University of Edinburgh, Department of Informatics).",
+                        "required": true,
+                        "field": {
+                            "component": "TextField"
+                        }
+                    },
+                    {
+                        "title": "Does your organisation have a current Data Security and Protection Toolkit (DSPT) published assessment?",
+                        "guidance": "The Data Security and Protection Toolkit (DSPT) is an online self-assessment tool that allows organisations to measure their performance against the National Data Guardian\u2019s 10 data security standards.\n\nAll organisations that have access to NHS patient data and systems must use the DSPT to provide assurance that they are practising good data security and that personal information is handled correctly.\n\nThe DSPT is an annual assessment.\n\nYou can find out the status of your organisation here https://www.dsptoolkit.nhs.uk/OrganisationSearch",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Will your organisation act as data controller?",
+                        "guidance": "Please specify if your organisation will act as a data controller. If your organisation is not the sole data controller, please provide details of other data controllers. ",
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                },
+                                {
+                                    "value": "unsure",
+                                    "label": "Unsure"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Other individuals",
+                "description": "Please list all individuals who will have access to the data requested, or are responsible for helping complete this application form. \n\nThis section should include key contact details for the person who is leading the project; key contact details for the person(s) who (are) leading the project from other organisations. Only one contact from each organisation is needed. \n\nThe 'Primary applicant' is the person filling out the application form and principal contact for the application. This is usually the person with operational responsibility for the proposal. Each application must have details for at least one person.\n\n",
+                "sub_section": "safepeople",
+                "questions": [
+                    {
+                        "title": "Full name",
+                        "guidance": "Full name is the individual's first and last name",
+                        "required": false,
+                        "field": {
+                            "component": "TextField"
+                        }
+                    },
+                    {
+                        "title": "Job title",
+                        "guidance": "Job Title is the name of the position the individual holds within their organisation.",
+                        "required": false,
+                        "field": {
+                            "component": "TextField"
+                        }
+                    },
+                    {
+                        "title": "Organisation",
+                        "guidance": "Please include the individual's organisation.",
+                        "required": false,
+                        "field": {
+                            "component": "TextField"
+                        }
+                    },
+                    {
+                        "title": "Role",
+                        "guidance": "A role is a function that the applicant plays. It might include role types and accreditation for those that are accessing the secure data and those that are not but would see cleared outputs from the project. \r\n (i.e. project lead, deputy lead, accrediter, researcher, peer reviewer)",
+                        "required": false,
+                        "field": {
+                            "component": "CheckboxGroup",
+                            "checkboxes": [
+                                {
+                                    "value": "principalinvestigator",
+                                    "label": "Principal investigator"
+                                },
+                                {
+                                    "value": "collaborator",
+                                    "label": "Collaborator"
+                                },
+                                {
+                                    "value": "teammember",
+                                    "label": "Team member"
+                                },
+                                {
+                                    "value": "other",
+                                    "label": "Other"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Will this person access the data requested?",
+                        "guidance": "Please confirm whether this person will be accessing the data that is being requested.",
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Is this person an accredited researcher under the Digital Economy Act 2017?",
+                        "guidance": "Please confirm whether this person is an accredited researcher under the Digital Economy Act 2017.",
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Has this person undertaken professional training or education on the topic of Information Governance?",
+                        "guidance": "Please confirm whether this person has undertaken professional training or education on the topic of Information Governance.",
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Add another individual?",
+                        "guidance": null,
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Please provide evidence of team's expertise and experience relevant to delivering the project",
+                        "guidance": null,
+                        "required": false,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Safe project",
+        "description": "What is the purpose of accessing the data?\n\nSafe projects are those that have a valid research purpose with a defined public benefit. \nFor access to data to be granted the researchers need to demonstrate that their proposal is an appropriate and ethical use of the data, and that it is intended to deliver clear public benefits.  The purpose of this section is to ensure that:\n- the project rationale is explained in lay terms\n- the research purpose has a defined public benefit. This can be new knowledge, new treatments, improved pathways of care, new techniques of training staff. \n- how the data requested will be used to achieve the project objectives is articulated.",
+        "subSections": [
+            {
+                "name": "About this application",
+                "description": "",
+                "sub_section": "safeproject",
+                "questions": [
+                    {
+                        "title": "This application is...",
+                        "guidance": "The application could be a new application, an extension, a renewal or amendment.\n\nFor extensions or amendments, you must highlight the specific information within this form that has been updated, provide\n an original application number and approval date, any subsequent amendment approval dates and a summary of changes and rationale for the change to your original application and and updated approvals signatures in order for the request to be processed.",
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "anewapplication",
+                                    "label": "A new application"
+                                },
+                                {
+                                    "value": "anamendmenttoanexistingapplication",
+                                    "label": "An amendment to an existing application"
+                                },
+                                {
+                                    "value": "anextensionofanexistingapproval",
+                                    "label": "An extension of an existing approval"
+                                },
+                                {
+                                    "value": "arenewalofanexistingapproval",
+                                    "label": "A renewal of an existing approval"
+                                },
+                                {
+                                    "value": "relatedtoapreviousapplicationapprovedornot",
+                                    "label": "Related to a previous application (approved or not)"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Project details",
+                "description": "",
+                "sub_section": "safeproject",
+                "questions": [
+                    {
+                        "title": "Title of project",
+                        "guidance": "The title should identify the main area of your research so that another researcher could understand if it might be relevant to their area of study. \n \nThe titles of all Accredited Research projects are published on the UK Statistics Authority website as part of the public record of DEA Accredited Researchers.",
+                        "required": true,
+                        "field": {
+                            "component": "TextField"
+                        }
+                    },
+                    {
+                        "title": "What is the type of project?",
+                        "guidance": "A research project is a discrete scientific endeavor to answer a research question or a set of research questions. \n\nA clinic audit project is designed and conducted to produe information to inform delivery of best care. It aims to find out if healthcare is being provided in line with standards to inform care providers and patients about where a service is doing well, and where there could be improvements.\n\nA service evaluation project is designed and conducted solely to define or judge current care. It seeks to assess current service to assess how well a service is achieving its intended aims.",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "research",
+                                    "label": "Research"
+                                },
+                                {
+                                    "value": "clinicaudit",
+                                    "label": "Clinic audit"
+                                },
+                                {
+                                    "value": "serviceevaluation",
+                                    "label": "Service evaluation"
+                                },
+                                {
+                                    "value": "other",
+                                    "label": "Other"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Is this a new study or supporting an existing study?",
+                        "guidance": null,
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "newstudy",
+                                    "label": "New study"
+                                },
+                                {
+                                    "value": "existingstudy",
+                                    "label": "Existing study"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Please provide a lay summary of the project (300 words)",
+                        "guidance": "Please provide a summary of the study in language suitable for non-experts in the field and ensure that all abbreviations in technical terminology are explained.\n  \nThe summary must make clear what the specific purpose is, who will be using the data (organisations rather than individual names), what will happen to the data, whether the expected outputs are in record level form, what is known to date about your chosen project including any preliminary/related analysis and background literature reviews. Please include any potential disclosure risks and how these will be addressed.",
+                        "required": true,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "What is the anticipated start date of the project?",
+                        "guidance": "This is required to allow us to know when and for how long the data will be required. If the project has already begun but this data is only required for a future element use the date from when it will be required here.",
+                        "required": false,
+                        "field": {
+                            "component": "DatePicker"
+                        }
+                    },
+                    {
+                        "title": "Please provide anticipated end date of the project?",
+                        "guidance": null,
+                        "required": false,
+                        "field": {
+                            "component": "DatePicker"
+                        }
+                    },
+                    {
+                        "title": "What are the project aims, objectives and rationale?",
+                        "guidance": "Please Include the background to the project by describing why you are conducting the study, the specific aims and the hypotheses that you hope to test. Summarise how the data requested are required to help address these aims. Please include whether the project has used peer review and if applicable the nature of that review.  ",
+                        "required": true,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "How will the data requested be used to achieve the project objectives?",
+                        "guidance": "Provide full details of your research methodology. This must include justification of sample size, analyses proposed, statistical methods, additional data sources such as linked data and any plans for collaborative work. \n\nThis information will be key to assessing whether your proposal will be feasible, deliver clear public good and be an appropriate use of data. \n\nEnsure you: \n\nSpecify the method(s) of analysis you plan to use (such as regression);\n\nAs far as possible, try to articulate the outcome or dependent variable(s). \n\nIndicate the starting point for the modelling process - acknowledging that the model may evolve.\n\nExplain (where relevant) how any potential selection/causal bias will be addressed (e.g. by including a control group with information on how this control group will be created); \n\nProvide methodology references, if a non-standard methodology is proposed;\n\nInclude information about any contribution to the field of research methodology that you believe may result from your research;\n\nInclude an explanation of how your methodological approach will answer the research question(s) set out in the project when employing methods not covered by any of the above (e.g. correlation or basic descriptive analysis will only be used, noting that such analysis might be more applicable for exploratory research).",
+                        "required": true,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "How will your project benefit the public and what is the anticipated impact?",
+                        "guidance": "Use these section to give the background and justification of your proposal, to demonstrate how your project will benefit the public, as well as show your understanding of the Information Governance issues specific and inherent to your project. Please make it clear how the data requested will contribute. \n\nPlease also show that you have considered how to balance the privacy risks and public benefits when designing the study.  The requirement for the datasets requested should be fully justified in the light of the aims and objectives of the proposal.",
+                        "required": true,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "Can you provide an outline of the public and patient involvement and engagement (PPIE*) strategies of the study or a brief explanation of why they are not planned?",
+                        "guidance": "Provide full details of proposed public engagement plans for patient and/or user group involvement. If you have no plans, please elaborate why there will not be public engagement.",
+                        "required": false,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Funder information",
+                "description": "A funder is the organisation or body providing the financial resource to make the project possible, and may be different to the organisation detailed in the Safe people section. Please provide details of the main funder organisations supporting this project.",
+                "sub_section": "safeproject",
+                "questions": [
+                    {
+                        "title": "Does your project have a funder?",
+                        "guidance": "Please confirm if your project has a funder.",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Sponsor information",
+                "description": "The sponsor is usually, but does not have to be, the main funder of the research. The sponsor takes primary responsibility for ensuring that the design of the project meets appropriate standards and that arrangements are in place to ensure appropriate conduct and reporting. ",
+                "sub_section": "safeproject",
+                "questions": [
+                    {
+                        "title": "Does your project have a sponsor?",
+                        "guidance": "Please confirm if your project has a sponsor.",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Declaration of interest",
+                "description": "All interests that might unduly influence an individual\u2019s judgement and objectivity in the use of the data being requested are of relevance, particularly if it involves payment or financial inducement. \r\n\nThese might include any involvement of commercial organisations at arm\u2019s-length to the project, or likely impact on commercial organisations, individually or collectively, that might result from the outcomes or methodology of the project.\n\nAll individuals named in this application who have an interest this application must declare their interest. ",
+                "sub_section": "safeproject",
+                "questions": [
+                    {
+                        "title": "Is there a commercial interest in this project?",
+                        "guidance": "Please indicate if there is any commercial aspect or dimension to the project or its outcomes.",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Intellectual property",
+                "description": "All interests that might unduly influence an individual\u2019s judgement and objectivity in the use of the data being requested are of relevance, particularly if it involves payment or financial inducement. \r\n\nThese might include any involvement of commercial organisations at arm\u2019s-length to the project, or likely impact on commercial organisations, individually or collectively, that might result from the outcomes or methodology of the project.\n\nAll individuals named in this application who have an interest this application must declare their interest. ",
+                "sub_section": "safeproject",
+                "questions": [
+                    {
+                        "title": "Please indicate if the research could lead to the development of a new product/process or the generation of intellectual property.",
+                        "guidance": "Intellectual Property is the tangible output of any intellectual activity that is new or previously undescribed. It has an owner; it can be bought, sold or licensed and must be adequately protected.  It can include inventions, industrial processes, software, data, written work, designs and images. \nAny research which could potentially lead to intellectual property rights for you or your employer should be discussed with your employer and your R&D office as early as possible in the planning of the research.\n",
+                        "required": false,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Safe data",
+        "description": "Safe data ensure that researchers have a clear legal basis for accessing the data and do not inadvertently learn something about the data subjects during the course of their analysis, minimising the risks of re-identification.\nThe minimisation of this risk could be achieved by removing direct identifiers, aggregating values, banding variables, or other statistical techniques that may make re-identification more difficult. Sensitive or confidential data could not be considered to be completely safe because of the residual risk to a data subject\u2019s confidentiality.  Hence other limitations on access will need to be applied.\n\nThe purpose of this section is to ensure that: \n- there is a clear legal basis for accessing the requested data\n- the data requested is proportionate to the requirement of the project \n- all data requested is necessary in order to achieve the public benefit declared \n- data subjects cannot be identified by your team by cross-referencing data sets from anywhere else.",
+        "subSections": [
+            {
+                "name": "Data fields",
+                "description": "These are the Information assets which your proposal seeks to access and use.\n\nYou should consider this definition to be wide in scope and include any source of information which you propose to access and use. The data may be highly structured or less structured in nature, already existing or to be newly collected or gathered. \n\nExamples may include national datasets, local data sets, national or local extracts from systems, national or local registries or networks, patient records, or new information to be gathered from patients, families or other cohorts. \n\nNew data\u201d should only include data that is being specifically gathered for the first time for the purposes of this proposal. i.e. data already held in case notes and transferred to a form is not \u201cnew\u201d data, but a survey filled out by clinicians in order to gather information not recorded anywhere else is \u201cnew\u201d.\n\n",
+                "sub_section": "safedata",
+                "questions": [
+                    {
+                        "title": "Please indicate the data necessary to conduct the study, the data fields required and the justifications for each field.",
+                        "guidance": "NHS Digital will require information about each dataset that you would like to have access to including and field names and justifications for each field. Data requested can only be provided for processing data for specific purpose.\n\nPlease note that NHS Digital will contact you to discuss the specific data items requested.\n",
+                        "required": false,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "Data fields indicated via file upload",
+                        "guidance": "A description of precisely the criteria which define the patients to be included and to be excluded from the data extract you are requesting should be provided. \n\nThis should include precise date parameters for the start and end of the range requested (dd/mm/yy) and explain which dated project field will be used to define the requested cohort (e.g. date of admission or date of operation).",
+                        "required": false,
+                        "field": {
+                            "component": "CheckboxGroup",
+                            "checkboxes": [
+                                {
+                                    "value": "iconfirmthatihaveenclosedalistofdatasetsfieldsandvariablesrequiredforthestudyaswellasjustificationforeachfield",
+                                    "label": "I confirm that I have enclosed a list of datasets, fields and variables required for the study as well as justification for each field."
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Inclusion and exclusion criteria (including date parameters)",
+                        "guidance": "A description of precisely the criteria which define the patients to be included and to be excluded from the data extract you are requesting should be provided. \n\nThis should include precise date parameters for the start and end of the range requested (dd/mm/yy) and explain which dated project field will be used to define the requested cohort (e.g. date of admission or date of operation).",
+                        "required": true,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "Will you require periodic refreshes of the data?",
+                        "guidance": "Please indicate if data refreshers will be required.",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Do you require aggregated or record level data?",
+                        "guidance": "Record level data typically relates to a single individual. There may be one or many records per individual. Such data would usually carry a risk of re-identification, and use of such data would be subject to strict controls.\n\nAggregate data would typically be 'counts' of an event - for example how many people had a particular operation over a specific time period. Aggregate data is not always anonymous data, and therefore may also be subject to specific controls.\n\n\n\n",
+                        "required": false,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Other datasets - Intention to link data",
+                "description": "This section should include information on the planned use of datasets not already included in this application. The following information is required:\n\nA descriptive name so that it is clear what the dataset is. \n\nSufficient information to explain the content of the dataset.  \n\nWhether the proposal requires linkage of data, the use of matched controls, or the extraction of anonymised data.\n\nPlease indicate which organisation or body is undertaking these processes and which variables from the data sources requested will be used to achieve the proposed linkage. This should cover every dataset and variable you will require. ",
+                "sub_section": "safedata",
+                "questions": [
+                    {
+                        "title": "Do you intend for the datasets requested to be linked with any additional datasets, other than the datasets listed in this application?",
+                        "guidance": "Please specify if you intend for the datasets to be linked with any additional datasets. Please also provide relevant information on the organisations undertaking linkages and provide a data flow diagram where applicable.",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Lawful basis",
+                "description": "General Data Protection Regulation (GDPR) applies to \u2018controllers\u2019 and \u2018processors\u2019. \n\nA controller determines the purposes and means of processing personal data.\n\nA processor is responsible for processing personal data on behalf of a controller.\n \nGDPR applies to processing carried out by organisations operating within the EU. It also applies to organisations outside the EU that offer goods or services to individuals in the EU.\nGDPR does not apply to certain activities including processing covered by the Law Enforcement Directive, processing for national security purposes and processing carried out by individuals purely for personal/household activities. \n \nGDPR only applies to information which relates to an identifiable living individual. Information relating to a deceased person does not constitute personal data and therefore is not subject to the GDPR.",
+                "sub_section": "safedata",
+                "questions": [
+                    {
+                        "title": "Article 6 lawful basis",
+                        "guidance": "The lawful bases for processing are set out in Article 6 of the GDPR. At least one of legal basis must apply whenever you process personal data. Please select appropriate Article 6 lawful basis. Processing shall be lawful only if and to the extent that at least one of the following applies.",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "notapplicable",
+                                    "label": "Not applicable"
+                                },
+                                {
+                                    "value": "athedatasubjecthasgivenconsenttotheprocessingofhisorherpersonaldataforoneormorespecificpurposes",
+                                    "label": "(a) the data subject has given consent to the processing of his or her personal data for one or more specific purposes;"
+                                },
+                                {
+                                    "value": "bprocessingisnecessaryfortheperformanceofacontracttowhichthedatasubjectispartyorinordertotakestepsattherequestofthedatasubjectpriortoenteringintoacontract",
+                                    "label": "(b) processing is necessary for the performance of a contract to which the data subject is party or in order to take steps at the request of the data subject prior to entering into a contract;"
+                                },
+                                {
+                                    "value": "cprocessingisnecessaryforcompliancewithalegalobligationtowhichthecontrollerissubject",
+                                    "label": "(c) processing is necessary for compliance with a legal obligation to which the controller is subject;"
+                                },
+                                {
+                                    "value": "dprocessingisnecessaryinordertoprotectthevitalinterestsofthedatasubjectorofanothernaturalperson",
+                                    "label": "(d) processing is necessary in order to protect the vital interests of the data subject or of another natural person;"
+                                },
+                                {
+                                    "value": "eprocessingisnecessaryfortheperformanceofataskcarriedoutinthepublicinterestorintheexerciseofofficialauthorityvestedinthecontroller",
+                                    "label": "(e) processing is necessary for the performance of a task carried out in the public interest or in the exercise of official authority vested in the controller;"
+                                },
+                                {
+                                    "value": "fprocessingisnecessaryforthepurposesofthelegitimateinterestspursuedbythecontrollerorbyathirdpartyexceptwheresuchinterestsareoverriddenbytheinterestsorfundamentalrightsandfreedomsofthedatasubjectwhichrequireprotectionofpersonaldatainparticularwherethedatasubjectisachild",
+                                    "label": "(f) processing is necessary for the purposes of the legitimate interests pursued by the controller or by a third party, except where such interests are overridden by the interests or fundamental rights and freedoms of the data subject which require protection of personal data, in particular where the data subject is a child."
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Article 6 legal basis justification",
+                        "guidance": "Please provide justification for selected Article 6 lawful basis.",
+                        "required": true,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "Article 9 conditions",
+                        "guidance": "Please select appropriate Article 9 conditions. \n \nProcessing of personal data revealing racial or ethnic origin, political opinions, religious or philosophical beliefs, or trade union membership, and the processing of genetic data, biometric data for the purpose of uniquely identifying a natural person, data concerning health or data concerning a natural person's sex life or sexual orientation shall be prohibited. This does shall not apply if one of the following applies.",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "notapplicable",
+                                    "label": "Not applicable"
+                                },
+                                {
+                                    "value": "athedatasubjecthasgivenexplicitconsenttotheprocessingofthosepersonaldataforoneormorespecifiedpurposesexceptwhereunionormemberstatelawprovidethattheprohibitionreferredtoinparagraph1maynotbeliftedbythedatasubject",
+                                    "label": "(a) the data subject has given explicit consent to the processing of those personal data for one or more specified purposes, except where Union or Member State law provide that the prohibition referred to in paragraph 1 may not be lifted by the data subject;"
+                                },
+                                {
+                                    "value": "bprocessingisnecessaryforthepurposesofcarryingouttheobligationsandexercisingspecificrightsofthecontrollerorofthedatasubjectinthefieldofemploymentandsocialsecurityandsocialprotectionlawinsofarasitisauthorisedbyunionormemberstatelaworacollectiveagreementpursuanttomemberstatelawprovidingforappropriatesafeguardsforthefundamentalrightsandtheinterestsofthedatasubject",
+                                    "label": "(b) processing is necessary for the purposes of carrying out the obligations and exercising specific rights of the controller or of the data subject in the field of employment and social security and social protection law in so far as it is authorised by Union or Member State law or a collective agreement pursuant to Member State law providing for appropriate safeguards for the fundamental rights and the interests of the data subject;"
+                                },
+                                {
+                                    "value": "cprocessingisnecessarytoprotectthevitalinterestsofthedatasubjectorofanothernaturalpersonwherethedatasubjectisphysicallyorlegallyincapableofgivingconsent",
+                                    "label": "(c) processing is necessary to protect the vital interests of the data subject or of another natural person where the data subject is physically or legally incapable of giving consent;"
+                                },
+                                {
+                                    "value": "dprocessingiscarriedoutinthecourseofitslegitimateactivitieswithappropriatesafeguardsbyafoundationassociationoranyothernotforprofitbodywithapoliticalphilosophicalreligiousortradeunionaimandonconditionthattheprocessingrelatessolelytothemembersortoformermembersofthebodyortopersonswhohaveregularcontactwithitinconnectionwithitspurposesandthatthepersonaldataarenotdisclosedoutsidethatbodywithouttheconsentofthedatasubjects",
+                                    "label": "(d) processing is carried out in the course of its legitimate activities with appropriate safeguards by a foundation, association or any other not-for-profit body with a political, philosophical, religious or trade union aim and on condition that the processing relates solely to the members or to former members of the body or to persons who have regular contact with it in connection with its purposes and that the personal data are not disclosed outside that body without the consent of the data subjects;"
+                                },
+                                {
+                                    "value": "eprocessingrelatestopersonaldatawhicharemanifestlymadepublicbythedatasubject",
+                                    "label": "(e) processing relates to personal data which are manifestly made public by the data subject;"
+                                },
+                                {
+                                    "value": "fprocessingisnecessaryfortheestablishmentexerciseordefenceoflegalclaimsorwhenevercourtsareactingintheirjudicialcapacity",
+                                    "label": "(f) processing is necessary for the establishment, exercise or defence of legal claims or whenever courts are acting in their judicial capacity;"
+                                },
+                                {
+                                    "value": "gprocessingisnecessaryforreasonsofsubstantialpublicinterestonthebasisofunionormemberstatelawwhichshallbeproportionatetotheaimpursuedrespecttheessenceoftherighttodataprotectionandprovideforsuitableandspecificmeasurestosafeguardthefundamentalrightsandtheinterestsofthedatasubject",
+                                    "label": "(g) processing is necessary for reasons of substantial public interest, on the basis of Union or Member State law which shall be proportionate to the aim pursued, respect the essence of the right to data protection and provide for suitable and specific measures to safeguard the fundamental rights and the interests of the data subject;"
+                                },
+                                {
+                                    "value": "hprocessingisnecessaryforthepurposesofpreventiveoroccupationalmedicinefortheassessmentoftheworkingcapacityoftheemployeemedicaldiagnosistheprovisionofhealthorsocialcareortreatmentorthemanagementofhealthorsocialcaresystemsandservicesonthebasisofunionormemberstatelaworpursuanttocontractwithahealthprofessionalandsubjecttotheconditionsandsafeguardsreferredtoinparagraph3",
+                                    "label": "(h) processing is necessary for the purposes of preventive or occupational medicine, for the assessment of the working capacity of the employee, medical diagnosis, the provision of health or social care or treatment or the management of health or social care systems and services on the basis of Union or Member State law or pursuant to contract with a health professional and subject to the conditions and safeguards referred to in paragraph 3;"
+                                },
+                                {
+                                    "value": "iprocessingisnecessaryforreasonsofpublicinterestintheareaofpublichealthsuchasprotectingagainstseriouscrossborderthreatstohealthorensuringhighstandardsofqualityandsafetyofhealthcareandofmedicinalproductsormedicaldevicesonthebasisofunionormemberstatelawwhichprovidesforsuitableandspecificmeasurestosafeguardtherightsandfreedomsofthedatasubjectinparticularprofessionalsecrecy",
+                                    "label": "(i) processing is necessary for reasons of public interest in the area of public health, such as protecting against serious cross-border threats to health or ensuring high standards of quality and safety of health care and of medicinal products or medical devices, on the basis of Union or Member State law which provides for suitable and specific measures to safeguard the rights and freedoms of the data subject, in particular professional secrecy;"
+                                },
+                                {
+                                    "value": "jprocessingisnecessaryforarchivingpurposesinthepublicinterestscientificorhistoricalresearchpurposesorstatisticalpurposesinaccordancewitharticle891basedonunionormemberstatelawwhichshallbeproportionatetotheaimpursuedrespecttheessenceoftherighttodataprotectionandprovideforsuitableandspecificmeasurestosafeguardthefundamentalrightsandtheinterestsofthedatasubject",
+                                    "label": "(j) processing is necessary for archiving purposes in the public interest, scientific or historical research purposes or statistical purposes in accordance with Article 89(1) based on Union or Member State law which shall be proportionate to the aim pursued, respect the essence of the right to data protection and provide for suitable and specific measures to safeguard the fundamental rights and the interests of the data subject."
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Article 9 legal basis justification",
+                        "guidance": null,
+                        "required": true,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Confidentiality avenue",
+                "description": "If confidential information is being disclosed , the organisations holding this data (both the organisation disclosing the information and the recipient organisation) must also have a lawful basis to hold and use this information, and if applicable, have a condition to hold and use special categories of confidential information, and be fair and transparent about how they hold and use this data. \n\nIn England and Wales, if you are using section 251 of the NHS Act 2006 (s251) as a legal basis for identifiable data, you will need to ensure that you have the latest approval letter and application. \n\nFor Scotland this application will be reviewed by the Public Benefit and Privacy Panel.\n\nIn Northern Ireland it will be considered by the Privacy Advisory Committee. If you are using patient consent as the legal basis, you will need to provide all relevant consent forms and information leaflets. ",
+                "sub_section": "safedata",
+                "questions": [
+                    {
+                        "title": "Please provide the legal basis to process confidential information",
+                        "guidance": "Please confirm if consent is in place for all disclosures of confidential information, if you have Section 251 exemption, or any other legal basis that you require for the project.\n\nFor England and Wales, please specify if Section 251 exemption is currently being sought and if so, please provide a Confidentiality Advisory group reference code.\n\nIn Scotland applications are required for the consented and unconsented use of data.",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "notapplicable",
+                                    "label": "Not applicable"
+                                },
+                                {
+                                    "value": "informedconsent",
+                                    "label": "Informed consent"
+                                },
+                                {
+                                    "value": "section251support",
+                                    "label": "Section 251 support"
+                                },
+                                {
+                                    "value": "other",
+                                    "label": "Other"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Ethics approval",
+                "description": "This section details the research and ethics approval which you have obtained or sought for your project, or otherwise provides evidence as to why such approval is not necessary. \nWhere such approval is not in place, it is important that you demonstrate why this is the case and provide assurances if approval is pending.  If you need advice on whether ethics approval is necessary, you should approach your local ethics services in the first instance. Information about UK research ethics committees and ethical opinions can be found on the Health Research Authority (HRA) website.\n",
+                "sub_section": "safedata",
+                "questions": [
+                    {
+                        "title": "Has ethics approval been obtained?",
+                        "guidance": null,
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                },
+                                {
+                                    "value": "approvalpending",
+                                    "label": "Approval pending"
+                                },
+                                {
+                                    "value": "notrequired",
+                                    "label": "Not required"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Safe settings",
+        "description": "Safe settings are analytics environments where researchers can access and analyse the requested datasets in a safe and ethical way. Safe settings encompass the physical environment and procedural arrangements such as the supervision and auditing regimes. For safe settings, the likelihood of both deliberate and accidental disclosure needs to be explicitly considered.\n\nThe purpose of this section is to ensure that:\n\n- researchers access requested data in a secure and controlled setting such as a Trusted Research Environment (TRE) that limits the unauthorised use of the data\n- practical controls and appropriate restrictions are in place if researchers access data though non-TRE environment. There may be requirements that data is held on restricted access servers, encrypted and only decrypted at the point of use.",
+        "subSections": [
+            {
+                "name": "Storage and processing",
+                "description": "This section details in what way the proposal aims to store and use data, and controls in place to minimise risks associated with this storage and use. If you have indicated that your proposal seeks to store and use data exclusively through a recognised trusted research environment, then you do not need to complete this section.\n \nIn relation to personal data, means any operation or set of operations which is performed on personal data or on sets of personal data (whether or not by automated means, such as collection, recording, organisation, structuring, storage, alteration, retrieval, consultation, use, disclosure, dissemination, restriction, erasure or destruction).\n \nAll Locations where processing will be undertaken, for the avoidance of doubt storage is considered processing. For each separate organisation processing data which is not fully anonymous a separate partner organisation form must also be completed.\n \n Processing, in relation to information or data means obtaining, recording or holding the information or data or carrying out any operation or set of operations on the information or data, including\u2014\n a) organisation, adaptation or alteration of the information or data,\n b) retrieval, consultation or use of the information or data,\n c) disclosure of the information or data by transmission,\n dissemination or otherwise making available, or\n d) alignment, combination, blocking, erasure or destruction of the information or data.",
+                "sub_section": "safesettings",
+                "questions": [
+                    {
+                        "title": "Will the data be accessed within a trusted research environment?",
+                        "guidance": "Please specify if the data will be accessed within a Trusted Research Environment. ",
+                        "required": false,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "nopleaseprovidedetailsoftheprocessingstorageorganisationsbelow",
+                                    "label": "No (Please provide details of the processing/storage organisations below)"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Dataflow",
+                "description": "",
+                "sub_section": "safesettings",
+                "questions": [
+                    {
+                        "title": "Will the data be transferred outside of the United Kingdom?",
+                        "guidance": "Jurisdiction (coverage) is defined as the location of the healthcare services who originated / initially provided the extract of data you are requesting. \\n NB. HQIP\u2019s DARG can only approve applications for access to the datasets which HQIP commission and thereby act as Data Controller.",
+                        "required": true,
+                        "field": {
+                            "component": "RadioGroup",
+                            "isRow": true,
+                            "radios": [
+                                {
+                                    "value": "yes",
+                                    "label": "Yes"
+                                },
+                                {
+                                    "value": "no",
+                                    "label": "No"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "title": "Please provide detailed information on data flows",
+                        "guidance": null,
+                        "required": false,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "Please include a data flow diagram for the requested data and any additional datasets intended to be linked.",
+                        "guidance": "The data flow should describe which organisation (if more than one) will be receiving the data and in what form (anonymised/limited access de-identified/personal). Your data flow should include\\n \\n All locations where the data will be housed/stored\\n \\n All transfers of data that will take place between organisations (and premises if an organisation has more than one remises where the data will be housed/stored)\\n \\n The format of the data as part of each transfer (anonymised/limited access de-identified/personal)\\n \\n If applicable, where the data will undergo any linkages to other data sets\\n \\n Where more than one legal basis is used to underpin the collection of personal data (e.g. both S251 and consent) it is helpful if these are represented.\\n \\n Please display only the data requested and any linked datasets, and not the entire project data flow.",
+                        "required": false,
+                        "field": {
+                            "component": "CheckboxGroup",
+                            "checkboxes": [
+                                {
+                                    "value": "ihaveenclosedacopyofthedataflow",
+                                    "label": "I have enclosed a copy of the dataflow"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Safe outputs",
+        "description": "Safe outputs ensure that all research outputs cannot be used to identity data subjects. They typically include \u2018descriptive statistics\u2019 that have been sufficiently aggregated such that identification is near enough impossible, and modelled outputs which are inherently non-confidential.\nThe purpose of this section is to ensure that:\n\n- controls are in place to minimise risks associated with planned outputs and publications \n\n- the researchers aim to openly publish their results to enable use, scrutiny and further research.",
+        "subSections": [
+            {
+                "name": "Ouputs dissemination plans",
+                "description": "Please include any plans for dissemination and publication of the data and results arising from your proposal. Please also specify any controls in place to minimise risks associated with publication. Dissemination can take place in a variety of ways and through many mechanisms, including through electronic media, print media or word of mouth.",
+                "sub_section": "safeoutputs",
+                "questions": [
+                    {
+                        "title": "How will proposal findings be disseminated, to what audience and in what format?",
+                        "guidance": "Please describe how you plan to disseminate the results from your proposal. \n\nAs the public might not read scientific literature or attend conferences, please consider how the results or findings will be disseminated to the wider public and how this fits with the public benefit of the proposal. \n\nPlease indicate if you plan to publish your findings in an open access journal. Reference should also be made to policy documents, service frameworks or strategies that are relevant.",
+                        "required": true,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "Please include any milestones for outputs dissemination.",
+                        "guidance": "Provide an outline of your plan, on what data, and how this will be done, with the anticipated outcomes and outputs and whether the outputs are in record level form.",
+                        "required": true,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "What steps will be taken to ensure that individuals cannot be identified? Please describe what disclosure control policy will be applied.",
+                        "guidance": "Please describe the steps you will take to ensure the confidentiality of the data when disseminating or publishing your findings. This may include the application of disclosure control procedures, aggregation of data or other approaches.",
+                        "required": true,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "Retention",
+                "description": "This section details how the project will treat data being processed after it has been used for the purpose of the proposal outlined, including governance in place to determine how long it will be retained, and controls to manage its subsequent disposal if required. Please reference any relevant policies and procedures which are in place to govern retention and disposal of data as outlined in the proposal.",
+                "sub_section": "safeoutputs",
+                "questions": [
+                    {
+                        "title": "Please state the date until which you will retain the data",
+                        "guidance": "Please confirm how long you intend to retain the data relating to your proposal.",
+                        "required": true,
+                        "field": {
+                            "component": "DatePicker"
+                        }
+                    },
+                    {
+                        "title": "Please indicate the reason for this date",
+                        "guidance": null,
+                        "required": false,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    },
+                    {
+                        "title": "Please provide details of any permissions that will need to apply for an extension to during this period in order to retain a legal basis to hold the data (e.g. section 251)",
+                        "guidance": null,
+                        "required": false,
+                        "field": {
+                            "component": "TextArea"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

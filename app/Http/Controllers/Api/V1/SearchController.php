@@ -156,7 +156,7 @@ class SearchController extends Controller
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
-            $response = Http::post($urlString, $input);
+            $response = Http::post($urlString, $input)->json();
 
             $datasetsArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
@@ -173,7 +173,7 @@ class SearchController extends Controller
                     if ((int) $dataset['_id'] === $model['id']) {
                         $datasetsArray[$i]['_source']['created_at'] = $model['versions'][0]['created_at'];
                         if ($viewType === 'mini') {
-                            $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata']);
+                            $datasetsArray[$i]['metadata'] = $this->trimPayload($model['versions'][0]['metadata'], $model);
                         } else {
                             $datasetsArray[$i]['metadata'] = $model['versions'][0]['metadata'];
                         }
@@ -1255,9 +1255,12 @@ class SearchController extends Controller
         return $resultArray;
     }
 
-    private function trimPayload(array &$input): array
+    private function trimPayload(array &$input, array &$dataset): array
     {
         $miniMetadata = $input['metadata'];
+        $hasTechnicalMetadata = (bool)$dataset['has_technical_details'];
+        $containsTissue = (!empty($input['metadata']['coverage']['biologicalSamples']) ? true : false);
+        $accessServiceCategory = $input['metadata']['accessibility']['access']['accessServiceCategory'];
 
         $minimumKeys = [
             'summary',
@@ -1270,6 +1273,10 @@ class SearchController extends Controller
                 unset($miniMetadata[$key]);
             }
         }
+
+        $miniMetadata['additional']['containsTissue'] = $containsTissue;
+        $miniMetadata['accessibility']['access']['accessServiceCategory'] = $accessServiceCategory;
+        $miniMetadata['additional']['hasTechnicalMetadata'] = $hasTechnicalMetadata;
 
         return $miniMetadata;
     }
