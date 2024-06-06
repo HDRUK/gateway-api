@@ -18,4 +18,18 @@ class DatasetVersionsPostMigrationProcesses
     {
         return $datasetVersion->tools()->where('tool_id', $tool->id)->exists();
     }
+
+    /**
+     * Check if a dataset version has a specific dataset version linkage.
+     *
+     * @param DatasetVersion $datasetVersion1
+     * @param DatasetVersion $datasetVersion2
+     * @return bool
+     */
+    public function datasetVersionHasDatasetVersion(DatasetVersion $datasetVersion1, DatasetVersion $datasetVersion2): bool
+    {
+        return DatasetVersionHasDatasetVersion::where('dataset_version_1_id', $datasetVersion1->id)
+            ->where('dataset_version_2_id', $datasetVersion2->id)
+            ->exists();
+    }
 }

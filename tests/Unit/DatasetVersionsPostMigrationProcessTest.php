@@ -11,15 +11,16 @@ use App\Models\User;
 use App\Models\Collection;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\ProgrammingLanguage;
 use App\Models\ProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 use App\Models\ToolHasTypeCategory;
 use App\Models\TypeCategory;
-use App\Console\Commands\ToolsPostMigrationProcess;
+use App\Console\Commands\DatasetVersionsPostMigrationProcesses;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class DatasetVersionsPostMigrationProcessTest extends TestCase
+class DatasetVersionsPostMigrationProcessesTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -40,7 +41,7 @@ class DatasetVersionsPostMigrationProcessTest extends TestCase
             'category_id' => $category->id
         ]);
 
-        $toolsPostMigrationProcess = new datasetVersionsPostMigrationProcesses();
+        $toolsPostMigrationProcess = new DatasetVersionsPostMigrationProcesses();
 
         $datasetVersion->tools()->attach($tool);
 
@@ -67,7 +68,7 @@ class DatasetVersionsPostMigrationProcessTest extends TestCase
             'category_id' => $category->id
         ]);
 
-        $toolsPostMigrationProcess = new datasetVersionsPostMigrationProcesses();
+        $toolsPostMigrationProcess = new DatasetVersionsPostMigrationProcesses();
 
         $this->assertFalse($toolsPostMigrationProcess->datasetVersionHasTool($datasetVersion, $tool));
     }
@@ -94,7 +95,7 @@ class DatasetVersionsPostMigrationProcessTest extends TestCase
             'category_id' => $category->id
         ]);
 
-        $toolsPostMigrationProcess = new datasetVersionsPostMigrationProcesses();
+        $toolsPostMigrationProcess = new DatasetVersionsPostMigrationProcesses();
 
         $datasetVersion->tools()->attach($tool1);
         $datasetVersion->tools()->attach($tool2);
@@ -105,5 +106,35 @@ class DatasetVersionsPostMigrationProcessTest extends TestCase
         $datasetVersion->tools()->detach($tool1);
         $this->assertFalse($toolsPostMigrationProcess->datasetVersionHasTool($datasetVersion, $tool1));
         $this->assertTrue($toolsPostMigrationProcess->datasetVersionHasTool($datasetVersion, $tool2));
-    } 
+    }
+
+    public function testDatasetVersionHasDatasetVersion()
+    {
+        $sector = Sector::factory()->create();
+        $user = User::factory()->create(['sector_id' => $sector->id]);
+        $team = Team::factory()->create();
+        $team->users()->attach($user->id);
+        $license = License::factory()->create();
+        $category = Category::factory()->create();
+        $collection = Collection::factory()->create(['team_id' => $team->id]);
+        $dataset = Dataset::factory()->create(['team_id' => $team->id, 'user_id' => $user->id]);
+        $datasetVersion1 = DatasetVersion::factory()->create(['dataset_id' => $dataset->id]);
+        $datasetVersion2 = DatasetVersion::factory()->create(['dataset_id' => $dataset->id]);
+
+        $linkage = DatasetVersionHasDatasetVersion::create([
+            'dataset_version_1_id' => $datasetVersion1->id,
+            'dataset_version_2_id' => $datasetVersion2->id,
+            'linkage_type' => 'some_linkage_type',
+            'direct_linkage' => true,
+            'description' => 'Test linkage'
+        ]);
+
+        $toolsPostMigrationProcess = new DatasetVersionsPostMigrationProcesses();
+
+        $this->assertTrue($toolsPostMigrationProcess->datasetVersionHasDatasetVersion($datasetVersion1, $datasetVersion2));
+
+        $linkage->delete();
+        $this->assertFalse($toolsPostMigrationProcess->datasetVersionHasDatasetVersion($datasetVersion1, $datasetVersion2));
+    }
 }
+
