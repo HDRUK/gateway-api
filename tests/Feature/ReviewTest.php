@@ -2,9 +2,18 @@
 
 namespace Tests\Feature;
 
-use App\Models\Review;
 use Tests\TestCase;
+use App\Models\Review;
+use App\Models\License;
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
+use Database\Seeders\ToolSeeder;
+use Database\Seeders\ReviewSeeder;
+use Database\Seeders\SectorSeeder;
+use Tests\Traits\MockExternalApis;
+use Database\Seeders\LicenseSeeder;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -13,6 +22,9 @@ class ReviewTest extends TestCase
     use WithFaker;
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL = '/api/v1/reviews';
 
@@ -25,15 +37,17 @@ class ReviewTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed();
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
+        $this->seed([
+            MinimalUserSeeder::class,
+            CategorySeeder::class,
+            TagSeeder::class,
+            LicenseSeeder::class,
+            ToolSeeder::class,
+            ReviewSeeder::class,
+            SectorSeeder::class,
+        ]);
     }
 
     /**
@@ -82,17 +96,6 @@ class ReviewTest extends TestCase
     }
 
     /**
-     * Get All Reviews with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_reviews_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get Review by Id with success
      * 
      * @return void
@@ -130,6 +133,7 @@ class ReviewTest extends TestCase
      */
     public function test_add_new_review_with_success(): void
     {    
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // tool
         $responseTool = $this->json(
             'POST',
@@ -139,8 +143,9 @@ class ReviewTest extends TestCase
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-                "license" => "Inventore omnis aut laudantium vel alias.",
+                "license" => $licenseId,
                 "tech_stack" => "Cumque molestias excepturi quam at.",
+                "category_id" => 1,
                 "user_id" => 1,
                 "tag" => array(1, 2),
                 "enabled" => 1,
@@ -165,7 +170,7 @@ class ReviewTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 12345678,  
+                'orcid' => "https://orcid.org/12345678",
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",           
             ],
@@ -203,6 +208,7 @@ class ReviewTest extends TestCase
      */
     public function test_update_review_with_success(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // tool
         $responseTool = $this->json(
             'POST',
@@ -212,8 +218,9 @@ class ReviewTest extends TestCase
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-                "license" => "Inventore omnis aut laudantium vel alias.",
+                "license" => $licenseId,
                 "tech_stack" => "Cumque molestias excepturi quam at.",
+                "category_id" => 1,
                 "user_id" => 1,
                 "tag" => array(1, 2),
                 "enabled" => 1,
@@ -238,7 +245,7 @@ class ReviewTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 12345678,  
+                'orcid' => "https://orcid.org/12345678",
                 'mongo_id' => 12345657,
                 'mongo_object_id' => "12345abcde",
             ],
@@ -300,6 +307,7 @@ class ReviewTest extends TestCase
      */
     public function test_edit_review_with_success(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // tool
         $responseTool = $this->json(
             'POST',
@@ -309,8 +317,9 @@ class ReviewTest extends TestCase
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-                "license" => "Inventore omnis aut laudantium vel alias.",
+                "license" => $licenseId,
                 "tech_stack" => "Cumque molestias excepturi quam at.",
+                "category_id" => 1,
                 "user_id" => 1,
                 "tag" => array(1, 2),
                 "enabled" => 1,
@@ -333,7 +342,7 @@ class ReviewTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 12345678,
+                'orcid' => "https://orcid.org/12345678",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234567,
@@ -448,6 +457,7 @@ class ReviewTest extends TestCase
     {
         $countBefore = Review::onlyTrashed()->count();
 
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // tool
         $responseTool = $this->json(
             'POST',
@@ -457,8 +467,9 @@ class ReviewTest extends TestCase
                 "name" => "Similique sapiente est vero eum.",
                 "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
                 "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-                "license" => "Inventore omnis aut laudantium vel alias.",
+                "license" => $licenseId,
                 "tech_stack" => "Cumque molestias excepturi quam at.",
+                "category_id" => 1,
                 "user_id" => 1,
                 "tag" => array(1, 2),
                 "enabled" => 1,
@@ -483,7 +494,7 @@ class ReviewTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 12345678,  
+                'orcid' => "https://orcid.org/12345678",
                 'mongo_id' => 1234567,
                 'mongo_object_id' => "12345abcde",                
             ],

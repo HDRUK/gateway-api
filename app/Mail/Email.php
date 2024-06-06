@@ -69,9 +69,9 @@ class Email extends Mailable
     {
         $this->replaceBodyText();
 
-        $response = Http::withBasicAuth(env('MJML_API_APPLICATION_KEY'),
-            env('MJML_API_KEY'))
-            ->post(env('MJML_RENDER_URL'), [
+        $response = Http::withBasicAuth(env('MJML_API_APPLICATION_KEY', ''),
+            env('MJML_API_KEY', ''))
+            ->post(env('MJML_RENDER_URL', ''), [
                 'mjml' => $this->template['body'],
             ]);
 
@@ -87,6 +87,13 @@ class Email extends Mailable
         foreach ($this->replacements as $k => $v) {
             $this->template['body'] = str_replace($k, $v, $this->template['body']);
         }
+
+        if (isset($this->template['buttons'])) {
+            $buttons = json_decode($this->template['buttons'], true);
+            foreach ($buttons['replacements'] as $b) {
+                $this->template['body'] = str_replace($b['placeholder'], $b['actual'], $this->template['body']);
+            }
+         }
     }
 
     private function replaceSubjectText(): void

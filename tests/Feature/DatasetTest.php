@@ -4,39 +4,44 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use Database\Seeders\SpatialCoverageSeeder;
 use Tests\Traits\Authorization;
-use Illuminate\Foundation\Testing\WithFaker;
+use Tests\Traits\MockExternalApis;
+use Illuminate\Support\Carbon;
+use App\Http\Enums\TeamMemberOf;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL_DATASET = '/api/v1/datasets';
-    const TEST_URL_TEAM = 'api/v1/teams';
-    const TEST_URL_NOTIFICATION = 'api/v1/notifications';
-    const TEST_URL_USER = 'api/v1/users';
+    const TEST_URL_TEAM = '/api/v1/teams';
+    const TEST_URL_NOTIFICATION = '/api/v1/notifications';
+    const TEST_URL_USER = '/api/v1/users';
 
-    protected $header = [];
-
-    /**
-     * Set up the database
-     *
-     * @return void
-     */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed();
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
+        $this->seed([
+            SpatialCoverageSeeder::class,
+        ]);
+
+        $this->metadata = $this->getFakeDataset();
+        $this->metadataAlt = $this->metadata;
+        $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
+
+        $this->metadataUpdate = $this->getFakeUpdateDataset();
     }
+
 
     /**
      * Get All Datasets with success
@@ -46,7 +51,6 @@ class DatasetTest extends TestCase
     public function test_get_all_datasets_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL_DATASET, [], $this->header);
-
         $response->assertJsonStructure([
             'current_page',
             'data',
@@ -66,6 +70,354 @@ class DatasetTest extends TestCase
     }
 
     /**
+     * Get All Datasets for a given team with success
+     * 
+     * @return void
+     */
+    public function test_get_all_team_datasets_with_success(): void
+    {
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => 'Some@email.com',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        
+
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => $teamName,
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        $teamId1 = $contentCreateTeam['data'];
+
+
+        //create a 2nd team
+        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => $teamName,
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        $teamId2 = $contentCreateTeam['data'];
+
+        // create user
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' =>" https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+        $responseCreateUser->assertStatus(201);
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        $userId = $contentCreateUser['data'];
+
+        $specificTime = Carbon::parse('2023-01-01 00:00:00');
+        Carbon::setTestNow($specificTime);
+
+        // create dataset
+        $labelDataset1 = 'XYZ DATASET';
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId1,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $responseCreateDataset->assertStatus(201);
+
+        $datasetId1 = $responseCreateDataset['data'];
+
+        //create a 2nd one
+        $specificTime = Carbon::parse('2023-02-01 00:00:00');
+        Carbon::setTestNow($specificTime);
+        $labelDataset2 = 'ABC DATASET';
+        $responseCreateDataset2 = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId1,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset2->assertStatus(201);
+        $datasetId2 = $responseCreateDataset2['data'];
+
+        //create a 3rd one which is owned by the 2nd team
+        $specificTime = Carbon::parse('2023-03-01 00:00:00');
+        Carbon::setTestNow($specificTime);
+        $labelDataset3 = 'Other Team DATASET';
+        $responseCreateDataset3 = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId2,
+                'user_id' => $userId,
+                'metadata' => $this->metadataAlt,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset3->assertStatus(201);
+        $datasetId3 = $responseCreateDataset3['data'];
+
+        $response = $this->json(
+            'GET', self::TEST_URL_DATASET,
+            [],
+            $this->header
+        );
+        $response->assertStatus(200);
+
+        $this->assertCount(3,$response['data']);
+        $response->assertJsonStructure([
+            'current_page',
+            'data',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',
+        ]);
+
+        /* 
+        * Test filtering by dataset title being ABC (datasetAlt)
+        */
+        
+
+        /* NOTE -  Calum 5/1/2024
+                Test is currently turned off because the model is calling raw SQL function JSON_UNQUOTE
+                which is not known to SQLite and therefore the test will fail
+           NOTE -  Calum 10/1/2024
+                Loki has been investigating this and coming up with a solution
+                There may be some other things not quite right due to sqlite/MySQL differences
+                This is know about and is being resolved... 
+        */
+        /*
+        $response = $this->json('GET', self::TEST_URL_DATASET .
+            '?title=ABC',
+            [], $this->header
+        );
+        $response->assertStatus(200);
+        $this->assertCount(1,$response['data']);
+        */
+        
+        /* 
+        * Sort so that the newest dataset is first in the list
+        */
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+            '?team_id=' . $teamId1 . 
+            '&sort=created:desc',
+            [],
+            $this->header
+        );
+        $first = Carbon::parse($response['data'][0]['created']);
+        $second = Carbon::parse($response['data'][1]['created']);
+
+        $this->assertTrue($first->gt($second));
+
+        /*
+        * use the endpoint /api/v1/datasets/count to find unique values of the field 'status'
+        */
+        $responseCount = $this->json('GET', self::TEST_URL_DATASET . 
+            '/count/status?team_id=' . $teamId1 ,
+            [],
+            $this->header
+        );
+        $responseCount->assertStatus(200);
+        $countActive = $responseCount['data']['ACTIVE'];
+        $countDraft = $responseCount['data']['DRAFT'];
+        $this->assertTrue($countActive===1);
+        $this->assertTrue($countDraft===1);
+        
+        /* 
+        * reverse this sorting
+        */
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+            '?team_id=' . $teamId1 . 
+            '&sort=created:asc',
+            [],
+            $this->header
+        );
+        $first = Carbon::parse($response['data'][0]['created']);
+        $second = Carbon::parse($response['data'][1]['created']);
+
+        $this->assertTrue($first->lt($second));
+
+        /* 
+        * Sort A-Z on the dataset label
+        */
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+            '?team_id=' . $teamId1 . 
+            '&sort=label:asc',
+            [],
+            $this->header
+        );
+
+        /* 
+        * Sort Z-A on the dataset label
+        */
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+            '?team_id=' . $teamId1 . 
+            '&sort=label:desc',
+            [],
+            $this->header
+        );
+
+        /* 
+        * Sort Z-A on the metadata title
+        */
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+            '?team_id=' . $teamId1 . 
+            '&sort=properties/summary/title:desc',
+            [],
+            $this->header
+        );
+
+        /* 
+        * fail if a bad direction has been given for sorting
+        */
+        $response = $this->json('GET', self::TEST_URL_DATASET . 
+            '?team_id=' . $teamId1 . 
+            '&sort=created:blah',
+            [],
+            $this->header
+        );
+        $response->assertStatus(400);
+
+
+        for ($i = 1; $i <= 3; $i++) {
+            // delete dataset
+            $responseDeleteDataset = $this->json(
+                'DELETE',
+                self::TEST_URL_DATASET . '/' . ${'datasetId' . $i} . '?deletePermanently=true',
+                [],
+                $this->header
+            );
+            $responseDeleteDataset->assertJsonStructure([
+                'message'
+            ]);
+        }
+
+        for ($i = 1; $i <= 2; $i++) {
+            // delete team
+            $responseDeleteTeam = $this->json(
+                'DELETE',
+                self::TEST_URL_TEAM . '/' . ${'teamId' . $i} . '?deletePermanently=true',
+                [],
+                $this->header
+            );
+
+            $responseDeleteTeam->assertJsonStructure([
+                'message'
+            ]);
+            $responseDeleteTeam->assertStatus(200);
+        }
+
+    }
+
+
+    /**
      * Get Dataset by Id with success
      * 
      * @return void
@@ -80,6 +432,7 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
+                'email' => 'Some@email.com',
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -89,22 +442,29 @@ class DatasetTest extends TestCase
         $notificationID = $contentNotification['data'];
 
         // Create the new team
+        $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseCreateTeam = $this->json(
             'POST',
             self::TEST_URL_TEAM,
             [
-                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'name' => $teamName,
                 'enabled' => 1,
                 'allows_messaging' => 1,
                 'workflow_enabled' => 1,
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'users' => [],
             ],
             $this->header,
         );
@@ -132,7 +492,7 @@ class DatasetTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 75697342,
+                'orcid' =>" https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234566,
@@ -145,18 +505,20 @@ class DatasetTest extends TestCase
         $userId = $contentCreateUser['data'];
 
         // create dataset
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseCreateDataset = $this->json(
             'POST',
             self::TEST_URL_DATASET,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                'data' => $this->getFakeDataset(),
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
+
         $responseCreateDataset->assertStatus(201);
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];
@@ -166,10 +528,22 @@ class DatasetTest extends TestCase
 
         $responseGetOne->assertJsonStructure([
             'message',
-            'data'
+            'data' => [
+                'named_entities',
+                'collections',
+                'publications',
+                'versions',
+                'durs_count',
+                'publications_count',
+            ]
         ]);
         $responseGetOne->assertStatus(200);
+        
+        $respArray = $responseGetOne->decodeResponseJson();
 
+        $this->assertArrayHasKey('named_entities', $respArray['data']);
+        $this->assertNotEmpty($respArray['data']['named_entities']);
+        
         // delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
@@ -192,6 +566,7 @@ class DatasetTest extends TestCase
         $responseDeleteTeam->assertJsonStructure([
             'message'
         ]);
+
         $responseDeleteTeam->assertStatus(200);
 
         // delete user
@@ -207,13 +582,15 @@ class DatasetTest extends TestCase
         $responseDeleteUser->assertStatus(200);
     }
 
+
     /**
-     * Create new Dataset with success
+     * Create/archive/unarchive Dataset with success
      * 
      * @return void
      */
-    public function test_create_delete_dataset_with_success(): void
+    public function test_create_archive_delete_dataset_with_success(): void
     {
+
         // create team
         // First create a notification to be used by the new team
         $responseNotification = $this->json(
@@ -222,6 +599,7 @@ class DatasetTest extends TestCase
             [
                 'notification_type' => 'applicationSubmitted',
                 'message' => 'Some message here',
+                'email' => 'some@email.com',
                 'opt_in' => 1,
                 'enabled' => 1,
             ],
@@ -242,11 +620,17 @@ class DatasetTest extends TestCase
                 'access_requests_management' => 1,
                 'uses_5_safes' => 1,
                 'is_admin' => 1,
-                'member_of' => 1001,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
                 'contact_point' => 'dinos345@mail.com',
                 'application_form_updated_by' => 'Someone Somewhere',
                 'application_form_updated_on' => '2023-04-06 15:44:41',
                 'notifications' => [$notificationID],
+                'users' => [],
             ],
             $this->header,
         );
@@ -274,7 +658,7 @@ class DatasetTest extends TestCase
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
-                'orcid' => 75697342,
+                'orcid' => "https://orcid.org/75697342",
                 'contact_feedback' => 1,
                 'contact_news' => 1,
                 'mongo_id' => 1234566,
@@ -287,15 +671,16 @@ class DatasetTest extends TestCase
         $userId = $contentCreateUser['data'];
 
         // create dataset
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseCreateDataset = $this->json(
             'POST',
             self::TEST_URL_DATASET,
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'label' => 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
-                'short_description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                'data' => $this->getFakeDataset(),
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
@@ -303,7 +688,47 @@ class DatasetTest extends TestCase
         $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
         $datasetId = $contentCreateDataset['data'];
 
-        // delete dataset
+        // archive dataset
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            [],
+            $this->header
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset->assertStatus(200);
+
+        // unarchive dataset
+        $responseUnarchiveDataset = $this->json(
+            'PATCH',
+            self::TEST_URL_DATASET . '/' . $datasetId . '?unarchive',
+            [
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header
+        );
+        $responseUnarchiveDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseUnarchiveDataset->assertStatus(200);
+
+        // change dataset status
+        $responseChangeStatusDataset = $this->json(
+            'PATCH',
+            self::TEST_URL_DATASET . '/' . $datasetId,
+            [
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header
+        );
+        $responseChangeStatusDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseChangeStatusDataset->assertStatus(200);
+
+        // permanent delete dataset
         $responseDeleteDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
@@ -339,143 +764,456 @@ class DatasetTest extends TestCase
         $responseDeleteUser->assertStatus(200);
     }
 
-    private function getFakeDataset()
+    /**
+     * Create/update/delete Dataset with success
+     * 
+     * @return void
+     */
+    public function test_create_update_delete_dataset_with_success(): void
     {
-        return [
-            'datasetv2' => [
-                'identifier' => 'bd18eb49-9789-4ed3-a6c1-7b4f851ec2e7',
-                'version' => '1.0.0',
-                'issued' => '12/04/2022',
-                'modified' => '12/04/2022',
-                'revisions' => [],
-                'summary' => [
-                    'title' => htmlentities(fake()->paragraph(), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'abstract' => htmlentities(implode(" ", fake()->paragraphs(1, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'publisher' => [
-                        'identifier' => '607db9c5e1f9d3704d570d5f',
-                        'name' => 'PIONEER',
-                        'logo' => '',
-                        'description' => '',
-                        'contactPoint' => [],
-                        'memberOf' => 'HUB',
-                        'accessRights' => [],
-                        'deliveryLeadTime' => '',
-                        'accessService' => '',
-                        'accessRequestCost' => '',
-                        'dataUseLimitation' => [],
-                        'dataUseRequirements' => []
-                    ],
-                    'contactPoint' => 'PIONEER@UHB.NHS.UK',
-                    'keywords' => [
-                        'Urinary Tract Infection',
-                        'Infection',
-                        'UTI',
-                        'Antibiotics',
-                    ],
-                    'alternateIdentifiers' => [],
-                    'doiName' => '',
-                ],
-                'documentation' => [
-                    'description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                    'associatedMedia' => [],
-                    'isPartOf' => [],
-                ],
-                'coverage' => [
-                    'spatial' => [
-                        'United Kingdom,England,West Midlands'
-                    ],
-                    'typicalAgeRange' => '0-112',
-                    'physicalSampleAvailability' => [
-                        'NOT AVAILABLE'
-                    ],
-                    'followup' => 'OTHER',
-                    'pathway' => htmlentities(fake()->paragraph(), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                ],
-                'provenance' => [
-                    'origin' => [
-                        'purpose' => [
-                            'CARE'
-                        ],
-                        'source' => [
-                            'EPR'
-                        ],
-                        'collectionSituation' => [
-                            'ACCIDENT AND EMERGENCY',
-                            'OUTPATIENTS',
-                            'IN-PATIENTS',
-                        ]
-                    ],
-                    'temporal' => [
-                        'accrualPeriodicity' => 'QUARTERLY',
-                        'distributionReleaseDate' => '20/01/2022',
-                        'startDate' => '12/01/2000',
-                        'endDate' => '01/01/2022',
-                        'timeLag' => 'OTHER',
-                    ],
-                ],
-                'accessibility' => [
-                    'usage' => [
-                        'dataUseLimitation' => [
-                            'RESEARCH USE ONLY'
-                        ],
-                        'dataUseRequirements' => [
-                            'PROJECT SPECIFIC RESTRICTIONS',
-                        ],
-                        'resourceCreator' => [
-                            htmlentities(fake()->paragraph(), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                        ],
-                        'investigations' => [],
-                        'isReferencedBy' => [],
-                    ],
-                    'access' => [
-                        "accessRights" => [
-                            "https://www.pioneerdatahub.co.uk/data/data-request-process/"
-                        ],
-                        "accessService" => htmlentities(fake()->paragraph(), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                        "accessRequestCost" => [
-                            "www.pioneerdatahub.co.uk/data/data-services-costs/"
-                        ],
-                        "deliveryLeadTime" => "1-2 MONTHS",
-                        "jurisdiction" => [
-                            "GB-ENG"
-                        ],
-                        "dataProcessor" => "NOT APPLICABLE",
-                        "dataController" => "University Hospitals Birmingham NHS Foundation Trust"
-                    ],
-                    'formatAndStandards' => [
-                        'vocabularyEncodingScheme' => [
-                            'SNOMED CT',
-                            'OPCS4',
-                            'ICD10',
-                        ],
-                        'conformsTo' => [
-                            'LOCAL',
-                        ],
-                        'language' => [
-                            'en',
-                        ],
-                        'format' => [
-                            'SQL',
-                        ]
-                    ],
-                ],
-                'enrichmentAndLinkage' => [
-                    'qualifiedRelation' => [],
-                    'derivation' => [
-                        'Not Available',
-                    ],
-                    'tools' => [],
-                ],
-                'observations' => [
-                    [
-                        'measuredProperty' => 'Count',
-                        'observedNode' => 'EVENTS',
-                        'measuredValue' => '91568',
-                        'disambiguatingDescription' => '91,568 spells with patients with diabetes between 12-01-2000 and 01-01-2022',
-                        'observationDate' => '02/01/2022',
-                    ]
-                ]
-            ]
-        ];
+        // create team
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => 'some@email.com',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();  
+        $teamId = $contentCreateTeam['data'];
+
+        // create user
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+        $responseCreateUser->assertStatus(201);
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        $userId = $contentCreateUser['data'];
+
+        // create dataset
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(201);
+        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
+        $datasetId = $contentCreateDataset['data'];
+
+        // update dataset
+        $responseUpdateDataset = $this->json(
+            'PUT',
+            self::TEST_URL_DATASET . '/' . $datasetId ,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadataUpdate,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header,
+        );
+
+        $contentUpdateDataset = $responseUpdateDataset->decodeResponseJson();
+        $responseUpdateDataset->assertStatus(200);
+
+        // permanent delete dataset
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset->assertStatus(200);
+
+        // delete team
+        $responseDeleteTeam = $this->json('DELETE',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteTeam->assertStatus(200);
+
+        // delete user
+        $responseDeleteUser = $this->json(
+            'DELETE',
+            self::TEST_URL_USER . '/' . $userId,
+            [],
+            $this->header
+        );
+        $responseDeleteUser->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteUser->assertStatus(200);
     }
+
+    public function test_create_dataset_fails_with_invalid_origin(): void
+    {
+        // create team
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => 'some@email.com',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();  
+        $teamId = $contentCreateTeam['data'];
+
+        // create user
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+        $responseCreateUser->assertStatus(201);
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        $userId = $contentCreateUser['data'];
+
+        // create dataset
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => 'OPTION_DOESNT_EXIST',
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $responseCreateDataset->assertStatus(400);
+        $createDataset = $responseCreateDataset->decodeResponseJson();
+        $this->assertEquals($createDataset['status'], 'INVALID_ARGUMENT');
+        $this->assertEquals($createDataset['errors'][0]['reason'], 'IN');
+        $this->assertEquals($createDataset['errors'][0]['field'], 'create_origin');
+        
+        // delete team
+        $responseDeleteTeam = $this->json('DELETE',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteTeam->assertStatus(200);
+
+        // delete user
+        $responseDeleteUser = $this->json(
+            'DELETE',
+            self::TEST_URL_USER . '/' . $userId,
+            [],
+            $this->header
+        );
+        $responseDeleteUser->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteUser->assertStatus(200);
+    }
+
+    /**
+     * Download Dataset table export with success
+     * 
+     * @return void
+     */
+    public function test_download_dataset_table_with_success(): void
+    {        
+        // create team
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => 'some@email.com',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();  
+        $teamId = $contentCreateTeam['data'];
+
+        // create user
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+        $responseCreateUser->assertStatus(201);
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        $userId = $contentCreateUser['data'];
+
+        // create dataset
+        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+        $responseCreateDataset->assertStatus(201);
+        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
+        $datasetId = $contentCreateDataset['data'];
+
+        $responseDownload = $this->json(
+            'GET',
+            self::TEST_URL_DATASET . '/export',
+            [],
+            $this->header,
+        );
+
+        $content = $responseDownload->streamedContent();
+        $responseDownload->assertHeader('Content-Disposition', 'attachment;filename="Datasets.csv"');
+        $this->assertEquals(
+            substr($content, 0, 5),
+            "Title"
+        );
+
+        // test dataset_id query parameter
+        $responseDownload = $this->json(
+            'GET',
+            self::TEST_URL_DATASET . '/export?dataset_id=' . $datasetId,
+            [],
+            $this->header,
+        );
+        $responseDownload->assertStatus(200);
+        $content = $responseDownload->streamedContent();
+        $responseDownload->assertHeader('Content-Disposition', 'attachment;filename="Datasets.csv"');
+        $this->assertEquals(
+            substr($content, 0, 5),
+            "Title"
+        );
+
+        // permanent delete dataset
+        $responseDeleteDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteDataset->assertStatus(200);
+
+        // delete team
+        $responseDeleteTeam = $this->json('DELETE',
+            self::TEST_URL_TEAM . '/' . $teamId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteTeam->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteTeam->assertStatus(200);
+
+        // delete user
+        $responseDeleteUser = $this->json(
+            'DELETE',
+            self::TEST_URL_USER . '/' . $userId,
+            [],
+            $this->header
+        );
+        $responseDeleteUser->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteUser->assertStatus(200);
+        
+    }
+
 }

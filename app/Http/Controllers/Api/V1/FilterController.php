@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
-
 use Exception;
 use App\Models\Filter;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -15,10 +16,11 @@ use App\Http\Requests\Filter\CreateFilter;
 use App\Http\Requests\Filter\DeleteFilter;
 use App\Http\Requests\Filter\UpdateFilter;
 use App\Http\Traits\RequestTransformation;
+use App\Http\Traits\PaginateFromArray;
 
 class FilterController extends Controller
 {
-    use RequestTransformation;
+    use RequestTransformation, PaginateFromArray;
     
     /**
      * @OA\Get(
@@ -32,28 +34,74 @@ class FilterController extends Controller
      *          response=200,
      *          description="Success",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="array",
-     *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="type", type="string", example="someType"),
-     *                      @OA\Property(property="value", type="string", example="some value"),
-     *                      @OA\Property(property="keys", type="string", example="someKey"),
-     *                      @OA\Property(property="enabled", type="boolean", example="1"),
+     *            @OA\Property(property="current_page", type="integer", example="1"),
+     *            @OA\Property(property="data", type="array",
+     *              @OA\Items(
+     *                  @OA\Property(property="id", type="integer", example="123"),
+     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="type", type="string", example="dataset"),
+     *                  @OA\Property(property="keys", type="string", example="publisherName"),
+     *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="buckets", type="array",
+     *                      @OA\Items(
+     *                          @OA\Property(property="doc_count", type="integer", example="123"),
+     *                          @OA\Property(property="key", type="string", example="Some publisher"),
+     *                      )
      *                  )
      *              )
+     *            ),
+     *            @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
+     *            @OA\Property(property="from", type="integer", example="1"),
+     *            @OA\Property(property="last_page", type="integer", example="1"),
+     *            @OA\Property(property="last_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
+     *            @OA\Property(property="links", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
+     *            @OA\Property(property="next_page_url", type="string", example="null"),
+     *            @OA\Property(property="path", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests"),
+     *            @OA\Property(property="per_page", type="integer", example="25"),
+     *            @OA\Property(property="prev_page_url", type="string", example="null"),
+     *            @OA\Property(property="to", type="integer", example="3"),
+     *            @OA\Property(property="total", type="integer", example="3")
      *          )
      *      )
      * )
      */
     public function index(Request $request): JsonResponse
     {
-        $filters = Filter::where('enabled', 1)->paginate(Config::get('constants.per_page'));
-        return response()->json(
-            $filters
-        );
+        try {
+            $filters = Filter::where('enabled', 1)->orderBy('type')->get()->toArray();
+
+            $urlString = env('SEARCH_SERVICE_URL') . '/filters';
+    
+            $response = Http::withBody(
+                json_encode(['filters' => $filters]), 'application/json'
+            )->post($urlString);
+    
+            $filterBuckets = isset($response->json()['filters']) ? $response->json()['filters'] : [];
+    
+            foreach ($filters as $i => $f) {
+                $type = $f['type'];
+                $keys = $f['keys'];
+                if (isset($filterBuckets[$i][$type][$keys])) {
+                    $filters[$i]['buckets'] = $filterBuckets[$i][$type][$keys]['buckets'];
+                } else {
+                    $filters[$i]['buckets'] = [];
+                }
+            }
+    
+            $perPage = request('perPage', Config::get('constants.per_page'));
+            $paginatedData = $this->paginateArray($request, $filters, $perPage);
+                            
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter get all",
+            ]);
+
+            return response()->json($paginatedData, 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -84,10 +132,15 @@ class FilterController extends Controller
      *                  @OA\Property(property="id", type="integer", example="123"),
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="type", type="string", example="someType"),
-     *                  @OA\Property(property="value", type="string", example="some value"),
-     *                  @OA\Property(property="keys", type="string", example="someKey"),
+     *                  @OA\Property(property="type", type="string", example="dataset"),
+     *                  @OA\Property(property="keys", type="string", example="publisherName"),
      *                  @OA\Property(property="enabled", type="boolean", example="1"),
+     *                  @OA\Property(property="buckets", type="array",
+     *                      @OA\Items(
+     *                          @OA\Property(property="doc_count", type="integer", example="123"),
+     *                          @OA\Property(property="key", type="string", example="Some publisher"),
+     *                      )
+     *                  )
      *              )
      *          ),
      *      ),
@@ -102,17 +155,41 @@ class FilterController extends Controller
      */
     public function show(GetFilter $request, int $id): JsonResponse
     {
-        $filter = Filter::findOrFail($id);
-        if ($filter) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $filter,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        }
+        try {
+            $filter = Filter::findOrFail($id);
+            if ($filter) {
+    
+                $urlString = env('SEARCH_SERVICE_URL') . '/filters';
+    
+                $response = Http::withBody(
+                    json_encode(['filters' => [$filter->toArray()]]), 'application/json'
+                )->post($urlString);
+    
+                $filterBuckets = isset($response->json()['filters'][0]) ? $response->json()['filters'][0] : [];
+                if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
+                    $filter['buckets'] = $filterBuckets[$filter['type']][$filter['keys']]['buckets'];
+                } else {
+                    $filter['buckets'] = [];
+                }
+                
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Filter get " . $id,
+                ]);
 
-        return response()->json([
-            'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
-        ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $filter,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+    
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -127,9 +204,8 @@ class FilterController extends Controller
      *          required=true,
      *          description="Filter definition",
      *          @OA\JsonContent(
-     *              required={"type", "value", "keys", "enabled"},
+     *              required={"type", "keys", "enabled"},
      *              @OA\Property(property="type", type="string", example="dataset"),
-     *              @OA\Property(property="value", type="string", example="your filter value here"),
      *              @OA\Property(property="keys", type="string", example="purpose"),
      *          ),
      *      ),
@@ -154,12 +230,19 @@ class FilterController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $filter = Filter::create([
                 'type' => $input['type'],
-                'value' => $input['value'],
                 'keys' => $input['keys'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $filter->id . " created",
             ]);
 
             return response()->json([
@@ -196,7 +279,6 @@ class FilterController extends Controller
      *          @OA\JsonContent(
      *              required={"type", "value", "keys", "enabled"},
      *              @OA\Property(property="type", type="string", example="dataset"),
-     *              @OA\Property(property="value", type="string", example="your filter value here"),
      *              @OA\Property(property="keys", type="string", example="purpose"),
      *              @OA\Property(property="enabled", type="integer", example="1"),
      *          ),
@@ -218,7 +300,6 @@ class FilterController extends Controller
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="type", type="string", example="someType"),
-     *                  @OA\Property(property="value", type="string", example="some value"),
      *                  @OA\Property(property="keys", type="string", example="someKey"),
      *                  @OA\Property(property="enabled", type="boolean", example="1"),
      *              )
@@ -237,12 +318,19 @@ class FilterController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Filter::where('id', $id)->update([
                 'type' => $input['type'],
-                'value' => $input['value'],
                 'keys' => $input['keys'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $id . " updated",
             ]);
 
             return response()->json([
@@ -278,7 +366,6 @@ class FilterController extends Controller
      *          description="Filter definition",
      *          @OA\JsonContent(
      *              @OA\Property(property="type", type="string", example="dataset"),
-     *              @OA\Property(property="value", type="string", example="your filter value here"),
      *              @OA\Property(property="keys", type="string", example="purpose"),
      *              @OA\Property(property="enabled", type="integer", example="1"),
      *          ),
@@ -300,7 +387,6 @@ class FilterController extends Controller
      *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="type", type="string", example="someType"),
-     *                  @OA\Property(property="value", type="string", example="some value"),
      *                  @OA\Property(property="keys", type="string", example="someKey"),
      *                  @OA\Property(property="enabled", type="boolean", example="1"),
      *              )
@@ -319,11 +405,20 @@ class FilterController extends Controller
     {
         try {
             $input = $request->all();
-            $arrayKeys = ['type', 'value', 'keys', 'enabled'];
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $arrayKeys = ['type', 'keys', 'enabled'];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Filter::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -379,6 +474,9 @@ class FilterController extends Controller
     public function destroy(DeleteFilter $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $filter = Filter::findOrFail($id);
             if ($filter) {
                 $filter->delete();
@@ -387,6 +485,13 @@ class FilterController extends Controller
                     'message' => Config::get('statuscodes.STATUS_OK.message'),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Filter " . $id . " deleted",
+            ]);
 
             throw new NotFoundException();
         } catch (Exception $e) {

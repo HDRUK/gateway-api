@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Exception;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -38,7 +39,7 @@ class SocialLoginController extends Controller
      *    operationId="login",
      *    tags={"Authentication"},
      *    summary="SocialLoginController@login",
-     *    description="Login with Google / Linkedin / Azure",
+     *    description="Login with Google / Linkedin with OpenId / Azure",
      *    @OA\Parameter(
      *       name="provider",
      *       in="path",
@@ -48,6 +49,17 @@ class SocialLoginController extends Controller
      *       @OA\Schema(
      *          type="string",
      *          description="provider",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="redirect",
+     *       in="redirect",
+     *       description="url to redirect to",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="redirect",
      *       ),
      *    ),
      *    @OA\Response(
@@ -68,10 +80,48 @@ class SocialLoginController extends Controller
      */
     public function login(Request $request, string $provider): mixed
     {
-        return Socialite::driver($provider)->redirect();
+        if ($provider === 'linkedin') {
+            $provider = 'linkedin-openid';
+        }
+        $redirectUrl = env('GATEWAY_URL');
+        if($request->has("redirect")){
+            $redirectUrl = $redirectUrl . $request->query('redirect');
+        }
+
+        session(['redirectUrl' => $redirectUrl]);
+        return Socialite::driver($provider)
+                ->redirect();
     }
 
     /**
+     * @OA\Get(
+     *    path="/api/v1/auth/{provider}/callback",
+     *    operationId="login-callback",
+     *    tags={"Authentication"},
+     *    summary="SocialLoginController@callback",
+     *    description="Login with Google / Linkedin with OpenId / Azure",
+     *    @OA\Parameter(
+     *       name="provider",
+     *       in="path",
+     *       description="google, linkedin with openid, azure",
+     *       required=true,
+     *       example="google",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="provider",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=302,
+     *       description="redirect to main page",
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *    ),
+     * )
+     * 
+     * 
      * redirect to front end page with token
      * 
      * @param Request $request
@@ -81,6 +131,9 @@ class SocialLoginController extends Controller
     public function callback(Request $request, string $provider): mixed
     {
         try {
+            if ($provider === 'linkedin') {
+                $provider = 'linkedin-openid';
+            }
             $socialUser = Socialite::driver($provider)->user();
 
             $socialUserDetails = [];
@@ -89,8 +142,8 @@ class SocialLoginController extends Controller
                     $socialUserDetails = $this->googleResponse($socialUser, $provider);
                     break;
 
-                case 'linkedin':
-                    $socialUserDetails = $this->linkedinResponse($socialUser, $provider);
+                case 'linkedin-openid':
+                    $socialUserDetails = $this->linkedinOpenIdResponse($socialUser, $provider);
                     break;
 
                 case 'azure':
@@ -111,10 +164,18 @@ class SocialLoginController extends Controller
 
             $jwt = $this->createJwt($user);
 
+            Auditor::log([
+                'target_user_id' => $user->id,
+                'action_type' => 'LOGIN',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "User " . $user->id . " with login through " . $user->provider . " has been connected",
+            ]);
+
             $cookies = [
                 Cookie::make('token', $jwt),
             ];
-            return redirect()->away(env('GATEWAY_URL'))->withCookies($cookies);
+            $redirectUrl = session('redirectUrl');
+            return redirect()->away($redirectUrl)->withCookies($cookies);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -141,20 +202,20 @@ class SocialLoginController extends Controller
     }
 
     /**
-     * Uniform response from LinkedIn
+     * Uniform response from LinkedIn using OpenID Connect
      *
      * @param object $data
      * @param string $provider
      * @return array
      */
-    private function linkedinResponse(object $data, string $provider): array
+    private function linkedinOpenIdResponse(object $data, string $provider): array
     {
         return [
-            'providerid' => $data->getId(),
-            'name' => $data->getName(),
-            'firstname' => $this->fetchFirstNameAndLastName($data->user['firstName']),
-            'lastname' => $this->fetchFirstNameAndLastName($data->user['lastName']),
-            'email' => $data->getEmail(),
+            'providerid' => (string) $data->getId(),
+            'name' => (string) $data->getName(),
+            'firstname' => (string) $data->user['given_name'],
+            'lastname' => (string) $data->user['family_name'],
+            'email' => (string) $data->getEmail(),
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
@@ -179,24 +240,6 @@ class SocialLoginController extends Controller
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
-    }
-
-    /**
-     * extract first name and last name from array
-     * 
-     * @param array $value
-     * @return string
-     */
-    private function fetchFirstNameAndLastName(array $value): string
-    {
-
-        $country = $value['preferredLocale']['country'];
-        $language = $value['preferredLocale']['language'];
-        $keyName = strtolower($language) . "_" . strtoupper($country);
-
-        $return = $value['localized'][$keyName];
-
-        return $return;
     }
 
     /**

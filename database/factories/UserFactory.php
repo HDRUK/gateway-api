@@ -28,6 +28,8 @@ class UserFactory extends Factory
             'firstname' => $firstName,
             'lastname' => $lastName,
             'email' => fake()->unique()->safeEmail(),
+            'secondary_email' => fake()->unique()->safeEmail(),
+            'preferred_email' => fake()->randomElement(['primary', 'secondary']),
             'email_verified_at' => now(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
@@ -42,6 +44,7 @@ class UserFactory extends Factory
             'mongo_id' => fake()->randomNumber(8, true),
             'mongo_object_id' => fake()->words(1, true),
             'is_admin' => false,
+            'terms' => fake()->numberBetween(0, 1),
         ];
     }
 

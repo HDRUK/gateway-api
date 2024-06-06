@@ -18,13 +18,12 @@ class CreateTag extends BaseFormRequest
             'type' => [
                 'required',
                 'string',
-                'unique:tags,type',
             ],
             'description' => [
                 'required',
                 'string',
                 Rule::unique('tags')->where(function ($query) {
-                    $query->where('description', trim($this->type));
+                    $query->where('description', trim($this->description));
                 }),
             ],
             'enabled' => [

@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\SavedSearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Filter extends Model
 {
@@ -13,7 +15,6 @@ class Filter extends Model
         'updated_at',
         'deleted_at',
         'type',
-        'value',
         'keys',
         'enabled',
     ];
@@ -48,13 +49,6 @@ class Filter extends Model
     private $type = '';
 
     /**
-     * Represents the filter value
-     * 
-     * @var string
-     */
-    private $value = '';
-
-    /**
      * Represents the filter key this filter is linked
      * to
      * 
@@ -68,5 +62,13 @@ class Filter extends Model
      * @var bool
      */
     private $enabled = false;
+
+    /**
+     * The saved searches that belong to the filter.
+     */
+    public function savedSearches(): BelongsToMany
+    {
+        return $this->belongsToMany(SavedSearch::class, 'saved_search_has_filters');
+    }
 
 }

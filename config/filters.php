@@ -22,6 +22,7 @@ return [
         'project',
         'paper',
         'dataUseRegister',
+        'dataProvider',
     ],
     'dataset_states' => [
         'active', 

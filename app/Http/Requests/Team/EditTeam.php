@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests\Team;
 
+use App\Models\Team;
+use Illuminate\Validation\Rule;
+use App\Http\Enums\TeamMemberOf;
 use App\Http\Requests\BaseFormRequest;
 
 class EditTeam extends BaseFormRequest
@@ -14,10 +17,17 @@ class EditTeam extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'id' => [
+            'teamId' => [
                 'int',
                 'required',
-                'exists:teams,id',
+                // 'exists:teams,teamId',
+                function ($attribute, $value, $fail) {
+                    $exists = Team::where('id', $value)->count();
+
+                    if (!$exists) {
+                        $fail('The selected team not exist.');
+                    }
+                },
             ],
             'name' => [
                 'string',
@@ -41,24 +51,47 @@ class EditTeam extends BaseFormRequest
                 'boolean',
             ],
             'member_of' => [
-                'integer',
+                'string',
+                Rule::in([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
             ],
             'contact_point' => [
+                'nullable',
                 'string',
             ],
             'application_form_updated_by' => [
+                'nullable',
                 'string',
             ],
             'application_form_updated_on' => [
+                'nullable',
                 'string',
             ],
             'notifications' => [
                 'array',
             ],
-            'mdm_folder_id' => [
+            'mongo_object_id' => [
+                'nullable',
                 'string',
-            ]
-
+            ],
+            'is_question_bank' => [
+                'boolean',
+            ],
+            'users' => [
+                'array',
+            ],
+            'users.*'  => [
+                'integer',
+                'distinct',
+                'exists:users,id',
+            ],
+            'is_provider' => [
+                'boolean',
+            ],
         ];
     }
 
@@ -69,6 +102,6 @@ class EditTeam extends BaseFormRequest
      */
     protected function prepareForValidation()
     {
-        $this->merge(['id' => $this->route('id')]);
+        $this->merge(['teamId' => $this->route('teamId')]);
     }
 }

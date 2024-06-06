@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\User;
@@ -90,6 +91,13 @@ class AuthController extends Controller
         }
 
         $jwt = $this->createJwt($user);
+
+        Auditor::log([
+            'user_id' => $user['id'],
+            'action_type' => 'GET',
+            'action_service' => class_basename($this) . '@'.__FUNCTION__,
+            'description' => "Autorization for user",
+        ]);
 
         return response()->json([
             "access_token" => $jwt,

@@ -20,8 +20,12 @@ class AuditLog extends Model
         'updated_at',
         'deleted_at',
         'user_id',
+        'team_id',
+        'target_user_id',
+        'target_team_id',
+        'action_type',
+        'action_service',
         'description',
-        'function',
     ];
 
     /**

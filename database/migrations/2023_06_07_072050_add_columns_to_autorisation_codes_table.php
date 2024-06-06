@@ -24,9 +24,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('authorisation_codes', function (Blueprint $table) {
-            $table->dropColumn('created_at');
-            $table->dropColumn('expired_at');
-            $table->dropColumn('updated_at');
+            $table->dropColumn([
+                'created_at',
+                'expired_at',
+                'updated_at',
+            ]);
         });
     }
 };

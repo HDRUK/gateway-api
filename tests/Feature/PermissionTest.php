@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Permission;
+use Database\Seeders\PermissionSeeder;
 use Tests\Traits\Authorization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -26,7 +27,9 @@ class PermissionTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
+        $this->seed([
+            PermissionSeeder::class
+        ]);
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
@@ -56,17 +59,6 @@ class PermissionTest extends TestCase
             ]
         ]);
         $response->assertStatus(200);
-    }
-
-    /**
-     * Get All Permmissions with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_permissions_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
     }
 
     /**

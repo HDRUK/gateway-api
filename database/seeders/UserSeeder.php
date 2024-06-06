@@ -6,6 +6,7 @@ use Hash;
 use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\UserHasRole;
 use App\Models\TeamHasUser;
 use App\Models\TeamUserHasRole;
 use Illuminate\Database\Seeder;
@@ -20,32 +21,86 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Create our super user account
-        $user = User::factory()->create([
-            'name' => 'HDRUK Super-User',
-            'firstname' => 'HDRUK',
-            'lastname' => 'Super-User',
-            'email' => 'developers@hdruk.ac.uk',
-            'provider' => 'service',
-            'password' => Hash::make('Watch26Task?'),
-            'is_admin' => true,
+        $this->createUser('HDRUK', 'Super-User', 'developers@hdruk.ac.uk', 'Watch26Task?', true, ['hdruk.superadmin']);
+
+        // Create our service layer user account
+        // TODO - Need to review permissions for this account overall as superadmin may be too much depending
+        // on actual needs
+        $this->createUser('HDRUK', 'Service-User', 'services@hdruk.ac.uk', 'Flood?15Voice', true, ['hdruk.superadmin']);
+
+        // Create our automation test users
+        $this->createUser('HDR', 'Team-Admin', 'hdrteamadmin@gmail.com', 'Gateway#3177', false, ['custodian.team.admin'], true);
+        $this->createUser('HDR', 'Team-Admin-Two', 'hdrgatea@gmail.com', 'December07*', false, ['custodian.team.admin'], true);
+        
+        $this->createUser('Dev', 'Eloper', 'hdrresearcher@gmail.com', 'London01!', false, ['developer']);
+        $this->createUser('HDR', 'DarManager', 'hdrdarmanager@gmail.com', 'Gateway@123', false, ['hdruk.dar']);
+
+        $this->createUser('Metadata', 'Manager', 'hdrmetadatamanager@gmail.com', 'Gateway@123', false, ['custodian.metadata.manager']);
+        $this->createUser('Metadata', 'Editor', 'hdreditorhdr@gmail.com', 'London01!', false, ['metadata.editor']);
+
+        $this->createUser('DarManager', 'MetadataManager', 'darmetadatamanager@gmail.com', 'London01!', false, [
+            'custodian.dar.manager',
+            'custodian.metadata.manager',
         ]);
 
-        $role = Role::with('permissions')->where('name', 'hdruk.superadmin')->first();
+        $this->createUser('Dar', 'Reviewer', 'hdrreviewer@gmail.com', 'Gateway@123', false, ['dar.reviewer']);
 
-        // Assign this account to every single team
-        $teams = Team::all();
-        foreach ($teams as $team) {
-            $thasu = TeamHasUser::create([
-                'user_id' => $user->id,
-                'team_id' => $team->id,
-            ]);
+        $this->createUser('HDR', 'Cohort-Admin', 'hdrcohortadmin@gmail.com', 'Flood15?Voice', false, ['hdruk.cohort.admin']);
 
-            TeamUserHasRole::create([
-                'team_has_user_id' => $thasu->id,
-                'role_id' => $role->id,
-            ]);
-        }
+        $this->createUser('HDR', 'Admin', 'hdrukadmin@gmail.com', '123P4ssword', false, ['hdruk.admin']);
 
         User::factory(10)->create();
+    }
+
+    /**
+     * Generically creates users per passed params
+     * 
+     * @param string $firstname     The firstname of the user to create
+     * @param string $lastname      The lastname of the user to create
+     * @param string $email         The email address of the user to create
+     * @param string $password      The password of the user to create
+     * @param bool $isAdmin         Whether this user being created is an admin
+     * @param array $roles          The roles that should be applied to the user being created
+     * 
+     * @return void
+     */
+    private function createUser(string $firstname, string $lastname, string $email,
+        string $password, bool $isAdmin, array $roles, bool $assignTeam = false): void
+    {
+        $user = User::factory()->create([
+            'name' => $firstname . ' ' . $lastname,
+            'firstname' => $firstname,
+            'lastname' => $lastname,
+            'email' => $email,
+            'provider' => 'service',
+            'password' => Hash::make($password),
+            'is_admin' => $isAdmin,
+        ]);
+
+        if ($assignTeam) {
+            $teamId = Team::all()->random()->id;
+
+            $thuId = TeamHasUser::create([
+                'team_id' => $teamId,
+                'user_id' => $user->id,
+            ]);
+
+            foreach ($roles as $role) {
+                $r = Role::where('name', $role)->first();
+
+                TeamUserHasRole::create([
+                    'team_has_user_id' => $thuId->id,
+                    'role_id' => $r->id,
+                ]);
+            }
+        } else {
+            foreach ($roles as $role) {
+                $r = Role::where('name', $role)->first();
+                UserHasRole::create([
+                    'user_id' => $user->id,
+                    'role_id' => $r->id,
+                ]);
+            }
+        }
     }
 }

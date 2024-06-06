@@ -42,6 +42,16 @@ class UpdateUser extends BaseFormRequest
                     }
                 },
             ],
+            'secondary_email' => [
+                'nullable',
+                'string',
+                'email',
+            ],
+            'preferred_email' => [
+                'required',
+                'string',
+                'in:primary,secondary',
+            ],
             'password' => [
                 'nullable',
                 'string',
@@ -68,7 +78,8 @@ class UpdateUser extends BaseFormRequest
                 'string',
             ],
             'orcid' => [
-                'integer',
+                'nullable',
+                'string',
             ],
             'contact_feedback' => [
                 'required',
@@ -82,8 +93,13 @@ class UpdateUser extends BaseFormRequest
                 'integer',
             ],
             'mongo_object_id' => [
-                'nullable', 'string',
+                'nullable',
+                'string',
             ],
+            'terms' => [
+                'boolean',
+            ],
+
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use Illuminate\Http\Request;
@@ -48,10 +49,25 @@ class ActivityLogUserTypeController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $activityLogUserTypes = ActivityLogUserType::paginate(Config::get('constants.per_page'));
-        return response()->json(
-            $activityLogUserTypes
-        );
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $activityLogUserTypes = ActivityLogUserType::paginate(Config::get('constants.per_page'), ['*'], 'page');
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Activity Log User Type get all",
+            ]);
+
+            return response()->json(
+                $activityLogUserTypes
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -97,15 +113,30 @@ class ActivityLogUserTypeController extends Controller
      */
     public function show(GetActivityLogUserType $request, int $id): JsonResponse
     {
-        $activityLogUserType = ActivityLogUserType::findOrFail($id);
-        if ($activityLogUserType) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $activityLogUserType,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        }
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        throw new NotFoundException();
+            $activityLogUserType = ActivityLogUserType::findOrFail($id);
+            if ($activityLogUserType) {
+
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Activity Log User Type get " . $id,
+                ]);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $activityLogUserType,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+    
+            throw new NotFoundException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -143,15 +174,29 @@ class ActivityLogUserTypeController extends Controller
      */
     public function store(CreateActivityLogUserType $request): JsonResponse
     {
-        $activityLogUserType = ActivityLogUserType::create($request->post());
-        if ($activityLogUserType) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $activityLogUserType->id,
-            ], Config::get('statuscodes.STATUS_CREATED.code'));
-        }
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        throw new InternalServerErrorException();
+            $activityLogUserType = ActivityLogUserType::create($request->post());
+            if ($activityLogUserType) {
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'CREATE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Activity Log User Type " . $activityLogUserType->id . " created",
+                ]);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_CREATED.message'),
+                    'data' => $activityLogUserType->id,
+                ], Config::get('statuscodes.STATUS_CREATED.code'));
+            }
+    
+            throw new InternalServerErrorException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -212,20 +257,34 @@ class ActivityLogUserTypeController extends Controller
      */
     public function update(UpdateActivityLogUserType $request, int $id): JsonResponse
     {
-        $activityLogUserType = ActivityLogUserType::findOrFail($id);
-        $body = $request->post();
-        $activityLogUserType->name = $body['name'];
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        if ($activityLogUserType->save()) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $activityLogUserType,
-            ], Config::get('statuscodes.STATUS_OK.code'));
-        } else {
-            throw new InternalServerErrorException();
+            $activityLogUserType = ActivityLogUserType::findOrFail($id);
+            $body = $request->post();
+            $activityLogUserType->name = $body['name'];
+    
+            if ($activityLogUserType->save()) {
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'UPDATE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Activity Log User Type " . $id . " updated",
+                ]);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $activityLogUserType,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            } else {
+                throw new InternalServerErrorException();
+            }
+    
+            throw new NotFoundException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new NotFoundException();
     }
 
     /**
@@ -291,6 +350,8 @@ class ActivityLogUserTypeController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'name',
             ];
@@ -298,6 +359,13 @@ class ActivityLogUserTypeController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             ActivityLogUserType::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Activity Log User Type " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -352,15 +420,30 @@ class ActivityLogUserTypeController extends Controller
      */
     public function destroy(DeleteActivityLogUserType $request, int $id): JsonResponse
     {
-        $activityLogUserType = ActivityLogUserType::findOrFail($id);
-        if ($activityLogUserType) {
-            if ($activityLogUserType->delete()) {
-                return response()->json([
-                    'message' => Config::get('statuscodes.STATUS_OK.message'),
-                ], Config::get('statuscodes.STATUS_OK.code'));
-            }
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            throw new InternalServerErrorException();
+            $activityLogUserType = ActivityLogUserType::findOrFail($id);
+            if ($activityLogUserType) {
+                if ($activityLogUserType->delete()) {
+                    Auditor::log([
+                        'user_id' => $jwtUser['id'],
+                        'action_type' => 'DELETE',
+                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'description' => "Activity Log User Type " . $id . " deleted",
+                    ]);
+
+                    
+                    return response()->json([
+                        'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    ], Config::get('statuscodes.STATUS_OK.code'));
+                }
+    
+                throw new InternalServerErrorException();
+            }
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
     }
 }

@@ -13,6 +13,109 @@ class FilterSeeder extends Seeder
      */
     public function run(): void
     {
-        Filter::factory(50)->create();
+        $this->seed_dataset_filters();
+        $this->seed_datauses_filters();
+        $this->seed_tools_filters();
+        $this->seed_collection_filters();
+        $this->seed_publication_filters();
+        $this->seed_data_provider_filters();
     }
+
+    public function seed_dataset_filters(): void
+    {
+        $filters = [
+            'publisherName',
+            'containsTissue',
+            'dataType',
+            'collectionName',
+            'dataUseTitles',
+            'dateRange',
+            'populationSize',
+            'geographicLocation',
+            'dataProviderColl',
+            'accessService'
+        ];
+
+        $this->seed_filter("dataset",$filters);
+    }
+
+     public function seed_datauses_filters(): void
+    {
+        $filters = [
+            'publisherName',
+            'organisationName',
+            'sector',
+            'datasetTitles',
+            'latestApprovalDate',
+            'accessType',
+            'dataProviderColl'
+        ];
+
+
+        $this->seed_filter("dataUseRegister",$filters);
+    }
+
+    public function seed_tools_filters(): void
+    {
+        $filters = [
+            'programmingLanguages',
+            'license',
+            'dataProviderColl',
+            'datasetTitles',
+            'typeCategory'
+        ];
+
+        $this->seed_filter("tool",$filters);
+    }
+
+
+    public function seed_collection_filters(): void
+    {
+        $filters = [
+            'publisherName',
+            'datasetTitles',
+            'dataProviderColl'
+        ];
+
+        $this->seed_filter("collection",$filters);
+    }
+
+    public function seed_publication_filters(): void
+    {
+        $filters = [
+            'publicationType',
+            'publicationDate',
+            'datasetTitles'
+        ];
+
+        $this->seed_filter("paper",$filters);
+    }
+
+    public function seed_data_provider_filters(): void
+    {
+        $filters = [
+            'geographicLocation',
+            'datasetTitles'
+        ];
+
+        $this->seed_filter("dataProvider",$filters);
+    }
+
+    public function seed_filter(string $type, array $filters): void
+    {
+        foreach ($filters as $filter){
+            $checkFilter = Filter::where([
+                'type' => $type, 
+                'keys' => $filter,
+            ])->first();
+            if (!$checkFilter) {
+                Filter::create([
+                    'type' => $type, 
+                    'keys' => $filter,
+                    'enabled' => true,
+                ]);
+            }
+        }
+    }
+
 }

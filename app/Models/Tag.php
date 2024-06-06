@@ -62,9 +62,4 @@ class Tag extends Model
     {
         return $this->belongsToMany(Tool::class, 'tool_has_tags');
     }
-
-    public function applications(): BelongsToMany
-    {
-        return $this->belongsToMany(Application::class, 'application_has_tags');
-    }
 }

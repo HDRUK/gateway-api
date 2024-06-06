@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Http\Enums\UserPreferredEmail;
 use App\Models\Team;
 use App\Models\Tool;
+use App\Models\Role;
 // use Laravel\Sanctum\HasApiTokens;
 use App\Models\Application;
 use App\Http\Traits\WithJwtUser;
@@ -30,6 +32,8 @@ class User extends Authenticatable
         'firstname',
         'lastname',
         'email',
+        'secondary_email',
+        'preferred_email',
         'password',
         'provider',
         'sector_id',
@@ -43,6 +47,7 @@ class User extends Authenticatable
         'mongo_id',
         'mongo_object_id',
         'is_admin',
+        'terms',
     ];
 
     /**
@@ -61,6 +66,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'terms' => 'boolean',
     ];
 
     /**
@@ -92,4 +98,15 @@ class User extends Authenticatable
     {
         return $this->hasMany(Application::class);
     }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'user_has_roles');
+    }
+
+    public function cohortRequests(): HasMany
+    {
+        return $this->hasMany(CohortRequest::class);
+    }
+    
 }

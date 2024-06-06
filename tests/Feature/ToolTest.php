@@ -3,23 +3,51 @@
 namespace Tests\Feature;
 
 use Config;
-use ReflectionClass;
-
 use Tests\TestCase;
 
 use App\Models\Tool;
+use ReflectionClass;
+use App\Models\License;
+use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
-use App\Http\Requests\ToolRequest;
-use App\Http\Controllers\Api\V1\ToolController;
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
+use App\Models\Publication;
+use Database\Seeders\DurSeeder;
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
+
+use Database\Seeders\ToolSeeder;
+use App\Http\Requests\ToolRequest;
+use Tests\Traits\MockExternalApis;
+use App\Models\ToolHasTypeCategory;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\DurHasToolSeeder;
+
+use Database\Seeders\ToolHasTagSeeder;
+use Database\Seeders\ApplicationSeeder;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
+use Database\Seeders\TypeCategorySeeder;
+use App\Models\ToolHasProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\DurHasPublicationSeeder;
+use Database\Seeders\ProgrammingPackageSeeder;
+use Database\Seeders\PublicationHasToolSeeder;
+use App\Http\Controllers\Api\V1\ToolController;
+use Database\Seeders\ProgrammingLanguageSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ToolTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL = '/api/v1/tools';
 
@@ -32,15 +60,29 @@ class ToolTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed();
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
+        $this->seed([
+            MinimalUserSeeder::class,
+            CategorySeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
+            LicenseSeeder::class,
+            TagSeeder::class,
+            KeywordSeeder::class,
+            TypeCategorySeeder::class,
+            DatasetSeeder::class,
+            DatasetVersionSeeder::class,
+            ToolSeeder::class,
+            ToolHasTagSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
+            PublicationHasToolSeeder::class,
+            ApplicationSeeder::class,
+            DurSeeder::class,
+            DurHasPublicationSeeder::class,
+            DurHasToolSeeder::class,
+        ]);
     }
 
     /**
@@ -63,6 +105,7 @@ class ToolTest extends TestCase
                     'description',
                     'license',
                     'tech_stack',
+                    'category_id',
                     'user_id',
                     'enabled',
                     'created_at',
@@ -70,6 +113,10 @@ class ToolTest extends TestCase
                     'deleted_at',
                     'user',
                     'tag',
+                    'associated_authors', 
+                    'contact_address',
+                    'publications',
+                    'durs',
                 ]
             ],
             'current_page',
@@ -89,44 +136,38 @@ class ToolTest extends TestCase
     }
 
     /**
-     * Get All Tools with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_tools_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get Tool by Id with success
      * 
      * @return void
      */
     public function test_get_tool_by_id_with_success(): void
     {
-        $tools = Tool::where('enabled', 1)->first();
-        $response = $this->json('GET', self::TEST_URL . '/' . $tools->id, [], $this->header);
-        $this->assertCount(1, $response['data']);
+        $toolId = Tool::where('enabled', 1)->get()->random()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $toolId, [], $this->header);
         $response->assertJsonStructure([
             'data' => [
-                0 => [
-                    'id',
-                    'mongo_object_id',
-                    'name',
-                    'url',
-                    'description',
-                    'license',
-                    'tech_stack',
-                    'user_id',
-                    'enabled',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                    'user',
-                    'tag',
-                ]
+                'id',
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'license',
+                'tech_stack',
+                'category_id',
+                'user_id',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'user',
+                'tag',
+                'programming_languages', 
+                'programming_packages', 
+                'type_category', 
+                'associated_authors', 
+                'contact_address',
+                'publications',
+                'durs',
             ]
         ]);
         $response->assertStatus(200);
@@ -139,6 +180,7 @@ class ToolTest extends TestCase
      */
     public function test_add_new_tool_with_success(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         $countBefore = Tool::withTrashed()->count();
         $countPivotBefore = ToolHasTag::all()->count();
         $mockData = array(
@@ -146,11 +188,16 @@ class ToolTest extends TestCase
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => "Inventore omnis aut laudantium vel alias.",
+            "license" => $licenseId,
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
+            "type_category" => array(1, 2),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
 
         $response = $this->json(
@@ -212,17 +259,23 @@ class ToolTest extends TestCase
      */
     public function test_update_tool_with_success(): void 
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => "Inventore omnis aut laudantium vel alias.",
+            "license" => $licenseId,
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1),
+            "programming_language" => array(1, 2),
+            "programming_package" => array(1, 2),
+            "type_category" => array(1, 2),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
         $responseIns = $this->json(
             'POST',
@@ -254,11 +307,16 @@ class ToolTest extends TestCase
             "name" => "Ea fuga ab aperiam nihil quis.",
             "url" => "http://dach.com/odio-facilis-ex-culpa",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
-            "license" => "Modi tenetur et et perferendis.",
+            "license" => $licenseId,
             "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
 
         $responseUpdate = $this->json(
@@ -272,13 +330,14 @@ class ToolTest extends TestCase
             'message',
             'data',
         ]);
-        
+
         $responseUpdate->assertStatus(200);
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
-        $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
+        $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
+        $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
         $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
         $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
 
@@ -287,6 +346,18 @@ class ToolTest extends TestCase
         $this->assertEquals(count($toolHasTags), 1);
 
         $this->assertEquals($toolHasTags[0]['tag_id'], 2);
+
+        $toolHasProgrammingLanguages = ToolHasProgrammingLanguage::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasProgrammingLanguages), 1);
+        $this->assertEquals($toolHasProgrammingLanguages[0]['programming_language_id'], 1);
+
+        $toolHasProgrammingPackages = ToolHasProgrammingPackage::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasProgrammingPackages), 1);
+        $this->assertEquals($toolHasProgrammingPackages[0]['programming_package_id'], 1);
+
+        $toolHasTypeCategories = ToolHasTypeCategory::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($toolHasTypeCategories), 1);
+        $this->assertEquals($toolHasTypeCategories[0]['type_category_id'], 1);
     }
 
     /**
@@ -296,17 +367,23 @@ class ToolTest extends TestCase
      */
     public function test_edit_tool_with_success(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         // insert
         $mockDataIns = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => "Inventore omnis aut laudantium vel alias.",
+            "license" => $licenseId,
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
         $responseIns = $this->json(
             'POST',
@@ -329,7 +406,6 @@ class ToolTest extends TestCase
             Config::get('statuscodes.STATUS_CREATED.message')
         );
         $toolIdInsert = $responseIns['data'];
-
         $responseIns->assertStatus(201);
 
         // update
@@ -338,11 +414,13 @@ class ToolTest extends TestCase
             "name" => "Ea fuga ab aperiam nihil quis.",
             "url" => "http://dach.com/odio-facilis-ex-culpa",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
-            "license" => "Modi tenetur et et perferendis.",
+            "license" => $licenseId,
             "tech_stack" => "Dolor accusamus rerum numquam et.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
 
         $responseUpdate = $this->json(
@@ -361,8 +439,9 @@ class ToolTest extends TestCase
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
-        $this->assertEquals($responseUpdate['data']['license'], $mockDataUpdate['license']);
+        $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
         $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
+        $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
         $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
         $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
 
@@ -376,7 +455,6 @@ class ToolTest extends TestCase
         $mockDataEdit1 = array(
             "name" => "Ea fuga ab aperiam nihil quis e1.",
             "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque. e1",
-            "enabled" => 0,
         );
 
         $responseEdit1 = $this->json(
@@ -393,15 +471,14 @@ class ToolTest extends TestCase
         $responseEdit1->assertStatus(200);
         $this->assertEquals($responseEdit1['data']['name'], $mockDataEdit1['name']);
         $this->assertEquals($responseEdit1['data']['description'], $mockDataEdit1['description']);
-        $this->assertEquals($responseEdit1['data']['enabled'], $mockDataEdit1['enabled']);
 
         // edit 
-        $mockDataEdit2 = array(
-            "url" => "http://dach.com/odio-facilis-ex-culpa-e2",
-            "license" => "Modi tenetur et et perferendis. e2",
-            "tech_stack" => "Dolor accusamus rerum numquam et. e2",
-        );
-
+        $licenseIdNew = License::where('valid_until', null)->get()->random()->id;
+        $mockDataEdit2 = [
+            'url' => 'http://dach.com/odio-facilis-ex-culpa-e2',
+            'license' => $licenseIdNew,
+            'tech_stack' => 'Dolor accusamus rerum numquam et. e2',
+        ];
         $responseEdit2 = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $toolIdInsert,
@@ -415,7 +492,7 @@ class ToolTest extends TestCase
         ]);
         $responseEdit2->assertStatus(200);
         $this->assertEquals($responseEdit2['data']['url'], $mockDataEdit2['url']);
-        $this->assertEquals($responseEdit2['data']['license'], $mockDataEdit2['license']);
+        $this->assertEquals($responseEdit2['data']['license']['id'], $mockDataEdit2['license']);
         $this->assertEquals($responseEdit2['data']['tech_stack'], $mockDataEdit2['tech_stack']);
     }
 
@@ -426,16 +503,22 @@ class ToolTest extends TestCase
      */
     public function test_update_tool_and_generate_exception(): void
     {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
         $mockData = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
             "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => "Inventore omnis aut laudantium vel alias.",
+            "license" => $licenseId,
             "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
             "enabled" => 1,
+            "publications" => $this->generatePublications(),
         );
         $id = 10000;
 
@@ -467,5 +550,19 @@ class ToolTest extends TestCase
             $countAfter,
             "actual value is equals to expected"
         );
+    }
+
+    private function generatePublications()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Publication::all()->random()->id;
+            $return[] = $temp;
+        }
+
+        return $return;
     }
 }

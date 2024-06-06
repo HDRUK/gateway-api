@@ -23,8 +23,6 @@ class AuthTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed();
-
         $this->user = [
             'name' => Config::get('constants.test.user.name'),
             'email' => Config::get('constants.test.user.email'),
@@ -33,7 +31,7 @@ class AuthTest extends TestCase
     }
 
     /**
-     * Test authorization whih success
+     * Test authorization with success
      * 
      * @return void
      */

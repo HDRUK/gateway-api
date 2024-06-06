@@ -2,16 +2,40 @@
 
 namespace Tests\Feature;
 
+use App\Models\Dur;
 use Tests\TestCase;
+use App\Models\Tool;
+use App\Models\Dataset;
+use App\Models\Keyword;
 use App\Models\Collection;
-use Tests\Traits\Authorization;
+use Database\Seeders\DurSeeder;
+use Database\Seeders\TagSeeder;
+use Database\Seeders\ToolSeeder;
+use Tests\Traits\MockExternalApis;
+use Database\Seeders\DatasetSeeder;
 // use Illuminate\Foundation\Testing\WithFaker;
+use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\CollectionSeeder;
+use Database\Seeders\ApplicationSeeder;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasDurSeeder;
+use Database\Seeders\CollectionHasToolSeeder;
+use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\CollectionHasKeywordSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\CollectionHasPublicationSeeder;
 
 class CollectionTest extends TestCase
 {
     use RefreshDatabase;
-    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     const TEST_URL = '/api/v1/collections';
 
@@ -24,15 +48,28 @@ class CollectionTest extends TestCase
      */
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed();
-        $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
-        $this->header = [
-            'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
-        ];
+        $this->seed([
+            MinimalUserSeeder::class,
+            ApplicationSeeder::class,
+            CollectionSeeder::class,
+            DatasetSeeder::class,
+            DatasetVersionSeeder::class,
+            KeywordSeeder::class,
+            CategorySeeder::class,
+            LicenseSeeder::class,
+            ToolSeeder::class,
+            TagSeeder::class,
+            DurSeeder::class,
+            CollectionHasKeywordSeeder::class,
+            CollectionHasDatasetSeeder::class,
+            CollectionHasToolSeeder::class,
+            CollectionHasDurSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
+            CollectionHasPublicationSeeder::class,
+        ]);
     }
 
     /**
@@ -42,10 +79,8 @@ class CollectionTest extends TestCase
      */
     public function test_get_all_collections_with_success(): void
     {
-        $countCollection = Collection::count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
-        $this->assertCount($countCollection, $response['data']);
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -54,12 +89,21 @@ class CollectionTest extends TestCase
                     'description',
                     'image_link',
                     'enabled',
-                    'keywords',
                     'public',
                     'counter',
                     'created_at',
                     'updated_at',
                     'deleted_at',
+                    'mongo_object_id',
+                    'mongo_id',
+                    'keywords',
+                    'datasets',
+                    'tools',
+                    'dur',
+                    'publications',
+                    'users',
+                    'applications',
+                    'team',
                 ],
             ],
             'current_page',
@@ -79,41 +123,38 @@ class CollectionTest extends TestCase
     }
 
     /**
-     * Get All Collections with no success
-     * 
-     * @return void
-     */
-    public function test_get_all_collections_and_generate_exception(): void
-    {
-        $response = $this->json('GET', self::TEST_URL, [], []);
-        $response->assertStatus(401);
-    }
-
-    /**
      * Get Collection by Id with success
      * 
      * @return void
      */
     public function test_get_collection_by_id_with_success(): void
     {
-        $response = $this->json('GET', self::TEST_URL . '/1', [], $this->header);
+        $collectionId = (int) Collection::all()->random()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $collectionId, [], $this->header);
 
-        $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
+            'message',
             'data' => [
-                0 => [
-                    'id',
-                    'name',
-                    'description',
-                    'image_link',
-                    'enabled',
-                    'keywords',
-                    'public',
-                    'counter',
-                    'created_at',
-                    'updated_at',
-                    'deleted_at',
-                ]
+                'id',
+                'name',
+                'description',
+                'image_link',
+                'enabled',
+                'public',
+                'counter',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'mongo_object_id',
+                'mongo_id',
+                'keywords',
+                'datasets',
+                'tools',
+                'dur',
+                'publications',
+                'users',
+                'applications',
+                'team',
             ]
         ]);
         $response->assertStatus(200);
@@ -126,15 +167,20 @@ class CollectionTest extends TestCase
      */
     public function test_add_new_collection_with_success(): void
     {
-        $countBefore = Collection::withTrashed()->count();
+        $countBefore = Collection::count();
+        $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $mockData = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
             "enabled" => true,
-            "keywords" => "key words",
             "public" => true,
-            "counter" => 123
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
 
         $response = $this->json(
@@ -144,11 +190,14 @@ class CollectionTest extends TestCase
             $this->header
         );
 
-        $countAfter = Collection::withTrashed()->count();
+        $countAfter = Collection::count();
         $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);
+
+        $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
+        $this->assertTrue($elasticCountAfter > $elasticCountBefore);
     }
 
     /**
@@ -164,9 +213,13 @@ class CollectionTest extends TestCase
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
             "enabled" => true,
-            "keywords" => "key words",
             "public" => true,
-            "counter" => 123
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -180,13 +233,16 @@ class CollectionTest extends TestCase
 
         // update collection
         $mockDataUpdate = [
-            "name" => "covid 2",
-            "description" => "Suscipit vitae mollitia molestias qui.",
+            "name" => "covid update",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
-            "enabled" => false,
-            "keywords" => "key words",
-            "public" => false,
-            "counter" => 125
+            "enabled" => true,
+            "public" => true,
+            "counter" => 1,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -194,6 +250,7 @@ class CollectionTest extends TestCase
             $mockDataUpdate,
             $this->header
         );
+
         $responseUpdate->assertStatus(200);
         $this->assertTrue($mockDataUpdate['name'] === $responseUpdate['data']['name']);
         $this->assertTrue($mockDataUpdate['description'] === $responseUpdate['data']['description']);
@@ -215,9 +272,13 @@ class CollectionTest extends TestCase
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
             "enabled" => true,
-            "keywords" => "key words",
             "public" => true,
-            "counter" => 123
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -231,13 +292,16 @@ class CollectionTest extends TestCase
 
         // update collection
         $mockDataUpdate = [
-            "name" => "covid 2",
-            "description" => "Suscipit vitae mollitia molestias qui.",
+            "name" => "covid update",
+            "description" => "Dolorem voluptas consequatur nihil illum et sunt libero. update",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
-            "enabled" => false,
-            "keywords" => "key words",
-            "public" => false,
-            "counter" => 125
+            "enabled" => true,
+            "public" => true,
+            "counter" => 1,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -301,9 +365,13 @@ class CollectionTest extends TestCase
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
             "enabled" => true,
-            "keywords" => "key words",
             "public" => true,
-            "counter" => 123
+            "counter" => 123,
+            "datasets" => $this->generateDatasets(),
+            "tools" => $this->generateTools(),
+            "keywords" => $this->generateKeywords(),
+            "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseIns = $this->json(
             'POST',
@@ -323,5 +391,77 @@ class CollectionTest extends TestCase
         $response->assertStatus(200);
         $countTrasherAfter = Collection::onlyTrashed()->count();
         $this->assertTrue((bool) ($countTrasherAfter - $countTrashedBefore), 'Response was successfully');
+    }
+
+    private function generateKeywords()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $return[] = Keyword::where(['enabled' => 1])->get()->random()->name;
+        }
+
+        return array_unique($return);
+    }
+
+    private function generateDatasets()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Dataset::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generateTools()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Tool::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generateDurs()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Dur::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generatePublications()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Tool::all()->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $return[] = $temp;
+        }
+
+        return $return;
     }
 }

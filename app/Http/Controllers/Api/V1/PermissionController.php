@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Permission;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\RequestTransformation;
@@ -54,12 +54,16 @@ class PermissionController extends Controller
      */
     public function index(): JsonResponse
     {
-        $permissions = Permission::all()->toArray();
+        try {
+            $permissions = Permission::all()->toArray();
 
-        return response()->json([
-            'message' => 'success',
-            'data' => $permissions
-        ], 200);
+            return response()->json([
+                'message' => 'success',
+                'data' => $permissions
+            ], 200);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -116,20 +120,24 @@ class PermissionController extends Controller
      */
     public function show(GetPermission $request, int $id): JsonResponse
     {
-        $tags = Permission::where([
-            'id' => $id,
-        ])->get();
-
-        if ($tags->count()) {
+        try {
+            $permissions = Permission::where([
+                'id' => $id,
+            ])->get();
+    
+            if ($permissions->count()) {
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $permissions,
+                ], 200);
+            }
+    
             return response()->json([
-                'message' => 'success',
-                'data' => $tags,
-            ], 200);
+                'message' => 'not found',
+            ], 404);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        return response()->json([
-            'message' => 'not found',
-        ], 404);
     }
 
     /**
@@ -178,9 +186,17 @@ class PermissionController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $permission = Permission::create([
                 'name' => $input['name'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Permission " . $permission->id . " created",
             ]);
 
             return response()->json([
@@ -265,9 +281,17 @@ class PermissionController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Permission::where('id', $id)->update([
                 'name' => $input['name'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Permission " . $id . " updated",
             ]);
 
             return response()->json([
@@ -352,12 +376,20 @@ class PermissionController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $array = [];
 
             if (array_key_exists('name', $input)) {
                 $array['name'] = $input['name'];
             }
             Permission::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Permission " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -421,7 +453,16 @@ class PermissionController extends Controller
     public function destroy(DeletePermission $request, string $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             Permission::where('id', $id)->delete();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Permission " . $id . " deleted",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),

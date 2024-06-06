@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 Use App\Models\User;
-
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,8 +20,10 @@ class AuditLogFactory extends Factory
     {
         return [
             'user_id' => User::all()->random()->id,
+            'team_id' => Team::all()->random()->id,
+            'action_type' => fake()->randomElement(['CREATE', 'UPDATE', 'DELETE', 'UNKNOWN']),
+            'action_service' => fake()->randomElement(['Gateway API', 'Translation Service']),
             'description' => fake()->words(10, true),
-            'function' => fake()->word() . '_' . fake()->word(),
         ];
     }
 }

@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Tag;
-use Illuminate\Http\Request;
 use App\Http\Requests\Tag\GetTag;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Tag\EditTag;
@@ -54,11 +54,21 @@ class TagController extends Controller
      */
     public function index(): JsonResponse
     {
-        $tags = Tag::where('enabled', 1)->paginate(Config::get('constants.per_page'));
+        try {
+            $tags = Tag::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
-        return response()->json(
-            $tags
-        );
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tag get all",
+            ]);
+
+            return response()->json(
+                $tags
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -119,6 +129,12 @@ class TagController extends Controller
                 'id' => $id,
             ])->get();
 
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tag get " . $id,
+            ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => $tags,
@@ -176,11 +192,19 @@ class TagController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $tag = Tag::create([
                 'type' => $input['type'],
                 'description' => $input['description'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tag " . $tag->id . " created",
             ]);
 
             return response()->json([
@@ -266,11 +290,19 @@ class TagController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Tag::where('id', $id)->update([
                 'type' => $input['type'],
                 'description' => $input['description'],
                 'enabled' => $input['enabled'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tag " . $id . " updated",
             ]);
 
             return response()->json([
@@ -356,6 +388,7 @@ class TagController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $arrayKeys = [
                 'type',
                 'description',
@@ -365,6 +398,13 @@ class TagController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Tag::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tag " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -427,7 +467,17 @@ class TagController extends Controller
     public function destroy(DeleteTag $request, string $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            
             Tag::where('id', $id)->delete();
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Tag " . $id . " deleted",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),

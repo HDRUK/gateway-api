@@ -5,27 +5,30 @@ namespace Tests\Feature;
 // use Illuminate\Foundation\Testing\RefreshDatabase;
 use Config;
 use Tests\TestCase;
+use Tests\Traits\MockExternalApis;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\FilterSeeder;
 
 class FilterTest extends TestCase
 {
     use RefreshDatabase;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
+
     private $accessToken = '';
 
     public function setUp() :void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
-        $this->seed();
-
-        $response = $this->postJson('api/v1/auth', [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
-        ]);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $content = $response->decodeResponseJson();  
-        $this->accessToken = $content['access_token'];      
+        $this->seed(
+            [
+            MinimalUserSeeder::class,
+            FilterSeeder::class,
+            ]
+        );  
     }
 
     /**
@@ -34,10 +37,8 @@ class FilterTest extends TestCase
      * @return void
      */
     public function test_the_application_can_list_filters()
-    {
-        $response = $this->get('api/v1/filters', [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+    { 
+        $response = $this->get('api/v1/filters', [], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -49,8 +50,8 @@ class FilterTest extends TestCase
                         'updated_at',
                         'deleted_at',
                         'type',
-                        'value',
                         'keys',
+                        'buckets',
                         'enabled',
                     ],
                 ],
@@ -66,7 +67,6 @@ class FilterTest extends TestCase
                 'to',
                 'total',                
             ]);
-
     }
 
     /**
@@ -81,13 +81,10 @@ class FilterTest extends TestCase
             'api/v1/filters',
             [
                 'type' => 'project',
-                'value' => 'Some value here',
                 'keys' => 'purpose',
                 'enabled' => 0,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -98,10 +95,8 @@ class FilterTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/filters/' . $content['data'], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
-        
+        $response = $this->get('api/v1/filters/' . $content['data'], $this->header);
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'data' => [
@@ -110,12 +105,11 @@ class FilterTest extends TestCase
                     'updated_at',
                     'deleted_at',
                     'type',
-                    'value',
                     'keys',
+                    'buckets',
                     'enabled',
                 ],
             ]);
-
     }
 
     /**
@@ -130,13 +124,10 @@ class FilterTest extends TestCase
             'api/v1/filters',
             [
                 'type' => 'project',
-                'value' => 'Some value here',
                 'keys' => 'purpose',
                 'enabled' => 0,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -165,13 +156,10 @@ class FilterTest extends TestCase
             'api/v1/filters',
             [
                 'type' => 'project',
-                'value' => 'Initial Value',
-                'keys' => 'purpose',
+                'keys' => 'purposeOld',
                 'enabled' => 0,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -192,13 +180,10 @@ class FilterTest extends TestCase
             'api/v1/filters/' . $content['data'],
             [
                 'type' => 'project',
-                'value' => 'New Value',
-                'keys' => 'purpose',
+                'keys' => 'purposeNew',
                 'enabled' => 1,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -208,7 +193,7 @@ class FilterTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['data']['value'], 'New Value');
+        $this->assertEquals($content['data']['keys'], 'purposeNew');
         $this->assertEquals($content['data']['enabled'], 1);
     }
 
@@ -226,13 +211,10 @@ class FilterTest extends TestCase
             'api/v1/filters',
             [
                 'type' => 'project',
-                'value' => 'Initial Value',
-                'keys' => 'purpose',
+                'keys' => 'purposeOld',
                 'enabled' => 0,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -252,13 +234,10 @@ class FilterTest extends TestCase
             'api/v1/filters/' . $id,
             [
                 'type' => 'project',
-                'value' => 'New Value',
-                'keys' => 'purpose',
+                'keys' => 'purposeNew',
                 'enabled' => 1,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -268,7 +247,7 @@ class FilterTest extends TestCase
         ]);
 
         $contentUpdate = $responseUpdate->decodeResponseJson();
-        $this->assertEquals($contentUpdate['data']['value'], 'New Value');
+        $this->assertEquals($contentUpdate['data']['keys'], 'purposeNew');
         $this->assertEquals($contentUpdate['data']['enabled'], 1);
 
         // edit
@@ -276,12 +255,9 @@ class FilterTest extends TestCase
             'PATCH',
             'api/v1/filters/' . $id,
             [
-                'type' => 'collection',
-                'value' => 'New Value e1',
+                'keys' => 'purposeNewNew',
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -291,21 +267,17 @@ class FilterTest extends TestCase
         ]);
 
         $contentEdit1 = $responseEdit1->decodeResponseJson();
-        $this->assertEquals($contentEdit1['data']['type'], 'collection');
-        $this->assertEquals($contentEdit1['data']['value'], 'New Value e1');
+        $this->assertEquals($contentEdit1['data']['keys'], 'purposeNewNew');
 
         // edit
         $responseEdit2 = $this->json(
             'PATCH',
             'api/v1/filters/' . $id,
             [
-                'value' => 'New Value e2',
-                'keys' => 'purpose e2',
+                'keys' => 'purposeNewNew',
                 'enabled' => 0,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $responseEdit2->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
@@ -315,8 +287,7 @@ class FilterTest extends TestCase
         ]);
 
         $contentEdit2 = $responseEdit2->decodeResponseJson();
-        $this->assertEquals($contentEdit2['data']['value'], 'New Value e2');
-        $this->assertEquals($contentEdit2['data']['keys'], 'purpose e2');
+        $this->assertEquals($contentEdit2['data']['keys'], 'purposeNewNew');
         $this->assertEquals($contentEdit2['data']['enabled'], 0);
     }
 
@@ -334,13 +305,10 @@ class FilterTest extends TestCase
             'api/v1/filters',
             [
                 'type' => 'project',
-                'value' => 'Initial Value',
                 'keys' => 'purpose',
                 'enabled' => 0,
             ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
@@ -360,9 +328,7 @@ class FilterTest extends TestCase
             'DELETE',
             'api/v1/filters/' . $content['data'],
             [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
+            $this->header
         );
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))

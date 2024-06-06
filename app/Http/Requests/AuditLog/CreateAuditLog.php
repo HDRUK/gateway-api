@@ -16,19 +16,25 @@ class CreateAuditLog extends BaseFormRequest
     {
         return [
             'user_id' => [
-                'required',
                 'integer',
                 'exists:users,id',
+            ],
+            'team_id' => [
+                'integer',
+                'exists:teams,id',
+            ],
+            'action_type' => [
+                'string',
+                'max:50',
+            ],
+            'action_service' => [
+                'required',
+                'string',
+                'max:255',
             ],
             'description' => [
                 'required',
                 'string',
-                'max:1024',
-            ],
-            'function' => [
-                'required',
-                'string',
-                'max:128',
             ],
         ];
     }

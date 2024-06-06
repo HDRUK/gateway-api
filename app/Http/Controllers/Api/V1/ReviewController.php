@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Auditor;
 use Config;
 use Exception;
 use App\Models\Review;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
@@ -15,6 +15,7 @@ use App\Http\Requests\Review\CreateReview;
 use App\Http\Requests\Review\DeleteReview;
 use App\Http\Requests\Review\UpdateReview;
 use App\Http\Traits\RequestTransformation;
+use Illuminate\Http\Request;
 
 class ReviewController extends Controller
 {
@@ -86,13 +87,27 @@ class ReviewController extends Controller
      * )
      */
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $reviews = Review::with(['tool', 'user'])->paginate(Config::get('constants.per_page'));
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-        return response()->json(
-            $reviews
-        );
+            $reviews = Review::with(['tool', 'user'])->paginate(Config::get('constants.per_page'), ['*'], 'page');
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Review get all",
+            ]);
+
+            return response()->json(
+                $reviews
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -182,11 +197,21 @@ class ReviewController extends Controller
     public function show(GetReview $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $reviews = Review::with(['tool', 'user'])
                         ->where(['id' => $id])
                         ->get();
 
             if ($reviews->count()) {
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'GET',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Review get " . $id,
+                ]);
+
                 return response()->json([
                     'message' => 'success',
                     'data' => $reviews,
@@ -254,6 +279,7 @@ class ReviewController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $review = Review::create([
                 'tool_id' => (int) $input['tool_id'],
@@ -261,6 +287,13 @@ class ReviewController extends Controller
                 'rating' => (int) $input['rating'],
                 'review_text' => $input['review_text'],
                 'review_state' => $input['review_state'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Review " . $review->id . " created",
             ]);
 
             return response()->json([
@@ -347,6 +380,7 @@ class ReviewController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             Review::where('id', $id)->update([
                 'tool_id' => $input['tool_id'],
@@ -354,6 +388,13 @@ class ReviewController extends Controller
                 'rating' => $input['rating'],
                 'review_text' => $input['review_text'],
                 'review_state' => $input['review_state'],
+            ]);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Review " . $id . " updated",
             ]);
 
             return response()->json([
@@ -440,6 +481,8 @@ class ReviewController extends Controller
     {
         try {
             $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $arrayKeys = [
                 'tool_id',
                 'user_id',
@@ -451,6 +494,13 @@ class ReviewController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Review::where('id', $id)->update($array);
+
+            Auditor::log([
+                'user_id' => $jwtUser['id'],
+                'action_type' => 'UPDATE',
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Review " . $id . " updated",
+            ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
@@ -509,10 +559,20 @@ class ReviewController extends Controller
     public function destroy(DeleteReview $request, int $id): JsonResponse
     {
         try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
             $review = Review::findOrFail($id);
             if ($review) {
                 $review->delete();
 
+                Auditor::log([
+                    'user_id' => $jwtUser['id'],
+                    'action_type' => 'DELETE',
+                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Review " . $id . " deleted",
+                ]);
+    
                 return response()->json([
                     'message' => 'success',
                 ], 200);

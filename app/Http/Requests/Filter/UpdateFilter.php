@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Filter;
 
+use App\Models\Filter;
 use App\Http\Requests\BaseFormRequest;
 
 class UpdateFilter extends BaseFormRequest
@@ -23,16 +24,23 @@ class UpdateFilter extends BaseFormRequest
                 'required',
                 'string',
                 function ($attribute, $value, $fail) {
-                    $type = ['dataset', 'collection', 'tool', 'course', 'project', 'paper', 'dataUseRegister'];
+                    $type = \Config::get('filters.types');
 
                     if (!in_array($value, $type)) {
                         $fail('The selected value is invalid.');
                     }
                 },
-            ],
-            'value' => [
-                'required',
-                'string',
+                function ($attribute, $value, $fail) {
+                    $key = $this->input('keys');
+                    $checkFilter = Filter::where([
+                        'type' => $value,
+                        'keys' => $key,
+                    ])->where('id', '<>', $this->id)->first();
+
+                    if ($checkFilter) {
+                        $fail('The combination of type and key must be unique.');
+                    }
+                },
             ],
             'keys' => [
                 'required',

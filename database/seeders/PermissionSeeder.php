@@ -14,104 +14,130 @@ class PermissionSeeder extends Seeder
     public function run(): void
     {
         $permissions = [
-            'applications.read',
-            'applications.create',
-            'applications.update',
-            'applications.delete',
-            
-            'integrations.metadata',
-            'integrations.dar',
-            
-            'datasets.read',
-            'datasets.create',
-            'datasets.update',
-            'datasets.delete',
+            'gateway' => [
+                'applications.read',
+                'applications.create',
+                'applications.update',
+                'applications.delete',
 
-            'enquiries.create',
-            'enquiries.read',
-            'enquiries.update',
-            'enquiries.delete', // Shouldn't be possible. Investigate need.
+                'integrations.metadata',
+                'integrations.dar',
 
-            'dar.read.all',
-            'dar.read.assigned',
-            'dar.update',
-            'dar.decision',
-            
-            'application.read',
-            'application.create',
-            'application.update',
-            'application.delete',
+                'datasets.read',
+                'datasets.create',
+                'datasets.update',
+                'datasets.delete',
 
-            'workflows.read',
-            'workflows.create',
-            'workflows.update',
-            'workflows.delete',
-            
-            'workflow.assign',
+                'enquiries.create',
+                'enquiries.read',
+                'enquiries.update',
+                'enquiries.delete', // Shouldn't be possible. Investigate need.
 
-            'dar-config.update',
-            'dar-form.create',
-            'dar-form.read',
-            'dar-form.update',
+                'dar.read.all',
+                'dar.read.assigned',
+                'dar.update',
+                'dar.decision',
 
-            'dur.read',
-            'dur.create',
-            'dur.update',
-            'dur.delete',
+                'application.read',
+                'application.create',
+                'application.update',
+                'application.delete',
 
-            'permissions.update',
+                'workflows.read',
+                'workflows.create',
+                'workflows.update',
+                'workflows.delete',
 
-            'custodians.create',
-            'custodians.read',
-            'custodians.update',
-            'custodians.delete',
+                'workflow.assign',
 
-            'papers.read',
-            'papers.create',
-            'papers.update',
-            'papers.delete',
+                'dar-config.update',
+                'dar-form.create',
+                'dar-form.read',
+                'dar-form.update',
 
-            'tools.read',
-            'tools.create',
-            'tools.update',
-            'tools.delete',
+                'dur.read',
+                'dur.create',
+                'dur.update',
+                'dur.delete',
 
-            'collections.read',
-            'collections.create',
-            'collections.update',
-            'collections.delete',
+                // 'permissions.update',
+                'roles.read',
+                'roles.cta.update',
+                'roles.dev.update',
+                'roles.mdm.update',
+                'roles.mde.update',
+                'roles.dar-m.update',
+                'roles.dar-r.update',
+                'team-members.create',
+                'team-members.update',
+                'team-members.delete',
 
-            'people.read',
-            'people.create',
-            'people.update',
-            'people.delete',
-            
-            'filters.read',
-            'filters.create',
-            'filters.update',
-            'filters.delete',
+                'custodians.create',
+                'custodians.read',
+                'custodians.update',
+                'custodians.delete',
 
-            'features.read',
-            'features.create',
-            'features.update',
-            'features.delete',
+                'papers.read',
+                'papers.create',
+                'papers.update',
+                'papers.delete',
 
-            'sectors.read',
-            'sectors.create',
-            'sectors.update',
-            'sectors.delete',
+                'tools.read',
+                'tools.create',
+                'tools.update',
+                'tools.delete',
 
-            'audit.read',
-            'audit.create',
-            'audit.update',
-            'audit.delete',
+                'collections.read',
+                'collections.create',
+                'collections.update',
+                'collections.delete',
 
+                'people.read',
+                'people.create',
+                'people.update',
+                'people.delete',
+
+                'filters.read',
+                'filters.create',
+                'filters.update',
+                'filters.delete',
+
+                'features.read',
+                'features.create',
+                'features.update',
+                'features.delete',
+
+                'sectors.read',
+                'sectors.create',
+                'sectors.update',
+                'sectors.delete',
+
+                'audit.read',
+                'audit.create',
+                'audit.update',
+                'audit.delete',
+
+                'notifications.update',
+
+                'cohort.create',
+                'cohort.read',
+                'cohort.update',
+                'cohort.delete',
+            ],
+            'cohort' => [
+                'GENERAL_ACCESS',
+                'SYSTEM_ADMIN',
+                'BANNED',
+            ],
         ];
 
-        foreach ($permissions as $perm) {
-            Permission::create([
-                'name' => $perm,
-            ]);
+        foreach ($permissions as $app => $perms) {
+            foreach ($perms as $perm) {
+                Permission::create([
+                    'application' => $app,
+                    'name' => $perm,
+                ]);
+            }
         }
     }
 }

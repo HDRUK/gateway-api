@@ -2,9 +2,11 @@
 
 namespace App\Http\Traits;
 
+use App\Models\User;
 use App\Models\TeamHasUser;
-use App\Models\TeamHasNotification;
 use App\Models\Notification;
+use App\Models\TeamHasNotification;
+use App\Models\TeamUserHasNotification;
 
 trait TeamTransformation
 {
@@ -21,6 +23,9 @@ trait TeamTransformation
         foreach ($teams as $team) {
             $tmpTeam = [
                 'id' => $team['id'],
+                'pid' => $team['pid'],
+                'created_at' => $team['created_at'],
+                'updated_at' => $team['updated_at'],
                 'name' => $team['name'],
                 'enabled' => $team['enabled'],
                 'allows_messaging' => $team['allows_messaging'],
@@ -32,6 +37,10 @@ trait TeamTransformation
                 'contact_point' => $team['contact_point'],
                 'application_form_updated_by' => $team['application_form_updated_by'],
                 'application_form_updated_on' => $team['application_form_updated_on'],
+                'mongo_object_id' => $team['mongo_object_id'],
+                'notification_status' => $team['notification_status'],
+                'is_question_bank' => $team['is_question_bank'],
+                'is_provider' => $team['is_provider'],
             ];
 
             $tmpUser = [];
@@ -42,16 +51,29 @@ trait TeamTransformation
                     'firstname' => $user['firstname'],
                     'lastname' => $user['lastname'],
                     'email' => $user['email'],
+                    'secondary_email' => $user['secondary_email'],
+                    'preferred_email' => $user['preferred_email'],
                     'providerid' => $user['providerid'],
                     'provider' => $user['provider'],
                     'created_at' => $user['created_at'],
                     'updated_at' => $user['updated_at'],
                     'deleted_at' => $user['deleted_at'],
+                    'sector_id' => $user['sector_id'],
+                    'organisation' => $user['organisation'],
+                    'bio' => $user['bio'],
+                    'domain' => $user['domain'],
+                    'link' => $user['link'],
+                    'orcid' => $user['orcid'],
+                    'contact_feedback' => $user['contact_feedback'],
+                    'contact_news' => $user['contact_news'],
+                    'mongo_id' => $user['mongo_id'],
+                    'mongo_object_id' => $user['mongo_object_id'],
+                    'terms' => $user['terms'],
                 ];
 
                 $teamHasUserId = (int) $user['pivot']['id'];
 
-                $roles = TeamHasUser::where('id', $teamHasUserId)->with('roles')->get()->toArray();
+                $roles = TeamHasUser::where('id', $teamHasUserId)->with('roles', 'roles.permissions')->get()->toArray();
 
                 $tmpPerm = [];
                 foreach ($roles[0]['roles'] as $role) {
@@ -85,5 +107,33 @@ trait TeamTransformation
         }
 
         return $response[0];
+    }
+
+    public function getTeamNotifications($team, int $teamId, int $userId)
+    {
+        $response = $team;
+        $user = User::where('id', $userId)->first();
+        $user['notification_status'] = false;
+
+        $teamHasUser = TeamHasUser::where([
+            'team_id' => $teamId,
+            'user_id' => $userId,
+        ])->first();
+
+        if ($teamHasUser) {
+            $teamHasUserId = $teamHasUser->id;
+            $teamUserHasNotification = TeamUserHasNotification::where([
+                'team_has_user_id' => $teamHasUserId,
+            ])->first();
+            if ($teamUserHasNotification) {
+                $userNotification = Notification::where('id', $teamUserHasNotification->notification_id)->first();
+                $userNotificationStatus = $userNotification->enabled;
+                $user['notification_status'] = $userNotificationStatus;
+            }
+        }
+
+        $response->user = $user;
+
+        return $response;
     }
 }

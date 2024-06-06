@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Collection;
 
+use App\Models\Keyword;
 use App\Models\Collection;
 use App\Http\Requests\BaseFormRequest;
 
@@ -18,15 +19,7 @@ class UpdateCollection extends BaseFormRequest
             'id' => [
                 'int',
                 'required',
-                function ($attribute, $value, $fail) {
-                    $exists = Collection::withTrashed()
-                        ->where('id', $value)
-                        ->exists();
-
-                    if (!$exists) {
-                        $fail('The selected collection does not exists.');
-                    }
-                },
+                'exists:collections,id',
             ],
             'name' => [
                 'string',
@@ -37,25 +30,108 @@ class UpdateCollection extends BaseFormRequest
                 'required',
             ],
             'image_link' => [
+                'nullable',
                 'string',
-                'required',
                 'url',
             ],
             'enabled' => [
                 'required',
                 'boolean',
             ],
-            'keywords' => [
-                'string',
-                'required',
-            ],
             'public' => [
                 'required',
                 'boolean',
             ],
-            'counter' => [
+            'datasets' => [
+                'array',
+            ],
+            'datasets.*.id'  => [
                 'integer',
-                'required',
+                'exists:datasets,id',
+            ],
+            'datasets.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'datasets.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'datasets.*.reason'  => [
+                'nullable',
+                'string',
+            ],
+            'publications' => [
+                'array',
+            ],
+            'publications.*.id'  => [
+                'integer',
+                'exists:publications,id',
+            ],
+            'publications.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'publications.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'publications.*.reason'  => [
+                'nullable',
+                'string',
+            ],
+            'tools' => [
+                'array',
+            ],
+            'tools.*.id'  => [
+                'integer',
+                'exists:tools,id',
+            ],
+            'tools.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'tools.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'tools.*.reason'  => [
+                'nullable',
+                'string',
+            ],
+            'keywords' => [
+                'array',
+            ],
+            'keywords.*' => [
+                'string',
+                'distinct',
+            ],
+            'user_id' => [
+                'integer',
+                'exists:users,id',
+            ],
+            'team_id' => [
+                'integer',
+                'exists:teams,id',
+            ],
+            'counter' => [
+                'integer'
+            ],
+            'mongo_id' => [
+                'integer',
+            ],
+            'mongo_object_id' => [
+                'nullable', 
+                'string',
+            ],
+            'created_at' => [
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'updated_at' => [
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'updated_on' => [
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],
         ];
     }

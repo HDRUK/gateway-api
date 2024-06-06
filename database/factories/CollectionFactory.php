@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,9 +22,9 @@ class CollectionFactory extends Factory
             'description' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
             'image_link' => htmlentities(fake()->imageUrl(640, 480, 'animals', true), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
             'enabled' => fake()->randomElement([0, 1]),
-            'keywords' => htmlentities(implode(" ", fake()->words($nb = 3, $asText = false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
             'public' => fake()->randomElement([0, 1]),
             'counter' => fake()->randomNumber(5, true),
+            'team_id' => Team::all()->random()->id,
         ];
     }
 }

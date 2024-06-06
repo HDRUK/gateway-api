@@ -29,6 +29,10 @@ class Role extends Model
         'enabled',
     ];
 
+    protected $casts = [
+        'enabled' => 'boolean',
+    ];
+
     /**
      * The name representing this model record
      * 

@@ -195,8 +195,8 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\AuditorServiceProvider::class,
-        App\Providers\MauroServiceProvider::class,
-
+        App\Providers\MetadataManagementControllerServiceProvider::class,
+        App\Providers\AliasReplyScannerProvider::class,
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
     ],
 
@@ -212,9 +212,9 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        // 'ExampleClass' => App\Example\ExampleClass::class,
         'Auditor' => App\Auditor\AuditorFacade::class,
-        'Mauro' => App\Mauro\MauroFacade::class,
+        'MetadataManagementController' => App\MetadataManagementController\MetadataManagementControllerFacade::class,
+        'AliasReplyScanner' => App\AliasReplyScanner\AliasReplyScannerFacade::class
     ])->toArray(),
 
 ];

@@ -22,7 +22,6 @@ class RoleSeeder extends Seeder
             'hdruk.admin' => [
                 'datasets.read',
                 'datasets.delete',
-                'permissions.update',
                 'custodians.create',
                 'custodians.read',
                 'custodians.update',
@@ -54,7 +53,6 @@ class RoleSeeder extends Seeder
                 'datasets.create',
                 'datasets.update',
                 'datasets.delete',
-                'permissions.update',
             ],
             'hdruk.dar' => [
                 'integrations.dar',
@@ -68,12 +66,28 @@ class RoleSeeder extends Seeder
                 'dur.create',
                 'dur.update',
                 'dur.delete',
-                'permissions.update',
+                'team-members.update',
+                'roles.mdm.update',
+                'roles.mde.update',
             ],
             'hdruk.custodian' => [
                 'datasets.read',
-                'permissions.update',
                 'custodians.create',
+                'roles.cta.update',
+                'roles.dev.update',
+                'roles.mdm.update',
+                'roles.mde.update',
+                'roles.dar-m.update',
+                'roles.dar-r.update',
+                'team-members.create',
+                'team-members.update',
+                'team-members.delete',
+            ],
+            'hdruk.cohort.admin' => [
+                'cohort.create',
+                'cohort.read',
+                'cohort.update',
+                'cohort.delete',
             ],
             'custodian.team.admin' => [
                 'applications.read',
@@ -88,9 +102,19 @@ class RoleSeeder extends Seeder
                 'workflows.read',
                 'dar-config.update',
                 'dar-form.read',
-                'permissions.update',
+                'roles.read',
+                'roles.cta.update',
+                'roles.dev.update',
+                'roles.mdm.update',
+                'roles.mde.update',
+                'roles.dar-m.update',
+                'roles.dar-r.update',
+                'team-members.create',
+                'team-members.update',
+                'team-members.delete',
                 'custodians.update',
                 'collections.read',
+                'notifications.update',
             ],
             'developer' => [
                 'applications.read',
@@ -102,23 +126,30 @@ class RoleSeeder extends Seeder
                 'datasets.read',
             ],
             'custodian.metadata.manager' => [
-                'integrations.metadata',
                 'datasets.read',
                 'datasets.create',
                 'datasets.update',
                 'datasets.delete',
-                'permissions.update',
+                'roles.read',
+                'roles.mdm.update',
+                'roles.mde.update',
+                'team-members.create',
+                'team-members.update',
             ],
-            'metadata_editor' => [
+            'metadata.editor' => [
                 'datasets.read',
                 'datasets.create',
                 'datasets.update',
+                'roles.read',
+                'team-members.update',
+                'roles.mde.update',
             ],
             'custodian.dar.manager' => [
                 'integrations.dar',
                 'datasets.read',
                 'enquiries.create',
                 'enquiries.read', 
+                'enquiries.update',
                 'dar.read.all',
                 'dar.read.assigned',
                 'dar.update',
@@ -127,16 +158,28 @@ class RoleSeeder extends Seeder
                 'workflows.create',
                 'workflows.update',
                 'workflows.delete',
+                'workflow.assign',
                 'dar-config.update',
                 'dar-form.create',
                 'dar-form.read',
                 'dar-form.update',
-                'permissions.update',                
+                'dur.read',
+                'dur.create',
+                'dur.update',
+                'dur.delete',
+                'roles.read',
+                'team-members.update',
+                'roles.dar-m.update',
+                'roles.dar-r.update',
+                'team-members.create',               
             ],
-            'reviewer' => [
+            'dar.reviewer' => [
                 'datasets.read',
                 'dar.read.assigned',
-                'dar.update',                
+                'dar.update', 
+                'roles.read',
+                'team-members.update',
+                'roles.dar-r.update',
             ],
         ];
 
@@ -150,14 +193,19 @@ class RoleSeeder extends Seeder
                 $perm = null;
 
                 if ($p !== 'all') {
-                    $perm = Permission::where('name', $p)->first();
+                    $perm = Permission::where([
+                        'name' => $p,
+                        'application' => 'gateway',
+                    ])->first();
 
                     RoleHasPermission::create([
                         'role_id' => $role->id,
                         'permission_id' => $perm->id,
                     ]);
                 } else {
-                    $perm = Permission::all();
+                    $perm = Permission::where([
+                        'application' => 'gateway',
+                    ])->get();
                     foreach ($perm as $p) {
                         RoleHasPermission::create([
                             'role_id' => $role->id,

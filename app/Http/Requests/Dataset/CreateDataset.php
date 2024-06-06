@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Dataset;
 
+use App\Models\Dataset;
 use App\Http\Requests\BaseFormRequest;
 
 class CreateDataset extends BaseFormRequest
@@ -16,24 +17,25 @@ class CreateDataset extends BaseFormRequest
         return [
             'team_id' => [
                 'int',
-                'required',
                 'exists:teams,id',
             ],
             'user_id' => [
                 'int',
-                'required',
                 'exists:users,id',
             ],
-            'label' => [
-                'string',
+            'metadata' => [
                 'required',
             ],
-            'short_description' => [
+            'create_origin' => [
                 'string',
-                'required',
+                'in:MANUAL,API,FMA',
             ],
-            'data' => [
-                'required',
+            'status' => [
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
+            ],
+            'is_cohort_discovery' => [
+                'boolean',
             ],
         ];
     }

@@ -6,6 +6,8 @@ use Monolog\Handler\SyslogUdpHandler;
 
 return [
 
+    'sqlLog' =>  env('LOG_SQL', false),
+
     /*
     |--------------------------------------------------------------------------
     | Default Log Channel
@@ -117,6 +119,12 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+
+        'email' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/email.log'),
+        ],
+
     ],
 
 ];

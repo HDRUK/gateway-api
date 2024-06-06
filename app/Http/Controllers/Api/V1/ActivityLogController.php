@@ -54,13 +54,17 @@ class ActivityLogController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $input = $request->all();
-        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-        $activityLogs = ActivityLog::getAll('user_id', $jwtUser)->paginate(Config::get('constants.per_page'));
-
-        return response()->json(
-            $activityLogs
-        );
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+            $activityLogs = ActivityLog::getAll('user_id', $jwtUser)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+    
+            return response()->json(
+                $activityLogs
+            );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
@@ -113,15 +117,19 @@ class ActivityLogController extends Controller
      */
     public function show(GetActivityLog $request, int $id): JsonResponse
     {
-        $activityLog = ActivityLog::findOrFail($id);
-        if ($activityLog) {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $activityLog,
-            ], Config::get('statuscodes.STATUS_OK.code'));
+        try {
+            $activityLog = ActivityLog::findOrFail($id);
+            if ($activityLog) {
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $activityLog,
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+    
+            throw new NotFoundException();
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
-
-        throw new NotFoundException();
     }
 
     /**

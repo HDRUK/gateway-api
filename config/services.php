@@ -37,17 +37,23 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URL'),
     ],
 
-    'linkedin' => [
+    'linkedin-openid' => [
         'client_id' => env('LINKEDIN_CLIENT_ID'),
         'client_secret' => env('LINKEDIN_CLIENT_SECRET'),
         'redirect' => env('LINKEDIN_REDIRECT_URL'),
+        'open_id' => true,
     ],
 
     'azure' => [
         'client_id' => env('AZURE_CLIENT_ID'),
         'client_secret' => env('AZURE_CLIENT_SECRET'),
         'redirect' => env('AZURE_REDIRECT_URL'),
-        'tenant' => env('AZURE_TENANT_ID'),
         'proxy' => env('AZURE_PROXY')
+    ],
+
+    'googlepubsub' => [
+        'project_id' => env('GOOGLE_CLOUD_PROJECT_ID', 'gcp_pubsub_project_id'),
+        'pubsub_topic' => env('GOOGLE_CLOUD_PUBSUB_TOPIC', 'gcp_pubsub_pubsub_topic'),
+        'pubsub_enabled' => env('GOOGLE_CLOUD_PUBSUB_ENABLED'. false),
     ],
 ];

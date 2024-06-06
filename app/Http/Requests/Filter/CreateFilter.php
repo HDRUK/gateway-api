@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Filter;
 
 use App\Http\Requests\BaseFormRequest;
+use App\Models\Filter;
 
 class CreateFilter extends BaseFormRequest
 {
@@ -18,16 +19,23 @@ class CreateFilter extends BaseFormRequest
                 'required',
                 'string',
                 function ($attribute, $value, $fail) {
-                    $type = ['dataset', 'collection', 'tool', 'course', 'project', 'paper', 'dataUseRegister'];
+                    $type = \Config::get('filters.types');
 
                     if (!in_array($value, $type)) {
                         $fail('The selected value is invalid.');
                     }
                 },
-            ],
-            'value' => [
-                'required',
-                'string',
+                function ($attribute, $value, $fail) {
+                    $key = $this->input('keys');
+                    $checkFilter = Filter::where([
+                        'type' => $value,
+                        'keys' => $key,
+                    ])->first();
+
+                    if ($checkFilter) {
+                        $fail('The combination of type and key must be unique.');
+                    }
+                },
             ],
             'keys' => [
                 'required',
