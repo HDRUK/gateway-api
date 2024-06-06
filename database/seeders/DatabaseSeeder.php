@@ -63,7 +63,6 @@ class DatabaseSeeder extends Seeder
             SpatialCoverageSeeder::class,
             PublicationSeeder::class,
             PublicationHasDatasetSeeder::class,
-            DataAccessSectionSeeder::class,
             QuestionBankSeeder::class,
             DataAccessApplicationAnswerSeeder::class,
             DataAccessApplicationSeeder::class,
