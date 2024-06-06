@@ -1,5 +1,4 @@
 <?php
-
 namespace Tests\Feature;
 
 use Tests\TestCase;
@@ -12,10 +11,15 @@ use App\Models\User;
 use App\Models\Collection;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
+use App\Models\ProgrammingLanguage;
+use App\Models\ProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
+use App\Models\ToolHasTypeCategory;
+use App\Models\TypeCategory;
 use App\Console\Commands\ToolsPostMigrationProcess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class LinkTest extends TestCase
+class DatasetVersionsPostMigrationProcessTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -36,7 +40,7 @@ class LinkTest extends TestCase
             'category_id' => $category->id
         ]);
 
-        $toolsPostMigrationProcess = new ToolsPostMigrationProcess();
+        $toolsPostMigrationProcess = new datasetVersionsPostMigrationProcesses();
 
         $datasetVersion->tools()->attach($tool);
 
@@ -63,7 +67,7 @@ class LinkTest extends TestCase
             'category_id' => $category->id
         ]);
 
-        $toolsPostMigrationProcess = new ToolsPostMigrationProcess();
+        $toolsPostMigrationProcess = new datasetVersionsPostMigrationProcesses();
 
         $this->assertFalse($toolsPostMigrationProcess->datasetVersionHasTool($datasetVersion, $tool));
     }
@@ -90,7 +94,7 @@ class LinkTest extends TestCase
             'category_id' => $category->id
         ]);
 
-        $toolsPostMigrationProcess = new ToolsPostMigrationProcess();
+        $toolsPostMigrationProcess = new datasetVersionsPostMigrationProcesses();
 
         $datasetVersion->tools()->attach($tool1);
         $datasetVersion->tools()->attach($tool2);
@@ -101,5 +105,5 @@ class LinkTest extends TestCase
         $datasetVersion->tools()->detach($tool1);
         $this->assertFalse($toolsPostMigrationProcess->datasetVersionHasTool($datasetVersion, $tool1));
         $this->assertTrue($toolsPostMigrationProcess->datasetVersionHasTool($datasetVersion, $tool2));
-    }
+    } 
 }
