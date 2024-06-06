@@ -188,6 +188,8 @@ class SearchController extends Controller
                 }
             }
 
+            return response()->json(count($datasetsArray));
+
             if ($download && $downloadType === "list") {
                 Auditor::log([
                     'action_type' => 'GET',
@@ -222,6 +224,7 @@ class SearchController extends Controller
                 'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search datasets",
             ]);
+            
 
             return response()->json($final, 200);
 
