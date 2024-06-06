@@ -268,4 +268,16 @@ class ToolsPostMigrationProcess extends Command
             throw new Exception($e->getMessage());
         }
     }
+
+    /**
+     * Check if a dataset version has a specific tool.
+     *
+     * @param DatasetVersion $datasetVersion
+     * @param Tool $tool
+     * @return bool
+     */
+    public function datasetVersionHasTool(DatasetVersion $datasetVersion, Tool $tool): bool
+    {
+        return $datasetVersion->tools()->where('tool_id', $tool->id)->exists();
+    }
 }
