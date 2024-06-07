@@ -42,7 +42,6 @@ class DatasetTest extends TestCase
         $this->metadataUpdate = $this->getFakeUpdateDataset();
     }
 
-
     /**
      * Get All Datasets with success
      * 
@@ -96,7 +95,6 @@ class DatasetTest extends TestCase
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         
-
         $responseCreateTeam = $this->json(
             'POST',
             self::TEST_URL_TEAM,
@@ -131,7 +129,6 @@ class DatasetTest extends TestCase
 
         $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
         $teamId1 = $contentCreateTeam['data'];
-
 
         //create a 2nd team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
@@ -192,6 +189,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
+        dd($responseCreateUser);
         $responseCreateUser->assertStatus(201);
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
         $userId = $contentCreateUser['data'];
