@@ -23,6 +23,9 @@ class Kernel extends ConsoleKernel
 
         // update license information from EU server
         $schedule->command('app:update-licenses')->monthlyOn(1, '01:00');
+
+        // update hubspot contacts information
+        $schedule->command('app:app:sync-hubspot')->monthlyOn(1, '04:00');
     }
 
     /**

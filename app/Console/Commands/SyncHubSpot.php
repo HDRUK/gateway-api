@@ -2,13 +2,10 @@
 
 namespace App\Console\Commands;
 
-use Config;
-use Exception;
 use App\Models\User;
 use App\Models\Sector;
 use Illuminate\Console\Command;
 use App\Services\HubspotService;
-use Illuminate\Support\Facades\Http;
 use App\Http\Enums\UserContactPreference;
 
 class SyncHubspot extends Command
@@ -33,32 +30,6 @@ class SyncHubspot extends Command
     public function handle()
     {
         $hubspotService = new HubspotService();
-
-        // $propertiesNew = [
-        //     'email' => 'testingapis.123@hubspot.com',
-        //     'firstname' => 'Adrian',
-        //     'lastname' => 'Mott',
-        //     'website' => 'http://hubspot.com',
-        //     'company' => 'HubSpot',
-        //     'phone' => '555-122-2323',
-        //     'address' => '25 First Street',
-        //     'city' => 'Cambridge',
-        //     'state' => 'MA',
-        //     'zip' => '02139',
-        // ];
-        // $propertiesUpdate = [
-        //     'email' => 'testingapis.123.update2@hubspot.com',
-        //     'firstname' => 'Updated',
-        //     'lastname' => 'Record',
-        //     'website' => 'http://updated.example.com',
-        //     'lifecyclestage' => 'customer',
-        // ];
-        // $create = $hubspotService->createContact($propertiesNew);
-        // dd($create['vid']);
-        // dd($hubspotService->updateContactById(17727931102, $propertiesUpdate));
-        // dd($hubspotService->getContactByEmail('hdrteamadmin@gmail.com'));
-        // dd($hubspotService->getContactById(17727931102));
-        // dd($hubspotService->deleteContactById(17765839833));
 
         // enabled users
         $users = User::where(['is_admin' => 0])->get();
@@ -99,7 +70,6 @@ class SyncHubspot extends Command
 
                 if (!$hubspotId) {
                     $createContact = $hubspotService->createContact($hubspot);
-                    // dd($createContact);
                     $hubspotId = $createContact['vid'];
                 }
 
