@@ -251,7 +251,7 @@ class UserController extends Controller
      */
     public function store(CreateUser $request): mixed
     {
-        try {
+        // try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
@@ -310,9 +310,9 @@ class UserController extends Controller
                 'message' => 'created',
                 'data' => $user->id,
             ], 201);
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
+        // } catch (Exception $e) {
+        //     throw new Exception($e->getMessage());
+        // }
     }
 
     /**
