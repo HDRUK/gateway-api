@@ -57,7 +57,7 @@ trait HubspotContacts
                 $hubspotId = $hubspotService->getContactByEmail($email);
                 if (!$hubspotId) {
                     $createContact = $hubspotService->createContact($hubspot);
-                    $hubspotId = $createContact['vid'];
+                    $hubspotId = array_key_exists('vid', $createContact) ? $createContact['vid'] : null;
                 }
     
                 if ($hubspotId) {
