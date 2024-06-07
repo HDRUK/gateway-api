@@ -538,7 +538,7 @@ class CohortRequestController extends Controller
 
             $this->sendEmail($id);
 
-            $this->updateOrCreateContact($id);
+            $this->updateOrCreateContact((int) $jwtUser['id']);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
