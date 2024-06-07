@@ -90,10 +90,10 @@ class SyncHubspot extends Command
                 'company' => $user->organisation,
                 'communication_preference' => count($commPreference) ? implode(";", $commPreference) : '',
                 'gateway_registered_user' => 'Yes',
-                'gateway_roles' => 'user',
+                'gateway_roles' => 'User',
             ];
-            print_r($this->hubspotService->convertProperties($hubspot));
-            print_r($hubspot);
+            // print_r($this->hubspotService->convertProperties($hubspot));
+            // print_r($hubspot);
 
             // update contact preferences
             if ($user->hubspot_id) {
