@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Models\User;
 use App\Models\Sector;
 use Illuminate\Console\Command;
-use App\Services\HubspotService;
+use App\Services\Hubspot;
 use App\Http\Enums\UserContactPreference;
 use App\Models\CohortRequest;
 
@@ -30,7 +30,7 @@ class SyncHubspot extends Command
      */
     public function handle()
     {
-        $hubspotService = new HubspotService();
+        $hubspotService = new Hubspot();
 
         // enabled users
         $users = User::where(['is_admin' => 0])->get();

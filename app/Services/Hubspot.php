@@ -1,12 +1,11 @@
 <?php
-
 namespace App\Services;
 
 use Config;
 use Exception;
 use Illuminate\Support\Facades\Http;
 
-class HubspotService
+class Hubspot
 {
     protected $baseUrl;
     protected $header;
@@ -26,7 +25,7 @@ class HubspotService
             $url = $this->baseUrl . '/contacts/v1/contact';
 
             $body = [
-                "properties" => $this->convertProperties($properties)
+                'properties' => $this->convertProperties($properties),
             ];
 
             $response = Http::withHeaders($this->header)->post($url, $body);
@@ -43,7 +42,7 @@ class HubspotService
             $url = $this->baseUrl . '/contacts/v1/contact/vid/' . $id . '/profile';
 
             $body = [
-                "properties" => $this->convertProperties($properties)
+                'properties' => $this->convertProperties($properties),
             ];
 
             $response = Http::withHeaders($this->header)->post($url, $body);
@@ -109,5 +108,4 @@ class HubspotService
 
         return $return;
     }
-
 }

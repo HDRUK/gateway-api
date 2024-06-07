@@ -2,18 +2,18 @@
 
 namespace App\Providers;
 
-use App\Services\HubspotService;
+use App\Services\Hubspot;
 use Illuminate\Support\ServiceProvider;
 
-class HubspotServiceProvider extends ServiceProvider
+class HubspotProvider extends ServiceProvider
 {
     /**
      * Register services.
      */
     public function register(): void
     {
-        $this->app->bind(HubspotService::class, function ($app) {
-            return new HubspotService();
+        $this->app->bind(Hubspot::class, function ($app) {
+            return new Hubspot();
         });
     }
 

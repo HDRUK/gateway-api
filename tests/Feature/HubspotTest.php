@@ -4,12 +4,12 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use App\Services\HubspotService;
+use App\Services\Hubspot;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class HubspotServiceTest extends TestCase
+class HubspotTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -26,7 +26,7 @@ class HubspotServiceTest extends TestCase
 
     public function testCreateContact()
     {
-        $hubspotService = new HubspotService();
+        $hubspotService = new Hubspot();
 
         $properties = [
             'firstname' => 'John',
@@ -61,7 +61,7 @@ class HubspotServiceTest extends TestCase
 
     public function testUpdateContactById()
     {
-        $hubspotService = new HubspotService();
+        $hubspotService = new Hubspot();
 
         $id = 12345;
         $properties = [
@@ -94,7 +94,7 @@ class HubspotServiceTest extends TestCase
 
     public function testGetContactByEmail()
     {
-        $hubspotService = new HubspotService();
+        $hubspotService = new Hubspot();
 
         $email = 'john.doe@example.com';
 
@@ -115,7 +115,7 @@ class HubspotServiceTest extends TestCase
 
     public function testGetContactById()
     {
-        $hubspotService = new HubspotService();
+        $hubspotService = new Hubspot();
 
         $id = 12345;
 
@@ -137,7 +137,7 @@ class HubspotServiceTest extends TestCase
 
     public function testDeleteContactById()
     {
-        $hubspotService = new HubspotService();
+        $hubspotService = new Hubspot();
 
         $id = 12345;
 
