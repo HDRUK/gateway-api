@@ -747,7 +747,7 @@ class ToolController extends Controller
                 $datasetVersionIDs = DatasetVersion::where('dataset_id', $datasetId)->pluck('id')->all();
                 DatasetHasTool::updateOrCreate([
                     'tool_id' => (int) $toolId,
-                    'dataset_id' => (int) $value,
+                    'dataset_id' => (int) $datasetVersionIDs,
                 ]);
             }
             return true;
