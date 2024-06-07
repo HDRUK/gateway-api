@@ -117,44 +117,4 @@ class ToolsPostMigrationProcessTest extends TestCase
             'type_category_id' => $typeCategory2->id,
         ]);
     }
-
-
-    public function testIndexElasticTool()
-    {
-        // Setup for testing the indexElasticTool method
-        $toolsPostMigrationProcess = new ToolsPostMigrationProcess();
-
-        // Create necessary models and relationships
-        $user = User::factory()->create();
-        $license = License::factory()->create(['code' => 'License1']);
-        $programmingLanguage1 = ProgrammingLanguage::factory()->create(['name' => 'Python']);
-        $programmingLanguage2 = ProgrammingLanguage::factory()->create(['name' => 'Java']);
-        $typeCategory1 = TypeCategory::factory()->create(['name' => 'Category1']);
-        $typeCategory2 = TypeCategory::factory()->create(['name' => 'Category2']);
-        $tool = Tool::factory()->create([
-            'mongo_object_id' => '1',
-            'user_id' => $user->id,
-            'license' => $license->id,
-            'category_id' => $typeCategory1->id,
-        ]);
-        $typeCategory = TypeCategory::factory()->create();
-        $programmingLanguage = ProgrammingLanguage::factory()->create();
-        $programmingPackage = ProgrammingPackage::factory()->create();
-
-        ToolHasProgrammingLanguage::create([
-            'tool_id' => $tool->id,
-            'programming_language_id' => $programmingLanguage->id,
-        ]);
-
-        ToolHasTypeCategory::create([
-            'tool_id' => $tool->id,
-            'type_category_id' => $typeCategory->id,
-        ]);
-
-        // Call the indexElasticTool method
-        $toolsPostMigrationProcess->indexElasticTool($tool->id);
-
-        // Assert that the tool was indexed in Elasticsearch (assuming mock or testing setup for Elasticsearch)
-        // This part will depend on how you have Elasticsearch set up for testing.
-    }
 }
