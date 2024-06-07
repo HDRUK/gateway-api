@@ -743,37 +743,16 @@ class ToolController extends Controller
     private function insertDatasetVersionHasTool(array $dataset, int $toolId): bool
     {
         try {
-            $insertData = [];
-
-            foreach ($dataset as $datasetId) {
+            foreach ($datasets as $value) {
                 $datasetVersionIDs = DatasetVersion::where('dataset_id', $datasetId)->pluck('id')->all();
-
-                if (!empty($datasetVersionIDs)) {
-                    foreach ($datasetVersionIDs as $datasetVersionID) {
-                        $insertData[] = [
-                            'tool_id' => $toolId,
-                            'dataset_version_id' => $datasetVersionID,
-                        ];
-                    }
-                } else {
-                    // Handle the case where no dataset version IDs were found
-                    throw new Exception("No dataset versions found for dataset_id: $datasetId");
-                }
+                DatasetHasTool::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'dataset_id' => (int) $value,
+                ]);
             }
-
-            // Perform bulk insert/update
-            if (!empty($insertData)) {
-                foreach ($insertData as $data) {
-                    DatasetVersionHasTool::updateOrCreate($data);
-                }
-            }
-
             return true;
-        } catch (\Throwable $e) {
-            // Log the error message if logging is available
-            // Log::error($e->getMessage());
-
-            throw new Exception("Error inserting dataset version tools: " . $e->getMessage(), 0, $e);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
         }
     }
 
