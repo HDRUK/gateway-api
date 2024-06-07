@@ -58,7 +58,6 @@ class Hubspot
     {
         try {
             $url = $this->baseUrl . '/contacts/v1/contact/email/' . $email . '/profile';
-            dd($url);
 
             $response = Http::withHeaders($this->header)->get($url);
 
