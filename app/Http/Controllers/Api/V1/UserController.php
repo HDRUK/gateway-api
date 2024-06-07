@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Hash;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\User;
 use App\Models\UserHasRole;
 use Illuminate\Http\Request;
 use App\Http\Requests\User\GetUser;
-use App\Http\Requests\User\IndexUser;
 use App\Models\UserHasNotification;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\EditUser;
+use App\Http\Traits\HubspotContacts;
 use App\Exceptions\NotFoundException;
+use App\Http\Requests\User\IndexUser;
 use App\Http\Requests\User\CreateUser;
 use App\Http\Requests\User\DeleteUser;
 use App\Http\Requests\User\UpdateUser;
@@ -23,7 +24,7 @@ use App\Http\Traits\RequestTransformation;
 
 class UserController extends Controller
 {
-    use UserTransformation, RequestTransformation;
+    use UserTransformation, RequestTransformation, HubspotContacts;
 
     /**
      * @OA\Get(
@@ -296,6 +297,8 @@ class UserController extends Controller
                 throw new NotFoundException();
             }
 
+            $this->updateOrCreateContact($user->id);
+
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -435,6 +438,8 @@ class UserController extends Controller
                 }
 
                 $user->update($array);
+
+                $this->updateOrCreateContact($id);
 
                 Auditor::log([
                     'user_id' => $jwtUser['id'],
@@ -587,6 +592,8 @@ class UserController extends Controller
                 ]);
             }
 
+            $this->updateOrCreateContact($id);
+
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -661,6 +668,8 @@ class UserController extends Controller
             UserHasNotification::where('user_id', $id)->delete();
             UserHasRole::where('user_id', $id)->delete();
             User::where('id', $id)->delete();
+
+            $this->updateOrCreateContact($id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
