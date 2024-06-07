@@ -233,7 +233,7 @@ class PublicationController extends Controller
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             if ($publication) {
                 foreach ($datasetInput as $dataset) {
-                    $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'UNKNOWN';
+                    $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'USING';
                     PublicationHasDataset::updateOrCreate([
                         'publication_id' => (int) $publicationId,
                         'dataset_id' => (int) $dataset['id'],
@@ -370,7 +370,7 @@ class PublicationController extends Controller
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();
             foreach ($datasetInput as $dataset) {
-                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'UNKNOWN';
+                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'USING';
                 PublicationHasDataset::updateOrCreate([
                     'publication_id' => (int) $id,
                     'dataset_id' => (int) $dataset['id'],
@@ -506,7 +506,7 @@ class PublicationController extends Controller
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();
             foreach ($datasetInput as $dataset) {
-                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'UNKNOWN';
+                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'USING';
                 PublicationHasDataset::updateOrCreate([
                     'publication_id' => (int) $id,
                     'dataset_id' => (int) $dataset['id'],
