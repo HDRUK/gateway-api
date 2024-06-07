@@ -58,6 +58,7 @@ trait HubspotContacts
     
                 if (!$hubspotId) {
                     $createContact = $hubspotService->createContact($hubspot);
+                    dd($createContact);
                     $hubspotId = $createContact['vid'];
                 }
     
