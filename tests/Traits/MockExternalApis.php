@@ -1061,21 +1061,21 @@ trait MockExternalApis
         Http::fake(function ($request) {
             $baseUrl = env('HUBSPOT_BASE_URL', 'https://local.hubspot');
         
-            // Exact match for /contacts/v1/contact
-            if ($request->url() === $baseUrl . '/contacts/v1/contact') {
+            $url = $request->url();
+        
+            // Match exact URL for /contacts/v1/contact
+            if ($url === $baseUrl . '/contacts/v1/contact') {
                 return Http::response(['vid' => 12345], 200);
             }
         
-            // Exact match for /contacts/v1/contact/email/*
-            if (preg_match('#^' . preg_quote($baseUrl . '/contacts/v1/contact/email/', '#') . '[^/]+$#', $request->url())) {
+            // Match URL pattern for /contacts/v1/contact/email/*
+            if (strpos($url, $baseUrl . '/contacts/v1/contact/email/') === 0) {
                 return Http::response(['vid' => 12345], 200);
             }
         
-            // Exact match for /contacts/v1/contact/vid/{id}/profile with 204 response
-            if (preg_match('#^' . preg_quote($baseUrl . '/contacts/v1/contact/vid/', '#') . '\d+/profile$#', $request->url())) {
-                // Simulate different responses based on some condition
-                $urlParts = explode('/', $request->url());
-                $id = $urlParts[count($urlParts) - 2];
+            // Match URL pattern for /contacts/v1/contact/vid/{id}/profile
+            if (preg_match('#^' . preg_quote($baseUrl . '/contacts/v1/contact/vid/', '#') . '(\d+)/profile$#', $url, $matches)) {
+                $id = $matches[1];
         
                 // Example logic to determine response
                 if ($id % 2 == 0) { // This is just an example condition
@@ -1085,14 +1085,23 @@ trait MockExternalApis
                 }
             }
         
-            // Exact match for /contacts/v1/contact/vid/{id}
-            if (preg_match('#^' . preg_quote($baseUrl . '/contacts/v1/contact/vid/', '#') . '\d+$#', $request->url())) {
+            // Match URL pattern for /contacts/v1/contact/vid/{id}
+            if (preg_match('#^' . preg_quote($baseUrl . '/contacts/v1/contact/vid/', '#') . '(\d+)$#', $url, $matches)) {
                 return Http::response([], 200);
             }
-        
-            // Default response if no pattern matches
-            // return Http::response([], 404);
         });
+
+        // $response1 = Http::get(env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact');
+        // dd($response1->json(), $response1->status());
+
+        // $response2 = Http::get(env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/email/test@example.com');
+        // dd($response2->json(), $response2->status());
+
+        // $response3 = Http::get(env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/12345/profile');
+        // dd($response3->json(), $response3->status());
+
+        // $response4 = Http::get(env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/12345');
+        // dd($response4->json(), $response4->status());
     }
 
     // Count requests made to the elastic mock client
