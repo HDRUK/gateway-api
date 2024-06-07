@@ -11,8 +11,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class HubspotServiceTest extends TestCase
 {
-    protected $hubspotService;
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -24,12 +22,12 @@ class HubspotServiceTest extends TestCase
         Config::shouldReceive('get')
             ->with('services.hubspot.key')
             ->andReturn('test_api_key');
-
-        $this->hubspotService = new HubspotService();
     }
 
     public function testCreateContact()
     {
+        $hubspotService = new HubspotService();
+
         $properties = [
             'firstname' => 'John',
             'lastname' => 'Doe',
@@ -48,7 +46,7 @@ class HubspotServiceTest extends TestCase
             'https://api.hubapi.com/contacts/v1/contact' => Http::response(['vid' => 12345], 200),
         ]);
 
-        $response = $this->hubspotService->createContact($properties);
+        $response = $hubspotService->createContact($properties);
 
         $this->assertIsArray($response);
         $this->assertEquals(12345, $response['vid']);
@@ -63,6 +61,8 @@ class HubspotServiceTest extends TestCase
 
     public function testUpdateContactById()
     {
+        $hubspotService = new HubspotService();
+
         $id = 12345;
         $properties = [
             'firstname' => 'John',
@@ -80,7 +80,7 @@ class HubspotServiceTest extends TestCase
             "https://api.hubapi.com/contacts/v1/contact/vid/{$id}/profile" => Http::response([], 204),
         ]);
 
-        $response = $this->hubspotService->updateContactById($id, $properties);
+        $response = $hubspotService->updateContactById($id, $properties);
 
         $this->assertEmpty($response);
 
@@ -94,13 +94,15 @@ class HubspotServiceTest extends TestCase
 
     public function testGetContactByEmail()
     {
+        $hubspotService = new HubspotService();
+
         $email = 'john.doe@example.com';
 
         Http::fake([
             "https://api.hubapi.com/contacts/v1/contact/email/{$email}/profile" => Http::response(['vid' => 12345], 200),
         ]);
 
-        $response = $this->hubspotService->getContactByEmail($email);
+        $response = $hubspotService->getContactByEmail($email);
 
         $this->assertEquals(12345, $response);
 
@@ -113,13 +115,15 @@ class HubspotServiceTest extends TestCase
 
     public function testGetContactById()
     {
+        $hubspotService = new HubspotService();
+
         $id = 12345;
 
         Http::fake([
             "https://api.hubapi.com/contacts/v1/contact/vid/{$id}/profile" => Http::response(['vid' => 12345, 'properties' => []], 200),
         ]);
 
-        $response = $this->hubspotService->getContactById($id);
+        $response = $hubspotService->getContactById($id);
 
         $this->assertIsArray($response);
         $this->assertEquals(12345, $response['vid']);
@@ -133,13 +137,15 @@ class HubspotServiceTest extends TestCase
 
     public function testDeleteContactById()
     {
+        $hubspotService = new HubspotService();
+
         $id = 12345;
 
         Http::fake([
             "https://api.hubapi.com/contacts/v1/contact/vid/{$id}" => Http::response([], 200),
         ]);
 
-        $response = $this->hubspotService->deleteContactById($id);
+        $response = $hubspotService->deleteContactById($id);
 
         $this->assertIsArray($response);
 
