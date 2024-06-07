@@ -32,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
                 \Log::warning("SQL query: " . $sql, ['time' => $query->time]);
             });
         }
+
+        $this->app->singleton(HubspotService::class, function ($app) {
+            return new HubspotService();
+        });
     }
 
     /**

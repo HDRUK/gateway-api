@@ -64,7 +64,7 @@ class SyncHubspot extends Command
         // dd($this->hubspotService->updateContactById(17727931102, $propertiesUpdate));
         // dd($this->hubspotService->getContactByEmail('hdrteamadmin@gmail.com'));
         // dd($this->hubspotService->getContactById(17727931102));
-        // dd($this->hubspotService->deleteContactById(17727931102));
+        // dd($this->hubspotService->deleteContactById(17765839833));
 
         // enabled users
         $users = User::where(['is_admin' => 0])->get();
@@ -85,15 +85,13 @@ class SyncHubspot extends Command
                 'firstname' => $user->firstname,
                 'lastname' => $user->lastname,
                 'email' => $email,
-                'orcid' => $user->orcid ? preg_replace('/[^0-9]/', '', $user->orcid) : '',
+                'orcid_number' => $user->orcid ? preg_replace('/[^0-9]/', '', $user->orcid) : '',
                 'related_organisation_sector' => $sector ? $sector->name : '',
                 'company' => $user->organisation,
                 'communication_preference' => count($commPreference) ? implode(";", $commPreference) : '',
                 'gateway_registered_user' => 'Yes',
                 'gateway_roles' => 'User',
             ];
-            // print_r($this->hubspotService->convertProperties($hubspot));
-            // print_r($hubspot);
 
             // update contact preferences
             if ($user->hubspot_id) {
@@ -107,7 +105,7 @@ class SyncHubspot extends Command
 
                 if (!$hubspotId) {
                     $createContact = $this->hubspotService->createContact($hubspot);
-                    dd($createContact);
+                    // dd($createContact);
                     $hubspotId = $createContact['vid'];
                 }
 
@@ -122,22 +120,22 @@ class SyncHubspot extends Command
                 ]);
             }
 
-            print_r('The user with email ' . $user->email . ' has been created\n');
+            echo 'The user with email ' . $user->email . ' has been created/updated', PHP_EOL;
         }
 
         // disabled users
         $users = User::onlyTrashed()->where(['is_admin' => 1])->get();
         foreach ($users as $user) {
-            // $hubspot = [
-            //     'gateway_registered_user' => 'No',
-            // ];
+            $hubspot = [
+                'gateway_registered_user' => 'No',
+            ];
 
-            // // update contact if exist
-            // if ($user->hubspot_id) {
-            //     $this->hubspotService->updateContactById((int) $user->hubspot_id, $hubspot);
-            // }
+            // update contact if exist
+            if ($user->hubspot_id) {
+                $this->hubspotService->updateContactById((int) $user->hubspot_id, $hubspot);
+            }
 
-            print_r('The disabled user with email ' . $user->email . ' has been updated\n');
+            echo 'The disabled user with email ' . $user->email . ' has been updated', PHP_EOL;
         }
     }
 }
