@@ -44,6 +44,7 @@ trait UserTransformation
                 'mongo_object_id' => $user['mongo_object_id'],
                 'terms' => $user['terms'],
                 'roles' => $user['roles'],
+                'hubspot_id' => $user['hubspot_id'],
             ];
 
             $tmpTeam = [];

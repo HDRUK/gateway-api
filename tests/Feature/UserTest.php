@@ -87,6 +87,7 @@ class UserTest extends TestCase
                     'terms',
                     'notifications',
                     'roles',
+                    'hubspot_id',
                 ],
             ],   
         ]);

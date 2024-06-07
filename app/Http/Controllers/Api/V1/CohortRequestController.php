@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
@@ -16,6 +16,7 @@ use App\Models\CohortRequestLog;
 use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\HubspotContacts;
 use App\Models\CohortRequestHasPermission;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -25,6 +26,8 @@ use App\Http\Requests\CohortRequest\UpdateCohortRequest;
 
 class CohortRequestController extends Controller
 {
+    use HubspotContacts;
+
     public function __construct()
     {
         //

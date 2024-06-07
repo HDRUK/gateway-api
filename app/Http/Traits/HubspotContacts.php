@@ -10,11 +10,6 @@ use App\Http\Enums\UserContactPreference;
 
 trait HubspotContacts
 {
-    /**
-     * Filter by user
-     *
-     * @return mixed
-     */
     public function updateOrCreateContact(int $id)
     {
         $hubspotService = new Hubspot();

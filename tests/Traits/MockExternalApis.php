@@ -1009,6 +1009,56 @@ trait MockExternalApis
             )
         ]);
 
+
+        // Config::shouldReceive('get')
+        //     ->with('services.hubspot.base_url')
+        //     ->andReturn('https://api.hubapi.com');
+
+        // Config::shouldReceive('get')
+        //     ->with('services.hubspot.key')
+        //     ->andReturn('test_api_key');
+            
+        Http::fake([
+            env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact' => Http::response(['vid' => 12345], 200),
+        ]);
+
+        Http::fake([
+            env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/email/*' => Http::response(['vid' => 12345], 200),
+        ]);
+
+        Http::fake(function ($request) {
+            if (preg_match('#contacts/v1/contact/vid/\d+/profile#', $request->url())) {
+
+                $status = rand(0, 1) ? 200 : 204;
+
+                if ($status == 200) {
+                    return Http::response(['vid' => 12345, 'properties' => []], 200);
+                } else {
+                    return Http::response([], 204);
+                }
+            }
+
+            if (preg_match('#contacts/v1/contact/vid/\d+#', $request->url())) {
+                return Http::response([], 200);
+            }        
+
+            // Default response if the URL pattern does not match
+            return Http::response([], 404);
+        });
+
+        Http::fake([
+            env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/{$id}/profile' => Http::response([], 204),
+        ]);
+
+        Http::fake([
+            env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/{$id}/profile' => Http::response(['vid' => 12345, 'properties' => []], 200),
+        ]);
+
+        Http::fake([
+            env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/{$id}' => Http::response([], 200),
+        ]);
+
+
     }
 
     // Count requests made to the elastic mock client
