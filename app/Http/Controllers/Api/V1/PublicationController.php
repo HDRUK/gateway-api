@@ -633,12 +633,18 @@ class PublicationController extends Controller
                 ->toArray();
 
             $datasetTitles = array();
+            $datasetLinkTypes = array();
             foreach ($pubMatch['datasets'] as $d) {
                 $metadata = Dataset::where(['id' => $d])
                     ->first()
                     ->latestVersion()
                     ->metadata;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+
+                $datasetLinkTypes[] = PublicationHasDataset::where([
+                    ['publication_id', '=', (int) $id],
+                    ['dataset_id', '=', (int) $d]
+                ])->first()['link_type'];
             }
 
             // Split string to array of strings
@@ -652,6 +658,7 @@ class PublicationController extends Controller
                 'publicationDate' => $pubMatch['year_of_publication'],
                 'datasetTitles' => $datasetTitles,
                 'publicationType' => $publicationTypes,
+                'datasetLinkTypes' => $datasetLinkTypes,
             ];
 
             $params = [

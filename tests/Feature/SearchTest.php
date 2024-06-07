@@ -806,7 +806,8 @@ class SearchTest extends TestCase
                     'journal_name',
                     'year_of_publication',
                     'full_text_url',
-                    'url'
+                    'url',
+                    'datasetLinkTypes'
                 ],
             ],
             'aggregations',

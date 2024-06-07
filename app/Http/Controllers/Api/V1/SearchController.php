@@ -16,6 +16,7 @@ use App\Models\License;
 use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\Publication;
+use App\Models\PublicationHasDataset;
 use App\Models\DataProvider;
 use App\Models\TypeCategory;
 
@@ -981,6 +982,7 @@ class SearchController extends Controller
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
                             $pubArray[$i]['url'] = $model['url'];
+                            $pubArray[$i]['datasetLinkTypes'] = PublicationHasDataset::where('publication_id', $model['id'])->pluck('link_type')->all();
                             $foundFlag = true;
                             break;
                         }
