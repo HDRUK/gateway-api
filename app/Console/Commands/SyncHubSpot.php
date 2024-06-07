@@ -27,19 +27,13 @@ class SyncHubspot extends Command
      */
     protected $description = 'Sync contacts from HubSpot to mk2 users';
 
-    protected $hubspotService;
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->hubspotService = new HubspotService();
-    }
-
     /**
      * Execute the console command.
      */
     public function handle()
     {
+        $hubspotService = new HubspotService();
+
         // $propertiesNew = [
         //     'email' => 'testingapis.123@hubspot.com',
         //     'firstname' => 'Adrian',
@@ -59,12 +53,12 @@ class SyncHubspot extends Command
         //     'website' => 'http://updated.example.com',
         //     'lifecyclestage' => 'customer',
         // ];
-        // $create = $this->hubspotService->createContact($propertiesNew);
+        // $create = $hubspotService->createContact($propertiesNew);
         // dd($create['vid']);
-        // dd($this->hubspotService->updateContactById(17727931102, $propertiesUpdate));
-        // dd($this->hubspotService->getContactByEmail('hdrteamadmin@gmail.com'));
-        // dd($this->hubspotService->getContactById(17727931102));
-        // dd($this->hubspotService->deleteContactById(17765839833));
+        // dd($hubspotService->updateContactById(17727931102, $propertiesUpdate));
+        // dd($hubspotService->getContactByEmail('hdrteamadmin@gmail.com'));
+        // dd($hubspotService->getContactById(17727931102));
+        // dd($hubspotService->deleteContactById(17765839833));
 
         // enabled users
         $users = User::where(['is_admin' => 0])->get();
@@ -95,22 +89,22 @@ class SyncHubspot extends Command
 
             // update contact preferences
             if ($user->hubspot_id) {
-                $this->hubspotService->updateContactById((int) $user->hubspot_id, $hubspot);
+                $hubspotService->updateContactById((int) $user->hubspot_id, $hubspot);
             }
             
             // create new contact hubspot and update users table
             if (!$user->hubspot_id){
                 // check by email
-                $hubspotId = $this->hubspotService->getContactByEmail($email);
+                $hubspotId = $hubspotService->getContactByEmail($email);
 
                 if (!$hubspotId) {
-                    $createContact = $this->hubspotService->createContact($hubspot);
+                    $createContact = $hubspotService->createContact($hubspot);
                     // dd($createContact);
                     $hubspotId = $createContact['vid'];
                 }
 
                 if ($hubspotId) {
-                    $this->hubspotService->updateContactById((int) $hubspotId, $hubspot);
+                    $hubspotService->updateContactById((int) $hubspotId, $hubspot);
                 }
 
                 User::where([
@@ -132,7 +126,7 @@ class SyncHubspot extends Command
 
             // update contact if exist
             if ($user->hubspot_id) {
-                $this->hubspotService->updateContactById((int) $user->hubspot_id, $hubspot);
+                $hubspotService->updateContactById((int) $user->hubspot_id, $hubspot);
             }
 
             echo 'The disabled user with email ' . $user->email . ' has been updated', PHP_EOL;
