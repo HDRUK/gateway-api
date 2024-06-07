@@ -538,6 +538,8 @@ class CohortRequestController extends Controller
 
             $this->sendEmail($id);
 
+            $this->updateOrCreateContact($id);
+
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -611,6 +613,8 @@ class CohortRequestController extends Controller
 
             CohortRequest::where('id', $id)->delete();
             CohortRequestHasPermission::where('id', $id)->delete();
+
+            $this->updateOrCreateContact($id);
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],

@@ -1018,47 +1018,78 @@ trait MockExternalApis
         //     ->with('services.hubspot.key')
         //     ->andReturn('test_api_key');
             
-        Http::fake([
-            env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact' => Http::response(['vid' => 12345], 200),
-        ]);
+        // Http::fake([
+        //     env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact' => Http::response(['vid' => 12345], 200),
+        // ]);
 
-        Http::fake([
-            env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/email/*' => Http::response(['vid' => 12345], 200),
-        ]);
+        // Http::fake([
+        //     env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/email/*' => Http::response(['vid' => 12345], 200),
+        // ]);
+
+        // Http::fake(function ($request) {
+        //     if (preg_match('#contacts/v1/contact/vid/\d+/profile#', $request->url())) {
+
+        //         $status = rand(0, 1) ? 200 : 204;
+
+        //         if ($status == 200) {
+        //             return Http::response(['vid' => 12345, 'properties' => []], 200);
+        //         } else {
+        //             return Http::response([], 204);
+        //         }
+        //     }
+
+        //     if (preg_match('#contacts/v1/contact/vid/\d+#', $request->url())) {
+        //         return Http::response([], 200);
+        //     }        
+
+        //     // Default response if the URL pattern does not match
+        //     return Http::response([], 404);
+        // });
+
+        // Http::fake([
+        //     env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/{$id}/profile' => Http::response([], 204),
+        // ]);
+
+        // Http::fake([
+        //     env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/{$id}/profile' => Http::response(['vid' => 12345, 'properties' => []], 200),
+        // ]);
+
+        // Http::fake([
+        //     env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/{$id}' => Http::response([], 200),
+        // ]);
 
         Http::fake(function ($request) {
-            if (preg_match('#contacts/v1/contact/vid/\d+/profile#', $request->url())) {
-
-                $status = rand(0, 1) ? 200 : 204;
-
-                if ($status == 200) {
-                    return Http::response(['vid' => 12345, 'properties' => []], 200);
-                } else {
+            $baseUrl = env('HUBSPOT_BASE_URL', 'https://local.hubspot');
+        
+            // Pattern for /contacts/v1/contact
+            if ($request->url() === $baseUrl . '/contacts/v1/contact') {
+                return Http::response(['vid' => 12345], 200);
+            }
+        
+            // Pattern for /contacts/v1/contact/email/*
+            if (preg_match('#' . preg_quote($baseUrl) . '/contacts/v1/contact/email/[^/]+#', $request->url())) {
+                return Http::response(['vid' => 12345], 200);
+            }
+        
+            // Pattern for /contacts/v1/contact/vid/{id}/profile with 204 response
+            if (preg_match('#' . preg_quote($baseUrl) . '/contacts/v1/contact/vid/\d+/profile#', $request->url())) {
+                // Use logic to determine whether to return 204 or 200
+                // This is an example; replace with your actual logic
+                if (/* some condition */ false) {
                     return Http::response([], 204);
+                } else {
+                    return Http::response(['vid' => 12345, 'properties' => []], 200);
                 }
             }
-
-            if (preg_match('#contacts/v1/contact/vid/\d+#', $request->url())) {
+        
+            // Pattern for /contacts/v1/contact/vid/{id}
+            if (preg_match('#' . preg_quote($baseUrl) . '/contacts/v1/contact/vid/\d+#', $request->url())) {
                 return Http::response([], 200);
-            }        
-
-            // Default response if the URL pattern does not match
-            return Http::response([], 404);
+            }
+        
+            // Default response if no pattern matches
+            // return Http::response([], 404);
         });
-
-        Http::fake([
-            env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/{$id}/profile' => Http::response([], 204),
-        ]);
-
-        Http::fake([
-            env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/{$id}/profile' => Http::response(['vid' => 12345, 'properties' => []], 200),
-        ]);
-
-        Http::fake([
-            env('HUBSPOT_BASE_URL', 'https://local.hubspot') . '/contacts/v1/contact/vid/{$id}' => Http::response([], 200),
-        ]);
-
-
     }
 
     // Count requests made to the elastic mock client
