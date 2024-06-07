@@ -174,7 +174,7 @@ class CohortRequestTest extends TestCase
             ],
             $this->header,
         );
-
+        dd($responseCreate);
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
         ->assertJsonStructure([
             'message',

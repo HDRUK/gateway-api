@@ -2,7 +2,6 @@
 
 namespace Tests\Traits;
 
-use App\Http\Controllers\Api\V1\CohortRequestController;
 use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
@@ -17,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use Elastic\Elasticsearch\ClientBuilder;
 use MetadataManagementController AS MMC;
 use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\CohortRequestController;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 
 trait MockExternalApis
@@ -1039,11 +1039,16 @@ trait MockExternalApis
         //     }
         // });
 
-        $mockHubSpotUser = $this->getMockBuilder(UserController::class)->onlyMethods(['updateOrCreateContact'])->getMock();
-        $mockHubSpotUser->method('updateOrCreateContact')->willReturn(true);
+        // $mockHubSpotUser = $this->getMockBuilder(UserController::class)->onlyMethods(['updateOrCreateContact'])->getMock();
+        // $mockHubSpotUser->method('updateOrCreateContact')->willReturn(true);
 
-        $mockHubSpotCohort = $this->getMockBuilder(CohortRequestController::class)->onlyMethods(['updateOrCreateContact'])->getMock();
-        $mockHubSpotCohort->method('updateOrCreateContact')->willReturn(true);
+        // $mockHubSpotCohort = $this->getMockBuilder(CohortRequestController::class)->onlyMethods(['updateOrCreateContact'])->getMock();
+        // $mockHubSpotCohort->method('updateOrCreateContact')->willReturn(true);
+
+        $mockTrait = $this->getMockForTrait(HubspotContacts::class);
+        $mockTrait->expects($this->any())
+                  ->method('updateOrCreateContact')
+                  ->willReturn(true);
 
     }
 
