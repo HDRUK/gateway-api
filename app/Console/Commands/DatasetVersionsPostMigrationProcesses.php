@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\DatasetVersion;
 use App\Models\Tool;
+use App\Models\DatasetVersionHasDatasetVersion;
 
 class DatasetVersionsPostMigrationProcesses
 {
