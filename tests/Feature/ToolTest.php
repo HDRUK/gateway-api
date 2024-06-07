@@ -11,31 +11,31 @@ use App\Models\License;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
+use App\Models\ToolHasTypeCategory;
+use App\Models\DatasetVersionHasTool;
+use App\Models\ToolHasProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
-
 use Database\Seeders\ToolSeeder;
 use App\Http\Requests\ToolRequest;
 use Tests\Traits\MockExternalApis;
-use App\Models\ToolHasTypeCategory;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\DurHasToolSeeder;
-
 use Database\Seeders\ToolHasTagSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TypeCategorySeeder;
-use App\Models\ToolHasProgrammingPackage;
-use App\Models\ToolHasProgrammingLanguage;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\DatasetVersionHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetSeeder;
@@ -183,6 +183,7 @@ class ToolTest extends TestCase
         $licenseId = License::where('valid_until', null)->get()->random()->id;
         $countBefore = Tool::withTrashed()->count();
         $countPivotBefore = ToolHasTag::all()->count();
+        $countPivotBeforeDV = DatasetVersionHasTool::all()->count();
         $mockData = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
@@ -193,6 +194,7 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(1, 2),
+            "dataset" => array(1, 2),
             "programming_language" => array(1, 2),
             "programming_package" => array(1, 2),
             "type_category" => array(1, 2),
@@ -209,13 +211,24 @@ class ToolTest extends TestCase
 
         $countAfter = Tool::withTrashed()->count();
         $countPivotAfter = ToolHasTag::all()->count();
+        $countPivotAfterDV = DatasetVersionHasTool::all()->count();
+
         $countNewRow = $countAfter - $countBefore;
+        
         $countPivotNewRows = $countPivotAfter - $countPivotBefore;
+        $countPivotNewRowsDV = $countPivotAfterDV - $countPivotBeforeDV;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $this->assertEquals(
             2,
             $countPivotNewRows,
+            "actual value is equal to expected"
+        );
+    
+        $this->assertTrue((bool) $countNewRowDV, 'Response was successfully');
+        $this->assertEquals(
+            2,
+            $countPivotNewRowsDV,
             "actual value is equal to expected"
         );
         $response->assertStatus(201);
