@@ -642,9 +642,9 @@ class PublicationController extends Controller
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
 
                 $datasetLinkTypes[] = PublicationHasDataset::where([
-                    ['publication_id', '=', (int) $publication->id],
-                    ['dataset_id', '=', (int) $datasetId]
-                ])->first()->link_type;
+                    ['publication_id', '=', (int) $id],
+                    ['dataset_id', '=', (int) $d]
+                ])->first()['link_type'];
             }
 
             // Split string to array of strings
