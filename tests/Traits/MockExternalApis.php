@@ -2,6 +2,7 @@
 
 namespace Tests\Traits;
 
+use App\Http\Controllers\Api\V1\CohortRequestController;
 use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
@@ -10,10 +11,12 @@ use Tests\Traits\Authorization;
 
 use Database\Seeders\SectorSeeder;
 
+use App\Http\Traits\HubspotContacts;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Elastic\Elasticsearch\ClientBuilder;
 use MetadataManagementController AS MMC;
+use App\Http\Controllers\Api\V1\UserController;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 
 trait MockExternalApis
@@ -1017,24 +1020,30 @@ trait MockExternalApis
         //     'http://hub.api/contacts/v1/contact/vid/*/profile' => Http::response(['vid' => 12345, 'properties' => []], 200),
         // ]);
 
-        Http::fake(function ($request) {
-            if ($request->url() === 'https://api.hubapi.com/contacts/v1/contact') {
-                return Http::response(['vid' => 12345], 200);
-            }
+        // Http::fake(function ($request) {
+        //     if ($request->url() === 'https://api.hubapi.com/contacts/v1/contact') {
+        //         return Http::response(['vid' => 12345], 200);
+        //     }
         
-            if (preg_match('/https:\/\/api\.hubapi\.com\/contacts\/v1\/contact\/vid\/(\d+)\/profile/', $request->url(), $matches)) {
-                $id = $matches[1];
-                // Custom condition based on $id
-                if ($id == 12345) {
-                    return Http::response([], 204);
-                }
-                return Http::response(['vid' => $id, 'properties' => []], 200);
-            }
+        //     if (preg_match('/https:\/\/api\.hubapi\.com\/contacts\/v1\/contact\/vid\/(\d+)\/profile/', $request->url(), $matches)) {
+        //         $id = $matches[1];
+        //         // Custom condition based on $id
+        //         if ($id == 12345) {
+        //             return Http::response([], 204);
+        //         }
+        //         return Http::response(['vid' => $id, 'properties' => []], 200);
+        //     }
         
-            if (preg_match('/https:\/\/api\.hubapi\.com\/contacts\/v1\/contact\/email\/.+\/profile/', $request->url())) {
-                return Http::response(['vid' => 12345], 200);
-            }
-        });
+        //     if (preg_match('/https:\/\/api\.hubapi\.com\/contacts\/v1\/contact\/email\/.+\/profile/', $request->url())) {
+        //         return Http::response(['vid' => 12345], 200);
+        //     }
+        // });
+
+        $mockHubSpotUser = $this->getMockBuilder(UserController::class)->onlyMethods(['updateOrCreateContact'])->getMock();
+        $mockHubSpotUser->method('updateOrCreateContact')->willReturn(true);
+
+        $mockHubSpotCohort = $this->getMockBuilder(CohortRequestController::class)->onlyMethods(['updateOrCreateContact'])->getMock();
+        $mockHubSpotCohort->method('updateOrCreateContact')->willReturn(true);
 
     }
 
