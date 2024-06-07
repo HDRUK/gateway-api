@@ -1061,29 +1061,32 @@ trait MockExternalApis
         Http::fake(function ($request) {
             $baseUrl = env('HUBSPOT_BASE_URL', 'https://local.hubspot');
         
-            // Pattern for /contacts/v1/contact
+            // Exact match for /contacts/v1/contact
             if ($request->url() === $baseUrl . '/contacts/v1/contact') {
                 return Http::response(['vid' => 12345], 200);
             }
         
-            // Pattern for /contacts/v1/contact/email/*
-            if (preg_match('#' . preg_quote($baseUrl) . '/contacts/v1/contact/email/[^/]+#', $request->url())) {
+            // Exact match for /contacts/v1/contact/email/*
+            if (preg_match('#^' . preg_quote($baseUrl . '/contacts/v1/contact/email/', '#') . '[^/]+$#', $request->url())) {
                 return Http::response(['vid' => 12345], 200);
             }
         
-            // Pattern for /contacts/v1/contact/vid/{id}/profile with 204 response
-            if (preg_match('#' . preg_quote($baseUrl) . '/contacts/v1/contact/vid/\d+/profile#', $request->url())) {
-                // Use logic to determine whether to return 204 or 200
-                // This is an example; replace with your actual logic
-                if (/* some condition */ false) {
+            // Exact match for /contacts/v1/contact/vid/{id}/profile with 204 response
+            if (preg_match('#^' . preg_quote($baseUrl . '/contacts/v1/contact/vid/', '#') . '\d+/profile$#', $request->url())) {
+                // Simulate different responses based on some condition
+                $urlParts = explode('/', $request->url());
+                $id = $urlParts[count($urlParts) - 2];
+        
+                // Example logic to determine response
+                if ($id % 2 == 0) { // This is just an example condition
                     return Http::response([], 204);
                 } else {
-                    return Http::response(['vid' => 12345, 'properties' => []], 200);
+                    return Http::response(['vid' => (int) $id, 'properties' => []], 200);
                 }
             }
         
-            // Pattern for /contacts/v1/contact/vid/{id}
-            if (preg_match('#' . preg_quote($baseUrl) . '/contacts/v1/contact/vid/\d+#', $request->url())) {
+            // Exact match for /contacts/v1/contact/vid/{id}
+            if (preg_match('#^' . preg_quote($baseUrl . '/contacts/v1/contact/vid/', '#') . '\d+$#', $request->url())) {
                 return Http::response([], 200);
             }
         
