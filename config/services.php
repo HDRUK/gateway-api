@@ -58,6 +58,7 @@ return [
     ],
 
     'hubspot' => [
-        'hubspot_key' => env('HUBSPOT_KEY', 'hubspot_key'),
+        'base_url' => env('HUBSPOT_BASE_URL', 'hubspot_url'),
+        'key' => env('HUBSPOT_KEY', 'hubspot_key'),
     ],
 ];
