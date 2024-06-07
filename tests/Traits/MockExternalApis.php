@@ -1059,7 +1059,8 @@ trait MockExternalApis
         // ]);
 
         Http::fake(function ($request) {
-            $baseUrl = env('HUBSPOT_BASE_URL', 'https://local.hubspot');
+            // $baseUrl = env('HUBSPOT_BASE_URL', 'https://local.hubspot');
+            $baseUrl = 'https://local.hubspot';
         
             $url = $request->url();
         
