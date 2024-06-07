@@ -181,9 +181,9 @@ class ToolTest extends TestCase
     public function test_add_new_tool_with_success(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
-        $countBefore = Tool::withTrashed()->count();
-        $countPivotBefore = ToolHasTag::all()->count();
-        $countPivotBeforeDV = DatasetVersionHasTool::all()->count();
+        $countBeforeTool = Tool::withTrashed()->count();
+        $countPivotBeforeTag = ToolHasTag::all()->count();
+        $countPivotBeforeDatasetVersion = DatasetVersionHasTool::all()->count();
         $mockData = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
@@ -209,27 +209,26 @@ class ToolTest extends TestCase
             $this->header
         );
 
-        $countAfter = Tool::withTrashed()->count();
-        $countPivotAfter = ToolHasTag::all()->count();
-        $countPivotAfterDV = DatasetVersionHasTool::all()->count();
+        $countAfterTool = Tool::withTrashed()->count();
+        $countPivotAfterTag = ToolHasTag::all()->count();
+        $countPivotAfterDatasetVersion = DatasetVersionHasTool::all()->count();
 
-        $countNewRow = $countAfter - $countBefore;
+        $countNewRowTool = $countAfterTool - $countBeforeTool;
         
-        $countPivotNewRows = $countPivotAfter - $countPivotBefore;
-        $countPivotNewRowsDV = $countPivotAfterDV - $countPivotBeforeDV;
+        $countPivotNewRowsTag = $countPivotAfterTag - $countPivotBeforeTag;
+        $countPivotNewRowsDatasetVersion = $countPivotAfterDatasetVersion - $countPivotBeforeDatasetVersion;
 
-        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+        $this->assertTrue((bool) $countNewRowTool, 'Response was successfully');
         $this->assertEquals(
             2,
-            $countPivotNewRows,
-            "actual value is equal to expected"
+            $countPivotNewRowsTag,
+            "Tag value is equal to expected"
         );
     
-        $this->assertTrue((bool) $countNewRowDV, 'Response was successfully');
         $this->assertEquals(
             2,
-            $countPivotNewRowsDV,
-            "actual value is equal to expected"
+            $countPivotNewRowsDatasetVersion,
+            "Dataset Version value is equal to expected"
         );
         $response->assertStatus(201);
     }
