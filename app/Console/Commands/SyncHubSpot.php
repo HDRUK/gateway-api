@@ -29,10 +29,10 @@ class SyncHubspot extends Command
 
     protected $hubspotService;
 
-    public function __construct(HubspotService $hubspotService)
+    public function __construct()
     {
         parent::__construct();
-        $this->hubspotService = $hubspotService;
+        $this->hubspotService = new HubspotService();
     }
 
     /**
