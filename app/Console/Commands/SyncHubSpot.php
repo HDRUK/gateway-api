@@ -7,6 +7,7 @@ use App\Models\Sector;
 use Illuminate\Console\Command;
 use App\Services\HubspotService;
 use App\Http\Enums\UserContactPreference;
+use App\Models\CohortRequest;
 
 class SyncHubspot extends Command
 {
@@ -46,6 +47,11 @@ class SyncHubspot extends Command
 
             $email = trim(strtolower($user->email));
 
+            $cohortRequest = CohortRequest::where([
+                'user_id' => $user->id,
+                'request_status' => 'APPROVED',
+            ])->first();
+
             $hubspot = [
                 'firstname' => $user->firstname,
                 'lastname' => $user->lastname,
@@ -56,6 +62,7 @@ class SyncHubspot extends Command
                 'communication_preference' => count($commPreference) ? implode(";", $commPreference) : '',
                 'gateway_registered_user' => 'Yes',
                 'gateway_roles' => 'User',
+                'cohort_registered_user' => $cohortRequest ? 'Yes' : 'No',
             ];
 
             // update contact preferences
