@@ -1011,10 +1011,10 @@ trait MockExternalApis
 
 
         Http::fake([
-            'http://local.hubapi/contacts/v1/contact' => Http::response(['vid' => 12345], 200),
-            'http://local.hubapi/contacts/v1/contact/vid/*/profile' => Http::response([], 204),
-            'http://local.hubapi/contacts/v1/contact/email/*/profile' => Http::response(['vid' => 12345], 200),
-            'http://local.hubapi/contacts/v1/contact/vid/*/profile' => Http::response(['vid' => 12345, 'properties' => []], 200),
+            'http://hub.api/contacts/v1/contact' => Http::response(['vid' => 12345], 200),
+            'http://hub.api/contacts/v1/contact/vid/*/profile' => Http::response([], 204),
+            'http://hub.api/contacts/v1/contact/email/*/profile' => Http::response(['vid' => 12345], 200),
+            'http://hub.api/contacts/v1/contact/vid/*/profile' => Http::response(['vid' => 12345, 'properties' => []], 200),
         ]);
     }
 
