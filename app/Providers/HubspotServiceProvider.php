@@ -5,7 +5,7 @@ namespace App\Providers;
 use App\Services\HubspotService;
 use Illuminate\Support\ServiceProvider;
 
-class HubspotProvider extends ServiceProvider
+class HubspotServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
