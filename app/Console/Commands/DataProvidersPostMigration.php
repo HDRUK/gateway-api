@@ -56,7 +56,12 @@ class DataProvidersPostMigration extends Command
                         'img_url' => 'http://placeholder.com',
                         'enabled' => true
                     ]);
+                    
                     $team = Team::where('name', $csv['name'])->first();
+                    if (!$team) {
+                        continue;
+                    }
+
                     DataProviderCollHasTeam::create([
                         'data_provider_coll_id' => $newProvider['id'],
                         'team_id' => $team['id']

@@ -385,7 +385,7 @@ class DatasetController extends Controller
                 $version = $dataset->latestVersion();
 
                 $translated = MMC::translateDataModelType(
-                    $version->metadata,
+                    json_encode($version->metadata),
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
                     Config::get('metadata.GWDM.name'),
