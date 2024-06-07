@@ -189,7 +189,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
-
+        dd($responseCreateUser);
         $responseCreateUser->assertStatus(201);
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
         $userId = $contentCreateUser['data'];

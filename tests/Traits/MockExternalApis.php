@@ -1012,43 +1012,23 @@ trait MockExternalApis
             )
         ]);
 
-
-        // Http::fake([
-        //     'http://hub.api/contacts/v1/contact' => Http::response(['vid' => 12345], 200),
-        //     'http://hub.api/contacts/v1/contact/vid/*/profile' => Http::response([], 204),
-        //     'http://hub.api/contacts/v1/contact/email/*/profile' => Http::response(['vid' => 12345], 200),
-        //     'http://hub.api/contacts/v1/contact/vid/*/profile' => Http::response(['vid' => 12345, 'properties' => []], 200),
-        // ]);
-
-        // Http::fake(function ($request) {
-        //     if ($request->url() === 'https://api.hubapi.com/contacts/v1/contact') {
-        //         return Http::response(['vid' => 12345], 200);
-        //     }
+        Http::fake(function ($request) {
+            if ($request->method() == 'POST' && $request->url() == 'http://hub.api/contacts/v1/contact') {
+                return Http::response(['vid' => 12345], 200);
+            }
         
-        //     if (preg_match('/https:\/\/api\.hubapi\.com\/contacts\/v1\/contact\/vid\/(\d+)\/profile/', $request->url(), $matches)) {
-        //         $id = $matches[1];
-        //         // Custom condition based on $id
-        //         if ($id == 12345) {
-        //             return Http::response([], 204);
-        //         }
-        //         return Http::response(['vid' => $id, 'properties' => []], 200);
-        //     }
+            if ($request->method() == 'POST' && preg_match('/http:\/\/hub\.api\/contacts\/v1\/contact\/vid\/\d+\/profile/', $request->url())) {
+                return Http::response([], 204);
+            }
         
-        //     if (preg_match('/https:\/\/api\.hubapi\.com\/contacts\/v1\/contact\/email\/.+\/profile/', $request->url())) {
-        //         return Http::response(['vid' => 12345], 200);
-        //     }
-        // });
-
-        // $mockHubSpotUser = $this->getMockBuilder(UserController::class)->onlyMethods(['updateOrCreateContact'])->getMock();
-        // $mockHubSpotUser->method('updateOrCreateContact')->willReturn(true);
-
-        // $mockHubSpotCohort = $this->getMockBuilder(CohortRequestController::class)->onlyMethods(['updateOrCreateContact'])->getMock();
-        // $mockHubSpotCohort->method('updateOrCreateContact')->willReturn(true);
-
-        $mockTrait = $this->getMockForTrait(HubspotContacts::class);
-        $mockTrait->expects($this->any())
-                  ->method('updateOrCreateContact')
-                  ->willReturn(true);
+            if ($request->method() == 'GET' && preg_match('/http:\/\/hub\.api\/contacts\/v1\/contact\/email\/[^\/]+\/profile/', $request->url())) {
+                return Http::response(['vid' => 12345], 200);
+            }
+        
+            if ($request->method() == 'GET' && preg_match('/http:\/\/hub\.api\/contacts\/v1\/contact\/vid\/\d+\/profile/', $request->url())) {
+                return Http::response(['vid' => 12345, 'properties' => []], 200);
+            }
+        });
 
     }
 
