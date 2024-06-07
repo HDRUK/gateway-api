@@ -743,12 +743,15 @@ class ToolController extends Controller
     private function insertDatasetVersionHasTool(array $dataset, int $toolId): bool
     {
         try {
-            foreach ($datasets as $value) {
+            foreach ($datasets as $datasetId) {
                 $datasetVersionIDs = DatasetVersion::where('dataset_id', $datasetId)->pluck('id')->all();
-                DatasetHasTool::updateOrCreate([
-                    'tool_id' => (int) $toolId,
-                    'dataset_version_id' => (int) $datasetVersionIDs,
-                ]);
+    
+                foreach ($datasetVersionIDs as $datasetVersionID) {
+                    DatasetVersionHasTool::updateOrCreate([
+                        'tool_id' => $toolId,
+                        'dataset_version_id' => $datasetVersionID,
+                    ]);
+                }
             }
             return true;
         } catch (Exception $e) {
