@@ -413,7 +413,7 @@ class ToolController extends Controller
             if (array_key_exists('dataset', $input)) {
                 $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
                 if (!empty($datasetVersionIDs)) {
-                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $tool->id);
+                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $id);
                 }
             }
 
@@ -568,7 +568,7 @@ class ToolController extends Controller
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
                 $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
                 if (!empty($datasetVersionIDs)) {
-                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $tool->id);
+                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $id);
                 }
             }
 
