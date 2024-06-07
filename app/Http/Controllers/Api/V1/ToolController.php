@@ -259,7 +259,10 @@ class ToolController extends Controller
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
             if (array_key_exists('dataset', $input)) {
-                $this->insertDatasetVersionHasTool($input['dataset'], (int) $tool->id);
+                $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
+                if (!empty($datasetVersionIDs)) {
+                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $tool->id);
+                }
             }
             if (array_key_exists('programming_language', $input)) {
                 $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
@@ -408,7 +411,10 @@ class ToolController extends Controller
 
             DatasetVersionHasTool::where('tool_id', $id)->delete();
             if (array_key_exists('dataset', $input)) {
-                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
+                $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
+                if (!empty($datasetVersionIDs)) {
+                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $tool->id);
+                }
             }
 
             if (array_key_exists('programming_language', $input)) {
@@ -560,7 +566,10 @@ class ToolController extends Controller
 
             if (array_key_exists('dataset', $input)) {
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
-                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
+                $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
+                if (!empty($datasetVersionIDs)) {
+                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $tool->id);
+                }
             }
 
             if (array_key_exists('programming_language', $input)) {
@@ -731,27 +740,40 @@ class ToolController extends Controller
      * @param integer $toolId
      * @return mixed
      */
-    private function insertDatasetVersionHasTool(array $dataset, int $toolId): mixed
+    private function insertDatasetVersionHasTool(array $dataset, int $toolId): bool
     {
         try {
-            foreach ($dataset as $value) {
-                $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
+            $insertData = [];
+
+            foreach ($dataset as $datasetId) {
+                $datasetVersionIDs = DatasetVersion::where('dataset_id', $datasetId)->pluck('id')->all();
+
                 if (!empty($datasetVersionIDs)) {
                     foreach ($datasetVersionIDs as $datasetVersionID) {
-                        DatasetVersionHasTool::updateOrCreate([
+                        $insertData[] = [
                             'tool_id' => $toolId,
                             'dataset_version_id' => $datasetVersionID,
-                        ]);
+                        ];
                     }
                 } else {
-                    // Handle the case where no dataset version IDs were found if necessary
-                    throw new Exception("No dataset versions found for dataset_id: $value");
+                    // Handle the case where no dataset version IDs were found
+                    throw new Exception("No dataset versions found for dataset_id: $datasetId");
+                }
+            }
+
+            // Perform bulk insert/update
+            if (!empty($insertData)) {
+                foreach ($insertData as $data) {
+                    DatasetVersionHasTool::updateOrCreate($data);
                 }
             }
 
             return true;
-        } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+        } catch (\Throwable $e) {
+            // Log the error message if logging is available
+            // Log::error($e->getMessage());
+
+            throw new Exception("Error inserting dataset version tools: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -963,7 +985,11 @@ class ToolController extends Controller
                 ->pluck('description')
                 ->all();
 
-            $datasetIDs = DatasetVersionHasTool::where('tool_id', $toolId)
+            $datasetVersionIDs = DatasetVersionHasTool::where('tool_id', $toolId)
+                ->pluck('dataset_version_id')
+                ->all();
+
+            $datasetIDs = DatasetVersion::whereIn('dataset_version_id', $datasetVersionIDs)
                 ->pluck('dataset_id')
                 ->all();
 
