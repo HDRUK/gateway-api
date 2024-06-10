@@ -21,10 +21,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tools', function (Blueprint $table) {
-            $table->dropColumn([
-                'category_id'
-            ]); 
-        });
+        if (Schema::hasTable('tools')) {
+            Schema::table('tools', function (Blueprint $table) {
+                $table->dropColumn([
+                    'category_id'
+                ]); 
+            });
+        }
     }
 };
