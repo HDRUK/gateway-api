@@ -3,12 +3,13 @@
 namespace Tests\Feature;
 
 use Hash;
-use App\Models\User;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SectorSeeder;
+use App\Models\User;
 use Tests\Traits\Authorization;
+use Database\Seeders\SectorSeeder;
+use Illuminate\Support\Facades\Http;
 // use Illuminate\Foundation\Testing\WithFaker;
+use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UserTest extends TestCase
@@ -28,6 +29,7 @@ class UserTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+        $this->runMockHubspot();
 
         $this->seed([
             MinimalUserSeeder::class,
@@ -485,5 +487,40 @@ class UserTest extends TestCase
         } else {
             $this->assertTrue(false, 'Response was unsuccessfully');
         }
+    }
+
+    public function runMockHubspot()
+    {
+        Http::fake([
+            // DELETE
+            "http://hub.local/contacts/v1/contact/vid/*" => function ($request) {
+                if ($request->method() === 'DELETE') {
+                    return Http::response([], 200);
+                }
+            },
+        
+            // GET (by vid)
+            "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345, 'properties' => []], 200);
+                } elseif ($request->method() === 'POST') {
+                    return Http::response([], 204);
+                }
+            },
+        
+            // GET (by email)
+            "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
+        
+            // POST (create contact)
+            'http://hub.local/contacts/v1/contact' => function ($request) {
+                if ($request->method() === 'POST') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
+        ]);
     }
 }
