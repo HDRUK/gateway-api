@@ -17,7 +17,7 @@ class HubspotTest extends TestCase
 
         Config::shouldReceive('get')
             ->with('services.hubspot.base_url')
-            ->andReturn('https://api.hubapi.com');
+            ->andReturn('http://hub.local');
 
         Config::shouldReceive('get')
             ->with('services.hubspot.key')
@@ -43,7 +43,7 @@ class HubspotTest extends TestCase
         ];
 
         Http::fake([
-            'https://api.hubapi.com/contacts/v1/contact' => Http::response(['vid' => 12345], 200),
+            'http://hub.local/contacts/v1/contact' => Http::response(['vid' => 12345], 200),
         ]);
 
         $response = $hubspotService->createContact($properties);
@@ -52,7 +52,7 @@ class HubspotTest extends TestCase
         $this->assertEquals(12345, $response['vid']);
 
         Http::assertSent(function ($request) use ($expectedBody) {
-            return $request->url() == 'https://api.hubapi.com/contacts/v1/contact'
+            return $request->url() == 'http://hub.local/contacts/v1/contact'
                 && $request->method() == 'POST'
                 && $request->hasHeader('Authorization', 'Bearer test_api_key')
                 && $request->body() == json_encode($expectedBody);
@@ -77,7 +77,7 @@ class HubspotTest extends TestCase
         ];
 
         Http::fake([
-            "https://api.hubapi.com/contacts/v1/contact/vid/{$id}/profile" => Http::response([], 204),
+            "http://hub.local/contacts/v1/contact/vid/{$id}/profile" => Http::response([], 204),
         ]);
 
         $response = $hubspotService->updateContactById($id, $properties);
@@ -85,7 +85,7 @@ class HubspotTest extends TestCase
         $this->assertEmpty($response);
 
         Http::assertSent(function ($request) use ($id, $expectedBody) {
-            return $request->url() == "https://api.hubapi.com/contacts/v1/contact/vid/{$id}/profile"
+            return $request->url() == "http://hub.local/contacts/v1/contact/vid/{$id}/profile"
                 && $request->method() == 'POST'
                 && $request->hasHeader('Authorization', 'Bearer test_api_key')
                 && $request->body() == json_encode($expectedBody);
@@ -99,7 +99,7 @@ class HubspotTest extends TestCase
         $email = 'john.doe@example.com';
 
         Http::fake([
-            "https://api.hubapi.com/contacts/v1/contact/email/{$email}/profile" => Http::response(['vid' => 12345], 200),
+            "http://hub.local/contacts/v1/contact/email/{$email}/profile" => Http::response(['vid' => 12345], 200),
         ]);
 
         $response = $hubspotService->getContactByEmail($email);
@@ -107,7 +107,7 @@ class HubspotTest extends TestCase
         $this->assertEquals(12345, $response);
 
         Http::assertSent(function ($request) use ($email) {
-            return $request->url() == "https://api.hubapi.com/contacts/v1/contact/email/{$email}/profile"
+            return $request->url() == "http://hub.local/contacts/v1/contact/email/{$email}/profile"
                 && $request->method() == 'GET'
                 && $request->hasHeader('Authorization', 'Bearer test_api_key');
         });
@@ -120,7 +120,7 @@ class HubspotTest extends TestCase
         $id = 12345;
 
         Http::fake([
-            "https://api.hubapi.com/contacts/v1/contact/vid/{$id}/profile" => Http::response(['vid' => 12345, 'properties' => []], 200),
+            "http://hub.local/contacts/v1/contact/vid/{$id}/profile" => Http::response(['vid' => 12345, 'properties' => []], 200),
         ]);
 
         $response = $hubspotService->getContactById($id);
@@ -129,7 +129,7 @@ class HubspotTest extends TestCase
         $this->assertEquals(12345, $response['vid']);
 
         Http::assertSent(function ($request) use ($id) {
-            return $request->url() == "https://api.hubapi.com/contacts/v1/contact/vid/{$id}/profile"
+            return $request->url() == "http://hub.local/contacts/v1/contact/vid/{$id}/profile"
                 && $request->method() == 'GET'
                 && $request->hasHeader('Authorization', 'Bearer test_api_key');
         });
@@ -142,7 +142,7 @@ class HubspotTest extends TestCase
         $id = 12345;
 
         Http::fake([
-            "https://api.hubapi.com/contacts/v1/contact/vid/{$id}" => Http::response([], 200),
+            "http://hub.local/contacts/v1/contact/vid/{$id}" => Http::response([], 200),
         ]);
 
         $response = $hubspotService->deleteContactById($id);
@@ -150,7 +150,7 @@ class HubspotTest extends TestCase
         $this->assertIsArray($response);
 
         Http::assertSent(function ($request) use ($id) {
-            return $request->url() == "https://api.hubapi.com/contacts/v1/contact/vid/{$id}"
+            return $request->url() == "http://hub.local/contacts/v1/contact/vid/{$id}"
                 && $request->method() == 'DELETE'
                 && $request->hasHeader('Authorization', 'Bearer test_api_key');
         });

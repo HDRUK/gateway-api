@@ -1012,23 +1012,37 @@ trait MockExternalApis
             )
         ]);
 
-        Http::fake(function ($request) {
-            if ($request->method() == 'POST' && $request->url() == 'http://hub.api/contacts/v1/contact') {
-                return Http::response(['vid' => 12345], 200);
-            }
+        Http::fake([
+            // DELETE
+            "http://hub.local/contacts/v1/contact/vid/*" => function ($request) {
+                if ($request->method() === 'DELETE') {
+                    return Http::response([], 200);
+                }
+            },
         
-            if ($request->method() == 'POST' && preg_match('/http:\/\/hub\.api\/contacts\/v1\/contact\/vid\/\d+\/profile/', $request->url())) {
-                return Http::response([], 204);
-            }
+            // GET (by vid)
+            "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345, 'properties' => []], 200);
+                } elseif ($request->method() === 'POST') {
+                    return Http::response([], 204);
+                }
+            },
         
-            if ($request->method() == 'GET' && preg_match('/http:\/\/hub\.api\/contacts\/v1\/contact\/email\/[^\/]+\/profile/', $request->url())) {
-                return Http::response(['vid' => 12345], 200);
-            }
+            // GET (by email)
+            "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
         
-            if ($request->method() == 'GET' && preg_match('/http:\/\/hub\.api\/contacts\/v1\/contact\/vid\/\d+\/profile/', $request->url())) {
-                return Http::response(['vid' => 12345, 'properties' => []], 200);
-            }
-        });
+            // POST (create contact)
+            'http://hub.local/contacts/v1/contact' => function ($request) {
+                if ($request->method() === 'POST') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
+        ]);
 
     }
 

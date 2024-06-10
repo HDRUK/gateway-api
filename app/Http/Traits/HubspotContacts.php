@@ -63,7 +63,7 @@ trait HubspotContacts
                 if ($hubspotId) {
                     $hubspotService->updateContactById((int) $hubspotId, $hubspot);
                 }
-    
+
                 User::where([
                     'id' => $user->id,
                 ])->update([
