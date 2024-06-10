@@ -180,11 +180,14 @@ class ToolTest extends TestCase
      */
     public function test_add_new_tool_with_success(): void
     {
-        $licenseId = License::where('valid_until', null)->get()->random()->id;
-        $countBeforeTool = Tool::withTrashed()->count();
-        $countPivotBeforeTag = ToolHasTag::all()->count();
-        $countPivotBeforeDatasetVersion = DatasetVersionHasTool::all()->count();
-        $mockData = array(
+        $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
+        $this->assertNotNull($licenseId, 'No valid license ID found');
+
+        $initialToolCount = Tool::withTrashed()->count();
+        $initialTagCount = ToolHasTag::count();
+        $initialDatasetVersionCount = DatasetVersionHasTool::count();
+
+        $mockData = [
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
@@ -193,14 +196,14 @@ class ToolTest extends TestCase
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
             "user_id" => 1,
-            "tag" => array(1, 2),
-            "dataset" => array(1, 2),
-            "programming_language" => array(1, 2),
-            "programming_package" => array(1, 2),
-            "type_category" => array(1, 2),
+            "tag" => [1, 2],
+            "dataset" => [1, 2],
+            "programming_language" => [1, 2],
+            "programming_package" => [1, 2],
+            "type_category" => [1, 2],
             "enabled" => 1,
             "publications" => $this->generatePublications(),
-        );
+        ];
 
         $response = $this->json(
             'POST',
@@ -209,29 +212,21 @@ class ToolTest extends TestCase
             $this->header
         );
 
-        $countAfterTool = Tool::withTrashed()->count();
-        $countPivotAfterTag = ToolHasTag::all()->count();
-        $countPivotAfterDatasetVersion = DatasetVersionHasTool::all()->count();
+        $finalToolCount = Tool::withTrashed()->count();
+        $finalTagCount = ToolHasTag::count();
+        $finalDatasetVersionCount = DatasetVersionHasTool::count();
 
-        $countNewRowTool = $countAfterTool - $countBeforeTool;
+        $newToolCount = $finalToolCount - $initialToolCount;
+        $newTagCount = $finalTagCount - $initialTagCount;
+        $newDatasetVersionCount = $finalDatasetVersionCount - $initialDatasetVersionCount;
+
+        $this->assertTrue((bool)$newToolCount, 'New tool was not created');
+        $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
+        $this->assertEquals(2, $newDatasetVersionCount, 'Number of new dataset versions is not as expected');
         
-        $countPivotNewRowsTag = $countPivotAfterTag - $countPivotBeforeTag;
-        $countPivotNewRowsDatasetVersion = $countPivotAfterDatasetVersion - $countPivotBeforeDatasetVersion;
-
-        $this->assertTrue((bool) $countNewRowTool, 'Response was successfully');
-        $this->assertEquals(
-            2,
-            $countPivotNewRowsTag,
-            "Tag value is equal to expected"
-        );
-    
-        $this->assertEquals(
-            2,
-            $countPivotNewRowsDatasetVersion,
-            "Dataset Version value is equal to expected"
-        );
         $response->assertStatus(201);
     }
+
 
     /**
      * Insert data into tool_has_tags table with success

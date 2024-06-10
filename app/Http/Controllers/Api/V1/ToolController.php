@@ -744,7 +744,7 @@ class ToolController extends Controller
     {
         try {
             foreach ($datasets as $value) {
-                $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $value)->pluck('id')->all();
+                $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
     
                 foreach ($datasetVersionIDs as $datasetVersionID) {
                     DatasetVersionHasTool::updateOrCreate([
@@ -975,7 +975,7 @@ class ToolController extends Controller
                 ->pluck('dataset_id')
                 ->all();
 
-            $datasets = Dataset::where('id', $datasetIDs)
+            $datasets = Dataset::whereIn('id', $datasetIDs)
                 ->with('versions')
                 ->get();
 
