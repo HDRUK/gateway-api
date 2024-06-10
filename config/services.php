@@ -56,4 +56,9 @@ return [
         'pubsub_topic' => env('GOOGLE_CLOUD_PUBSUB_TOPIC', 'gcp_pubsub_pubsub_topic'),
         'pubsub_enabled' => env('GOOGLE_CLOUD_PUBSUB_ENABLED'. false),
     ],
+
+    'hubspot' => [
+        'base_url' => env('HUBSPOT_BASE_URL', 'http://hub.local'),
+        'key' => env('HUBSPOT_KEY', 'hubspot_key'),
+    ],
 ];

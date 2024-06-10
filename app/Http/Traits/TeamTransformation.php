@@ -69,6 +69,7 @@ trait TeamTransformation
                     'mongo_id' => $user['mongo_id'],
                     'mongo_object_id' => $user['mongo_object_id'],
                     'terms' => $user['terms'],
+                    'hubspot_id' => $user['hubspot_id'],
                 ];
 
                 $teamHasUserId = (int) $user['pivot']['id'];
