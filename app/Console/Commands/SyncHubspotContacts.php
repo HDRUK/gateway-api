@@ -95,7 +95,7 @@ class SyncHubspotContacts extends Command
         }
 
         // disabled users
-        $users = User::onlyTrashed()->where(['is_admin' => 1])->get();
+        $users = User::onlyTrashed()->where(['is_admin' => 0])->get();
         foreach ($users as $user) {
             $hubspot = [
                 'gateway_registered_user' => 'No',
