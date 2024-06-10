@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('app:update-licenses')->monthlyOn(1, '01:00');
 
         // update hubspot contacts information
-        $schedule->command('app:sync-hubspot-contacts')->dailyAt(1, '04:00');
+        $schedule->command('app:sync-hubspot-contacts')->dailyAt('04:00');
     }
 
     /**
