@@ -20,7 +20,7 @@ return new class extends Migration
             $table->boolean('direct_linkage');
             $table->text('description')->nullable();
 
-            // Unique key for combination of dataset_1_id, dataset_2_id, and linkage_type
+            // Unique key for combination of dataset_version_source_id, dataset_version_target_id, and linkage_type
             $table->unique(['dataset_version_source_id', 'dataset_version_target_id', 'linkage_type'], 'linkage_unique');
 
             // Indexes for foreign keys
