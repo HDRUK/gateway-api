@@ -5,13 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DatasetHasTool extends Model
+class DatasetVersionHasTool extends Model
 {
     use HasFactory;
 
 
     protected $fillable = [
-        'dataset_id',
+        'dataset_version_id',
         'tool_id',
     ];
 
@@ -20,7 +20,7 @@ class DatasetHasTool extends Model
      * 
      * @var string
      */
-    protected $table = 'dataset_has_tools';
+    protected $table = 'dataset_version_has_tool';
 
     /**
      * Indicates if the model should be timestamped or not

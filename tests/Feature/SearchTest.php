@@ -7,7 +7,8 @@ use Tests\TestCase;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
-use App\Models\DatasetHasTool;
+use App\Models\DatasetVersionHasTool;
+use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\DurHasTool;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
@@ -31,6 +32,7 @@ use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
+use Database\Seeders\DatasetVersionHasToolSeeder;
 use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\DataProviderSeeder;
 use Database\Seeders\DurHasToolSeeder;
@@ -64,6 +66,7 @@ class SearchTest extends TestCase
             KeywordSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
+            DatasetVersionHasToolSeeder::class,
             LicenseSeeder::class,
             ToolSeeder::class,
             CollectionSeeder::class,

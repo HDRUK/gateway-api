@@ -11,7 +11,8 @@ use App\Models\License;
 use App\Models\ToolHasTag;
 use App\Models\DataProvider;
 use App\Models\TypeCategory;
-use App\Models\DatasetHasTool;
+use App\Models\DatasetVersionHasTool;
+use App\Models\DatasetVersion;
 use Illuminate\Console\Command;
 use App\Models\DataProviderColl;
 use App\Models\ProgrammingPackage;
@@ -155,6 +156,16 @@ class ToolsPostMigrationProcess extends Command
     }
 
     /**
+     * Get the CSV data for testing purposes.
+     *
+     * @return array
+     */
+    public function getCsvData(): array
+    {
+        return $this->csvData;
+    }
+
+    /**
      * Insert tool document into elastic index
      *
      * @param integer $id
@@ -200,13 +211,17 @@ class ToolsPostMigrationProcess extends Command
             ->pluck('description')
             ->all();
 
-        $datasetIDs = DatasetHasTool::where('tool_id', $id)
+        $datasetVersionsIDs = DatasetVersionHasTool::where('tool_id', $id)
+            ->pluck('dataset_version_id')
+            ->all();
+
+        $datasetIDs = DatasetVersion::whereIn('id', $datasetVersionsIDs)
             ->pluck('dataset_id')
             ->all();
 
-        $datasets = Dataset::where('id', $datasetIDs)
+        $datasets = Dataset::whereIn('id', $datasetIDs)
             ->with('versions')
-            ->get();
+            ->get(); 
 
         $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
             ->pluck('data_provider_coll_id')
@@ -252,5 +267,17 @@ class ToolsPostMigrationProcess extends Command
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * Check if a dataset version has a specific tool.
+     *
+     * @param DatasetVersion $datasetVersion
+     * @param Tool $tool
+     * @return bool
+     */
+    public function DatasetVersionHasTool(DatasetVersion $datasetVersion, Tool $tool): bool
+    {
+        return $datasetVersion->tools()->where('tool_id', $tool->id)->exists();
     }
 }

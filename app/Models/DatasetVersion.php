@@ -1,9 +1,9 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Tool;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -72,6 +72,14 @@ class DatasetVersion extends Model
             "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) LIKE LOWER(?)",
             ["%$filterTitle%"]
         );
+    }
+
+       /**
+     * The tools that belong to the dataset version.
+     */
+    public function tools(): BelongsToMany
+    {
+        return $this->belongsToMany(Tool::class, 'dataset_version_has_tool');
     }
 
 }
