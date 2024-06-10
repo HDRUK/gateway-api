@@ -740,11 +740,11 @@ class ToolController extends Controller
      * @param integer $toolId
      * @return mixed
      */
-    private function insertDatasetVersionHasTool(array $datasets, int $toolId): bool
+    private function insertDatasetVersionHasTool(array $datasets, int $toolId): mixed
     {
         try {
-            foreach ($datasets as $datasetId) {
-                $datasetVersionIDs = DatasetVersion::where('dataset_id', $datasetId)->pluck('id')->all();
+            foreach ($datasets as $value) {
+                $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $value)->pluck('id')->all();
     
                 foreach ($datasetVersionIDs as $datasetVersionID) {
                     DatasetVersionHasTool::updateOrCreate([
