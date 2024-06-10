@@ -21,8 +21,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('dur', function (Blueprint $table) {
-            $table->renameColumn('confidential_data_description', 'confidential_description');
-        });
+        if (Schema::hasTable('dur')) {
+            Schema::table('dur', function (Blueprint $table) {
+                $table->renameColumn('confidential_data_description', 'confidential_description');
+            });
+        }
     }
 };
