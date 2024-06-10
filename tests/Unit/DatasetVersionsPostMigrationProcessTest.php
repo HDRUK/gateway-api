@@ -115,8 +115,8 @@ class DatasetVersionsPostMigrationProcessesTest extends TestCase
         $datasetVersion2 = DatasetVersion::factory()->create(['dataset_id' => $dataset->id]);
 
         $linkage = DatasetVersionHasDatasetVersion::create([
-            'dataset_version_1_id' => $datasetVersion1->id,
-            'dataset_version_2_id' => $datasetVersion2->id,
+            'dataset_version_source_id' => $datasetVersion1->id,
+            'dataset_version_target_id' => $datasetVersion2->id,
             'linkage_type' => 'some_linkage_type',
             'direct_linkage' => true,
             'description' => 'Test linkage'
@@ -159,16 +159,16 @@ class DatasetVersionsPostMigrationProcessesTest extends TestCase
         $datasetVersion3 = DatasetVersion::factory()->create(['dataset_id' => $dataset->id]);
 
         $linkage1 = DatasetVersionHasDatasetVersion::create([
-            'dataset_version_1_id' => $datasetVersion1->id,
-            'dataset_version_2_id' => $datasetVersion2->id,
+            'dataset_version_source_id' => $datasetVersion1->id,
+            'dataset_version_target_id' => $datasetVersion2->id,
             'linkage_type' => 'some_linkage_type',
             'direct_linkage' => true,
             'description' => 'Test linkage 1'
         ]);
 
         $linkage2 = DatasetVersionHasDatasetVersion::create([
-            'dataset_version_1_id' => $datasetVersion1->id,
-            'dataset_version_2_id' => $datasetVersion3->id,
+            'dataset_version_source_id' => $datasetVersion1->id,
+            'dataset_version_target_id' => $datasetVersion3->id,
             'linkage_type' => 'some_linkage_type',
             'direct_linkage' => true,
             'description' => 'Test linkage 2'

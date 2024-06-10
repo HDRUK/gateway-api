@@ -10,8 +10,8 @@ class DatasetVersionHasDatasetVersion extends Model
     use HasFactory;
 
     protected $fillable = [
-        'dataset_version_1_id',
-        'dataset_version_2_id',
+        'dataset_version_source_id',
+        'dataset_version_target_id',
         'linkage_type',
         'direct_linkage',
         'description',
@@ -36,7 +36,7 @@ class DatasetVersionHasDatasetVersion extends Model
      */
     public function dataset1()
     {
-        return $this->belongsTo(Dataset::class, 'dataset_version_1_id');
+        return $this->belongsTo(Dataset::class, 'dataset_version_source_id');
     }
 
     /**
@@ -45,6 +45,6 @@ class DatasetVersionHasDatasetVersion extends Model
     
     public function dataset2()
     {
-        return $this->belongsTo(Dataset::class, 'dataset_version_2_id');
+        return $this->belongsTo(Dataset::class, 'dataset_version_target_id');
     }
 }

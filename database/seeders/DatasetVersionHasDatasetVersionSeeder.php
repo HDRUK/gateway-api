@@ -29,15 +29,15 @@ class DatasetVersionHasDatasetVersionSeeder extends Seeder
             $description = fake()->paragraph();
 
             $DatasetVersionHasDatasetVersion = DatasetVersionHasDatasetVersion::where([
-                'dataset_version_1_id' => $datasetVersionId1,
-                'dataset_version_2_id' => $datasetVersionId2,
+                'dataset_version_source_id' => $datasetVersionId1,
+                'dataset_version_target_id' => $datasetVersionId2,
                 'linkage_type' => $linkageType,
             ])->first();
 
             if (!$DatasetVersionHasDatasetVersion) {
                 DatasetVersionHasDatasetVersion::create([
-                    'dataset_version_1_id' => $datasetVersionId1,
-                    'dataset_version_2_id' => $datasetVersionId2,
+                    'dataset_version_source_id' => $datasetVersionId1,
+                    'dataset_version_target_id' => $datasetVersionId2,
                     'linkage_type' => $linkageType,
                     'direct_linkage' => $directLinkage,
                     'description' => $description,

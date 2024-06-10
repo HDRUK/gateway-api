@@ -29,8 +29,8 @@ class DatasetVersionsPostMigrationProcesses
      */
     public function datasetVersionHasDatasetVersion(DatasetVersion $datasetVersion1, DatasetVersion $datasetVersion2): bool
     {
-        return DatasetVersionHasDatasetVersion::where('dataset_version_1_id', $datasetVersion1->id)
-            ->where('dataset_version_2_id', $datasetVersion2->id)
+        return DatasetVersionHasDatasetVersion::where('dataset_version_source_id', $datasetVersion1->id)
+            ->where('dataset_version_target_id', $datasetVersion2->id)
             ->exists();
     }
 }
