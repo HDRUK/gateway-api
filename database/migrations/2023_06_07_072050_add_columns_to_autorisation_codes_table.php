@@ -23,12 +23,28 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('authorisation_codes', function (Blueprint $table) {
-            $table->dropColumn([
-                'created_at',
-                'expired_at',
-                'updated_at',
-            ]);
-        });
+        if (Schema::hasColumn('authorisation_codes', 'created_at')) {
+            Schema::table('authorisation_codes', function (Blueprint $table) {
+                $table->dropColumn([
+                    'created_at',
+                ]);
+            });
+        }
+
+        if (Schema::hasColumn('authorisation_codes', 'expired_at')) {
+            Schema::table('authorisation_codes', function (Blueprint $table) {
+                $table->dropColumn([
+                    'expired_at',
+                ]);
+            });
+
+        }
+        if (Schema::hasColumn('authorisation_codes', 'updated_at')) {
+            Schema::table('authorisation_codes', function (Blueprint $table) {
+                $table->dropColumn([
+                    'updated_at',
+                ]);
+            });
+        }
     }
 };
