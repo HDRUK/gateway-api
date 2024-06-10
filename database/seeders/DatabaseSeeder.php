@@ -43,6 +43,8 @@ class DatabaseSeeder extends Seeder
             AuditLogSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
+            DatasetVersionHasDatasetVersionSeeder::class,
+            DatasetVersionHasToolSeeder::class,
             ApplicationSeeder::class,
             ApplicationHasPermissionSeeder::class,
             FAIRShareCommandSeeder::class,

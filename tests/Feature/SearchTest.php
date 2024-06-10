@@ -27,12 +27,13 @@ use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use MetadataManagementController AS MMC;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\DatasetVersionHasToolSeeder;
+use Database\Seeders\DatasetVersionHasDatasetVersionSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\CollectionHasDatasetSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\DatasetVersionHasToolSeeder;
 use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\DataProviderSeeder;
 use Database\Seeders\DurHasToolSeeder;
@@ -66,13 +67,14 @@ class SearchTest extends TestCase
             KeywordSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
-            DatasetVersionHasToolSeeder::class,
             LicenseSeeder::class,
             ToolSeeder::class,
             CollectionSeeder::class,
             KeywordSeeder::class,
             CollectionHasDatasetSeeder::class,
             CollectionHasKeywordSeeder::class,
+            DatasetVersionHasDatasetVersionSeeder::class,
+            DatasetVersionHasToolSeeder::class,
             DurSeeder::class,
             PublicationSeeder::class,
             CategorySeeder::class,
