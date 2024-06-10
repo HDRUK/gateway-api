@@ -22,7 +22,7 @@ Accept: application/json
 {
     "firstname": {{uFirstName}},
     "lastname": {{uLastName}},
-    "email": {{uEmail}},
+    "email": {{uEmail2}},
     "password": {{uPassword}},
     "sector_id": 1,
     "contact_feedback": 1,
