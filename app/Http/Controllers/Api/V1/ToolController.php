@@ -736,7 +736,7 @@ class ToolController extends Controller
     /**
      * Insert data into DatasetVersionHasTool
      *
-     * @param array $dataset
+     * @param array $datasets
      * @param integer $toolId
      * @return mixed
      */
