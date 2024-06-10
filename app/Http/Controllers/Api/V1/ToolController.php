@@ -740,7 +740,7 @@ class ToolController extends Controller
      * @param integer $toolId
      * @return mixed
      */
-    private function insertDatasetVersionHasTool(array $dataset, int $toolId): bool
+    private function insertDatasetVersionHasTool(array $datasets, int $toolId): bool
     {
         try {
             foreach ($datasets as $datasetId) {
