@@ -276,7 +276,7 @@ class ToolsPostMigrationProcess extends Command
      * @param Tool $tool
      * @return bool
      */
-    public function DatasetVersionHasTool(DatasetVersion $datasetVersion, Tool $tool): bool
+    public function datasetVersionHasTool(DatasetVersion $datasetVersion, Tool $tool): bool
     {
         return $datasetVersion->tools()->where('tool_id', $tool->id)->exists();
     }
