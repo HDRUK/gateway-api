@@ -29,13 +29,15 @@ return new class extends Migration
             $table->softDeletes();
             $table->boolean('enabled')->default(true);
             $table->bigInteger('user_id')->unsigned();
+            $table->bigInteger('dataset_id')->unsigned();
             $table->mediumText('ro_crate')->nullable();
-            $table->foreign('dataset_id')->references('id')->on('datasets');
-            $table->foreign('user_id')->references('id')->on('users');
             $table->string('organization_name')->nullable();
             $table->string('project_title')->nullable();
             $table->string('lay_summary')->nullable();
             $table->string('public_benefit_statement')->nullable();
+
+            $table->foreign('dataset_id')->references('id')->on('datasets');
+            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 };
