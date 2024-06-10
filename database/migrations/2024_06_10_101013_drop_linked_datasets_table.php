@@ -13,11 +13,7 @@ class DropLinkedDatasetsTable extends Migration
     public function up()
     {
         Schema::disableForeignKeyConstraints();
-
-        if (Schema::hasTable('linked_datasets')) {
-            Schema::drop('linked_datasets');
-        }
-
+        Schema::dropIfExists('linked_datasets');
         Schema::enableForeignKeyConstraints();
     }
 
