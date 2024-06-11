@@ -276,7 +276,6 @@ class EnquiryThreadController extends Controller
                 'data' => $enquiryThreadId,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -284,8 +283,6 @@ class EnquiryThreadController extends Controller
                 'description' => 'EnquiryThread ' . $enquiryThreadId . ' create - FAILED: ' . 
                     $e->getMessage(),
             ]);
-
-            throw new Exception($e->getMessage());
         }
     }
 

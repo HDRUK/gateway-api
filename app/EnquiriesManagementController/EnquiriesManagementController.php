@@ -139,7 +139,6 @@ class EnquiriesManagementController {
                 }
             }
         } catch (Exception $e) {
-            throw new Exception ($e->getMessage());
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'SEND EMAIL',
