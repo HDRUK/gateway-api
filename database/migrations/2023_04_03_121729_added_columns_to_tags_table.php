@@ -26,13 +26,29 @@ return new class extends Migration
     {
         Schema::disableForeignKeyConstraints();
 
-        Schema::table('tags', function (Blueprint $table) {
-            $table->dropColumn(['deleted_at', 'enabled']);
-        });
+        if (Schema::hasColumn('tags', 'deleted_at')) {
+            Schema::table('tags', function (Blueprint $table) {
+                $table->dropColumn([
+                    'deleted_at',
+                ]);
+            });
+        }
 
-        Schema::table('tags', function (Blueprint $table) {
-            $table->char('description', 255)->nullable()->change();
-        });
+        if (Schema::hasColumn('tags', 'enabled')) {
+            Schema::table('tags', function (Blueprint $table) {
+                $table->dropColumn([
+                    'enabled',
+                ]);
+            });
+        }
+
+        if (Schema::hasColumn('tags', 'description')) {
+            Schema::table('tags', function (Blueprint $table) {
+                $table->dropColumn([
+                    'description',
+                ]);
+            });
+        }
 
         Schema::disableForeignKeyConstraints();
 
