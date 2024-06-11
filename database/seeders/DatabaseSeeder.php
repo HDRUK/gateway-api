@@ -70,7 +70,7 @@ class DatabaseSeeder extends Seeder
             DataAccessApplicationSeeder::class,
             DataAccessTemplateSeeder::class,
             EnquiryThreadSeeder::class,
-            EnquiryMessagesSeeder::class,
+            EnquiryMessageSeeder::class,
             CollectionHasToolSeeder::class,
             CategorySeeder::class,
             DurHasPublicationSeeder::class,

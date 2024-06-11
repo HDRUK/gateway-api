@@ -3320,4 +3320,42 @@ return [
             'id' => '[0-9]+',
         ],
     ],
+    // Enquiry Threads
+    [
+        'name' => 'enquiry_threads',
+        'method' => 'get',
+        'path' => '/enquiry_threads',
+        'methodController' => 'EnquiryThreadController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'enquiry_threads',
+        'method' => 'get',
+        'path' => '/enquiry_threads/{id}',
+        'methodController' => 'EnquiryThreadController@show',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'enquiry_threads',
+        'method' => 'post',
+        'path' => '/enquiry_threads',
+        'methodController' => 'EnquiryThreadController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
 ];

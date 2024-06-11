@@ -4,14 +4,14 @@ namespace Tests\Unit;
 
 use App\Mail\Email;
 use App\Models\EmailTemplate;
-use App\Models\EnquiryMessages;
+use App\Models\EnquiryMessage;
 use App\Models\EnquiryThread;
 use App\Models\Team;
 use App\Models\Role;
 
 use Tests\TestCase;
 use Database\Seeders\EnquiryThreadSeeder;
-use Database\Seeders\EnquiryMessagesSeeder;
+use Database\Seeders\EnquiryMessageSeeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\TeamSeeder;
@@ -58,7 +58,7 @@ class AliasReplyScannerTest extends TestCase
             TeamHasUserSeeder::class,
             TeamUserHasRoleSeeder::class,
             EnquiryThreadSeeder::class,
-            EnquiryMessagesSeeder::class,
+            EnquiryMessageSeeder::class,
         ]);
 
         $unique_key = EnquiryThread::get()->first()->unique_key;
@@ -107,14 +107,16 @@ class AliasReplyScannerTest extends TestCase
         $response = ARS::getThread($alias);
         $this->assertNotEmpty($response);
 
-        $this->assertSame(array_keys($response->toArray()),
-                            ['id',
-                            'user_id',
-                            'team_id',
-                            'project_title',
-                            'unique_key',
-                            'is_dar_dialogue',
-                            'is_dar_status']);
+        $this->assertSame(array_keys($response->toArray()), [
+            'id',
+            'user_id',
+            'team_id',
+            'project_title',
+            'unique_key',
+            'is_dar_dialogue',
+            'is_dar_status',
+            'enabled',
+        ]);
 
         $this->assertEquals($response->id,$thread->id);
     }
@@ -153,12 +155,12 @@ class AliasReplyScannerTest extends TestCase
         $firstMessage = $messages[0];
         $alias = ARS::getAlias($firstMessage);
         $enquiryThread = ARS::getThread($alias);
-        $nMessagesBefore = EnquiryMessages::get()->count();
+        $nMessagesBefore = EnquiryMessage::get()->count();
 
         $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage,$enquiryThread->id);
         $this->assertNotEmpty($enquiryMessage);
 
-        $nMessagesAfter = EnquiryMessages::get()->count();
+        $nMessagesAfter = EnquiryMessage::get()->count();
         $this->assertTrue($nMessagesAfter == $nMessagesBefore + 1);
         $this->assertSame($enquiryMessage->message_body,$firstMessage->getHTMLBody());
 
@@ -178,8 +180,8 @@ class AliasReplyScannerTest extends TestCase
                 ->first();
 
         $actualDarManagers = $team->teamUserRoles
-            ->where("role_name","custodian.dar.manager")
-            ->where("enabled",true);
+            ->where("role_name", "custodian.dar.manager")
+            ->where("enabled", true);
         
         $darManagers = ARS::getDarManagersFromEnquiryMessage($enquiryThread->id);
         $this->assertEqualsCanonicalizing($darManagers,$actualDarManagers);

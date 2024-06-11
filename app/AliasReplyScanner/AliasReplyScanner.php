@@ -2,7 +2,7 @@
 
 namespace App\AliasReplyScanner;
 
-use App\Models\EnquiryMessages;
+use App\Models\EnquiryMessage;
 use App\Models\EnquiryThread;
 
 use App\Models\Team;
@@ -94,7 +94,7 @@ class AliasReplyScanner {
             $email = substr($from, $pos1 + 1, $pos2 - $pos1 - 1);
         }
 
-        $enquiryMessage = EnquiryMessages::create([
+        $enquiryMessage = EnquiryMessage::create([
             "from" => $email,
             "message_body" => $body,
             "thread_id" => $threadId,
@@ -159,7 +159,7 @@ class AliasReplyScanner {
         $darManagers = null;
 
         //get the message linked to the original thread
-        $enquiryMessage = EnquiryMessages::with("thread")
+        $enquiryMessage = EnquiryMessage::with("thread")
                             ->where("id",$enquiryMessageId)
                             ->first();
         
