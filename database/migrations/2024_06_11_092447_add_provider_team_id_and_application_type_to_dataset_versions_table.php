@@ -23,10 +23,13 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::table('dataset_versions', function (Blueprint $table) {
+            
             $table->dropForeign(['provider_team_id']);
             $table->dropColumn('provider_team_id');
             $table->dropColumn('application_type');
         });
+        Schema::enableForeignKeyConstraints();
     }
 };
