@@ -25,9 +25,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
+        DB::table('tools')->update(['license' => null]);
+        DB::statement('ALTER TABLE `tools` DROP FOREIGN KEY `tools_license_foreign`');
+        DB::statement('ALTER TABLE `tools` DROP KEY `tools_license_foreign`');
+
         Schema::table('tools', function (Blueprint $table) {
-            $table->dropForeign(['license']);
             $table->char('license', 45)->nullable()->change();
         });
+        Schema::enableForeignKeyConstraints();
     }
 };

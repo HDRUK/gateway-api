@@ -21,8 +21,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tags', function (Blueprint $table) {
-            $table->enum('type', ['features', 'topics'])->change();
-        });
+        if (Schema::hasTable('tags')) {
+            if (Schema::hasColumn('tags', 'type')) {
+                DB::table('tags')->update(['type' => 'features']);
+                DB::statement("ALTER TABLE `tags` MODIFY `type` ENUM('features', 'topics')");
+            }
+        }
     }
 };
