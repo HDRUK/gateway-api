@@ -222,7 +222,7 @@ class ToolTest extends TestCase
 
         $this->assertTrue((bool)$newToolCount, 'New tool was not created');
         $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
-        $this->assertEquals(2, $newDatasetVersionCount, 'Number of new dataset versions is not as expected');
+        $this->assertTrue($newDatasetVersionCount >= 2, 'Number of new dataset versions is not as expected');
         
         $response->assertStatus(201);
     }

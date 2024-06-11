@@ -23,11 +23,13 @@ class DatasetVersionFactory extends Factory
      */
     public function definition(): array
     {
-        $ds = Dataset::all();
+        $dataset = Dataset::all()->random();
         return [
-            'dataset_id' => fake()->randomElement($ds)->id,
+            'dataset_id' => $dataset->id,
             'metadata' => json_encode($this->getFakeDataset()),
             'version' => fake()->unique()->numberBetween(1, 50),
+            'provider_team_id' => $dataset->team_id,
+            'application_type' => fake()->word(),
         ];
     }
 }

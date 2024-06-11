@@ -37,6 +37,8 @@ class TeamFactory extends Factory
             'mongo_object_id' => null,
             'is_question_bank' => fake()->boolean(),
             'is_provider' => fake()->boolean(),
+            'team_logo' => fake()->imageUrl(),
+
         ];
     }
 }
