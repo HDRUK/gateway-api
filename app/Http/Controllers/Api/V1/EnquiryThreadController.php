@@ -283,12 +283,14 @@ class EnquiryThreadController extends Controller
                 'description' => 'EnquiryThread ' . $enquiryThreadId . ' create - FAILED: ' . 
                     $e->getMessage(),
             ]);
-        } finally {
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
-                'data' => null,
-            ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
+            
+            throw new Exception ($e->getMessage());
         }
+
+        return response()->json([
+            'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
+            'data' => null,
+        ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
     }
 
     private function mapDatasets(array $datasets): array

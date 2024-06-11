@@ -128,9 +128,10 @@ class EnquiriesManagementController {
 
                 // In case for multiple users to notify, loop again for actual details.
                 foreach ($u as $arr) {
+                    $aliasEmail = str_replace('@', '+' . $threadDetail['thread']['unique_key']. '@', $arr['user']['email']);
                     $to = [
                         'to' => [
-                            'email' => $arr['user']['email'],
+                            'email' => str_replace('@', '+' . $threadDetail['thread']['unique_key']. '@', $arr['user']['email']),
                             'name' => $arr['user']['firstname'] . ' ' . $arr['user']['lastname'],
                         ],
                     ];
@@ -146,6 +147,8 @@ class EnquiriesManagementController {
                 'description' => 'EnquiriesManagementController failed to send email on behalf of ' .
                     $jwtUser['id'] . ': ' . $e->getMessage(),
             ]);
+
+            throw new Exception($e->getMessage());
         }
     }
 
