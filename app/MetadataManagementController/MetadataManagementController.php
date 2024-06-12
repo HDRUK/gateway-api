@@ -5,25 +5,21 @@ namespace App\MetadataManagementController;
 use Mauro;
 use Config;
 use Exception;
-
+use App\Exceptions\MMCException;
 use App\Models\Filter;
 use App\Models\Dataset;
-use Http\Client\HttpClient;
-
 use App\Models\DataProviderColl;
 use App\Models\DataProviderCollHasTeam;
 use App\Models\DatasetVersion;
-
-use Illuminate\Support\Carbon;
-use App\Exceptions\MMCException;
-
 use Elastic\Elasticsearch\Client;
-use Illuminate\Support\Facades\DB;
-
-use Illuminate\Support\Facades\Http;
 use Elastic\Elasticsearch\ClientBuilder;
-
+use Http\Client\HttpClient;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class MetadataManagementController {
 
@@ -198,124 +194,81 @@ class MetadataManagementController {
     }
 
     /**
-     * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection
+     * Calls a re-indexing of Elastic search when a dataset is created, updated or added to a collection.
      * 
-     * @param string $datasetId The dataset id from the DB
+     * @param string $datasetId The dataset id from the DB.
      * 
      * @return void
      */
     public function reindexElastic(string $datasetId): void
     {
-        // Get named entities
         try {
-
-            $datasetMatch = Dataset::where(['id' => $datasetId])
+            $datasetMatch = Dataset::where('id', $datasetId)
                 ->with(['namedEntities', 'collections', 'durs', 'spatialCoverage'])
-                ->first();
-            
-            $version = $datasetMatch->latestVersion();
-            $metadata = $version->metadata;
-            $dataset = $datasetMatch->toArray();
+                ->firstOrFail();
 
-            $namedEntities = array();
-            foreach ($dataset['named_entities'] as $n) {
-                $namedEntities[] = $n['name'];
-            }
+            $metadata = $datasetMatch->latestVersion()->metadata;
 
-            $collections = array();
-            foreach ($dataset['collections'] as $c) {
-                $collections[] = $c['name'];
-            }
-
-            $durs = array();
-            foreach ($dataset['durs'] as $d) {
-                $durs[] = $d['project_title'];
-            }
-
-            $geographicLocations = array();
-            foreach ($dataset['spatial_coverage'] as $s) {
-                $geographicLocations[] = $s['region'];
-            }
-
-            $metadataModelVersion = $metadata['gwdmVersion'];
-
-            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $datasetMatch['team_id'])
-                ->pluck('data_provider_coll_id')
-                ->all();
-            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
-                ->pluck('name')
-                ->all();
-
-            // ------------------------------------------------------
-            // WARNING....
-            //  - this part of the code may need updating when the GWDM is changed 
-            //  - can we make this more dynamic in someway?
-            // ------------------------------------------------------
-            $publisherName = '';
-            $containsTissue = false;
-            $populationSize = -1;
-            $accessServiceCategory = '';
-
-            if(version_compare($metadataModelVersion,"1.1","<")){
-                $publisherName = $metadata['metadata']['summary']['publisher']['publisherName'];
-                $containsTissue = !empty($metadata['metadata']['coverage']['physicalSampleAvailability']) ? true : false;
-            } else {
-                if (array_key_exists('name',$metadata['metadata']['summary']['publisher'])){
-                    $publisherName = $metadata['metadata']['summary']['publisher']['name'];
-                }
-                if(array_key_exists('biologicalsamples',$metadata['metadata']['coverage'])){
-                    $containsTissue = !empty($metadata['metadata']['coverage']['biologicalsamples']) ? true : false;
-                }
-                if (array_key_exists('populationSize', $metadata['metadata']['summary'])){
-                    $populationSize = $metadata['metadata']['summary']['populationSize'];
-                }
-                if (array_key_exists('accessServiceCategory', $metadata['metadata']['accessibility']['access'])){
-                    $accessServiceCategory = $metadata['metadata']['accessibility']['access']['accessServiceCategory'];
-                }
-            }
-
-            $endDate = $metadata['metadata']['provenance']['temporal']['endDate'];
-            if (is_null($endDate)) {
-                // Note: danger that this approach is not future proof.
-                // Better approach would be to either keep elastic index updated regularly with
-                // the current date or for elastic to treat null values as the current date.
-                $endDate = Carbon::now()->addYears(180);
-            }
-            
             $toIndex = [
-                'abstract' => $metadata['metadata']['summary']['abstract'],
-                'keywords' => $metadata['metadata']['summary']['keywords'],
-                'description' => $metadata['metadata']['summary']['description'],
-                'shortTitle' => $metadata['metadata']['summary']['shortTitle'],
-                'title' => $metadata['metadata']['summary']['title'],
-                'populationSize' => $populationSize,
-                'publisherName' => $publisherName,
-                'startDate' => $metadata['metadata']['provenance']['temporal']['startDate'],
-                'endDate' => $endDate,
-                'containsTissue' => $containsTissue,
-                'conformsTo' => explode(',', $metadata['metadata']['accessibility']['formatAndStandards']['conformsTo']),
-                'hasTechnicalMetadata' => (bool) $datasetMatch['has_technical_details'],
-                'named_entities' => $namedEntities,
-                'collectionName' => $collections,
-                'dataUseTitles' => $durs,
-                'geographicLocation' => $geographicLocations,
-                'accessService' => $accessServiceCategory,
-                'dataProviderColl' => $dataProviderColl
+                'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
+                'keywords' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], ''),
+                'description' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.description'], ''),
+                'shortTitle' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.shortTitle'], ''),
+                'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''),
+                'populationSize' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.populationSize'], -1),
+                'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
+                'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], ''),
+                'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(180)),
+                'containsTissue' => !empty($this->getValueByPossibleKeys($metadata, ['metadata.coverage.biologicalsamples', 'metadata.coverage.physicalSampleAvailability'], '')),
+                'tissueSampleAvailability' => !empty($this->getValueByPossibleKeys($metadata, ['metadata.coverage.properties.materialType.items', 'TissuesSampleCollection.properties.materialType.items'], '')),
+                'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
+                'hasTechnicalMetadata' => (bool) $datasetMatch->has_technical_details,
+                'named_entities' => $datasetMatch->namedEntities->pluck('name')->all(),
+                'collectionName' => $datasetMatch->collections->pluck('name')->all(),
+                'dataUseTitles' => $datasetMatch->durs->pluck('project_title')->all(),
+                'geographicLocation' => $datasetMatch->spatialCoverage->pluck('region')->all(),
+                'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], ''),
+                'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
             ];
 
             $params = [
                 'index' => 'dataset',
-                'id' => $datasetMatch['id'],
+                'id' => $datasetMatch->id,
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
-            
+
             $client = $this->getElasticClient();
-            $response = $client->index($params);
+            $client->index($params);
 
         } catch (Exception $e) {
+            \Log::error('Error reindexing ElasticSearch', [
+                'datasetId' => $datasetId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             throw new Exception($e->getMessage());
         }
+    }
+
+    /**
+     * Search for a value in an array by trying multiple possible keys in order.
+     *
+     * @param array $array The array to search.
+     * @param array $keys The list of possible keys to try, in order.
+     * @param mixed $default The default value to return if none of the keys are found.
+     * @return mixed The value of the first key found, or the default value if none are found.
+     */
+    function getValueByPossibleKeys(array $array, array $keys, $default = null)
+    {
+        foreach ($keys as $key) {
+            $value = Arr::get($array, $key, null);
+            if (!is_null($value)) {
+                return $value;
+            }
+        }
+        Log::info('No value found for any of the specified keys', ['keys' => $keys, 'array' => $array]);
+        return $default;
     }
 
     /**
