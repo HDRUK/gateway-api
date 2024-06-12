@@ -38,13 +38,7 @@ class UpdateSavedSearch extends BaseFormRequest
             'sort_order' => [
                 'required',
                 'string',
-                Rule::in([
-                    SortOrderSavedSearch::MOST_RELEVANT,
-                    SortOrderSavedSearch::SORT_TITLE_ASC,
-                    SortOrderSavedSearch::SORT_TITLE_DESC,
-                    SortOrderSavedSearch::MOST_RECENTLY_UPDATED,
-                    SortOrderSavedSearch::LEAST_RECENTLY_UPDATED,
-                ]),
+                Rule::in(['score','title:asc','title:desc','updated_at:desc','updated_at:asc']),
             ],
         ];
     }
