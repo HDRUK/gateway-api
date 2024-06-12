@@ -17,7 +17,6 @@ return new class extends Migration
 
         Schema::enableForeignKeyConstraints();
     }
-
     /**
      * Reverse the migrations.
      */
@@ -29,6 +28,7 @@ return new class extends Migration
             $table->softDeletes();
             $table->boolean('enabled')->default(true);
             $table->bigInteger('user_id')->unsigned();
+            $table->bigInteger('dataset_id')->unsigned(); 
             $table->mediumText('ro_crate')->nullable();
             $table->foreign('dataset_id')->references('id')->on('datasets');
             $table->foreign('user_id')->references('id')->on('users');

@@ -26,7 +26,15 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('tools', function (Blueprint $table) {
+            // Drop the foreign key constraint first
             $table->dropForeign(['license']);
+        });
+
+        // Ensure no big integers exist that could violate the char(45) constraint
+        DB::table('tools')->update(['license' => null]);
+
+        Schema::table('tools', function (Blueprint $table) {
+            // Change the column type back to char(45)
             $table->char('license', 45)->nullable()->change();
         });
     }
