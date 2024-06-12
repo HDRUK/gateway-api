@@ -43,6 +43,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        DB::statement("ALTER TABLE `publication_has_dataset` MODIFY `link_type` ENUM('ABOUT', 'USING', 'UNKNOWN') DEFAULT 'UNKNOWN'");
+        Schema::table('publication_has_dataset', function (Blueprint $table) {
+            if (!Schema::hasColumn('publication_has_dataset', 'link_type')) {
+                $table->enum('link_type', ['ABOUT', 'USING', 'UNKNOWN'])->default('UNKNOWN');
+            }
+        });
     }
 };

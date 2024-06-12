@@ -29,6 +29,9 @@ return new class extends Migration
         DB::statement('ALTER TABLE `collections` DROP KEY `collections_team_id_foreign`');
 
         Schema::table('collections', function (Blueprint $table) {
+            // Drop the foreign key constraint first
+            $table->dropForeign(['team_id']);
+            // Now drop the column
             $table->dropColumn('team_id');
         });
 

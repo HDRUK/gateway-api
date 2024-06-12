@@ -28,7 +28,7 @@ return new class extends Migration
             $table->softDeletes();
             $table->boolean('enabled')->default(true);
             $table->bigInteger('user_id')->unsigned();
-            $table->bigInteger('dataset_id')->unsigned();
+            $table->bigInteger('dataset_id')->unsigned(); 
             $table->mediumText('ro_crate')->nullable();
             $table->string('organization_name')->nullable();
             $table->string('project_title')->nullable();
