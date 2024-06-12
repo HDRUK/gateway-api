@@ -2208,15 +2208,30 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "name": "Test Saved Search",
-    "search_term": "",
-    "search_endpoint": "datasets",
-    "enabled": false,
+    "search_term":"",
+    "sort_order":"score:desc",
+    "name":"asdads",
+    "search_endpoint":"tools",
     "filters": [
         {
-            "id": 1,
-            "terms": ["term a","term b"]
+            "id":18,
+            "terms":["Python"]
         }
     ],
-    "sort_order": "score:desc"
+    "enabled":true
 }
+
+
+# {
+#     "name": "Test Saved Search",
+#     "search_term": "",
+#     "search_endpoint": "datasets",
+#     "enabled": false,
+#     "filters": [
+#         {
+#             "id": 1,
+#             "terms": ["term a","term b"]
+#         }
+#     ],
+#     "sort_order": "score:desc"
+# }
