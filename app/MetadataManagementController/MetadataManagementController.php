@@ -272,29 +272,6 @@ class MetadataManagementController {
     }
 
     /**
-     * Recursively search for a key in an array and return its value.
-     *
-     * @param array $array The array to search.
-     * @param string $key The key to search for.
-     * @return mixed|null The value of the key if found, null otherwise.
-     */
-    function searchKey(array $array, string $key)
-    {
-        foreach ($array as $k => $v) {
-            if ($k === $key) {
-                return $v;
-            }
-            if (is_array($v)) {
-                $result = searchKey($v, $key);
-                if ($result !== null) {
-                    return $result;
-                }
-            }
-        }
-        return null;
-    }
-
-    /**
      * Calls a delete on the document in ElasticSearch index when a dataset is 
      * deleted
      * 
