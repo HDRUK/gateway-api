@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use Config;
+
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
@@ -9,16 +11,31 @@ use App\Models\User;
 use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
+use App\Models\Publication;
 use Database\Seeders\DurSeeder;
+use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
+use App\Http\Enums\TeamMemberOf;
+use App\Models\Tool;
+use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
+use Database\Seeders\LicenseSeeder;
+use Database\Seeders\CategorySeeder;
 use Database\Seeders\CollectionSeeder;
+use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
+use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
+use Database\Seeders\DurHasPublicationSeeder;
+use Database\Seeders\ProgrammingPackageSeeder;
+use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\ProgrammingLanguageSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DurTest extends TestCase
@@ -29,6 +46,9 @@ class DurTest extends TestCase
     }
 
     const TEST_URL = '/api/v1/dur';
+    const TEST_URL_TEAM = '/api/v1/teams';
+    const TEST_URL_NOTIFICATION = '/api/v1/notifications';
+    const TEST_URL_USER = '/api/v1/users';
 
     protected $header = [];
 
@@ -43,12 +63,24 @@ class DurTest extends TestCase
 
         $this->seed([
             MinimalUserSeeder::class,
+            CategorySeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
+            LicenseSeeder::class,
+            TagSeeder::class,
+            TypeCategorySeeder::class,
             ApplicationSeeder::class,
             CollectionSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
             KeywordSeeder::class,
+            ToolSeeder::class,
             DurSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
+            PublicationHasToolSeeder::class,
+            DurHasPublicationSeeder::class,
+            DurHasToolSeeder::class,
         ]);
     }
     /**
@@ -109,12 +141,12 @@ class DurTest extends TestCase
                     'created_at',
                     'updated_at',
                     'datasets',
+                    'publications',
+                    'tools',
                     'keywords',
-                    'applications',
+                    'application',
                     'team',
                     'user',
-                    'application',
-                    'applicant_id',
                 ],
             ],
             'current_page',
@@ -192,13 +224,20 @@ class DurTest extends TestCase
                     'team_id',
                     'created_at',
                     'updated_at',
-                    'datasets',
+                    'datasets' => [
+                        0 => [
+                            'id',
+                            'shortTitle',
+                        ]
+                    ],
+                    'publications',
+                    'tools',
                     'keywords',
                     'applications',
                     'team',
                     'user',
-                    'application',
-                    'applicant_id',
+                    'application_id',
+                    'applications',
                 ]
             ]
         ]);
@@ -218,7 +257,9 @@ class DurTest extends TestCase
         $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $mockData = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -232,6 +273,7 @@ class DurTest extends TestCase
             $mockData,
             $this->header
         );
+
         $response->assertStatus(201);
 
         $countAfter = Dur::count();
@@ -261,6 +303,7 @@ class DurTest extends TestCase
         $countBefore = Dur::count();
         $mockData = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -292,6 +335,7 @@ class DurTest extends TestCase
         // update
         $mockDataUpdate = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -328,7 +372,9 @@ class DurTest extends TestCase
         $countBefore = Dur::count();
         $mockData = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -353,6 +399,7 @@ class DurTest extends TestCase
         // update
         $mockDataUpdate = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -370,6 +417,7 @@ class DurTest extends TestCase
         // update
         $mockDataEdit = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -404,7 +452,9 @@ class DurTest extends TestCase
         $countBefore = Dur::count();
         $mockData = [
             'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
             'user_id' => $userId,
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
@@ -435,6 +485,172 @@ class DurTest extends TestCase
         $responseDelete->assertStatus(200);
     }
 
+    public function test_download_dur_table_with_success(): void
+    {
+        // create team
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => 'some@email.com',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}'),
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();  
+        $teamId = $contentCreateTeam['data'];
+
+        // create user
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+        $responseCreateUser->assertStatus(201);
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        $userId = $contentCreateUser['data'];
+
+        // create dur
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+        $countBefore = Dur::count();
+        $mockData = [
+            'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
+            'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        $countAfter = Dur::count();
+        $countNewRow = $countAfter - $countBefore;
+
+        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+        
+        $responseDownload = $this->json(
+            'GET',
+            self::TEST_URL . '/export',
+            [],
+            $this->header,
+        );
+
+        $content = $responseDownload->streamedContent();
+        $this->assertMatchesRegularExpression('/Non-Gateway Datasets/', $content);
+    }
+
+    /**
+     * Create and Upload Dur with success
+     * 
+     * @return void
+     */
+    public function test_upload_dur_with_success(): void
+    {
+        // create dur
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+        $mockData = [
+            'datasets' => $this->generateUploadDatasets(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+            'organisation_sector' => 'academia',
+            'project_title' => 'Upload - Health, death, and cancers in people with learning disabilities and people with autism.',
+            'project_id_text' => 'eDRIS-1819-0051',
+            'organisation_name' => 'University of Glasgow',
+            'organisation_sector' => 'Academia',
+            'non_gateway_applicants' => 'Skye Harvey | Leora Bartell',
+            'applicant_id' => (int) $userId,
+            'project_start_date' => '2020-03-23T00:00:00',
+            'project_end_date' => '2025-04-30T00:00:00',
+            'latest_approval_date' => '2020-04-14T00:00:00',
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '/upload',
+            $mockData,
+            $this->header
+        );
+
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        $dur = Dur::where(['id' => $durId])->first();
+
+        $this->assertTrue((bool) $dur, 'Response was successfully');
+    }
+
+
     private function generateKeywords()
     {
         $return = [];
@@ -442,6 +658,18 @@ class DurTest extends TestCase
 
         for ($i = 1; $i <= $iterations; $i++) {
             $return[] = Keyword::where(['enabled' => 1])->get()->random()->name;
+        }
+
+        return array_unique($return);
+    }
+
+    private function generateTools()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $return[] = Tool::where(['enabled' => 1])->get()->random()->id;
         }
 
         return array_unique($return);
@@ -457,6 +685,32 @@ class DurTest extends TestCase
             $temp['id'] = Dataset::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $temp['is_locked'] = fake()->randomElement([0, 1]);
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generateUploadDatasets()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $return[] = Dataset::all()->random()->id;
+        }
+
+        return $return;
+    }
+
+    private function generatePublications()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Publication::all()->random()->id;
             $return[] = $temp;
         }
 

@@ -46,7 +46,8 @@ class UpdateTool extends BaseFormRequest
             ],
             'license' => [
                 'nullable',
-                'string',
+                'int',
+                'exists:licenses,id',
             ],
             'tech_stack' => [
                 'nullable',
@@ -70,6 +71,54 @@ class UpdateTool extends BaseFormRequest
             'enabled' => [
                 'required',
                 'boolean',
+            ],
+            'programming_language' => [
+                'nullable', 
+                'array',
+            ],
+            'programming_language.*' => [
+                'integer',
+            ],
+            'programming_package' => [
+                'nullable', 
+                'array',
+            ],
+            'programming_package.*' => [
+                'integer',
+            ],
+            'type_category' => [
+                'nullable', 
+                'array',
+            ],
+            'type_category.*' => [
+                'integer',
+            ],
+            'associated_authors' => [
+                'nullable', 
+                'string',
+            ],
+            'contact_address' => [
+                'nullable', 
+                'string',
+            ],
+            'publications' => [
+                'array',
+            ],
+            'publications.*.id'  => [
+                'integer',
+                'exists:publications,id',
+            ],
+            'publications.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'publications.*.user_id'  => [
+                'integer',
+                'exists:users,id',
+            ],
+            'publications.*.reason'  => [
+                'nullable',
+                'string',
             ],
         ];
     }

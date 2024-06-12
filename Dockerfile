@@ -25,6 +25,8 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql soap zip iconv bcmath \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
+    && docker-php-ext-configure pcntl --enable-pcntl \
+    && docker-php-ext-install pcntl \
     && docker-php-ext-install sockets
 
 # Install Redis
@@ -63,6 +65,9 @@ RUN composer install \
 
 # Generate Swagger
 RUN php artisan l5-swagger:generate
+
+# Add symbolic link for public file storage
+RUN php artisan storage:link
 
 # Starts both, laravel server and job queue
 CMD ["/var/www/docker/start.sh"]

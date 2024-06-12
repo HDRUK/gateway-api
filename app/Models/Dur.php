@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Application;
-use App\Models\Sector;
+use App\Models\Publication;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -111,14 +112,30 @@ class Dur extends Model
             ->withPivot('dur_id', 'dataset_id', 'user_id', 'application_id', 'is_locked', 'reason', 'created_at', 'updated_at');
     }
 
-    public function users(): BelongsToMany
+    public function userDatasets(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'dur_has_datasets');
     }
 
-    public function applications(): BelongsToMany
+    public function applicationDatasets(): BelongsToMany
     {
         return $this->belongsToMany(Application::class, 'dur_has_datasets');
+    }
+
+    public function publications(): BelongsToMany
+    {
+        return $this->belongsToMany(Publication::class, 'dur_has_publications')
+            ->withPivot('dur_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
+    }
+
+    public function userPublications(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'dur_has_publications');
+    }
+
+    public function applicationPublications(): BelongsToMany
+    {
+        return $this->belongsToMany(Application::class, 'dur_has_publications');
     }
     
     public function user(): BelongsTo
@@ -139,5 +156,60 @@ class Dur extends Model
     public function sector(): BelongsTo
     {
         return $this->belongsTo(Sector::class);
+    }
+
+    public function tools(): BelongsToMany
+    {
+        return $this->belongsToMany(Tool::class, 'dur_has_tools');
+    }
+
+    public static function exportHeadings(): array
+    {
+        return [
+            'Non-Gateway Datasets',
+            'Non-Gateway Applicants',
+            'Funders And Sponsors',
+            'Other Approval Committees',
+            'Gateway Outputs - Tools',
+            'Gateway Outputs - Papers',
+            'Non-Gateway Outputs',
+            'Project Title',
+            'Project ID',
+            'Organisation Name',
+            'Organisation Sector',
+            'Lay Summary',
+            'Technical Summary',
+            'Latest Approval Date',
+            'Manual Upload',
+            'Rejection Reason',
+            'Sublicence Arrangements',
+            'Public Benefit Statement',
+            'Data Sensitivity Level',
+            'Project Start Date',
+            'Project End Data',
+            'Access Date',
+            'Accredited Researcher Status',
+            'Confidential Data Description',
+            'Dataset Linkage Description',
+            'Duty of Confidentiality',
+            'Legal basis for Data Article 6',
+            'Legal basis for Data Article 9',
+            'National Data Opt-out',
+            'Organisation ID',
+            'Privacy Enhancements',
+            'Request Category Type',
+            'Request Frequency',
+            'Access Type',
+            'Enabled',
+            'Last Activity',
+            'Counter',
+            'ID1', // Intentionally renamed to not reveal our internal field names
+            'ID2', // Intentionally renamed to not reveal our internal field names
+            'UID', // Intentionally renamed to not reveal our internal field names
+            'TID', // Intentionally renamed to not reveal our internal field names
+            'Created At',
+            'Updated At',
+            'Applicant ID',
+        ];
     }
 }

@@ -112,7 +112,9 @@ class AliasReplyScannerTest extends TestCase
                             'user_id',
                             'team_id',
                             'project_title',
-                            'unique_key']);
+                            'unique_key',
+                            'is_dar_dialogue',
+                            'is_dar_status']);
 
         $this->assertEquals($response->id,$thread->id);
     }

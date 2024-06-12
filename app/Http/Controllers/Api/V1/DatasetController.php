@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
+use App\Models\DataProvider;
+use App\Models\DataProviderHasTeam;
 
 use Illuminate\Support\Carbon;
 use App\Models\SpatialCoverage;
@@ -383,7 +385,7 @@ class DatasetController extends Controller
                 $version = $dataset->latestVersion();
 
                 $translated = MMC::translateDataModelType(
-                    $version->metadata,
+                    json_encode($version->metadata),
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
                     Config::get('metadata.GWDM.name'),
@@ -477,6 +479,8 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
+
+            $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $teamId = (int)$input['team_id'];
@@ -598,7 +602,8 @@ class DatasetController extends Controller
                 // Dispatch term extraction to a subprocess as it may take some time
                 TermExtraction::dispatch(
                     $dataset->id,
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
+                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
+                    $elasticIndexing
                 );
 
                 Auditor::log([
