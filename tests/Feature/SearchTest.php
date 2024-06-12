@@ -7,7 +7,8 @@ use Tests\TestCase;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
-use App\Models\DatasetHasTool;
+use App\Models\DatasetVersionHasTool;
+use App\Models\DatasetVersionHasDatasetVersion;
 use App\Models\DurHasTool;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
@@ -26,6 +27,8 @@ use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use MetadataManagementController AS MMC;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\DatasetVersionHasToolSeeder;
+use Database\Seeders\DatasetVersionHasDatasetVersionSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
@@ -70,6 +73,8 @@ class SearchTest extends TestCase
             KeywordSeeder::class,
             CollectionHasDatasetSeeder::class,
             CollectionHasKeywordSeeder::class,
+            DatasetVersionHasDatasetVersionSeeder::class,
+            DatasetVersionHasToolSeeder::class,
             DurSeeder::class,
             PublicationSeeder::class,
             CategorySeeder::class,
@@ -806,7 +811,8 @@ class SearchTest extends TestCase
                     'journal_name',
                     'year_of_publication',
                     'full_text_url',
-                    'url'
+                    'url',
+                    'datasetLinkTypes'
                 ],
             ],
             'aggregations',

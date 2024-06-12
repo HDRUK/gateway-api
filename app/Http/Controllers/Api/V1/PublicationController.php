@@ -233,7 +233,7 @@ class PublicationController extends Controller
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             if ($publication) {
                 foreach ($datasetInput as $dataset) {
-                    $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'UNKNOWN';
+                    $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'USING';
                     PublicationHasDataset::updateOrCreate([
                         'publication_id' => (int) $publicationId,
                         'dataset_id' => (int) $dataset['id'],
@@ -370,7 +370,7 @@ class PublicationController extends Controller
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();
             foreach ($datasetInput as $dataset) {
-                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'UNKNOWN';
+                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'USING';
                 PublicationHasDataset::updateOrCreate([
                     'publication_id' => (int) $id,
                     'dataset_id' => (int) $dataset['id'],
@@ -506,7 +506,7 @@ class PublicationController extends Controller
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();
             foreach ($datasetInput as $dataset) {
-                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'UNKNOWN';
+                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'USING';
                 PublicationHasDataset::updateOrCreate([
                     'publication_id' => (int) $id,
                     'dataset_id' => (int) $dataset['id'],
@@ -633,12 +633,18 @@ class PublicationController extends Controller
                 ->toArray();
 
             $datasetTitles = array();
+            $datasetLinkTypes = array();
             foreach ($pubMatch['datasets'] as $d) {
                 $metadata = Dataset::where(['id' => $d])
                     ->first()
                     ->latestVersion()
                     ->metadata;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+
+                $datasetLinkTypes[] = PublicationHasDataset::where([
+                    ['publication_id', '=', (int) $id],
+                    ['dataset_id', '=', (int) $d]
+                ])->first()['link_type'];
             }
 
             // Split string to array of strings
@@ -652,6 +658,7 @@ class PublicationController extends Controller
                 'publicationDate' => $pubMatch['year_of_publication'],
                 'datasetTitles' => $datasetTitles,
                 'publicationType' => $publicationTypes,
+                'datasetLinkTypes' => $datasetLinkTypes,
             ];
 
             $params = [

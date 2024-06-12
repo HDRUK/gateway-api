@@ -118,7 +118,7 @@ class Dataset extends Model
      */
     public function latestMetadata(): HasOne
     {
-        return $this->hasOne(DatasetVersion::class, 'dataset_id')->latest('version');
+        return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()->latest('version');
     }
 
     /**

@@ -22,7 +22,7 @@ Accept: application/json
 {
     "firstname": {{uFirstName}},
     "lastname": {{uLastName}},
-    "email": {{uEmail}},
+    "email": {{uEmail2}},
     "password": {{uPassword}},
     "sector_id": 1,
     "contact_feedback": 1,
@@ -66,6 +66,12 @@ Authorization: Bearer {{accessToken}}
     "email": {{uEmail2}},
     "password": {{uPassword}}
 }
+
+#### delete user
+DELETE {{baseUrl}}/api/{{apiVersion}}/users/10 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
 
 ### PERMISSIONS
 #### get all permissions

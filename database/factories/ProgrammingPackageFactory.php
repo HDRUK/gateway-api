@@ -16,11 +16,9 @@ class ProgrammingPackageFactory extends Factory
      */
     public function definition(): array
     {
-        return [
-            return [
-                'name' => fake()->word(),
-                'enabled' => fake()->randomElement([0, 1]),
-            ];
+    return [
+            'name' => fake()->word(),
+            'enabled' => fake()->randomElement([0, 1]),
         ];
     }
 }

@@ -7,7 +7,6 @@ use Auditor;
 use Exception;
 use App\Models\Dur;
 use App\Models\Team;
-
 use App\Models\Tool;
 use App\Models\User;
 use App\Models\Filter;
@@ -16,12 +15,13 @@ use App\Models\License;
 use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\Publication;
+use App\Models\PublicationHasDataset;
 use App\Models\DataProvider;
 use App\Models\TypeCategory;
 
 use Illuminate\Http\Request;
 use App\Exports\DataUseExport;
-use App\Models\DatasetHasTool;
+use App\Models\DatasetVersionHasTool;
 use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
 use App\Models\CollectionHasTool;
@@ -461,7 +461,9 @@ class SearchController extends Controller
                         $toolsArray[$i]['programming_package'] = $toolHasProgrammingPackageIds ? ProgrammingPackage::whereIn('id', $toolHasProgrammingPackageIds)->pluck('name')->all() : [];
 
                         // datasets
-                        $datasetHasToolIds = DatasetHasTool::where('tool_id', $model['id'])->pluck('dataset_id')->all();
+                        $datasetVersionHasToolIds = DatasetVersionHasTool::where('tool_id', $model['id'])->pluck('dataset_version_id')->all();
+                        $datasetHasToolIds = DatasetVersion::whereIn('id', $datasetVersionHasToolIds)->pluck('dataset_id')->all();
+
                         $toolsArray[$i]['datasets'] = $this->getDatasetTitle($datasetHasToolIds);
 
                         $toolsArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
@@ -981,6 +983,7 @@ class SearchController extends Controller
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
                             $pubArray[$i]['url'] = $model['url'];
+                            $pubArray[$i]['datasetLinkTypes'] = PublicationHasDataset::where('publication_id', $model['id'])->pluck('link_type')->all();
                             $foundFlag = true;
                             break;
                         }
