@@ -29,7 +29,7 @@ class EditSavedSearch extends BaseFormRequest
             ],
             'sort_order' => [
                 'string',
-                Rule::in(['score','title:asc','title:desc','updated_at:desc','updated_at:asc']),
+                Rule::in(['score:desc', 'name:asc', 'name:desc', 'created_at:asc', 'created_at:desc']),
             ],
         ];
     }
