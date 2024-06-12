@@ -220,14 +220,18 @@ class SavedSearchController extends Controller
             }, ARRAY_FILTER_USE_KEY);
             $arraySearchFilter = $input['filters'];
 
-            $savedSearch = SavedSearch::create([
-                'name' => $input['name'],
-                'search_term' => $input['search_term'],
-                'search_endpoint' => $input['search_endpoint'],
-                'enabled' => $input['enabled'],
-                'sort_order' => $input['sort_order'],
-                'user_id' => $jwtUser['id'],
-            ]);
+            $arrayKeys = [
+                'name',
+                'search_term',
+                'search_endpoint',
+                'enabled',
+                'sort_order',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+            $array['user_id'] = $jwtUser['id'];
+
+            $savedSearch = SavedSearch::create($array);
 
             if ($savedSearch) {
                 foreach ($arraySearchFilter as $filter) {
@@ -335,14 +339,19 @@ class SavedSearchController extends Controller
             if ($savedSearch['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to edit this saved search');
             }
-            $savedSearch->update([
-                'name' => $input['name'],
-                'search_term' => $input['search_term'],
-                'search_endpoint' => $input['search_endpoint'],
-                'enabled' => $input['enabled'],
-                'sort_order' => $input['sort_order'],
-                'user_id' => $jwtUser['id'],
-            ]);
+
+            $arrayKeys = [
+                'name',
+                'search_term',
+                'search_endpoint',
+                'enabled',
+                'sort_order',
+            ];
+
+            $array = $this->checkEditArray($input, $arrayKeys);
+            $array['user_id'] = $jwtUser['id'];
+
+            $savedSearch->update($array);
 
             $arraySearchFilter = $input['filters'];
             SavedSearchHasFilter::where('saved_search_id', $id)->delete();

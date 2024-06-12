@@ -26,7 +26,8 @@ class UpdateSavedSearch extends BaseFormRequest
                 'string',
             ],
             'search_term' => [
-                'required',
+                'nullable',
+                'string',
             ],
             'search_endpoint' => [
                 'required',

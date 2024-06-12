@@ -19,6 +19,7 @@ return new class extends Migration
             DB::statement("ALTER TABLE saved_searches DROP COLUMN sort_order");
 
             Schema::table('saved_searches', function (Blueprint $table) {
+                $table->text('search_term')->nullable()->change();
                 $table->enum('sort_order', ['score:desc', 'name:asc', 'name:desc', 'created_at:asc', 'created_at:desc'])->default('score:desc');
             });
 

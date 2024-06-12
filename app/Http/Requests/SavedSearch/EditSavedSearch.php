@@ -24,6 +24,10 @@ class EditSavedSearch extends BaseFormRequest
             'name' => [
                 'string',
             ],
+            'search_term' => [
+                'nullable',
+                'string',
+            ],
             'enabled' => [
                 'boolean',
             ],
