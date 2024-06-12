@@ -21,12 +21,29 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->dropColumn([
-                'team_id',
-                'user_id',
-                'email',
-            ]);
-        });
+        if (Schema::hasColumn('notifications', 'team_id')) {
+            Schema::table('notifications', function (Blueprint $table) {
+                $table->dropColumn([
+                    'team_id',
+                ]);
+            });
+        }
+
+        if (Schema::hasColumn('notifications', 'user_id')) {
+            Schema::table('notifications', function (Blueprint $table) {
+                $table->dropColumn([
+                    'user_id',
+                ]);
+            });
+        }
+
+        if (Schema::hasColumn('notifications', 'email')) {
+            Schema::table('notifications', function (Blueprint $table) {
+                $table->dropColumn([
+                    'email',
+                ]);
+            });
+        }
+
     }
 };

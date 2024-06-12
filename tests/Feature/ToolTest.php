@@ -11,31 +11,31 @@ use App\Models\License;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
+use App\Models\ToolHasTypeCategory;
+use App\Models\DatasetVersionHasTool;
+use App\Models\ToolHasProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
-
 use Database\Seeders\ToolSeeder;
 use App\Http\Requests\ToolRequest;
 use Tests\Traits\MockExternalApis;
-use App\Models\ToolHasTypeCategory;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
 use Database\Seeders\DurHasToolSeeder;
-
 use Database\Seeders\ToolHasTagSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TypeCategorySeeder;
-use App\Models\ToolHasProgrammingPackage;
-use App\Models\ToolHasProgrammingLanguage;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\DatasetVersionHasTooleeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetSeeder;
@@ -180,10 +180,14 @@ class ToolTest extends TestCase
      */
     public function test_add_new_tool_with_success(): void
     {
-        $licenseId = License::where('valid_until', null)->get()->random()->id;
-        $countBefore = Tool::withTrashed()->count();
-        $countPivotBefore = ToolHasTag::all()->count();
-        $mockData = array(
+        $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
+        $this->assertNotNull($licenseId, 'No valid license ID found');
+
+        $initialToolCount = Tool::withTrashed()->count();
+        $initialTagCount = ToolHasTag::count();
+        $initialDatasetVersionCount = DatasetVersionHasTool::count();
+
+        $mockData = [
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
@@ -192,13 +196,14 @@ class ToolTest extends TestCase
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
             "user_id" => 1,
-            "tag" => array(1, 2),
-            "programming_language" => array(1, 2),
-            "programming_package" => array(1, 2),
-            "type_category" => array(1, 2),
+            "tag" => [1, 2],
+            "dataset" => [1, 2],
+            "programming_language" => [1, 2],
+            "programming_package" => [1, 2],
+            "type_category" => [1, 2],
             "enabled" => 1,
             "publications" => $this->generatePublications(),
-        );
+        ];
 
         $response = $this->json(
             'POST',
@@ -207,19 +212,21 @@ class ToolTest extends TestCase
             $this->header
         );
 
-        $countAfter = Tool::withTrashed()->count();
-        $countPivotAfter = ToolHasTag::all()->count();
-        $countNewRow = $countAfter - $countBefore;
-        $countPivotNewRows = $countPivotAfter - $countPivotBefore;
+        $finalToolCount = Tool::withTrashed()->count();
+        $finalTagCount = ToolHasTag::count();
+        $finalDatasetVersionCount = DatasetVersionHasTool::count();
 
-        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
-        $this->assertEquals(
-            2,
-            $countPivotNewRows,
-            "actual value is equal to expected"
-        );
+        $newToolCount = $finalToolCount - $initialToolCount;
+        $newTagCount = $finalTagCount - $initialTagCount;
+        $newDatasetVersionCount = $finalDatasetVersionCount - $initialDatasetVersionCount;
+
+        $this->assertTrue((bool)$newToolCount, 'New tool was not created');
+        $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
+        $this->assertTrue($newDatasetVersionCount >= 2, 'Number of new dataset versions is not as expected');
+        
         $response->assertStatus(201);
     }
+
 
     /**
      * Insert data into tool_has_tags table with success

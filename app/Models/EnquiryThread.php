@@ -11,8 +11,11 @@ class EnquiryThread extends Model
     use HasFactory;
 
      protected $fillable = [
-        'title',
-        'unique_key'
+        'user_id',
+        'team_id',
+        'project_title',
+        'unique_key',
+        'enabled',
     ];
 
     /**
@@ -31,12 +34,12 @@ class EnquiryThread extends Model
     }
 
     /**
-     * Define the one-to-many relationship with EnquiryMessages
+     * Define the one-to-many relationship with EnquiryMessage
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
     */
     public function messages(): HasMany
     {
-        return $this->hasMany(EnquiryMessages::class, 'thread_id');
+        return $this->hasMany(EnquiryMessage::class, 'thread_id');
     }
 }

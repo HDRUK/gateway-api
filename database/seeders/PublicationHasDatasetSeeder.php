@@ -17,7 +17,7 @@ class PublicationHasDatasetSeeder extends Seeder
         for ($count = 1; $count <= 10; $count++) {
             $pubId = Publication::all()->random()->id;
             $datasetId = Dataset::all()->random()->id;
-            $type = fake()->randomElement(['ABOUT', 'USING', 'UNKNOWN']);
+            $type = fake()->randomElement(['ABOUT', 'USING']);
 
             $pubHasDataset = PublicationHasDataset::where([
                 'publication_id' => $pubId,

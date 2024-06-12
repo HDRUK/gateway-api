@@ -10,10 +10,13 @@ use Tests\Traits\Authorization;
 
 use Database\Seeders\SectorSeeder;
 
+use App\Http\Traits\HubspotContacts;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Elastic\Elasticsearch\ClientBuilder;
 use MetadataManagementController AS MMC;
+use App\Http\Controllers\Api\V1\UserController;
+use App\Http\Controllers\Api\V1\CohortRequestController;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 
 trait MockExternalApis
@@ -1007,6 +1010,38 @@ trait MockExternalApis
                 200,
                 ['application/json']
             )
+        ]);
+
+        Http::fake([
+            // DELETE
+            "http://hub.local/contacts/v1/contact/vid/*" => function ($request) {
+                if ($request->method() === 'DELETE') {
+                    return Http::response([], 200);
+                }
+            },
+        
+            // GET (by vid)
+            "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345, 'properties' => []], 200);
+                } elseif ($request->method() === 'POST') {
+                    return Http::response([], 204);
+                }
+            },
+        
+            // GET (by email)
+            "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
+        
+            // POST (create contact)
+            'http://hub.local/contacts/v1/contact' => function ($request) {
+                if ($request->method() === 'POST') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
         ]);
 
     }

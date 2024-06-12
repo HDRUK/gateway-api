@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class EnquiryMessages extends Model
+class EnquiryMessage extends Model
 {
     use HasFactory;
 

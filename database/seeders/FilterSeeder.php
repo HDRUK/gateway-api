@@ -85,7 +85,8 @@ class FilterSeeder extends Seeder
         $filters = [
             'publicationType',
             'publicationDate',
-            'datasetTitles'
+            'datasetTitles',
+            'datasetLinkTypes'
         ];
 
         $this->seed_filter("paper",$filters);

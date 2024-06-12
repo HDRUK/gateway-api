@@ -152,7 +152,7 @@ class PublicationTest extends TestCase
                 'datasets' => [
                     0 => [
                         'id' => 1,
-                        'link_type' => 'UNKNOWN',
+                        'link_type' => 'USING',
                     ],
                 ],
                 'tools' => $this->generateTools(),
@@ -169,7 +169,7 @@ class PublicationTest extends TestCase
         $pubId = $response->decodeResponseJson()['data'];
         $relation = PublicationHasDataset::where('publication_id', $pubId)->first();
         $this->assertNotNull($relation);
-        $this->assertEquals($relation['link_type'], "UNKNOWN");
+        $this->assertEquals($relation['link_type'], "USING");
 
         $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
         $this->assertTrue($elasticCountAfter > $elasticCountBefore);
@@ -197,7 +197,7 @@ class PublicationTest extends TestCase
                 'datasets' => [
                     0 => [
                         'id' => 1,
-                        'link_type' => 'UNKNOWN',
+                        'link_type' => 'USING',
                     ],
                 ],
                 'tools' => $this->generateTools(),
@@ -236,7 +236,7 @@ class PublicationTest extends TestCase
                 'datasets' => [
                     0 => [
                         'id' => 1,
-                        'link_type' => 'UNKNOWN',
+                        'link_type' => 'ABOUT',
                     ],
                 ],
                 'tools' => $this->generateTools(),

@@ -198,6 +198,7 @@ return [
         App\Providers\MetadataManagementControllerServiceProvider::class,
         App\Providers\AliasReplyScannerProvider::class,
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+        App\Providers\EnquiriesManagementControllerServiceProvider::class,
     ],
 
     /*
@@ -214,7 +215,8 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         'Auditor' => App\Auditor\AuditorFacade::class,
         'MetadataManagementController' => App\MetadataManagementController\MetadataManagementControllerFacade::class,
-        'AliasReplyScanner' => App\AliasReplyScanner\AliasReplyScannerFacade::class
+        'AliasReplyScanner' => App\AliasReplyScanner\AliasReplyScannerFacade::class,
+        'EnquiriesManagementController' => App\EnquiriesManagementController\EnquiriesManagementControllerFacade::class,
     ])->toArray(),
 
 ];
