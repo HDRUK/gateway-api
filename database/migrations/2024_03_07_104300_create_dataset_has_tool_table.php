@@ -14,11 +14,9 @@ return new class extends Migration
         Schema::create('dataset_has_tools', function (Blueprint $table) {
             $table->bigInteger('dataset_id')->unsigned();
             $table->bigInteger('tool_id')->unsigned();
-
             $table->primary(['dataset_id', 'tool_id']);
             $table->foreign('dataset_id')->references('id')->on('datasets')->onDelete('cascade');
             $table->foreign('tool_id')->references('id')->on('tools')->onDelete('cascade');
-
             $table->timestamps();
         });
     }
