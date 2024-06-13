@@ -60,18 +60,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Drop the foreign key constraint first
-        Schema::table('datasets_has_tool', function (Blueprint $table) {
-            $table->dropForeign(['dataset_id']);
-        });
-
-        // Drop the datasets_has_tool table
-        Schema::dropIfExists('datasets_has_tool');
-
-        // Drop the datasets table
         Schema::dropIfExists('datasets');
 
-        // Create the datasets table with the old structure
         Schema::create('datasets', function (Blueprint $table) {
             $table->id();
             $table->timestamps();
