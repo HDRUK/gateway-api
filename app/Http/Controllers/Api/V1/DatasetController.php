@@ -480,8 +480,6 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
 
-            
-
             $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
