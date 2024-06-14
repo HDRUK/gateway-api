@@ -550,7 +550,6 @@ class DatasetController extends Controller
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
-    
                 $publisher = null;
                 $required = [
                         'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
@@ -705,7 +704,6 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
             
-
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $teamId = (int)$input['team_id'];
@@ -808,7 +806,6 @@ class DatasetController extends Controller
                     MMC::reindexElastic($currDataset->id);
                 }
                 
-
                 Auditor::log([
                     'user_id' => $userId,
                     'team_id' => $teamId,
