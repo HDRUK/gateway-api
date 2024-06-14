@@ -93,14 +93,33 @@ class SocialLoginController extends Controller
         }
 
         session(['redirectUrl' => $redirectUrl]);
-        $CONFIG['http.cookie.samesite'] = 'None';
+        // $CONFIG['http.cookie.samesite'] = 'None';
         // session(['same_site' => 'none']);
 
         if ($provider === 'openathens') {
-            return redirect()->action(
-                [SocialLoginController::class, 'callback'], 
-                ['provider' => 'openathens']
+            $oidc = new OpenIDConnectClient(
+                Config::get('services.openathens.issuer'),
+                Config::get('services.openathens.client_id'),
+                Config::get('services.openathens.client_secret')
             );
+            $oidc->addScope(array('openid'));
+            $oidc->setAllowImplicitFlow(true);
+            $oidc->addAuthParam(array('response_mode' => 'form_post'));
+            $oidc->setRedirectUrl('http://localhost:8000/api/v1/auth/openathens/callback');
+            $oidc->authenticate();
+        }
+
+        if ($provider === 'openathens') {
+            $params = [
+                'client_id' => Config::get('services.openathens.client_id'),
+                'client_secret' => Config::get('services.openathens.client_secret'),
+                'redirect_uri' => 'http://localhost:8000/api/v1/auth/openathens/callback',
+                'response_type' => 'code',
+                'scope' => 'openid',
+            ];
+            $oaUrl = env('OPENATHENS_ISSUER_URL') . '/oidc/auth?' . http_build_query($params);
+
+            return redirect()->away($oaUrl);
         } else {
             return Socialite::driver($provider)
                 ->redirect();
@@ -145,7 +164,7 @@ class SocialLoginController extends Controller
     public function callback(Request $request, string $provider): mixed
     {
         // session(['same_site' => 'none']);
-        $CONFIG['http.cookie.samesite'] = 'None';
+        // $CONFIG['http.cookie.samesite'] = 'None';
         try {
             if ($provider === 'linkedin') {
                 $provider = 'linkedin-openid';
@@ -156,14 +175,40 @@ class SocialLoginController extends Controller
                     Config::get('services.openathens.client_id'),
                     Config::get('services.openathens.client_secret')
                 );
-                var_dump('client defined');
-                $oidc->addScope(array('openid'));
+                $oidc->providerConfigParam([
+                    'authorization_endpoint' => 'https://connect.openathens.net/oidc/auth',
+                    'jwks_uri' => 'https://connect.openathens.net/oidc/jwks',
+                    'token_endpoint' => 'https://connect.openathens.net/oidc/token',
+                    'userinfo_endpoint' => 'https://connect.openathens.net/oidc/userinfo',
+                ]);
+                $oidc->addScope(['openid','profile','email']);
+                // $oidc->addAuthParam(array('response_type' => 'code'));
+                // $oidc->setRedirectUrl('http://localhost:8000/api/v1/auth/openathens/callback');
+
+                $oidc->setVerifyHost(false);
+                $oidc->setVerifyPeer(false);
+                $oidc->setResponseTypes(['id_token']);
                 $oidc->setAllowImplicitFlow(true);
-                $oidc->addAuthParam(array('response_mode' => 'form_post'));
+                $oidc->addAuthParam(['response_mode' => 'form_post']);
+                // $oidc->setCertPath('/path/to/my.cert');
+                // $oidc->authenticate();
+                // $sub = $oidc->getVerifiedClaims('sub');
+
                 $oidc->authenticate();
-                var_dump('oidc authenticated');
-                $socialUser = $oidc->requestUserInfo();
-                var_dump('social user retrieved');
+                $response = $oidc->requestUserInfo('email');
+
+                dd($response);
+
+                $socialUser = array();
+                foreach($oidc as $key => $value) {
+                    if (is_array($value)) {
+                        $v = implode(', ', $value);
+                    } else {
+                        $v = $value;
+                    }
+                    $socialUser[$key] = $v;
+                }
+                dd($socialUser);
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
                 var_dump('social use details');
             } else {
