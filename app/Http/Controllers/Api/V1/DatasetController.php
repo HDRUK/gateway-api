@@ -520,7 +520,7 @@ class DatasetController extends Controller
                 null,
                 null,
                 $input['status'] !== 'DRAFT', // Disable input validation if it's a draft
-                true // Always validate output
+                $input['status'] !== 'DRAFT' // Disable output validation if it's a draft
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -739,7 +739,7 @@ class DatasetController extends Controller
                 null,
                 null,
                 $input['status'] !== 'DRAFT', // Disable input validation if it's a draft
-                true // Always validate output
+                $input['status'] !== 'DRAFT' // Disable output validation if it's a draft
             );
 
             if ($traserResponse['wasTranslated']) {
