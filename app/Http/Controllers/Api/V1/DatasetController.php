@@ -492,16 +492,12 @@ class DatasetController extends Controller
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 
-            // Determine if the dataset is a draft
-            $isDraft = $input['status'] === 'DRAFT';
-
-            // Ensure title is present for creating a draft
-            if (empty($input['metadata']['metadata']['summary']['title']) && $isDraft) {
+            // Ensure title is present for creating a dataset
+            if (empty($input['metadata']['metadata']['summary']['title'])) {
                 return response()->json([
-                    'message' => 'Title is required to save a draft',
+                    'message' => 'Title is required to save a dataset',
                 ], 400);
             }
-
 
             //send the payload to traser
             // - traser will return the input unchanged if the data is
@@ -525,7 +521,7 @@ class DatasetController extends Controller
                 Config::get('metadata.GWDM.version'),
                 null,
                 null,
-                !$isDraft, // Disable input validation if it's a draft
+                $input['status'] !== 'DRAFT', // Disable input validation if it's a draft
                 true // Always validate output
             );
 
@@ -710,6 +706,7 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
+            
 
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
@@ -722,6 +719,13 @@ class DatasetController extends Controller
             $currentPid = $currDataset->pid;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
+
+            // Ensure title is present for updating a dataset
+            if (empty($input['metadata']['metadata']['summary']['title'])) {
+                return response()->json([
+                    'message' => 'Title is required to save a dataset',
+                ], 400);
+            }
 
             // Determine if the dataset is a draft
             $isDraft = $input['status'] === 'DRAFT';
@@ -748,7 +752,7 @@ class DatasetController extends Controller
                 Config::get('metadata.GWDM.version'),
                 null,
                 null,
-                !$isDraft, // Disable input validation if it's a draft
+                $input['status'] !== 'DRAFT', // Disable input validation if it's a draft
                 true // Always validate output
             );
 
