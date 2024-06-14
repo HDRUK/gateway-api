@@ -719,17 +719,7 @@ class DatasetController extends Controller
             // Ensure title is present for updating a dataset
             if (empty($input['metadata']['metadata']['summary']['title'])) {
                 return response()->json([
-                    'message' => 'Title is required to save a dataset',
-                ], 400);
-            }
-
-            // Determine if the dataset is a draft
-            $isDraft = $input['status'] === 'DRAFT';
-
-            // Ensure title is present for creating a draft
-            if (empty($input['metadata']['metadata']['summary']['title']) && $isDraft) {
-                return response()->json([
-                    'message' => 'Title is required to save a draft',
+                    'message' => 'Title is required to update a dataset',
                 ], 400);
             }
 
@@ -795,12 +785,27 @@ class DatasetController extends Controller
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
-                // Create new metadata version for this dataset
-                $version = DatasetVersion::create([
-                    'dataset_id' => $currDataset->id,
-                    'metadata' => json_encode($input['metadata']),
-                    'version' => ($lastVersionNumber + 1),
-                ]);
+                // Update or create new metadata version based on draft status
+                if ($currDataset->status !== 'DRAFT') {
+                    $version = DatasetVersion::create([
+                        'dataset_id' => $currDataset->id,
+                        'metadata' => json_encode($input['metadata']),
+                        'version' => ($lastVersionNumber + 1),
+                    ]);
+                } else {
+                    // Delete the existing version
+                    DatasetVersion::where([
+                        'dataset_id' => $currDataset->id,
+                        'version' => $lastVersionNumber,
+                    ])->delete();
+
+                    // Create a new version with the same version number
+                    $version = DatasetVersion::create([
+                        'dataset_id' => $currDataset->id,
+                        'metadata' => json_encode($input['metadata']),
+                        'version' => $lastVersionNumber,
+                    ]);
+                }
 
                 if($input['status'] === 'ACTIVE'){
                     MMC::reindexElastic($currDataset->id);
