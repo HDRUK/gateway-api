@@ -519,8 +519,8 @@ class DatasetController extends Controller
                 Config::get('metadata.GWDM.version'),
                 null,
                 null,
-                $input['status'] !== 'DRAFT', // Disable input validation if it's a draft
-                $input['status'] !== 'DRAFT' // Disable output validation if it's a draft
+                $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
+                $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -546,7 +546,7 @@ class DatasetController extends Controller
                     'submitted' => now(),
                     'pid' => $pid,
                     'create_origin' => $input['create_origin'],
-                    'status' => $input['status'],
+                    'status' => $request['status'],
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
@@ -610,7 +610,7 @@ class DatasetController extends Controller
                 $this->mapCoverage($input['metadata'], $dataset);
 
                 // Dispatch term extraction to a subprocess if the dataset is marked as active
-                if($input['status'] === 'ACTIVE'){
+                if($request['status'] === Dataset::STATUS_ACTIVE){
                     TermExtraction::dispatch(
                         $dataset->id,
                         base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
@@ -703,6 +703,8 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
+
+            $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
             
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
@@ -738,8 +740,8 @@ class DatasetController extends Controller
                 Config::get('metadata.GWDM.version'),
                 null,
                 null,
-                $input['status'] !== 'DRAFT', // Disable input validation if it's a draft
-                $input['status'] !== 'DRAFT' // Disable output validation if it's a draft
+                $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
+                $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -754,7 +756,7 @@ class DatasetController extends Controller
                     'updated' => $updateTime,
                     'pid' => $currentPid,
                     'create_origin' => $input['create_origin'],
-                    'status' => $input['status'],
+                    'status' => $request['status'],
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
@@ -786,7 +788,7 @@ class DatasetController extends Controller
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
                 // Update or create new metadata version based on draft status
-                if ($currDataset->status !== 'DRAFT') {
+                if ($currDataset->status !== Dataset::STATUS_DRAFT) {
                     $version = DatasetVersion::create([
                         'dataset_id' => $currDataset->id,
                         'metadata' => json_encode($input['metadata']),
@@ -807,7 +809,16 @@ class DatasetController extends Controller
                     ]);
                 }
 
-                if($input['status'] === 'ACTIVE'){
+                // Dispatch term extraction to a subprocess if the dataset moves from draft to active
+                if($currDataset->status === Dataset::STATUS_DRAFT && $request['status'] ===  Dataset::STATUS_ACTIVE){
+                    TermExtraction::dispatch(
+                        $dataset->id,
+                        base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
+                        $elasticIndexing
+                    );
+                }
+
+                if($request['status'] === 'ACTIVE'){
                     MMC::reindexElastic($currDataset->id);
                 }
                 
