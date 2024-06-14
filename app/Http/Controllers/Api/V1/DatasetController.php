@@ -480,6 +480,8 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
 
+            
+
             $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
@@ -489,6 +491,17 @@ class DatasetController extends Controller
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
+
+            // Determine if the dataset is a draft
+            $isDraft = $input['status'] === 'DRAFT';
+
+            // Ensure title is present for creating a draft
+            if (empty($input['metadata']['metadata']['summary']['title']) && $isDraft) {
+                return response()->json([
+                    'message' => 'Title is required to save a draft',
+                ], 400);
+            }
+
 
             //send the payload to traser
             // - traser will return the input unchanged if the data is
@@ -510,6 +523,10 @@ class DatasetController extends Controller
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
                 Config::get('metadata.GWDM.version'),
+                null,
+                null,
+                !$isDraft, // Disable input validation if it's a draft
+                true // Always validate output
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -599,12 +616,14 @@ class DatasetController extends Controller
                 // map coverage/spatial field to controlled list for filtering
                 $this->mapCoverage($input['metadata'], $dataset);
 
-                // Dispatch term extraction to a subprocess as it may take some time
-                TermExtraction::dispatch(
-                    $dataset->id,
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
-                    $elasticIndexing
-                );
+                // Dispatch term extraction to a subprocess if the dataset is marked as active
+                if($input['status'] === 'ACTIVE'){
+                    TermExtraction::dispatch(
+                        $dataset->id,
+                        base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
+                        $elasticIndexing
+                    );
+                }
 
                 Auditor::log([
                     'user_id' => $input['user_id'],
@@ -704,6 +723,16 @@ class DatasetController extends Controller
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 
+            // Determine if the dataset is a draft
+            $isDraft = $input['status'] === 'DRAFT';
+
+            // Ensure title is present for creating a draft
+            if (empty($input['metadata']['metadata']['summary']['title']) && $isDraft) {
+                return response()->json([
+                    'message' => 'Title is required to save a draft',
+                ], 400);
+            }
+
             $payload = $input['metadata'];
             $payload['extra'] = [
                 "id"=>$id,
@@ -716,7 +745,11 @@ class DatasetController extends Controller
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
-                Config::get('metadata.GWDM.version')
+                Config::get('metadata.GWDM.version'),
+                null,
+                null,
+                !$isDraft, // Disable input validation if it's a draft
+                true // Always validate output
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -769,8 +802,10 @@ class DatasetController extends Controller
                     'version' => ($lastVersionNumber + 1),
                 ]);
 
-
-                MMC::reindexElastic($currDataset->id);
+                if($input['status'] === 'ACTIVE'){
+                    MMC::reindexElastic($currDataset->id);
+                }
+                
 
                 Auditor::log([
                     'user_id' => $userId,
