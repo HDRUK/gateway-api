@@ -812,7 +812,7 @@ class DatasetController extends Controller
                 // Dispatch term extraction to a subprocess if the dataset moves from draft to active
                 if($currDataset->status === Dataset::STATUS_DRAFT && $request['status'] ===  Dataset::STATUS_ACTIVE){
                     TermExtraction::dispatch(
-                        $dataset->id,
+                        $currDataset->id,
                         base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
                         $elasticIndexing
                     );
