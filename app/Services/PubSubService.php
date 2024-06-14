@@ -17,7 +17,11 @@ class PubSubService
 
     public function publishMessage(array $data)
     {
+        $out = new \Symfony\Component\Console\Output\ConsoleOutput();
+        $out->writeln(json_encode($data));
         $topic = $this->pubSubClient->topic(Config::get('services.googlepubsub.pubsub_topic'));
-        $topic->publish(json_encode($data));
+        $result = $topic->publish(json_encode($data));
+        $out->writeln(json_encode($result->result));
+
     }
 }
