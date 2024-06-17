@@ -174,13 +174,15 @@ class ToolController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_service' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tool get all",
             ]);
 
-            return response()->json($tools);
+            return response()->json(
+                $tools
+            );
         } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            throw new Exception($e->getMessage());
         }
     }
 
