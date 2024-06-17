@@ -490,6 +490,13 @@ class DatasetController extends Controller
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 
+            // Ensure title is present for creating a dataset
+            if (empty($input['metadata']['metadata']['summary']['title'])) {
+                return response()->json([
+                    'message' => 'Title is required to save a dataset',
+                ], 400);
+            }
+
             //send the payload to traser
             // - traser will return the input unchanged if the data is
             //   already in the GWDM with GWDM_CURRENT_VERSION
@@ -510,6 +517,10 @@ class DatasetController extends Controller
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
                 Config::get('metadata.GWDM.version'),
+                null,
+                null,
+                $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
+                $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -535,11 +546,10 @@ class DatasetController extends Controller
                     'submitted' => now(),
                     'pid' => $pid,
                     'create_origin' => $input['create_origin'],
-                    'status' => $input['status'],
+                    'status' => $request['status'],
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
-    
                 $publisher = null;
                 $required = [
                         'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
@@ -599,12 +609,14 @@ class DatasetController extends Controller
                 // map coverage/spatial field to controlled list for filtering
                 $this->mapCoverage($input['metadata'], $dataset);
 
-                // Dispatch term extraction to a subprocess as it may take some time
-                TermExtraction::dispatch(
-                    $dataset->id,
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
-                    $elasticIndexing
-                );
+                // Dispatch term extraction to a subprocess if the dataset is marked as active
+                if($request['status'] === Dataset::STATUS_ACTIVE){
+                    TermExtraction::dispatch(
+                        $dataset->id,
+                        base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
+                        $elasticIndexing
+                    );
+                }
 
                 Auditor::log([
                     'user_id' => $input['user_id'],
@@ -692,6 +704,8 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
 
+            $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
+            
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $teamId = (int)$input['team_id'];
@@ -703,6 +717,13 @@ class DatasetController extends Controller
             $currentPid = $currDataset->pid;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
+
+            // Ensure title is present for updating a dataset
+            if (empty($input['metadata']['metadata']['summary']['title'])) {
+                return response()->json([
+                    'message' => 'Title is required to update a dataset',
+                ], 400);
+            }
 
             $payload = $input['metadata'];
             $payload['extra'] = [
@@ -716,7 +737,11 @@ class DatasetController extends Controller
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
-                Config::get('metadata.GWDM.version')
+                Config::get('metadata.GWDM.version'),
+                null,
+                null,
+                $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
+                $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -731,7 +756,7 @@ class DatasetController extends Controller
                     'updated' => $updateTime,
                     'pid' => $currentPid,
                     'create_origin' => $input['create_origin'],
-                    'status' => $input['status'],
+                    'status' => $request['status'],
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
@@ -762,16 +787,41 @@ class DatasetController extends Controller
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
-                // Create new metadata version for this dataset
-                $version = DatasetVersion::create([
-                    'dataset_id' => $currDataset->id,
-                    'metadata' => json_encode($input['metadata']),
-                    'version' => ($lastVersionNumber + 1),
-                ]);
+                // Update or create new metadata version based on draft status
+                if ($currDataset->status !== Dataset::STATUS_DRAFT) {
+                    $version = DatasetVersion::create([
+                        'dataset_id' => $currDataset->id,
+                        'metadata' => json_encode($input['metadata']),
+                        'version' => ($lastVersionNumber + 1),
+                    ]);
+                } else {
+                    // Delete the existing version
+                    DatasetVersion::where([
+                        'dataset_id' => $currDataset->id,
+                        'version' => $lastVersionNumber,
+                    ])->delete();
 
+                    // Create a new version with the same version number
+                    $version = DatasetVersion::create([
+                        'dataset_id' => $currDataset->id,
+                        'metadata' => json_encode($input['metadata']),
+                        'version' => $lastVersionNumber,
+                    ]);
+                }
 
-                MMC::reindexElastic($currDataset->id);
+                // Dispatch term extraction to a subprocess if the dataset moves from draft to active
+                if($currDataset->status === Dataset::STATUS_DRAFT && $request['status'] ===  Dataset::STATUS_ACTIVE){
+                    TermExtraction::dispatch(
+                        $currDataset->id,
+                        base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
+                        $elasticIndexing
+                    );
+                }
 
+                if($request['status'] === 'ACTIVE'){
+                    MMC::reindexElastic($currDataset->id);
+                }
+                
                 Auditor::log([
                     'user_id' => $userId,
                     'team_id' => $teamId,

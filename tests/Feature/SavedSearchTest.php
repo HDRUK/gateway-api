@@ -119,7 +119,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'score',
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -198,7 +198,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'score',
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -253,7 +253,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'score',
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -289,7 +289,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'score',
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -332,7 +332,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'score',
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -368,7 +368,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'score',
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -432,7 +432,7 @@ class SavedSearchTest extends TestCase
                         ]
                     ]
                 ],
-                'sort_order' => 'score',
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -495,7 +495,7 @@ class SavedSearchTest extends TestCase
                 'search_endpoint' => 'datasets',
                 'enabled' => false,
                 'filters' => [],
-                'sort_order' => 'score',
+                'sort_order' => 'score:desc',
             ],
             $headerNonAdmin,
         );
@@ -524,7 +524,7 @@ class SavedSearchTest extends TestCase
                 'search_endpoint' => 'datasets',
                 'enabled' => true,
                 'filters' => [],
-                'sort_order' => 'score',
+                'sort_order' => 'score:desc',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

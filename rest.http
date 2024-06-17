@@ -2187,3 +2187,51 @@ DELETE {{baseUrl}}/api/{{apiVersion}}/licenses/2 HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+
+
+### Saved Searches
+#### get all saved searches
+GET {{baseUrl}}/api/{{apiVersion}}/saved_searches HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one saved search by id
+GET {{baseUrl}}/api/{{apiVersion}}/saved_searches/2 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create a new saved search
+POST {{baseUrl}}/api/{{apiVersion}}/saved_searches HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "search_term":"",
+    "sort_order":"score:desc",
+    "name":"asdads",
+    "search_endpoint":"tools",
+    "filters": [
+        {
+            "id":18,
+            "terms":["Python"]
+        }
+    ],
+    "enabled":true
+}
+
+
+# {
+#     "name": "Test Saved Search",
+#     "search_term": "",
+#     "search_endpoint": "datasets",
+#     "enabled": false,
+#     "filters": [
+#         {
+#             "id": 1,
+#             "terms": ["term a","term b"]
+#         }
+#     ],
+#     "sort_order": "score:desc"
+# }
