@@ -186,13 +186,6 @@ class ToolController extends Controller
         }
     }
 
-    
-
-
-     
-
-
-
     /**
      * @OA\Get(
      *    path="/api/v1/tools/{id}",
