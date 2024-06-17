@@ -832,5 +832,3 @@ class ToolTest extends TestCase
         return $return;
     }
 }
-
-
