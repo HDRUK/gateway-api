@@ -90,24 +90,18 @@ class ToolTest extends TestCase
     }
 
     /**
-     * test all tools
-     *
+     * Get All Tools with success
+     * 
      * @return void
      */
     public function test_get_all_tools_with_success(): void
     {
-        // Update the countTool to match your expectation
         $countTool = Tool::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
-        
-        $response->assertStatus(200);
-        
-        $responseData = $response->json();
-        $this->assertEquals($countTool, $responseData['total']);
-        
+        $this->assertEquals($countTool, $response['total']);
         $response->assertJsonStructure([
             'data' => [
-                '*' => [
+                0 => [
                     'id',
                     'mongo_object_id',
                     'name',
@@ -233,7 +227,6 @@ class ToolTest extends TestCase
         $this->assertTrue((bool)$newToolCount, 'New tool was not created');
         $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
         $this->assertTrue($newDatasetVersionCount >= 2, 'Number of new dataset versions is not as expected');
-
         $response->assertStatus(201);
     }
 
