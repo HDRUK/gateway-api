@@ -293,7 +293,7 @@ class ToolTest extends TestCase
         $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
         $teamId1 = $contentCreateTeam['data'];
 
-        //create a 2nd team
+        // Create a 2nd team
         $teamName2 = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         $responseCreateTeam = $this->json(
             'POST',
@@ -330,7 +330,7 @@ class ToolTest extends TestCase
         $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
         $teamId2 = $contentCreateTeam['data'];
 
-        // create user
+        // Create user
         $responseCreateUser = $this->json(
             'POST',
             self::TEST_URL_USER,
@@ -435,10 +435,11 @@ class ToolTest extends TestCase
         );
         $responseCreateTool->assertStatus(201);
 
-        // Retrieve mongo_id, team_id, and name for filtering tests
-        $mongoId = Tool::first()->mongo_id;
-        $teamId = Tool::first()->team_id;
-        $title = Tool::first()->name;
+        // Use the explicit team_id, mongo_id, and name for filtering tests
+        $toolA = Tool::where('name', 'Tool A')->first();
+        $mongoId = $toolA->mongo_id;
+        $teamId = $toolA->team_id;
+        $title = $toolA->name;
 
         // Filter by mongo_id
         $response = $this->json('GET', self::TEST_URL . '?mongo_id=' . $mongoId, [], $this->header);
@@ -484,7 +485,51 @@ class ToolTest extends TestCase
         $sortedTitles = $titles;
         rsort($sortedTitles);
         $this->assertEquals($sortedTitles, $titles, "Descending order sorting by title failed.");
+
+        // Cleanup: Delete tools
+        $toolIds = Tool::pluck('id')->toArray();
+        foreach ($toolIds as $toolId) {
+            $responseDeleteTool = $this->json(
+                'DELETE',
+                self::TEST_URL . '/' . $toolId . '?deletePermanently=true',
+                [],
+                $this->header
+            );
+            $responseDeleteTool->assertJsonStructure([
+                'message'
+            ]);
+            $responseDeleteTool->assertStatus(200);
+        }
+
+        // Cleanup: Delete teams
+        for ($i = 1; $i <= 2; $i++) {
+            $responseDeleteTeam = $this->json(
+                'DELETE',
+                self::TEST_URL_TEAM . '/' . ${'teamId' . $i} . '?deletePermanently=true',
+                [],
+                $this->header
+            );
+
+            $responseDeleteTeam->assertJsonStructure([
+                'message'
+            ]);
+            $responseDeleteTeam->assertStatus(200);
+        }
+
+        // Cleanup: Delete user
+        $responseDeleteUser = $this->json(
+            'DELETE',
+            self::TEST_URL_USER . '/' . $userId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteUser->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteUser->assertStatus(200);
     }
+
+
 
 
     /**
