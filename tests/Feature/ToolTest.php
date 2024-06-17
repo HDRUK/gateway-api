@@ -144,6 +144,67 @@ class ToolTest extends TestCase
         ]);
     }
 
+    /**
+     * Get All Tools with success
+     * 
+     * @return void
+     */
+    public function test_get_all_tools_with_success(): void
+    {
+        $countTool = Tool::where('enabled', 1)->count();
+        $response = $this->json('GET', self::TEST_URL, [], $this->header);
+        $this->assertEquals($countTool, $response['total']);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    'id',
+                    'mongo_object_id',
+                    'name',
+	@@ -132,99 +142,262 @@ public function test_get_all_tools_with_success(): void
+            'to',
+            'total',
+        ]);
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Get Tool by Id with success
+     * 
+     * @return void
+     */
+    public function test_get_tool_by_id_with_success(): void
+    {
+        $toolId = Tool::where('enabled', 1)->get()->random()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $toolId, [], $this->header);
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'license',
+                'tech_stack',
+                'category_id',
+                'user_id',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'user',
+                'tag',
+                'programming_languages', 
+                'programming_packages', 
+                'type_category', 
+                'associated_authors', 
+                'contact_address',
+                'publications',
+                'durs',
+            ]
+        ]);
+        $response->assertStatus(200);
+    }
+
 
     /**
      * Get All tools for a given team with success
@@ -400,6 +461,59 @@ class ToolTest extends TestCase
         $this->assertEquals($sortedTitles, $titles, "Descending order sorting by title failed.");
     }
 
+    /**
+     * Create new Tool with success
+     * 
+     * @return void
+     */
+    public function test_add_new_tool_with_success(): void
+    {
+        $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
+        $this->assertNotNull($licenseId, 'No valid license ID found');
+
+        $initialToolCount = Tool::withTrashed()->count();
+        $initialTagCount = ToolHasTag::count();
+        $initialDatasetVersionCount = DatasetVersionHasTool::count();
+
+        $mockData = [
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => [1, 2],
+            "dataset" => [1, 2],
+            "programming_language" => [1, 2],
+            "programming_package" => [1, 2],
+            "type_category" => [1, 2],
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $mockData,
+            $this->header
+        );
+
+        $finalToolCount = Tool::withTrashed()->count();
+        $finalTagCount = ToolHasTag::count();
+        $finalDatasetVersionCount = DatasetVersionHasTool::count();
+
+        $newToolCount = $finalToolCount - $initialToolCount;
+        $newTagCount = $finalTagCount - $initialTagCount;
+        $newDatasetVersionCount = $finalDatasetVersionCount - $initialDatasetVersionCount;
+
+        $this->assertTrue((bool)$newToolCount, 'New tool was not created');
+        $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
+        $this->assertTrue($newDatasetVersionCount >= 2, 'Number of new dataset versions is not as expected');
+
+        $response->assertStatus(201);
+    }
 
     /**
      * Insert data into tool_has_tags table with success
