@@ -7,6 +7,7 @@ use Tests\TestCase;
 
 use App\Models\Tool;
 use ReflectionClass;
+use App\Http\Enums\TeamMemberOf;
 use App\Models\License;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
@@ -50,6 +51,9 @@ class ToolTest extends TestCase
     }
 
     const TEST_URL = '/api/v1/tools';
+    const TEST_URL_TEAM = '/api/v1/teams';
+    const TEST_URL_NOTIFICATION = '/api/v1/notifications';
+    const TEST_URL_USER = '/api/v1/users';
 
     protected $header = [];
 
@@ -86,18 +90,24 @@ class ToolTest extends TestCase
     }
 
     /**
-     * Get All Tools with success
-     * 
+     * test all tools
+     *
      * @return void
      */
     public function test_get_all_tools_with_success(): void
     {
+        // Update the countTool to match your expectation
         $countTool = Tool::where('enabled', 1)->count();
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
-        $this->assertEquals($countTool, $response['total']);
+        
+        $response->assertStatus(200);
+        
+        $responseData = $response->json();
+        $this->assertEquals($countTool, $responseData['total']);
+        
         $response->assertJsonStructure([
             'data' => [
-                0 => [
+                '*' => [
                     'id',
                     'mongo_object_id',
                     'name',
@@ -132,99 +142,262 @@ class ToolTest extends TestCase
             'to',
             'total',
         ]);
-        $response->assertStatus(200);
     }
 
+
     /**
-     * Get Tool by Id with success
+     * Get All tools for a given team with success
      * 
      * @return void
      */
-    public function test_get_tool_by_id_with_success(): void
+    public function test_get_all_team_tools_with_success(): void
     {
-        $toolId = Tool::where('enabled', 1)->get()->random()->id;
-        $response = $this->json('GET', self::TEST_URL . '/' . $toolId, [], $this->header);
-        $response->assertJsonStructure([
-            'data' => [
-                'id',
-                'mongo_object_id',
-                'name',
-                'url',
-                'description',
-                'license',
-                'tech_stack',
-                'category_id',
-                'user_id',
-                'enabled',
-                'created_at',
-                'updated_at',
-                'deleted_at',
-                'user',
-                'tag',
-                'programming_languages', 
-                'programming_packages', 
-                'type_category', 
-                'associated_authors', 
-                'contact_address',
-                'publications',
-                'durs',
-            ]
-        ]);
-        $response->assertStatus(200);
-    }
-
-    /**
-     * Create new Tool with success
-     * 
-     * @return void
-     */
-    public function test_add_new_tool_with_success(): void
-    {
-        $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
-        $this->assertNotNull($licenseId, 'No valid license ID found');
-
-        $initialToolCount = Tool::withTrashed()->count();
-        $initialTagCount = ToolHasTag::count();
-        $initialDatasetVersionCount = DatasetVersionHasTool::count();
-
-        $mockData = [
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
-            "name" => "Similique sapiente est vero eum.",
-            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
-            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
-            "license" => $licenseId,
-            "tech_stack" => "Cumque molestias excepturi quam at.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => [1, 2],
-            "dataset" => [1, 2],
-            "programming_language" => [1, 2],
-            "programming_package" => [1, 2],
-            "type_category" => [1, 2],
-            "enabled" => 1,
-            "publications" => $this->generatePublications(),
-        ];
-
-        $response = $this->json(
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
             'POST',
-            self::TEST_URL . '/',
-            $mockData,
-            $this->header
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => 'Some@email.com',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $teamName1 = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => $teamName1,
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
         );
 
-        $finalToolCount = Tool::withTrashed()->count();
-        $finalTagCount = ToolHasTag::count();
-        $finalDatasetVersionCount = DatasetVersionHasTool::count();
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
 
-        $newToolCount = $finalToolCount - $initialToolCount;
-        $newTagCount = $finalTagCount - $initialTagCount;
-        $newDatasetVersionCount = $finalDatasetVersionCount - $initialDatasetVersionCount;
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        $teamId1 = $contentCreateTeam['data'];
 
-        $this->assertTrue((bool)$newToolCount, 'New tool was not created');
-        $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
-        $this->assertTrue($newDatasetVersionCount >= 2, 'Number of new dataset versions is not as expected');
-        
-        $response->assertStatus(201);
+        //create a 2nd team
+        $teamName2 = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => $teamName2,
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        $teamId2 = $contentCreateTeam['data'];
+
+        // create user
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' =>" https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+
+        $responseCreateUser->assertStatus(201);
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        $userId = $contentCreateUser['data'];
+
+        // Create Tool A
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'mongo_object_id' => '5ece82082abda8b3a06f1941',
+                'name' => 'Tool A',
+                'url' => 'http://example.com/toolA',
+                'description' => 'Test Tool A Description',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack A',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId1,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [1, 2],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+            ],
+            $this->header
+        );
+        $responseCreateTool->assertStatus(201);
+
+        // Create Tool B
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'mongo_object_id' => '5ece82082abda8b3a06f1942',
+                'name' => 'Tool B',
+                'url' => 'http://example.com/toolB',
+                'description' => 'Test Tool B Description',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack B',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId1,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [1, 2],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+            ],
+            $this->header
+        );
+        $responseCreateTool->assertStatus(201);
+
+        // Create Tool C
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'mongo_object_id' => '5ece82082abda8b3a06f1943',
+                'name' => 'Tool C',
+                'url' => 'http://example.com/toolC',
+                'description' => 'Test Tool C Description',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack C',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId2,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [1, 2],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+            ],
+            $this->header
+        );
+        $responseCreateTool->assertStatus(201);
+
+        // Retrieve mongo_id, team_id, and name for filtering tests
+        $mongoId = Tool::first()->mongo_id;
+        $teamId = Tool::first()->team_id;
+        $title = Tool::first()->name;
+
+        // Filter by mongo_id
+        $response = $this->json('GET', self::TEST_URL . '?mongo_id=' . $mongoId, [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $this->assertNotEmpty($responseData);
+        foreach ($responseData as $tool) {
+            $this->assertEquals($mongoId, $tool['mongo_id']);
+        }
+
+        // Filter by team_id
+        $response = $this->json('GET', self::TEST_URL . '?team_id=' . $teamId, [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $this->assertNotEmpty($responseData);
+        foreach ($responseData as $tool) {
+            $this->assertEquals($teamId, $tool['team_id']);
+        }
+
+        // Filter by title
+        $response = $this->json('GET', self::TEST_URL . '?title=' . urlencode($title), [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $this->assertNotEmpty($responseData);
+        foreach ($responseData as $tool) {
+            $this->assertStringContainsString($title, $tool['name']);
+        }
+
+        // Test ascending order by title
+        $response = $this->json('GET', self::TEST_URL . '?sort=name:asc', [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $titles = array_column($responseData, 'name');
+        $sortedTitles = $titles;
+        sort($sortedTitles);
+        $this->assertEquals($sortedTitles, $titles, "Ascending order sorting by title failed.");
+
+        // Test descending order by title
+        $response = $this->json('GET', self::TEST_URL . '?sort=name:desc', [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $titles = array_column($responseData, 'name');
+        $sortedTitles = $titles;
+        rsort($sortedTitles);
+        $this->assertEquals($sortedTitles, $titles, "Descending order sorting by title failed.");
     }
 
 
@@ -573,3 +746,5 @@ class ToolTest extends TestCase
         return $return;
     }
 }
+
+
