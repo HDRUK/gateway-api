@@ -7,7 +7,10 @@ use Illuminate\Database\Seeder;
 
 class ToolSeeder extends Seeder
 {
-    public function run()
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
         // Seed 8 enabled tools
         Tool::factory()->count(8)->create([
