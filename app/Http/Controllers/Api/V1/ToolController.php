@@ -13,26 +13,31 @@ use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Application;
 use App\Models\TypeCategory;
-use Illuminate\Http\Request;
 use App\Models\DatasetVersion;
-use App\Models\DatasetVersionHasTool;
 use App\Models\DataProviderColl;
-use Illuminate\Http\JsonResponse;
 use App\Models\ProgrammingPackage;
 use App\Models\PublicationHasTool;
-use App\Http\Requests\Tool\GetTool;
 use App\Models\ProgrammingLanguage;
 use App\Models\ToolHasTypeCategory;
+use App\Models\DatasetVersionHasTool;
+use App\Models\DataProviderCollHasTeam;
+use App\Models\ToolHasProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tool\GetTool;
 use App\Http\Requests\Tool\EditTool;
 use App\Http\Requests\Tool\CreateTool;
 use App\Http\Requests\Tool\DeleteTool;
 use App\Http\Requests\Tool\UpdateTool;
-use App\Models\DataProviderCollHasTeam;
+
 use MetadataManagementController AS MMC;
-use App\Models\ToolHasProgrammingPackage;
+
 use App\Http\Traits\RequestTransformation;
-use App\Models\ToolHasProgrammingLanguage;
+
 
 class ToolController extends Controller
 {
@@ -51,35 +56,121 @@ class ToolController extends Controller
      *    path="/api/v1/tools",
      *    operationId="fetch_all_tools",
      *    tags={"Tools"},
-     *    summary="ToolController@index",
-     *    description="Get All Tools",
+     *    summary="Fetch all tools",
+     *    description="Get all tools with optional filters and sorting",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="mongo_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter tools by mongo ID"
+     *    ),
+     *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="integer"),
+     *       description="Filter tools by team ID"
+     *    ),
+     *    @OA\Parameter(
+     *       name="title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter tools by title"
+     *    ),
+     *    @OA\Parameter(
+     *       name="sort",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string", example="name:asc"),
+     *       description="Sort tools by a specific field and direction, e.g., 'name:asc' or 'created_at:desc'"
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
-     *       @OA\JsonContent( @OA\Property( property="data", type="array", example="[]", @OA\Items( type="array", @OA\Items() ) ),
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="array",
+     *             @OA\Items(type="object")
+     *          ),
+     *          @OA\Property(property="current_page", type="integer"),
+     *          @OA\Property(property="first_page_url", type="string"),
+     *          @OA\Property(property="from", type="integer"),
+     *          @OA\Property(property="last_page", type="integer"),
+     *          @OA\Property(property="last_page_url", type="string"),
+     *          @OA\Property(property="links", type="array", @OA\Items(type="object")),
+     *          @OA\Property(property="next_page_url", type="string"),
+     *          @OA\Property(property="path", type="string"),
+     *          @OA\Property(property="per_page", type="integer"),
+     *          @OA\Property(property="prev_page_url", type="string"),
+     *          @OA\Property(property="to", type="integer"),
+     *          @OA\Property(property="total", type="integer"),
      *       ),
      *    ),
+     *    @OA\Response(
+     *       response="400",
+     *       description="Bad request response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string")
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response="500",
+     *       description="Internal server error",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="error", type="string")
+     *       )
+     *    )
      * )
      */
     public function index(Request $request): JsonResponse
     {
         try {
+            $matches = [];
             $mongoId = $request->query('mongo_id', null);
-            $tools = Tool::with([
-                    'user', 
-                    'tag',
-                    'team',
-                    'license',
-                    'publications',
-                    'durs',
-                ])
-                ->when($mongoId, function ($query) use ($mongoId) {
-                    return $query->where('mongo_id', '=', $mongoId);
-                })
-                ->where('enabled', 1)
-                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            $teamId = $request->query('team_id', null);
+            $filterTitle = $request->query('title', null);
 
+            $sort = $request->query('sort', 'name:desc');
+            $tmp = explode(":", $sort);
+            $sortField = $tmp[0];
+            $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'desc';
+
+            // Get all field names from the Tool model
+            $allFields = collect(Tool::first())->keys()->toArray();
+            
+            // Validate sort field and direction
+            if (!in_array($sortField, $allFields)) {
+                return response()->json([
+                    'message' => '"' . $sortField . '" is not a valid field to sort on'
+                ], 400);
+            }
+
+            $validDirections = ['desc', 'asc'];
+            if (!in_array($sortDirection, $validDirections)) {
+                return response()->json([
+                    "message" => "Sort direction must be either: " . implode(' OR ', $validDirections) . 
+                        '. Not "' . $sortDirection . '"'
+                ], 400);
+            }
+
+            // Perform query for the matching tools with filters, sorting, and pagination
+            $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications', 'durs'])
+            ->when($mongoId, function ($query) use ($mongoId) {
+                return $query->where('mongo_id', '=', $mongoId);
+            })
+            ->when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
+            })
+            ->when($filterTitle, function ($query) use ($filterTitle) {
+                return $query->where('name', 'like', '%' . $filterTitle . '%');
+            })
+            ->where('enabled', 1)
+            ->orderBy($sortField, $sortDirection)
+            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
                 'action_type' => 'GET',
