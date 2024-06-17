@@ -142,6 +142,45 @@ class ToolTest extends TestCase
             'to',
             'total',
         ]);
+        $response->assertStatus(200);
+    }
+
+    /**
+     * Get Tool by Id with success
+     * 
+     * @return void
+     */
+    public function test_get_tool_by_id_with_success(): void
+    {
+        $toolId = Tool::where('enabled', 1)->get()->random()->id;
+        $response = $this->json('GET', self::TEST_URL . '/' . $toolId, [], $this->header);
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'mongo_object_id',
+                'name',
+                'url',
+                'description',
+                'license',
+                'tech_stack',
+                'category_id',
+                'user_id',
+                'enabled',
+                'created_at',
+                'updated_at',
+                'deleted_at',
+                'user',
+                'tag',
+                'programming_languages', 
+                'programming_packages', 
+                'type_category', 
+                'associated_authors', 
+                'contact_address',
+                'publications',
+                'durs',
+            ]
+        ]);
+        $response->assertStatus(200);
     }
 
     /**
