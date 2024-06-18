@@ -368,7 +368,7 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($tool->id, $publications, $array['user_id'], $appId);
 
-            if($request['enabled'] === 1){
+            if($input['enabled'] === 1){
                 $this->indexElasticTools((int) $tool->id);
             }
 
@@ -526,7 +526,7 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($id, $publications, $array['user_id'], $appId);
 
-            if($request['enabled'] === 1){
+            if($input['enabled'] === 1){
                 $this->indexElasticTools((int) $id);
             }
 
@@ -686,7 +686,7 @@ class ToolController extends Controller
                 $this->checkPublications($id, $publications, $userIdFinal, $appId);
             }
 
-            if($request['enabled'] === 1){
+            if($input['enabled'] === 1){
                 $this->indexElasticTools((int) $id);
             }
 

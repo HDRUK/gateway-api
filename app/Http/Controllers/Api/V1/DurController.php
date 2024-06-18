@@ -497,7 +497,7 @@ class DurController extends Controller
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
 
-            if($request['enabled'] === 1){
+            if($input['enabled'] === 1){
                 $this->indexElasticDur($durId);
             }
           
@@ -765,7 +765,7 @@ class DurController extends Controller
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
-            if($request['enabled'] === 1){
+            if($input['enabled'] === 1){
                 $this->indexElasticDur($id);
             }
 
@@ -1040,9 +1040,8 @@ class DurController extends Controller
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
-            if($request['enabled'] === 1){
+            if($input['enabled'] === 1){
                 $this->indexElasticDur($id);
-
             }
 
             Auditor::log([
