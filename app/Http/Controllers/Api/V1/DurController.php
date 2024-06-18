@@ -184,7 +184,7 @@ class DurController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur get all",
             ]);
 
@@ -289,7 +289,7 @@ class DurController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur get " . $id,
             ]);
     
@@ -500,9 +500,9 @@ class DurController extends Controller
             $this->indexElasticDur($durId);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur " . $durId . " created",
             ]);
 
@@ -765,9 +765,9 @@ class DurController extends Controller
             $this->indexElasticDur($id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur " . $id . " updated",
             ]);
 
@@ -1038,9 +1038,9 @@ class DurController extends Controller
             $this->indexElasticDur($id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur " . $id . " updated",
             ]);
 
@@ -1107,9 +1107,9 @@ class DurController extends Controller
             Dur::where(['id' => $id])->delete();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur " . $id . " deleted",
             ]);
 
@@ -1361,9 +1361,9 @@ class DurController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPLOAD',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur " . $durId . " uploaded",
             ]);
 

@@ -56,9 +56,9 @@ class UserOrganisationController extends Controller
                         ->toArray();
 
                     Auditor::log([
-                        'user_id' => $jwtUser['id'],
+                        'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'GET',
-                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
                         'description' => "User Organisation get all",
                     ]);
 

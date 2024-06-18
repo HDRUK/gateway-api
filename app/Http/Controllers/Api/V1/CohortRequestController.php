@@ -187,9 +187,9 @@ class CohortRequestController extends Controller
             $cohortRequests = $query->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request get all",
             ]);
 
@@ -275,9 +275,9 @@ class CohortRequestController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request get " . $id,
             ]);
 
@@ -342,7 +342,7 @@ class CohortRequestController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $checkRequestByUserId = CohortRequest::where([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
             ])->first();
 
             // keep just one request by user id
@@ -354,7 +354,7 @@ class CohortRequestController extends Controller
 
             if ($id) {
                 CohortRequest::where('id', $id)->update([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'request_status' => 'PENDING',
                     'cohort_status' => false,
                     'request_expire_at' => null,
@@ -363,7 +363,7 @@ class CohortRequestController extends Controller
                 CohortRequestHasPermission::where('id', $id)->delete();
             } else {
                 $cohortRequest = CohortRequest::create([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'request_status' => 'PENDING',
                     'cohort_status' => false,
                     'created_at' => Carbon::now(),
@@ -371,7 +371,7 @@ class CohortRequestController extends Controller
             }
 
             $cohortRequestLog = CohortRequestLog::create([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => 'PENDING',
             ]);
@@ -385,9 +385,9 @@ class CohortRequestController extends Controller
             $this->sendEmail($cohortRequest->id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request " . ($id ?: $cohortRequest->id) . " created",
             ]);
 
@@ -481,7 +481,7 @@ class CohortRequestController extends Controller
             $currRequestStatus = strtoupper(trim($currCohortRequest['request_status']));
 
             $cohortRequestLog = new CohortRequestLog([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => $requestStatus,
             ]);
@@ -541,9 +541,9 @@ class CohortRequestController extends Controller
             $this->updateOrCreateContact((int) $jwtUser['id']);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request " . $id . " updated",
             ]);
  
@@ -617,9 +617,9 @@ class CohortRequestController extends Controller
             $this->updateOrCreateContact($id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request " . $id . " deleted",
             ]);
 
@@ -769,9 +769,9 @@ class CohortRequestController extends Controller
             $response->headers->set('Cache-Control','max-age=0');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'EXPORT',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request exported",
             ]);
 

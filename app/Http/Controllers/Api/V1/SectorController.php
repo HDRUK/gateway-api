@@ -55,9 +55,9 @@ class SectorController extends Controller
             $sectors = Sector::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Sector get all",
             ]);
 
@@ -120,9 +120,9 @@ class SectorController extends Controller
             $sector = Sector::findOrFail($id);
             if ($sector) {
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Sector get " . $id,
                 ]);
 
@@ -186,9 +186,9 @@ class SectorController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Sector " . $sector->id . " created",
             ]);
 
@@ -271,9 +271,9 @@ class SectorController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Sector " . $id . " updated",
             ]);
 
@@ -359,9 +359,9 @@ class SectorController extends Controller
             Sector::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Sector " . $id . " updated",
             ]);
 
@@ -427,9 +427,9 @@ class SectorController extends Controller
                 $sector->enabled = false;
                 if ($sector->save()) {
                     Auditor::log([
-                        'user_id' => $jwtUser['id'],
+                        'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'DELETE',
-                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
                         'description' => "Sector " . $id . " deleted",
                     ]);
 
