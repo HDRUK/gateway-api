@@ -496,12 +496,10 @@ class DurController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
-
-            if($input['enabled'] === 1){
+            if($request['enabled'] === 1) {
                 $this->indexElasticDur($durId);
             }
-          
-
+            
             Auditor::log([
                 'user_id' => $jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -757,15 +755,14 @@ class DurController extends Controller
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
-                Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
+                Dur::withTrashed()->where('id', $id)->update(['created_at' => $input['created_at']]);
             }
 
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
-                Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
+                Dur::withTrashed()->where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
-
-            if($input['enabled'] === 1){
+            if($request['enabled'] === 1) {
                 $this->indexElasticDur($id);
             }
 
@@ -1032,15 +1029,15 @@ class DurController extends Controller
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
-                Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
+                Dur::withTrashed()->where('id', $id)->update(['created_at' => $input['created_at']]);
             }
 
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
-                Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
+                Dur::withTrashed()->where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
-
-            if($input['enabled'] === 1){
+            
+            if($request['enabled'] === 1) {
                 $this->indexElasticDur($id);
             }
 
