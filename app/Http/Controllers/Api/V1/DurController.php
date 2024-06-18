@@ -766,7 +766,7 @@ class DurController extends Controller
             }
 
             if($request['enabled'] === 1){
-                $this->indexElasticDur($durId);
+                $this->indexElasticDur($id);
             }
 
             Auditor::log([
@@ -1041,7 +1041,8 @@ class DurController extends Controller
             }
 
             if($request['enabled'] === 1){
-                $this->indexElasticDur($durId);
+                $this->indexElasticDur($id);
+
             }
 
             Auditor::log([

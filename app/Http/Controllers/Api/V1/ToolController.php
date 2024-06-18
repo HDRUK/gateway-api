@@ -527,7 +527,7 @@ class ToolController extends Controller
             $this->checkPublications($id, $publications, $array['user_id'], $appId);
 
             if($request['enabled'] === 1){
-                $this->indexElasticTools((int) $tool->id);
+                $this->indexElasticTools((int) id);
             }
 
             Auditor::log([
@@ -687,7 +687,7 @@ class ToolController extends Controller
             }
 
             if($request['enabled'] === 1){
-                $this->indexElasticTools((int) $tool->id);
+                $this->indexElasticTools((int) $id);
             }
 
             Auditor::log([
