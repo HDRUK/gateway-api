@@ -496,7 +496,7 @@ class DurController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
-            if($request['enabled'] === 1) {
+            if($request['enabled'] === 1 && is_null(Dur::withTrashed()->find($durId)->deleted_at)){
                 $this->indexElasticDur($durId);
             }
             
@@ -762,7 +762,7 @@ class DurController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Dur::withTrashed()->where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
-            if($request['enabled'] === 1) {
+            if($request['enabled'] === 1 && is_null(Dur::withTrashed()->find($id)->deleted_at)){
                 $this->indexElasticDur($id);
             }
 
@@ -1036,8 +1036,8 @@ class DurController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Dur::withTrashed()->where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
-            
-            if($request['enabled'] === 1) {
+
+            if($request['enabled'] === 1 && is_null(Dur::withTrashed()->find($id)->deleted_at)){
                 $this->indexElasticDur($id);
             }
 
