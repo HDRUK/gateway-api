@@ -36,12 +36,12 @@ class Auditor {
 
             $data['action_name'] = strtolower($data['action_name']);
 
-            if (Config::get('services.googlepubsub.pubsub_enabled')) {
+            if (env('GOOGLE_CLOUD_PUBSUB_ENABLED', false)) {
                 SendAuditLogToPubSub::dispatch($data);
             }
 
             $audit = AuditLog::create($data);
-
+            
             if (!$audit) {
                 return false;
             }

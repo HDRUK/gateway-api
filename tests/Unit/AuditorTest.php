@@ -8,8 +8,9 @@ use Tests\TestCase;
 
 use App\Models\Team;
 use App\Models\User;
-use Database\Seeders\MinimalUserSeeder;
+use App\Models\AuditLog;
 use Illuminate\Support\Facades\Config;
+use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AuditorTest extends TestCase
@@ -36,7 +37,7 @@ class AuditorTest extends TestCase
         $targetUserId = User::all()->random()->id;
         $targetTeamId = Team::all()->random()->id;
         $actionType = 'CREATE';
-        $actionService = 'Gateway API';
+        $actionName = 'Gateway API';
         $description = 'testing auditor description';
 
         $logInfo = [
@@ -45,7 +46,7 @@ class AuditorTest extends TestCase
             'target_user_id' => $targetUserId,
             'target_team_id' => $targetTeamId,
             'action_type' => $actionType,
-            'action_service' =>  $actionService,
+            'action_name' =>  $actionName,
             'description' => $description,
         ];
         Auditor::log($logInfo);
@@ -56,7 +57,7 @@ class AuditorTest extends TestCase
             'target_user_id' => $targetUserId,
             'target_team_id' => $targetTeamId,
             'action_type' => $actionType,
-            'action_service' =>  $actionService,
+            'action_name' =>  strtolower($actionName),
             'description' => $description,
         ]);
     }
