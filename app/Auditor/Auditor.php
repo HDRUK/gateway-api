@@ -32,7 +32,7 @@ class Auditor {
             ];
     
             $data = $this->checkEditArray($log, $arrayKeys);
-            $data['action_service'] = 'gateway_api';
+            $data['action_service'] = env('AUDIT_ACTION_SERVICE', 'gateway_api');
 
             $data['action_name'] = strtolower($data['action_name']);
 
@@ -41,7 +41,7 @@ class Auditor {
             }
 
             $audit = AuditLog::create($data);
-            
+
             if (!$audit) {
                 return false;
             }
