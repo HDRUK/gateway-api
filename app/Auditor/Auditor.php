@@ -27,11 +27,17 @@ class Auditor {
                 'target_user_id',
                 'target_team_id',
                 'action_type',
-                'action_service',
+                'action_name',
                 'description',
             ];
     
             $data = $this->checkEditArray($log, $arrayKeys);
+            $data['action_service'] = 'gateway_api';
+
+            array_walk($data, function(&$value)
+            {
+                $value = strtolower($value);
+            });
 
             if (Config::get('services.googlepubsub.pubsub_enabled')) {
                 SendAuditLogToPubSub::dispatch($data);

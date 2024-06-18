@@ -217,7 +217,7 @@ class DatasetController extends Controller
     
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dataset get all",
             ]);
             
@@ -286,7 +286,7 @@ class DatasetController extends Controller
     
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dataset count",
             ]);
 
@@ -412,7 +412,7 @@ class DatasetController extends Controller
             
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dataset get " . $id,
             ]);
 
@@ -622,7 +622,7 @@ class DatasetController extends Controller
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
                     'action_type' => 'CREATE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Dataset " . $dataset->id . " with version " . $version->id . " created",
                 ]);
 
@@ -826,7 +826,7 @@ class DatasetController extends Controller
                     'user_id' => $userId,
                     'team_id' => $teamId,
                     'action_type' => 'UPDATE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Dataset " . $id . " with version " . ($lastVersionNumber + 1) . " updated",
                 ]);
 
@@ -908,10 +908,10 @@ class DatasetController extends Controller
                         }
 
                         Auditor::log([
-                            'user_id' => $jwtUser['id'],
+                            'user_id' => (int) $jwtUser['id'],
                             'team_id' => $datasetModel['team_id'],
                             'action_type' => 'UPDATE',
-                            'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
                             'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
                         ]);
                     } else {
@@ -942,10 +942,10 @@ class DatasetController extends Controller
                 // body validate, translate if needed, update Mauro data model, etc. 
 
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'team_id' => $datasetModel['team_id'],
                     'action_type' => 'UPDATE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
                 ]);
             }
@@ -1011,9 +1011,9 @@ class DatasetController extends Controller
             MMC::deleteFromElastic($id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dataset " . $id . " deleted",
             ]);
 

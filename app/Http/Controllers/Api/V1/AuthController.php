@@ -93,9 +93,9 @@ class AuthController extends Controller
         $jwt = $this->createJwt($user);
 
         Auditor::log([
-            'user_id' => $user['id'],
+            'user_id' => (int) $user['id'],
             'action_type' => 'GET',
-            'action_service' => class_basename($this) . '@'.__FUNCTION__,
+            'action_name' => class_basename($this) . '@'.__FUNCTION__,
             'description' => "Autorization for user",
         ]);
 

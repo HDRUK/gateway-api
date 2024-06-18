@@ -55,9 +55,9 @@ class TypeCategoryController extends Controller
             $typeCategories = TypeCategory::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Type Category get all",
             ]);
 
@@ -119,9 +119,9 @@ class TypeCategoryController extends Controller
 
             $typeCategory = TypeCategory::findOrFail($id);
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Type Category get " . $id,
             ]);
 
@@ -183,9 +183,9 @@ class TypeCategoryController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Type Category " . $typeCategory->id . " created",
             ]);
 
@@ -271,9 +271,9 @@ class TypeCategoryController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Type Category " . $id . " updated",
             ]);
 
@@ -361,9 +361,9 @@ class TypeCategoryController extends Controller
             TypeCategory::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Type Category " . $id . " updated",
             ]);
 
@@ -428,9 +428,9 @@ class TypeCategoryController extends Controller
             $typeCategory->enabled = false;
             if ($typeCategory->save()) {
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'DELETE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Type Category " . $id . " deleted",
                 ]);
 

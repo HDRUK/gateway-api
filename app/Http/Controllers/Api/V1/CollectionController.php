@@ -137,7 +137,7 @@ class CollectionController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Collection get all",
             ]);
 
@@ -209,7 +209,7 @@ class CollectionController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Collection get " . $id,
             ]);
     
@@ -350,7 +350,7 @@ class CollectionController extends Controller
                 'user_id' => $array['user_id'],
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Collection " . $collectionId . " created",
             ]);
 
@@ -517,7 +517,7 @@ class CollectionController extends Controller
                 'user_id' => $array['user_id'],
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Collection " . $id . " updated",
             ]);
 
@@ -687,7 +687,7 @@ class CollectionController extends Controller
                 'user_id' => $userIdFinal,
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Collection " . $id . " updated",
             ]);
 
@@ -755,9 +755,9 @@ class CollectionController extends Controller
             Collection::where(['id' => $id])->delete();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Collection " . $id . " deleted",
             ]);
 

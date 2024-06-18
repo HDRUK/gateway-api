@@ -119,9 +119,9 @@ class TeamController extends Controller
             $teams['data'] = $this->getTeams($teams['data']);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Get all",
             ]);
 
@@ -195,9 +195,9 @@ class TeamController extends Controller
             $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Get by " . $teamId,
             ]);
 
@@ -305,9 +305,9 @@ class TeamController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $team->id . " created",
             ]);
 
@@ -451,9 +451,9 @@ class TeamController extends Controller
             $this->updateTeamAdminUsers($teamId, $users);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $teamId . " updated",
             ]);
 
@@ -584,9 +584,9 @@ class TeamController extends Controller
             $this->updateTeamAdminUsers($teamId, $users);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $teamId . " updated",
             ]);
 
@@ -663,9 +663,9 @@ class TeamController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $teamId . " deleted",
             ]);
 
