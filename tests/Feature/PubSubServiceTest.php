@@ -10,18 +10,18 @@ use Google\Cloud\PubSub\Topic;
 use Google\Cloud\PubSub\Message;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Config;
+use Tests\CreatesApplication;
 // use Config;
 // use Google\Cloud\PubSub\MessageBuilder;
 
 class PubSubServiceTest extends TestCase
 {
-    protected function tearDown(): void
-    {
-        Mockery::close();
-    }
+    protected $pubSubService;
 
-    public function testPublishMessage()
+    protected function setUp(): void
     {
+        parent::setUp();
+
         // Mock the Config facade
         Config::shouldReceive('get')
             ->with('services.googlepubsub.project_id')
@@ -31,39 +31,34 @@ class PubSubServiceTest extends TestCase
             ->with('services.googlepubsub.pubsub_topic')
             ->andReturn('test-topic');
 
-        // Mock the PubSubClient and Topic
-        $mockTopic = Mockery::mock(Topic::class);
-        $mockPubSubClient = Mockery::mock(PubSubClient::class);
-
-        $mockPubSubClient->shouldReceive('topic')
-            ->with('test-topic')
-            ->andReturn($mockTopic);
-
-        $mockTopic->shouldReceive('publish')
-            ->once()
-            ->with(Mockery::on(function ($message) {
-                $expectedData = ['foo' => 'bar'];
-                $messageData = json_decode($message->data(), true);
-                return $messageData == $expectedData;
-            }));
-
-        // Instantiate the service with the mocked PubSubClient
-        $pubSubService = new PubSubService();
-        $pubSubService->setPubSubClient($mockPubSubClient);
-
-        // Call the publishMessage method
-        $data = ['foo' => 'bar'];
-        $pubSubService->publishMessage($data);
-
-        $mockPubSubClient->shouldHaveReceived('topic')
-            ->with('test-topic')
-            ->once();
-
-        $mockTopic->shouldHaveReceived('publish')
-            ->once()
-            ->with(Mockery::on(function ($message) use ($data) {
-                $messageData = json_decode($message->data(), true);
-                return $messageData == $data;
-            }));
+        $this->pubSubService = new PubSubService();
     }
+
+    public function testPublishMessage()
+    {
+        $data = ['message' => 'test message'];
+
+        // Mock the PubSubClient and Topic classes
+        $pubSubClientMock = $this->createMock(PubSubClient::class);
+        $topicMock = $this->createMock(Topic::class);
+
+        $pubSubClientMock->expects($this->once())
+            ->method('topic')
+            ->with('test-topic')
+            ->willReturn($topicMock);
+
+        $topicMock->expects($this->once())
+            ->method('publish')
+            ->with($this->callback(function ($message) use ($data) {
+                $messageData = json_decode($message->data(), true);
+                return $messageData === $data;
+            }));
+
+        // Set the mocked PubSubClient in the service
+        $this->pubSubService->setPubSubClient($pubSubClientMock);
+
+        // Call the publishMessage method with the test data
+        $this->pubSubService->publishMessage($data);
+    }
+
 }
