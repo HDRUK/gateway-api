@@ -58,6 +58,7 @@ return [
     ],
 
     'hubspot' => [
+        'enabled' => env('HUBSPOT_ENABLED', false),
         'base_url' => env('HUBSPOT_BASE_URL', 'http://hub.local'),
         'key' => env('HUBSPOT_KEY', 'hubspot_key'),
     ],

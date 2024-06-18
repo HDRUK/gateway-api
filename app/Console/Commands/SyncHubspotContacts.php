@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Config;
 use App\Models\User;
 use App\Models\Sector;
 use Illuminate\Console\Command;
@@ -30,6 +31,12 @@ class SyncHubspotContacts extends Command
      */
     public function handle()
     {
+        $hubspotEnabled = Config::get('services.hubspot.enabled');
+
+        if (!$hubspotEnabled) {
+            echo 'Sync contacts from HubSpot to mk2 users not enabled - please check HUBSPOT_ENABLED in environment', PHP_EOL; 
+        }
+
         $hubspotService = new Hubspot();
 
         // enabled users
