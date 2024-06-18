@@ -143,10 +143,8 @@ class ServiceLayerController extends Controller
 
         // Forward the request to the external API service
         $response = Http::send($request->method(), $url, [
-            'headers' => $request->headers->all(),
             'query' => $request->query(),
             'body' => $request->getContent(),
-            'follow_redirects' => true, 
         ]);
 
         $statusCode = $response->status();
