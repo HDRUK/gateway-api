@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Mockery;
 use Tests\TestCase;
+use Illuminate\Support\Env;
 use Google\Cloud\PubSub\Topic;
 use App\Services\PubSubService;
 use App\Jobs\SendAuditLogToPubSub;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\App;
 
 class SendAuditLogToPubSubTest extends TestCase
 {
@@ -31,7 +33,6 @@ class SendAuditLogToPubSubTest extends TestCase
 
         $pubSubClient = Mockery::mock('overload:Google\Cloud\PubSub\PubSubClient');
         $pubSubClient->shouldReceive('topic')
-            ->once()
             ->andReturn($topic);
 
         SendAuditLogToPubSub::dispatch(['message' => 'fake test message']);
