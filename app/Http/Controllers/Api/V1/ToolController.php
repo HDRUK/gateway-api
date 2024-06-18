@@ -368,7 +368,9 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($tool->id, $publications, $array['user_id'], $appId);
 
-            $this->indexElasticTools((int) $tool->id);
+            if($input['enabled'] === 1){
+                $this->indexElasticTools((int) $tool->id);
+            }
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -524,7 +526,9 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($id, $publications, $array['user_id'], $appId);
 
-            $this->indexElasticTools((int) $id);
+            if($input['enabled'] === 1){
+                $this->indexElasticTools((int) $tool->id);
+            }
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
@@ -682,7 +686,9 @@ class ToolController extends Controller
                 $this->checkPublications($id, $publications, $userIdFinal, $appId);
             }
 
-            $this->indexElasticTools((int) $id);
+            if($input['enabled'] === 1){
+                $this->indexElasticTools((int) $tool->id);
+            }
 
             Auditor::log([
                 'user_id' => $jwtUser['id'],
