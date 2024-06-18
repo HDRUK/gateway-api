@@ -88,6 +88,10 @@ class CreateTeam extends BaseFormRequest
             'is_provider' => [
                 'boolean',
             ],
+            'url' => [
+                'nullable',
+                'url:http,https',
+            ],
         ];
     }
 }
