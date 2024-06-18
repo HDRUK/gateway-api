@@ -143,7 +143,6 @@ class ServiceLayerController extends Controller
 
         $headers = $request->headers->all();
         unset($headers['host']);
-      
         // Forward the request to the external API service
         $response = Http::send($request->method(), $url, [
             'headers' => $headers,
@@ -154,7 +153,6 @@ class ServiceLayerController extends Controller
         $statusCode = $response->status();
 
         $responseData = $response->json();
-
 
         return response()->json($responseData, $statusCode);
     }
