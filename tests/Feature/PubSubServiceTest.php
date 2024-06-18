@@ -3,35 +3,67 @@
 namespace Tests\Feature;
 
 use Mockery;
-use Tests\TestCase;
-use Google\Cloud\PubSub\Topic;
 use App\Services\PubSubService;
+// use Config;
+use Google\Cloud\PubSub\PubSubClient;
+use Google\Cloud\PubSub\Topic;
+use Google\Cloud\PubSub\Message;
+use Tests\TestCase;
 use Illuminate\Support\Facades\Config;
+// use Config;
+// use Google\Cloud\PubSub\MessageBuilder;
 
 class PubSubServiceTest extends TestCase
 {
-    public function testPublishMessageWhenEnabled()
+    protected function tearDown(): void
     {
-        Config::set('GOOGLE_CLOUD_PROJECT_ID', 'fake-project-id');
-        Config::set('GOOGLE_CLOUD_PUBSUB_TOPIC', 'fake-topic-name');
-        Config::set('GOOGLE_CLOUD_PUBSUB_ENABLED', true);
+        Mockery::close();
+    }
 
-        // Mock the Topic class
-        $topic = Mockery::mock(Topic::class);
-        $topic->shouldReceive('publish')
+    public function testPublishMessage()
+    {
+        // Mock the Config facade
+        Config::shouldReceive('get')
+            ->with('services.googlepubsub.project_id')
+            ->andReturn('test-project-id');
+
+        Config::shouldReceive('get')
+            ->with('services.googlepubsub.pubsub_topic')
+            ->andReturn('test-topic');
+
+        // Mock the PubSubClient and Topic
+        $mockTopic = Mockery::mock(Topic::class);
+        $mockPubSubClient = Mockery::mock(PubSubClient::class);
+
+        $mockPubSubClient->shouldReceive('topic')
+            ->with('test-topic')
+            ->andReturn($mockTopic);
+
+        $mockTopic->shouldReceive('publish')
             ->once()
-            ->with(Mockery::on(function ($data) {
-                $this->assertEquals(json_encode(['message' => 'fake test message']), $data['data']);
-                return true;
+            ->with(Mockery::on(function ($message) {
+                $expectedData = ['foo' => 'bar'];
+                $messageData = json_decode($message->data(), true);
+                return $messageData == $expectedData;
             }));
 
-        // Mock the PubSubClient and make it return the mocked Topic
-        $pubSubClient = Mockery::mock('overload:Google\Cloud\PubSub\PubSubClient');
-        $pubSubClient->shouldReceive('topic')
-            ->once()
-            ->andReturn($topic);
+        // Instantiate the service with the mocked PubSubClient
+        $pubSubService = new PubSubService();
+        $pubSubService->setPubSubClient($mockPubSubClient);
 
-        $service = new PubSubService();
-        $service->publishMessage(['message' => 'fake test message']);
+        // Call the publishMessage method
+        $data = ['foo' => 'bar'];
+        $pubSubService->publishMessage($data);
+
+        $mockPubSubClient->shouldHaveReceived('topic')
+            ->with('test-topic')
+            ->once();
+
+        $mockTopic->shouldHaveReceived('publish')
+            ->once()
+            ->with(Mockery::on(function ($message) use ($data) {
+                $messageData = json_decode($message->data(), true);
+                return $messageData == $data;
+            }));
     }
 }
