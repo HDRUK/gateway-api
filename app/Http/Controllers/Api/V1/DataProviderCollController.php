@@ -60,7 +60,7 @@ class DataProviderCollController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'DataProviderColl list'
             ]);
 
@@ -125,7 +125,7 @@ class DataProviderCollController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'DataProviderColl get ' . $id,
             ]);
 
@@ -190,9 +190,9 @@ class DataProviderCollController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'DataProvider ' . $dps->id . ' created',
             ]);
 
@@ -203,9 +203,9 @@ class DataProviderCollController extends Controller
                 ]);
 
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'CREATE',
-                    'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'DataProviderCollHasTeam ' . $dps->id . '/' . $teamId . ' created',
                 ]);
             }
@@ -472,9 +472,9 @@ class DataProviderCollController extends Controller
             DataProviderColl::where(['id' => $id])->delete();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'DataProvider ' . $id . ' deleted',
             ]);
 

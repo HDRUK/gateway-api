@@ -174,7 +174,7 @@ class ToolController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tool get all",
             ]);
 
@@ -233,7 +233,7 @@ class ToolController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tool get " . $id,
             ]);
 
@@ -371,9 +371,9 @@ class ToolController extends Controller
             $this->indexElasticTools((int) $tool->id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tool " . $tool->id . " created",
             ]);
 
@@ -527,9 +527,9 @@ class ToolController extends Controller
             $this->indexElasticTools((int) $id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tool " . $id . " updated",
             ]);
 
@@ -685,9 +685,9 @@ class ToolController extends Controller
             $this->indexElasticTools((int) $id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tool " . $id . " updated",
             ]);
 
@@ -765,9 +765,9 @@ class ToolController extends Controller
             PublicationHasTool::where('tool_id', $id)->delete();
             
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tool " . $id . " deleted",
             ]);
 

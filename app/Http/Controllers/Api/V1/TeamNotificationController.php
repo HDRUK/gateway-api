@@ -89,9 +89,9 @@ class TeamNotificationController extends Controller
             $team = Team::where('id', $teamId)->with(['notifications'])->first();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team Notification get for teams " . $teamId,
             ]);
 
@@ -184,9 +184,9 @@ class TeamNotificationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team Notification for team " . $teamId . " created",
             ]);
 

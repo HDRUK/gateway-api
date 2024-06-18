@@ -260,7 +260,7 @@ class TeamUserController extends Controller
     //             'target_user_id' => $payload['userId'],
     //             'target_team_id' => $teamId,
     //             'action_type' => 'ASSIGN',
-    //             'action_service' => $actionService,
+    //             'action_name' => $actionService,
     //             'description' => 'User role "' . $role . '" added',
     //         ];
 
@@ -725,7 +725,7 @@ class TeamUserController extends Controller
                     'target_user_id' => $userId,
                     'target_team_id' => $teamId,
                     'action_type' => 'ASSIGN',
-                    'action_service' => $actionService,
+                    'action_name' => $actionService,
                     'description' => 'User role "' . $role . '" added',
                 ]);
             }
@@ -753,7 +753,7 @@ class TeamUserController extends Controller
                     'target_user_id' => $userId,
                     'target_team_id' => $teamId,
                     'action_type' => 'UPDATE',
-                    'action_service' => $actionService,
+                    'action_name' => $actionService,
                     'description' => 'User role "' . $role . '" ' . ($action ? 'added' : 'removed'),
                 ]);
             }
@@ -784,7 +784,7 @@ class TeamUserController extends Controller
                         'target_user_id' => $userId,
                         'target_team_id' => $teamId,
                         'action_type' => 'UPDATE',
-                        'action_service' => $actionService,
+                        'action_name' => $actionService,
                         'description' => 'User role "' . $role . '" ' . ($action ? 'added' : 'removed'),
                     ]);
         
@@ -812,7 +812,7 @@ class TeamUserController extends Controller
                 'target_user_id' => $userId,
                 'target_team_id' => $teamId,
                 'action_type' => 'REMOVE',
-                'action_service' => $actionService,
+                'action_name' => $actionService,
                 'description' => 'User was removed',
             ]);
         } catch (Exception $e) {
