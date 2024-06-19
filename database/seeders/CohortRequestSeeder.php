@@ -21,6 +21,7 @@ class CohortRequestSeed extends Seeder
     {
         for ($count = 1; $count <= 50; $count++) {
             $userId = User::all()->random()->id;
+            
             $checkRequestByUserId = CohortRequest::where([
                 'user_id' => $userId,
             ])->first();
@@ -47,11 +48,13 @@ class CohortRequestSeed extends Seeder
                         'permission_id' => $permissions->id,
                     ]);
                 }
+
                 $cohortRequestLog = CohortRequestLog::create([
                     'user_id' => $userId,
                     'details' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
                     'request_status' => $status,
                 ]);
+
                 CohortRequestHasLog::create([
                     'cohort_request_id' => $cohortRequest->id,
                     'cohort_request_log_id' => $cohortRequestLog->id,
