@@ -347,7 +347,7 @@ class CohortRequestController extends Controller
             ])->first();
 
             // keep just one request by user id
-            if ($checkRequestByUserId && in_array(strtoupper($checkRequestByUserId['request_status']), ['PENDING', 'APPROVED', 'BANNED', 'SUSPENDED'])) {
+            if ($checkRequestByUserId && in_array(strtoupper($checkRequestByUserId['request_status']), $notAllowUpdateRequest)) {
                 throw new Exception("A cohort request already exists or the status of the request does not allow updating.");
             } else {
                 $id = $checkRequestByUserId ? $checkRequestByUserId->id : 0;
@@ -396,7 +396,7 @@ class CohortRequestController extends Controller
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
                 'data' => $id ?: $cohortRequest->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
-            
+
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -472,13 +472,13 @@ class CohortRequestController extends Controller
      * )
      */
     public function update(UpdateCohortRequest $request, int $id): JsonResponse
-    {   
+    {
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $requestStatus = strtoupper(trim($input['request_status']));
 
-            $currCohortRequest = CohortRequest::withTrashed()->where('id', $id)->first();
+            $currCohortRequest = CohortRequest::where('id', $id)->first();
             $currRequestStatus = strtoupper(trim($currCohortRequest['request_status']));
 
             $cohortRequestLog = CohortRequestLog::create([
