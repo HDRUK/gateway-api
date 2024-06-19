@@ -336,6 +336,9 @@ class CohortRequestController extends Controller
     public function store(CreateCohortRequest $request): JsonResponse
     {
         try {
+            $id = 0;
+            $cohortRequest = null;
+            $notAllowUpdateRequest = ['PENDING', 'APPROVED', 'BANNED', 'SUSPENDED'];
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
@@ -346,15 +349,27 @@ class CohortRequestController extends Controller
             // keep just one request by user id
             if ($checkRequestByUserId && in_array(strtoupper($checkRequestByUserId['request_status']), ['PENDING', 'APPROVED', 'BANNED', 'SUSPENDED'])) {
                 throw new Exception("A cohort request already exists or the status of the request does not allow updating.");
+            } else {
+                $id = $checkRequestByUserId ? $checkRequestByUserId->id : 0;
             }
 
-            $cohortRequest = CohortRequest::create([
-                'user_id' => (int) $jwtUser['id'],
-                'request_status' => 'PENDING',
-                'cohort_status' => false,
-                'created_at' => Carbon::now(),
-                'accept_declaration' => false,
-            ]);
+            if ($id) {
+                CohortRequest::where('id', $id)->update([
+                    'user_id' => (int) $jwtUser['id'],
+                    'request_status' => 'PENDING',
+                    'cohort_status' => false,
+                    'request_expire_at' => null,
+                    'created_at' => Carbon::today()->toDateTimeString(),
+                ]);
+                CohortRequestHasPermission::where('id', $id)->delete();
+            } else {
+                $cohortRequest = CohortRequest::create([
+                    'user_id' => (int) $jwtUser['id'],
+                    'request_status' => 'PENDING',
+                    'cohort_status' => false,
+                    'created_at' => Carbon::now(),
+                ]);
+            }
 
             $cohortRequestLog = CohortRequestLog::create([
                 'user_id' => (int) $jwtUser['id'],
@@ -363,23 +378,25 @@ class CohortRequestController extends Controller
             ]);
 
             CohortRequestHasLog::create([
-                'cohort_request_id' => $cohortRequest->id,
+                'cohort_request_id' => $id ?: $cohortRequest->id,
                 'cohort_request_log_id' => $cohortRequestLog->id,
             ]);
 
+            // send email notification
             $this->sendEmail($cohortRequest->id);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Cohort Request " . $cohortRequest->id . " created",
+                'description' => "Cohort Request " . ($id ?: $cohortRequest->id) . " created",
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $cohortRequest->id,
+                'data' => $id ?: $cohortRequest->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+            
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
