@@ -1,5 +1,7 @@
 <?php
+
 namespace Database\Seeders;
+
 use App\Models\User;
 use App\Models\Permission;
 use App\Models\CohortRequest;
@@ -10,7 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class CohortRequestSeeder extends Seeder
+class CohortRequestSeed extends Seeder
 {
     /**
      * Run the database seeds.
