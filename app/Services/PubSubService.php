@@ -21,7 +21,9 @@ class PubSubService
         \Log::debug(json_encode(['$this->pubSubClient', $this->pubSubClient]));
         $topic = $this->pubSubClient->topic(Config::get('services.googlepubsub.pubsub_topic'));
         \Log::debug(json_encode(['$topic', $topic]));
-        $publish = $topic->publish((new MessageBuilder)->setData(json_encode($data))->build());
+        $message = (new MessageBuilder)->setData(json_encode($data))->build();
+        \Log::debug(json_encode(['$message', $message]));
+        $publish = $topic->publish($message);
         \Log::debug(json_encode(['$publish', $publish]));
     }
 }
