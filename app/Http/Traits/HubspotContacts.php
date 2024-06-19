@@ -2,6 +2,7 @@
 
 namespace App\Http\Traits;
 
+use Config;        
 use App\Models\User;
 use App\Models\Sector;
 use App\Services\Hubspot;
@@ -12,6 +13,12 @@ trait HubspotContacts
 {
     public function updateOrCreateContact(int $id)
     {
+        $hubspotEnabled = Config::get('services.hubspot.enabled');
+
+        if (!$hubspotEnabled) {
+            return; 
+        }
+
         $hubspotService = new Hubspot();
         
         $user = User::where('id', $id)->first();

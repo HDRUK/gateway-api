@@ -41,6 +41,7 @@ trait TeamTransformation
                 'notification_status' => $team['notification_status'],
                 'is_question_bank' => $team['is_question_bank'],
                 'is_provider' => $team['is_provider'],
+                'url' => $team['url'],
             ];
 
             $tmpUser = [];

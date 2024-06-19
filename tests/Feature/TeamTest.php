@@ -70,6 +70,7 @@ class TeamTest extends TestCase
                         'notifications',
                         'is_question_bank',
                         'is_provider',
+                        'url',
                     ],
                 ],               
             ]);
@@ -124,6 +125,7 @@ class TeamTest extends TestCase
                 'notifications' => [$notificationID],
                 'is_question_bank' => 1,
                 'users' => [],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -220,6 +222,7 @@ class TeamTest extends TestCase
                 'notifications' => [$notificationID],
                 'is_question_bank' => 0,
                 'users' => [],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -301,6 +304,7 @@ class TeamTest extends TestCase
                 'notifications' => [$notificationID],
                 'is_question_bank' => 0,
                 'users' => [],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -420,6 +424,7 @@ class TeamTest extends TestCase
                 'notifications' => [$notificationID],
                 'is_question_bank' => 1,
                 'users' => [],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -589,6 +594,7 @@ class TeamTest extends TestCase
                 'notifications' => [$notificationID],
                 'is_question_bank' => 0,
                 'users' => [],
+                'url' => 'https://fakeimg.pl/350x200/ff0000/000',
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

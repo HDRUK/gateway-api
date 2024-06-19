@@ -55,9 +55,9 @@ class ProgrammingPackageController extends Controller
             $programming_packages = ProgrammingPackage::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "ProgrammingPackage get all",
             ]);
 
@@ -120,9 +120,9 @@ class ProgrammingPackageController extends Controller
             $programming_package = ProgrammingPackage::findOrFail($id);
             if ($programming_package) {
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "ProgrammingPackage get " . $id,
                 ]);
 
@@ -186,9 +186,9 @@ class ProgrammingPackageController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "ProgrammingPackage " . $programming_package->id . " created",
             ]);
 
@@ -271,9 +271,9 @@ class ProgrammingPackageController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "ProgrammingPackage " . $id . " updated",
             ]);
 
@@ -359,9 +359,9 @@ class ProgrammingPackageController extends Controller
             ProgrammingPackage::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "ProgrammingPackage " . $id . " updated",
             ]);
 
@@ -426,9 +426,9 @@ class ProgrammingPackageController extends Controller
             $programming_package->enabled = false;
             if ($programming_package->save()) {
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'DELETE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "ProgrammingPackage " . $id . " deleted",
                 ]);
 

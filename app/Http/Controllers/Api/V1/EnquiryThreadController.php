@@ -57,9 +57,9 @@ class EnquiryThreadController extends Controller
             $enquiryThreads = EnquiryThread::paginate($perPage);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'EnquiryThread get all',
             ]);
 
@@ -69,9 +69,9 @@ class EnquiryThreadController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'EnquiryThread get all - FAILED: ' . $e->getMessage(),
             ]);
 
@@ -133,9 +133,9 @@ class EnquiryThreadController extends Controller
             $enquiryThread = EnquiryThread::findOrFail($id)->get();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'EnquiryThread get ' . $id,
             ]);
 
@@ -145,9 +145,9 @@ class EnquiryThreadController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'EnquiryThread get ' . $id . ' - FAILED: ' . $e->getMessage(),
             ]);
 
@@ -248,9 +248,9 @@ class EnquiryThreadController extends Controller
 
             if (empty($usersToNotify)) {
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'POST',
-                    'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
                     'description' => 'EnquiryThread was created, but no custodian.dar.managers found to notify for thread ' . 
                         $enquiryThreadId,
                 ]);
@@ -265,9 +265,9 @@ class EnquiryThreadController extends Controller
             EMC::sendEmail('dar.firstmessage', $payload, $usersToNotify, $jwtUser);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'EnquiryThread ' . $enquiryThreadId . ' created',
             ]);
 
@@ -277,9 +277,9 @@ class EnquiryThreadController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'EnquiryThread ' . $enquiryThreadId . ' create - FAILED: ' . 
                     $e->getMessage(),
             ]);

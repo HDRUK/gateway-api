@@ -72,9 +72,9 @@ class ShortListController extends Controller
             $shortLists = $shortLists->paginate($perPage);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "short list get all",
             ]);
 
@@ -141,9 +141,9 @@ class ShortListController extends Controller
             } 
             
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "short list get " . $id,
             ]);
 
@@ -196,14 +196,14 @@ class ShortListController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $shortList = ShortList::create([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'dataset_id' => $input['dataset_id']
             ]);
             
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "short list " . $shortList->id . " created",
             ]);
 
@@ -284,14 +284,14 @@ class ShortListController extends Controller
                 throw new UnauthorizedException('You do not have permission to edit this short list');
             }
             $shortList->update([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'dataset_id' => $input['dataset_id'],
             ]);
             
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "short list " . $id . " updated",
             ]);
 
@@ -382,9 +382,9 @@ class ShortListController extends Controller
             $shortList->update($array);
             
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "short list " . $id . " updated",
             ]);
 
@@ -454,9 +454,9 @@ class ShortListController extends Controller
 
                 if ($shortList->save()) {
                     Auditor::log([
-                        'user_id' => $jwtUser['id'],
+                        'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'DELETE',
-                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
                         'description' => "short list " . $id . " deleted",
                     ]);
 

@@ -55,9 +55,9 @@ class ProgrammingLanguageController extends Controller
             $programming_languages = ProgrammingLanguage::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "ProgrammingLanguage get all",
             ]);
 
@@ -120,9 +120,9 @@ class ProgrammingLanguageController extends Controller
             $programming_language = ProgrammingLanguage::findOrFail($id);
             if ($programming_language) {
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "ProgrammingLanguage get " . $id,
                 ]);
 
@@ -186,9 +186,9 @@ class ProgrammingLanguageController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "ProgrammingLanguage " . $programming_language->id . " created",
             ]);
 
@@ -271,9 +271,9 @@ class ProgrammingLanguageController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "ProgrammingLanguage " . $id . " updated",
             ]);
 
@@ -359,9 +359,9 @@ class ProgrammingLanguageController extends Controller
             ProgrammingLanguage::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "ProgrammingLanguage " . $id . " updated",
             ]);
 
@@ -426,9 +426,9 @@ class ProgrammingLanguageController extends Controller
             $programming_language->enabled = false;
             if ($programming_language->save()) {
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'DELETE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "ProgrammingLanguage " . $id . " deleted",
                 ]);
 
