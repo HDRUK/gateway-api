@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class CohortRequestSeed extends Seeder
+class CohortRequestSeeder extends Seeder
 {
     /**
      * Run the database seeds.
