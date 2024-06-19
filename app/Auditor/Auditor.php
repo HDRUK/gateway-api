@@ -36,9 +36,8 @@ class Auditor {
 
             $data['action_service'] = env('AUDIT_ACTION_SERVICE', 'gateway_api');
             $data['action_name'] = strtolower($data['action_name']);
-            $data['created_at'] = CarbonImmutable::now()->toDateTimeString();
 
-            if (Config::get('services.googlepubsub.pubsub_enabled')) {
+            if (Config::get('services.googlepubsub.enabled')) {
                 SendAuditLogToPubSub::dispatch($data);
             }
 

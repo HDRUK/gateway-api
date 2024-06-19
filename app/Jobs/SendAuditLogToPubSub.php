@@ -30,7 +30,6 @@ class SendAuditLogToPubSub implements ShouldQueue
      */
     public function handle(): void
     {
-
         if (!Config::get('services.googlepubsub.enabled')) {
             return;
         }
