@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\DataProviderColl;
+use App\Models\DataProviderCollHasTeam;
 use Illuminate\Console\Command;
 
 class AddDataProviderNetwork extends Command
@@ -20,12 +22,12 @@ class AddDataProviderNetwork extends Command
      */
     protected $description = 'Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3.csv"';
 
-    private $csvDataFromFile = [];
+    private $csvData = [];
 
     public function __construct()
     {
         parent::__construct();
-        $this->csvDataFromFile = $this->readMigrationFile(storage_path() . '/migration_files/data_provider_networkv3.csv');
+        $this->readMigrationFile(storage_path() . '/migration_files/data_provider_networkv3.csv');
     }
 
     /**
@@ -33,12 +35,30 @@ class AddDataProviderNetwork extends Command
      */
     public function handle()
     {
-        $askDataProviderNetwork = $this->ask('Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3.csv"?', 'all');
+        $askDataProviderNetwork = $this->ask('Data Provider Network for import, based on file "../storage/migration_files/data_provider_networkv3.csv"? [default value all]', 'all');
+        $askInitDataProviderNetwork = $this->ask('Do you want to initialize the database for "Data Provider Network"? yes/no [default value no]', 'no');
 
-        $csv = $this->csvData($this->csvDataFromFile);
+        if ($askInitDataProviderNetwork === 'yes') {
+            DataProviderCollHasTeam::truncate();
+            DataProviderColl::truncate();
+        }
+
+        $csvData = $this->csvData;
+
+        dd($csvData);
 
         if ($csv === 'all') {
+            foreach ($csvData as $key => $value) {
+                // check in teams
 
+                // check if exists DataProviderNetwork
+
+                // check if DataProviderNetwork & Team exists
+
+                // create new DataProviderNetwork
+
+                // add DataProviderNetwork with Team
+            }
         }
 
         if ($csv !== 'all') {
@@ -65,7 +85,7 @@ class AddDataProviderNetwork extends Command
         while (($row = fgetcsv($file)) !== FALSE) {
             $item = [];
             foreach ($row as $key => $value) {
-                $item[$headers[$key]] = $value ?: '';
+                $item[trim($headers[$key], "\xEF\xBB\xBF")] = $value ?: '';
             }
 
             $this->csvData[] = $item;
