@@ -481,15 +481,16 @@ class CohortRequestController extends Controller
             $currCohortRequest = CohortRequest::where('id', $id)->first();
             $currRequestStatus = strtoupper(trim($currCohortRequest['request_status']));
 
-            $cohortRequestLog = CohortRequestLog::create([
+            $cohortRequestLog = new CohortRequestLog([
                 'user_id' => (int) $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => $requestStatus,
             ]);
+            $cohortRequestLog->save();
 
             CohortRequestHasLog::create([
                 'cohort_request_id' => $id,
-                'cohort_request_log_id' => $cohortRequestLog->id,
+                'cohort_request_log_id' => $cohortRequestLog->getKey(),
             ]);
 
             // APPROVED / BANNED / SUSPENDED
