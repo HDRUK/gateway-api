@@ -8,11 +8,9 @@ use App\Models\CohortRequest;
 use App\Models\CohortRequestHasLog;
 use App\Models\CohortRequestHasPermission;
 use App\Models\CohortRequestLog;
-use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class CohortRequestSeed extends Seeder
+class CohortRequestSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -26,7 +24,7 @@ class CohortRequestSeed extends Seeder
                 'user_id' => $userId,
             ])->first();
 
-            $status = fake()->randomElement(['PENDING', 'APPROVED']);
+            $status = fake()->randomElement(['PENDING', 'APPROVED', 'REJECTED', 'BANNED','SUSPENDED','EXPIRED']);
 
             if (!$checkRequestByUserId) {
                 $cohortRequest = CohortRequest::create([
@@ -35,6 +33,7 @@ class CohortRequestSeed extends Seeder
                     'request_status' => $status,
                     'cohort_status' => ($status === 'PENDING' ? false : true),
                     'request_expire_at' => null,
+                    'accept_declaration' => ($status === 'APPROVED' ? true : false), // Simulating the response from the front
                 ]);
 
                 if ($status === 'APPROVED') {
@@ -58,6 +57,27 @@ class CohortRequestSeed extends Seeder
                     'cohort_request_id' => $cohortRequest->id,
                     'cohort_request_log_id' => $cohortRequestLog->id,
                 ]);
+            } else {
+                // Handle status change logic here
+                $newStatus = fake()->randomElement(['REJECTED', 'BANNED', 'SUSPENDED', 'EXPIRED']);
+                if (in_array($checkRequestByUserId->request_status, ['APPROVED']) && in_array($newStatus, ['REJECTED', 'BANNED', 'SUSPENDED', 'EXPIRED'])) {
+                    $checkRequestByUserId->update([
+                        'request_status' => $newStatus,
+                        'accept_declaration' => false,
+                    ]);
+
+                    // Log the status change
+                    $cohortRequestLog = CohortRequestLog::create([
+                        'user_id' => $userId,
+                        'details' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
+                        'request_status' => $newStatus,
+                    ]);
+
+                    CohortRequestHasLog::create([
+                        'cohort_request_id' => $checkRequestByUserId->id,
+                        'cohort_request_log_id' => $cohortRequestLog->id,
+                    ]);
+                }
             }
         }
     }
