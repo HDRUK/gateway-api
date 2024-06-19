@@ -14,6 +14,7 @@ class PubSubService
         $this->pubSubClient = new PubSubClient([
             'projectId' => Config::get('services.googlepubsub.project_id'),
         ]);
+        \Log::debug($this->pubSubClient);
     }
 
     public function publishMessage(array $data)
