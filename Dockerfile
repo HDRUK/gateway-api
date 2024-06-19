@@ -45,7 +45,7 @@ COPY ./init/php.development.ini /usr/local/etc/php/php.ini
 # Copy the application
 COPY . /var/www
 
-#add a new line to the end of the .env file#
+#add a new line to the end of the .env file
 # RUN echo "" >> /var/www/.env
 # #add in these extra variables to the .env file
 # RUN echo "TED_ENABLED=$TED_ENABLED" >> /var/www/.env
