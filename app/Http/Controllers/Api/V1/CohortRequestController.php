@@ -492,15 +492,15 @@ class CohortRequestController extends Controller
                 'cohort_request_log_id' => $cohortRequestLog->id,
             ]);
 
-            if ($currRequestStatus !== $requestStatus) {
-                $cohortStatus = $requestStatus === 'APPROVED';
-                $acceptDeclaration = $requestStatus === 'APPROVED';
-                
-                CohortRequest::withTrashed()->where('id', $id)->update([
+            // APPROVED / BANNED / SUSPENDED
+            // PENDING - initial state
+            // EXPIRED - must be an update using the chron
+            if ($currRequestStatus !== $requestStatus) {   
+                CohortRequest::where('id', $id)->update([
                     'request_status' => $requestStatus,
-                    'cohort_status' => $cohortStatus,
-                    'request_expire_at' => $cohortStatus ? Carbon::now()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days')) : null,
-                    'accept_declaration' => $acceptDeclaration,
+                    'cohort_status' => true,
+                    'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days')),
+                    'accept_declaration' => $requestStatus === 'APPROVED',
                 ]);
             }
 
@@ -520,6 +520,7 @@ class CohortRequestController extends Controller
                         'cohort_request_id' => $id,
                         'permission_id' => $permissions->id,
                     ]);
+                    break;
                 case 'BANNED':    
                     CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
                     $permissions = Permission::where([
