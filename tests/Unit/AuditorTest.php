@@ -36,7 +36,7 @@ class AuditorTest extends TestCase
         $targetUserId = User::all()->random()->id;
         $targetTeamId = Team::all()->random()->id;
         $actionType = 'CREATE';
-        $actionService = 'Gateway API';
+        $actionName = 'Gateway API';
         $description = 'testing auditor description';
 
         $logInfo = [
@@ -45,7 +45,7 @@ class AuditorTest extends TestCase
             'target_user_id' => $targetUserId,
             'target_team_id' => $targetTeamId,
             'action_type' => $actionType,
-            'action_service' =>  $actionService,
+            'action_name' => $actionName,
             'description' => $description,
         ];
         Auditor::log($logInfo);
@@ -56,7 +56,7 @@ class AuditorTest extends TestCase
             'target_user_id' => $targetUserId,
             'target_team_id' => $targetTeamId,
             'action_type' => $actionType,
-            'action_service' =>  $actionService,
+            'action_name' =>  strtolower($actionName),
             'description' => $description,
         ]);
     }

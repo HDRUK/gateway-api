@@ -70,6 +70,7 @@ class ScanFileUpload implements ShouldQueue
             ]);
         } else {
             $loc = $upload->file_location;
+
             $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
             Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
             Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
@@ -81,7 +82,7 @@ class ScanFileUpload implements ShouldQueue
 
             Auditor::log([
                 'action_type' => 'SCAN',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Uploaded file passed malware scan",
             ]);
         }

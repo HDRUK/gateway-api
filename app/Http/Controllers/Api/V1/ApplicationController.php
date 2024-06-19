@@ -127,7 +127,7 @@ class ApplicationController extends Controller
     
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Application get all",
             ]);
 
@@ -195,7 +195,7 @@ class ApplicationController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Application get " . $id,
             ]);
 
@@ -310,11 +310,11 @@ class ApplicationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'target_user_id' => $input['user_id'],
                 'target_team_id' => $input['team_id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Application " . $application->id . " created",
             ]);
 
@@ -432,11 +432,11 @@ class ApplicationController extends Controller
             $application->makeHidden(['client_secret']);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'target_user_id' => $input['user_id'],
                 'target_team_id' => $input['team_id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Application " . $id . " updated",
             ]);
 
@@ -544,11 +544,11 @@ class ApplicationController extends Controller
             $application->makeHidden(['client_secret']);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'target_user_id' => $application['user_id'],
                 'target_team_id' => $application['team_id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Application " . $id . " updated",
             ]);
  
@@ -619,9 +619,9 @@ class ApplicationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Application " . $id . " deleted",
             ]);
 

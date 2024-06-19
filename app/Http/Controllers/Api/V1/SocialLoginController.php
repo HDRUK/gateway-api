@@ -167,7 +167,7 @@ class SocialLoginController extends Controller
             Auditor::log([
                 'target_user_id' => $user->id,
                 'action_type' => 'LOGIN',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "User " . $user->id . " with login through " . $user->provider . " has been connected",
             ]);
 

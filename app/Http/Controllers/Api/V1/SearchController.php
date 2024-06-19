@@ -191,7 +191,7 @@ class SearchController extends Controller
             if ($download && $downloadType === "list") {
                 Auditor::log([
                     'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Search datasets export data - list",
                 ]);
                 return Excel::download(new DatasetListExport($datasetsArray), 'datasets.csv');
@@ -200,7 +200,7 @@ class SearchController extends Controller
             if ($download && $downloadType === "table") {
                 Auditor::log([
                     'action_type' => 'POST',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Search datasets export data - table",
                 ]);
                 return Excel::download(new DatasetTableExport($datasetsArray), 'datasets.csv');
@@ -219,7 +219,7 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'POST',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search datasets",
             ]);
 
@@ -300,7 +300,7 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search similar datasets",
             ]);
 
@@ -492,7 +492,7 @@ class SearchController extends Controller
             if ($download) {
                 Auditor::log([
                     'action_type' => 'POST',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Search tools export data - list",
                 ]);
                 return Excel::download(new ToolListExport($toolsArraySorted), 'tools.csv');
@@ -509,7 +509,7 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'POST',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search tools",
             ]);
 
@@ -655,7 +655,7 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search collections",
             ]);
 
@@ -798,7 +798,7 @@ class SearchController extends Controller
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Search dur export data",
                 ]);
                 return Excel::download(new DataUseExport($durArray), 'dur.csv');
@@ -817,7 +817,7 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search dur",
             ]);
 
@@ -1018,7 +1018,7 @@ class SearchController extends Controller
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Search publications export data",
                 ]);
                 return Excel::download(new PublicationExport($pubArray), 'publications.csv');
@@ -1037,7 +1037,7 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search publications",
             ]);
 
@@ -1172,7 +1172,7 @@ class SearchController extends Controller
             if ($download) {
                 Auditor::log([
                     'action_type' => 'GET',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Search data provider export data",
                 ]);
                 return Excel::download(new DataProviderExport($dataProviderCollArray), 'dataProviderColl.csv');
@@ -1191,7 +1191,7 @@ class SearchController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Search data provider",
             ]);
 
