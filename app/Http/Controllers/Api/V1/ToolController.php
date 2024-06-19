@@ -836,6 +836,7 @@ class ToolController extends Controller
             'typeCategory',
             'publications',
             'durs',
+            'collections',
         ])->where([
             'id' => $toolId,
         ])->first();

@@ -7,6 +7,7 @@ use App\Models\Tag;
 use App\Models\License;
 use App\Models\Category;
 use App\Models\Publication;
+use App\Models\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -109,5 +110,10 @@ class Tool extends Model
     public function durs(): BelongsToMany
     {
         return $this->belongsToMany(Dur::class, 'dur_has_tools');
+    }
+
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(Collection::class, 'collection_has_tools');
     }
 }
