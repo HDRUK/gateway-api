@@ -496,7 +496,7 @@ class CohortRequestController extends Controller
             // APPROVED / BANNED / SUSPENDED
             // PENDING - initial state
             // EXPIRED - must be an update using the chron
-            if ($currRequestStatus !== $requestStatus) {   
+            if ($currRequestStatus !== $requestStatus) {
                 CohortRequest::where('id', $id)->update([
                     'request_status' => $requestStatus,
                     'cohort_status' => true,
@@ -522,7 +522,7 @@ class CohortRequestController extends Controller
                         'permission_id' => $permissions->id,
                     ]);
                     break;
-                case 'BANNED':    
+                case 'BANNED':
                     CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
                     $permissions = Permission::where([
                         'application' => 'cohort',
@@ -548,7 +548,7 @@ class CohortRequestController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request " . $id . " updated",
             ]);
-
+ 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => CohortRequest::where('id', $id)->first()
