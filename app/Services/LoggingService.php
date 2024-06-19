@@ -15,7 +15,7 @@ class LoggingService
         ]);
     }
 
-    public function writeLog($message, $severity = 'INFO')
+    public function writeLog($message, $severity = 'CRITICAL')
     {
         $logger = $this->logging->logger('gateway-api-mk2');
         $entry = $logger->entry($message, [
