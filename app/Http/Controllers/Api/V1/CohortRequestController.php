@@ -508,6 +508,7 @@ class CohortRequestController extends Controller
             }
 
             $this->sendEmail($id);
+            
             $this->updateOrCreateContact((int) $jwtUser['id']);
 
             Auditor::log([
@@ -516,10 +517,9 @@ class CohortRequestController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request " . $id . " updated",
             ]);
-
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => CohortRequest::withTrashed()->where('id', $id)->first(),
+                'data' => CohortRequest::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
