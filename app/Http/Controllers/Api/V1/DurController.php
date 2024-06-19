@@ -496,7 +496,7 @@ class DurController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
-            if($request['enabled'] === 1 && is_null(Dur::withTrashed()->find($durId)->deleted_at)){
+            if($request['enabled'] === 1){
                 $this->indexElasticDur($durId);
             }
             
