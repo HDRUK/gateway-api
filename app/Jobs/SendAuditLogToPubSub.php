@@ -35,7 +35,7 @@ class SendAuditLogToPubSub implements ShouldQueue
         }
 
         $loggingService = new LoggingService();
-        $loggingService->writeLog(json_encode(['start SendAuditLogToPubSub']));
+        $loggingService->writeLog('start SendAuditLogToPubSub');
 
         $pubSubService = new PubSubService();
         $publish = $pubSubService->publishMessage($this->data);
