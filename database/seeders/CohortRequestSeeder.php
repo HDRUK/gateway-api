@@ -21,7 +21,7 @@ class CohortRequestSeed extends Seeder
     {
         for ($count = 1; $count <= 50; $count++) {
             $userId = User::all()->random()->id;
-            
+
             $checkRequestByUserId = CohortRequest::where([
                 'user_id' => $userId,
             ])->first();
