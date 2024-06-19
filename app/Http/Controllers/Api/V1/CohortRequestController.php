@@ -508,19 +508,31 @@ class CohortRequestController extends Controller
                 case 'PENDING':
                 case 'REJECTED':
                 case 'SUSPENDED':
-                case 'EXPIRED':
                     CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
-                    break;
-                case 'BANNED':    
-                    $permissionsBanned = Permission::where(['application' => 'cohort', 'name' => 'BANNED'])->first();
-                    CohortRequestHasPermission::create(['cohort_request_id' => $id, 'permission_id' => $permissionsBanned->id]);
                     break;
                 case 'APPROVED':
                     CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
-                    $permissionsGeneralAccess = Permission::where(['application' => 'cohort', 'name' => 'GENERAL_ACCESS'])->first();
-                    CohortRequestHasPermission::create(['cohort_request_id' => $id, 'permission_id' => $permissionsGeneralAccess->id]);
+                    $permissions = Permission::where([
+                        'application' => 'cohort',
+                        'name' => 'GENERAL_ACCESS',
+                    ])->first();
+                    CohortRequestHasPermission::create([
+                        'cohort_request_id' => $id,
+                        'permission_id' => $permissions->id,
+                    ]);
+                case 'BANNED':    
+                    CohortRequestHasPermission::where('cohort_request_id', $id)->delete();
+                    $permissions = Permission::where([
+                        'application' => 'cohort',
+                        'name' => 'BANNED',
+                    ])->first();
+                    CohortRequestHasPermission::create([
+                        'cohort_request_id' => $id,
+                        'permission_id' => $permissions->id,
+                    ]);
                     break;
-                throw new Exception("A cohort request status received not accepted.");
+                default:
+                    throw new Exception("A cohort request status received not accepted.");
                     break;
             }
 
@@ -534,6 +546,7 @@ class CohortRequestController extends Controller
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request " . $id . " updated",
             ]);
+
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => CohortRequest::where('id', $id)->first()
@@ -601,7 +614,7 @@ class CohortRequestController extends Controller
             $cohortRequest = CohortRequest::withTrashed()->findOrFail($id);
             $cohortRequest->update(['accept_declaration' => false]);
             $cohortRequest->delete();
-
+            
             CohortRequestHasPermission::where('id', $id)->delete();
 
             $this->updateOrCreateContact($id);
