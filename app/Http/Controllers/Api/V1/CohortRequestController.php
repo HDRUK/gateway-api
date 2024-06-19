@@ -520,12 +520,12 @@ class CohortRequestController extends Controller
                     $permissionsGeneralAccess = Permission::where(['application' => 'cohort', 'name' => 'GENERAL_ACCESS'])->first();
                     CohortRequestHasPermission::create(['cohort_request_id' => $id, 'permission_id' => $permissionsGeneralAccess->id]);
                     break;
-                default:
-                    throw new Exception("Invalid request status.");
+                throw new Exception("A cohort request status received not accepted.");
+                    break;
             }
 
             $this->sendEmail($id);
-            
+
             $this->updateOrCreateContact((int) $jwtUser['id']);
 
             Auditor::log([
@@ -542,9 +542,6 @@ class CohortRequestController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
-
-
 
     /**
      * @OA\Delete(
