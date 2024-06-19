@@ -5,6 +5,7 @@ namespace App\Jobs;
 use Config;
 use Illuminate\Bus\Queueable;
 use App\Services\PubSubService;
+use App\Services\LoggingService;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -33,9 +34,11 @@ class SendAuditLogToPubSub implements ShouldQueue
             return;
         }
 
+        $loggingService = new LoggingService();
+        $loggingService->writeLog(json_encode(['start SendAuditLogToPubSub']));
+
         $pubSubService = new PubSubService();
-        \Log::debug(json_encode(['pubSubService', $pubSubService]));
         $publish = $pubSubService->publishMessage($this->data);
-        \Log::debug(json_encode(['SendAuditLogToPubSub', $publish]));
+        $loggingService->writeLog(json_encode($publish));
     }
 }
