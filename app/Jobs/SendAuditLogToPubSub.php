@@ -30,13 +30,19 @@ class SendAuditLogToPubSub implements ShouldQueue
      */
     public function handle(): void
     {
-        $loggingService = new LoggingService();
 
-        if (!Config::get('services.googlepubsub.pubsub_enabled')) {
+        if (!Config::get('services.googlepubsub.enabled')) {
             return;
         }
+
         $pubSubService = new PubSubService();
         $publish = $pubSubService->publishMessage($this->data);
+
+        if (!Config::get('services.googlelogging.enabled')) {
+            return;
+        }
+
+        $loggingService = new LoggingService();
         $loggingService->writeLog('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
     }
 }

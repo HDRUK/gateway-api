@@ -11,13 +11,13 @@ class LoggingService
     public function __construct()
     {
         $this->logging = new LoggingClient([
-            'projectId' => Config::get('services.googlepubsub.project_id'),
+            'projectId' => Config::get('services.googlelogging.project_id'),
         ]);
     }
 
-    public function writeLog($message, $severity = 'CRITICAL')
+    public function writeLog(string $message, $severity = 'INFO')
     {
-        $logger = $this->logging->logger('gateway-api-mk2');
+        $logger = $this->logging->logger(Config::get('services.googlelogging.log_name'));
         $entry = $logger->entry($message, [
             'severity' => $severity,
             'resource' => [
