@@ -18,7 +18,8 @@ class PubSubService
 
     public function publishMessage(array $data)
     {
-        $topic = $this->pubSubClient->topic(Config::get('services.googlepubsub.pubsub_topic', 'test-topic'));
-        $topic->publish((new MessageBuilder)->setData(json_encode($data))->build());
+        $topic = $this->pubSubClient->topic(Config::get('services.googlepubsub.pubsub_topic'));
+        $message = (new MessageBuilder)->setData(json_encode($data))->build();
+        return $topic->publish($message);
     }
 }
