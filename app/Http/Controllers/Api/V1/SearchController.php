@@ -163,7 +163,13 @@ class SearchController extends Controller
                 ], 404);
             }
             $response = $response->json();
-            return response()->json($response);
+
+            if (!isset($response['hits']) || !is_array($response['hits']) || 
+                !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) || 
+                !isset($response['hits']['total']['value'])) {
+
+                    return response()->json(['message' => 'Hits not being properly returned by the search service'], 404);
+            }
 
             $datasetsArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
@@ -174,7 +180,6 @@ class SearchController extends Controller
             }
 
             
-
             $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
             foreach ($datasetsArray as $i => $dataset) {
                 $foundFlag = false;
