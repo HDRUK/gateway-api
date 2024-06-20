@@ -497,7 +497,11 @@ class ToolController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            Tool::withTrashed()->where('id', $id)->update($array);
+            $tool = Tool::withTrashed()->where('id', $id)->first();
+            if ($tool->deleted_at !== null) {
+                $tool->restore();
+            }
+            $tool->update($array);
 
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
@@ -526,7 +530,7 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($id, $publications, $array['user_id'], $appId);
 
-            if($request['enabled'] === 1 && is_null(Tool::withTrashed()->find($id)->deleted_at)){
+            if($request['enabled'] === 1){
                 $this->indexElasticTools((int) $id);
             }
 
@@ -652,8 +656,12 @@ class ToolController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            Tool::withTrashed()->where('id', $id)->update($array);
-
+            $tool = Tool::withTrashed()->where('id', $id)->first();
+            if ($tool->deleted_at !== null) {
+                $tool->restore();
+            }
+            $tool->update($array);
+            
             if (array_key_exists('tag', $input)) {
                 ToolHasTag::where('tool_id', $id)->delete();
                 $this->insertToolHasTag($input['tag'], (int) $id);
@@ -686,7 +694,7 @@ class ToolController extends Controller
                 $this->checkPublications($id, $publications, $userIdFinal, $appId);
             }
 
-            if($request['enabled'] === 1 && is_null(Tool::withTrashed()->find($id)->deleted_at)){
+            if($request['enabled'] === 1){
                 $this->indexElasticTools((int) $id);
             }
 

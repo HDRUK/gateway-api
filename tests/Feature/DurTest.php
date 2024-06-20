@@ -485,6 +485,89 @@ class DurTest extends TestCase
         $responseDelete->assertStatus(200);
     }
 
+    /**
+     * Create, delete, unarchive (un-delete), and delete Dur with success
+     *
+     * @return void
+     */
+    public function test_create_delete_unarchive_delete_dur_with_success(): void
+    {
+        // create dur
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+        $countBefore = Dur::count();
+        $mockData = [
+            'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
+            'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+        ];
+
+        $response = $this->json(
+            'POST',
+            self::TEST_URL,
+            $mockData,
+            $this->header
+        );
+        $response->assertStatus(201);
+        $durId = (int) $response['data'];
+
+        $countAfter = Dur::count();
+        $countNewRow = $countAfter - $countBefore;
+
+        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+
+        // delete
+        $responseDelete = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $durId,
+            [],
+            $this->header
+        );
+        $responseDelete->assertStatus(200);
+
+        // unarchive (un-delete with put)
+        $responseUnarchive = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $durId,
+            $mockData,
+            $this->header
+        );
+        $responseUnarchive->assertStatus(200);
+
+        // delete again
+        $responseDeleteAgain = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $durId,
+            [],
+            $this->header
+        );
+        $responseDeleteAgain->assertStatus(200);
+
+        // unarchive (un-delete with path)
+        $responseEdit = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $durId,
+            $mockData,
+            $this->header
+        );
+        $responseUnarchive->assertStatus(200);
+
+        // delete again
+        $responseDeleteAgain = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $durId,
+            [],
+            $this->header
+        );
+        $responseDeleteAgain->assertStatus(200);
+    }
+
+
     public function test_download_dur_table_with_success(): void
     {
         // create team

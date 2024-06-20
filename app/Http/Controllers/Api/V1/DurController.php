@@ -735,7 +735,11 @@ class DurController extends Controller
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
 
-            Dur::withTrashed()->where('id', $id)->update($array);
+            $dur = Dur::withTrashed()->where('id', $id)->first();
+            if ($dur->deleted_at !== null) {
+                $dur->restore();
+            }
+            $dur->update($array);
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
@@ -755,14 +759,14 @@ class DurController extends Controller
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
-                Dur::withTrashed()->where('id', $id)->update(['created_at' => $input['created_at']]);
+                $dur->update(['created_at' => $input['created_at']]);
             }
 
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
-                Dur::withTrashed()->where('id', $id)->update(['updated_at' => $input['updated_at']]);
+                $dur->update(['updated_at' => $input['updated_at']]);
             }
-            if($request['enabled'] === 1 && is_null(Dur::withTrashed()->find($id)->deleted_at)){
+            if($request['enabled'] === 1){
                 $this->indexElasticDur($id);
             }
 
@@ -1001,7 +1005,11 @@ class DurController extends Controller
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
 
-            Dur::withTrashed()->where('id', $id)->update($array);
+            $dur = Dur::withTrashed()->where('id', $id)->first();
+            if ($dur->deleted_at !== null) {
+                $dur->restore();
+            }
+            $dur->update($array);
 
             // link/unlink dur with datasets
             if (array_key_exists('datasets', $input)) {
@@ -1029,15 +1037,15 @@ class DurController extends Controller
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
-                Dur::withTrashed()->where('id', $id)->update(['created_at' => $input['created_at']]);
+                Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
             }
 
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
-                Dur::withTrashed()->where('id', $id)->update(['updated_at' => $input['updated_at']]);
+                Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
-            if($request['enabled'] === 1 && is_null(Dur::withTrashed()->find($id)->deleted_at)){
+            if($request['enabled'] === 1){
                 $this->indexElasticDur($id);
             }
 
