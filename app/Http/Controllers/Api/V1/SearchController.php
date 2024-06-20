@@ -140,7 +140,7 @@ class SearchController extends Controller
     {
         try {
             $input = $request->all();
-
+            
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : "list";
             $sort = $request->query('sort',"score:desc");
@@ -156,7 +156,13 @@ class SearchController extends Controller
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
-            $response = Http::post($urlString, $input)->json();
+            $response = Http::post($urlString, $input);
+            if (!$response->successful()) {
+                return response()->json([
+                    'message' => 'No response from '.$urlString,
+                ], 404);
+            }
+            $response = $response->json();
 
             $datasetsArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
@@ -165,6 +171,8 @@ class SearchController extends Controller
             foreach (array_values($datasetsArray) as $i => $d) {
                $matchedIds[] = $d['_id'];
             }
+
+            
 
             $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
             foreach ($datasetsArray as $i => $dataset) {
