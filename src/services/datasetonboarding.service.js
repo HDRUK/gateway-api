@@ -209,7 +209,7 @@ export default class DatasetOnboardingService {
 					],
 				},
 			},
-		]).exec();
+		]).allowDiskUse(true).exec();
 
 		const versionedDatasets = datasets[0].datasets.length > 0 ? datasets[0].datasets : [];
 
