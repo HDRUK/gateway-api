@@ -41,7 +41,7 @@ use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\DatasetVersionHasTooleeder;
+use Database\Seeders\DatasetVersionHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetSeeder;
@@ -92,6 +92,8 @@ class ToolTest extends TestCase
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
             CollectionSeeder::class,
+            CollectionHasToolSeeder::class,
+            DatasetVersionHasToolSeeder::class,
         ]);
     }
 
