@@ -20,7 +20,7 @@ class UpdateTool extends BaseFormRequest
             'id' => [
                 'int',
                 'required',
-                'exists:users,id',
+                'exists:tools,id',
             ],
             'mongo_object_id' => [
                 'string',

@@ -17,7 +17,7 @@ class UpdateDur extends FormRequest
             'id' => [
                 'required',
                 'int',
-                'exists:users,id',
+                'exists:dur,id',
             ],
             'non_gateway_datasets' => [
                 'array',

@@ -548,6 +548,10 @@ class DurTest extends TestCase
 
         $responseUnarchive->assertStatus(200);
 
+        // Verify that the unarchived dur has deleted_at == null
+        $durData = $responseUnarchive['data'];
+        $this->assertNull($durData['deleted_at']);
+
         // Delete again
         $responseDeleteAgain = $this->json(
             'DELETE',

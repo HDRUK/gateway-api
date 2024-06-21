@@ -18,13 +18,7 @@ class EditDur extends BaseFormRequest
             'id' => [
                 'required',
                 'int',
-                function ($attribute, $value, $fail) {
-                    $exists = Dur::withTrashed()->where('id', $value)->count();
-    
-                    if (!$exists) {
-                        $fail('The ID does not exist in the database');
-                    }
-                }
+                'exists:dur,id',
             ],
             'non_gateway_datasets' => [
                 'array',

@@ -875,6 +875,11 @@ class ToolTest extends TestCase
 
         $responseUnarchive->assertStatus(200);
 
+        // Verify that the unarchived tool has deleted_at == null
+        $toolData = $responseUnarchive['data'];
+        $this->assertNull($toolData['deleted_at']);
+
+
         // Delete again
         $responseDeleteAgain = $this->json(
             'DELETE',
