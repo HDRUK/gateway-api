@@ -497,7 +497,7 @@ class ToolController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            Tool::where('id', $id)->first()->update($array);
+            Tool::where('id', $id)->update($array);
 
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
@@ -691,7 +691,7 @@ class ToolController extends Controller
 
                 $array = $this->checkEditArray($input, $arrayKeys);
 
-                Tool::where('id', $id)->first()->update($array);
+                Tool::where('id', $id)->update($array);
                 
                 if (array_key_exists('tag', $input)) {
                     ToolHasTag::where('tool_id', $id)->delete();
