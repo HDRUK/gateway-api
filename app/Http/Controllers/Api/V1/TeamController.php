@@ -59,6 +59,7 @@ class TeamController extends Controller
      *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()), 
      *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                    @OA\Property(property="is_provider", type="boolean", example="1"),
+     *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *                ),
      *             ),
      *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -119,9 +120,9 @@ class TeamController extends Controller
             $teams['data'] = $this->getTeams($teams['data']);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Get all",
             ]);
 
@@ -174,6 +175,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="notifications", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
+     *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              )
      *          ),
      *      ),
@@ -195,9 +197,9 @@ class TeamController extends Controller
             $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Get by " . $teamId,
             ]);
 
@@ -247,6 +249,7 @@ class TeamController extends Controller
      *              @OA\Property(property="users", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
+     *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -305,9 +308,9 @@ class TeamController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $team->id . " created",
             ]);
 
@@ -369,6 +372,7 @@ class TeamController extends Controller
      *              @OA\Property(property="users", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
+     *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -400,6 +404,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
+     *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              )
      *          ),
      *      ),
@@ -432,6 +437,7 @@ class TeamController extends Controller
                 'application_form_updated_on',
                 'is_question_bank',
                 'is_provider',
+                'url',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -451,9 +457,9 @@ class TeamController extends Controller
             $this->updateTeamAdminUsers($teamId, $users);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $teamId . " updated",
             ]);
 
@@ -501,6 +507,7 @@ class TeamController extends Controller
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
+     *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -532,6 +539,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
+     *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
      *              )
      *          ),
      *      ),
@@ -564,6 +572,7 @@ class TeamController extends Controller
                 'application_form_updated_on',
                 'is_question_bank',
                 'is_provider',
+                'url',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -584,9 +593,9 @@ class TeamController extends Controller
             $this->updateTeamAdminUsers($teamId, $users);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $teamId . " updated",
             ]);
 
@@ -663,9 +672,9 @@ class TeamController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $teamId . " deleted",
             ]);
 

@@ -51,9 +51,9 @@ class CategoryController extends Controller
             $categories = Category::where('enabled', 1)->paginate($perPage);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Category get all",
             ]);
 
@@ -116,9 +116,9 @@ class CategoryController extends Controller
             $category = Category::where(['id' => $id,])->get();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Category get " . $id,
             ]);
 
@@ -177,9 +177,9 @@ class CategoryController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Category " . $category->id . " created",
             ]);
 
@@ -262,9 +262,9 @@ class CategoryController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Category " . $id . " updated",
             ]);
 
@@ -350,9 +350,9 @@ class CategoryController extends Controller
             Category::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Category " . $id . " updated",
             ]);
 
@@ -419,9 +419,9 @@ class CategoryController extends Controller
                 if ($category->save()) {
 
                     Auditor::log([
-                        'user_id' => $jwtUser['id'],
+                        'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'DELETE',
-                        'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
                         'description' => "Category " . $id . " deleted",
                     ]);
 

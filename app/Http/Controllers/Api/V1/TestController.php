@@ -44,7 +44,7 @@ class TestController extends Controller
         Auditor::log([
             'user_id' => 1,
             'action_type' => 'CREATE',
-            'action_service' => 'action service test',
+            'action_name' => 'action service test',
             'description' => 'description test',
         ]);
 

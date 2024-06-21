@@ -46,6 +46,15 @@ class IntegrationDurController extends Controller
      *    tags={"Integration Data Use Registers"},
      *    summary="IntegrationDurController@index",
      *    description="Returns a list of dur",
+     *    @OA\Parameter(
+     *       name="sort",
+     *       in="query",
+     *       description="Sort fields in the format field:direction, e.g., project_title:asc,updated_at:asc",
+     *       required=false,
+     *       @OA\Schema(
+     *           type="project_title:asc,updated_at:asc"
+     *       )
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -127,6 +136,17 @@ class IntegrationDurController extends Controller
     {
         try {
             $input = $request->all();
+
+            $sort = [];
+            $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
+            foreach ($sortArray as $item) {
+                $tmp = explode(":", $item);
+                $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+            }
+            if (!array_key_exists('create_at', $sort)) {
+                $sort['updated_at'] = 'desc';
+            }
+
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $perPage = request('perPage', Config::get('constants.per_page'));
@@ -151,7 +171,13 @@ class IntegrationDurController extends Controller
                     'user',
                     'team',
                     'application',
-                ])->paginate((int) $perPage, ['*'], 'page')
+                ]);
+
+            foreach ($sort as $key => $value) {
+                $durs->orderBy('dur.' . $key, strtoupper($value));
+            }
+            
+            $durs = $durs->paginate((int) $perPage, ['*'], 'page')
                 ->through(function ($dur) {
                     if ($dur->datasets) {
                         $dur->datasets = $dur->datasets->map(function ($dataset) {
@@ -182,7 +208,7 @@ class IntegrationDurController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur Integration get all",
             ]);
 
@@ -294,7 +320,7 @@ class IntegrationDurController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur Integration get " . $id,
             ]);
 
@@ -503,7 +529,7 @@ class IntegrationDurController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur Integration " . $durId . " created",
             ]);
 
@@ -763,7 +789,7 @@ class IntegrationDurController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur Integration " . $id . " updated",
             ]);
 
@@ -1029,7 +1055,7 @@ class IntegrationDurController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur Integration " . $id . " updated",
             ]);
 
@@ -1098,7 +1124,7 @@ class IntegrationDurController extends Controller
                 'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
                 'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dur Integration " . $id . " deleted",
             ]);
 

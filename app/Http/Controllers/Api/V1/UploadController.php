@@ -39,18 +39,18 @@ class UploadController extends Controller
         $file  = $request->file('file');
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $fileSystem = env('SCANNING_FILESYSTEM_DISK', 'local_scan');
-
+        
         // store unscanned
         $storedFilename = time() . '_' . $file->getClientOriginalName();
         $filePath = $file->storeAs(
             '', $storedFilename, $fileSystem . '.unscanned'
         );
-
+        
         // write to uploads
         $upload = Upload::create([
             'filename' => $file->getClientOriginalName(),
             'file_location' => $filePath,
-            'user_id' => $jwtUser['id'],
+            'user_id' => (int) $jwtUser['id'],
             'status' => 'PENDING'
         ]);
 
@@ -60,7 +60,7 @@ class UploadController extends Controller
         // audit log
         Auditor::log([
             'action_type' => 'POST',
-            'action_service' => class_basename($this) . '@'.__FUNCTION__,
+            'action_name' => class_basename($this) . '@'.__FUNCTION__,
             'description' => "File upload",
         ]);
 
@@ -111,7 +111,7 @@ class UploadController extends Controller
 
         Auditor::log([
             'action_type' => 'GET',
-            'action_service' => class_basename($this) . '@'.__FUNCTION__,
+            'action_name' => class_basename($this) . '@'.__FUNCTION__,
             'description' => "Show uploaded file",
         ]);
 
@@ -159,7 +159,7 @@ class UploadController extends Controller
         if ($upload->status === 'PENDING') {
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Get uploaded file content failed due to pending malware scan",
             ]);
             return response()->json([
@@ -168,7 +168,7 @@ class UploadController extends Controller
         } else if ($upload->status === 'FAILED') {
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Get uploaded file content failed due to failed malware scan",
             ]);
             return response()->json([
@@ -180,7 +180,7 @@ class UploadController extends Controller
                 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Get uploaded file content",
             ]);
             return response()->json([

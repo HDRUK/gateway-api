@@ -38,7 +38,7 @@ class TeamFactory extends Factory
             'is_question_bank' => fake()->boolean(),
             'is_provider' => fake()->boolean(),
             'team_logo' => fake()->imageUrl(),
-
+            'url' => fake()->imageUrl(),
         ];
     }
 }

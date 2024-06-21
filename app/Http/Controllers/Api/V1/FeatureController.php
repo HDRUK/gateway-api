@@ -52,7 +52,7 @@ class FeatureController extends Controller
     
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Feature get all",
             ]);
 
@@ -132,7 +132,7 @@ class FeatureController extends Controller
     
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Feature get " . $id,
             ]);
 
@@ -199,9 +199,9 @@ class FeatureController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Feature " . $feature->id . " created",
             ]);
 
@@ -295,9 +295,9 @@ class FeatureController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Feature " . $id . " updated",
             ]);
 
@@ -398,9 +398,9 @@ class FeatureController extends Controller
             Feature::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Feature " . $id . " updated",
             ]);
 
@@ -478,9 +478,9 @@ class FeatureController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Feature " . $id . " deleted",
             ]);
 

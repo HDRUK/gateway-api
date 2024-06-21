@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use Mockery;
 use Tests\TestCase;
-use Google\Cloud\PubSub\Topic;
 use App\Services\PubSubService;
+use Google\Cloud\PubSub\PubSubClient;
+use Google\Cloud\PubSub\Topic;
+use Google\Cloud\PubSub\MessageBuilder;
 use Illuminate\Support\Facades\Config;
 
 class PubSubServiceTest extends TestCase
@@ -20,9 +22,10 @@ class PubSubServiceTest extends TestCase
         $topic = Mockery::mock(Topic::class);
         $topic->shouldReceive('publish')
             ->once()
-            ->with(Mockery::on(function ($data) {
-                $this->assertEquals(json_encode(['message' => 'fake test message']), $data['data']);
-                return true;
+            ->with(Mockery::on(function ($message) {
+                $messageBuilder = new MessageBuilder();
+                $expectedMessage = $messageBuilder->setData(json_encode(['test' => 'Test message']))->build();
+                return $message == $expectedMessage;
             }));
 
         // Mock the PubSubClient and make it return the mocked Topic
@@ -31,7 +34,8 @@ class PubSubServiceTest extends TestCase
             ->once()
             ->andReturn($topic);
 
+        $message = ['message' => 'fake test message'];
         $service = new PubSubService();
-        $service->publishMessage(['message' => 'fake test message']);
+        $service->publishMessage(['test' => 'Test message']);
     }
 }
