@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('dur_has_keywords', function (Blueprint $table) {
             $table->bigInteger('dur_id')->unsigned();
             $table->bigInteger('keyword_id')->unsigned();
+
             $table->foreign('dur_id')->references('id')->on('dur');
             $table->foreign('keyword_id')->references('id')->on('keywords');
         });
