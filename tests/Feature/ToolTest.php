@@ -12,6 +12,8 @@ use App\Models\License;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
+use App\Models\Collection;
+use App\Models\CollectionHasTool;
 use App\Models\ToolHasTypeCategory;
 use App\Models\DatasetVersionHasTool;
 use App\Models\ToolHasProgrammingPackage;
@@ -26,6 +28,7 @@ use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
+use Database\Seeders\CollectionSeeder;
 use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\ToolHasTagSeeder;
 use Database\Seeders\ApplicationSeeder;
@@ -36,6 +39,7 @@ use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\DatasetVersionHasTooleeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
@@ -86,6 +90,7 @@ class ToolTest extends TestCase
             DurSeeder::class,
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
+            CollectionSeeder::class,
         ]);
     }
 
@@ -121,6 +126,7 @@ class ToolTest extends TestCase
                     'contact_address',
                     'publications',
                     'durs',
+                    'collections',
                 ]
             ],
             'current_page',
@@ -172,6 +178,7 @@ class ToolTest extends TestCase
                 'contact_address',
                 'publications',
                 'durs',
+                'collections',
             ]
         ]);
         $response->assertStatus(200);
@@ -207,6 +214,7 @@ class ToolTest extends TestCase
             "type_category" => [1, 2],
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "collections" => $this->generateCollections(),
         ];
 
         $response = $this->json(
@@ -378,6 +386,8 @@ class ToolTest extends TestCase
                 'programming_package' => [1, 2],
                 'type_category' => [1, 2],
                 'publications' => [],
+                'durs' => [],
+                'collections' => [],
             ],
             $this->header
         );
@@ -404,6 +414,8 @@ class ToolTest extends TestCase
                 'programming_package' => [1, 2],
                 'type_category' => [1, 2],
                 'publications' => [],
+                'durs' => [],
+                'collections' => [1, 2],
             ],
             $this->header
         );
@@ -430,6 +442,8 @@ class ToolTest extends TestCase
                 'programming_package' => [1, 2],
                 'type_category' => [1, 2],
                 'publications' => [],
+                'durs' => [1, 2],
+                'collections' => [],
             ],
             $this->header
         );
@@ -587,6 +601,7 @@ class ToolTest extends TestCase
             "type_category" => array(1, 2),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "collections" => $this->generateCollections(),
         );
         $responseIns = $this->json(
             'POST',
@@ -628,6 +643,7 @@ class ToolTest extends TestCase
             "type_category" => array(1),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "collections" => array(2),
         );
 
         $responseUpdate = $this->json(
@@ -669,6 +685,10 @@ class ToolTest extends TestCase
         $toolHasTypeCategories = ToolHasTypeCategory::where('tool_id', $toolIdInsert)->get();
         $this->assertEquals(count($toolHasTypeCategories), 1);
         $this->assertEquals($toolHasTypeCategories[0]['type_category_id'], 1);
+        
+        $collectionHasTool = CollectionHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($collectionHasTool), 1);
+        $this->assertEquals($collectionHasTool[0]['collection_id'], 2);
     }
 
     /**
@@ -958,6 +978,20 @@ class ToolTest extends TestCase
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
             $temp['id'] = Publication::all()->random()->id;
+            $return[] = $temp;
+        }
+
+        return $return;
+    }
+
+    private function generateCollections()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Collection::all()->random()->id;
             $return[] = $temp;
         }
 

@@ -158,7 +158,7 @@ class ToolController extends Controller
             }
 
             // Perform query for the matching tools with filters, sorting, and pagination
-            $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications', 'durs'])
+            $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications', 'durs', 'collections'])
             ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
             })
@@ -278,6 +278,8 @@ class ToolController extends Controller
      *             @OA\Property( property="associated_authors", type="string", example="string" ),
      *             @OA\Property( property="contact_address", type="string", example="string" ),
      *             @OA\Property( property="publications", type="array", @OA\Items() ),
+     *             @OA\Property( property="durs", type="array", @OA\Items() ),
+     *             @OA\Property( property="collections", type="array", @OA\Items() ),
      *          ),
      *       ),
      *    ),
@@ -368,10 +370,17 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($tool->id, $publications, $array['user_id'], $appId);
 
+            if (array_key_exists('durs', $input)) {
+                $this->insertDurHasTool($input['durs'], (int) $tool->id);
+            }
+
+            $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
+            $this->checkCollections($tool->id, $collections, $array['user_id'], $appId);
+
             if($request['enabled'] === 1){
                 $this->indexElasticTools((int) $tool->id);
             }
-
+            
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -427,6 +436,8 @@ class ToolController extends Controller
      *             @OA\Property( property="associated_authors", type="string", example="string" ),
      *             @OA\Property( property="contact_address", type="string", example="string" ),
      *             @OA\Property( property="publications", type="array", @OA\Items() ),
+     *             @OA\Property( property="durs", type="array", @OA\Items() ),
+     *             @OA\Property( property="collections", type="array", @OA\Items() ),
      *          ),
      *       ),
      *    ),
@@ -526,6 +537,13 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($id, $publications, $array['user_id'], $appId);
 
+            if (array_key_exists('durs', $input)) {
+                $this->insertDurHasTool($input['durs'], (int) $id);
+            }
+
+            $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
+            $this->checkCollections($id, $collections, $array['user_id'], $appId);
+
             if($request['enabled'] === 1){
                 $this->indexElasticTools((int) $id);
             }
@@ -593,6 +611,9 @@ class ToolController extends Controller
      *             @OA\Property( property="type_category", type="array", @OA\Items() ),
      *             @OA\Property( property="associated_authors", type="string", example="string" ),
      *             @OA\Property( property="contact_address", type="string", example="string" ),
+     *             @OA\Property( property="publications", type="array", @OA\Items() ),
+     *             @OA\Property( property="durs", type="array", @OA\Items() ),
+     *             @OA\Property( property="collections", type="array", @OA\Items() ),
      *          ),
      *       ),
      *    ),
@@ -722,6 +743,15 @@ class ToolController extends Controller
                     $this->checkPublications($id, $publications, $userIdFinal, $appId);
                 }
 
+                if (array_key_exists('durs', $input)) {
+                    $this->insertDurHasTool($input['durs'], (int) $id);
+                }
+    
+                if (array_key_exists('collections', $input)) {
+                    $collections = $input['collections'];
+                    $this->checkCollections($id, $collections, $userIdFinal, $appId);
+                }
+                
                 if ($request['enabled'] === 1) {
                     $this->indexElasticTools($id);
                 }
@@ -806,8 +836,9 @@ class ToolController extends Controller
             ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
             ToolHasProgrammingPackage::where('tool_id', $id)->delete();
             ToolHasTypeCategory::where('tool_id', $id)->delete();
-            DurHasTool::where('tool_id', $id)->delete();
             PublicationHasTool::where('tool_id', $id)->delete();
+            DurHasTool::where('tool_id', $id)->delete();
+            CollectionHasTool::where('tool_id', $id)->delete();
             
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -965,6 +996,29 @@ class ToolController extends Controller
         }
     }
 
+    /**
+     * Insert data into DurHasTool
+     *
+     * @param array $durs
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertDurHasTool(array $durs, int $toolId): mixed
+    {
+        try {
+            foreach ($durs as $value) {
+                DurHasTool::updateOrCreate([
+                    'tool_id' => (int) $toolId,
+                    'dur_id' => (int) $value,
+                ]);
+            }
+
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
     // publications
     private function checkPublications(int $toolId, array $inPublications, int $userId = null, int $appId = null) 
     {
@@ -1044,6 +1098,88 @@ class ToolController extends Controller
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deletePublicationHasTools :: " . $e->getMessage());
+        }
+    }
+
+    // collections
+    private function checkCollections(int $toolId, array $inCollections, int $userId = null, int $appId = null) 
+    {
+        $colls = CollectionHasTool::where(['tool_id' => $toolId])->get();
+        foreach ($colls as $coll) {
+            if (!in_array($coll->collection_id, $this->extractInputIdToArray($inCollections))) {
+                $this->deleteCollectionHasTools($toolId, $coll->collection_id);
+            }
+        }
+
+        foreach ($inCollections as $collection) {
+            $checking = $this->checkInCollectionHasTools($toolId, (int) $collection['id']);
+
+            if (!$checking) {
+                $this->addCollectionHasTool($toolId, $collection, $userId, $appId);
+            }
+        }
+    }
+
+    private function addCollectionHasTool(int $toolId, array $collection, int $userId = null, int $appId = null)
+    {
+        try {
+            $arrCreate = [
+                'tool_id' => $toolId,
+                'collection_id' => $collection['id'],
+            ];
+
+            if (array_key_exists('user_id', $collection)) {
+                $arrCreate['user_id'] = (int) $collection['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $collection)) {
+                $arrCreate['reason'] = $collection['reason'];
+            }
+
+            if (array_key_exists('updated_at', $collection)) { // special for migration
+                $arrCreate['created_at'] = $collection['updated_at'];
+                $arrCreate['updated_at'] = $collection['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return CollectionHasTool::updateOrCreate(
+                $arrCreate,
+                [
+                    'tool_id' => $toolId,
+                    'collection_id' => $collection['id'],
+                ]
+            );
+        } catch (Exception $e) {
+            throw new Exception("addCollectionHasTool :: " . $e->getMessage());
+        }
+    }
+
+    private function checkInCollectionHasTools(int $toolId, int $collectionId)
+    {
+        try {
+            return CollectionHasTool::where([
+                'tool_id' => $toolId,
+                'collection_id' => $collectionId,
+            ])->first();
+        } catch (Exception $e) {
+            throw new Exception("checkInCollecionHasTools :: " . $e->getMessage());
+        }
+    }
+
+    private function deleteCollectionHasTools(int $toolId, int $collectionId)
+    {
+        try {
+            return CollectionHasTool::where([
+                'tool_id' => $toolId,
+                'collection_id' => $collectionId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deleteCollectionHasTools :: " . $e->getMessage());
         }
     }
 
