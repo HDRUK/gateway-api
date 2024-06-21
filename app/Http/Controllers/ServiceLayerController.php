@@ -141,12 +141,13 @@ class ServiceLayerController extends Controller
         $subPath = substr($path, strpos($path,$apiPath) + strlen($apiPath));
         $url = $baseUrl . "/" . $subPath;
 
+        $headers = $request->headers->all();
+        unset($headers['host']);
         // Forward the request to the external API service
         $response = Http::send($request->method(), $url, [
-            'headers' => $request->headers->all(),
+            'headers' => $headers,
             'query' => $request->query(),
             'body' => $request->getContent(),
-            'follow_redirects' => true, 
         ]);
 
         $statusCode = $response->status();

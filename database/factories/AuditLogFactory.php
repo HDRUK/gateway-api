@@ -22,7 +22,7 @@ class AuditLogFactory extends Factory
             'user_id' => User::all()->random()->id,
             'team_id' => Team::all()->random()->id,
             'action_type' => fake()->randomElement(['CREATE', 'UPDATE', 'DELETE', 'UNKNOWN']),
-            'action_service' => fake()->randomElement(['Gateway API', 'Translation Service']),
+            'action_name' => fake()->randomElement(['Gateway API', 'Translation Service']),
             'description' => fake()->words(10, true),
         ];
     }

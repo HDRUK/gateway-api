@@ -70,7 +70,7 @@ class PublicationController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Publication get all",
             ]);
 
@@ -141,7 +141,7 @@ class PublicationController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Publication get " . $id,
             ]);
 
@@ -250,9 +250,9 @@ class PublicationController extends Controller
             $this->indexElasticPublication($publicationId);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Publication " . $publication->id . " created",
             ]);
 
@@ -384,9 +384,9 @@ class PublicationController extends Controller
             $this->indexElasticPublication((int) $id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Publication " . $id . " updated",
             ]);
 
@@ -522,9 +522,9 @@ class PublicationController extends Controller
             $this->indexElasticPublication((int) $id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Publication " . $id . " updated",
             ]);
 
@@ -600,9 +600,9 @@ class PublicationController extends Controller
                 $publication->delete();
 
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'DELETE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Publication " . $id . " deleted",
                 ]);
     
