@@ -12,6 +12,7 @@ use App\Models\License;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
+use App\Models\PublicationHasTool;
 use App\Models\Collection;
 use App\Models\CollectionHasTool;
 use App\Models\ToolHasTypeCategory;
@@ -214,6 +215,7 @@ class ToolTest extends TestCase
             "type_category" => [1, 2],
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "durs" => [],
             "collections" => $this->generateCollections(),
         ];
 
@@ -223,6 +225,8 @@ class ToolTest extends TestCase
             $mockData,
             $this->header
         );
+
+        $response->assertStatus(201);
 
         $finalToolCount = Tool::withTrashed()->count();
         $finalTagCount = ToolHasTag::count();
@@ -235,7 +239,6 @@ class ToolTest extends TestCase
         $this->assertTrue((bool)$newToolCount, 'New tool was not created');
         $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
         $this->assertTrue($newDatasetVersionCount >= 2, 'Number of new dataset versions is not as expected');
-        $response->assertStatus(201);
     }
 
 
@@ -415,7 +418,7 @@ class ToolTest extends TestCase
                 'type_category' => [1, 2],
                 'publications' => [],
                 'durs' => [],
-                'collections' => [1, 2],
+                'collections' => $this->generateCollections(),
             ],
             $this->header
         );
@@ -601,6 +604,7 @@ class ToolTest extends TestCase
             "type_category" => array(1, 2),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "durs" => [],
             "collections" => $this->generateCollections(),
         );
         $responseIns = $this->json(
@@ -628,6 +632,8 @@ class ToolTest extends TestCase
         $responseIns->assertStatus(201);
 
         // update
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
         $mockDataUpdate = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Ea fuga ab aperiam nihil quis.",
@@ -642,8 +648,9 @@ class ToolTest extends TestCase
             "programming_package" => array(1),
             "type_category" => array(1),
             "enabled" => 1,
-            "publications" => $this->generatePublications(),
-            "collections" => array(2),
+            "publications" => $generatedPublications,
+            "durs" => [1, 2],
+            "collections" => $generatedCollections,
         );
 
         $responseUpdate = $this->json(
@@ -653,12 +660,12 @@ class ToolTest extends TestCase
             $this->header
         );
 
+        $responseUpdate->assertStatus(200);
         $responseUpdate->assertJsonStructure([
             'message',
             'data',
         ]);
 
-        $responseUpdate->assertStatus(200);
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
@@ -686,9 +693,16 @@ class ToolTest extends TestCase
         $this->assertEquals(count($toolHasTypeCategories), 1);
         $this->assertEquals($toolHasTypeCategories[0]['type_category_id'], 1);
         
+        $publicationHasTool = PublicationHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($publicationHasTool), count($generatedPublications));
+        
+        $durHasTool = DurHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($durHasTool), 2);
+        $this->assertEquals($durHasTool[0]['dur_id'], 1);
+        $this->assertEquals($durHasTool[1]['dur_id'], 2);
+        
         $collectionHasTool = CollectionHasTool::where('tool_id', $toolIdInsert)->get();
-        $this->assertEquals(count($collectionHasTool), 1);
-        $this->assertEquals($collectionHasTool[0]['collection_id'], 2);
+        $this->assertEquals(count($collectionHasTool), count($generatedCollections));
     }
 
     /**
@@ -715,6 +729,8 @@ class ToolTest extends TestCase
             "type_category" => array(1),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
         );
         $responseIns = $this->json(
             'POST',
@@ -981,7 +997,8 @@ class ToolTest extends TestCase
             $return[] = $temp;
         }
 
-        return $return;
+        // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
+        return array_map("unserialize", array_unique(array_map("serialize", $return)));
     }
 
     private function generateCollections()
@@ -995,6 +1012,7 @@ class ToolTest extends TestCase
             $return[] = $temp;
         }
 
-        return $return;
+        // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
+        return array_map("unserialize", array_unique(array_map("serialize", $return)));
     }
 }
