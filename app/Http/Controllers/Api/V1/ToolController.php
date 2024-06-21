@@ -368,7 +368,7 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($tool->id, $publications, $array['user_id'], $appId);
 
-            if($request['enabled'] === 1 && is_null(Tool::withTrashed()->find($tool->id)->deleted_at)){
+            if($request['enabled'] === 1){
                 $this->indexElasticTools((int) $tool->id);
             }
 
