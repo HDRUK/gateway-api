@@ -479,7 +479,6 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
-            return response()->json("hello");
 
             $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
 
@@ -490,6 +489,9 @@ class DatasetController extends Controller
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
+
+            $inputSchema = $request->query("input_schema",null);
+            $inputVersion = $request->query("input_version",null);
 
             // Ensure title is present for creating a dataset
             if (empty($input['metadata']['metadata']['summary']['title'])) {
@@ -513,19 +515,16 @@ class DatasetController extends Controller
                 "publisherId"=>$team['pid'],
                 "publisherName"=>$team['name']
             ];
-            return response()->json("hi");
 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
                 Config::get('metadata.GWDM.version'),
-                null,
-                null,
+                $inputSchema,
+                $inputVersion,
                 $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
                 $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
-
-            return response()->json($traserResponse);
 
             if ($traserResponse['wasTranslated']) {
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
