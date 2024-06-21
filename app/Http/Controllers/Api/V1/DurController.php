@@ -43,6 +43,15 @@ class DurController extends Controller
      *    tags={"Data Use Registers"},
      *    summary="DurController@index",
      *    description="Returns a list of dur",
+     *    @OA\Parameter(
+     *       name="sort",
+     *       in="query",
+     *       description="Sort fields in the format field:direction, e.g., project_title:asc,updated_at:asc",
+     *       required=false,
+     *       @OA\Schema(
+     *           type="project_title:asc,updated_at:asc"
+     *       )
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
