@@ -43,6 +43,15 @@ class DurController extends Controller
      *    tags={"Data Use Registers"},
      *    summary="DurController@index",
      *    description="Returns a list of dur",
+     *    @OA\Parameter(
+     *       name="sort",
+     *       in="query",
+     *       description="Sort fields in the format field:direction, e.g., project_title:asc,updated_at:asc",
+     *       required=false,
+     *       @OA\Schema(
+     *           type="project_title:asc,updated_at:asc"
+     *       )
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -126,9 +135,18 @@ class DurController extends Controller
         try {
             $input = $request->all();
 
+            $sort = [];
+            $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
+            foreach ($sortArray as $item) {
+                $tmp = explode(":", $item);
+                $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+            }
+            if (!array_key_exists('create_at', $sort)) {
+                $sort['updated_at'] = 'desc';
+            }
+
             $mongoId = $request->query('mongo_id', null);
             $projectTitle = $request->query('project_title', null);
-    
             $perPage = request('perPage', Config::get('constants.per_page'));
             $durs = Dur::where('enabled', 1)
                 ->when($mongoId, function ($query) use ($mongoId) {
@@ -155,16 +173,22 @@ class DurController extends Controller
                     'user',
                     'team',
                     'application',
-                ])->paginate((int) $perPage, ['*'], 'page')
+                ]);
+
+            foreach ($sort as $key => $value) {
+                $durs->orderBy('dur.' . $key, strtoupper($value));
+            }
+
+            $durs = $durs->paginate((int) $perPage, ['*'], 'page')
                 ->through(function ($dur) {
-                    if ($dur->datasets) {
-                        $dur->datasets = $dur->datasets->map(function ($dataset) {
-                            $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
-                            return $dataset;
-                        });
-                    }
-                    return $dur;
-                });
+                if ($dur->datasets) {
+                    $dur->datasets = $dur->datasets->map(function ($dataset) {
+                        $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
+                        return $dataset;
+                    });
+                }
+                return $dur;
+            });
 
             $durs->getCollection()->transform(function ($dur) {
                 $userDatasets = $dur->userDatasets;
