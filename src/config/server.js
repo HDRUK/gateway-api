@@ -4,43 +4,18 @@ import express from 'express';
 import Provider from 'oidc-provider';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
-import logger from 'morgan';
+import morgan from 'morgan';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import { connectToDatabase } from './db';
 import { initialiseAuthentication } from '../resources/auth';
-import * as Sentry from '@sentry/node';
-import * as Tracing from '@sentry/tracing';
-import helper from '../resources/utilities/helper.util';
+
+import { errorHandler } from '../middlewares';
 
 require('dotenv').config();
 
 var app = express();
-
-const readEnv = process.env.ENV || 'prod';
-if (readEnv === 'test' || readEnv === 'prod') {
-	Sentry.init({
-		dsn: 'https://b6ea46f0fbe048c9974718d2c72e261b@o444579.ingest.sentry.io/5653683',
-		environment: helper.getEnvironment(),
-		integrations: [
-			// enable HTTP calls tracing
-			new Sentry.Integrations.Http({ tracing: true }),
-			// enable Express.js middleware tracing
-			new Tracing.Integrations.Express({
-				// trace all requests to the default router
-				app,
-			}),
-		],
-		tracesSampleRate: 1.0,
-	});
-	// RequestHandler creates a separate execution context using domains, so that every
-	// transaction/span/breadcrumb is attached to its own Hub instance
-	app.use(Sentry.Handlers.requestHandler());
-	// TracingHandler creates a trace for every incoming request
-	app.use(Sentry.Handlers.tracingHandler());
-	app.use(Sentry.Handlers.errorHandler());
-}
 
 const Account = require('./account');
 const configuration = require('./configuration');
@@ -84,7 +59,7 @@ connectToDatabase();
 app.use(bodyParser.json({ limit: '10mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: false }));
 
-app.use(logger('dev'));
+app.use(morgan('tiny'));
 app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -191,10 +166,18 @@ app.use('/api/v1/auth/register', require('../resources/user/user.register.route'
 app.use('/api/v1/users', require('../resources/user/user.route'));
 app.use('/api/v1/topics', require('../resources/topic/topic.route'));
 app.use('/api/v1/publishers', require('../resources/publisher/publisher.route'));
+
 app.use('/api/v1/teams', require('../resources/team/team.route'));
+app.use('/api/v3/teams', require('../resources/team/v3/team.route'));
+
 app.use('/api/v1/workflows', require('../resources/workflow/workflow.route'));
+
 app.use('/api/v1/messages', require('../resources/message/message.route'));
-app.use('/api/v1/reviews', require('../resources/tool/review.route'));
+app.use('/api/v3/messages', require('../resources/message/v3/message.route'));
+
+app.use('/api/v1/reviews', require('../resources/review/v1/review.route'));
+app.use('/api/v3/reviews', require('../resources/review/v3/review.route'));
+
 app.use('/api/v1/relatedobject/', require('../resources/relatedobjects/relatedobjects.route'));
 
 app.use('/api/v1/accounts', require('../resources/account/account.route'));
@@ -258,7 +241,11 @@ app.use('/api/v2/questionbank', require('../resources/questionbank/questionbank.
 app.use('/api/v2/data-use-registers', require('../resources/dataUseRegister/dataUseRegister.route'));
 app.use('/api/v1/locations', require('../resources/spatialfilter/SpatialRouter'));
 
+app.use(errorHandler);
+
+app.use('/api/v1/metadata', require('../resources/metadata/metadata.route'));
+
 initialiseAuthentication(app);
 
 // launch our backend into a port
-app.listen(API_PORT, () => console.log(`LISTENING ON PORT ${API_PORT}`));
+app.listen(API_PORT, () => process.stdout.write(`LISTENING ON PORT ${API_PORT}\n`));

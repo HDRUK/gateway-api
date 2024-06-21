@@ -24,7 +24,7 @@ class HttpClient {
 
             return response;
         } catch (err) {
-            console.error(err);
+            process.stdout.write(`HTTPCLIENT - POST : ${err.message}\n`);
             throw new Error(err.message);
         }
     }
@@ -44,7 +44,7 @@ class HttpClient {
 
             return response;
         } catch (err) {
-            console.error(err);
+            process.stdout.write(`HTTPCLIENT - PUT : ${err.message}\n`);
             throw new Error(err.message);
         }
     }
@@ -64,7 +64,7 @@ class HttpClient {
 
             return response;
         } catch (err) {
-            console.error(err);
+            process.stdout.write(`HTTPCLIENT - DELETE : ${err.message}\n`);
             throw new Error(err.message);
         }
     }

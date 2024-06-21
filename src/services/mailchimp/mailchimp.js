@@ -1,5 +1,4 @@
 import Mailchimp from 'mailchimp-api-v3';
-import * as Sentry from '@sentry/node';
 import Crypto from 'crypto';
 import constants from '../../resources/utilities/constants.util';
 import { UserModel } from '../../resources/user/user.model';
@@ -13,7 +12,6 @@ let mailchimp;
 if (apiKey) mailchimp = new Mailchimp(apiKey);
 const tags = ['Gateway User'];
 const defaultSubscriptionStatus = constants.mailchimpSubscriptionStatuses.SUBSCRIBED;
-const readEnv = process.env.ENV || 'prod';
 
 /**
  * Create MailChimp Subscription Subscriber
@@ -37,21 +35,10 @@ const addSubscriptionMember = async (subscriptionId, user, status) => {
 				LNAME: lastname,
 			},
 		};
-		// 2. Track attempted update in Sentry using log
-		if (readEnv === 'test' || readEnv === 'prod') {
-			Sentry.addBreadcrumb({
-				category: 'MailChimp',
-				message: `Adding subscription for user: ${id} to subscription: ${subscriptionId}`,
-				level: Sentry.Severity.Log,
-			});
-		}
 		// 3. POST to MailChimp Marketing API to add the Gateway user to the MailChimp subscription members
 		const md5email = Crypto.createHash('md5').update(email).digest('hex');
 		await mailchimp.put(`lists/${subscriptionId}/members/${md5email}`, body).catch(err => {
-			if (readEnv === 'test' || readEnv === 'prod') {
-				Sentry.captureException(err);
-			}
-			console.error(`Message: ${err.message} Errors: ${JSON.stringify(err.errors)}`);
+			process.stdout.write(`MAILCHIP - addSubscriptionMember : ${id} - ${err.message}\n`);
 		});
 	}
 };
@@ -104,22 +91,10 @@ const updateSubscriptionMembers = async (subscriptionId, members) => {
 				skip_duplicate_check: true,
 				update_existing: true,
 			};
-			// 4. Track attempted updates in Sentry using log
-			if (readEnv === 'test' || readEnv === 'prod') {
-				Sentry.addBreadcrumb({
-					category: 'MailChimp',
-					message: `Updating subscribed for members: ${members.map(
-						member => `${member.userId} to ${member.status}`
-					)} against subscription: ${subscriptionId}`,
-					level: Sentry.Severity.Log,
-				});
-			}
+
 			// 5. POST to MailChimp Marketing API to update member statuses
 			await mailchimp.post(`lists/${subscriptionId}`, body).catch(err => {
-				if (readEnv === 'test' || readEnv === 'prod') {
-					Sentry.captureException(err);
-				}
-				console.error(`Message: ${err.message} Errors: ${JSON.stringify(err.errors)}`);
+				process.stdout.write(`MAILCHIP - updateSubscriptionMembers : ${err.message}\n`);
 			});
 		}
 	}
@@ -134,22 +109,11 @@ const updateSubscriptionMembers = async (subscriptionId, members) => {
  */
 const syncSubscriptionMembers = async subscriptionId => {
 	if (apiKey) {
-		// 1. Track attempted sync in Sentry using log
-		if (readEnv === 'test' || readEnv === 'prod') {
-			Sentry.addBreadcrumb({
-				category: 'MailChimp',
-				message: `Syncing users for subscription: ${subscriptionId}`,
-				level: Sentry.Severity.Log,
-			});
-		}
 		// 2. Get total member count to anticipate chunking required to process all contacts
 		const {
 			stats: { member_count: subscribedCount, unsubscribe_count: unsubscribedCount },
 		} = await mailchimp.get(`lists/${subscriptionId}?fields=stats.member_count,stats.unsubscribe_count`).catch(err => {
-			if (readEnv === 'test' || readEnv === 'prod') {
-				Sentry.captureException(err);
-			}
-			console.error(`Message: ${err.message} Errors: ${JSON.stringify(err.errors)}`);
+			process.stdout.write(`MAILCHIP - syncSubscriptionMembers : ${err.message}\n`);
 		});
 		const memberCount = subscribedCount + unsubscribedCount;
 		// 3. Batch update database to sync MailChimp to reflect users unsubscribed/subscribed externally

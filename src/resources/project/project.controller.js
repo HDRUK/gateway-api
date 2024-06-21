@@ -33,7 +33,7 @@ export default class ProjectController extends Controller {
 			});
 		} catch (err) {
             // Return error response if something goes wrong
-            console.error(err.message);
+            process.stdout.write(`PROJECT - GET PROJECT : ${err.message}\n`);
             return res.status(500).json({
 				success: false,
 				message: 'A server error occurred, please try again',
@@ -52,7 +52,7 @@ export default class ProjectController extends Controller {
 			});
 		} catch (err) {
             // Return error response if something goes wrong
-            console.error(err.message);
+            process.stdout.write(`PROJECT - GET PROJECTS : ${err.message}\n`);
             return res.status(500).json({
 				success: false,
 				message: 'A server error occurred, please try again',

@@ -42,7 +42,7 @@ export async function getDiscourseTopic(topicId, user) {
 			posts: posts,
 		};
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - getDiscourseTopic : ${err.message}`);
 	}
 }
 
@@ -109,7 +109,7 @@ export async function createDiscourseTopic(tool) {
 			}
 		}
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - createDiscourseTopic : ${err.message}`);
 	}
 }
 
@@ -140,7 +140,7 @@ export async function createDiscoursePost(topicId, comment, user) {
 	try {
 		await axios.post(`${process.env.DISCOURSE_URL}/posts.json`, payload, config);
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - createDiscoursePost : ${err.message}`);
 	}
 }
 
@@ -176,7 +176,7 @@ export async function updateDiscoursePost(postId, comment, user) {
 		// 4. Return the post data
 		return post;
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - updateDiscoursePost : ${err.message}`);
 	}
 }
 
@@ -208,7 +208,7 @@ export async function deleteDiscoursePost(postId, user) {
 	try {
 		await axios.delete(`${process.env.DISCOURSE_URL}/posts/${postId}`, config);
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - deleteDiscoursePost : ${err.message}`);
 	}
 }
 
@@ -248,7 +248,7 @@ async function createUser({ id, email, username }) {
 		// 6. Return the new user object from Discourse
 		return res.data;
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - createUser : ${err.message}`);
 	}
 }
 
@@ -286,7 +286,7 @@ async function generateAPIKey(discourseUsername) {
 		// 3. Return key
 		return key;
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`DISCOURSE - generateAPIKey : ${err.message}`);
 		return '';
 	}
 }
@@ -326,7 +326,7 @@ async function getCredentials(user, strict) {
 			// 6. Update MongoDb to contain users Discourse credentials
 			await UserModel.findOneAndUpdate({ id: { $eq: id } }, { $set: { discourseUsername, discourseKey } });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`DISCOURSE - getCredentials : ${err.message}`);
 		}
 		// 3. If user has username but no API key, generate new one
 	} else if (_.isEmpty(discourseKey)) {
@@ -336,7 +336,7 @@ async function getCredentials(user, strict) {
 			// 5. Update MongoDb to contain users Discourse credentials
 			await UserModel.findOneAndUpdate({ id: { $eq: id } }, { $set: { discourseUsername, discourseKey } });
 		} catch (err) {
-			console.error(err.message);
+			process.stdout.write(`DISCOURSE - getCredentials : ${err.message}`);
 		}
 	}
 	// Return identification payload of registered Discourse user

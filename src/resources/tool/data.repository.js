@@ -50,7 +50,7 @@ const addTool = async (req, res) => {
 		data.journalYear = inputSanitizer.removeNonBreakingSpaces(journalYear);
 		data.description = inputSanitizer.removeNonBreakingSpaces(description);
 		data.resultsInsights = inputSanitizer.removeNonBreakingSpaces(resultsInsights);
-		console.log(req.body);
+
 		if (categories && typeof categories !== 'undefined')
 			data.categories.category = inputSanitizer.removeNonBreakingSpaces(categories.category);
 		data.license = inputSanitizer.removeNonBreakingSpaces(license);

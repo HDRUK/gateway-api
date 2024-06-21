@@ -74,5 +74,5 @@ export const publishMessageWithRetryToPubSub = async (topicName, message) => {
     const [response] = await publisherClient.publish(request, {
         retry: retrySettings,
     });
-    console.log(`Message ${response.messageIds} published.`);
+    process.stdout.write(`Message ${response.messageIds} published.`);
 }

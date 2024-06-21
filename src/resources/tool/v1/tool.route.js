@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import express from 'express';
 import { ROLES } from '../../user/user.roles';
-import { Reviews } from '../review.model';
+import { Reviews } from '../../review/review.model';
 import { Data } from '../data.model';
 import { Course } from '../../course/course.model';
 import { DataUseRegister } from '../../dataUseRegister/dataUseRegister.model';
@@ -393,7 +393,7 @@ router.get('/:type/tag', passport.authenticate('jwt'), async (req, res) => {
 		// 4. Return projects
 		return res.status(200).json({ success: true, entities });
 	} catch (err) {
-		console.error(err.message);
+		process.stdout.write(`TOOL : ${err.message}\n`);
 		return res.status(500).json({
 			success: false,
 			message: 'An error occurred searching for tools by tag',

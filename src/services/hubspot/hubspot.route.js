@@ -1,8 +1,6 @@
 import express from 'express';
-import * as Sentry from '@sentry/node';
 import hubspotConnector from './hubspot';
 const router = express.Router();
-const readEnv = process.env.ENV || 'prod';
 
 // @router   POST /api/v1/hubspot/sync
 // @desc     Performs a two-way sync of contact details including communication opt in preferences between HubSpot and the Gateway database
@@ -29,10 +27,7 @@ router.post('/sync', async (req, res) => {
 		// Return response indicating job has started (do not await async import)
 		return res.status(200).json({ success: true, message: 'Sync started' });
 	} catch (err) {
-		if (readEnv === 'test' || readEnv === 'prod') {
-			Sentry.captureException(err);
-		}
-		console.error(err.message);
+		process.stdout.write(`HUBSPOT - SYNC : ${err.message}\n`);
 		return res.status(500).json({ success: false, message: 'Sync failed' });
 	}
 });

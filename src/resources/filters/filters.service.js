@@ -183,8 +183,8 @@ export default class FiltersService {
 		Object.keys(filters).forEach(filterKey => {
 			// 9. Set filter values to title case (all except publisher) / upper case (publisher) and remove white space
 			if (filterKey === 'publisher') {
-				filters[filterKey] = filters[filterKey].map(value =>
-					value.includes('>') ? value.split(' > ')[1].toString().toUpperCase().trim() : value.toString().toUpperCase().trim()
+				filters[filterKey] = filters[filterKey].map(value => 
+					value.includes('>') ? value.split('>')[1].toString().toUpperCase().trim() : value.toString().toUpperCase().trim()
 				);
 			} else {
 				filters[filterKey] = filters[filterKey].map(value => (filterKey === 'spatial') ? value.toString().trim() : helper.toTitleCase(value.toString().trim()));
