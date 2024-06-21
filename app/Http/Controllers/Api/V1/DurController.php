@@ -520,9 +520,10 @@ class DurController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
-
-            $this->indexElasticDur($durId);
-
+            if($request['enabled'] === 1){
+                $this->indexElasticDur($durId);
+            }
+            
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
@@ -758,7 +759,7 @@ class DurController extends Controller
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
 
-            Dur::where('id', $id)->update($array);
+            Dur::where('id', $id)->first()->update($array);
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
@@ -786,7 +787,9 @@ class DurController extends Controller
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
-            $this->indexElasticDur($id);
+            if($request['enabled'] === 1){
+                $this->indexElasticDur($id);
+            }
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -811,6 +814,15 @@ class DurController extends Controller
      *    summary="Edit a dur",
      *    description="Edit a dur",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="unarchive",
+     *       in="query",
+     *       description="Unarchive a dur",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="instruction to unarchive dur",
+     *       ),
+     *    ),
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
@@ -965,113 +977,140 @@ class DurController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $userId = null;
-            $appId = null;
-            if (array_key_exists('user_id', $input)) {
-                $userId = (int) $input['user_id'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
-            } else {
-                $appId = (int) $input['app']['id'];
+            if ($request->has('unarchive')) {
+                $dur = Dur::withTrashed()->where('id', $id)->first();
+            
+                // Restore the Dur and related models
+                Dur::withTrashed()->where('id', $id)->restore();
+                DurHasDataset::withTrashed()->where('dur_id', $id)->restore();
+                DurHasKeyword::withTrashed()->where('dur_id', $id)->restore();
+                DurHasPublication::withTrashed()->where('dur_id', $id)->restore();
+                DurHasTool::withTrashed()->where('dur_id', $id)->restore();
+
+                Auditor::log([
+                    'user_id' => (int) $jwtUser['id'],
+                    'action_type' => 'UPDATE',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dur " . $id . " unarchived",
+                ]);
+    
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $this->getDurById($id),
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
 
-            $arrayKeys = [
-                'non_gateway_datasets',
-                'non_gateway_applicants',
-                'funders_and_sponsors',
-                'other_approval_committees',
-                'gateway_outputs_tools',
-                'gateway_outputs_papers',
-                'non_gateway_outputs',
-                'project_title',
-                'project_id_text',
-                'organisation_name',
-                'organisation_sector',
-                'lay_summary',
-                'technical_summary',
-                'latest_approval_date',
-                'manual_upload',
-                'rejection_reason',
-                'sublicence_arrangements',
-                'public_benefit_statement',
-                'data_sensitivity_level',
-                'accredited_researcher_status',
-                'confidential_data_description',
-                'dataset_linkage_description',
-                'duty_of_confidentiality',
-                'legal_basis_for_data_article6',
-                'legal_basis_for_data_article9',
-                'national_data_optout',
-                'organisation_id',
-                'privacy_enhancements',
-                'request_category_type',
-                'request_frequency',
-                'access_type',
-                'mongo_object_dar_id',
-                'technicalSummary',
-                'enabled',
-                'last_activity',
-                'counter',
-                'mongo_object_id',
-                'mongo_id',
-                'applicant_id',
-            ];
-            $array = $this->checkEditArray($input, $arrayKeys);
-            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+            else{
+                $userId = null;
+                $appId = null;
+                if (array_key_exists('user_id', $input)) {
+                    $userId = (int) $input['user_id'];
+                } elseif (array_key_exists('jwt_user', $input)) {
+                    $userId = (int) $input['jwt_user']['id'];
+                } else {
+                    $appId = (int) $input['app']['id'];
+                }
 
-            if (array_key_exists('organisation_sector', $array)) {
-                $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
+                $arrayKeys = [
+                    'non_gateway_datasets',
+                    'non_gateway_applicants',
+                    'funders_and_sponsors',
+                    'other_approval_committees',
+                    'gateway_outputs_tools',
+                    'gateway_outputs_papers',
+                    'non_gateway_outputs',
+                    'project_title',
+                    'project_id_text',
+                    'organisation_name',
+                    'organisation_sector',
+                    'lay_summary',
+                    'technical_summary',
+                    'latest_approval_date',
+                    'manual_upload',
+                    'rejection_reason',
+                    'sublicence_arrangements',
+                    'public_benefit_statement',
+                    'data_sensitivity_level',
+                    'accredited_researcher_status',
+                    'confidential_data_description',
+                    'dataset_linkage_description',
+                    'duty_of_confidentiality',
+                    'legal_basis_for_data_article6',
+                    'legal_basis_for_data_article9',
+                    'national_data_optout',
+                    'organisation_id',
+                    'privacy_enhancements',
+                    'request_category_type',
+                    'request_frequency',
+                    'access_type',
+                    'mongo_object_dar_id',
+                    'technicalSummary',
+                    'enabled',
+                    'last_activity',
+                    'counter',
+                    'mongo_object_id',
+                    'mongo_id',
+                    'applicant_id',
+                ];
+                $array = $this->checkEditArray($input, $arrayKeys);
+                $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+
+                if (array_key_exists('organisation_sector', $array)) {
+                    $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
+                }
+
+                Dur::where('id', $id)->update($array);
+
+                // link/unlink dur with datasets
+                if (array_key_exists('datasets', $input)) {
+                    $datasets = $input['datasets'];
+                    $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
+                }
+
+                // link/unlink dur with publications
+                if (array_key_exists('publications', $input)) {
+                    $publications = $input['publications'];
+                    $this->checkPublications($id, $publications, $userIdFinal, $appId);
+                }
+
+                // link/unlink dur with keywords
+                if (array_key_exists('keywords', $input)) {
+                    $keywords = $input['keywords'];
+                    $this->checkKeywords($id, $keywords);
+                }
+
+                // link/unlink dur with tools
+                if (array_key_exists('tools', $input)) {
+                    $tools = $input['tools'];
+                    $this->checkTools($id, $tools);
+                }
+
+                // for migration from mongo database
+                if (array_key_exists('created_at', $input)) {
+                    Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
+                }
+
+                // for migration from mongo database
+                if (array_key_exists('updated_at', $input)) {
+                    Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
+                }
+
+                if ($request['enabled'] === 1) {
+                    $this->indexElasticDur($id);
+                }
+
+                Auditor::log([
+                    'user_id' => (int) $jwtUser['id'],
+                    'action_type' => 'UPDATE',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dur " . $id . " updated",
+                ]);
+
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $this->getDurById($id),
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
-
-            Dur::where('id', $id)->update($array);
-
-            // link/unlink dur with datasets
-            if (array_key_exists('datasets', $input)) {
-                $datasets = $input['datasets'];
-                $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
-            }
-
-            // link/unlink dur with publications
-            if (array_key_exists('publications', $input)) {
-                $publications = $input['publications'];
-                $this->checkPublications($id, $publications, $userIdFinal, $appId);
-            }
-
-            // link/unlink dur with keywords
-            if (array_key_exists('keywords', $input)) {
-                $keywords = $input['keywords'];
-                $this->checkKeywords($id, $keywords);
-            }
-
-            // link/unlink dur with tools
-            if (array_key_exists('tools', $input)) {
-                $tools = $input['tools'];
-                $this->checkTools($id, $tools);
-            }
-
-            // for migration from mongo database
-            if (array_key_exists('created_at', $input)) {
-                Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
-            }
-
-            // for migration from mongo database
-            if (array_key_exists('updated_at', $input)) {
-                Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-            }
-
-            $this->indexElasticDur($id);
-
-            Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
-                'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur " . $id . " updated",
-            ]);
-
-            return response()->json([
-                'message' => 'success',
-                'data' => $this->getDurById($id),
-            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
