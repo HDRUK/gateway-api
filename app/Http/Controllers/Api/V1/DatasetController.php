@@ -479,6 +479,7 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
+            return response()->json("hello");
 
             $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
 
@@ -512,6 +513,7 @@ class DatasetController extends Controller
                 "publisherId"=>$team['pid'],
                 "publisherName"=>$team['name']
             ];
+            return response()->json("hi");
 
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
@@ -522,6 +524,8 @@ class DatasetController extends Controller
                 $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
                 $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
+
+            return response()->json($traserResponse);
 
             if ($traserResponse['wasTranslated']) {
                 $input['metadata']['original_metadata'] = $input['metadata']['metadata'];

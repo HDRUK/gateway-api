@@ -157,6 +157,7 @@ class SearchController extends Controller
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
             $response = Http::post($urlString, $input);
+            
             if (!$response->successful()) {
                 return response()->json([
                     'message' => 'No response from '.$urlString,
@@ -976,12 +977,16 @@ class SearchController extends Controller
 
                 $pubArray = $response['hits']['hits'];
                 $totalResults = $response['hits']['total']['value'];
+
                 $matchedIds = [];
                 foreach (array_values($pubArray) as $i => $d) {
                     $matchedIds[] = $d['_id'];
                 }
 
                 $pubModels = Publication::whereIn('id', $matchedIds)->get();
+
+                return response()->json(Publication::pluck("id"));
+
 
                 foreach ($pubArray as $i => $p) {
                     $foundFlag = false;
