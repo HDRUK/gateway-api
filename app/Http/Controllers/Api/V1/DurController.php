@@ -759,13 +759,14 @@ class DurController extends Controller
 
             // for migration from mongo database
             if (array_key_exists('created_at', $input)) {
-                $dur->update(['created_at' => $input['created_at']]);
+                Dur::where('id', $id)->update(['created_at' => $input['created_at']]);
             }
 
             // for migration from mongo database
             if (array_key_exists('updated_at', $input)) {
-                $dur->update(['updated_at' => $input['updated_at']]);
+                Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
+            
             if($request['enabled'] === 1){
                 $this->indexElasticDur($id);
             }
