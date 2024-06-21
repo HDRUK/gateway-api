@@ -689,7 +689,7 @@ class ToolTest extends TestCase
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
             "user_id" => 1,
-            "tag" => array(1),
+            "tag" => array(),
             "programming_language" => array(1),
             "programming_package" => array(1),
             "type_category" => array(1),
@@ -806,6 +806,93 @@ class ToolTest extends TestCase
         $this->assertEquals($responseEdit2['data']['license']['id'], $mockDataEdit2['license']);
         $this->assertEquals($responseEdit2['data']['tech_stack'], $mockDataEdit2['tech_stack']);
     }
+
+    /**
+     * Create, delete, update, delete, edit, and delete a Tool with success
+     *
+     * @return void
+     */
+    public function test_create_archive_unarchive_tool_with_success(): void
+    {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+
+        // Insert
+        $mockDataIns = array(
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => array(2),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+        );
+
+        $responseIns = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $mockDataIns,
+            $this->header
+        );
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $this->assertEquals(
+            $responseIns['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+        $toolIdInsert = $responseIns['data'];
+
+        // Delete
+        $responseDelete = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $toolIdInsert,
+            [],
+            $this->header
+        );
+        $responseDelete->assertStatus(200);
+
+        // Unarchive tool
+        $responseUnarchive = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $toolIdInsert . '?unarchive',
+            [],
+            $this->header
+        );
+        $responseUnarchive->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseUnarchive->assertStatus(200);
+
+        // Verify that the unarchived tool has deleted_at == null
+        $toolData = $responseUnarchive['data'];
+        $this->assertNull($toolData['deleted_at']);
+
+
+        // Delete again
+        $responseDeleteAgain = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $toolIdInsert,
+            [],
+            $this->header
+        );
+        $responseDeleteAgain->assertStatus(200);
+    }
+
+
+
+    
 
     /**
      * Update Tool with success by id and generate an exception

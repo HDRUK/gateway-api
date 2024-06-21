@@ -485,6 +485,84 @@ class DurTest extends TestCase
         $responseDelete->assertStatus(200);
     }
 
+    /**
+     * Create, delete, unarchive (un-delete), and delete Dur with success
+     *
+     * @return void
+     */
+    public function test_create_archive_unarchive_dur_with_success(): void
+    {
+        // create dur
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+        $countBefore = Dur::count();
+        $mockData = [
+            'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
+            'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+        ];
+
+        $responseIns = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $mockData,
+            $this->header
+        );
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $this->assertEquals(
+            $responseIns['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+        $dueIdInsert = $responseIns['data'];
+
+        // Delete
+        $responseDelete = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $dueIdInsert,
+            [],
+            $this->header
+        );
+        $responseDelete->assertStatus(200);
+
+        // Unarchive tool
+        $responseUnarchive = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $dueIdInsert . '?unarchive',
+            [],
+            $this->header
+        );
+        $responseUnarchive->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseUnarchive->assertStatus(200);
+
+        // Verify that the unarchived dur has deleted_at == null
+        $durData = $responseUnarchive['data'];
+        $this->assertNull($durData['deleted_at']);
+
+        // Delete again
+        $responseDeleteAgain = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $dueIdInsert,
+            [],
+            $this->header
+        );
+        $responseDeleteAgain->assertStatus(200);
+    }
+
+
     public function test_download_dur_table_with_success(): void
     {
         // create team

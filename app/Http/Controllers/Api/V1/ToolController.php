@@ -368,7 +368,9 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($tool->id, $publications, $array['user_id'], $appId);
 
-            $this->indexElasticTools((int) $tool->id);
+            if($request['enabled'] === 1){
+                $this->indexElasticTools((int) $tool->id);
+            }
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -495,7 +497,7 @@ class ToolController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            Tool::withTrashed()->where('id', $id)->update($array);
+            Tool::where('id', $id)->first()->update($array);
 
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
@@ -524,7 +526,9 @@ class ToolController extends Controller
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($id, $publications, $array['user_id'], $appId);
 
-            $this->indexElasticTools((int) $id);
+            if($request['enabled'] === 1){
+                $this->indexElasticTools((int) $id);
+            }
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -550,6 +554,15 @@ class ToolController extends Controller
      *    summary="ToolController@edit",
      *    description="Edit tool by id",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="unarchive",
+     *       in="query",
+     *       description="Unarchive a tool",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="instruction to unarchive tool",
+     *       ),
+     *    ),
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
@@ -620,85 +633,117 @@ class ToolController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $userId = null;
-            $appId = null;
-            if ($request->has('userId')) {
-                $userId = (int) $input['userId'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
-            } elseif (array_key_exists('app_user', $input)) {
-                $appId = (int) $input['app']['id'];
+            if ($request->has('unarchive')) {
+                $tool = Tool::withTrashed()->where('id', $id)->first();
+            
+                // Restore the tool and related models
+                Tool::withTrashed()->where('id', $id)->restore();
+                ToolHasTag::withTrashed()->where('tool_id', $id)->restore();
+                DatasetVersionHasTool::withTrashed()->where('tool_id', $id)->restore();
+                ToolHasProgrammingLanguage::withTrashed()->where('tool_id', $id)->restore();
+                ToolHasProgrammingPackage::withTrashed()->where('tool_id', $id)->restore();
+                ToolHasTypeCategory::withTrashed()->where('tool_id', $id)->restore();
+                DurHasTool::withTrashed()->where('tool_id', $id)->restore();
+                PublicationHasTool::withTrashed()->where('tool_id', $id)->restore();
+
+                Auditor::log([
+                    'user_id' => (int) $jwtUser['id'],
+                    'action_type' => 'UPDATE',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Tool " . $id . " unarchived",
+                ]);
+    
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $this->getToolById($id),
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
-
-            $arrayKeys = [
-                'mongo_object_id',
-                'name',
-                'url',
-                'description',
-                'license',
-                'tech_stack',
-                'category_id',
-                'user_id',
-                'enabled',
-                'team_id',
-                'mongo_id',
-                'associated_authors', 
-                'contact_address',
-            ];
-
-            $array = $this->checkEditArray($input, $arrayKeys);
-
-            Tool::withTrashed()->where('id', $id)->update($array);
-
-            if (array_key_exists('tag', $input)) {
-                ToolHasTag::where('tool_id', $id)->delete();
-                $this->insertToolHasTag($input['tag'], (int) $id);
-            };
-
-            if (array_key_exists('dataset', $input)) {
-                DatasetVersionHasTool::where('tool_id', $id)->delete();
-                $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
-                if (!empty($datasetVersionIDs)) {
-                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $id);
+            else{
+                
+                $userId = null;
+                $appId = null;
+                if ($request->has('userId')) {
+                    $userId = (int) $input['userId'];
+                } elseif (array_key_exists('jwt_user', $input)) {
+                    $userId = (int) $input['jwt_user']['id'];
+                } elseif (array_key_exists('app_user', $input)) {
+                    $appId = (int) $input['app']['id'];
                 }
-            }
 
-            if (array_key_exists('programming_language', $input)) {
-                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
-                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
-            }
-            if (array_key_exists('programming_package', $input)) {
-                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
-                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
-            }
-            if (array_key_exists('type_category', $input)) {
-                ToolHasTypeCategory::where('tool_id', $id)->delete();
-                $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
-            }
+                $arrayKeys = [
+                    'mongo_object_id',
+                    'name',
+                    'url',
+                    'description',
+                    'license',
+                    'tech_stack',
+                    'category_id',
+                    'user_id',
+                    'enabled',
+                    'team_id',
+                    'mongo_id',
+                    'associated_authors', 
+                    'contact_address',
+                ];
 
-            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
-            if (array_key_exists('publications', $input)) {
-                $publications = $input['publications'];
-                $this->checkPublications($id, $publications, $userIdFinal, $appId);
+                $array = $this->checkEditArray($input, $arrayKeys);
+
+                Tool::withTrashed()->where('id', $id)->update($array);
+
+                if (array_key_exists('tag', $input)) {
+                    ToolHasTag::where('tool_id', $id)->delete();
+                    $this->insertToolHasTag($input['tag'], (int) $id);
+                };
+
+                if (array_key_exists('dataset', $input)) {
+                    DatasetVersionHasTool::where('tool_id', $id)->delete();
+                    $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
+                    if (!empty($datasetVersionIDs)) {
+                        $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $id);
+                    }
+                }
+
+                if (array_key_exists('programming_language', $input)) {
+                    ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+                    $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+                }
+                if (array_key_exists('programming_package', $input)) {
+                    ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+                    $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
+                }
+                if (array_key_exists('type_category', $input)) {
+                    ToolHasTypeCategory::where('tool_id', $id)->delete();
+                    $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
+                }
+
+                $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+                if (array_key_exists('publications', $input)) {
+                    $publications = $input['publications'];
+                    $this->checkPublications($id, $publications, $userIdFinal, $appId);
+                }
+
+                if ($request['enabled'] === 1) {
+                    $this->indexElasticTools($id);
+                }
+
+                Auditor::log([
+                    'user_id' => (int) $jwtUser['id'],
+                    'action_type' => 'UPDATE',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Tool " . $id . " updated",
+                ]);
+
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                    'data' => $this->getToolById($id),
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
-
-            $this->indexElasticTools((int) $id);
-
-            Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
-                'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Tool " . $id . " updated",
-            ]);
-
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $this->getToolById($id),
-            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
+
+
 
     /**
      * @OA\Delete(
