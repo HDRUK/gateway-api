@@ -159,7 +159,7 @@ class ToolController extends Controller
             }
 
             // Perform query for the matching tools with filters, sorting, and pagination
-            $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications', 'durs', 'collections'])
+            $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications', 'durs', 'collections', 'datasets'])
             ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
             })
@@ -353,10 +353,10 @@ class ToolController extends Controller
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
             if (array_key_exists('dataset', $input)) {
-                $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
-                if (!empty($datasetVersionIDs)) {
-                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $tool->id);
-                }
+                // $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
+                // if (!empty($datasetVersionIDs)) {
+                    $this->insertDatasetVersionHasTool($input['dataset'], (int) $tool->id);
+                // }
             }
             if (array_key_exists('programming_language', $input)) {
                 $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
@@ -516,10 +516,11 @@ class ToolController extends Controller
 
             DatasetVersionHasTool::where('tool_id', $id)->delete();
             if (array_key_exists('dataset', $input)) {
-                $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
-                if (!empty($datasetVersionIDs)) {
-                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $id);
-                }
+                // $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
+                // var_dump('datasetVersionIDs', $datasetVersionIDs); // 8,9, 10
+                // if (!empty($datasetVersionIDs)) {
+                    $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
+                // }
             }
 
             if (array_key_exists('programming_language', $input)) {
@@ -869,6 +870,7 @@ class ToolController extends Controller
             'publications',
             'durs',
             'collections',
+            'datasets',
         ])->where([
             'id' => $toolId,
         ])->first();

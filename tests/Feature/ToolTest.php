@@ -16,6 +16,7 @@ use App\Models\PublicationHasTool;
 use App\Models\Collection;
 use App\Models\CollectionHasTool;
 use App\Models\ToolHasTypeCategory;
+use App\Models\Dataset;
 use App\Models\DatasetVersionHasTool;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
@@ -130,6 +131,7 @@ class ToolTest extends TestCase
                     'publications',
                     'durs',
                     'collections',
+                    'datasets',
                 ]
             ],
             'current_page',
@@ -182,6 +184,7 @@ class ToolTest extends TestCase
                 'publications',
                 'durs',
                 'collections',
+                'datasets',
             ]
         ]);
         $response->assertStatus(200);
@@ -199,7 +202,6 @@ class ToolTest extends TestCase
 
         $initialToolCount = Tool::withTrashed()->count();
         $initialTagCount = ToolHasTag::count();
-        $initialDatasetVersionCount = DatasetVersionHasTool::count();
 
         $mockData = [
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
@@ -229,18 +231,20 @@ class ToolTest extends TestCase
         );
 
         $response->assertStatus(201);
+        $toolId = $response['data'];
 
         $finalToolCount = Tool::withTrashed()->count();
         $finalTagCount = ToolHasTag::count();
-        $finalDatasetVersionCount = DatasetVersionHasTool::count();
 
         $newToolCount = $finalToolCount - $initialToolCount;
         $newTagCount = $finalTagCount - $initialTagCount;
-        $newDatasetVersionCount = $finalDatasetVersionCount - $initialDatasetVersionCount;
 
         $this->assertTrue((bool)$newToolCount, 'New tool was not created');
         $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
-        $this->assertTrue($newDatasetVersionCount >= 2, 'Number of new dataset versions is not as expected');
+        $count1 = Dataset::where('id', 1)->first()->versions()->count();
+        $count2 = Dataset::where('id', 2)->first()->versions()->count();
+        $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolId)->count();
+        $this->assertEquals($finalDatasetVersions, $count1 + $count2);
     }
 
 
@@ -414,7 +418,7 @@ class ToolTest extends TestCase
                 'team_id' => $teamId1,
                 'enabled' => 1,
                 'tag' => [1, 2],
-                'dataset' => [1, 2],
+                'dataset' => [2],
                 'programming_language' => [1, 2],
                 'programming_package' => [1, 2],
                 'type_category' => [1, 2],
@@ -442,7 +446,7 @@ class ToolTest extends TestCase
                 'team_id' => $teamId2,
                 'enabled' => 1,
                 'tag' => [1, 2],
-                'dataset' => [1, 2],
+                'dataset' => [1],
                 'programming_language' => [1, 2],
                 'programming_package' => [1, 2],
                 'type_category' => [1, 2],
@@ -646,6 +650,7 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
+            "dataset" => [4, 5],
             "programming_language" => array(1),
             "programming_package" => array(1),
             "type_category" => array(1),
@@ -705,6 +710,11 @@ class ToolTest extends TestCase
         
         $collectionHasTool = CollectionHasTool::where('tool_id', $toolIdInsert)->get();
         $this->assertEquals(count($collectionHasTool), count($generatedCollections));
+
+        $count1 = Dataset::where('id', 4)->first()->versions()->count();
+        $count2 = Dataset::where('id', 5)->first()->versions()->count();
+        $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolIdInsert)->count();
+        $this->assertEquals($finalDatasetVersions, $count1 + $count2);
     }
 
     /**
