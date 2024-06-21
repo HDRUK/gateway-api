@@ -23,6 +23,7 @@ use App\Models\DatasetVersionHasTool;
 use App\Models\DataProviderCollHasTeam;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
+use App\Models\CollectionHasTool;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Http\JsonResponse;
