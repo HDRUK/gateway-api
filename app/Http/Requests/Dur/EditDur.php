@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Dur;
 
 use App\Http\Requests\BaseFormRequest;
-use App\Models\Dur;
 
 class EditDur extends BaseFormRequest
 {
