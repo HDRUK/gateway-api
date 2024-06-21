@@ -127,6 +127,17 @@ class IntegrationDurController extends Controller
     {
         try {
             $input = $request->all();
+
+            $sort = [];
+            $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
+            foreach ($sortArray as $item) {
+                $tmp = explode(":", $item);
+                $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
+            }
+            if (!array_key_exists('create_at', $sort)) {
+                $sort['updated_at'] = 'desc';
+            }
+
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $perPage = request('perPage', Config::get('constants.per_page'));
@@ -151,7 +162,13 @@ class IntegrationDurController extends Controller
                     'user',
                     'team',
                     'application',
-                ])->paginate((int) $perPage, ['*'], 'page')
+                ]);
+
+            foreach ($sort as $key => $value) {
+                $durs->orderBy('dur.' . $key, strtoupper($value));
+            }
+            
+            $durs = $durs->paginate((int) $perPage, ['*'], 'page')
                 ->through(function ($dur) {
                     if ($dur->datasets) {
                         $dur->datasets = $dur->datasets->map(function ($dataset) {

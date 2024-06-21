@@ -170,9 +170,8 @@ class DurController extends Controller
                 $durs->orderBy('dur.' . $key, strtoupper($value));
             }
 
-            $durs = $durs->paginate((int) $perPage, ['*'], 'page');
-
-            $durs->through(function ($dur) {
+            $durs = $durs->paginate((int) $perPage, ['*'], 'page')
+                ->through(function ($dur) {
                 if ($dur->datasets) {
                     $dur->datasets = $dur->datasets->map(function ($dataset) {
                         $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
