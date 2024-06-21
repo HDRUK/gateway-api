@@ -118,6 +118,7 @@ class CohortRequestController extends Controller
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="logs", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="accept_declaration", type="boolean", example="0"),  
      *                ),
      *             ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -500,6 +501,7 @@ class CohortRequestController extends Controller
                     'request_status' => $requestStatus,
                     'cohort_status' => true,
                     'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days')),
+                    'accept_declaration' => $requestStatus === 'APPROVED',
                 ]);
             }
 
@@ -610,8 +612,11 @@ class CohortRequestController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-            CohortRequest::where('id', $id)->delete();
+            
+            $cohortRequest = CohortRequest::withTrashed()->findOrFail($id);
+            $cohortRequest->update(['accept_declaration' => false]);
+            $cohortRequest->delete();
+            
             CohortRequestHasPermission::where('id', $id)->delete();
 
             $this->updateOrCreateContact($id);
@@ -740,7 +745,7 @@ class CohortRequestController extends Controller
                     // Open output stream
                     $handle = fopen('php://output', 'w');
                     
-                    $headerRow = ['User ID', 'Name', 'Email address', 'Organisation', 'Status', 'Date Requested', 'Date Actioned'];
+                    $headerRow = ['User ID', 'Name', 'Email address', 'Organisation', 'Status', 'Date Requested', 'Date Actioned','Live'];
 
                     // Add CSV headers
                     fputcsv($handle, $headerRow);
@@ -755,6 +760,7 @@ class CohortRequestController extends Controller
                             (string) $rowDetails['request_status'],
                             (string) $rowDetails['created_at'],
                             (string) $rowDetails['updated_at'],
+                            (string) $rowDetails['accept_declaration'],
                         ];
                         fputcsv($handle, $row);
                     }

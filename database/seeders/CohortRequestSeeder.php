@@ -12,7 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class CohortRequestSeed extends Seeder
+class CohortRequestSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -35,6 +35,7 @@ class CohortRequestSeed extends Seeder
                     'request_status' => $status,
                     'cohort_status' => ($status === 'PENDING' ? false : true),
                     'request_expire_at' => null,
+                    'accept_declaration' => ($status === 'APPROVED' ? true : false),
                 ]);
 
                 if ($status === 'APPROVED') {
