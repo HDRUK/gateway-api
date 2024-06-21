@@ -872,7 +872,7 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
-            "enabled" => 1,
+            "enabled" => 0,
             "publications" => $this->generatePublications(),
         );
 
