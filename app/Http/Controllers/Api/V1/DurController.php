@@ -954,7 +954,7 @@ class DurController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             if ($request->has('unarchive')) {
-                $dur = Dur::withTrashed()->findOrFail($id);
+                $dur = Dur::withTrashed()->first();
             
                 // Restore the Dur and related models
                 Dur::withTrashed()->where('id', $id)->restore();
@@ -1037,11 +1037,7 @@ class DurController extends Controller
                     $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
                 }
     
-                $dur = Dur::withTrashed()->where('id', $id)->first();
-                if ($dur->deleted_at !== null) {
-                    $dur->restore();
-                }
-                $dur->update($array);
+                Dur::where('id', $id)->first()->update($array);
     
                 // link/unlink dur with datasets
                 if (array_key_exists('datasets', $input)) {
