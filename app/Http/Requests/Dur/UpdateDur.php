@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Dur;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Dur; 
 
 class UpdateDur extends FormRequest
 {
@@ -17,7 +18,13 @@ class UpdateDur extends FormRequest
             'id' => [
                 'required',
                 'int',
-                'exists:dur,id',
+                function ($attribute, $value, $fail) {
+                    $exists = Dur::withTrashed()->where('id', $value)->count();
+    
+                    if (!$exists) {
+                        $fail('The ID does not exist in the database');
+                    }
+                }
             ],
             'non_gateway_datasets' => [
                 'array',
