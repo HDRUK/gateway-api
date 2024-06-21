@@ -17,6 +17,8 @@ return new class extends Migration
 
             $table->foreign('dur_id')->references('id')->on('dur');
             $table->foreign('tool_id')->references('id')->on('tools');
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 

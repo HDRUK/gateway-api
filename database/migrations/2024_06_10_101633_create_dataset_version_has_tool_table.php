@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('tool_id');
             $table->unsignedBigInteger('dataset_version_id');
             $table->timestamps();
-
+            $table->SoftDeletes();
             $table->foreign('tool_id')->references('id')->on('tools')->onDelete('cascade');
             $table->foreign('dataset_version_id')->references('id')->on('dataset_versions')->onDelete('cascade');
         });

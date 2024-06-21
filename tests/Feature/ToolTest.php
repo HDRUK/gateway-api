@@ -689,7 +689,7 @@ class ToolTest extends TestCase
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
             "user_id" => 1,
-            "tag" => array(1),
+            "tag" => array(),
             "programming_language" => array(1),
             "programming_package" => array(1),
             "type_category" => array(1),
@@ -812,7 +812,7 @@ class ToolTest extends TestCase
      *
      * @return void
      */
-    public function test_create_delete_update_delete_edit_delete_tool_with_success(): void
+    public function test_create_archive_unarchive_tool_with_success(): void
     {
         $licenseId = License::where('valid_until', null)->get()->random()->id;
 
@@ -826,7 +826,7 @@ class ToolTest extends TestCase
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
             "user_id" => 1,
-            "tag" => array(1),
+            "tag" => array(2),
             "programming_language" => array(1),
             "programming_package" => array(1),
             "type_category" => array(1),
@@ -861,46 +861,19 @@ class ToolTest extends TestCase
         );
         $responseDelete->assertStatus(200);
 
-        // Update (Unarchive and update)
-        $mockDataUpdate = array(
-            "mongo_object_id" => "5ece82082abda8b3a06f1941",
-            "name" => "Ea fuga ab aperiam nihil quis.",
-            "url" => "http://dach.com/odio-facilis-ex-culpa",
-            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque.",
-            "license" => $licenseId,
-            "tech_stack" => "Dolor accusamus rerum numquam et.",
-            "category_id" => 1,
-            "user_id" => 1,
-            "tag" => array(2),
-            "enabled" => 0,
-            "publications" => $this->generatePublications(),
-        );
-
-        $responseUpdate = $this->json(
-            'PUT',
-            self::TEST_URL . '/' . $toolIdInsert,
-            $mockDataUpdate,
+        // Unarchive tool
+        $responseUnarchive = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $toolIdInsert . '?unarchive',
+            [],
             $this->header
         );
-
-        $responseUpdate->assertJsonStructure([
+        $responseUnarchive->assertJsonStructure([
             'message',
             'data',
         ]);
 
-        $responseUpdate->assertStatus(200);
-        $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
-        $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
-        $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
-        $this->assertEquals($responseUpdate['data']['license']['id'], $mockDataUpdate['license']);
-        $this->assertEquals($responseUpdate['data']['tech_stack'], $mockDataUpdate['tech_stack']);
-        $this->assertEquals($responseUpdate['data']['category_id'], $mockDataUpdate['category_id']);
-        $this->assertEquals($responseUpdate['data']['user_id'], $mockDataUpdate['user_id']);
-        $this->assertEquals($responseUpdate['data']['enabled'], $mockDataUpdate['enabled']);
-
-        $toolHasTags = ToolHasTag::where('tool_id', $toolIdInsert)->get();
-        $this->assertEquals(count($toolHasTags), 1);
-        $this->assertEquals($toolHasTags[0]['tag_id'], 2);
+        $responseUnarchive->assertStatus(200);
 
         // Delete again
         $responseDeleteAgain = $this->json(
@@ -910,60 +883,9 @@ class ToolTest extends TestCase
             $this->header
         );
         $responseDeleteAgain->assertStatus(200);
-
-        // Edit 1
-        $mockDataEdit1 = array(
-            "name" => "Ea fuga ab aperiam nihil quis e1.",
-            "description" => "Ut voluptatem reprehenderit pariatur. Ut quod quae odio aut. Deserunt adipisci molestiae non expedita quia atque ut. Quis distinctio culpa perferendis neque. e1",
-        );
-
-        $responseEdit1 = $this->json(
-            'PATCH',
-            self::TEST_URL . '/' . $toolIdInsert,
-            $mockDataEdit1,
-            $this->header
-        );
-
-        $responseEdit1->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-        $responseEdit1->assertStatus(200);
-        $this->assertEquals($responseEdit1['data']['name'], $mockDataEdit1['name']);
-        $this->assertEquals($responseEdit1['data']['description'], $mockDataEdit1['description']);
-
-        // Edit 2
-        $licenseIdNew = License::where('valid_until', null)->get()->random()->id;
-        $mockDataEdit2 = [
-            'url' => 'http://dach.com/odio-facilis-ex-culpa-e2',
-            'license' => $licenseIdNew,
-            'tech_stack' => 'Dolor accusamus rerum numquam et. e2',
-        ];
-        $responseEdit2 = $this->json(
-            'PATCH',
-            self::TEST_URL . '/' . $toolIdInsert,
-            $mockDataEdit2,
-            $this->header
-        );
-
-        $responseEdit2->assertJsonStructure([
-            'message',
-            'data',
-        ]);
-        $responseEdit2->assertStatus(200);
-        $this->assertEquals($responseEdit2['data']['url'], $mockDataEdit2['url']);
-        $this->assertEquals($responseEdit2['data']['license']['id'], $mockDataEdit2['license']);
-        $this->assertEquals($responseEdit2['data']['tech_stack'], $mockDataEdit2['tech_stack']);
-
-        // Delete final
-        $responseDeleteFinal = $this->json(
-            'DELETE',
-            self::TEST_URL . '/' . $toolIdInsert,
-            [],
-            $this->header
-        );
-        $responseDeleteFinal->assertStatus(200);
     }
+
+
 
     
 

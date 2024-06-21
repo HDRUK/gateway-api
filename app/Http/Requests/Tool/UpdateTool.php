@@ -20,13 +20,7 @@ class UpdateTool extends BaseFormRequest
             'id' => [
                 'int',
                 'required',
-                function ($attribute, $value, $fail) {
-                    $exists = Tool::withTrashed()->where('id', $value)->count();
-    
-                    if (!$exists) {
-                        $fail('The ID does not exist in the database');
-                    }
-                }
+                'exists:users,id',
             ],
             'mongo_object_id' => [
                 'string',

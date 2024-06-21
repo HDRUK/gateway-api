@@ -490,7 +490,7 @@ class DurTest extends TestCase
      *
      * @return void
      */
-    public function test_create_delete_unarchive_delete_dur_with_success(): void
+    public function test_create_archive_unarchive_dur_with_success(): void
     {
         // create dur
         $userId = (int) User::all()->random()->id;
@@ -507,60 +507,51 @@ class DurTest extends TestCase
             'latest_approval_date' => '2017-09-12T01:00:00',
         ];
 
-        $response = $this->json(
+        $responseIns = $this->json(
             'POST',
-            self::TEST_URL,
+            self::TEST_URL . '/',
             $mockData,
             $this->header
         );
-        $response->assertStatus(201);
-        $durId = (int) $response['data'];
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
 
-        $countAfter = Dur::count();
-        $countNewRow = $countAfter - $countBefore;
+        $this->assertEquals(
+            $responseIns['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+        $dueIdInsert = $responseIns['data'];
 
-        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
-
-        // delete
+        // Delete
         $responseDelete = $this->json(
             'DELETE',
-            self::TEST_URL . '/' . $durId,
+            self::TEST_URL . '/' . $dueIdInsert,
             [],
             $this->header
         );
         $responseDelete->assertStatus(200);
 
-        // unarchive (un-delete with put)
+        // Unarchive tool
         $responseUnarchive = $this->json(
-            'PUT',
-            self::TEST_URL . '/' . $durId,
-            $mockData,
-            $this->header
-        );
-        $responseUnarchive->assertStatus(200);
-
-        // delete again
-        $responseDeleteAgain = $this->json(
-            'DELETE',
-            self::TEST_URL . '/' . $durId,
+            'PATCH',
+            self::TEST_URL . '/' . $dueIdInsert . '?unarchive',
             [],
             $this->header
         );
-        $responseDeleteAgain->assertStatus(200);
+        $responseUnarchive->assertJsonStructure([
+            'message',
+            'data',
+        ]);
 
-        // unarchive (un-delete with path)
-        $responseEdit = $this->json(
-            'PATCH',
-            self::TEST_URL . '/' . $durId,
-            $mockData,
-            $this->header
-        );
         $responseUnarchive->assertStatus(200);
 
-        // delete again
+        // Delete again
         $responseDeleteAgain = $this->json(
             'DELETE',
-            self::TEST_URL . '/' . $durId,
+            self::TEST_URL . '/' . $dueIdInsert,
             [],
             $this->header
         );

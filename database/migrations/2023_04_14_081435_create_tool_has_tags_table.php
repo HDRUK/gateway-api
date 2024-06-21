@@ -17,7 +17,10 @@ return new class extends Migration
             $table->foreign('tool_id')->references('id')->on('tools');
             $table->foreign('tag_id')->references('id')->on('tags');
             $table->unique(['tool_id', 'tag_id']);
+            $table->timestamps();
+            $table->softDeletes();
         });
+        
     }
 
     /**
