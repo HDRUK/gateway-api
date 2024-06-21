@@ -4,12 +4,14 @@ import express from 'express';
 import Provider from 'oidc-provider';
 import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
-import logger from 'morgan';
+import morgan from 'morgan';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import { connectToDatabase } from './db';
 import { initialiseAuthentication } from '../resources/auth';
+
+import { errorHandler } from '../middlewares';
 
 require('dotenv').config();
 
@@ -57,7 +59,7 @@ connectToDatabase();
 app.use(bodyParser.json({ limit: '10mb', extended: true }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: false }));
 
-app.use(logger('dev'));
+app.use(morgan('tiny'));
 app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -164,7 +166,10 @@ app.use('/api/v1/auth/register', require('../resources/user/user.register.route'
 app.use('/api/v1/users', require('../resources/user/user.route'));
 app.use('/api/v1/topics', require('../resources/topic/topic.route'));
 app.use('/api/v1/publishers', require('../resources/publisher/publisher.route'));
+
 app.use('/api/v1/teams', require('../resources/team/team.route'));
+app.use('/api/v3/teams', require('../resources/team/v3/team.route'));
+
 app.use('/api/v1/workflows', require('../resources/workflow/workflow.route'));
 
 app.use('/api/v1/messages', require('../resources/message/message.route'));
@@ -235,6 +240,8 @@ app.use('/api/v1/search-preferences', require('../resources/searchpreferences/se
 app.use('/api/v2/questionbank', require('../resources/questionbank/questionbank.route'));
 app.use('/api/v2/data-use-registers', require('../resources/dataUseRegister/dataUseRegister.route'));
 app.use('/api/v1/locations', require('../resources/spatialfilter/SpatialRouter'));
+
+app.use(errorHandler);
 
 app.use('/api/v1/metadata', require('../resources/metadata/metadata.route'));
 

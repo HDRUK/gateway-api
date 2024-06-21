@@ -41,7 +41,6 @@ const getTeamById = async (req, res) => {
 // GET api/v1/teams/:id/members
 const getTeamMembers = async (req, res) => {
 	try {
-		// 1. Get the team from the database
 		const team = await TeamModel.findOne({ _id: req.params.id }).populate({
 			path: 'users',
 			populate: {
@@ -82,8 +81,9 @@ const formatTeamUsers = team => {
 				id,
 				_id,
 				email,
-				additionalInfo: { organisation, bio, showOrganisation, showBio },
+				additionalInfo,
 			} = user;
+			let { organisation = '', bio = '', showOrganisation = true, showBio = true } = { ...additionalInfo };
 			let userMember = team.members.find(el => el.memberid.toString() === user._id.toString());
 			let { roles = [] } = userMember;
 			return {
@@ -746,7 +746,7 @@ async function getManagerInfo(managerId, teamManagerIds, recipients) {
 	).exec();
 
 	teamManagerIds.push({
-		roles: ['manager'],
+		roles: [constants.roleMemberTeam.CUST_TEAM_ADMIN],
 		memberid: ObjectId(managerInfo._id.toString()),
 	});
 
