@@ -735,8 +735,7 @@ class DurController extends Controller
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
 
-            $dur = Dur::where('id', $id)->first();
-            $dur->update($array);
+            Dur::where('id', $id)->first()->update($array);
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
