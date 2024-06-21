@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('dur_has_tools', function (Blueprint $table) {
-            $table->bigInteger('dur_id')->unsigned();
-            $table->bigInteger('tool_id')->unsigned();
-
-            $table->foreign('dur_id')->references('id')->on('dur');
-            $table->foreign('tool_id')->references('id')->on('tools');
+        Schema::table('tool_has_tags', function (Blueprint $table) {
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -25,6 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('dur_has_tools');
+        Schema::table('tool_has_tags', function (Blueprint $table) {
+            $table->dropTimestamps();
+            $table->dropSoftDeletes();
+        });
     }
 };

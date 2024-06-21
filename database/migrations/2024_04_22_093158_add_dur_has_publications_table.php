@@ -22,7 +22,6 @@ return new class extends Migration
             $table->foreign('publication_id')->references('id')->on('publications');
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('application_id')->references('id')->on('applications');
-            $table->softDeletes();
             $table->timestamps();
         });
     }
