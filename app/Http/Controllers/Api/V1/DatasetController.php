@@ -393,7 +393,7 @@ class DatasetController extends Controller
                 );
 
                 if ($translated['wasTranslated']) {
-                    $version->metadata = json_encode(['metadata' => $translated['metadata']]);
+                    $version['metadata'] = json_encode(['metadata' => $translated['metadata']]);
                     $dataset['versions'][] = $version;
                 }
                 else {
