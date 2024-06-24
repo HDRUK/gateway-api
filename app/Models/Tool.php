@@ -8,6 +8,7 @@ use App\Models\License;
 use App\Models\Category;
 use App\Models\Publication;
 use App\Models\Collection;
+use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
