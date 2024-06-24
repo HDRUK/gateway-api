@@ -657,8 +657,6 @@ class ToolController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             if ($request->has('unarchive')) {
-                $tool = Tool::withTrashed()->where('id', $id)->first();
-            
                 // Restore the tool and related models
                 Tool::withTrashed()->where('id', $id)->restore();
                 ToolHasTag::withTrashed()->where('tool_id', $id)->restore();
@@ -666,8 +664,9 @@ class ToolController extends Controller
                 ToolHasProgrammingLanguage::withTrashed()->where('tool_id', $id)->restore();
                 ToolHasProgrammingPackage::withTrashed()->where('tool_id', $id)->restore();
                 ToolHasTypeCategory::withTrashed()->where('tool_id', $id)->restore();
-                DurHasTool::withTrashed()->where('tool_id', $id)->restore();
                 PublicationHasTool::withTrashed()->where('tool_id', $id)->restore();
+                DurHasTool::withTrashed()->where('tool_id', $id)->restore();
+                CollectionHasTool::withTrashed()->where('tool_id', $id)->restore();
 
                 if ($request['enabled']) {
                     $this->indexElasticTools($id);
