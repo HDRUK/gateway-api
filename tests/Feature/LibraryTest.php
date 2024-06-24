@@ -4,17 +4,17 @@ namespace Tests\Feature;
 
 use Config;
 use Tests\TestCase;
-use App\Models\ShortList;
+use App\Models\Library;
 use Tests\Traits\Authorization;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\FilterSeeder;
 use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\ShortListSeeder;
-use App\Http\Enums\SortOrderShortList;
+use Database\Seeders\LibrarySeeder;
+use App\Http\Enums\SortOrderLibrary;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class ShortListTest extends TestCase
+class LibraryTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
@@ -29,7 +29,7 @@ class ShortListTest extends TestCase
             MinimalUserSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
-            ShortListSeeder::class,
+            LibrarySeeder::class,
         ]);
 
         $response = $this->postJson('api/v1/auth', [
@@ -43,13 +43,13 @@ class ShortListTest extends TestCase
     }
 
     /**
-     * List all short_lists.
+     * List all libraries.
      *
      * @return void
      */
-    public function test_the_application_can_list_short_lists()
+    public function test_the_application_can_list_libraries()
     {
-        $response = $this->get('api/v1/short_lists', [
+        $response = $this->get('api/v1/libraries', [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
 
@@ -86,11 +86,11 @@ class ShortListTest extends TestCase
      * 
      * @return void
      */
-    public function test_the_application_can_list_a_single_short_list()
+    public function test_the_application_can_list_a_single_library()
     {
         $response = $this->json(
             'POST',
-            'api/v1/short_lists',
+            'api/v1/libraries',
             [
                 'dataset_id' => 1,
             ],
@@ -106,7 +106,7 @@ class ShortListTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/short_lists/' . $content['data'], [
+        $response = $this->get('api/v1/libraries/' . $content['data'], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
         
@@ -128,11 +128,11 @@ class ShortListTest extends TestCase
      * 
      * @return void
      */
-    public function test_the_application_can_create_a_short_list()
+    public function test_the_application_can_create_a_library()
     {
         $response = $this->json(
             'POST',
-            'api/v1/short_lists',
+            'api/v1/libraries',
             [
                 'dataset_id' => 1,
             ],
@@ -155,7 +155,7 @@ class ShortListTest extends TestCase
         // test filter has been linked correctly
         $newSearchId = $content['data'];
 
-        $responseGet = $this->get('api/v1/short_lists/' . $newSearchId, [
+        $responseGet = $this->get('api/v1/libraries/' . $newSearchId, [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
     }
@@ -165,12 +165,12 @@ class ShortListTest extends TestCase
      * 
      * @return void
      */
-    public function test_the_application_can_update_a_short_list()
+    public function test_the_application_can_update_a_library()
     {
         // create
         $response = $this->json(
             'POST',
-            'api/v1/short_lists',
+            'api/v1/libraries',
             [
                 'dataset_id' => 1,
             ],
@@ -193,7 +193,7 @@ class ShortListTest extends TestCase
         // update
         $response = $this->json(
             'PUT',
-            'api/v1/short_lists/' . $content['data'],
+            'api/v1/libraries/' . $content['data'],
             [
                 'dataset_id' => 2,
             ],
@@ -214,12 +214,12 @@ class ShortListTest extends TestCase
      * 
      * @return void
      */
-    public function test_the_application_can_edit_a_short_list()
+    public function test_the_application_can_edit_a_library()
     {
         // create
         $responseCreate = $this->json(
             'POST',
-            'api/v1/short_lists',
+            'api/v1/libraries',
             [
                 'dataset_id' => 1,
             ],
@@ -242,7 +242,7 @@ class ShortListTest extends TestCase
         // edit (PUT)
         $responseUpdate = $this->json(
             'PUT',
-            'api/v1/short_lists/' . $id,
+            'api/v1/libraries/' . $id,
             [
                 'dataset_id' => 2,
             ],
@@ -263,7 +263,7 @@ class ShortListTest extends TestCase
         // edit PATCH
         $responseEdit1 = $this->json(
             'PATCH',
-            'api/v1/short_lists/' . $id,
+            'api/v1/libraries/' . $id,
             [
                 'dataset_id' => 1,
             ],
@@ -287,12 +287,12 @@ class ShortListTest extends TestCase
      * 
      * @return void
      */
-    public function test_it_can_delete_a_short_list()
+    public function test_it_can_delete_a_library()
     {
         // create
         $response = $this->json(
             'POST',
-            'api/v1/short_lists',
+            'api/v1/libraries',
             [
                 'dataset_id' => 2,
             ],
@@ -315,7 +315,7 @@ class ShortListTest extends TestCase
         // delete      
         $response = $this->json(
             'DELETE',
-            'api/v1/short_lists/' . $content['data'],
+            'api/v1/libraries/' . $content['data'],
             [],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -339,7 +339,7 @@ class ShortListTest extends TestCase
      * 
      * @return void
      */
-    public function test_user_can_create_update_delete_a_short_list()
+    public function test_user_can_create_update_delete_a_library()
     {
         $this->authorisationUser(false);
         $nonAdminJwt = $this->getAuthorisationJwt(false);
@@ -350,7 +350,7 @@ class ShortListTest extends TestCase
 
         $response = $this->json(
             'POST',
-            'api/v1/short_lists',
+            'api/v1/libraries',
             [
                 'dataset_id' => 1,
             ],
@@ -366,7 +366,7 @@ class ShortListTest extends TestCase
         $newSearchId = $content['data'];
         
         // test admin can view short list
-        $responseGet = $this->get('api/v1/short_lists/' . $newSearchId, [
+        $responseGet = $this->get('api/v1/libraries/' . $newSearchId, [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
         $responseGet->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
@@ -374,7 +374,7 @@ class ShortListTest extends TestCase
         // test admin cannot edit or delete
         $responseUpdate = $this->json(
             'PUT',
-            'api/v1/short_lists/' . $newSearchId,
+            'api/v1/libraries/' . $newSearchId,
             [
                 'dataset_id' => 2,
             ],
@@ -390,7 +390,7 @@ class ShortListTest extends TestCase
 
         $responseDelete = $this->json(
             'DELETE',
-            'api/v1/short_lists/' . $newSearchId,
+            'api/v1/libraries/' . $newSearchId,
             [],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

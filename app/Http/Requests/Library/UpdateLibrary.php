@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\ShortList;
+namespace App\Http\Requests\Library;
 
 use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
 
-class EditShortList extends BaseFormRequest
+class UpdateLibrary extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.

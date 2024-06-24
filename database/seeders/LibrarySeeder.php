@@ -2,17 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\ShortList;
+use App\Models\Library;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class ShortListSeeder extends Seeder
+class LibrarySeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        ShortList::factory(10)->create();
+        Library::factory(10)->create();
     }
 }

@@ -8,16 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
 use Illuminate\Notifications\Notifiable;
 
-class ShortList extends Model
+class Library extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
 
     protected $fillable = [
         'user_id',
         'dataset_id',
+        'created_at',
         'updated_at',
         'deleted_at',
     ];
@@ -27,7 +27,7 @@ class ShortList extends Model
      * 
      * @var string
      */
-    protected $table = 'short_lists';
+    protected $table = 'library';
 
     /**
      * Indicates if this model is timestamped
@@ -36,9 +36,8 @@ class ShortList extends Model
      */
     public $timestamps = true;
 
-
     public function dataset(): BelongsTo
     {
-        return $this->belongsTo(Dataset::class,'dataset_id', 'id');
+        return $this->belongsTo(Dataset::class, 'dataset_id', 'id');
     }
 }

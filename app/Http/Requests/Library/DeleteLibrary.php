@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\ShortList;
+namespace App\Http\Requests\Library;
 
 use App\Http\Requests\BaseFormRequest;
 
-class GetShortList extends BaseFormRequest
+class DeleteLibrary extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
