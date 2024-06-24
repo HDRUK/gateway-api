@@ -1190,6 +1190,10 @@ class DatasetController extends Controller
 
     private function mapCoverage(array $metadata, Dataset $dataset): void 
     {
+        if (!isset($metadata['metadata']['coverage']['spatial'])) {
+            return;
+        }
+
         $coverage = strtolower($metadata['metadata']['coverage']['spatial']);
         $ukCoverages = SpatialCoverage::whereNot('region', 'Rest of the world')->get();
         $worldId = SpatialCoverage::where('region', 'Rest of the world')->first()->id;
