@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\DatasetVersionHasTool;
 use App\Models\DatasetVersionHasDatasetVersion;
+use App\Models\Dur;
 use App\Models\DurHasTool;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
@@ -587,6 +588,7 @@ class SearchTest extends TestCase
         // update dataset with id 1
         $userId = (int) User::all()->random()->id;
         $teamId = (int) Team::all()->random()->id;
+        Dur::where('id', 1)->update(['status' => 'ACTIVE']);
         $metadata = $this->metadataUpdate;
         MMC::shouldReceive("translateDataModelType")
             ->with(json_encode($this->metadataUpdate), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
@@ -689,6 +691,7 @@ class SearchTest extends TestCase
         // Test dataset titles are alphabetical - "updated" will be at the end
         $endTitle = array_key_last($response['data'][0]['datasetTitles']);
         // dd($response['data'][0]['datasetTitles'][$endTitle]); // HDR UK Papers & Preprints
+        // dd($response['data'][0]['datasetTitles'][$endTitle]);
         $this->assertTrue($response['data'][0]['datasetTitles'][$endTitle] === 'Updated HDR UK Papers & Preprints');
 
         // Test search result with id not in db is not returned
