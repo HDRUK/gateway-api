@@ -17,7 +17,7 @@ class GetLibrary extends BaseFormRequest
             'id' => [
                 'int',
                 'required',
-                'exists:short_lists,id',
+                'exists:library,id',
             ],
         ];
     }

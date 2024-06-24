@@ -8,20 +8,19 @@ use App\Models\Library;
 use Tests\Traits\Authorization;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
-use Database\Seeders\FilterSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\LibrarySeeder;
-use App\Http\Enums\SortOrderLibrary;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LibraryTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
-    
-    private $accessToken = '';    
 
-    public function setUp() :void
+    private $accessToken = '';
+    const TEST_URL = '/api/v1/libraries';
+
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -38,8 +37,8 @@ class LibraryTest extends TestCase
         ]);
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
-        $content = $response->decodeResponseJson();  
-        $this->accessToken = $content['access_token'];      
+        $content = $response->decodeResponseJson();
+        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -49,7 +48,7 @@ class LibraryTest extends TestCase
      */
     public function test_the_application_can_list_libraries()
     {
-        $response = $this->get('api/v1/libraries', [
+        $response = $this->json('GET', self::TEST_URL, [], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
 
@@ -75,43 +74,38 @@ class LibraryTest extends TestCase
                 'per_page',
                 'prev_page_url',
                 'to',
-                'total',                
+                'total',
             ]);
-
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
     }
 
     /**
-     * Returns a single short list
-     * 
+     * Returns a single library
+     *
      * @return void
      */
     public function test_the_application_can_list_a_single_library()
     {
-        $response = $this->json(
-            'POST',
-            'api/v1/libraries',
-            [
-                'dataset_id' => 1,
-            ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        $response = $this->json('POST', self::TEST_URL, [
+            'dataset_id' => 2,
+        ], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
+                'data',
             ]);
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->get('api/v1/libraries/' . $content['data'], [
+        $response = $this->json('GET', self::TEST_URL . '/' . $content['data'], [], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
-        
+
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
+                'message',
                 'data' => [
                     'id',
                     'created_at',
@@ -120,26 +114,20 @@ class LibraryTest extends TestCase
                     'dataset',
                 ],
             ]);
-
     }
 
     /**
-     * Creates a new short list
-     * 
+     * Creates a new library
+     *
      * @return void
      */
     public function test_the_application_can_create_a_library()
     {
-        $response = $this->json(
-            'POST',
-            'api/v1/libraries',
-            [
-                'dataset_id' => 1,
-            ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        $response = $this->json('POST', self::TEST_URL, [
+            'dataset_id' => 1,
+        ], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
@@ -148,36 +136,29 @@ class LibraryTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
-            Config::get('statuscodes.STATUS_CREATED.message')
-        );
+        $this->assertEquals($content['message'], Config::get('statuscodes.STATUS_CREATED.message'));
 
         // test filter has been linked correctly
         $newSearchId = $content['data'];
 
-        $responseGet = $this->get('api/v1/libraries/' . $newSearchId, [
+        $responseGet = $this->json('GET', self::TEST_URL . '/' . $newSearchId, [], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
     }
 
     /**
-     * Tests that a short list record can be updated
-     * 
+     * Tests that a library record can be updated
+     *
      * @return void
      */
     public function test_the_application_can_update_a_library()
     {
         // create
-        $response = $this->json(
-            'POST',
-            'api/v1/libraries',
-            [
-                'dataset_id' => 1,
-            ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        $response = $this->json('POST', self::TEST_URL, [
+            'dataset_id' => 1,
+        ], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
@@ -186,21 +167,14 @@ class LibraryTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
-            Config::get('statuscodes.STATUS_CREATED.message')
-        );
+        $this->assertEquals($content['message'], Config::get('statuscodes.STATUS_CREATED.message'));
 
         // update
-        $response = $this->json(
-            'PUT',
-            'api/v1/libraries/' . $content['data'],
-            [
-                'dataset_id' => 2,
-            ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        $response = $this->json('PUT', self::TEST_URL . '/' . $content['data'], [
+            'dataset_id' => 2,
+        ], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -210,29 +184,24 @@ class LibraryTest extends TestCase
     }
 
     /**
-     * Tests that a short list record can be edited
-     * 
+     * Tests that a library record can be edited
+     *
      * @return void
      */
     public function test_the_application_can_edit_a_library()
     {
         // create
-        $responseCreate = $this->json(
-            'POST',
-            'api/v1/libraries',
-            [
-                'dataset_id' => 1,
-            ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        $responseCreate = $this->json('POST', self::TEST_URL, [
+            'dataset_id' => 1,
+        ], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         $contentCreate = $responseCreate->decodeResponseJson();
         $this->assertEquals($contentCreate['message'], Config::get('statuscodes.STATUS_CREATED.message'));
@@ -240,66 +209,51 @@ class LibraryTest extends TestCase
         $id = $contentCreate['data'];
 
         // edit (PUT)
-        $responseUpdate = $this->json(
-            'PUT',
-            'api/v1/libraries/' . $id,
-            [
-                'dataset_id' => 2,
-            ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        $responseUpdate = $this->json('PUT', self::TEST_URL . '/' . $id, [
+            'dataset_id' => 2,
+        ], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         $contentUpdate = $responseUpdate->decodeResponseJson();
         $this->assertEquals($contentUpdate['data']['dataset_id'], 2);
 
-        // edit PATCH
-        $responseEdit1 = $this->json(
-            'PATCH',
-            'api/v1/libraries/' . $id,
-            [
-                'dataset_id' => 1,
-            ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        // edit (PATCH)
+        $responseEdit1 = $this->json('PATCH', self::TEST_URL . '/' . $id, [
+            'dataset_id' => 1,
+        ], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-        ->assertJsonStructure([
-            'message',
-            'data',
-        ]);
+            ->assertJsonStructure([
+                'message',
+                'data',
+            ]);
 
         $contentEdit1 = $responseEdit1->decodeResponseJson();
         $this->assertEquals($contentEdit1['data']['dataset_id'], 1);
     }
 
     /**
-     * Tests it can delete a short list
-     * 
+     * Tests it can delete a library
+     *
      * @return void
      */
     public function test_it_can_delete_a_library()
     {
         // create
-        $response = $this->json(
-            'POST',
-            'api/v1/libraries',
-            [
-                'dataset_id' => 2,
-            ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        $response = $this->json('POST', self::TEST_URL, [
+            'dataset_id' => 2,
+        ], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
@@ -308,35 +262,25 @@ class LibraryTest extends TestCase
             ]);
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
-            Config::get('statuscodes.STATUS_CREATED.message')
-        );
+        $this->assertEquals($content['message'], Config::get('statuscodes.STATUS_CREATED.message'));
 
-        // delete      
-        $response = $this->json(
-            'DELETE',
-            'api/v1/libraries/' . $content['data'],
-            [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        // delete
+        $response = $this->json('DELETE', self::TEST_URL . '/' . $content['data'], [], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
                 'message',
             ]);
-    
 
         $content = $response->decodeResponseJson();
-        $this->assertEquals($content['message'],
-            Config::get('statuscodes.STATUS_OK.message')
-        );
+        $this->assertEquals($content['message'], Config::get('statuscodes.STATUS_OK.message'));
     }
 
     /**
-     * Tests user permissions with a new short list
-     * 
+     * Tests user permissions with a new library
+     *
      * @return void
      */
     public function test_user_can_create_update_delete_a_library()
@@ -348,14 +292,9 @@ class LibraryTest extends TestCase
             'Authorization' => 'Bearer ' . $nonAdminJwt,
         ];
 
-        $response = $this->json(
-            'POST',
-            'api/v1/libraries',
-            [
-                'dataset_id' => 1,
-            ],
-            $headerNonAdmin,
-        );
+        $response = $this->json('POST', self::TEST_URL, [
+            'dataset_id' => 1,
+        ], $headerNonAdmin);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
@@ -364,38 +303,28 @@ class LibraryTest extends TestCase
             ]);
         $content = $response->decodeResponseJson();
         $newSearchId = $content['data'];
-        
-        // test admin can view short list
-        $responseGet = $this->get('api/v1/libraries/' . $newSearchId, [
+
+        // test admin can view library
+        $responseGet = $this->json('GET', self::TEST_URL . '/' . $newSearchId, [], [
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
         $responseGet->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // test admin cannot edit or delete
-        $responseUpdate = $this->json(
-            'PUT',
-            'api/v1/libraries/' . $newSearchId,
-            [
-                'dataset_id' => 2,
-            ],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        $responseUpdate = $this->json('PUT', self::TEST_URL . '/' . $newSearchId, [
+            'dataset_id' => 2,
+        ], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $responseUpdate->assertJsonStructure([
             'message',
         ]);
         $responseUpdate->assertStatus(500);
 
-        $responseDelete = $this->json(
-            'DELETE',
-            'api/v1/libraries/' . $newSearchId,
-            [],
-            [
-                'Authorization' => 'bearer ' . $this->accessToken,
-            ],
-        );
+        $responseDelete = $this->json('DELETE', self::TEST_URL . '/' . $newSearchId, [], [
+            'Authorization' => 'bearer ' . $this->accessToken,
+        ]);
 
         $responseDelete->assertJsonStructure([
             'message',

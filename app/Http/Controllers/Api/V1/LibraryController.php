@@ -92,7 +92,6 @@ class LibraryController extends Controller
      *      summary="Return a single library",
      *      description="Return a single library",
      *      tags={"Library"},
-     *      summary="Library@show",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
@@ -112,8 +111,8 @@ class LibraryController extends Controller
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="created_at", type="string", format="date-time", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="string", format="date-time", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="user_id", type="integer", example="123"),
      *                  @OA\Property(property="dataset", type="array", @OA\Items()),
      *              )
@@ -135,11 +134,11 @@ class LibraryController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
-            $Library = Library::where('id', $id)->with(['dataset'])->first();
-            if (!$jwtUserIsAdmin && $Library['user_id'] != $jwtUser['id']) {
+            $library = Library::where('id', $id)->with(['dataset'])->first();
+            if (!$jwtUserIsAdmin && $library['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to view this library');
             } 
-            
+
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
@@ -149,12 +148,19 @@ class LibraryController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $Library,
+                'data' => $library,
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred',
+            ], Config::get('statuscodes.STATUS_INTERNAL_SERVER_ERROR.code'));
         }
     }
+
 
     /**
      * @OA\Post(
@@ -195,7 +201,7 @@ class LibraryController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $Library = Library::create([
+            $library = Library::create([
                 'user_id' => (int) $jwtUser['id'],
                 'dataset_id' => $input['dataset_id']
             ]);
@@ -204,12 +210,12 @@ class LibraryController extends Controller
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "library " . $Library->id . " created",
+                'description' => "library " . $library->id . " created",
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $Library->id,
+                'data' => $library->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -279,11 +285,11 @@ class LibraryController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $Library = Library::where('id', $id)->first();
-            if ($Library['user_id'] != $jwtUser['id']) {
+            $library = Library::where('id', $id)->first();
+            if ($library['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to edit this library');
             }
-            $Library->update([
+            $library->update([
                 'user_id' => (int) $jwtUser['id'],
                 'dataset_id' => $input['dataset_id'],
             ]);
@@ -374,12 +380,12 @@ class LibraryController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            $Library = Library::where('id', $id)->first();
-            if ($Library['user_id'] != $jwtUser['id']) {
+            $library = Library::where('id', $id)->first();
+            if ($library['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to edit this library');
             }
             
-            $Library->update($array);
+            $library->update($array);
             
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -445,14 +451,14 @@ class LibraryController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
     
-            $Library = Library::findOrFail($id);
-            if ($Library) {
+            $library = Library::findOrFail($id);
+            if ($library) {
 
-                if ($Library['user_id'] != $jwtUser['id']) {
+                if ($library['user_id'] != $jwtUser['id']) {
                     throw new UnauthorizedException('You do not have permission to delete this library');
                 }
 
-                if ($Library->save()) {
+                if ($library->save()) {
                     Auditor::log([
                         'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'DELETE',

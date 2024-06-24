@@ -3242,12 +3242,12 @@ return [
         'constraint' => [],
     ],
 
-    // short lists
+    // libraries
     [
-        'name' => 'short_lists',
+        'name' => 'libraries',
         'method' => 'get',
-        'path' => '/short_lists',
-        'methodController' => 'ShortListController@index',
+        'path' => '/libraries',
+        'methodController' => 'LibraryController@index',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3255,10 +3255,10 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'short_lists',
+        'name' => 'libraries',
         'method' => 'get',
-        'path' => '/short_lists/{id}',
-        'methodController' => 'ShortListController@show',
+        'path' => '/libraries/{id}',
+        'methodController' => 'LibraryController@show',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3268,10 +3268,10 @@ return [
         ],
     ],
     [
-        'name' => 'short_lists',
+        'name' => 'libraries',
         'method' => 'post',
-        'path' => '/short_lists',
-        'methodController' => 'ShortListController@store',
+        'path' => '/libraries',
+        'methodController' => 'LibraryController@store',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3280,10 +3280,10 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'short_lists',
+        'name' => 'libraries',
         'method' => 'put',
-        'path' => '/short_lists/{id}',
-        'methodController' => 'ShortListController@update',
+        'path' => '/libraries/{id}',
+        'methodController' => 'LibraryController@update',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3294,10 +3294,10 @@ return [
         ],
     ],
     [
-        'name' => 'short_lists',
+        'name' => 'libraries',
         'method' => 'patch',
-        'path' => '/short_lists/{id}',
-        'methodController' => 'ShortListController@edit',
+        'path' => '/libraries/{id}',
+        'methodController' => 'LibraryController@edit',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -3308,10 +3308,10 @@ return [
         ],
     ],
     [
-        'name' => 'short_lists',
+        'name' => 'libraries',
         'method' => 'delete',
-        'path' => '/short_lists/{id}',
-        'methodController' => 'ShortListController@destroy',
+        'path' => '/libraries/{id}',
+        'methodController' => 'LibraryController@destroy',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
