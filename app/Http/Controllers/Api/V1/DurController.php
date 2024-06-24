@@ -113,6 +113,7 @@ class DurController extends Controller
      *                @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                @OA\Property(property="application", type="string", example=""),
      *                @OA\Property(property="applications", type="string", example=""),
+     *                @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *             ),
      *          ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/collections?page=1"),
@@ -141,7 +142,7 @@ class DurController extends Controller
                 $tmp = explode(":", $item);
                 $sort[$tmp[0]] = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
-            if (!array_key_exists('create_at', $sort)) {
+            if (!array_key_exists('updated_at', $sort)) {
                 $sort['updated_at'] = 'desc';
             }
 
@@ -299,6 +300,7 @@ class DurController extends Controller
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *                   @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *                ),
      *             ),
      *          ),
@@ -388,6 +390,7 @@ class DurController extends Controller
      *             @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="applicant_id", type="string", example=""),
+     *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *          ),
      *       ),
      *    ),
@@ -476,6 +479,7 @@ class DurController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'applicant_id',
+                'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
@@ -520,7 +524,9 @@ class DurController extends Controller
             if (array_key_exists('updated_at', $input)) {
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
-            if($request['enabled'] === 1){
+
+            $currentDurStatus = Dur::where('id', $durId)->first();
+            if($request['enabled'] === 1 && $currentDurStatus === 'ACTIVE'){
                 $this->indexElasticDur($durId);
             }
             
@@ -612,6 +618,7 @@ class DurController extends Controller
      *             @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="applicant_id", type="string", example=""),
+     *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *          ),
      *       ),
      *    ),
@@ -683,6 +690,7 @@ class DurController extends Controller
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="applicant_id", type="string", example=""),
+     *                   @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *              ),
      *        ),
      *    ),
@@ -751,6 +759,7 @@ class DurController extends Controller
                 'mongo_object_id',
                 'mongo_id',
                 'applicant_id',
+                'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
@@ -787,7 +796,8 @@ class DurController extends Controller
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
-            if($request['enabled'] === 1){
+            $currentDurStatus = Dur::where('id', $id)->first();
+            if($request['enabled'] === 1 && $currentDurStatus === 'ACTIVE'){
                 $this->indexElasticDur($id);
             }
 
@@ -888,6 +898,7 @@ class DurController extends Controller
      *             @OA\Property(property="user", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *             @OA\Property(property="applicant_id", type="string", example=""),
+     *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *          ),
      *       ),
      *    ),
@@ -959,6 +970,7 @@ class DurController extends Controller
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="application", type="array", example="{}", @OA\Items()),
      *                   @OA\Property(property="applicant_id", type="string", example=""),
+     *                   @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *              ),
      *        ),
      *    ),
@@ -998,9 +1010,8 @@ class DurController extends Controller
                     'message' => 'success',
                     'data' => $this->getDurById($id),
                 ], Config::get('statuscodes.STATUS_OK.code'));
-            }
-
-            else{
+            
+            } else {
                 $userId = null;
                 $appId = null;
                 if (array_key_exists('user_id', $input)) {
@@ -1051,6 +1062,7 @@ class DurController extends Controller
                     'mongo_object_id',
                     'mongo_id',
                     'applicant_id',
+                    'status',
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
                 $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
@@ -1095,7 +1107,8 @@ class DurController extends Controller
                     Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
                 }
 
-                if ($request['enabled'] === 1) {
+                $currentDurStatus = Dur::where('id', $id)->first();
+                if($request['enabled'] === 1 && $currentDurStatus === 'ACTIVE'){
                     $this->indexElasticDur($id);
                 }
 

@@ -147,6 +147,7 @@ class DurTest extends TestCase
                     'application',
                     'team',
                     'user',
+                    'status',
                 ],
             ],
             'current_page',
@@ -172,7 +173,7 @@ class DurTest extends TestCase
      */
     public function test_get_dur_by_id_with_success(): void
     {
-        $durId = (int) Dur::all()->random()->id;
+        $durId = (int) Dur::all()->where('status', 'ACTIVE')->random()->id;
         $response = $this->json('GET', self::TEST_URL . '/' . $durId, [], $this->header);
 
         $this->assertCount(1, $response['data']);
@@ -238,6 +239,7 @@ class DurTest extends TestCase
                     'user',
                     'application_id',
                     'applications',
+                    'status',
                 ]
             ]
         ]);
@@ -265,6 +267,7 @@ class DurTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -310,6 +313,7 @@ class DurTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -380,6 +384,7 @@ class DurTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -405,6 +410,7 @@ class DurTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02', 'External Dataset 03'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'status' => 'ACTIVE',
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -459,6 +465,7 @@ class DurTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -505,6 +512,7 @@ class DurTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'status' => 'ACTIVE',
         ];
 
         $responseIns = $this->json(
@@ -658,6 +666,7 @@ class DurTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -711,6 +720,7 @@ class DurTest extends TestCase
             'project_start_date' => '2020-03-23T00:00:00',
             'project_end_date' => '2025-04-30T00:00:00',
             'latest_approval_date' => '2020-04-14T00:00:00',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(

@@ -165,6 +165,7 @@ class DurIntegrationTest extends TestCase
                     'user',
                     'applicant_id',
                     'applications',
+                    'status',
                 ],
             ],
             'current_page',
@@ -255,6 +256,7 @@ class DurIntegrationTest extends TestCase
                     'user',
                     'application_id',
                     'applications',
+                    'status',
                 ]
             ]
         ]);
@@ -279,6 +281,7 @@ class DurIntegrationTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -321,6 +324,7 @@ class DurIntegrationTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -387,6 +391,7 @@ class DurIntegrationTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(

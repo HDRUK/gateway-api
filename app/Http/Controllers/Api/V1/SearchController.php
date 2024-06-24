@@ -771,7 +771,7 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $durModels = Dur::whereIn('id', $matchedIds)->with('datasets')->get();
+            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->with('datasets')->get();
 
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
@@ -1362,7 +1362,7 @@ class SearchController extends Controller
         $durIds = DurHasTool::where('tool_id', $toolId)->pluck('dur_id')->all();
         if (!count($durIds)) return [];
 
-        $durNames = Dur::whereIn('id', $durIds)->pluck('project_title')->all();
+        $durNames = Dur::whereIn('id', $durIds)->where('status', 'ACTIVE')->pluck('project_title')->all();
 
         return $durNames;
     }
