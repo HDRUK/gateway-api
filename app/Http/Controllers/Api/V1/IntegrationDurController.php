@@ -12,8 +12,8 @@ use App\Models\Tool;
 use App\Models\Sector;
 use App\Models\Dataset;
 use App\Models\Keyword;
-use App\Models\Application;
 use App\Models\DurHasTool;
+use App\Models\Application;
 
 use Illuminate\Http\Request;
 use App\Models\DurHasDataset;
@@ -21,16 +21,17 @@ use App\Models\DurHasDataset;
 use App\Models\DurHasKeyword;
 
 use App\Http\Requests\Dur\GetDur;
+use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Dur\CreateDur;
 
+use App\Http\Requests\Dur\CreateDur;
 use App\Http\Requests\Dur\DeleteDur;
+
 use App\Http\Requests\Dur\UpdateDur;
 
 use App\Exceptions\NotFoundException;
-
 use App\Http\Traits\IntegrationOverride;
 use MetadataManagementController AS MMC;
 use App\Http\Traits\RequestTransformation;
@@ -709,6 +710,7 @@ class IntegrationDurController extends Controller
         try {
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+            $initDur = Dur::withTrashed()->where('id', $id)->first();
 
             $userId = null;
             $appId = null;
@@ -763,6 +765,19 @@ class IntegrationDurController extends Controller
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
+
+            if ($initDur === 'ARCHIVED' && !array_key_exists('status', $input)) {
+                throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
+            }
+
+            if ($initDur === 'ARCHIVED' && (array_key_exists('status', $input) && $input['status'] !== 'ARCHIVED')) {
+                Dur::withTrashed()->where('id', $id)->restore();
+                DurHasDataset::withTrashed()->where('dur_id', $id)->restore();
+                DurHasKeyword::withTrashed()->where('dur_id', $id)->restore();
+                DurHasPublication::withTrashed()->where('dur_id', $id)->restore();
+                DurHasTool::withTrashed()->where('dur_id', $id)->restore();
+            }
+
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             if (array_key_exists('organisation_sector', $array)) {
@@ -794,8 +809,16 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus === 'ACTIVE'){
+            if($currentDurStatus->status === 'ACTIVE'){
                 $this->indexElasticDur($id);
+            }
+
+            if ($currentDurStatus->status === 'ARCHIVED') {
+                Dur::where('id', $id)->delete();
+                DurHasDataset::where('dur_id', $id)->delete();
+                DurHasKeyword::where('dur_id', $id)->delete();
+                DurHasPublication::where('dur_id', $id)->delete();
+                DurHasTool::where('dur_id', $id)->delete();
             }
 
             Auditor::log([
