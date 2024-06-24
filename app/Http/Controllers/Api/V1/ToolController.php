@@ -353,10 +353,7 @@ class ToolController extends Controller
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
             if (array_key_exists('dataset', $input)) {
-                // $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
-                // if (!empty($datasetVersionIDs)) {
-                    $this->insertDatasetVersionHasTool($input['dataset'], (int) $tool->id);
-                // }
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $tool->id);
             }
             if (array_key_exists('programming_language', $input)) {
                 $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
@@ -516,11 +513,7 @@ class ToolController extends Controller
 
             DatasetVersionHasTool::where('tool_id', $id)->delete();
             if (array_key_exists('dataset', $input)) {
-                // $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
-                // var_dump('datasetVersionIDs', $datasetVersionIDs); // 8,9, 10
-                // if (!empty($datasetVersionIDs)) {
-                    $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
-                // }
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
             }
 
             if (array_key_exists('programming_language', $input)) {
