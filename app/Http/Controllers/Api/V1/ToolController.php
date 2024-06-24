@@ -378,7 +378,7 @@ class ToolController extends Controller
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
             $this->checkCollections($tool->id, $collections, $array['user_id'], $appId);
 
-            if($request['enabled'] === 1){
+            if($request['enabled']){
                 $this->indexElasticTools((int) $tool->id);
             }
             
@@ -546,7 +546,7 @@ class ToolController extends Controller
             $collections = array_key_exists('collections', $input) ? $input['collections'] : [];
             $this->checkCollections($id, $collections, $array['user_id'], $appId);
 
-            if($request['enabled'] === 1){
+            if($request['enabled']){
                 $this->indexElasticTools((int) $id);
             }
 
@@ -669,6 +669,10 @@ class ToolController extends Controller
                 DurHasTool::withTrashed()->where('tool_id', $id)->restore();
                 PublicationHasTool::withTrashed()->where('tool_id', $id)->restore();
 
+                if ($request['enabled']) {
+                    $this->indexElasticTools($id);
+                }
+
                 Auditor::log([
                     'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'UPDATE',
@@ -711,7 +715,7 @@ class ToolController extends Controller
 
                 $array = $this->checkEditArray($input, $arrayKeys);
 
-                Tool::withTrashed()->where('id', $id)->update($array);
+                Tool::where('id', $id)->update($array);
 
                 if (array_key_exists('tag', $input)) {
                     ToolHasTag::where('tool_id', $id)->delete();
@@ -754,7 +758,7 @@ class ToolController extends Controller
                     $this->checkCollections($id, $collections, $userIdFinal, $appId);
                 }
                 
-                if ($request['enabled'] === 1) {
+                if ($request['enabled']) {
                     $this->indexElasticTools($id);
                 }
 
