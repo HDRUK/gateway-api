@@ -152,7 +152,7 @@ class SearchController extends Controller
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
-            $aggs = Filter::where('type', 'dataset')->get()->toArray();
+            $aggs = Filter::where('type', 'dataset')->where("enabled",1)->get()->toArray();
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
@@ -977,16 +977,12 @@ class SearchController extends Controller
 
                 $pubArray = $response['hits']['hits'];
                 $totalResults = $response['hits']['total']['value'];
-
                 $matchedIds = [];
                 foreach (array_values($pubArray) as $i => $d) {
                     $matchedIds[] = $d['_id'];
                 }
 
                 $pubModels = Publication::whereIn('id', $matchedIds)->get();
-
-                return response()->json(Publication::pluck("id"));
-
 
                 foreach ($pubArray as $i => $p) {
                     $foundFlag = false;
