@@ -270,7 +270,7 @@ class ToolController extends Controller
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
-     *             @OA\Property( property="dataset", type="array", @OA\Items()),
+     *             @OA\Property( property="dataset_ids", type="array", @OA\Items()),
      *             @OA\Property( property="dataset_version", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
@@ -352,8 +352,8 @@ class ToolController extends Controller
             $tool = Tool::create($array);
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
-            if (array_key_exists('dataset', $input)) {
-                $this->insertDatasetVersionHasTool($input['dataset'], (int) $tool->id);
+            if (array_key_exists('dataset_ids', $input)) {
+                $this->insertDatasetVersionHasTool($input['dataset_ids'], (int) $tool->id);
             }
             if (array_key_exists('programming_language', $input)) {
                 $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
@@ -426,7 +426,7 @@ class ToolController extends Controller
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
-     *             @OA\Property( property="dataset", type="array", @OA\Items()),
+     *             @OA\Property( property="dataset_ids", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
@@ -512,8 +512,8 @@ class ToolController extends Controller
             $this->insertToolHasTag($input['tag'], (int) $id);
 
             DatasetVersionHasTool::where('tool_id', $id)->delete();
-            if (array_key_exists('dataset', $input)) {
-                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
+            if (array_key_exists('dataset_ids', $input)) {
+                $this->insertDatasetVersionHasTool($input['dataset_ids'], (int) $id);
             }
             ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
             if (array_key_exists('programming_language', $input)) {
@@ -599,7 +599,7 @@ class ToolController extends Controller
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
-     *             @OA\Property( property="dataset", type="array", @OA\Items()),
+     *             @OA\Property( property="dataset_ids", type="array", @OA\Items()),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
@@ -709,9 +709,9 @@ class ToolController extends Controller
                 $this->insertToolHasTag($input['tag'], (int) $id);
             };
 
-            if (array_key_exists('dataset', $input)) {
+            if (array_key_exists('dataset_ids', $input)) {
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
-                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
+                $this->insertDatasetVersionHasTool($input['dataset_ids'], (int) $id);
             }
 
             if (array_key_exists('programming_language', $input)) {
