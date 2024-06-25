@@ -13,8 +13,7 @@
                         "guidance": "Full name is the applicant's first and last name",
                         "required": true,
                         "field": {
-                            "component": "TextField",
-                            "name":"fullname"
+                            "component": "TextField"
                         }
                     },
                     {
@@ -22,8 +21,7 @@
                         "guidance": "Job Title is the name of the position the applicant holds within their organisation.",
                         "required": true,
                         "field": {
-                            "component": "TextField",
-                            "name":"jobtitle"
+                            "component": "TextField"
                         }
                     },
                     {
@@ -31,8 +29,7 @@
                         "guidance": "Please include a contact telephone number that the applicant can be contacted on.",
                         "required": false,
                         "field": {
-                            "component": "TextField",
-                            "name":"telephone"
+                            "component": "TextField"
                         }
                     },
                     {
@@ -40,8 +37,7 @@
                         "guidance": "ORCID provides a persistent digital identifier (an ORCID iD) that you own and control, and that distinguishes you from every other researcher. You can create an ORCID profile at  https://orcid.org/. If you have an ORCID iD please include it here. ",
                         "required": false,
                         "field": {
-                            "component": "TextField",
-                            "name":"orcid"
+                            "component": "TextField"
                         }
                     },
                     {
@@ -49,8 +45,7 @@
                         "guidance": "Please include an email address that the applicant can receive communications through.",
                         "required": true,
                         "field": {
-                            "component": "TextField",
-                            "name":"email"
+                            "component": "TextField"
                         }
                     },
                     {
@@ -59,7 +54,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"willaccessdata",
                             "isRow": true,
                             "radios": [
                                 {
@@ -79,7 +73,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"accreditedresearcher",
                             "isRow": true,
                             "radios": [
                                 {
@@ -99,7 +92,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"trainingIG",
                             "isRow": true,
                             "radios": [
                                 {
@@ -118,8 +110,7 @@
                         "guidance": "Please give the full name of the organisation on whose behalf you are making the application or within which you work in your professional capacity as an applicant. This should include a parent organisation, and sub-division or department if appropriate (for example University of Edinburgh, Department of Informatics).",
                         "required": true,
                         "field": {
-                            "component": "TextField",
-                            "name":"organisation_name"
+                            "component": "TextField"
                         }
                     },
                     {
@@ -128,7 +119,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"organisation_dspt",
                             "isRow": true,
                             "radios": [
                                 {
@@ -148,7 +138,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"organisation_as_data_controller",
                             "isRow": true,
                             "radios": [
                                 {
@@ -178,8 +167,7 @@
                         "guidance": "Full name is the individual's first and last name",
                         "required": false,
                         "field": {
-                            "component": "TextField",
-                            "name":"others_fullname"
+                            "component": "TextField"
                         }
                     },
                     {
@@ -187,8 +175,7 @@
                         "guidance": "Job Title is the name of the position the individual holds within their organisation.",
                         "required": false,
                         "field": {
-                            "component": "TextField",
-                            "name":"others_jobtitle"
+                            "component": "TextField"
                         }
                     },
                     {
@@ -196,8 +183,7 @@
                         "guidance": "Please include the individual's organisation.",
                         "required": false,
                         "field": {
-                            "component": "TextField",
-                            "name":"others_organisation"
+                            "component": "TextField"
                         }
                     },
                     {
@@ -206,7 +192,6 @@
                         "required": false,
                         "field": {
                             "component": "CheckboxGroup",
-                            "name":"others_role",
                             "checkboxes": [
                                 {
                                     "value": "principalinvestigator",
@@ -233,7 +218,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"others_access",
                             "isRow": true,
                             "radios": [
                                 {
@@ -253,7 +237,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"others_accreditedresearcher",
                             "isRow": true,
                             "radios": [
                                 {
@@ -273,7 +256,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"others_ig",
                             "isRow": true,
                             "radios": [
                                 {
@@ -293,7 +275,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"add_another",
                             "isRow": true,
                             "radios": [
                                 {
@@ -312,8 +293,7 @@
                         "guidance": null,
                         "required": false,
                         "field": {
-                            "component": "TextArea",
-                            "name": "team_expertise_evidence"
+                            "component": "TextArea"
                         }
                     }
                 ]
@@ -335,7 +315,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"application_type",
                             "isRow": true,
                             "radios": [
                                 {
@@ -373,8 +352,7 @@
                         "guidance": "The title should identify the main area of your research so that another researcher could understand if it might be relevant to their area of study. \n \nThe titles of all Accredited Research projects are published on the UK Statistics Authority website as part of the public record of DEA Accredited Researchers.",
                         "required": true,
                         "field": {
-                            "component": "TextField",
-                            "name":"project_title"
+                            "component": "TextField"
                         }
                     },
                     {
@@ -383,7 +361,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"project_type",
                             "isRow": true,
                             "radios": [
                                 {
@@ -411,7 +388,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"project_existing_or_new",
                             "isRow": true,
                             "radios": [
                                 {
@@ -430,8 +406,7 @@
                         "guidance": "Please provide a summary of the study in language suitable for non-experts in the field and ensure that all abbreviations in technical terminology are explained.\n  \nThe summary must make clear what the specific purpose is, who will be using the data (organisations rather than individual names), what will happen to the data, whether the expected outputs are in record level form, what is known to date about your chosen project including any preliminary/related analysis and background literature reviews. Please include any potential disclosure risks and how these will be addressed.",
                         "required": true,
                         "field": {
-                            "component": "TextArea",
-                            "name":"project_laysummary"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -439,8 +414,7 @@
                         "guidance": "This is required to allow us to know when and for how long the data will be required. If the project has already begun but this data is only required for a future element use the date from when it will be required here.",
                         "required": false,
                         "field": {
-                            "component": "DatePicker",
-                            "name":"project_start_date"
+                            "component": "DatePicker"
                         }
                     },
                     {
@@ -448,8 +422,7 @@
                         "guidance": null,
                         "required": false,
                         "field": {
-                            "component": "DatePicker",
-                            "name":"project_end_date"
+                            "component": "DatePicker"
                         }
                     },
                     {
@@ -457,8 +430,7 @@
                         "guidance": "Please Include the background to the project by describing why you are conducting the study, the specific aims and the hypotheses that you hope to test. Summarise how the data requested are required to help address these aims. Please include whether the project has used peer review and if applicable the nature of that review.  ",
                         "required": true,
                         "field": {
-                            "component": "TextArea",
-                            "name":"project_aims"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -466,8 +438,7 @@
                         "guidance": "Provide full details of your research methodology. This must include justification of sample size, analyses proposed, statistical methods, additional data sources such as linked data and any plans for collaborative work. \n\nThis information will be key to assessing whether your proposal will be feasible, deliver clear public good and be an appropriate use of data. \n\nEnsure you: \n\nSpecify the method(s) of analysis you plan to use (such as regression);\n\nAs far as possible, try to articulate the outcome or dependent variable(s). \n\nIndicate the starting point for the modelling process - acknowledging that the model may evolve.\n\nExplain (where relevant) how any potential selection/causal bias will be addressed (e.g. by including a control group with information on how this control group will be created); \n\nProvide methodology references, if a non-standard methodology is proposed;\n\nInclude information about any contribution to the field of research methodology that you believe may result from your research;\n\nInclude an explanation of how your methodological approach will answer the research question(s) set out in the project when employing methods not covered by any of the above (e.g. correlation or basic descriptive analysis will only be used, noting that such analysis might be more applicable for exploratory research).",
                         "required": true,
                         "field": {
-                            "component": "TextArea",
-                            "name":"project_aims_how"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -475,8 +446,7 @@
                         "guidance": "Use these section to give the background and justification of your proposal, to demonstrate how your project will benefit the public, as well as show your understanding of the Information Governance issues specific and inherent to your project. Please make it clear how the data requested will contribute. \n\nPlease also show that you have considered how to balance the privacy risks and public benefits when designing the study.  The requirement for the datasets requested should be fully justified in the light of the aims and objectives of the proposal.",
                         "required": true,
                         "field": {
-                            "component": "TextArea",
-                            "name":"project_impact"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -484,8 +454,7 @@
                         "guidance": "Provide full details of proposed public engagement plans for patient and/or user group involvement. If you have no plans, please elaborate why there will not be public engagement.",
                         "required": false,
                         "field": {
-                            "component": "TextArea",
-                            "name":"poject_ppie"
+                            "component": "TextArea"
                         }
                     }
                 ]
@@ -501,7 +470,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"has_funder",
                             "isRow": true,
                             "radios": [
                                 {
@@ -528,7 +496,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"has_sponser",
                             "isRow": true,
                             "radios": [
                                 {
@@ -555,7 +522,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"commercial_interest",
                             "isRow": true,
                             "radios": [
                                 {
@@ -581,8 +547,7 @@
                         "guidance": "Intellectual Property is the tangible output of any intellectual activity that is new or previously undescribed. It has an owner; it can be bought, sold or licensed and must be adequately protected.  It can include inventions, industrial processes, software, data, written work, designs and images. \nAny research which could potentially lead to intellectual property rights for you or your employer should be discussed with your employer and your R&D office as early as possible in the planning of the research.\n",
                         "required": false,
                         "field": {
-                            "component": "TextArea",
-                            "name":"intellectual_property"
+                            "component": "TextArea"
                         }
                     }
                 ]
@@ -603,8 +568,7 @@
                         "guidance": "NHS Digital will require information about each dataset that you would like to have access to including and field names and justifications for each field. Data requested can only be provided for processing data for specific purpose.\n\nPlease note that NHS Digital will contact you to discuss the specific data items requested.\n",
                         "required": false,
                         "field": {
-                            "component": "TextArea",
-                            "name":"data_fields"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -613,7 +577,6 @@
                         "required": false,
                         "field": {
                             "component": "CheckboxGroup",
-                            "name":"data_fields_upload",
                             "checkboxes": [
                                 {
                                     "value": "iconfirmthatihaveenclosedalistofdatasetsfieldsandvariablesrequiredforthestudyaswellasjustificationforeachfield",
@@ -627,8 +590,7 @@
                         "guidance": "A description of precisely the criteria which define the patients to be included and to be excluded from the data extract you are requesting should be provided. \n\nThis should include precise date parameters for the start and end of the range requested (dd/mm/yy) and explain which dated project field will be used to define the requested cohort (e.g. date of admission or date of operation).",
                         "required": true,
                         "field": {
-                            "component": "TextArea",
-                            "name":"data_inclusion"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -637,7 +599,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"data_refresh_required",
                             "isRow": true,
                             "radios": [
                                 {
@@ -656,8 +617,7 @@
                         "guidance": "Record level data typically relates to a single individual. There may be one or many records per individual. Such data would usually carry a risk of re-identification, and use of such data would be subject to strict controls.\n\nAggregate data would typically be 'counts' of an event - for example how many people had a particular operation over a specific time period. Aggregate data is not always anonymous data, and therefore may also be subject to specific controls.\n\n\n\n",
                         "required": false,
                         "field": {
-                            "component": "TextArea",
-                            "name":"data_aggregated"
+                            "component": "TextArea"
                         }
                     }
                 ]
@@ -673,7 +633,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"data_additional",
                             "isRow": true,
                             "radios": [
                                 {
@@ -700,7 +659,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"law_gdpr_6",
                             "isRow": true,
                             "radios": [
                                 {
@@ -739,8 +697,7 @@
                         "guidance": "Please provide justification for selected Article 6 lawful basis.",
                         "required": true,
                         "field": {
-                            "component": "TextArea",
-                            "name":"law_gdpr_6_justification"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -749,7 +706,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"law_gdpr_9_conditions",
                             "isRow": true,
                             "radios": [
                                 {
@@ -804,8 +760,7 @@
                         "guidance": null,
                         "required": true,
                         "field": {
-                            "component": "TextArea",
-                            "name":"law_gdpr_9_justification"
+                            "component": "TextArea"
                         }
                     }
                 ]
@@ -821,7 +776,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"confidentiality_avenue",
                             "isRow": true,
                             "radios": [
                                 {
@@ -856,7 +810,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"ethics_approval",
                             "isRow": true,
                             "radios": [
                                 {
@@ -897,7 +850,6 @@
                         "required": false,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"use_tre",
                             "isRow": true,
                             "radios": [
                                 {
@@ -924,7 +876,6 @@
                         "required": true,
                         "field": {
                             "component": "RadioGroup",
-                            "name":"uk_jurisdiction",
                             "isRow": true,
                             "radios": [
                                 {
@@ -943,8 +894,7 @@
                         "guidance": null,
                         "required": false,
                         "field": {
-                            "component": "TextArea",
-                            "name":"data_flows"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -953,7 +903,6 @@
                         "required": false,
                         "field": {
                             "component": "CheckboxGroup",
-                            "name":"dataflow_diagram",
                             "checkboxes": [
                                 {
                                     "value": "ihaveenclosedacopyofthedataflow",
@@ -980,8 +929,7 @@
                         "guidance": "Please describe how you plan to disseminate the results from your proposal. \n\nAs the public might not read scientific literature or attend conferences, please consider how the results or findings will be disseminated to the wider public and how this fits with the public benefit of the proposal. \n\nPlease indicate if you plan to publish your findings in an open access journal. Reference should also be made to policy documents, service frameworks or strategies that are relevant.",
                         "required": true,
                         "field": {
-                            "component": "TextArea",
-                            "name":"proposal_findings"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -989,8 +937,7 @@
                         "guidance": "Provide an outline of your plan, on what data, and how this will be done, with the anticipated outcomes and outputs and whether the outputs are in record level form.",
                         "required": true,
                         "field": {
-                            "component": "TextArea",
-                            "name":"output_milestones"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -998,8 +945,7 @@
                         "guidance": "Please describe the steps you will take to ensure the confidentiality of the data when disseminating or publishing your findings. This may include the application of disclosure control procedures, aggregation of data or other approaches.",
                         "required": true,
                         "field": {
-                            "component": "TextArea",
-                            "name":"steps_identifying"
+                            "component": "TextArea"
                         }
                     }
                 ]
@@ -1014,8 +960,7 @@
                         "guidance": "Please confirm how long you intend to retain the data relating to your proposal.",
                         "required": true,
                         "field": {
-                            "component": "DatePicker",
-                            "name":"rentention_date"
+                            "component": "DatePicker"
                         }
                     },
                     {
@@ -1023,8 +968,7 @@
                         "guidance": null,
                         "required": false,
                         "field": {
-                            "component": "TextArea",
-                            "name":"retention_date_reason"
+                            "component": "TextArea"
                         }
                     },
                     {
@@ -1032,8 +976,7 @@
                         "guidance": null,
                         "required": false,
                         "field": {
-                            "component": "TextArea",
-                            "name":"extention_permissions"
+                            "component": "TextArea"
                         }
                     }
                 ]
