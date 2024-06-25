@@ -73,6 +73,41 @@ Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
+
+### Users - Roles
+### assign roles to user
+POST {{baseUrl}}/api/{{apiVersion}}/users/20/roles HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "roles": [
+        "custodian.metadata.manager",
+        "metadata.editor",
+        "dar.reviewer"
+    ]
+}
+
+### update roles to user
+PUT {{baseUrl}}/api/{{apiVersion}}/users/20/roles HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "roles": {
+        "custodian.metadata.manager": false
+    }
+}
+
+### update roles to user
+DELETE {{baseUrl}}/api/{{apiVersion}}/users/20/roles HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
 ### PERMISSIONS
 #### get all permissions
 GET {{baseUrl}}/api/{{apiVersion}}/permissions HTTP/1.1

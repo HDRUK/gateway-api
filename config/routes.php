@@ -1006,6 +1006,47 @@ return [
         ],
     ],
 
+    // users & roles
+    [
+        'name' => 'users.roles.post',
+        'method' => 'post',
+        'path' => '/users/{userId}/roles',
+        'methodController' => 'UserRoleController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'users.roles.patch',
+        'method' => 'patch',
+        'path' => '/users/{userId}/roles',
+        'methodController' => 'UserRoleController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'users.roles.delete',
+        'method' => 'delete',
+        'path' => '/users/{userId}/roles',
+        'methodController' => 'UserRoleController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+
     // notifications
     [
         'name' => 'notifications',
