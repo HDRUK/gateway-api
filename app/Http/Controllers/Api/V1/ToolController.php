@@ -894,14 +894,14 @@ class ToolController extends Controller
     /**
      * Insert data into DatasetVersionHasTool
      *
-     * @param array $datasets
+     * @param array $datasetIds
      * @param integer $toolId
      * @return mixed
      */
-    private function insertDatasetVersionHasTool(array $datasets, int $toolId): mixed
+    private function insertDatasetVersionHasTool(array $datasetIds, int $toolId): mixed
     {
         try {
-            foreach ($datasets as $value) {
+            foreach ($datasetIds as $value) {
                 $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
     
                 foreach ($datasetVersionIDs as $datasetVersionID) {
@@ -1252,8 +1252,8 @@ class ToolController extends Controller
 
             $datasetTitles = array();
             foreach ($datasets as $dataset) {
-                $metadata = $dataset['versions'][0];
-                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
+                $dataset_version = $dataset['versions'][0];
+                $datasetTitles[] = $dataset_version['metadata']['metadata']['summary']['shortTitle'];
             }
             usort($datasetTitles, 'strcasecmp');
 
