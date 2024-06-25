@@ -515,23 +515,23 @@ class ToolController extends Controller
             if (array_key_exists('dataset', $input)) {
                 $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
             }
-
+            ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
             if (array_key_exists('programming_language', $input)) {
-                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
                 $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
             }
+            ToolHasProgrammingPackage::where('tool_id', $id)->delete();
             if (array_key_exists('programming_package', $input)) {
-                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
                 $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
             }
+            ToolHasTypeCategory::where('tool_id', $id)->delete();
             if (array_key_exists('type_category', $input)) {
-                ToolHasTypeCategory::where('tool_id', $id)->delete();
                 $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
             }
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($id, $publications, $array['user_id'], $appId);
 
+            DurHasTool::where('tool_id', $id)->delete();
             if (array_key_exists('durs', $input)) {
                 $this->insertDurHasTool($input['durs'], (int) $id);
             }
@@ -711,10 +711,7 @@ class ToolController extends Controller
 
             if (array_key_exists('dataset', $input)) {
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
-                $datasetVersionIDs = DatasetVersion::whereIn('dataset_id', $input['dataset'])->pluck('id')->all();
-                if (!empty($datasetVersionIDs)) {
-                    $this->insertDatasetVersionHasTool($datasetVersionIDs, (int) $id);
-                }
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
             }
 
             if (array_key_exists('programming_language', $input)) {
