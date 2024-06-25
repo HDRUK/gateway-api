@@ -123,7 +123,15 @@ class ToolsPostMigrationProcess extends Command
                     /**
                      * Final Step. Set license type for migrated tool and save record
                      */
-                    $tool->license = $csv['License MK2'];
+                    $licenceId = NULL;
+                    if ($csv['License MK2'] !== '') {
+                        $licences = License::where('label', $csv['License MK2'])->first();
+                        if ($licences) {
+                            $licenceId = $licences->id;
+                        }
+                    }
+
+                    $tool->license = $licenceId;
                     $tool->save();
 
                     $this->indexElasticTool($tool->id);
