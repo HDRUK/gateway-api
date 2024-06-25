@@ -1390,6 +1390,18 @@ Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
+#### assign admin for cohort request id
+POST {{baseUrl}}/api/{{apiVersion}}/cohort_requests/24/admin HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+#### assign admin for cohort request id
+DELETE {{baseUrl}}/api/{{apiVersion}}/cohort_requests/24/admin HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
 ### Keywords
 #### get all
 # GET {{baseUrl}}/api/{{apiVersion}}/keywords?perPage=5 HTTP/1.1

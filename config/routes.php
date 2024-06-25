@@ -2349,6 +2349,34 @@ return [
         ],
         'constraint' => [],
     ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'post',
+        'path' => '/cohort_requests/{id}/admin',
+        'methodController' => 'CohortRequestController@assignAdminPermissionToUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'delete',
+        'path' => '/cohort_requests/{id}/admin',
+        'methodController' => 'CohortRequestController@removeAdminPermissionToUser',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
 
     // search
     [
