@@ -118,7 +118,7 @@ class Tool extends Model
         return $this->belongsToMany(Collection::class, 'collection_has_tools');
     }
 
-    public function datasets(): BelongsToMany
+    public function dataset_versions(): BelongsToMany
     {
         return $this->belongsToMany(DatasetVersion::class, 'dataset_version_has_tool');
     }

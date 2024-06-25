@@ -131,7 +131,7 @@ class ToolTest extends TestCase
                     'publications',
                     'durs',
                     'collections',
-                    'datasets',
+                    'dataset_versions',
                 ]
             ],
             'current_page',
@@ -184,7 +184,7 @@ class ToolTest extends TestCase
                 'publications',
                 'durs',
                 'collections',
-                'datasets',
+                'dataset_versions',
             ]
         ]);
         $response->assertStatus(200);
