@@ -6,6 +6,8 @@ use Config;
 use MetadataManagementController as MMC;
 
 use App\Http\Controllers\Controller;
+use App\Models\Dataset;
+use App\Models\Team;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -121,7 +123,96 @@ class FormHydrationController extends Controller
     {
         $model = $request->input('model',Config::get('form_hydration.schema.model'));
         $version = $request->input('version',Config::get('form_hydration.schema.latest_version'));
+        $team = $request->input('team_id');
 
-        return MMC::getOnboardingFormHydrated($model, $version);
+        $hydrationJson = MMC::getOnboardingFormHydrated($model, $version);
+        $hydrationJson['defaultValues'] = $this->getDefaultValues((int) $team);
+
+        return response()->json([
+            'message' => 'success',
+            'data' => $hydrationJson,
+        ]);
     }    
+
+    private function getDefaultValues(int $id): array 
+    {
+        $team = Team::findOrFail($id);
+        $datasets = Dataset::where('team_id', $id)->get();
+        foreach ($datasets as $dataset) {
+            $version = $dataset->latestVersion();
+            $dataset['metadata'] = $version->metadata;
+        }
+        $datasets = $datasets->toArray();
+        $defaultValues = array();
+        $defaultValues['Organisation Contact Point'] = $team['contact_point'];
+        $defaultValues['Data Controller'] = $team['name'];
+        $defaultValues['Data Processor'] = $team['name'];
+
+        $generalDefaults = [
+            'Jurisdiction' => 'UK',
+            'Language' => 'en',
+            'Biological Samples' => 'Not Available'
+        ];
+
+        $defaultValues['Data Use Limitation'] = $this->mostCommonValue(
+            'metadata.metadata.accessibility.usage.dataUseLimitation',
+            $datasets
+        );
+        $defaultValues['Data Use Requirements'] = $this->mostCommonValue(
+            'metadata.metadata.accessibility.usage.dataUseRequirements',
+            $datasets
+        );
+        $defaultValues['Access Rights'] = $this->mostCommonValue(
+            'metadata.metadata.accessibility.access.accessRights',
+            $datasets
+        );
+        $defaultValues['Access Service'] = $this->mostCommonValue(
+            'metadata.metadata.accessibility.access.accessService',
+            $datasets
+        );
+        $defaultValues['Organisation Access Request Cost'] = $this->mostCommonValue(
+            'metadata.metadata.accessibility.access.accessRequestCost',
+            $datasets
+        );
+        $defaultValues['Access Request Duration'] = $this->mostCommonValue(
+            'metadata.metadata.accessibility.access.deliveryLeadTime',
+            $datasets
+        );
+        $defaultValues['Format'] = $this->mostCommonValue(
+            'metadata.metadata.accessibility.formatAndStandards.format',
+            $datasets
+        );
+
+        $defaultValues = array_merge($defaultValues, $generalDefaults);
+        return $defaultValues;
+    }
+
+    private function mostCommonValue(string $path, array $datasets): string 
+    {
+        $values = array();
+        foreach ($datasets as $dataset) {
+            $v = $this->getValueFromPath($dataset, $path);
+            $values[] = is_null($v)? "" : $this->getValueFromPath($dataset, $path);
+        }
+        $countMap = array_count_values($values);
+        arsort($countMap);
+        $mostCommon = array_keys($countMap)[0];
+        return $mostCommon;
+    }
+
+    public function getValueFromPath(array $item, string $path) 
+    {
+        $keys = explode('.', $path);
+
+        $return = $item;
+        foreach ($keys as $key) {
+            if (isset($return[$key])) {
+                $return = $return[$key];
+            } else {
+                return null;
+            }
+        }
+        
+        return $return;
+    }
 }
