@@ -180,7 +180,6 @@ class SearchController extends Controller
                $matchedIds[] = $d['_id'];
             }
 
-            
             $datasetsModels = Dataset::with('versions')->whereIn('id', $matchedIds)->get()->toArray();
             foreach ($datasetsArray as $i => $dataset) {
                 $foundFlag = false;
