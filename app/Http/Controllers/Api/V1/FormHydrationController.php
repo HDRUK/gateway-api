@@ -121,12 +121,16 @@ class FormHydrationController extends Controller
      */    
     public function onboardingFormHydration(Request $request): JsonResponse
     {
-        $model = $request->input('model',Config::get('form_hydration.schema.model'));
-        $version = $request->input('version',Config::get('form_hydration.schema.latest_version'));
-        $team = $request->input('team_id');
+        $model = $request->input('model', Config::get('form_hydration.schema.model'));
+        $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
+        $team = $request->input('team_id', null);
 
         $hydrationJson = MMC::getOnboardingFormHydrated($model, $version);
-        $hydrationJson['defaultValues'] = $this->getDefaultValues((int) $team);
+        if ($team) {
+            $hydrationJson['defaultValues'] = $this->getDefaultValues((int) $team);
+        } else {
+            $hydrationJson['defaultValues'] = $this->generalDefaults();
+        }
 
         return response()->json([
             'message' => 'success',
@@ -144,37 +148,36 @@ class FormHydrationController extends Controller
         }
         $datasets = $datasets->toArray();
         $defaultValues = array();
-        $defaultValues['Organisation Contact Point'] = $team['contact_point'];
+        $defaultValues['identifier'] = $team['id'];
+        $defaultValues['Name of data provider'] = $team['name'];
+        $defaultValues['Organisation Logo'] = $team['team_logo'];
+        $defaultValues['Organisation Description'] = $team['name'];
+        $defaultValues['contact point'] = $team['contact_point'];
+        $defaultValues['Organisation Membership'] = $team['memberOf'];
         $defaultValues['Data Controller'] = $team['name'];
         $defaultValues['Data Processor'] = $team['name'];
 
-        $generalDefaults = [
-            'Jurisdiction' => 'UK',
-            'Language' => 'en',
-            'Biological Samples' => 'Not Available'
-        ];
-
-        $defaultValues['Data Use Limitation'] = $this->mostCommonValue(
+        $defaultValues['Data use limitation'] = $this->mostCommonValue(
             'metadata.metadata.accessibility.usage.dataUseLimitation',
             $datasets
         );
-        $defaultValues['Data Use Requirements'] = $this->mostCommonValue(
+        $defaultValues['Data use requirements'] = $this->mostCommonValue(
             'metadata.metadata.accessibility.usage.dataUseRequirements',
             $datasets
         );
-        $defaultValues['Access Rights'] = $this->mostCommonValue(
+        $defaultValues['Access rights'] = $this->mostCommonValue(
             'metadata.metadata.accessibility.access.accessRights',
             $datasets
         );
-        $defaultValues['Access Service'] = $this->mostCommonValue(
+        $defaultValues['Access service description'] = $this->mostCommonValue(
             'metadata.metadata.accessibility.access.accessService',
             $datasets
         );
-        $defaultValues['Organisation Access Request Cost'] = $this->mostCommonValue(
+        $defaultValues['Access request cost'] = $this->mostCommonValue(
             'metadata.metadata.accessibility.access.accessRequestCost',
             $datasets
         );
-        $defaultValues['Access Request Duration'] = $this->mostCommonValue(
+        $defaultValues['Time to dataset access'] = $this->mostCommonValue(
             'metadata.metadata.accessibility.access.deliveryLeadTime',
             $datasets
         );
@@ -183,8 +186,17 @@ class FormHydrationController extends Controller
             $datasets
         );
 
-        $defaultValues = array_merge($defaultValues, $generalDefaults);
+        $defaultValues = array_merge($defaultValues, $this->generalDefaults());
         return $defaultValues;
+    }
+
+    private function generalDefaults(): array
+    {
+        return [
+            'Jurisdiction' => 'UK',
+            'Language' => 'en',
+            'Biological sample availability' => 'None/not Available'
+        ];
     }
 
     private function mostCommonValue(string $path, array $datasets): string 
