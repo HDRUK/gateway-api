@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\CohortRequest;
+use App\Models\CohortRequestHasPermission;
 use Tests\Traits\Authorization;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\SectorSeeder;
@@ -77,6 +78,7 @@ class CohortRequestTest extends TestCase
                     'deleted_at',
                     'accept_declaration',
                     'logs',
+                    'permissions',
 
                 ]
             ],
@@ -302,8 +304,6 @@ class CohortRequestTest extends TestCase
         $this->assertFalse($cohortRequest->accept_declaration);
     }
 
-
-
     /**
      * Download Cohort Request Admin dashboard export with success
      * 
@@ -387,6 +387,102 @@ class CohortRequestTest extends TestCase
         ]);
 
         $responseGetOne->assertStatus(200);
+
+        // delete
+        $responseDelete = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $id,
+            [],
+            $this->header,
+        );
+
+        $responseDelete->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+        ]);
+    }
+        
+    /**
+     * Assign / Remove admin permission
+     * 
+     * @return void
+     */
+    public function test_assign_remove_admin_cohort_request_with_success(): void
+    {
+        Mail::fake();
+        
+        // create
+        $responseCreate = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum.',
+            ],
+            $this->header,
+        );
+
+        $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreate = $responseCreate->decodeResponseJson();
+        $this->assertEquals(
+            $contentCreate['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+
+        $id = $contentCreate['data'];
+
+        // update
+        $responseUpdate = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $id,
+            [
+                'request_status' => 'APPROVED',
+                'details' => 'Praesentium ut et quae suscipit ut quo adipisci. Enim ut tenetur ad omnis ut consequatur. Aliquid officiis expedita rerum - put.',
+            ],
+            $this->header,
+        );
+
+        $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        // get one
+        $responseGetOne = $this->json('GET', self::TEST_URL . '/' . $id, [], $this->header);
+
+        $responseGetOne->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseGetOne->assertStatus(200);
+
+        // assign admin permission
+        $responseAssignAdmin = $this->json(
+            'POST',
+            self::TEST_URL . '/' . $id . '/admin',
+            [],
+            $this->header,
+        );
+        $responseAssignAdmin->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $countPermissions = CohortRequestHasPermission::where([ 'cohort_request_id' => $id])->count();
+        $this->assertTrue((int) $countPermissions === 2);
+
+        // remove admin permission
+        $responseAssignAdmin = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $id . '/admin',
+            [],
+            $this->header,
+        );
+        $responseAssignAdmin->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        $countPermissions = CohortRequestHasPermission::where([ 'cohort_request_id' => $id])->count();
+        $this->assertTrue((int) $countPermissions === 1);
 
         // delete
         $responseDelete = $this->json(

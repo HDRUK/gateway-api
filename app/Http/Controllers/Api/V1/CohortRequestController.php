@@ -23,6 +23,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Requests\CohortRequest\CreateCohortRequest;
 use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
+use App\Http\Requests\CohortRequest\AssignAdminCohortRequest;
+use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
 
 class CohortRequestController extends Controller
 {
@@ -150,7 +152,7 @@ class CohortRequestController extends Controller
                 $sort[$tmp[0]]= array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
-            $query = CohortRequest::with(['user', 'logs', 'logs.user']);
+            $query = CohortRequest::with(['user', 'logs', 'logs.user', 'permissions']);
 
             // filter by users.email
             $query->filterByEmail($request->has('email') ? $request->query('email') : '');
@@ -266,6 +268,7 @@ class CohortRequestController extends Controller
                         $q->orderBy('id', 'desc');
                     }, 
                     'logs.user',
+                    'permissions',
                     ])
                 ->first()->toArray();
 
@@ -788,7 +791,185 @@ class CohortRequestController extends Controller
         }
     }
 
-    private function sendEmail($cohortId)
+    /**
+     * @OA\POST(
+     *    path="/api/v1/cohort_requests/{id}/admin",
+     *    operationId="assing_admin_permission_cohort_requests",
+     *    tags={"Cohort Requests"},
+     *    summary="CohortRequestController@assignAdminPermission",
+     *    description="Assing admin permission for cohort request by id",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="cohort request id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="cohort request id",
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Error response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource not found"),
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function assignAdminPermission(AssignAdminCohortRequest $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $permissionName = 'SYSTEM_ADMIN';
+            $perms = Permission::where('name', $permissionName)->first();
+            if (!$perms) {
+                throw new Exception($permissionName  . ' permission not found!');
+            }
+
+            // assign role
+            CohortRequestHasPermission::create([
+                'cohort_request_id' => $id,
+                'permission_id' => $perms->id,
+            ]);
+
+            // send email
+            $this->sendEmail($id, 'assing');
+
+            // update HubSpot
+            $this->updateOrCreateContact($id);
+
+            // Audit log
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Cohort Request assign admin permission for id " . $id,
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *    path="/api/v1/cohort_requests/{id}/admin",
+     *    operationId="remove_admin_permission_cohort_requests",
+     *    tags={"Cohort Requests"},
+     *    summary="CohortRequestController@removeAdminPermission",
+     *    description="Remove admin permission for cohort request by id",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="cohort request id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="cohort request id",
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Error response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource not found"),
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function removeAdminPermission(RemoveAdminCohortRequest $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $permissionName = 'SYSTEM_ADMIN';
+            $perms = Permission::where('name', $permissionName)->first();
+            if (!$perms) {
+                throw new Exception($permissionName  . ' permission not found!');
+            }
+
+            // remove admin role
+            CohortRequestHasPermission::where([
+                'cohort_request_id' => $id,
+                'permission_id' => $perms->id,
+            ])->delete();
+
+            // send email
+            $this->sendEmail($id, 'remove');
+
+            // update HubSpot
+            $this->updateOrCreateContact($id);
+
+            // Audit log
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Cohort Request remove admin permission for id " . $id,
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function sendEmail($cohortId, $admin = null)
     {
         try {
             $cohort = CohortRequest::where('id', $cohortId)->first();
@@ -796,23 +977,38 @@ class CohortRequestController extends Controller
             $cohortRequestUserId = $cohort['user_id'];
             $user = User::where('id', $cohortRequestUserId)->first();
             $userEmail = ($user['preferred_email'] === 'primary') ? $user['email'] : $user['secondary_email'];
+
+            // template
             $template = null;
-            switch ($cohortRequestStatus) {
-                case 'PENDING': // submitted
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.submitted')->first();
-                    break;
-                case 'REJECTED':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.rejected')->first();
-                    break;
-                case 'APPROVED':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.approved')->first();
-                    break;
-                case 'BANNED':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.banned')->first();
-                    break;
-                case 'SUSPENDED':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.suspended')->first();
-                    break;
+            if (!$admin) {
+                switch ($cohortRequestStatus) {
+                    case 'PENDING': // submitted
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.submitted')->first();
+                        break;
+                    case 'REJECTED':
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.rejected')->first();
+                        break;
+                    case 'APPROVED':
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.approved')->first();
+                        break;
+                    case 'BANNED':
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.banned')->first();
+                        break;
+                    case 'SUSPENDED':
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.suspended')->first();
+                        break;
+                }
+            }
+
+            if ($admin) {
+                switch ($admin) {
+                    case 'assign': // submitted
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.request.admin.approve')->first();
+                        break;
+                    case 'remove':
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.request.admin.remove')->first();
+                        break;
+                }
             }
 
             $to = [
