@@ -52,16 +52,21 @@ class LibraryTest extends TestCase
             'Authorization' => 'bearer ' . $this->accessToken,
         ]);
 
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
-            ->assertJsonStructure([
+        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
+        
+        $response->assertJsonStructure([
                 'current_page',
                 'data' => [
-                    0 => [
+                    0 => [ // Assuming 'data' is an array of libraries
                         'id',
                         'created_at',
                         'updated_at',
                         'user_id',
-                        'dataset',
+                        'dataset_id',
+                        'dataset_status',
+                        'data_provider_id',
+                        'data_provider_dar_status',
+                        'data_provider_name'
                     ],
                 ],
                 'first_page_url',
@@ -111,7 +116,11 @@ class LibraryTest extends TestCase
                     'created_at',
                     'updated_at',
                     'user_id',
-                    'dataset',
+                    'dataset_id',
+                    'dataset_status',
+                    'data_provider_id',
+                    'data_provider_dar_status',
+                    'data_provider_name'
                 ],
             ]);
     }

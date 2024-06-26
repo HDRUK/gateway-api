@@ -25,35 +25,64 @@ class LibraryController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/libraries",
-     *      summary="List of libraries",
-     *      description="Returns a list of libraries on the system",
+     *      operationId="listLibraries",
      *      tags={"Library"},
-     *      summary="Library@index",
+     *      summary="Retrieve a list of libraries",
+     *      description="Returns a paginated list of libraries along with associated datasets and teams.",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="perPage",
      *          in="query",
-     *          description="Specify number of results per page",
-     *          @OA\Schema(type="integer")
+     *          description="Specify the number of libraries per page",
+     *          required=false,
+     *          @OA\Schema(
+     *              type="integer",
+     *              default=10
+     *          )
      *      ),
      *      @OA\Response(
      *          response=200,
-     *          description="Success",
+     *          description="Successful operation",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="array",
+     *              type="object",
+     *              @OA\Property(property="current_page", type="integer", example=1),
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="array",
      *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="id", type="integer", example="1"),
+     *                      @OA\Property(property="created_at", type="string", format="date-time", example="2023-04-03T12:00:00Z"),
+     *                      @OA\Property(property="updated_at", type="string", format="date-time", example="2023-04-03T12:00:00Z"),
      *                      @OA\Property(property="user_id", type="integer", example="123"),
-     *                      @OA\Property(property="dataset", type="array", @OA\Items()),
+     *                      @OA\Property(property="dataset_id", type="string", example="dataset12345"),
+     *                      @OA\Property(property="dataset_status", type="string", example="ACTIVE"),
+     *                      @OA\Property(property="data_provider_id", type="string", example="PID12345"),
+     *                      @OA\Property(property="data_provider_dar_status", type="boolean", example=false),
+     *                      @OA\Property(property="data_provider_name", type="string", example="Team Name")
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="/api/v1/libraries?page=1"),
+     *              @OA\Property(property="from", type="integer", example=1),
+     *              @OA\Property(property="last_page", type="integer", example=10),
+     *              @OA\Property(property="last_page_url", type="string", example="/api/v1/libraries?page=10"),
+     *              @OA\Property(property="links", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="url", type="string", example=null),
+     *                      @OA\Property(property="label", type="string", example="&laquo; Previous"),
+     *                      @OA\Property(property="active", type="boolean", example=false)
+     *                  )
+     *              ),
+     *              @OA\Property(property="next_page_url", type="string", example="/api/v1/libraries?page=2"),
+     *              @OA\Property(property="path", type="string", example="/api/v1/libraries"),
+     *              @OA\Property(property="per_page", type="integer", example=15),
+     *              @OA\Property(property="prev_page_url", type="string", example=null),
+     *              @OA\Property(property="to", type="integer", example=15),
+     *              @OA\Property(property="total", type="integer", example=150)
      *          )
      *      )
      * )
      */
+
     public function index(Request $request): JsonResponse
     {
         try {
@@ -62,25 +91,46 @@ class LibraryController extends Controller
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
             $perPage = request('perPage', Config::get('constants.per_page'));
+
             if ($jwtUserIsAdmin) {
-                $libraries = Library::with('dataset');
+                $libraries = Library::with(['dataset.team']);
             } else {
                 $libraries = Library::where('user_id', $jwtUser['id'])
-                    ->with('dataset');
+                    ->with(['dataset.team']);
             }
 
             $libraries = $libraries->paginate($perPage);
 
+            $transformedLibraries = $libraries->getCollection()->map(function ($library) {
+                $dataset = $library->dataset;
+                $team = $dataset->team;
+
+                $library->dataset_id = $dataset->datasetid;
+                $library->dataset_status = $dataset->status;
+                $library->{"data_provider_id"} = $team->pid;
+                $library->{"data_provider_dar_status"} = $team->uses_5_safes;
+                $library->{"data_provider_name"} = $team->name;
+
+                unset($library->dataset);
+                return $library;
+            });
+
+            $paginatedTransformedLibraries = new \Illuminate\Pagination\LengthAwarePaginator(
+                $transformedLibraries,
+                $libraries->total(),
+                $libraries->perPage(),
+                $libraries->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
+
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "library get all",
             ]);
 
-            return response()->json(
-                $libraries,
-            );
+            return response()->json($paginatedTransformedLibraries);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -114,7 +164,19 @@ class LibraryController extends Controller
      *                  @OA\Property(property="created_at", type="string", format="date-time", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="updated_at", type="string", format="date-time", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="user_id", type="integer", example="123"),
-     *                  @OA\Property(property="dataset", type="array", @OA\Items()),
+     *                  @OA\Property(
+     *                          property="dataset",
+     *                          type="object",
+     *                          @OA\Property(property="id", type="integer", example="10"),
+     *                          @OA\Property(property="status", type="string", example="ACTIVE"),
+     *                          @OA\Property(
+     *                              property="team",
+     *                              type="object",
+     *                              @OA\Property(property="id", type="integer", example="5"),
+     *                              @OA\Property(property="pid", type="string", example="PID12345"),
+     *                              @OA\Property(property="access_requests_management", type="boolean", example=false)
+     *                          )
+     *                      )
      *              )
      *          ),
      *      ),
@@ -134,15 +196,30 @@ class LibraryController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
-            $library = Library::where('id', $id)->with(['dataset'])->first();
+            // Fetch the library with dataset and team
+            $library = Library::with(['dataset.team'])
+                        ->where('id', $id)
+                        ->firstOrFail();
+
             if (!$jwtUserIsAdmin && $library['user_id'] != $jwtUser['id']) {
                 throw new UnauthorizedException('You do not have permission to view this library');
-            } 
+            }
+
+            $dataset = $library->dataset;
+            $team = $dataset->team;
+
+            $library->dataset_id = $dataset->datasetid;
+            $library->dataset_status = $dataset->status;
+            $library->{"data_provider_id"} = $team->pid;
+            $library->{"data_provider_dar_status"} = $team->uses_5_safes;
+            $library->{"data_provider_name"} = $team->name;
+
+            unset($library->dataset);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "library get " . $id,
             ]);
 
@@ -154,12 +231,17 @@ class LibraryController extends Controller
             return response()->json([
                 'message' => $e->getMessage(),
             ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'not found',
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'An error occurred',
             ], Config::get('statuscodes.STATUS_INTERNAL_SERVER_ERROR.code'));
         }
     }
+
 
 
     /**

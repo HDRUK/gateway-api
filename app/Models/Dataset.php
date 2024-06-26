@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
 
 class Dataset extends Model
@@ -165,5 +166,12 @@ class Dataset extends Model
     public function publications(): BelongsToMany
     {
         return $this->belongsToMany(Publication::class, 'publication_has_dataset');
+    }
+    /**
+     * The team for the dataset.
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'team_id');
     }
 }

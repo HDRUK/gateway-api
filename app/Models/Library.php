@@ -22,20 +22,13 @@ class Library extends Model
         'deleted_at',
     ];
 
-    /**
-     * Table associated with this model
-     * 
-     * @var string
-     */
     protected $table = 'library';
 
-    /**
-     * Indicates if this model is timestamped
-     * 
-     * @var bool
-     */
     public $timestamps = true;
 
+    /**
+     * Relationship to Dataset model.
+     */
     public function dataset(): BelongsTo
     {
         return $this->belongsTo(Dataset::class, 'dataset_id', 'id');
