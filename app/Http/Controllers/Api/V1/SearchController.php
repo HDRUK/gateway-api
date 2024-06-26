@@ -140,7 +140,7 @@ class SearchController extends Controller
     {
         try {
             $input = $request->all();
-
+            
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : "list";
             $sort = $request->query('sort',"score:desc");
@@ -152,11 +152,25 @@ class SearchController extends Controller
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
-            $aggs = Filter::where('type', 'dataset')->get()->toArray();
+            $aggs = Filter::where('type', 'dataset')->where("enabled",1)->get()->toArray();
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
-            $response = Http::post($urlString, $input)->json();
+            $response = Http::post($urlString, $input);
+            
+            if (!$response->successful()) {
+                return response()->json([
+                    'message' => 'No response from '.$urlString,
+                ], 404);
+            }
+            $response = $response->json();
+
+            if (!isset($response['hits']) || !is_array($response['hits']) || 
+                !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) || 
+                !isset($response['hits']['total']['value'])) {
+
+                    return response()->json(['message' => 'Hits not being properly returned by the search service'], 404);
+            }
 
             $datasetsArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];

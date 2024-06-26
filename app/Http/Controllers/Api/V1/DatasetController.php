@@ -490,6 +490,9 @@ class DatasetController extends Controller
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 
+            $inputSchema = $request->query("input_schema",null);
+            $inputVersion = $request->query("input_version",null);
+
             // Ensure title is present for creating a dataset
             if (empty($input['metadata']['metadata']['summary']['title'])) {
                 return response()->json([
@@ -517,8 +520,8 @@ class DatasetController extends Controller
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
                 Config::get('metadata.GWDM.version'),
-                null,
-                null,
+                $inputSchema,
+                $inputVersion,
                 $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
                 $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
@@ -1187,6 +1190,10 @@ class DatasetController extends Controller
 
     private function mapCoverage(array $metadata, Dataset $dataset): void 
     {
+        if (!isset($metadata['metadata']['coverage']['spatial'])) {
+            return;
+        }
+
         $coverage = strtolower($metadata['metadata']['coverage']['spatial']);
         $ukCoverages = SpatialCoverage::whereNot('region', 'Rest of the world')->get();
         $worldId = SpatialCoverage::where('region', 'Rest of the world')->first()->id;
