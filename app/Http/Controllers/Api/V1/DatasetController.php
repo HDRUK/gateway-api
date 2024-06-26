@@ -612,15 +612,16 @@ class DatasetController extends Controller
                 // map coverage/spatial field to controlled list for filtering
                 $this->mapCoverage($input['metadata'], $dataset);
 
+                $tedEnabled = env('TED_ENABLED');
                 // Dispatch term extraction to a subprocess if the dataset is marked as active
-                if($request['status'] === Dataset::STATUS_ACTIVE){
+                if($request['status'] === Dataset::STATUS_ACTIVE && $tedEnabled === true){
                     TermExtraction::dispatch(
                         $dataset->id,
                         base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
                         $elasticIndexing
                     );
                 }
-
+                
                 Auditor::log([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
