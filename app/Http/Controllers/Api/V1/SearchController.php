@@ -646,6 +646,7 @@ class SearchController extends Controller
                         $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
                         $collectionArray[$i]['name'] = $model['name'];
                         $collectionArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
+                        $collectionArray[$i]['image_link'] = $model['image_link'];
                         $foundFlag = true;
                         break;
                     }
