@@ -556,7 +556,9 @@ class DatasetTest extends TestCase
 
         $respArrayActive = $responseGetOneActive->decodeResponseJson();
         $this->assertArrayHasKey('named_entities', $respArrayActive['data']);
-        $this->assertNotEmpty($respArrayActive['data']['named_entities']);
+        if(env('TED_ENABLED')){
+            $this->assertNotEmpty($respArrayActive['data']['named_entities']);
+        };
 
         // get one draft dataset
         $responseGetOneDraft = $this->json('GET', self::TEST_URL_DATASET . '/' . $draftDatasetId, [], $this->header);

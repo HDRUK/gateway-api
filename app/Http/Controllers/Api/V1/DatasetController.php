@@ -393,8 +393,8 @@ class DatasetController extends Controller
                 );
 
                 if ($translated['wasTranslated']) {
-                    $version->metadata = json_decode(json_encode($translated['metadata']));
-                    $dataset->versions[] = $version;
+                    $version['metadata'] = json_encode(['metadata' => $translated['metadata']]);
+                    $dataset['versions'][] = $version;
                 }
                 else {
                     return response()->json([
@@ -490,6 +490,9 @@ class DatasetController extends Controller
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 
+            $inputSchema = $request->query("input_schema",null);
+            $inputVersion = $request->query("input_version",null);
+
             // Ensure title is present for creating a dataset
             if (empty($input['metadata']['metadata']['summary']['title'])) {
                 return response()->json([
@@ -517,8 +520,8 @@ class DatasetController extends Controller
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
                 Config::get('metadata.GWDM.version'),
-                null,
-                null,
+                $inputSchema,
+                $inputVersion,
                 $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
                 $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
@@ -609,15 +612,16 @@ class DatasetController extends Controller
                 // map coverage/spatial field to controlled list for filtering
                 $this->mapCoverage($input['metadata'], $dataset);
 
+                $tedEnabled = env('TED_ENABLED');
                 // Dispatch term extraction to a subprocess if the dataset is marked as active
-                if($request['status'] === Dataset::STATUS_ACTIVE){
+                if($request['status'] === Dataset::STATUS_ACTIVE && $tedEnabled === true){
                     TermExtraction::dispatch(
                         $dataset->id,
                         base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
                         $elasticIndexing
                     );
                 }
-
+                
                 Auditor::log([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
@@ -1187,6 +1191,10 @@ class DatasetController extends Controller
 
     private function mapCoverage(array $metadata, Dataset $dataset): void 
     {
+        if (!isset($metadata['metadata']['coverage']['spatial'])) {
+            return;
+        }
+
         $coverage = strtolower($metadata['metadata']['coverage']['spatial']);
         $ukCoverages = SpatialCoverage::whereNot('region', 'Rest of the world')->get();
         $worldId = SpatialCoverage::where('region', 'Rest of the world')->first()->id;

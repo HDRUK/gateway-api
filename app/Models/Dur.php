@@ -20,6 +20,10 @@ class Dur extends Model
 {
     use HasFactory, SoftDeletes, Prunable;
 
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_DRAFT = 'DRAFT';
+    public const STATUS_ARCHIVED = 'ARCHIVED';
+
     public $timestamps = true;
 
     /**
@@ -82,6 +86,7 @@ class Dur extends Model
         'created_at', // for migration from mongo database
         'updated_at', // for migration from mongo database
         'applicant_id',
+        'status',
     ];
 
     /**

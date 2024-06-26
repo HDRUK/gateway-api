@@ -7,6 +7,7 @@ use Exception;
 use App\Models\AuditLog;
 use App\Jobs\SendAuditLogToPubSub;
 use App\Http\Traits\RequestTransformation;
+use Carbon\CarbonImmutable;
 
 class Auditor {
 
@@ -36,7 +37,7 @@ class Auditor {
             $data['action_service'] = env('AUDIT_ACTION_SERVICE', 'gateway_api');
             $data['action_name'] = strtolower($data['action_name']);
 
-            if (Config::get('services.googlepubsub.pubsub_enabled')) {
+            if (Config::get('services.googlepubsub.enabled')) {
                 SendAuditLogToPubSub::dispatch($data);
             }
 

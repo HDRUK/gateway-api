@@ -2488,7 +2488,7 @@ class EmailTemplatesSeeder extends Seeder
                         <mj-section background-repeat="repeat" background-size="auto" background-position="top center" border="none" direction="ltr" text-align="center" padding="20px 0px 20px 0px" >
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[TEAM_NAME]],<br><br>
-                                    You have received a dataset access enquiry from [[USER_FIRST_NAME]], details of which can be found in the thread below. You can respond by using the reply button within your email client, or by clicking the button below to respond via the Gateway.<br><br>
+                                    You have received an enquiry from [[USER_FIRST_NAME]], details of which can be found in the thread below. You can respond by using the reply button within your email client, or by clicking the button below to respond via the Gateway.<br><br>
                             Submitted information<div>Name: [[USER_FIRST_NAME]] [[USER_LAST_NAME]]</div>
                             <div>Organisation: [[USER_ORGANISATION]]</div>
                             <div>Project title: [[PROJECT_TITLE]]</div>

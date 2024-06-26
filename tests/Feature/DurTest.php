@@ -147,6 +147,7 @@ class DurTest extends TestCase
                     'application',
                     'team',
                     'user',
+                    'status',
                 ],
             ],
             'current_page',
@@ -172,7 +173,7 @@ class DurTest extends TestCase
      */
     public function test_get_dur_by_id_with_success(): void
     {
-        $durId = (int) Dur::all()->random()->id;
+        $durId = (int) Dur::all()->where('status', 'ACTIVE')->random()->id;
         $response = $this->json('GET', self::TEST_URL . '/' . $durId, [], $this->header);
 
         $this->assertCount(1, $response['data']);
@@ -238,6 +239,7 @@ class DurTest extends TestCase
                     'user',
                     'application_id',
                     'applications',
+                    'status',
                 ]
             ]
         ]);
@@ -265,6 +267,7 @@ class DurTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -310,6 +313,7 @@ class DurTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -380,6 +384,7 @@ class DurTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -405,6 +410,7 @@ class DurTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02', 'External Dataset 03'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'status' => 'ACTIVE',
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -459,6 +465,7 @@ class DurTest extends TestCase
             'team_id' => $teamId,
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -484,6 +491,85 @@ class DurTest extends TestCase
         );
         $responseDelete->assertStatus(200);
     }
+
+    /**
+     * Create, delete, unarchive (un-delete), and delete Dur with success
+     *
+     * @return void
+     */
+    public function test_create_archive_unarchive_dur_with_success(): void
+    {
+        // create dur
+        $userId = (int) User::all()->random()->id;
+        $teamId = (int) Team::all()->random()->id;
+        $countBefore = Dur::count();
+        $mockData = [
+            'datasets' => $this->generateDatasets(),
+            'publications' => $this->generatePublications(),
+            'keywords' => $this->generateKeywords(),
+            'tools' => $this->generateTools(),
+            'user_id' => $userId,
+            'team_id' => $teamId,
+            'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
+            'latest_approval_date' => '2017-09-12T01:00:00',
+            'status' => 'ACTIVE',
+        ];
+
+        $responseIns = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $mockData,
+            $this->header
+        );
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $this->assertEquals(
+            $responseIns['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+        $dueIdInsert = $responseIns['data'];
+
+        // Delete
+        $responseDelete = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $dueIdInsert,
+            [],
+            $this->header
+        );
+        $responseDelete->assertStatus(200);
+
+        // Unarchive tool
+        $responseUnarchive = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $dueIdInsert . '?unarchive',
+            [],
+            $this->header
+        );
+        $responseUnarchive->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseUnarchive->assertStatus(200);
+
+        // Verify that the unarchived dur has deleted_at == null
+        $durData = $responseUnarchive['data'];
+        $this->assertNull($durData['deleted_at']);
+
+        // Delete again
+        $responseDeleteAgain = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $dueIdInsert,
+            [],
+            $this->header
+        );
+        $responseDeleteAgain->assertStatus(200);
+    }
+
 
     public function test_download_dur_table_with_success(): void
     {
@@ -580,6 +666,7 @@ class DurTest extends TestCase
             'non_gateway_datasets' => ['External Dataset 01', 'External Dataset 02'],
             'latest_approval_date' => '2017-09-12T01:00:00',
             'organisation_sector' => 'academia',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
@@ -633,6 +720,7 @@ class DurTest extends TestCase
             'project_start_date' => '2020-03-23T00:00:00',
             'project_end_date' => '2025-04-30T00:00:00',
             'latest_approval_date' => '2020-04-14T00:00:00',
+            'status' => 'ACTIVE',
         ];
 
         $response = $this->json(
