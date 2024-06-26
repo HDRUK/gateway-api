@@ -796,7 +796,7 @@ class CohortRequestController extends Controller
      *    path="/api/v1/cohort_requests/{id}/admin",
      *    operationId="assing_admin_permission_cohort_requests",
      *    tags={"Cohort Requests"},
-     *    summary="CohortRequestController@assignAdminPermissionToUser",
+     *    summary="CohortRequestController@assignAdminPermission",
      *    description="Assing admin permission for cohort request by id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -840,7 +840,7 @@ class CohortRequestController extends Controller
      *      )
      * )
      */
-    public function assignAdminPermissionToUser(AssignAdminCohortRequest $request, int $id): JsonResponse
+    public function assignAdminPermission(AssignAdminCohortRequest $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -885,7 +885,7 @@ class CohortRequestController extends Controller
      *    path="/api/v1/cohort_requests/{id}/admin",
      *    operationId="remove_admin_permission_cohort_requests",
      *    tags={"Cohort Requests"},
-     *    summary="CohortRequestController@removeAdminPermissionToUser",
+     *    summary="CohortRequestController@removeAdminPermission",
      *    description="Remove admin permission for cohort request by id",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
@@ -929,7 +929,7 @@ class CohortRequestController extends Controller
      *      )
      * )
      */
-    public function removeAdminPermissionToUser(RemoveAdminCohortRequest $request, int $id): JsonResponse
+    public function removeAdminPermission(RemoveAdminCohortRequest $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();

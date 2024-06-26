@@ -2353,7 +2353,7 @@ return [
         'name' => 'cohort_requests',
         'method' => 'post',
         'path' => '/cohort_requests/{id}/admin',
-        'methodController' => 'CohortRequestController@assignAdminPermissionToUser',
+        'methodController' => 'CohortRequestController@assignAdminPermission',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -2367,7 +2367,7 @@ return [
         'name' => 'cohort_requests',
         'method' => 'delete',
         'path' => '/cohort_requests/{id}/admin',
-        'methodController' => 'CohortRequestController@removeAdminPermissionToUser',
+        'methodController' => 'CohortRequestController@removeAdminPermission',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
