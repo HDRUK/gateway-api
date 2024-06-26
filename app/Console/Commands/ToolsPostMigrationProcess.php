@@ -125,20 +125,19 @@ class ToolsPostMigrationProcess extends Command
                      */
                     $licenceId = NULL;
                     if ($csv['License MK2'] !== '') {
-                        $licences = License::where('label', $csv['License MK2'])->first();
-                        if ($licences) {
+                        $licences = License::where(['label' => trim($csv['License MK2'])])->first();
+                        if (!is_null($licences)) {
                             $licenceId = $licences->id;
                         }
                     }
-
                     $tool->license = $licenceId;
                     $tool->save();
 
                     $this->indexElasticTool($tool->id);
 
-                    echo 'completed post-process of migration for tool ' . $tool->id . "\n";
+                    echo 'completed post-process of migration for tool ' . $tool->id . PHP_EOL;
                 } else {
-                    echo 'no tool matching ' . $csv['_id'] . " ignoring\n";
+                    echo 'no tool matching ' . $csv['_id'] . ' ignoring'  . PHP_EOL;
                 }
             } catch (Exception $e) {
                 echo 'unable to process ' . $csv['_id'] . ' because ' . $e->getMessage() . "\n";
