@@ -1006,6 +1006,47 @@ return [
         ],
     ],
 
+    // users & roles
+    [
+        'name' => 'users.roles.post',
+        'method' => 'post',
+        'path' => '/users/{userId}/roles',
+        'methodController' => 'UserRoleController@store',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'users.roles.patch',
+        'method' => 'patch',
+        'path' => '/users/{userId}/roles',
+        'methodController' => 'UserRoleController@edit',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'users.roles.delete',
+        'method' => 'delete',
+        'path' => '/users/{userId}/roles',
+        'methodController' => 'UserRoleController@destroy',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [],
+    ],
+
     // notifications
     [
         'name' => 'notifications',
@@ -2307,6 +2348,34 @@ return [
             'check.access:permissions,cohort.read',
         ],
         'constraint' => [],
+    ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'post',
+        'path' => '/cohort_requests/{id}/admin',
+        'methodController' => 'CohortRequestController@assignAdminPermission',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'cohort_requests',
+        'method' => 'delete',
+        'path' => '/cohort_requests/{id}/admin',
+        'methodController' => 'CohortRequestController@removeAdminPermission',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+            'check.access:roles,hdruk.superadmin',
+        ],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
     ],
 
     // search

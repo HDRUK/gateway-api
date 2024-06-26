@@ -73,6 +73,41 @@ Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
+
+### Users - Roles
+### assign roles to user
+POST {{baseUrl}}/api/{{apiVersion}}/users/20/roles HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "roles": [
+        "custodian.metadata.manager",
+        "metadata.editor",
+        "dar.reviewer"
+    ]
+}
+
+### update roles to user
+PUT {{baseUrl}}/api/{{apiVersion}}/users/20/roles HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "roles": {
+        "custodian.metadata.manager": false
+    }
+}
+
+### update roles to user
+DELETE {{baseUrl}}/api/{{apiVersion}}/users/20/roles HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+
 ### PERMISSIONS
 #### get all permissions
 GET {{baseUrl}}/api/{{apiVersion}}/permissions HTTP/1.1
@@ -1355,6 +1390,18 @@ Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
 
+#### assign admin for cohort request id
+POST {{baseUrl}}/api/{{apiVersion}}/cohort_requests/24/admin HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
+#### assign admin for cohort request id
+DELETE {{baseUrl}}/api/{{apiVersion}}/cohort_requests/24/admin HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer {{accessToken}}
+
 ### Keywords
 #### get all
 # GET {{baseUrl}}/api/{{apiVersion}}/keywords?perPage=5 HTTP/1.1
@@ -1599,8 +1646,10 @@ Authorization: Bearer {{accessToken}}
 
 ### Data Use Registers 
 #### get all
-# GET {{baseUrl}}/api/{{apiVersion}}/dur HTTP/1.1
-GET {{baseUrl}}/api/{{apiVersion}}/dur?project_title=study HTTP/1.1
+# GET {{baseUrl}}/api/{{apiVersion}}/dur
+# GET {{baseUrl}}/api/{{apiVersion}}/dur?sort=project_title:asc,updated_at:asc,created_at:asc
+# GET {{baseUrl}}/api/{{apiVersion}}/dur?project_title=study
+GET {{baseUrl}}/api/{{apiVersion}}/dur?sort=project_title:desc HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
