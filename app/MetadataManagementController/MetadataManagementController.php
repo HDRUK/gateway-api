@@ -209,6 +209,28 @@ class MetadataManagementController {
 
             $metadata = $datasetMatch->latestVersion()->metadata;
 
+            $containsTissue = false;
+            $materialTypes = null;
+            if(version_compare(Config::get('metadata.GWDM.version'),"2.0","<")){
+                $containsTissue = !empty(MMC::getValueByPossibleKeys($metadata, ['metadata.coverage.biologicalsamples', 'metadata.coverage.physicalSampleAvailability'], ''));
+            }
+            else{
+                $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
+                if (!is_null($tissues)) {
+                    $materialTypes = array_map(function ($item) {
+                        return $item['materialType'];
+                    }, $tissues);
+                    $containsTissue = count($materialTypes) > 0;
+                } 
+               
+            }
+
+            $structuralMetadata = Arr::get($metadata, 'metadata.structuralMetadata', null);
+            $hasTechnicalMetadata = false;
+            if (!is_null($structuralMetadata)) {
+                $hasTechnicalMetadata = count($structuralMetadata) > 0;
+            } 
+
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
                 'keywords' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], ''),
@@ -219,10 +241,10 @@ class MetadataManagementController {
                 'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(180)),
-                'containsTissue' => !empty($this->getValueByPossibleKeys($metadata, ['metadata.coverage.biologicalsamples', 'metadata.coverage.physicalSampleAvailability'], '')),
-                'sampleAvailability' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.coverage.properties.materialType.items', 'TissuesSampleCollection.properties.materialType.items'], '')),
+                'containsTissue' => $containsTissue,
+                'sampleAvailability' => explode(',', $materialTypes),
                 'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
-                'hasTechnicalMetadata' => (bool) $datasetMatch->has_technical_details,
+                'hasTechnicalMetadata' => $hasTechnicalMetadata,
                 'named_entities' => $datasetMatch->namedEntities->pluck('name')->all(),
                 'collectionName' => $datasetMatch->collections->pluck('name')->all(),
                 'dataUseTitles' => $datasetMatch->durs->pluck('project_title')->all(),
