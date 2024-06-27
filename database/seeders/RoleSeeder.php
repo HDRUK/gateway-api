@@ -102,7 +102,7 @@ class RoleSeeder extends Seeder
                 ],
             ],
             'custodian.team.admin' => [
-                'full_name' => 'TEAM ADMIN',
+                'full_name' => 'Team Admin',
                 'permissions' => [
                     'applications.read',
                     'applications.create',
@@ -132,7 +132,7 @@ class RoleSeeder extends Seeder
                 ],
             ],
             'developer' => [
-                'full_name' => 'DEVELOPER',
+                'full_name' => 'Developer',
                 'permissions' => [
                     'applications.read',
                     'applications.create',
@@ -144,7 +144,7 @@ class RoleSeeder extends Seeder
                 ],
             ],
             'custodian.metadata.manager' => [
-                'full_name' => 'METADATA MANAGER',
+                'full_name' => 'Metadata Manager',
                 'permissions' => [
                     'datasets.read',
                     'datasets.create',
@@ -158,7 +158,7 @@ class RoleSeeder extends Seeder
                 ],
             ],
             'metadata.editor' => [
-                'full_name' => 'METADATA EDITOR',
+                'full_name' => 'Metadata Editor',
                 'permissions' => [
                     'datasets.read',
                     'datasets.create',
@@ -169,7 +169,7 @@ class RoleSeeder extends Seeder
                 ],
             ],
             'custodian.dar.manager' => [
-                'full_name' => 'DAR MANAGER',
+                'full_name' => 'DAR Manager',
                 'permissions' => [
                     'integrations.dar',
                     'datasets.read',
@@ -201,7 +201,7 @@ class RoleSeeder extends Seeder
                 ],
             ],
             'dar.reviewer' => [
-                'full_name' => 'REVIEWER',
+                'full_name' => 'DAR Reviewer',
                 'permissions' => [
                     'datasets.read',
                     'dar.read.assigned',

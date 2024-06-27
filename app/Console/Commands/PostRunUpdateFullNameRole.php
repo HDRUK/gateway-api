@@ -27,12 +27,12 @@ class PostRunUpdateFullNameRole extends Command
     public function handle()
     {
         $array = [
-            'custodian.team.admin' => 'TEAM ADMIN',
-            'developer' => 'DEVELOPER',
-            'custodian.metadata.manager' => 'METADATA MANAGER',
-            'metadata.editor' => 'METADATA EDITOR',
-            'custodian.dar.manager' => 'DAR MANAGER',
-            'dar.reviewer' => 'DAR REVIEWER',
+            'custodian.team.admin' => 'Team Admin',
+            'developer' => 'Developer',
+            'custodian.metadata.manager' => 'Metadata Manager',
+            'metadata.editor' => 'Metadata Editor',
+            'custodian.dar.manager' => 'DAR Manager',
+            'dar.reviewer' => 'DAR Reviewer',
         ];
 
         $askInitFullName = $this->ask('Do you want this "roles.full_name" column to be initialized? [yes]/no', 'yes');
