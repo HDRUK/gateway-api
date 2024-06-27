@@ -49,6 +49,7 @@ class DatasetsPostMigration extends Command
                 'mongo_pid' => $mongoPid,
             ])->first();
 
+
             if ($dataset) {
                 $datasetVersion = DatasetVersion::where([
                     'id' => $dataset->id,
@@ -64,17 +65,39 @@ class DatasetsPostMigration extends Command
                     DatasetVersion::where('id', $dataset->id)->update([
                         'metadata' => json_encode(json_encode($metadata)),
                     ]);
-                }
 
-                if ($reindexEnabled) {
-                    MMC::reindexElastic($dataset->id);
-                }                
+                    $progressbar->advance();
+                }
             }
-            $progressbar->advance();
-            sleep(1); // to not kill ElasticSearch
         }
 
         $progressbar->finish();
+        echo "Done creating new versions! \n";
+
+
+        if(!$reindexEnabled){
+            return;
+        }
+
+        //reindex ALL, not just those in this CSV file
+        $datasetIds = Dataset::pluck('id');
+        $progressbar = $this->output->createProgressBar(count($datasetIds));
+        foreach ($datasetIds as $id) {
+        
+            // Example: Fetch dataset details
+            $dataset = Dataset::find($id);
+        
+            MMC::reindexElastic($dataset->id);
+
+            // Add your logic here for each dataset ID
+            $progressbar->advance();
+            sleep(1); // to not kill ElasticSearch
+        }
+       
+        
+        $progressbar->start();
+
+
     }
 
     private function readMigrationFile(string $migrationFile): array
