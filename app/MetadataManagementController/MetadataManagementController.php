@@ -297,21 +297,19 @@ class MetadataManagementController {
         }
     }
 
-    public function getOnboardingFormHydrated(string $name, string $version): JsonResponse
+    public function getOnboardingFormHydrated(string $name, string $version, string $dataTypes): array
     {
         try {
             $queryParams = [
                 'name' => $name,
                 'version' => $version,
+                'dataTypes' => $dataTypes
             ];
 
             $urlString = env('TRASER_SERVICE_URL') . '/get/form_hydration?' . http_build_query($queryParams);
             $response = Http::get($urlString);
 
-            return response()->json([
-                'message' => 'success',
-                'data' => $response->json(),
-            ]);
+            return $response->json();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
