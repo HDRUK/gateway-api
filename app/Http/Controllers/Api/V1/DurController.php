@@ -526,7 +526,7 @@ class DurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $durId)->first();
-            if($request['enabled'] === 1 && $currentDurStatus === 'ACTIVE'){
+            if($currentDurStatus->status === 'ACTIVE'){
                 $this->indexElasticDur($durId);
             }
             
@@ -768,14 +768,6 @@ class DurController extends Controller
                 throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
             }
 
-            if ($initDur === 'ARCHIVED' && (array_key_exists('status', $input) && $input['status'] !== 'ARCHIVED')) {
-                Dur::withTrashed()->where('id', $id)->restore();
-                DurHasDataset::withTrashed()->where('dur_id', $id)->restore();
-                DurHasKeyword::withTrashed()->where('dur_id', $id)->restore();
-                DurHasPublication::withTrashed()->where('dur_id', $id)->restore();
-                DurHasTool::withTrashed()->where('dur_id', $id)->restore();
-            }
-
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             if (array_key_exists('organisation_sector', $array)) {
@@ -811,16 +803,8 @@ class DurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $id)->first();
-            if($request['enabled'] === 1 && $currentDurStatus->status === 'ACTIVE'){
+            if($currentDurStatus->status === 'ACTIVE'){
                 $this->indexElasticDur($id);
-            }
-
-            if ($currentDurStatus->status === 'ARCHIVED') {
-                Dur::where('id', $id)->delete();
-                DurHasDataset::where('dur_id', $id)->delete();
-                DurHasKeyword::where('dur_id', $id)->delete();
-                DurHasPublication::where('dur_id', $id)->delete();
-                DurHasTool::where('dur_id', $id)->delete();
             }
 
             Auditor::log([
@@ -1012,12 +996,6 @@ class DurController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             if ($request->has('unarchive')) {
-                // Restore the Dur and related models
-                Dur::withTrashed()->where('id', $id)->restore();
-                DurHasDataset::withTrashed()->where('dur_id', $id)->restore();
-                DurHasKeyword::withTrashed()->where('dur_id', $id)->restore();
-                DurHasPublication::withTrashed()->where('dur_id', $id)->restore();
-                DurHasTool::withTrashed()->where('dur_id', $id)->restore();
                 Dur::where('id', $id)->update(['status' => 'DRAFT']);
 
                 Auditor::log([
@@ -1031,7 +1009,6 @@ class DurController extends Controller
                     'message' => 'success',
                     'data' => $this->getDurById($id),
                 ], Config::get('statuscodes.STATUS_OK.code'));
-            
             } else {
                 $initDur = Dur::withTrashed()->where('id', $id)->first();
                 $userId = null;
@@ -1091,14 +1068,6 @@ class DurController extends Controller
                 if ($initDur === 'ARCHIVED' && !array_key_exists('status', $input)) {
                     throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
                 }
-    
-                if ($initDur === 'ARCHIVED' && (array_key_exists('status', $input) && $input['status'] !== 'ARCHIVED')) {
-                    Dur::withTrashed()->where('id', $id)->restore();
-                    DurHasDataset::withTrashed()->where('dur_id', $id)->restore();
-                    DurHasKeyword::withTrashed()->where('dur_id', $id)->restore();
-                    DurHasPublication::withTrashed()->where('dur_id', $id)->restore();
-                    DurHasTool::withTrashed()->where('dur_id', $id)->restore();
-                }
 
                 $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
@@ -1143,16 +1112,8 @@ class DurController extends Controller
                 }
 
                 $currentDurStatus = Dur::where('id', $id)->first();
-                if($request['enabled'] === 1 && $currentDurStatus === 'ACTIVE'){
+                if($currentDurStatus->status === 'ACTIVE'){
                     $this->indexElasticDur($id);
-                }
-
-                if ($currentDurStatus->status === 'ARCHIVED') {
-                    Dur::where('id', $id)->delete();
-                    DurHasDataset::where('dur_id', $id)->delete();
-                    DurHasKeyword::where('dur_id', $id)->delete();
-                    DurHasPublication::where('dur_id', $id)->delete();
-                    DurHasTool::where('dur_id', $id)->delete();
                 }
 
                 Auditor::log([

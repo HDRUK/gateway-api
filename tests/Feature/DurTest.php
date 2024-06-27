@@ -533,14 +533,17 @@ class DurTest extends TestCase
         );
         $dueIdInsert = $responseIns['data'];
 
-        // Delete
-        $responseDelete = $this->json(
-            'DELETE',
+        // Archive
+        $mockDataEdit = [
+            'status' => 'ARCHIVED',
+        ];
+        $responseEdit = $this->json(
+            'PATCH',
             self::TEST_URL . '/' . $dueIdInsert,
-            [],
+            $mockDataEdit,
             $this->header
         );
-        $responseDelete->assertStatus(200);
+        $responseEdit->assertStatus(200);
 
         // Unarchive tool
         $responseUnarchive = $this->json(

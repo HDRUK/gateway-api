@@ -1665,32 +1665,32 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "mongo_object_id": "62792f1ff1c353ea952a95ac",
-    "mongo_id": "6406865803342279",
-    "counter": 19,
-    "non_gateway_datasets": ["SICSAG (Scottish Intensive Care Society Audit Group)", "COVID19 test"],
-    "non_gateway_applicants": ["Richard Haynes"],
+    "mongo_object_id": "61d56c7e4a44aac1b7267cd4",
+    "mongo_id": "13939098729056544",
+    "counter": 0,
+    "non_gateway_datasets": [],
+    "non_gateway_applicants": [],
     "funders_and_sponsors": [],
     "other_approval_committees": [],
     "gateway_outputs_tools": [],
     "gateway_outputs_papers": [],
-    "non_gateway_outputs": ["https://www.recoverytrial.net/results"],
-    "project_title": "RECOVERY (Randomised Evaluation of Covid 19 Therapy)",
-    "project_id_text": "eDRIS-1920-0282",
-    "organisation_name": "University of Oxford",
-    "organisation_sector": "Academic Institute",
-    "manual_upload": true,
-    "team_id": 42,
-    "user_id": 2335,
-    "enabled": true,
+    "non_gateway_outputs": [],
+    "project_title": "",
+    "project_id_text": "600A-EF4A-913B-1EC6-25AF-B3B6",
+    "organisation_name": "",
+    "organisation_sector": "",
+    "manual_upload": false,
+    "team_id": 43,
+    "user_id": 123,
+    "enabled": false,
     "rejection_reason": "",
-    "accredited_researcher_status": "",
+    "accredited_researcher_status": "Unknown",
     "applicant_id": "",
     "confidential_data_description": "",
     "data_sensitivity_level": "",
     "dataset_linkage_description": "",
     "duty_of_confidentiality": "",
-    "lay_summary": "This international clinical trial aims to identify treatments that may be beneficial for people hospitalised with suspected or confirmed COVID-19. A range of potential treatments have been suggested for COVID-19 but nobody knows if any of them will turn out to be more effective in helping people recover than the usual standard of hospital care which all patients will receive. The RECOVERY Trial is currently testing some of these suggested treatments:  - high-dose vs standard corticosteroids - empagliflozin (a drug for diabetes and heart and kidney disease) - sotrovimab (a monoclonal antibody treatment against the spike protein) - molnupiravir (an antiviral treatment) - paxlovid (an antiviral treatment) Data from the trial are regularly reviewed so that any effective treatment can be identified quickly and made available to all patients ",
+    "lay_summary": "",
     "legal_basis_for_data_article6": "",
     "legal_basis_for_data_article9": "",
     "national_data_optout": "",
@@ -1699,69 +1699,173 @@ Authorization: Bearer {{accessToken}}
     "public_benefit_statement": "",
     "request_category_type": "",
     "request_frequency": "",
-    "access_type": "Release",
+    "access_type": "",
     "sublicence_arrangements": "",
     "technical_summary": "",
-    "keywords": ["COVID-19", "National Core Study"],
+    "keywords": [],
     "datasets": [
         {
-            "id": 345,
+            "id": 414,
             "is_locked": true,
-            "updated_at": "2022-05-09T00:00:00",
-            "user_id": 2335,
-            "reason": "This dataset was added via an edit of this data use register"
+            "updated_at": "2022-01-05T00:00:00",
+            "user_id": 123,
+            "reason": "This dataset was added automatically from an approved data access request"
         },
         {
-            "id": 356,
+            "id": 407,
             "is_locked": true,
-            "updated_at": "2022-05-09T00:00:00",
-            "user_id": 2335,
-            "reason": "This dataset was added via an edit of this data use register"
+            "updated_at": "2022-01-05T00:00:00",
+            "user_id": 123,
+            "reason": "This dataset was added automatically from an approved data access request"
+        },
+        {
+            "id": 393,
+            "is_locked": true,
+            "updated_at": "2022-01-05T00:00:00",
+            "user_id": 123,
+            "reason": "This dataset was added automatically from an approved data access request"
+        },
+        {
+            "id": 445,
+            "is_locked": true,
+            "updated_at": "2022-01-05T00:00:00",
+            "user_id": 123,
+            "reason": "This dataset was added automatically from an approved data access request"
+        },
+        {
+            "id": 419,
+            "is_locked": true,
+            "updated_at": "2022-01-05T00:00:00",
+            "user_id": 123,
+            "reason": "This dataset was added automatically from an approved data access request"
+        },
+        {
+            "id": 415,
+            "is_locked": true,
+            "updated_at": "2022-01-05T00:00:00",
+            "user_id": 123,
+            "reason": "This dataset was added automatically from an approved data access request"
+        },
+        {
+            "id": 418,
+            "is_locked": true,
+            "updated_at": "2022-01-05T00:00:00",
+            "user_id": 123,
+            "reason": "This dataset was added automatically from an approved data access request"
+        },
+        {
+            "id": 446,
+            "is_locked": true,
+            "updated_at": "2022-01-05T00:00:00",
+            "user_id": 123,
+            "reason": "This dataset was added automatically from an approved data access request"
         }],
-    "publications": [
-        {
-            "id": 1375,
-            "updated_at": "2022-05-09T00:00:00"
-        },
-        {
-            "id": 1107,
-            "updated_at": "2022-05-09T00:00:00"
-        },
-        {
-            "id": 815,
-            "updated_at": "2022-05-09T00:00:00"
-        },
-        {
-            "id": 998,
-            "updated_at": "2022-05-09T00:00:00"
-        },
-        {
-            "id": 1006,
-            "updated_at": "2022-05-09T00:00:00"
-        },
-        {
-            "id": 1554,
-            "updated_at": "2022-05-09T00:00:00"
-        },
-        {
-            "id": 1302,
-            "updated_at": "2022-05-09T00:00:00"
-        },
-        {
-            "id": 1607,
-            "updated_at": "2022-05-09T00:00:00"
-        },
-        {
-            "id": 1203,
-            "updated_at": "2022-05-09T00:00:00"
-        }],
-    "project_start_date": "2020-03-23T00:00:00",
-    "project_end_date": "2025-04-30T00:00:00",
-    "latest_approval_date": "2020-04-14T00:00:00",
-    "last_activity": "2023-08-21T12:51:31",
-    "created_at": "2022-05-09T15:11:28",
-    "updated_at": "2023-08-21T12:51:31"
+    "publications": [],
+    "status": "ARCHIVED",
+    "latest_approval_date": "2022-01-05T10:01:34",
+    "last_activity": "2022-01-05T10:01:34",
+    "created_at": "2022-01-05T10:01:34",
+    "updated_at": "2022-01-05T10:01:34"
 }
+
+# {
+#     "mongo_object_id": "62792f1ff1c353ea952a95ac",
+#     "mongo_id": "6406865803342279",
+#     "counter": 19,
+#     "non_gateway_datasets": ["SICSAG (Scottish Intensive Care Society Audit Group)", "COVID19 test"],
+#     "non_gateway_applicants": ["Richard Haynes"],
+#     "funders_and_sponsors": [],
+#     "other_approval_committees": [],
+#     "gateway_outputs_tools": [],
+#     "gateway_outputs_papers": [],
+#     "non_gateway_outputs": ["https://www.recoverytrial.net/results"],
+#     "project_title": "RECOVERY (Randomised Evaluation of Covid 19 Therapy)",
+#     "project_id_text": "eDRIS-1920-0282",
+#     "organisation_name": "University of Oxford",
+#     "organisation_sector": "Academic Institute",
+#     "manual_upload": true,
+#     "team_id": 42,
+#     "user_id": 2335,
+#     "enabled": true,
+#     "rejection_reason": "",
+#     "accredited_researcher_status": "",
+#     "applicant_id": "",
+#     "confidential_data_description": "",
+#     "data_sensitivity_level": "",
+#     "dataset_linkage_description": "",
+#     "duty_of_confidentiality": "",
+#     "lay_summary": "This international clinical trial aims to identify treatments that may be beneficial for people hospitalised with suspected or confirmed COVID-19. A range of potential treatments have been suggested for COVID-19 but nobody knows if any of them will turn out to be more effective in helping people recover than the usual standard of hospital care which all patients will receive. The RECOVERY Trial is currently testing some of these suggested treatments:  - high-dose vs standard corticosteroids - empagliflozin (a drug for diabetes and heart and kidney disease) - sotrovimab (a monoclonal antibody treatment against the spike protein) - molnupiravir (an antiviral treatment) - paxlovid (an antiviral treatment) Data from the trial are regularly reviewed so that any effective treatment can be identified quickly and made available to all patients ",
+#     "legal_basis_for_data_article6": "",
+#     "legal_basis_for_data_article9": "",
+#     "national_data_optout": "",
+#     "organisation_id": "",
+#     "privacy_enhancements": "",
+#     "public_benefit_statement": "",
+#     "request_category_type": "",
+#     "request_frequency": "",
+#     "access_type": "Release",
+#     "sublicence_arrangements": "",
+#     "technical_summary": "",
+#     "keywords": ["COVID-19", "National Core Study"],
+#     "datasets": [
+#         {
+#             "id": 345,
+#             "is_locked": true,
+#             "updated_at": "2022-05-09T00:00:00",
+#             "user_id": 2335,
+#             "reason": "This dataset was added via an edit of this data use register"
+#         },
+#         {
+#             "id": 356,
+#             "is_locked": true,
+#             "updated_at": "2022-05-09T00:00:00",
+#             "user_id": 2335,
+#             "reason": "This dataset was added via an edit of this data use register"
+#         }],
+#     "publications": [
+#         {
+#             "id": 1375,
+#             "updated_at": "2022-05-09T00:00:00"
+#         },
+#         {
+#             "id": 1107,
+#             "updated_at": "2022-05-09T00:00:00"
+#         },
+#         {
+#             "id": 815,
+#             "updated_at": "2022-05-09T00:00:00"
+#         },
+#         {
+#             "id": 998,
+#             "updated_at": "2022-05-09T00:00:00"
+#         },
+#         {
+#             "id": 1006,
+#             "updated_at": "2022-05-09T00:00:00"
+#         },
+#         {
+#             "id": 1554,
+#             "updated_at": "2022-05-09T00:00:00"
+#         },
+#         {
+#             "id": 1302,
+#             "updated_at": "2022-05-09T00:00:00"
+#         },
+#         {
+#             "id": 1607,
+#             "updated_at": "2022-05-09T00:00:00"
+#         },
+#         {
+#             "id": 1203,
+#             "updated_at": "2022-05-09T00:00:00"
+#         }],
+#     "project_start_date": "2020-03-23T00:00:00",
+#     "project_end_date": "2025-04-30T00:00:00",
+#     "latest_approval_date": "2020-04-14T00:00:00",
+#     "last_activity": "2023-08-21T12:51:31",
+#     "created_at": "2022-05-09T15:11:28",
+#     "updated_at": "2023-08-21T12:51:31"
+# }
 
 
 #### add new - test
