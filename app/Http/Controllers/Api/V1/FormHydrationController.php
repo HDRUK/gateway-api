@@ -102,6 +102,15 @@ class FormHydrationController extends Controller
      *              type="string"
      *          )
      *      ),
+     *       @OA\Parameter(
+     *          name="dataTypes",
+     *          in="query",
+     *          required=false,
+     *          description="The data types of the dataset about to be onboarded.",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
@@ -123,9 +132,10 @@ class FormHydrationController extends Controller
     {
         $model = $request->input('model', Config::get('form_hydration.schema.model'));
         $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
+        $dataTypes = $request->input('dataTypes', '');
         $team = $request->input('team_id', null);
 
-        $hydrationJson = MMC::getOnboardingFormHydrated($model, $version);
+        $hydrationJson = MMC::getOnboardingFormHydrated($model, $version, $dataTypes);
         if ($team) {
             $hydrationJson['defaultValues'] = $this->getDefaultValues((int) $team);
         } else {
