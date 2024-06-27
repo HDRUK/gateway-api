@@ -18,15 +18,12 @@ use Database\Seeders\DatasetSeeder;
 use Database\Seeders\DatasetVersionSeeder;
 
 use Tests\Traits\Authorization;
-use Tests\Traits\MockExternalApis;
 
 class FormHydrationTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
-    use MockExternalApis {
-        setUp as commonSetUp;
-    }
+
     protected $header = [];
 
     /**
@@ -36,7 +33,7 @@ class FormHydrationTest extends TestCase
      */
     public function setUp(): void
     {
-        $this->commonSetUp();
+        parent::setUp();
 
         $this->seed([
             MinimalUserSeeder::class,
@@ -45,6 +42,17 @@ class FormHydrationTest extends TestCase
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
         ]);
+
+        $this->authorisationUser();
+        $jwt = $this->getAuthorisationJwt();
+        $this->header = [
+            'Accept' => 'application/json',
+            'Authorization' => 'Bearer ' . $jwt,
+        ];
+
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
+        $json = json_decode($jsonFile, true);
+        $this->metadata = $json;
     }
 
     public function test_form_hydration_schema(): void
@@ -120,6 +128,38 @@ class FormHydrationTest extends TestCase
 
     public function test_get_form_hydration_with_success(): void 
     {
+        $hydratedForm = [
+            "schema_fields" => [
+                0 => [
+                    "title" => "Title",
+                    "is_array_form" => false,
+                    "description" => "Title of the dataset limited to 150 characters. It should provide a short description of the dataset and be unique across the gateway. If your title is not unique, please add a prefix with your organisation name or identifier to differentiate it from other datasets within the Gateway. Please avoid acronyms wherever possible. Good titles should summarise the content of the dataset and if relevant, the region the dataset covers.",
+                    "location" => "summary.title",
+                    "guidance" => "- The **title** should provide a short description of the dataset and be **unique** across the gateway.\\n- If your title is not unique, please **add a prefix with your organisation name or identifier** to differentiate it from other datasets within the Gateway.\\n- If the dataset is a **“linked dataset”**, please indicate this using the prefix **“Linked”**.\\n- Please **avoid acronyms** wherever possible.\\n- Good titles should summarise the content of the dataset and if relevant, **the region the dataset covers**.\\n- **Example**: North West London COVID-19 Patient Level Situation Report',",
+                    "field" => [
+                        "component" => "TextField",
+                        "name" => "Title",
+                        "placeholder" => "North West London COVID-19 Patient Level Situation Report",
+                        "label" => "Title of the dataset limited to 150 characters. It should provide a short description of the dataset and be unique across the gateway. If your title is not unique, please add a prefix with your organisation name or identifier to differentiate it from other datasets within the Gateway. Please avoid acronyms wherever possible. Good titles should summarise the content of the dataset and if relevant, the region the dataset covers.",
+                        "limit" => 150,
+                        "required" => true,
+                        "hidden" => false
+                    ]
+                ]
+            ],
+            "validation" => [
+                0 => [
+                    "title" => "Title",
+                    "required" => true,
+                    "type" => "string",
+                    "min" => 2,
+                    "max" => 150
+                ]
+            ]
+        ];
+        MMC::shouldReceive("getOnboardingFormHydrated")->andReturn($hydratedForm);
+        MMC::makePartial();
+
         $teamId = Team::all()->random()->id;
         $userId = User::all()->random()->id;
         $responseCreateDataset = $this->json(
@@ -128,7 +168,7 @@ class FormHydrationTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'metadata' => $this->getFakeDataset(),
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],

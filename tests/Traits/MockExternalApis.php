@@ -992,37 +992,6 @@ trait MockExternalApis
             ];
         });
         MMC::shouldReceive("validateDataModelType")->andReturn(true);
-        
-        $hydratedForm = [
-            "schema_fields" => [
-                0 => [
-                    "title" => "Title",
-                    "is_array_form" => false,
-                    "description" => "Title of the dataset limited to 150 characters. It should provide a short description of the dataset and be unique across the gateway. If your title is not unique, please add a prefix with your organisation name or identifier to differentiate it from other datasets within the Gateway. Please avoid acronyms wherever possible. Good titles should summarise the content of the dataset and if relevant, the region the dataset covers.",
-                    "location" => "summary.title",
-                    "guidance" => "- The **title** should provide a short description of the dataset and be **unique** across the gateway.\\n- If your title is not unique, please **add a prefix with your organisation name or identifier** to differentiate it from other datasets within the Gateway.\\n- If the dataset is a **“linked dataset”**, please indicate this using the prefix **“Linked”**.\\n- Please **avoid acronyms** wherever possible.\\n- Good titles should summarise the content of the dataset and if relevant, **the region the dataset covers**.\\n- **Example**: North West London COVID-19 Patient Level Situation Report',",
-                    "field" => [
-                        "component" => "TextField",
-                        "name" => "Title",
-                        "placeholder" => "North West London COVID-19 Patient Level Situation Report",
-                        "label" => "Title of the dataset limited to 150 characters. It should provide a short description of the dataset and be unique across the gateway. If your title is not unique, please add a prefix with your organisation name or identifier to differentiate it from other datasets within the Gateway. Please avoid acronyms wherever possible. Good titles should summarise the content of the dataset and if relevant, the region the dataset covers.",
-                        "limit" => 150,
-                        "required" => true,
-                        "hidden" => false
-                    ]
-                ]
-            ],
-            "validation" => [
-                0 => [
-                    "title" => "Title",
-                    "required" => true,
-                    "type" => "string",
-                    "min" => 2,
-                    "max" => 150
-                ]
-            ]
-        ];
-        MMC::shouldReceive("getOnboardingFormHydrated")->andReturn($hydratedForm);
         MMC::makePartial();
 
         $this->dataset_store = [];
