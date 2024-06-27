@@ -209,27 +209,11 @@ class MetadataManagementController {
 
             $metadata = $datasetMatch->latestVersion()->metadata;
 
-            $containsTissue = false;
-            $materialTypes = null;
-            if(version_compare(Config::get('metadata.GWDM.version'),"2.0","<")){
-                $containsTissue = !empty(MMC::getValueByPossibleKeys($metadata, ['metadata.coverage.biologicalsamples', 'metadata.coverage.physicalSampleAvailability'], ''));
-            }
-            else{
-                $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
-                if (!is_null($tissues)) {
-                    $materialTypes = array_map(function ($item) {
-                        return $item['materialType'];
-                    }, $tissues);
-                    $containsTissue = count($materialTypes) > 0;
-                } 
-               
-            }
+            
+            $materialTypes = $this->getMaterialTypes($metadata);
+            $containsTissue = $this->getContainsTissues($materialTypes);
+            $hasTechnicalMetadata = $this->getHasTechnicalMetadata($metadata);
 
-            $structuralMetadata = Arr::get($metadata, 'metadata.structuralMetadata', null);
-            $hasTechnicalMetadata = false;
-            if (!is_null($structuralMetadata)) {
-                $hasTechnicalMetadata = count($structuralMetadata) > 0;
-            } 
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -337,5 +321,38 @@ class MetadataManagementController {
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    public function getMaterialTypes(array $metadata): array|null
+    {
+        $materialTypes = null;
+        if(version_compare(Config::get('metadata.GWDM.version'),"2.0","<")){
+            $containsTissue = !empty(MMC::getValueByPossibleKeys($metadata, ['metadata.coverage.biologicalsamples', 'metadata.coverage.physicalSampleAvailability'], ''));
+        }
+        else{
+            $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);
+            if (!is_null($tissues)) {
+                $materialTypes = array_map(function ($item) {
+                    return $item['materialType'];
+                }, $tissues);
+            } 
+        }
+        return $materialTypes;
+    }
+
+    public function getContainsTissues(?array $materialTypes){
+        if($materialTypes === null){
+            return false;
+        }
+        return count($materialTypes) > 0;
+    }
+
+    public function getHasTechnicalMetadata(array $metadata){
+        $structuralMetadata = Arr::get($metadata, 'metadata.structuralMetadata', null);
+        $hasTechnicalMetadata = false;
+        if (!is_null($structuralMetadata)) {
+            $hasTechnicalMetadata = count($structuralMetadata) > 0;
+        } 
+        return  $hasTechnicalMetadata;
     }
 }
