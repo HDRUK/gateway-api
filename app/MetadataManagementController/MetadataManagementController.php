@@ -242,7 +242,7 @@ class MetadataManagementController {
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(180)),
                 'containsTissue' => $containsTissue,
-                'sampleAvailability' => explode(',', $materialTypes),
+                'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => $hasTechnicalMetadata,
                 'named_entities' => $datasetMatch->namedEntities->pluck('name')->all(),
