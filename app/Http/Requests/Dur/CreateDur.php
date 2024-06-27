@@ -251,7 +251,7 @@ class CreateDur extends BaseFormRequest
             'status' => [
                 'nullable',
                 'string',
-                'in:ACTIVE,DRAFT',
+                'in:ACTIVE,ARCHIVED,DRAFT',
             ],
         ];
     }
