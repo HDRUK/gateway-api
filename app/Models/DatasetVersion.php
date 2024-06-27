@@ -2,7 +2,6 @@
 
 namespace App\Models;
 use App\Models\Tool;
-use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Prunable;
