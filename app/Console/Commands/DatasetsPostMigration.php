@@ -66,6 +66,11 @@ class DatasetsPostMigration extends Command
                         'metadata' => json_encode(json_encode($metadata)),
                     ]);
 
+                    if ($reindexEnabled) {
+                        MMC::reindexElastic($dataset->id);
+                        sleep(1); 
+                    }  
+
                     $progressbar->advance();
                 }
             }
@@ -73,30 +78,6 @@ class DatasetsPostMigration extends Command
 
         $progressbar->finish();
         echo "Done creating new versions! \n";
-
-
-        if(!$reindexEnabled){
-            return;
-        }
-
-        //reindex ALL, not just those in this CSV file
-        $datasetIds = Dataset::pluck('id');
-        $progressbar = $this->output->createProgressBar(count($datasetIds));
-        foreach ($datasetIds as $id) {
-        
-            // Example: Fetch dataset details
-            $dataset = Dataset::find($id);
-        
-            MMC::reindexElastic($dataset->id);
-
-            // Add your logic here for each dataset ID
-            $progressbar->advance();
-            sleep(1); // to not kill ElasticSearch
-        }
-       
-        
-        $progressbar->start();
-
 
     }
 
