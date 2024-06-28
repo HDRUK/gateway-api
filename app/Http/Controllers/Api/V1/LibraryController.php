@@ -234,7 +234,7 @@ class LibraryController extends Controller
             return response()->json([
                 'message' => $e->getMessage(),
             ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
-        } catch (ModelNotFoundException $e) {
+        } catch (NotFoundException $e) {
             return response()->json([
                 'message' => 'not found',
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
