@@ -71,11 +71,12 @@ class PublicationTypePostMigration extends Command
                 $publication->save();
             
                 echo 'Updated or created record with id ' . $publication->id . ', doi ' . $paperDOI . ', with publication type ' . $publicationType . "\n";
+            
+                if ($reindexEnabled) {
+                    $publicationController->indexElasticPublication($publication->id);
+                }
             }
-            if ($reindexEnabled) {
-                $publicationController->indexElasticPublication($publication->id);
-            }
-
+            
             $progressbar->advance();
             sleep(0.1);
         }
