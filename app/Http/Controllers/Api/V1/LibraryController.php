@@ -102,8 +102,8 @@ class LibraryController extends Controller
             $libraries = $libraries->paginate($perPage);
 
             $transformedLibraries = $libraries->getCollection()->map(function ($library) {
-                $dataset = $library->dataset;
-                $team = $dataset->team;
+                $dataset = $library->dataset->first();
+                $team = $dataset->team->first();
 
                 $library->dataset_id = $dataset->datasetid;
                 $library->dataset_status = $dataset->status;
@@ -205,8 +205,8 @@ class LibraryController extends Controller
                 throw new UnauthorizedException('You do not have permission to view this library');
             }
 
-            $dataset = $library->dataset;
-            $team = $dataset->team;
+            $dataset = $library->dataset->first();
+            $team = $dataset->team->first();
 
             $library->dataset_id = $dataset->datasetid;
             $library->dataset_status = $dataset->status;
