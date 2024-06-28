@@ -58,6 +58,7 @@ class RoleTest extends TestCase
                 0 => [
                     'id',
                     'name',
+                    'full_name',
                     'enabled',
                     'created_at',
                     'updated_at',
@@ -95,6 +96,7 @@ class RoleTest extends TestCase
                 0 => [
                     'id',
                     'name',
+                    'full_name',
                     'enabled',
                     'created_at',
                     'updated_at',
@@ -114,6 +116,7 @@ class RoleTest extends TestCase
     {
         $bodyCreateRole = [
             "name" => "this.is.a.new.role",
+            "full_name" => "THIS IS A NEW ROLE",
             "enabled" => true,
             "permissions" => [
                 "create",
@@ -132,16 +135,12 @@ class RoleTest extends TestCase
         $contentCreate = $responseCreate->decodeResponseJson();
         $id = $contentCreate['data'];
 
-        $existsRole = Role::where('name', $bodyCreateRole['name'])
-                        ->get()
-                        ->toArray();
-
-        $existsPermsForRole = RoleHasPermission::where('role_id', $id)
-                                ->get()
-                                ->toArray();
+        $existsRole = Role::where('name', $bodyCreateRole['name'])->get()->toArray();
+        $existsPermsForRole = RoleHasPermission::where('role_id', $id)->get()->toArray();
 
         $this->assertTrue((bool) count($existsRole), 'Response was successfully');
         $this->assertEquals($existsRole[0]['name'], $bodyCreateRole['name']);
+        $this->assertEquals($existsRole[0]['full_name'], $bodyCreateRole['full_name']);
         $this->assertEquals(count($existsPermsForRole), count($bodyCreateRole['permissions']));
     }
 
@@ -155,6 +154,7 @@ class RoleTest extends TestCase
         // create
         $bodyCreateRole = [
             "name" => "this.is.a.new.role",
+            "full_name" => "THIS IS A NEW ROLE",
             "enabled" => true,
             "permissions" => [
                 "create",
@@ -173,13 +173,8 @@ class RoleTest extends TestCase
         $contentCreate = $responseCreate->decodeResponseJson();
         $roleId = $contentCreate['data'];
 
-        $existsRole = Role::where('name', $bodyCreateRole['name'])
-                        ->get()
-                        ->toArray();
-
-        $existsPermsForRole = RoleHasPermission::where('role_id', $roleId)
-                        ->get()
-                        ->toArray();
+        $existsRole = Role::where('name', $bodyCreateRole['name'])->get()->toArray();
+        $existsPermsForRole = RoleHasPermission::where('role_id', $roleId)->get()->toArray();
 
         $this->assertTrue((bool) count($existsRole), 'Response was successfully');
         $this->assertEquals($existsRole[0]['name'], $bodyCreateRole['name']);
@@ -188,6 +183,7 @@ class RoleTest extends TestCase
         // update
         $bodyUpdateRole = [
             "name" => "this.is.a.new.role.test",
+            "full_name" => "UPDATE THIS IS A NEW ROLE",
             "enabled" => true,
             "permissions" => [
                 "create",
@@ -205,16 +201,12 @@ class RoleTest extends TestCase
 
         $responseUpdate->assertStatus(200);
 
-        $existsRoleUpdate = Role::where('name', $bodyUpdateRole['name'])
-                                ->get()
-                                ->toArray();
-
-        $existsPermsForRoleUpdate = RoleHasPermission::where('role_id', $roleId)
-                                        ->get()
-                                        ->toArray();
+        $existsRoleUpdate = Role::where('name', $bodyUpdateRole['name'])->get()->toArray();
+        $existsPermsForRoleUpdate = RoleHasPermission::where('role_id', $roleId)->get()->toArray();
 
         $this->assertTrue((bool) count($existsRoleUpdate), 'Response was successfully');
         $this->assertEquals($existsRoleUpdate[0]['name'], $bodyUpdateRole['name']);
+        $this->assertEquals($existsRoleUpdate[0]['full_name'], $bodyUpdateRole['full_name']);
         $this->assertEquals(count($existsPermsForRoleUpdate), count($bodyUpdateRole['permissions']));
     }
 
@@ -228,6 +220,7 @@ class RoleTest extends TestCase
         // create
         $bodyCreateRole = [
             "name" => "this.is.a.new.role",
+            "full_name" => "THIS IS A NEW ROLE",
             "enabled" => true,
             "permissions" => [
                 "create",
@@ -246,21 +239,18 @@ class RoleTest extends TestCase
         $contentCreate = $responseCreate->decodeResponseJson();
         $roleId = $contentCreate['data'];
 
-        $existsRole = Role::where('name', $bodyCreateRole['name'])
-        ->get()
-            ->toArray();
-
-        $existsPermsForRole = RoleHasPermission::where('role_id', $roleId)
-            ->get()
-            ->toArray();
+        $existsRole = Role::where('name', $bodyCreateRole['name'])->get()->toArray();
+        $existsPermsForRole = RoleHasPermission::where('role_id', $roleId)->get()->toArray();
 
         $this->assertTrue((bool) count($existsRole), 'Response was successfully');
         $this->assertEquals($existsRole[0]['name'], $bodyCreateRole['name']);
+        $this->assertEquals($existsRole[0]['full_name'], $bodyCreateRole['full_name']);
         $this->assertEquals(count($existsPermsForRole), count($bodyCreateRole['permissions']));
 
         // edit
         $bodyEditRole = [
             "name" => "this.is.a.new.role.y",
+            "full_name" => "THIS IS A NEW ROLE Y",
         ];
         $responseEdit = $this->json(
             'PATCH',
@@ -271,16 +261,12 @@ class RoleTest extends TestCase
 
         $responseEdit->assertStatus(200);
 
-        $existsRoleEdit = Role::where('name', $bodyEditRole['name'])
-                                ->get()
-                                ->toArray();
-
-        $existsPermsForRoleEdit = RoleHasPermission::where('role_id', $roleId)
-                                        ->get()
-                                        ->toArray();
+        $existsRoleEdit = Role::where('name', $bodyEditRole['name'])->get()->toArray();
+        $existsPermsForRoleEdit = RoleHasPermission::where('role_id', $roleId)->get()->toArray();
 
         $this->assertTrue((bool) count($existsRoleEdit), 'Response was successfully');
         $this->assertEquals($existsRoleEdit[0]['name'], $bodyEditRole['name']);
+        $this->assertEquals($existsRoleEdit[0]['full_name'], $bodyEditRole['full_name']);
         $this->assertEquals(count($existsPermsForRoleEdit), count($bodyCreateRole['permissions']));
     }
 
@@ -294,6 +280,7 @@ class RoleTest extends TestCase
         // create
         $bodyCreateRole = [
             "name" => "this.is.a.new.role",
+            "full_name" => "THIS IS A NEW ROLE",
             "enabled" => true,
             "permissions" => [
                 "create",
@@ -312,16 +299,12 @@ class RoleTest extends TestCase
         $contentCreate = $responseCreate->decodeResponseJson();
         $roleId = $contentCreate['data'];
 
-        $existsRole = Role::where('name', $bodyCreateRole['name'])
-                        ->get()
-                        ->toArray();
-
-        $existsPermsForRole = RoleHasPermission::where('role_id', $roleId)
-                                ->get()
-                                ->toArray();
+        $existsRole = Role::where('name', $bodyCreateRole['name'])->get()->toArray();
+        $existsPermsForRole = RoleHasPermission::where('role_id', $roleId)->get()->toArray();
 
         $this->assertTrue((bool) count($existsRole), 'Response was successfully');
         $this->assertEquals($existsRole[0]['name'], $bodyCreateRole['name']);
+        $this->assertEquals($existsRole[0]['full_name'], $bodyCreateRole['full_name']);
         $this->assertEquals(count($existsPermsForRole), count($bodyCreateRole['permissions']));
 
         // delete
@@ -333,13 +316,8 @@ class RoleTest extends TestCase
         );
         $responseDelete->assertStatus(200);
 
-        $existsRole = Role::where('name', $bodyCreateRole['name'])
-                        ->get()
-                        ->toArray();
-
-        $existsPermsForRole = RoleHasPermission::where('role_id', $roleId)
-                                ->get()
-                                ->toArray();
+        $existsRole = Role::where('name', $bodyCreateRole['name'])->get()->toArray();
+        $existsPermsForRole = RoleHasPermission::where('role_id', $roleId)->get()->toArray();
 
         $this->assertFalse((bool) count($existsRole), 'Response was successfully');
         $this->assertFalse((bool) count($existsPermsForRole), 'Response was successfully');

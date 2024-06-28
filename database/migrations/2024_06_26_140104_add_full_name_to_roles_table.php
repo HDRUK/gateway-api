@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-    if (Schema::hasTable('dur')) {
-        Schema::table('dur', function (Blueprint $table) {
-            $table->enum('status', ['ACTIVE', 'DRAFT', 'ARCHIVED'])->default('DRAFT');
+        Schema::table('roles', function (Blueprint $table) {
+            $table->string('full_name')->nullable()->after('name');
         });
-    }
     }
 
     /**
@@ -23,9 +21,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasTable('dur')) {
-            Schema::table('dur', function (Blueprint $table) {
-                $table->dropColumn('status');
+        if (Schema::hasTable('roles')) {
+            Schema::table('roles', function (Blueprint $table) {
+                $table->dropColumn('full_name');
             });
         }
     }
