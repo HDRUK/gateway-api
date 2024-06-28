@@ -11,18 +11,26 @@ use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\LibrarySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
+use Tests\Traits\MockExternalApis;
 class LibraryTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
 
-    private $accessToken = '';
+    use RefreshDatabase;
+    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
+
     const TEST_URL = '/api/v1/libraries';
+
+    protected $header = [];
+
 
     public function setUp(): void
     {
-        parent::setUp();
+        $this->commonSetUp();
 
         $this->seed([
             MinimalUserSeeder::class,
@@ -30,15 +38,6 @@ class LibraryTest extends TestCase
             DatasetVersionSeeder::class,
             LibrarySeeder::class,
         ]);
-
-        $response = $this->postJson('api/v1/auth', [
-            'email' => 'developers@hdruk.ac.uk',
-            'password' => 'Watch26Task?',
-        ]);
-        $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
-
-        $content = $response->decodeResponseJson();
-        $this->accessToken = $content['access_token'];
     }
 
     /**
@@ -48,9 +47,7 @@ class LibraryTest extends TestCase
      */
     public function test_the_application_can_list_libraries()
     {
-        $response = $this->json('GET', self::TEST_URL, [], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->json('GET', self::TEST_URL, [], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
         
@@ -92,10 +89,9 @@ class LibraryTest extends TestCase
     {
         $response = $this->json('POST', self::TEST_URL, [
             'dataset_id' => 2,
-        ], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        ], $this->header);
 
+        
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
                 'message',
@@ -104,9 +100,7 @@ class LibraryTest extends TestCase
 
         $content = $response->decodeResponseJson();
 
-        $response = $this->json('GET', self::TEST_URL . '/' . $content['data'], [], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->json('GET', self::TEST_URL . '/' . $content['data'], [], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -134,9 +128,7 @@ class LibraryTest extends TestCase
     {
         $response = $this->json('POST', self::TEST_URL, [
             'dataset_id' => 1,
-        ], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        ], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
@@ -150,9 +142,7 @@ class LibraryTest extends TestCase
         // test filter has been linked correctly
         $newSearchId = $content['data'];
 
-        $responseGet = $this->json('GET', self::TEST_URL . '/' . $newSearchId, [], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $responseGet = $this->json('GET', self::TEST_URL . '/' . $newSearchId, [], $this->header);
     }
 
     /**
@@ -165,9 +155,7 @@ class LibraryTest extends TestCase
         // create
         $response = $this->json('POST', self::TEST_URL, [
             'dataset_id' => 1,
-        ], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        ], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
@@ -181,9 +169,7 @@ class LibraryTest extends TestCase
         // update
         $response = $this->json('PUT', self::TEST_URL . '/' . $content['data'], [
             'dataset_id' => 2,
-        ], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        ], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -202,9 +188,7 @@ class LibraryTest extends TestCase
         // create
         $responseCreate = $this->json('POST', self::TEST_URL, [
             'dataset_id' => 1,
-        ], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        ], $this->header);
 
         $responseCreate->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
@@ -220,9 +204,7 @@ class LibraryTest extends TestCase
         // edit (PUT)
         $responseUpdate = $this->json('PUT', self::TEST_URL . '/' . $id, [
             'dataset_id' => 2,
-        ], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        ], $this->header);
 
         $responseUpdate->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -236,9 +218,7 @@ class LibraryTest extends TestCase
         // edit (PATCH)
         $responseEdit1 = $this->json('PATCH', self::TEST_URL . '/' . $id, [
             'dataset_id' => 1,
-        ], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        ], $this->header);
 
         $responseEdit1->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -260,9 +240,7 @@ class LibraryTest extends TestCase
         // create
         $response = $this->json('POST', self::TEST_URL, [
             'dataset_id' => 2,
-        ], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        ], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_CREATED.code'))
             ->assertJsonStructure([
@@ -274,9 +252,7 @@ class LibraryTest extends TestCase
         $this->assertEquals($content['message'], Config::get('statuscodes.STATUS_CREATED.message'));
 
         // delete
-        $response = $this->json('DELETE', self::TEST_URL . '/' . $content['data'], [], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $response = $this->json('DELETE', self::TEST_URL . '/' . $content['data'], [], $this->header);
 
         $response->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
             ->assertJsonStructure([
@@ -314,26 +290,20 @@ class LibraryTest extends TestCase
         $newSearchId = $content['data'];
 
         // test admin can view library
-        $responseGet = $this->json('GET', self::TEST_URL . '/' . $newSearchId, [], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $responseGet = $this->json('GET', self::TEST_URL . '/' . $newSearchId, [], $this->header);
         $responseGet->assertStatus(Config::get('statuscodes.STATUS_OK.code'));
 
         // test admin cannot edit or delete
         $responseUpdate = $this->json('PUT', self::TEST_URL . '/' . $newSearchId, [
             'dataset_id' => 2,
-        ], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        ], $this->header);
 
         $responseUpdate->assertJsonStructure([
             'message',
         ]);
         $responseUpdate->assertStatus(500);
 
-        $responseDelete = $this->json('DELETE', self::TEST_URL . '/' . $newSearchId, [], [
-            'Authorization' => 'bearer ' . $this->accessToken,
-        ]);
+        $responseDelete = $this->json('DELETE', self::TEST_URL . '/' . $newSearchId, [], $this->header);
 
         $responseDelete->assertJsonStructure([
             'message',
