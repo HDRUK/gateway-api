@@ -67,7 +67,6 @@ class DatasetsPostMigration extends Command
                 }
                 if ($reindexEnabled) {
                     MMC::reindexElastic($dataset->id);
-                   
                 }  
             }
             $progressbar->advance();

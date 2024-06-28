@@ -209,11 +209,9 @@ class MetadataManagementController {
 
             $metadata = $datasetMatch->latestVersion()->metadata;
 
-            
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
             $hasTechnicalMetadata = $this->getHasTechnicalMetadata($metadata);
-
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -327,7 +325,7 @@ class MetadataManagementController {
     {
         $materialTypes = null;
         if(version_compare(Config::get('metadata.GWDM.version'),"2.0","<")){
-            $containsTissue = !empty(MMC::getValueByPossibleKeys($metadata, ['metadata.coverage.biologicalsamples', 'metadata.coverage.physicalSampleAvailability'], ''));
+            $containsTissue = !empty($this->getValueByPossibleKeys($metadata, ['metadata.coverage.biologicalsamples', 'metadata.coverage.physicalSampleAvailability'], ''));
         }
         else{
             $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);

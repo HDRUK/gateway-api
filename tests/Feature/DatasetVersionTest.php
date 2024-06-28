@@ -390,8 +390,9 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
         $dataset1 = Dataset::with('versions')->where('id', $datasetId)->first();
         
         $this->assertTrue((count($dataset1->versions)) === 1);
+        $updatedMetadata = $this->metadata;
 
-        $this->metadata['metadata']['summary']['title'] = 'Updated Metadata Title 123';
+        $updatedMetadata['metadata']['summary']['title'] = 'Updated Metadata Title 123';
 
         $responseUpdateDataset = $this->json(
             'PUT',
@@ -399,7 +400,7 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'metadata' => $this->metadata,
+                'metadata' => $updatedMetadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],
@@ -421,7 +422,7 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
         );
         $this->assertEquals(
             $version[1]->metadata['metadata']['summary']['title'],
-            'Updated Metadata Title 123'
+            $updatedMetadata['metadata']['summary']['title']
         );
 
         // assert that changing the status does not create a new version
@@ -492,10 +493,11 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
         $original_gwdm_version = Config::get("metadata.GWDM.version");
         //set the GWDM to version 1.0 
         Config::set('metadata.GWDM.version', '1.0');
+        $currentMetadata = $this->getMetadata();
 
 
-        $originalPublisherName = $this->metadata['metadata']['summary']['publisher']['publisherName'];
-        $originalPhysicalSampleAvailability = $this->metadata['metadata']['coverage']['physicalSampleAvailability'];
+        $originalPublisherName = $currentMetadata['metadata']['summary']['publisher']['publisherName'];
+        $originalPhysicalSampleAvailability = $currentMetadata['metadata']['coverage']['physicalSampleAvailability'];
 
         $team = Team::first();
         $user = User::first();
@@ -506,13 +508,13 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
             [
                 'team_id' => $team->id,
                 'user_id' => $user->id,
-                'metadata' => $this->getMetadata(),
+                'metadata' => $currentMetadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],
             $this->header
         );
-        
+
         $responseCreateDataset->assertStatus(201);
 
         //check the metadata has recorded the right gwdm version
@@ -533,19 +535,20 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
 
          //change to GWDM 1.1
          Config::set('metadata.GWDM.version', '1.1');
+         $currentMetadata = $this->getMetadata();
          $responseUpdateDataset = $this->json(
              'PUT',
              self::TEST_URL_DATASET . '/' . $datasetId,
              [
                  'team_id' => $team->id,
                  'user_id' => $user->id,
-                 'metadata' => $this->getMetadata(),
+                 'metadata' => $currentMetadata,
                  'create_origin' => Dataset::ORIGIN_MANUAL,
                  'status' => Dataset::STATUS_ACTIVE,
              ],
              $this->header
          );
-         
+
          $responseUpdateDataset->assertStatus(200);
  
          $datasetId = $responseCreateDataset['data'];
@@ -562,13 +565,14 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
 
         //change to GWDM 2.0
         Config::set('metadata.GWDM.version', '2.0');
+        $currentMetadata = $this->getMetadata();
         $responseUpdateDataset = $this->json(
             'PUT',
             self::TEST_URL_DATASET . '/' . $datasetId,
             [
                 'team_id' => $team->id,
                 'user_id' => $user->id,
-                'metadata' => $this->getMetadata(),
+                'metadata' => $currentMetadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_ACTIVE,
             ],
@@ -579,14 +583,14 @@ public function test_dataset_metadata_publisher_is_saved_correctly(): void
 
         $datasetId = $responseCreateDataset['data'];
         //get the 2nd version of the metadata that was just updated
-        $dataset2 = DatasetVersion::where('dataset_id', $datasetId)->skip(1)->take(1)->first();
+        $dataset2 = DatasetVersion::where('dataset_id', $datasetId)->skip(2)->take(1)->first();
         //check this has used the newer GWDM 2.0
         $dataset2GwdmVersion = $dataset2['metadata']['gwdmVersion'];
         $this->assertEquals($dataset2GwdmVersion,"2.0");
 
-        $recordedBioligcalSamples = $dataset2['metadata']['metadata']['coverage']['biologicalsamples'];
-        $this->assertEquals($recordedBioligcalSamples,$originalPhysicalSampleAvailability);
+        $recordedTissuesSamples = $dataset2['metadata']['metadata']['tissuesSampleCollection'];
 
+        $this->assertCount(2,$recordedTissuesSamples);
         Config::set('metadata.GWDM.version', $original_gwdm_version);
 
 

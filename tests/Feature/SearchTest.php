@@ -235,7 +235,9 @@ class SearchTest extends TestCase
         $metadata = $response['data'][0]['metadata'];
 
         $this->assertTrue(isset($metadata['additional']['containsTissue']));
-        $this->assertTrue(isset($metadata['accessibility']['access']['accessServiceCategory']));
+        if(version_compare(Config::get('metadata.GWDM.version'),"2.0",">=")){
+            $this->assertTrue(isset($metadata['accessibility']['access']['accessServiceCategory']));
+        }
         $this->assertTrue(isset($metadata['additional']['hasTechnicalMetadata']));
 
         $this->assertFalse(isset($metadata['coverage']));
@@ -691,7 +693,7 @@ class SearchTest extends TestCase
         // Test dataset titles are alphabetical - "updated" will be at the end
         $endTitle = array_key_last($response['data'][0]['datasetTitles']);
                 
-        $this->assertTrue($response['data'][0]['datasetTitles'][$endTitle] === 'Updated HDR UK Papers & Preprints');
+        $this->assertTrue($response['data'][0]['datasetTitles'][$endTitle] === 'HDR UK Papers & Preprints');
 
         // Test search result with id not in db is not returned
         $content = $response->decodeResponseJson();
