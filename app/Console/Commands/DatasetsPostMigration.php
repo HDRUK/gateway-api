@@ -65,13 +65,13 @@ class DatasetsPostMigration extends Command
                         'metadata' => json_encode(json_encode($metadata)),
                     ]);
                 }
+                if ($reindexEnabled) {
+                    MMC::reindexElastic($dataset->id);
+                   
+                }  
             }
-            if ($reindexEnabled) {
-                MMC::reindexElastic($dataset->id);
-                sleep(1); 
-            }  
-
             $progressbar->advance();
+            sleep(1); 
         }
 
         $progressbar->finish();
