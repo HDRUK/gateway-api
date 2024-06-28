@@ -65,17 +65,16 @@ class DatasetsPostMigration extends Command
                         'metadata' => json_encode(json_encode($metadata)),
                     ]);
                 }
+
                 if ($reindexEnabled) {
                     MMC::reindexElastic($dataset->id);
-                }  
+                }                
             }
             $progressbar->advance();
-            sleep(1); 
+            sleep(1); // to not kill ElasticSearch
         }
 
         $progressbar->finish();
-        echo "Done creating new versions! \n";
-
     }
 
     private function readMigrationFile(string $migrationFile): array
