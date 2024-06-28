@@ -88,7 +88,7 @@ class DatasetDemo extends Seeder
                 $team = Team::find($item['team_id']);
 
                 if ($team) {
-                    $dataset = $this->getFakeDataset($item['title'], $item['short_description'], $item['description'], $team->name, $team->member_of);
+                    $dataset = $this->getMetadata($item['title'], $item['short_description'], $item['description'], $team->name, $team->member_of);
 
                     $payload = [
                         'team_id' => $item['team_id'],
