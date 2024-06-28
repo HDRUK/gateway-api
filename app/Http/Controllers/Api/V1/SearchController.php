@@ -140,7 +140,7 @@ class SearchController extends Controller
     {
         try {
             $input = $request->all();
-
+            
             $download = array_key_exists('download', $input) ? $input['download'] : false;
             $downloadType = array_key_exists('download_type', $input) ? $input['download_type'] : "list";
             $sort = $request->query('sort',"score:desc");
@@ -152,11 +152,25 @@ class SearchController extends Controller
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $filters = (isset($request['filters']) ? $request['filters'] : []);
-            $aggs = Filter::where('type', 'dataset')->get()->toArray();
+            $aggs = Filter::where('type', 'dataset')->where("enabled",1)->get()->toArray();
             $input['aggs'] = $aggs;
 
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/datasets';
-            $response = Http::post($urlString, $input)->json();
+            $response = Http::post($urlString, $input);
+            
+            if (!$response->successful()) {
+                return response()->json([
+                    'message' => 'No response from '.$urlString,
+                ], 404);
+            }
+            $response = $response->json();
+
+            if (!isset($response['hits']) || !is_array($response['hits']) || 
+                !isset($response['hits']['hits']) || !is_array($response['hits']['hits']) || 
+                !isset($response['hits']['total']['value'])) {
+
+                    return response()->json(['message' => 'Hits not being properly returned by the search service'], 404);
+            }
 
             $datasetsArray = $response['hits']['hits'];
             $totalResults = $response['hits']['total']['value'];
@@ -632,6 +646,7 @@ class SearchController extends Controller
                         $collectionArray[$i]['_source']['created_at'] = $model['created_at'];
                         $collectionArray[$i]['name'] = $model['name'];
                         $collectionArray[$i]['dataProviderColl'] = $this->getDataProviderColl($model->toArray());
+                        $collectionArray[$i]['image_link'] = $model['image_link'];
                         $foundFlag = true;
                         break;
                     }
@@ -771,7 +786,7 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $durModels = Dur::whereIn('id', $matchedIds)->with('datasets')->get();
+            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->with('datasets')->get();
 
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
@@ -994,8 +1009,10 @@ class SearchController extends Controller
                     }
                 }
             } else {
+
                 $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
-                $input['field'] = 'METHODS';
+                $input['field'] = ['TITLE','ABSTRACT','METHODS'];
+                $input['filters'] = isset($request['filters']) ? $request['filters'] : [];
                 $response = Http::post($urlString, $input);
 
                 $pubArray = $response['resultList']['result'];
@@ -1362,7 +1379,7 @@ class SearchController extends Controller
         $durIds = DurHasTool::where('tool_id', $toolId)->pluck('dur_id')->all();
         if (!count($durIds)) return [];
 
-        $durNames = Dur::whereIn('id', $durIds)->pluck('project_title')->all();
+        $durNames = Dur::whereIn('id', $durIds)->where('status', 'ACTIVE')->pluck('project_title')->all();
 
         return $durNames;
     }
