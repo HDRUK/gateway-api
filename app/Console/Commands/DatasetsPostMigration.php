@@ -49,7 +49,6 @@ class DatasetsPostMigration extends Command
                 'mongo_pid' => $mongoPid,
             ])->first();
 
-
             if ($dataset) {
                 $datasetVersion = DatasetVersion::where([
                     'id' => $dataset->id,
@@ -65,15 +64,14 @@ class DatasetsPostMigration extends Command
                     DatasetVersion::where('id', $dataset->id)->update([
                         'metadata' => json_encode(json_encode($metadata)),
                     ]);
-
-                    if ($reindexEnabled) {
-                        MMC::reindexElastic($dataset->id);
-                        sleep(1); 
-                    }  
-
-                    $progressbar->advance();
                 }
             }
+            if ($reindexEnabled) {
+                MMC::reindexElastic($dataset->id);
+                sleep(1); 
+            }  
+
+            $progressbar->advance();
         }
 
         $progressbar->finish();
