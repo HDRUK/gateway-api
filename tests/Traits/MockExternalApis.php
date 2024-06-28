@@ -48,7 +48,7 @@ trait MockExternalApis
     // Changed visibility. Private functions in shared trait is frowned upon
     public function getMetadataV2p0()
     {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v2p0_dataset_min_update.json', 0, null);
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v2p0_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
 
         return $json;

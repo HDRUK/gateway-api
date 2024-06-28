@@ -1,5 +1,5 @@
 {
-    "gwdmVersion": "1.1",
+    "gwdmVersion": "2.0",
     "metadata": {
         "required": {
             "gatewayId": "1234",
@@ -77,7 +77,7 @@
                 "accessService": "https://github.com/HDRUK/papers",
                 "accessRequestCost": "Free",
                 "accessMode": "New project",
-                "accessServiceCategory": null
+                "accessServiceCategory": "TRE"
             },
             "usage": {
                 "dataUseLimitation": "GENERAL RESEARCH USE",

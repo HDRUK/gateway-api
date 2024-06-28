@@ -1284,7 +1284,10 @@ class SearchController extends Controller
         $containsTissue = MMC::getContainsTissues($materialTypes);
         $hasTechnicalMetadata = MMC::getHasTechnicalMetadata($input);
 
-        $accessServiceCategory = $input['metadata']['accessibility']['access']['accessServiceCategory'];
+        $accessServiceCategory = null
+        if(array_key_exists('accessServiceCategory', $metadata['metadata']['accessibility']['access'])) {
+            $accessServiceCategory  = $input['metadata']['accessibility']['access']['accessServiceCategory'];
+        }
 
         $minimumKeys = [
             'summary',
