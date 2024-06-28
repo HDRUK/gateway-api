@@ -217,10 +217,10 @@ class MetadataManagementController {
                 'title' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.title'], ''),
                 'populationSize' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.populationSize'], -1),
                 'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
-                'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], ''),
+                'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(180)),
                 'containsTissue' => !empty($this->getValueByPossibleKeys($metadata, ['metadata.coverage.biologicalsamples', 'metadata.coverage.physicalSampleAvailability'], '')),
-                'tissueSampleAvailability' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.coverage.properties.materialType.items', 'TissuesSampleCollection.properties.materialType.items'], '')),
+                'sampleAvailability' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.coverage.properties.materialType.items', 'TissuesSampleCollection.properties.materialType.items'], '')),
                 'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => (bool) $datasetMatch->has_technical_details,
                 'named_entities' => $datasetMatch->namedEntities->pluck('name')->all(),
@@ -297,21 +297,19 @@ class MetadataManagementController {
         }
     }
 
-    public function getOnboardingFormHydrated(string $name, string $version): JsonResponse
+    public function getOnboardingFormHydrated(string $name, string $version, string $dataTypes): array
     {
         try {
             $queryParams = [
                 'name' => $name,
                 'version' => $version,
+                'dataTypes' => $dataTypes
             ];
 
             $urlString = env('TRASER_SERVICE_URL') . '/get/form_hydration?' . http_build_query($queryParams);
             $response = Http::get($urlString);
 
-            return response()->json([
-                'message' => 'success',
-                'data' => $response->json(),
-            ]);
+            return $response->json();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

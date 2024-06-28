@@ -155,7 +155,7 @@ class DurSeeder extends Seeder
             'Research',
         ];
 
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 15; $i++) {
             $userId = User::all()->random()->id;
             $teamId = Team::all()->random()->id;
             $keywordId = Keyword::all()->random()->id;
@@ -215,6 +215,12 @@ class DurSeeder extends Seeder
 
                 'mongo_object_id' => fake()->numerify('MOBJID-####'), // _id (mongo)
                 'mongo_id' => fake()->numberBetween(10000000000, 99999999999), // id
+
+                'status' => fake()->randomElement([
+                    Dur::STATUS_ACTIVE,
+                    Dur::STATUS_DRAFT,
+                    Dur::STATUS_ARCHIVED
+                ]),
             ];
             $dur = Dur::create($arrayDur);
 

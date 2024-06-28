@@ -34,7 +34,7 @@ class FilterSeeder extends Seeder
             'geographicLocation',
             'dataProviderColl',
             'accessService',
-            'tissueSampleAvailability'
+            'sampleAvailability'
         ];
 
         $this->seed_filter("dataset",$filters);

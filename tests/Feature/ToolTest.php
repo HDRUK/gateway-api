@@ -12,7 +12,11 @@ use App\Models\License;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
+use App\Models\PublicationHasTool;
+use App\Models\Collection;
+use App\Models\CollectionHasTool;
 use App\Models\ToolHasTypeCategory;
+use App\Models\Dataset;
 use App\Models\DatasetVersionHasTool;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
@@ -26,6 +30,7 @@ use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
+use Database\Seeders\CollectionSeeder;
 use Database\Seeders\DurHasToolSeeder;
 use Database\Seeders\ToolHasTagSeeder;
 use Database\Seeders\ApplicationSeeder;
@@ -36,7 +41,8 @@ use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
-use Database\Seeders\DatasetVersionHasTooleeder;
+use Database\Seeders\CollectionHasToolSeeder;
+use Database\Seeders\DatasetVersionHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetSeeder;
@@ -86,6 +92,9 @@ class ToolTest extends TestCase
             DurSeeder::class,
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
+            CollectionSeeder::class,
+            CollectionHasToolSeeder::class,
+            DatasetVersionHasToolSeeder::class,
         ]);
     }
 
@@ -121,6 +130,8 @@ class ToolTest extends TestCase
                     'contact_address',
                     'publications',
                     'durs',
+                    'collections',
+                    'dataset_versions',
                 ]
             ],
             'current_page',
@@ -172,6 +183,8 @@ class ToolTest extends TestCase
                 'contact_address',
                 'publications',
                 'durs',
+                'collections',
+                'dataset_versions',
             ]
         ]);
         $response->assertStatus(200);
@@ -189,7 +202,6 @@ class ToolTest extends TestCase
 
         $initialToolCount = Tool::withTrashed()->count();
         $initialTagCount = ToolHasTag::count();
-        $initialDatasetVersionCount = DatasetVersionHasTool::count();
 
         $mockData = [
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
@@ -201,12 +213,14 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => [1, 2],
-            "dataset" => [1, 2],
+            "dataset_ids" => [1, 2],
             "programming_language" => [1, 2],
             "programming_package" => [1, 2],
             "type_category" => [1, 2],
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
         ];
 
         $response = $this->json(
@@ -216,18 +230,21 @@ class ToolTest extends TestCase
             $this->header
         );
 
+        $response->assertStatus(201);
+        $toolId = $response['data'];
+
         $finalToolCount = Tool::withTrashed()->count();
         $finalTagCount = ToolHasTag::count();
-        $finalDatasetVersionCount = DatasetVersionHasTool::count();
 
         $newToolCount = $finalToolCount - $initialToolCount;
         $newTagCount = $finalTagCount - $initialTagCount;
-        $newDatasetVersionCount = $finalDatasetVersionCount - $initialDatasetVersionCount;
 
         $this->assertTrue((bool)$newToolCount, 'New tool was not created');
         $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
-        $this->assertTrue($newDatasetVersionCount >= 2, 'Number of new dataset versions is not as expected');
-        $response->assertStatus(201);
+        $count1 = Dataset::where('id', 1)->first()->versions()->count();
+        $count2 = Dataset::where('id', 2)->first()->versions()->count();
+        $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolId)->count();
+        $this->assertEquals($finalDatasetVersions, $count1 + $count2);
     }
 
 
@@ -373,11 +390,13 @@ class ToolTest extends TestCase
                 'team_id' => $teamId1,
                 'enabled' => 1,
                 'tag' => [1, 2],
-                'dataset' => [1, 2],
+                'dataset_ids' => [1, 2],
                 'programming_language' => [1, 2],
                 'programming_package' => [1, 2],
                 'type_category' => [1, 2],
                 'publications' => [],
+                'durs' => [],
+                'collections' => [],
             ],
             $this->header
         );
@@ -399,11 +418,13 @@ class ToolTest extends TestCase
                 'team_id' => $teamId1,
                 'enabled' => 1,
                 'tag' => [1, 2],
-                'dataset' => [1, 2],
+                'dataset_ids' => [2],
                 'programming_language' => [1, 2],
                 'programming_package' => [1, 2],
                 'type_category' => [1, 2],
                 'publications' => [],
+                'durs' => [],
+                'collections' => $this->generateCollections(),
             ],
             $this->header
         );
@@ -425,11 +446,13 @@ class ToolTest extends TestCase
                 'team_id' => $teamId2,
                 'enabled' => 1,
                 'tag' => [1, 2],
-                'dataset' => [1, 2],
+                'dataset_ids' => [1],
                 'programming_language' => [1, 2],
                 'programming_package' => [1, 2],
                 'type_category' => [1, 2],
                 'publications' => [],
+                'durs' => [1, 2],
+                'collections' => [],
             ],
             $this->header
         );
@@ -587,6 +610,8 @@ class ToolTest extends TestCase
             "type_category" => array(1, 2),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
         );
         $responseIns = $this->json(
             'POST',
@@ -613,6 +638,8 @@ class ToolTest extends TestCase
         $responseIns->assertStatus(201);
 
         // update
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
         $mockDataUpdate = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Ea fuga ab aperiam nihil quis.",
@@ -623,11 +650,14 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
+            "dataset_ids" => [4, 5],
             "programming_language" => array(1),
             "programming_package" => array(1),
             "type_category" => array(1),
             "enabled" => 1,
-            "publications" => $this->generatePublications(),
+            "publications" => $generatedPublications,
+            "durs" => [1, 2],
+            "collections" => $generatedCollections,
         );
 
         $responseUpdate = $this->json(
@@ -637,12 +667,12 @@ class ToolTest extends TestCase
             $this->header
         );
 
+        $responseUpdate->assertStatus(200);
         $responseUpdate->assertJsonStructure([
             'message',
             'data',
         ]);
 
-        $responseUpdate->assertStatus(200);
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
@@ -669,6 +699,22 @@ class ToolTest extends TestCase
         $toolHasTypeCategories = ToolHasTypeCategory::where('tool_id', $toolIdInsert)->get();
         $this->assertEquals(count($toolHasTypeCategories), 1);
         $this->assertEquals($toolHasTypeCategories[0]['type_category_id'], 1);
+        
+        $publicationHasTool = PublicationHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($publicationHasTool), count($generatedPublications));
+        
+        $durHasTool = DurHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($durHasTool), 2);
+        $this->assertEquals($durHasTool[0]['dur_id'], 1);
+        $this->assertEquals($durHasTool[1]['dur_id'], 2);
+        
+        $collectionHasTool = CollectionHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($collectionHasTool), count($generatedCollections));
+
+        $count1 = Dataset::where('id', 4)->first()->versions()->count();
+        $count2 = Dataset::where('id', 5)->first()->versions()->count();
+        $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolIdInsert)->count();
+        $this->assertEquals($finalDatasetVersions, $count1 + $count2);
     }
 
     /**
@@ -695,6 +741,8 @@ class ToolTest extends TestCase
             "type_category" => array(1),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
         );
         $responseIns = $this->json(
             'POST',
@@ -961,6 +1009,22 @@ class ToolTest extends TestCase
             $return[] = $temp;
         }
 
-        return $return;
+        // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
+        return array_map("unserialize", array_unique(array_map("serialize", $return)));
+    }
+
+    private function generateCollections()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Collection::all()->random()->id;
+            $return[] = $temp;
+        }
+
+        // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
+        return array_map("unserialize", array_unique(array_map("serialize", $return)));
     }
 }

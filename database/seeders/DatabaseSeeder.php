@@ -53,7 +53,7 @@ class DatabaseSeeder extends Seeder
             TeamHasFederationSeeder::class,
             NamedEntitiesSeeder::class,
             DatasetHasNamedEntitiesSeeder::class,
-            CohortRequestSeed::class,
+            CohortRequestSeeder::class,
             TeamUserHasNotificationSeeder::class,
             KeywordSeeder::class,
             CollectionHasKeywordSeeder::class,
@@ -82,6 +82,7 @@ class DatabaseSeeder extends Seeder
             DataProviderCollsSeeder::class,
             DurHasToolSeeder::class,
             LibrarySeeder::class,
+            CohortRequestEmailSeeder::class,
         ]);
     }
 }
