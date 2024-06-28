@@ -5,55 +5,84 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-use App\Models\ShortList;
+use App\Models\Library;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Exceptions\NotFoundException;
 use App\Exceptions\UnauthorizedException;
 use App\Http\Traits\RequestTransformation;
-use App\Http\Requests\ShortList\EditShortList;
-use App\Http\Requests\ShortList\CreateShortList;
-use App\Http\Requests\ShortList\DeleteShortList;
-use App\Http\Requests\ShortList\GetShortList;
-use App\Http\Requests\ShortList\UpdateShortList;
+use App\Http\Requests\Library\EditLibrary;
+use App\Http\Requests\Library\CreateLibrary;
+use App\Http\Requests\Library\DeleteLibrary;
+use App\Http\Requests\Library\GetLibrary;
+use App\Http\Requests\Library\UpdateLibrary;
 
-class ShortListController extends Controller
+class LibraryController extends Controller
 {
     use RequestTransformation;
 
     /**
      * @OA\Get(
-     *      path="/api/v1/short_lists",
-     *      summary="List of short lists",
-     *      description="Returns a list of short lists on the system",
-     *      tags={"ShortList"},
-     *      summary="ShortList@index",
+     *      path="/api/v1/libraries",
+     *      operationId="listLibraries",
+     *      tags={"Library"},
+     *      summary="Retrieve a list of libraries",
+     *      description="Returns a paginated list of libraries along with associated datasets and teams.",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *          name="perPage",
      *          in="query",
-     *          description="Specify number of results per page",
-     *          @OA\Schema(type="integer")
+     *          description="Specify the number of libraries per page",
+     *          required=false,
+     *          @OA\Schema(
+     *              type="integer",
+     *              default=10
+     *          )
      *      ),
      *      @OA\Response(
      *          response=200,
-     *          description="Success",
+     *          description="Successful operation",
      *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string"),
-     *              @OA\Property(property="data", type="array",
+     *              type="object",
+     *              @OA\Property(property="current_page", type="integer", example=1),
+     *              @OA\Property(
+     *                  property="data",
+     *                  type="array",
      *                  @OA\Items(
-     *                      @OA\Property(property="id", type="integer", example="123"),
-     *                      @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                      @OA\Property(property="id", type="integer", example="1"),
+     *                      @OA\Property(property="created_at", type="string", format="date-time", example="2023-04-03T12:00:00Z"),
+     *                      @OA\Property(property="updated_at", type="string", format="date-time", example="2023-04-03T12:00:00Z"),
      *                      @OA\Property(property="user_id", type="integer", example="123"),
-     *                      @OA\Property(property="dataset", type="array", @OA\Items()),
+     *                      @OA\Property(property="dataset_id", type="string", example="dataset12345"),
+     *                      @OA\Property(property="dataset_status", type="string", example="ACTIVE"),
+     *                      @OA\Property(property="data_provider_id", type="string", example="PID12345"),
+     *                      @OA\Property(property="data_provider_dar_status", type="boolean", example=false),
+     *                      @OA\Property(property="data_provider_name", type="string", example="Team Name")
      *                  )
-     *              )
+     *              ),
+     *              @OA\Property(property="first_page_url", type="string", example="/api/v1/libraries?page=1"),
+     *              @OA\Property(property="from", type="integer", example=1),
+     *              @OA\Property(property="last_page", type="integer", example=10),
+     *              @OA\Property(property="last_page_url", type="string", example="/api/v1/libraries?page=10"),
+     *              @OA\Property(property="links", type="array",
+     *                  @OA\Items(
+     *                      @OA\Property(property="url", type="string", example=null),
+     *                      @OA\Property(property="label", type="string", example="&laquo; Previous"),
+     *                      @OA\Property(property="active", type="boolean", example=false)
+     *                  )
+     *              ),
+     *              @OA\Property(property="next_page_url", type="string", example="/api/v1/libraries?page=2"),
+     *              @OA\Property(property="path", type="string", example="/api/v1/libraries"),
+     *              @OA\Property(property="per_page", type="integer", example=15),
+     *              @OA\Property(property="prev_page_url", type="string", example=null),
+     *              @OA\Property(property="to", type="integer", example=15),
+     *              @OA\Property(property="total", type="integer", example=150)
      *          )
      *      )
      * )
      */
+
     public function index(Request $request): JsonResponse
     {
         try {
@@ -62,25 +91,48 @@ class ShortListController extends Controller
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
             $perPage = request('perPage', Config::get('constants.per_page'));
+
             if ($jwtUserIsAdmin) {
-                $shortLists = ShortList::with('dataset');
+                $libraries = Library::with(['dataset.team']);
             } else {
-                $shortLists = ShortList::where('user_id', $jwtUser['id'])
-                    ->with('dataset');
+                $libraries = Library::where('user_id', $jwtUser['id'])
+                    ->with(['dataset.team']);
             }
 
-            $shortLists = $shortLists->paginate($perPage);
+            $libraries = $libraries->paginate($perPage);
+
+            $transformedLibraries = $libraries->getCollection()->map(function ($library) {
+                $dataset = $library->dataset->first();
+                $team = $dataset->team->first();
+
+                // Using dynamic attributes to avoid undefined property error
+                $library->setAttribute('dataset_id', (int)$dataset->datasetid);
+                $library->setAttribute('dataset_status', $dataset->status);
+                $library->setAttribute('data_provider_id', $team->pid);
+                $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
+                $library->setAttribute('data_provider_name', $team->name);
+
+
+                unset($library->dataset);
+                return $library;
+            });
+
+            $paginatedTransformedLibraries = new \Illuminate\Pagination\LengthAwarePaginator(
+                $transformedLibraries,
+                $libraries->total(),
+                $libraries->perPage(),
+                $libraries->currentPage(),
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "short list get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => "library get all",
             ]);
 
-            return response()->json(
-                $shortLists,
-            );
+            return response()->json($paginatedTransformedLibraries);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -88,21 +140,20 @@ class ShortListController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/short_lists/{id}",
-     *      summary="Return a single short list",
-     *      description="Return a single short list",
-     *      tags={"ShortList"},
-     *      summary="ShortList@show",
+     *      path="/api/v1/libraries/{id}",
+     *      summary="Return a single library",
+     *      description="Return a single library",
+     *      tags={"Library"},
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="short list id",
+     *         description="library id",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="short list id",
+     *            description="library id",
      *         ),
      *      ),
      *      @OA\Response(
@@ -112,10 +163,22 @@ class ShortListController extends Controller
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example="123"),
-     *                  @OA\Property(property="created_at", type="datetime", example="2023-04-03 12:00:00"),
-     *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="created_at", type="string", format="date-time", example="2023-04-03 12:00:00"),
+     *                  @OA\Property(property="updated_at", type="string", format="date-time", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="user_id", type="integer", example="123"),
-     *                  @OA\Property(property="dataset", type="array", @OA\Items()),
+     *                  @OA\Property(
+     *                          property="dataset",
+     *                          type="object",
+     *                          @OA\Property(property="id", type="integer", example="10"),
+     *                          @OA\Property(property="status", type="string", example="ACTIVE"),
+     *                          @OA\Property(
+     *                              property="team",
+     *                              type="object",
+     *                              @OA\Property(property="id", type="integer", example="5"),
+     *                              @OA\Property(property="pid", type="string", example="PID12345"),
+     *                              @OA\Property(property="access_requests_management", type="boolean", example=false)
+     *                          )
+     *                      )
      *              )
      *          ),
      *      ),
@@ -128,45 +191,73 @@ class ShortListController extends Controller
      *      )
      * )
      */
-    public function show(GetShortList $request, int $id): JsonResponse
+    public function show(GetLibrary $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $jwtUserIsAdmin = $jwtUser['is_admin'];
 
-            $shortList = ShortList::where('id', $id)->with(['dataset'])->first();
-            if (!$jwtUserIsAdmin && $shortList['user_id'] != $jwtUser['id']) {
-                throw new UnauthorizedException('You do not have permission to view this short list');
-            } 
-            
+            // Fetch the library with dataset and team
+            $library = Library::with(['dataset.team'])
+                        ->where('id', $id)
+                        ->firstOrFail();
+
+            if (!$jwtUserIsAdmin && $library['user_id'] != $jwtUser['id']) {
+                throw new UnauthorizedException('You do not have permission to view this library');
+            }
+
+            $dataset = $library->dataset->first();
+            $team = $dataset->team->first();
+
+            // Using dynamic attributes to avoid undefined property error
+            $library->setAttribute('dataset_id', (int)$dataset->datasetid);
+            $library->setAttribute('dataset_status', $dataset->status);
+            $library->setAttribute('data_provider_id', $team->pid);
+            $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
+            $library->setAttribute('data_provider_name', $team->name);
+
+            unset($library->dataset);
+
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "short list get " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => "library get " . $id,
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $shortList,
+                'data' => $library,
             ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (UnauthorizedException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], Config::get('statuscodes.STATUS_UNAUTHORIZED.code'));
+        } catch (NotFoundException $e) {
+            return response()->json([
+                'message' => 'not found',
+            ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
+            return response()->json([
+                'message' => 'An error occurred',
+            ], Config::get('statuscodes.STATUS_INTERNAL_SERVER_ERROR.code'));
         }
     }
 
+
+
     /**
      * @OA\Post(
-     *      path="/api/v1/short_lists",
-     *      summary="Create a new short list",
-     *      description="Creates a new short list",
-     *      tags={"ShortList"},
-     *      summary="ShortList@store",
+     *      path="/api/v1/libraries",
+     *      summary="Create a new library",
+     *      description="Creates a new library",
+     *      tags={"Library"},
+     *      summary="Library@store",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
      *          required=true,
-     *          description="short list definition",
+     *          description="library definition",
      *          @OA\JsonContent(
      *              required={"dataset_id"},
      *                  @OA\Property(property="dataset_id", type="integer", example="123"),
@@ -189,13 +280,13 @@ class ShortListController extends Controller
      *      )
      * )
      */
-    public function store(CreateShortList $request): JsonResponse
+    public function store(CreateLibrary $request): JsonResponse
     {
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $shortList = ShortList::create([
+            $library = Library::create([
                 'user_id' => (int) $jwtUser['id'],
                 'dataset_id' => $input['dataset_id']
             ]);
@@ -204,12 +295,12 @@ class ShortListController extends Controller
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "short list " . $shortList->id . " created",
+                'description' => "library " . $library->id . " created",
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
-                'data' => $shortList->id,
+                'data' => $library->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -218,26 +309,26 @@ class ShortListController extends Controller
 
     /**
      * @OA\Put(
-     *      path="/api/v1/short_lists/{id}",
-     *      summary="Update a short list",
-     *      description="Update a short list",
-     *      tags={"ShortList"},
-     *      summary="ShortList@update",
+     *      path="/api/v1/libraries/{id}",
+     *      summary="Update a library",
+     *      description="Update a library",
+     *      tags={"Library"},
+     *      summary="Library@update",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="short list id",
+     *         description="library id",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="short list id",
+     *            description="library id",
      *         ),
      *      ),
      *      @OA\RequestBody(
      *          required=true,
-     *          description="short list definition",
+     *          description="library definition",
      *          @OA\JsonContent(
      *              required={"dataset_id"},
      *                  @OA\Property(property="dataset_id", type="integer", example="123"),
@@ -273,17 +364,17 @@ class ShortListController extends Controller
      *      )
      * )
      */
-    public function update(UpdateShortList $request, int $id): JsonResponse
+    public function update(UpdateLibrary $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $shortList = ShortList::where('id', $id)->first();
-            if ($shortList['user_id'] != $jwtUser['id']) {
-                throw new UnauthorizedException('You do not have permission to edit this short list');
+            $library = Library::where('id', $id)->first();
+            if ($library['user_id'] != $jwtUser['id']) {
+                throw new UnauthorizedException('You do not have permission to edit this library');
             }
-            $shortList->update([
+            $library->update([
                 'user_id' => (int) $jwtUser['id'],
                 'dataset_id' => $input['dataset_id'],
             ]);
@@ -292,12 +383,12 @@ class ShortListController extends Controller
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "short list " . $id . " updated",
+                'description' => "library " . $id . " updated",
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => ShortList::where('id', $id)->first()
+                'data' => Library::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -306,26 +397,26 @@ class ShortListController extends Controller
 
     /**
      * @OA\Patch(
-     *      path="/api/v1/short_lists/{id}",
-     *      summary="Edit a short list",
-     *      description="Edit a short list",
-     *      tags={"ShortList"},
-     *      summary="ShortList@update",
+     *      path="/api/v1/libraries/{id}",
+     *      summary="Edit a library",
+     *      description="Edit a library",
+     *      tags={"Library"},
+     *      summary="Library@update",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="short list id",
+     *         description="library id",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="short list id",
+     *            description="library id",
      *         ),
      *      ),
      *      @OA\RequestBody(
      *          required=true,
-     *          description="short list definition",
+     *          description="library definition",
      *          @OA\JsonContent(
      *              required={"dataset_id"},
      *                  @OA\Property(property="dataset_id", type="integer", example="123"),
@@ -361,7 +452,7 @@ class ShortListController extends Controller
      *      )
      * )
      */
-    public function edit(EditShortList $request, int $id): JsonResponse
+    public function edit(EditLibrary $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
@@ -374,23 +465,23 @@ class ShortListController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            $shortList = ShortList::where('id', $id)->first();
-            if ($shortList['user_id'] != $jwtUser['id']) {
-                throw new UnauthorizedException('You do not have permission to edit this short list');
+            $library = Library::where('id', $id)->first();
+            if ($library['user_id'] != $jwtUser['id']) {
+                throw new UnauthorizedException('You do not have permission to edit this library');
             }
             
-            $shortList->update($array);
+            $library->update($array);
             
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "short list " . $id . " updated",
+                'description' => "library " . $id . " updated",
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => ShortList::where('id', $id)->first()
+                'data' => Library::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -399,21 +490,21 @@ class ShortListController extends Controller
 
     /**
      * @OA\Delete(
-     *      path="/api/v1/short_lists/{id}",
-     *      summary="Delete a short list",
-     *      description="Delete a short list",
-     *      tags={"ShortList"},
-     *      summary="ShortList@destroy",
+     *      path="/api/v1/libraries/{id}",
+     *      summary="Delete a library",
+     *      description="Delete a library",
+     *      tags={"Library"},
+     *      summary="Library@destroy",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="short list id",
+     *         description="library id",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="short list id",
+     *            description="library id",
      *         ),
      *      ),
      *      @OA\Response(
@@ -439,25 +530,25 @@ class ShortListController extends Controller
      *      )
      * )
      */
-    public function destroy(DeleteShortList $request, int $id): JsonResponse
+    public function destroy(DeleteLibrary $request, int $id): JsonResponse
     {
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
     
-            $shortList = ShortList::findOrFail($id);
-            if ($shortList) {
+            $library = Library::findOrFail($id);
+            if ($library) {
 
-                if ($shortList['user_id'] != $jwtUser['id']) {
-                    throw new UnauthorizedException('You do not have permission to delete this short list');
+                if ($library['user_id'] != $jwtUser['id']) {
+                    throw new UnauthorizedException('You do not have permission to delete this library');
                 }
 
-                if ($shortList->save()) {
+                if ($library->save()) {
                     Auditor::log([
                         'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'DELETE',
                         'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                        'description' => "short list " . $id . " deleted",
+                        'description' => "library " . $id . " deleted",
                     ]);
 
                     return response()->json([

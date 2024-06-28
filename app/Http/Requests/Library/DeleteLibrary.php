@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Http\Requests\ShortList;
+namespace App\Http\Requests\Library;
 
-use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
 
-class EditShortList extends BaseFormRequest
+class DeleteLibrary extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -15,13 +14,10 @@ class EditShortList extends BaseFormRequest
     public function rules(): array
     {
         return [
-            'user_id' => [
+            'id' => [
                 'int',
-                'exists:users,id',
-            ],
-            'dataset_id' => [
-                'int',
-                'exists:datasets,id',
+                'required',
+                'exists:libraries,id',
             ],
         ];
     }

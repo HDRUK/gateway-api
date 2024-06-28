@@ -81,6 +81,7 @@ class DatabaseSeeder extends Seeder
             PublicationHasToolSeeder::class,
             DataProviderCollsSeeder::class,
             DurHasToolSeeder::class,
+            LibrarySeeder::class,
             CohortRequestEmailSeeder::class,
         ]);
     }

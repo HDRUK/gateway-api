@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\ShortList;
+namespace App\Http\Requests\Library;
 
 use Illuminate\Validation\Rule;
 use App\Http\Requests\BaseFormRequest;
 
-class UpdateShortList extends BaseFormRequest
+class CreateLibrary extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -24,15 +24,5 @@ class UpdateShortList extends BaseFormRequest
                 'exists:datasets,id',
             ],
         ];
-    }
-
-    /**
-     * Add Route parameters to the FormRequest.
-     *
-     * @return void
-     */
-    protected function prepareForValidation()
-    {
-        $this->merge(['id' => $this->route('id')]);
     }
 }

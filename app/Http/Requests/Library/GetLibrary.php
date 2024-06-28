@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\ShortList;
+namespace App\Http\Requests\Library;
 
 use App\Http\Requests\BaseFormRequest;
 
-class GetShortList extends BaseFormRequest
+class GetLibrary extends BaseFormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -17,7 +17,7 @@ class GetShortList extends BaseFormRequest
             'id' => [
                 'int',
                 'required',
-                'exists:short_lists,id',
+                'exists:libraries,id',
             ],
         ];
     }
