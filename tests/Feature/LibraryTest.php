@@ -16,9 +16,6 @@ class LibraryTest extends TestCase
 {
     use RefreshDatabase;
     use Authorization;
-
-    use RefreshDatabase;
-    use Authorization;
     use MockExternalApis {
         setUp as commonSetUp;
     }
