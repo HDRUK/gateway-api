@@ -51,7 +51,7 @@ class SearchTest extends TestCase
     const TEST_URL_SEARCH = '/api/v1/search';
 
     protected $header = [];
-    protected $metadataUpdate;
+    protected $metadata;
 
     /**
      * Set up the database
@@ -88,7 +88,7 @@ class SearchTest extends TestCase
             DurHasToolSeeder::class,
         ]);
 
-        $this->metadataUpdate = $this->getFakeUpdateDataset();
+        $this->metadata = $this->getMetadata();
     }
 
     /**
@@ -589,9 +589,9 @@ class SearchTest extends TestCase
         $userId = (int) User::all()->random()->id;
         $teamId = (int) Team::all()->random()->id;
         Dur::query()->update(['status' => 'ACTIVE']);
-        $metadata = $this->metadataUpdate;
+        $metadata = $this->metadata;
         MMC::shouldReceive("translateDataModelType")
-            ->with(json_encode($this->metadataUpdate), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
+            ->with(json_encode($this->metadata), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
             ->andReturnUsing(function(string $metadata){
             return [
                 "traser_message" => "",
@@ -606,13 +606,13 @@ class SearchTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'metadata' => $this->metadataUpdate,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
-        $metadata = $this->getFakeUpdateDataset();
+        $metadata = $this->getMetadata();
 
         // update dur with id 1 to include updated dataset and another
         $mockData = [

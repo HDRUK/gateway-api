@@ -988,16 +988,6 @@ trait MockExternalApis
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        // MMC::shouldReceive("translateDataModelType")
-        //     ->with(json_encode($this->getFakeDataset()), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
-        //     ->andReturnUsing(function(string $metadata){
-        //     return [
-        //         "traser_message" => "",
-        //         "wasTranslated" => true,
-        //         "metadata" => json_decode($metadata,true)["metadata"],
-        //         "statusCode" => "200",
-        //     ];
-        // });
         MMC::shouldReceive("translateDataModelType")
             ->andReturnUsing(function(string $metadata){
             return [
