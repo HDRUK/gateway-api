@@ -3,8 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
+use App\Models\Publication;
 use Illuminate\Console\Command;
+use App\Http\Controllers\Api\V1\PublicationController;
 use MetadataManagementController AS MMC;
 
 class ReindexEntities extends Command
@@ -39,19 +40,33 @@ class ReindexEntities extends Command
 
     }
 
-    public function datasets(){
-       
+    private function datasets(){
         $datasetIds = Dataset::pluck('id');
         $progressbar = $this->output->createProgressBar(count($datasetIds));
         foreach ($datasetIds as $id) {
             $dataset = Dataset::find($id);
-            //MMC::reindexElastic($dataset->id);
+            if($dataset){
+                MMC::reindexElastic($dataset->id);
+            }
             $progressbar->advance();
-            sleep(1); // to not kill ElasticSearch
+            sleep(0.5); 
         }
-        
         $progressbar->finish();
-
     }
+
+    private function publications(){
+        $publicationController = new PublicationController();
+        $pubicationIds = Publication::pluck('id');
+        $progressbar = $this->output->createProgressBar(count($pubicationIds));
+        foreach ($pubicationIds as $id) {
+          
+            $publicationController->indexElasticPublication($id);
+           
+            $progressbar->advance();
+            sleep(0.5); 
+        }
+        $progressbar->finish();
+    }
+
 
 }

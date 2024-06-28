@@ -634,11 +634,18 @@ class PublicationController extends Controller
 
             $datasetTitles = array();
             $datasetLinkTypes = array();
+
+            if(!array_key_exists('datasets',$pubMatch)){
+                throw new Exception("datasets not found on publication!");
+            }
+
             foreach ($pubMatch['datasets'] as $d) {
                 $metadata = Dataset::where(['id' => $d])
                     ->first()
                     ->latestVersion()
                     ->metadata;
+
+                echo json_encode($metadata['metadata']);
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
 
                 $datasetLinkTypes[] = PublicationHasDataset::where([
@@ -646,6 +653,8 @@ class PublicationController extends Controller
                     ['dataset_id', '=', (int) $d]
                 ])->first()['link_type'];
             }
+
+         
 
             // Split string to array of strings
             $publicationTypes = explode(",", $pubMatch['publication_type']); 
