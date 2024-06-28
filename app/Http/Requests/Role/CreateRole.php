@@ -27,6 +27,10 @@ class CreateRole extends BaseFormRequest
                 'required',
                 'array',
             ],
+            'full_name' => [
+                'nullable',
+                'string',
+            ],
         ];
     }
 }

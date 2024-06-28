@@ -557,6 +557,9 @@ class DatasetTest extends TestCase
         if(env('TED_ENABLED')){
             $this->assertNotEmpty($respArrayActive['data']['named_entities']);
         };
+        $this->assertArrayHasKey(
+            'linked_dataset_versions', $respArrayActive['data']['versions'][0]
+        );
 
         // get one draft dataset
         $responseGetOneDraft = $this->json('GET', self::TEST_URL_DATASET . '/' . $draftDatasetId, [], $this->header);

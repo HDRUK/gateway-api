@@ -3,12 +3,15 @@
 namespace App\Console\Commands;
 
 use Config;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Sector;
-use Illuminate\Console\Command;
 use App\Services\Hubspot;
-use App\Http\Enums\UserContactPreference;
+use App\Models\TeamHasUser;
 use App\Models\CohortRequest;
+use App\Models\TeamUserHasRole;
+use Illuminate\Console\Command;
+use App\Http\Enums\UserContactPreference;
 
 class SyncHubspotContacts extends Command
 {
@@ -58,6 +61,8 @@ class SyncHubspotContacts extends Command
                 'user_id' => $user->id,
                 'request_status' => 'APPROVED',
             ])->first();
+            
+            $rolesFullNamesByUserId = $this->getUserRoleNames($user->id);
 
             $hubspot = [
                 'firstname' => $user->firstname,
@@ -68,7 +73,7 @@ class SyncHubspotContacts extends Command
                 'company' => $user->organisation,
                 'communication_preference' => count($commPreference) ? implode(";", $commPreference) : '',
                 'gateway_registered_user' => 'Yes',
-                'gateway_roles' => 'User',
+                'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(";", $rolesFullNamesByUserId) : ''),
                 'cohort_registered_user' => $cohortRequest ? 'Yes' : 'No',
             ];
 
@@ -76,7 +81,7 @@ class SyncHubspotContacts extends Command
             if ($user->hubspot_id) {
                 $hubspotService->updateContactById((int) $user->hubspot_id, $hubspot);
             }
-            
+
             // create new contact hubspot and update users table
             if (!$user->hubspot_id){
                 // check by email
@@ -88,7 +93,7 @@ class SyncHubspotContacts extends Command
                 }
 
                 if ($hubspotId) {
-                    $hubspotService->updateContactById((int) $hubspotId, $hubspot);
+                    $updateContactByIdx = $hubspotService->updateContactById((int) $hubspotId, $hubspot);
                 }
 
                 User::where([
@@ -115,5 +120,21 @@ class SyncHubspotContacts extends Command
 
             echo 'The disabled user with email ' . $user->email . ' has been updated', PHP_EOL;
         }
+    }
+
+    private function getUserRoleNames(int $userId): array
+    {
+        $teamUserIds = TeamHasUser::where([
+            'user_id' => $userId,
+        ])->pluck('id');
+
+        if (!count($teamUserIds)) {
+            return [];
+        }
+
+        $roleIds = TeamUserHasRole::whereIn('team_has_user_id', $teamUserIds)->pluck('role_id')->toArray();
+        $roleNames = Role::whereNotNull('full_name')->whereIn('id', $roleIds)->pluck('full_name')->toArray();
+
+        return $roleNames;
     }
 }
