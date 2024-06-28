@@ -17,7 +17,7 @@ class DeleteLibrary extends BaseFormRequest
             'id' => [
                 'int',
                 'required',
-                'exists:library,id',
+                'exists:libraries,id',
             ],
         ];
     }

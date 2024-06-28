@@ -22,7 +22,7 @@ class Library extends Model
         'deleted_at',
     ];
 
-    protected $table = 'library';
+    protected $table = 'libraries';
 
     public $timestamps = true;
 
