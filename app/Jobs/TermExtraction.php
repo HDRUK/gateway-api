@@ -6,8 +6,9 @@ use Exception;
 use MetadataManagementController AS MMC;
 
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\NamedEntities;
-use App\Models\DatasetHasNamedEntities;
+use App\Models\DatasetVersionHasNamedEntities;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -76,13 +77,15 @@ class TermExtraction implements ShouldQueue
                 'application/json'
             )->post(env('TED_SERVICE_URL', 'http://localhost:8001'));
 
+            $datasetVersionId = DatasetVersion::where('dataset_id', $datasetId)->first();
+
             if ($response->json() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $n) {
                     $named_entities = NamedEntities::create([
                         'name' => $n,
                     ]);
-                    DatasetHasNamedEntities::updateOrCreate([
-                        'dataset_id' => $datasetId,
+                    DatasetVersionHasNamedEntities::updateOrCreate([
+                        'dataset_version_id' => $datasetVersionId,
                         'named_entities_id' => $named_entities->id
                     ]);
                 }

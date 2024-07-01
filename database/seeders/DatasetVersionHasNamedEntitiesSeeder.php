@@ -3,7 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Dataset;
-use App\Models\DatasetHasNamedEntities;
+use App\Models\DatasetVersion;
+use App\Models\DatasetVersionHasNamedEntities;
 use App\Models\NamedEntities;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -17,16 +18,17 @@ class DatasetHasNamedEntitiesSeeder extends Seeder
     {
         for ($count = 1; $count <= 50; $count++) {
             $datasetId = Dataset::all()->random()->id;
+            $datasetVersionId = DatasetVersion::where('dataset_id', $datasetId)->first();
             $namedEntitiesId = NamedEntities::all()->random()->id;
 
-            $datasetHasNamedEntities = DatasetHasNamedEntities::where([
-                'dataset_id' => $datasetId,
+            $datasetHasNamedEntities = DatasetVersionHasNamedEntities::where([
+                'dataset_id' => $datasetVersionId,
                 'named_entities_id' => $namedEntitiesId,
             ])->first();
 
             if (!$datasetHasNamedEntities) {
-                DatasetHasNamedEntities::create([
-                    'dataset_id' => $datasetId,
+                DatasetVersionHasNamedEntities::create([
+                    'dataset_id' => $datasetVersionId,
                     'named_entities_id' => $namedEntitiesId,
                 ]);
             }
