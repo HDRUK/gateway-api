@@ -263,7 +263,7 @@ class MetadataManagementController {
      * @param mixed $default The default value to return if none of the keys are found.
      * @return mixed The value of the first key found, or the default value if none are found.
      */
-    function getValueByPossibleKeys(array $array, array $keys, $default = null)
+    private function getValueByPossibleKeys(array $array, array $keys, $default = null)
     {
         foreach ($keys as $key) {
             $value = Arr::get($array, $key, null);
