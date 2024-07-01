@@ -24,13 +24,13 @@ class CollectionHasDatasetVersionSeeder extends Seeder
 
             $collectionHasDataset = CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-                'dataset_id' => $datasetVersionId,
+                'dataset_version_id' => $datasetVersionId,
             ])->first();
 
             if (!$collectionHasDataset) {
                 CollectionHasDatasetVersion::create([
                     'collection_id' => $collectionId,
-                    'dataset_id' => $datasetVersionId,
+                    'dataset_version_id' => $datasetVersionId,
                     'user_id' => $userId,
                 ]);
             }

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class CollectionHasDatasetVersion extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
-
+    
     protected $fillable = [
         'collection_id',
         'dataset_version_id',
@@ -20,6 +20,7 @@ class CollectionHasDatasetVersion extends Model
         'reason',
         'created_at',
         'updated_at',
+        'deleted_at',
     ];
 
     /**
