@@ -4,10 +4,12 @@ namespace App\Auditor;
 
 use Config;
 use Exception;
+use Carbon\Carbon;
 use App\Models\AuditLog;
+use Carbon\CarbonImmutable;
 use App\Jobs\SendAuditLogToPubSub;
 use App\Http\Traits\RequestTransformation;
-use Carbon\CarbonImmutable;
+use App\Services\LoggingService;
 
 class Auditor {
 
@@ -36,11 +38,15 @@ class Auditor {
 
             $data['action_service'] = env('AUDIT_ACTION_SERVICE', 'gateway_api');
             $data['action_name'] = strtolower($data['action_name']);
+            $data['created_at'] = Carbon::now()->timestamp;
 
             if (Config::get('services.googlepubsub.enabled')) {
+                // $logService = new LoggingService();
+                // $logService->writeLog(json_encode($data));
                 SendAuditLogToPubSub::dispatch($data);
             }
 
+            // unset($data['created_at']);
             $audit = AuditLog::create($data);
 
             if (!$audit) {
