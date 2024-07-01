@@ -1278,9 +1278,15 @@ class SearchController extends Controller
     private function trimPayload(array &$input, array &$dataset): array
     {
         $miniMetadata = $input['metadata'];
-        $hasTechnicalMetadata = (bool)$dataset['has_technical_details'];
-        $containsTissue = (!empty($input['metadata']['coverage']['biologicalSamples']) ? true : false);
-        $accessServiceCategory = $input['metadata']['accessibility']['access']['accessServiceCategory'];
+    
+        $materialTypes = MMC::getMaterialTypes($input);
+        $containsTissue = MMC::getContainsTissues($materialTypes);
+        $hasTechnicalMetadata = MMC::getHasTechnicalMetadata($input);
+
+        $accessServiceCategory = null;
+        if(array_key_exists('accessServiceCategory', $miniMetadata['accessibility']['access'])) {
+            $accessServiceCategory  = $miniMetadata['accessibility']['access']['accessServiceCategory'];
+        }
 
         $minimumKeys = [
             'summary',

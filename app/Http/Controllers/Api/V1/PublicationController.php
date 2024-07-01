@@ -634,16 +634,24 @@ class PublicationController extends Controller
 
             $datasetTitles = array();
             $datasetLinkTypes = array();
+
+            if(!array_key_exists('datasets',$pubMatch)){
+                throw new Exception("datasets not found on publication!");
+            }
+
             foreach ($pubMatch['datasets'] as $d) {
-                $metadata = Dataset::where(['id' => $d])
+                $datasetId = $d['id'];
+                $metadata = Dataset::where(['id' => $datasetId])
                     ->first()
                     ->latestVersion()
                     ->metadata;
+
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
 
+                //needs a check for this!?
                 $datasetLinkTypes[] = PublicationHasDataset::where([
                     ['publication_id', '=', (int) $id],
-                    ['dataset_id', '=', (int) $d]
+                    ['dataset_id', '=', (int) $datasetId]
                 ])->first()['link_type'];
             }
 

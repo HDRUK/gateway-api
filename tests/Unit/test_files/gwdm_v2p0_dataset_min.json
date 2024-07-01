@@ -1,5 +1,5 @@
 {
-    "gwdmVersion": "1.0",
+    "gwdmVersion": "2.0",
     "metadata": {
         "required": {
             "gatewayId": "1234",
@@ -23,34 +23,41 @@
                     "version": "2.1.1",
                     "url": "https://a7ddefbd-31d9-4703-a738-256e4689f76a"
                 }
-            ]
+            ],
+            "version": "0.0.1"
         },
         "summary": {
             "abstract": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
             "contactPoint": "susheel.varma@hdruk.ac.uk",
             "keywords": "Preprints,Papers,HDR UK",
-            "controlledKeywords": "",
+            "controlledKeywords": null,
             "datasetType": "list of papers",
             "description": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations\n\nThis will include:\n- Papers\n- COVID-19 Papers\n- COVID-19 Preprint",
             "doiName": "10.1093/ije/dyx196",
             "shortTitle": "HDR UK Papers & Preprints",
             "title": "Publications that mention HDR-UK (or any variant thereof) in Acknowledgements or Author Affiliations",
             "publisher": {
-                "publisherName": "HEALTH DATA RESEARCH UK"
-            }
+                "name": "HEALTH DATA RESEARCH UK",
+                "gatewayId": null,
+                "rorId": null
+            },
+            "populationSize": 0,
+            "inPipeline": null,
+            "datasetSubType": null
         },
         "coverage": {
             "pathway": "NOT APPLICABLE",
-            "physicalSampleAvailability": "Blood,Urine",
             "spatial": "https://www.geonames.org/countries/GB/united-kingdom.html",
             "followup": "UNKNOWN",
-            "typicalAgeRange": "0-0"
+            "typicalAgeRange": "0-0",
+            "datasetCompleteness": null
         },
         "provenance": {
             "origin": {
                 "purpose": "OTHER",
                 "source": "MACHINE GENERATED",
-                "collectionSituation": "OTHER"
+                "collectionSituation": "OTHER",
+                "imageContrast": null
             },
             "temporal": {
                 "endDate": "2022-04-30",
@@ -68,12 +75,18 @@
                 "dataProcessor": "HDR UK",
                 "accessRights": "https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE",
                 "accessService": "https://github.com/HDRUK/papers",
-                "accessRequestCost": "Free"
+                "accessRequestCost": "Free",
+                "accessMode": "New project",
+                "accessServiceCategory": "TRE"
             },
             "usage": {
                 "dataUseLimitation": "GENERAL RESEARCH USE",
                 "dataUseRequirement": "RETURN TO DATABASE OR RESOURCE",
-                "resourceCreator": "HDR UK Science Team"
+                "resourceCreator": {
+                    "name": "HDR UK Science Team",
+                    "gatewayId": null,
+                    "rorId": null
+                }
             },
             "formatAndStandards": {
                 "vocabularyEncodingSchemes": "OTHER",
@@ -93,11 +106,15 @@
                 "isMemberOf": "blah",
                 "linkedDatasets": "https://web.www.healthdatagateway.org/dataset/fd8d0743-344a-4758-bb97-f8ad84a37357"
             },
-            "investigations": "https://github.com/HDRUK/papers"
+            "investigations": "https://github.com/HDRUK/papers",
+            "associatedMedia": null,
+            "publicationAboutDataset": null,
+            "syntheticDataWebLink": null,
+            "publicationUsingDataset": null
         },
         "observations": [
             {
-                "observedNode": "FINDINGS",
+                "observedNode": "Findings",
                 "measuredValue": 575,
                 "observationDate": "2020-11-27",
                 "measuredProperty": "Count",
@@ -107,33 +124,24 @@
         "structuralMetadata": [
             {
                 "name": "table1",
-                "description": "this is table 1 - description to be changed",
+                "description": "this is table 1",
                 "columns": [
                     {
-                        "name": "column1-1",
-                        "description": "this is column1-1 - description to be changed",
+                        "name": "column1",
+                        "description": "this is column1",
                         "dataType": "String",
-                        "sensitive": false
-                    },
-                    {
-                        "name": "column1-2",
-                        "description": "this is column1-2 - to be deleted",
-                        "dataType": "String",
-                        "sensitive": false
+                        "sensitive": false,
+                        "values": null
                     }
                 ]
+            }
+        ],
+        "tissuesSampleCollection": [
+            {
+                "materialType": "Blood"
             },
             {
-                "name": "table2",
-                "description": "this is table 2 - to be deleted",
-                "columns": [
-                    {
-                        "name": "column2-1",
-                        "description": "this is column2-1 - to be automatically deleted",
-                        "dataType": "String",
-                        "sensitive": false
-                    }
-                ]
+                "materialType": "Urine"
             }
         ]
     }

@@ -28,7 +28,7 @@ trait MockExternalApis
     protected $header = [];
 
     // Changed visibility. Private functions in shared trait is frowned upon
-    public function getFakeDataset()
+    public function getMetadataV1p0()
     {
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
@@ -37,7 +37,7 @@ trait MockExternalApis
     }
 
 
-    public function getFakeDatasetNew()
+    public function getMetadataV1p1()
     {
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1p1_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
@@ -46,12 +46,28 @@ trait MockExternalApis
     }
 
     // Changed visibility. Private functions in shared trait is frowned upon
-    public function getFakeUpdateDataset()
+    public function getMetadataV2p0()
     {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min_update.json', 0, null);
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v2p0_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
 
         return $json;
+    }
+
+    public function getMetadata()
+    {
+        $version = Config::get('metadata.GWDM.version');
+        switch (true) {
+            case version_compare($version, "1.0", "<="):
+                return $this->getMetadataV1p0();
+    
+            case version_compare($version, "1.2", "<="):
+                #note: v1.1 and v1.2 were not that different so can use this example metadata
+                return $this->getMetadataV1p1();
+    
+            case version_compare($version, "2.0", "<="):
+                return $this->getMetadataV2p0();
+            }
     }
     
     public function setUp(): void
@@ -972,16 +988,6 @@ trait MockExternalApis
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        // MMC::shouldReceive("translateDataModelType")
-        //     ->with(json_encode($this->getFakeDataset()), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
-        //     ->andReturnUsing(function(string $metadata){
-        //     return [
-        //         "traser_message" => "",
-        //         "wasTranslated" => true,
-        //         "metadata" => json_decode($metadata,true)["metadata"],
-        //         "statusCode" => "200",
-        //     ];
-        // });
         MMC::shouldReceive("translateDataModelType")
             ->andReturnUsing(function(string $metadata){
             return [

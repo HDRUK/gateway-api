@@ -52,8 +52,9 @@ class TermExtraction implements ShouldQueue
 
         $tedUrl = env('TED_SERVICE_URL');
         $tedEnabled = env('TED_ENABLED');
-
-        $this->postToTermExtractionDirector(json_encode($data['metadata']), $this->datasetId);
+        if($tedEnabled === true){
+            $this->postToTermExtractionDirector(json_encode($data['metadata']), $this->datasetId);
+        }
 
         if ($this->reIndexElastic) {
             MMC::reindexElastic($this->datasetId);
