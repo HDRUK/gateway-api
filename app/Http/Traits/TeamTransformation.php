@@ -16,7 +16,7 @@ trait TeamTransformation
      * @param array $teams
      * @return array
      */
-    public function getTeams(array $teams): array
+    public function getTeams(array $teams, bool $showAll): array
     {
         $response = [];
         
@@ -46,6 +46,11 @@ trait TeamTransformation
 
             $tmpUser = [];
             foreach ($team['users'] as $user) {
+                if (!$showAll) {
+                    if ($user['is_admin']){
+                        continue;
+                    }    
+                }
                 $tmp = [
                     'id' => $user['id'],
                     'name' => $user['name'],
