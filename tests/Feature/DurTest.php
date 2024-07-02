@@ -255,6 +255,19 @@ class DurTest extends TestCase
     {
         $userId = (int) User::all()->random()->id;
         $teamId = (int) Team::all()->random()->id;
+
+        /*
+        * use the endpoint /api/v1/datause/count to find unique values of the field 'status'
+        */
+        $responseCount = $this->json('GET', self::TEST_URL .
+            '/count/status?team_id=' . $teamId ,
+            [],
+            $this->header
+        );
+        $responseCount->assertStatus(200);
+        $teamCountActiveBefore = array_key_exists('ACTIVE', $responseCount['data']) ? $responseCount['data']['ACTIVE'] : 0;
+        $teamCountDraftBefore = array_key_exists('DRAFT', $responseCount['data']) ? $responseCount['data']['DRAFT'] : 0;
+
         $countBefore = Dur::count();
         $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $mockData = [
@@ -291,6 +304,21 @@ class DurTest extends TestCase
         );
         $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
         $this->assertTrue($elasticCountAfter > $elasticCountBefore);
+
+        /*
+        * compare the counts per status to before the ACTIVE one was added
+        */
+        $responseCount = $this->json('GET', self::TEST_URL . 
+            '/count/status?team_id=' . $teamId ,
+            [],
+            $this->header
+        );
+        $responseCount->assertStatus(200);
+        $teamCountActiveAfter = array_key_exists('ACTIVE', $responseCount['data']) ? $responseCount['data']['ACTIVE'] : 0;
+        $teamCountDraftAfter = array_key_exists('DRAFT', $responseCount['data']) ? $responseCount['data']['DRAFT'] : 0;
+
+        $this->assertEquals($teamCountDraftAfter, $teamCountDraftBefore);
+        $this->assertEquals($teamCountActiveAfter, $teamCountActiveBefore+1);
     }
 
     /**
