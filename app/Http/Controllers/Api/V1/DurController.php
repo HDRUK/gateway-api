@@ -52,6 +52,13 @@ class DurController extends Controller
      *           type="project_title:asc,updated_at:asc"
      *       )
      *    ),
+     *    @OA\Parameter(
+     *       name="project_title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter tools by project title"
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",

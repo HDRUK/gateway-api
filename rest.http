@@ -313,6 +313,14 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 
+### Publications
+#### get all publications
+# GET {{baseUrl}}/api/{{apiVersion}}/publications?title=19004 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/publications?title=doloribus HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+
 ### Tools
 #### get all tools
 # GET {{baseUrl}}/api/{{apiVersion}}/tools?mongo_id=19004 HTTP/1.1

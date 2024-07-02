@@ -36,7 +36,14 @@ class PublicationController extends Controller
      *    summary="PublicationController@index",
      *    description="Get All Publications",
      *    security={{"bearerAuth":{}}},
-     *    @OA\Response(
+     *    @OA\Parameter(
+     *       name="paper_title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter tools by paper title"
+     *    ),
+      *    @OA\Response(
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
@@ -58,8 +65,12 @@ class PublicationController extends Controller
         try {
             $input = $request->all();
             $mongoId = $request->query('mongo_id', null);
+            $paperTitle = $request->query('paper_title', null);
 
-            $publications = Publication::when($mongoId, function ($query) use ($mongoId) {
+            $publications = Publication::when($paperTitle, function ($query) use ($paperTitle) {
+                return $query->where('paper_title', 'LIKE', '%' . $paperTitle . '%');
+            })
+            ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
             })
             ->with([
