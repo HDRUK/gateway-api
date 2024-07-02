@@ -268,11 +268,6 @@ class DurTest extends TestCase
         $teamCountActiveBefore = array_key_exists('ACTIVE', $responseCount['data']) ? $responseCount['data']['ACTIVE'] : 0;
         $teamCountDraftBefore = array_key_exists('DRAFT', $responseCount['data']) ? $responseCount['data']['DRAFT'] : 0;
 
-        var_dump('$teamCountActiveBefore');
-        var_dump($teamCountActiveBefore);
-        var_dump('$teamCountDraftBefore');
-        var_dump($teamCountDraftBefore);
-
         $countBefore = Dur::count();
         $elasticCountBefore = $this->countElasticClientRequests($this->testElasticClient);
         $mockData = [
