@@ -83,7 +83,6 @@ class TeamController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $showAll = (bool) ($request->has('show_all') ? $request->query('show_all') : false);
             $sort = [];
             $sortArray = $request->has('sort') ? explode(',', $request->query('sort', '')) : [];
             foreach ($sortArray as $item) {
@@ -118,7 +117,7 @@ class TeamController extends Controller
                 ->paginate($perPage, ['*'], 'page')
                 ->toArray();
 
-            $teams['data'] = $this->getTeams($teams['data'], $showAll);
+            $teams['data'] = $this->getTeams($teams['data']);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -193,7 +192,6 @@ class TeamController extends Controller
     {
         try {
             $input = $request->all();
-            $showAll = (bool) ($request->has('show_all') ? $request->query('show_all') : false);
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
@@ -207,7 +205,7 @@ class TeamController extends Controller
 
             return response()->json([
                 'message' => 'success',
-                'data' => $this->getTeams($userTeam, $showAll),
+                'data' => $this->getTeams($userTeam),
             ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
