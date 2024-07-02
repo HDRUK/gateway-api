@@ -14,9 +14,8 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
 
-        $this->call(BaseDatabaseSeeder::class);
-
         $this->call([
+            BaseDatabaseSeeder::class,
             TagSeeder::class,
             FeatureSeeder::class,
             DarIntegrationSeeder::class,
