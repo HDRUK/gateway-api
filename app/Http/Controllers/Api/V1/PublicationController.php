@@ -36,7 +36,14 @@ class PublicationController extends Controller
      *    summary="PublicationController@index",
      *    description="Get All Publications",
      *    security={{"bearerAuth":{}}},
-     *    @OA\Response(
+     *    @OA\Parameter(
+     *       name="paper_title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter tools by paper title"
+     *    ),
+      *    @OA\Response(
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
