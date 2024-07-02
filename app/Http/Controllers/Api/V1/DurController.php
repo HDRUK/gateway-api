@@ -1043,29 +1043,9 @@ class DurController extends Controller
                         $durModel->deleted_at = null;
                         $durModel->save();
 
-                        // link/unlink dur with datasets
-                        if (array_key_exists('datasets', $input)) {
-                            $datasets = $input['datasets'];
-                            $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
-                        }
-
-                        // link/unlink dur with publications
-                        if (array_key_exists('publications', $input)) {
-                            $publications = $input['publications'];
-                            $this->checkPublications($id, $publications, $userIdFinal, $appId);
-                        }
-
-                        // link/unlink dur with keywords
-                        if (array_key_exists('keywords', $input)) {
-                            $keywords = $input['keywords'];
-                            $this->checkKeywords($id, $keywords);
-                        }
-
-                        // link/unlink dur with tools
-                        if (array_key_exists('tools', $input)) {
-                            $tools = $input['tools'];
-                            $this->checkTools($id, $tools);
-                        }
+                        // TODO: need to consider how we re-link datasets, publications etc. 
+                        // Currently, the checkPublications() etc do not consider the case where
+                        // we want to restore an existing soft-deleted DurHasX.
                         
                         Auditor::log([
                             'user_id' => (int) $jwtUser['id'],
