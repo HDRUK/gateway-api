@@ -14,22 +14,22 @@ class BaseDatabaseSeeder extends Seeder
     public function run()
     {
         $this->call([
-            FilterSeeder::class, //
-            SectorSeeder::class, //
-            PermissionSeeder::class, //
-            RoleSeeder::class, //
-            LicenseSeeder::class, //
-            ActivityLogUserTypeSeeder::class, // 
-            EmailTemplatesSeeder::class, // 
+            FilterSeeder::class, 
+            SectorSeeder::class, 
+            PermissionSeeder::class,
+            RoleSeeder::class,
+            LicenseSeeder::class,
+            ActivityLogUserTypeSeeder::class, 
+            EmailTemplatesSeeder::class, 
             FAIRShareCommandSeeder::class,
-            KeywordSeeder::class, //
-            SpatialCoverageSeeder::class, //
-            QuestionBankSeeder::class,//
-            CategorySeeder::class, //
-            ProgrammingLanguageSeeder::class, //
-            ProgrammingPackageSeeder::class, //
-            TypeCategorySeeder::class, //
-            CohortRequestEmailSeeder::class, //
+            KeywordSeeder::class,
+            SpatialCoverageSeeder::class,
+            QuestionBankSeeder::class,
+            CategorySeeder::class,
+            ProgrammingLanguageSeeder::class,
+            ProgrammingPackageSeeder::class,
+            TypeCategorySeeder::class,
+            CohortRequestEmailSeeder::class,
         ]);
     }
 }
