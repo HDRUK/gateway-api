@@ -67,7 +67,7 @@ class PublicationController extends Controller
             $mongoId = $request->query('mongo_id', null);
             $paperTitle = $request->query('paper_title', null);
 
-            $publications = Publication::when($paperTitle, function ($query, $paperTitle) {
+            $publications = Publication::when($paperTitle, function ($query) use ($paperTitle) {
                 return $query->where('paper_title', 'LIKE', '%' . $paperTitle . '%');
             })
             ->when($mongoId, function ($query) use ($mongoId) {
