@@ -56,12 +56,37 @@ Create a new (gitignore'd) `tiltconf.json` following the same format as below:
 
 From the root of the cloned gateway-api directory run `tilt up`. This will run both the API.
 
-## Migrations
+## Migration and Databse Seeding
+### Migration
 
 When needing to update your database schema, you can use the following artisan functions:
 `artisan migrate` to migrate/update your local and, `artisan migrate:rollback` to rollback the last migration run.
 
 If running in a docker container, you'll need to remotely interact with artisan with: `docker exec php artisan migrate/migrate:rollback`.
+
+### Seeding
+
+The database can be seeded for local testing using:
+```
+kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') -- php artisan db:seed
+```
+
+
+To migrate and seed at the same time you can do:
+```
+kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') -- php artisan migrate:fresh --seed 
+```
+
+### Production
+
+For production we don't want to seed all the fake data used for development, you can instead just migrate and run the baseline database seeder like so:
+```
+kubectl exec -it $(kubectl get pods | awk '/gateway-api/ {print $1}') -- php artisan migrate:fresh --seed --seeder=BaseDatabaseSeeder 
+```
+
+Follows steps in the mongo-migration-suite to migrate real data.
+
+
 
 ## Contribution
 
@@ -180,3 +205,5 @@ php -d memory_limit=2048M ./vendor/bin/phpunit --testdox --filter ActivityLogTes
 ```
 https://gist.github.com/jeffochoa/a162fc4381d69a2d862dafa61cda0798
 ```
+
+
