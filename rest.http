@@ -194,7 +194,6 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get all teams
-# GET {{baseUrl}}/api/{{apiVersion}}/teams?show_all=true HTTP/1.1
 GET {{baseUrl}}/api/{{apiVersion}}/teams HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
