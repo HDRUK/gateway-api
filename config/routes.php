@@ -2699,6 +2699,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'dur.count-field',
+        'method' => 'get',
+        'path' => '/dur/count/{field}',
+        'methodController' => 'DurController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'dur.get.id',
         'method' => 'get',
         'path' => '/dur/{id}',

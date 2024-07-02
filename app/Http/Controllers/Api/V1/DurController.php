@@ -223,6 +223,74 @@ class DurController extends Controller
 
     /**
      * @OA\Get(
+     *    path="/api/v1/dur/count/{field}",
+     *    operationId="count_unique_dur_fields",
+     *    tags={"Data Use Registers"},
+     *    summary="DurController@count",
+     *    description="Get Counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="status field",
+     *       ),
+     *    ),
+    *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(Request $request, string $field): JsonResponse
+    {
+        try {
+            $teamId = $request->query('team_id',null);
+            $counts = Dur::when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
+            })->withTrashed()
+                ->select($field)
+                ->get()
+                ->groupBy($field)
+                ->map->count();
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Datause count",
+            ]);
+
+            return response()->json([
+                "data" => $counts
+            ]);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
      *    path="/api/v1/dur/{id}",
      *    operationId="fetch_dur_by_id",
      *    tags={"Data Use Registers"},
