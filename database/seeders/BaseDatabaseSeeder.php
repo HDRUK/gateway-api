@@ -30,6 +30,7 @@ class BaseDatabaseSeeder extends Seeder
             ProgrammingPackageSeeder::class,
             TypeCategorySeeder::class,
             CohortRequestEmailSeeder::class,
+            UserAdminsSeeder::class,
         ]);
     }
 }
