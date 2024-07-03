@@ -281,6 +281,8 @@ class TeamController extends Controller
             $arrayTeamNotification = $input['notifications'];
             $arrayTeamUsers = $input['users'];
 
+            $superAdminIds = User::where("is_admin",true)->pluck('id');
+
             $team = Team::create($arrayTeam);
 
             if ($team) {
@@ -289,6 +291,13 @@ class TeamController extends Controller
                         'team_id' => (int) $team->id,
                         'notification_id' => (int) $value,
                     ]);
+                }
+
+                //make sure the super admin is added to this team on creation
+                foreach($superAdminIds as $adminId){
+                    TeamHasUser::create(
+                        ['team_id' => $team->id, 'user_id' => $adminId],
+                    );
                 }
 
                 $roles = Role::where(['name' => 'custodian.team.admin'])->first();
