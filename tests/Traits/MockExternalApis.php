@@ -863,56 +863,60 @@ trait MockExternalApis
                             0 => [
                                 '_explanation' => [],
                                 '_id' => '1',
-                                '_index' => 'dataprovidercoll',
+                                '_index' => 'dataprovider',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 20.0,
-                                '_shard' => '[dataprovidercoll][0]',
+                                '_shard' => '[dataprovider][0]',
                                 '_source' => [
                                     'name' => 'One Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
-                                    'geographicLocations' => ['Scotland', 'Wales']
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
                                 ],
                                 'highlight' => null,
                             ],
                             1 => [
                                 '_explanation' => [],
                                 '_id' => '2',
-                                '_index' => 'dataprovidercoll',
+                                '_index' => 'dataprovider',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 18.0,
-                                '_shard' => '[dataprovidercoll][0]',
+                                '_shard' => '[dataprovider][0]',
                                 '_source' => [
                                     'name' => 'Another Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
-                                    'geographicLocations' => ['Scotland', 'Wales']
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
                                 ],
                                 'highlight' => null,
                             ],
                             2 => [
                                 '_explanation' => [],
                                 '_id' => '3',
-                                '_index' => 'dataprovidercoll',
+                                '_index' => 'dataprovider',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 16.0,
-                                '_shard' => '[dataprovidercoll][0]',
+                                '_shard' => '[dataprovider][0]',
                                 '_source' => [
                                     'name' => 'Third Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
-                                    'geographicLocations' => ['Scotland', 'Wales']
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
                                 ],
                                 'highlight' => null,
                             ],
                             3 => [
                                 '_explanation' => [],
                                 '_id' => '1111',
-                                '_index' => 'dataprovidercoll',
+                                '_index' => 'dataprovider',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 16.0,
-                                '_shard' => '[dataprovidercoll][0]',
+                                '_shard' => '[dataprovider][0]',
                                 '_source' => [
                                     'name' => 'Fourth Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
-                                    'geographicLocations' => ['Scotland', 'Wales']
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
                                 ],
                                 'highlight' => null,
                             ]
