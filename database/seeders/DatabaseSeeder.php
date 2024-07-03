@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
             TeamUserHasNotificationSeeder::class,
             KeywordSeeder::class,
             CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetVersionSeeder::class,
+            CollectionHasDatasetSeeder::class,
             SavedSearchSeeder::class,
             SavedSearchHasFilterSeeder::class,
             DurSeeder::class,
