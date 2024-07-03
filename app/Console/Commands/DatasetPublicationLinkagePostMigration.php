@@ -53,16 +53,19 @@ class DatasetPublicationLinkagePostMigration extends Command
             $linkType = $csv['Relationship'];
 
             // Find DatasetVersion associated to this row
-            $datasetId = DatasetVersion::whereRaw(
+            $datasetVersion = DatasetVersion::whereRaw(
                 "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) LIKE LOWER(?)",
                 ["%$datasetTitle%"]
-            )->latest('version')->first()->pluck('dataset_id');
-            if (!$datasetId) {
+            )->latest('version')->first();
+            if (!$datasetVersion) {
                 echo 'Failed to find dataset with title ' . $datasetTitle . "\n";
                 $progressbar->advance();
                 sleep(0.1);
                 continue;
             }
+
+            // Find Dataset ID associated to this row
+            $datasetId = $datasetVersion->dataset_id;
 
             // Find Publication associated to this row
             $publication = Publication::where('paper_doi', $paperDOI)->first();
