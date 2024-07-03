@@ -211,7 +211,6 @@ class MetadataManagementController {
 
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
-            $hasTechnicalMetadata = $this->getHasTechnicalMetadata($metadata);
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -341,14 +340,5 @@ class MetadataManagementController {
             return false;
         }
         return count($materialTypes) > 0;
-    }
-
-    public function getHasTechnicalMetadata(array $metadata){
-        $structuralMetadata = Arr::get($metadata, 'metadata.structuralMetadata', null);
-        $hasTechnicalMetadata = false;
-        if (!is_null($structuralMetadata)) {
-            $hasTechnicalMetadata = count($structuralMetadata) > 0;
-        } 
-        return  $hasTechnicalMetadata;
     }
 }
