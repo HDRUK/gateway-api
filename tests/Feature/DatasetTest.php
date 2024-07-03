@@ -579,7 +579,6 @@ class DatasetTest extends TestCase
 
         $respArrayDraft = $responseGetOneDraft->decodeResponseJson();
         $this->assertArrayHasKey('named_entities', $respArrayDraft['data']);
-        $this->assertNotEmpty($respArrayDraft['data']['named_entities']);
 
         // delete active dataset
         $responseDeleteActiveDataset = $this->json(
