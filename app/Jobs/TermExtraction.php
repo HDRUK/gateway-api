@@ -77,24 +77,30 @@ class TermExtraction implements ShouldQueue
                 'application/json'
             )->post(env('TED_SERVICE_URL', 'http://localhost:8001'));
 
-            $datasetVersionId = DatasetVersion::where('dataset_id', $datasetId)->first();
+            // Assuming you want the latest dataset version
+            $datasetVersion = DatasetVersion::where('dataset_id', $datasetId)->latest()->firstOrFail();
 
-            if ($response->json() && array_key_exists('extracted_terms', $response->json())) {
-                foreach ($response->json()['extracted_terms'] as $n) {
-                    $named_entities = NamedEntities::create([
-                        'name' => $n,
-                    ]);
+            if ($response->successful() && array_key_exists('extracted_terms', $response->json())) {
+                foreach ($response->json()['extracted_terms'] as $term) {
+                    // Check if the named entity already exists
+                    $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
+
                     DatasetVersionHasNamedEntities::updateOrCreate([
-                        'dataset_version_id' => $datasetVersionId,
-                        'named_entities_id' => $named_entities->id
+                        'dataset_version_id' => $datasetVersion->id,
+                        'named_entities_id' => $namedEntity->id
                     ]);
                 }
             }
 
         } catch (Exception $e) {
-            throw new Exception($e->getMessage());
-        }
+            Log::error('Error in postToTermExtractionDirector: ' . $e->getMessage(), [
+                'datasetId' => $datasetId,
+                'dataset' => $dataset,
+            ]);
 
+            throw new Exception('Error processing term extraction: ' . $e->getMessage());
+        }
     }
+
 
 }

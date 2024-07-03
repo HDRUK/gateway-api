@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Builder;
@@ -71,9 +72,9 @@ class Dataset extends Model
     /**
      * The named_entities that belong to the dataset.
      */
-    public function namedEntities(): BelongsToMany
+    public function namedEntities()
     {
-        return $this->belongsToMany(NamedEntities::class, 'dataset_has_named_entities');
+        return $this->hasManyThrough(NamedEntities::class, DatasetVersion::class, 'dataset_id', 'id', 'id', 'id');
     }
 
     /**

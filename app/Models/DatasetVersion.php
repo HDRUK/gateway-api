@@ -73,6 +73,17 @@ class DatasetVersion extends Model
             ["%$filterTitle%"]
         );
     }
+    
+    /**
+     *  Named entities that belong to the dataset version.
+     */
+    // In DatasetVersion.php
+
+    public function namedEntities(): BelongsToMany
+    {
+        return $this->belongsToMany(NamedEntities::class, 'dataset_version_has_named_entities');
+    }
+
 
     /**
      * The tools that belong to the dataset version.
