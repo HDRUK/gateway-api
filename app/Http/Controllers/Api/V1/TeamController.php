@@ -280,9 +280,7 @@ class TeamController extends Controller
             }, ARRAY_FILTER_USE_KEY);
             $arrayTeamNotification = $input['notifications'];
             $arrayTeamUsers = $input['users'];
-
             $superAdminIds = User::where("is_admin",true)->pluck('id');
-
             $team = Team::create($arrayTeam);
 
             if ($team) {
