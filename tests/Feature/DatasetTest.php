@@ -580,6 +580,13 @@ class DatasetTest extends TestCase
         $respArrayDraft = $responseGetOneDraft->decodeResponseJson();
         $this->assertArrayHasKey('named_entities', $respArrayDraft['data']);
 
+        // The named_entities field is empty for draft datasets. 
+        // The TermExtraction job is responsible for populating the named_entities field,
+        // is not run for draft datasets, thus the field remains empty and the following breaks the code.
+        if (!empty($respArrayDraft['data']['named_entities'])) {
+            trigger_error('Warning: named_entities array is not empty.', E_USER_WARNING);
+        }
+
         // delete active dataset
         $responseDeleteActiveDataset = $this->json(
             'DELETE',
