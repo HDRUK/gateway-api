@@ -40,6 +40,12 @@ class DatasetTest extends TestCase
         $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
     }
 
+    protected function logWarning($message)
+    {
+        // Log the warning message to standard error
+        fwrite(STDERR, $message . "\n");
+    }
+
     /**
      * Get All Datasets with success
      * 
@@ -583,9 +589,11 @@ class DatasetTest extends TestCase
         // The named_entities field is empty for draft datasets. 
         // The TermExtraction job is responsible for populating the named_entities field,
         // is not run for draft datasets, thus the field remains empty and the following breaks the code.
+        // Issue a warning if named_entities is not empty
         if (!empty($respArrayDraft['data']['named_entities'])) {
-            trigger_error('Warning: named_entities array is not empty.', E_USER_WARNING);
+            $this->logWarning('Warning: named_entities array is not empty.');
         }
+
 
         // delete active dataset
         $responseDeleteActiveDataset = $this->json(
