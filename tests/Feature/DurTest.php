@@ -577,7 +577,7 @@ class DurTest extends TestCase
         $responseUnarchive = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $dueIdInsert . '?unarchive',
-            [],
+            ['status' => 'ACTIVE'],
             $this->header
         );
         $responseUnarchive->assertJsonStructure([
@@ -590,6 +590,7 @@ class DurTest extends TestCase
         // Verify that the unarchived dur has deleted_at == null
         $durData = $responseUnarchive['data'];
         $this->assertNull($durData['deleted_at']);
+        $this->assertEquals($durData['status'], 'ACTIVE');
 
         // Delete again
         $responseDeleteAgain = $this->json(
