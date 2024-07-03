@@ -226,7 +226,7 @@ class MetadataManagementController {
                 'containsTissue' => $containsTissue,
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
-                'hasTechnicalMetadata' => $hasTechnicalMetadata,
+                'hasTechnicalMetadata' => (bool) $this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], 0),
                 'named_entities' => $datasetMatch->namedEntities->pluck('name')->all(),
                 'collectionName' => $datasetMatch->collections->pluck('name')->all(),
                 'dataUseTitles' => $datasetMatch->durs->pluck('project_title')->all(),
@@ -268,7 +268,7 @@ class MetadataManagementController {
         foreach ($keys as $key) {
             $value = Arr::get($array, $key, null);
             if (!is_null($value)) {
-                return $value;
+                return is_array($value) ? count($value) : $value;
             }
         }
         Log::info('No value found for any of the specified keys', ['keys' => $keys, 'array' => $array]);
