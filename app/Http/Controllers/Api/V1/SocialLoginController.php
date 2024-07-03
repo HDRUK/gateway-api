@@ -320,11 +320,11 @@ class SocialLoginController extends Controller
     /**
      * Uniform response from OpenAthens
      *
-     * @param object $data
+     * @param array $data
      * @param string $provider
      * @return array
      */
-    private function openathensResponse(object $data, string $provider): array
+    private function openathensResponse(array $data, string $provider): array
     {
         return [
             'providerid' => $data['sub'],
