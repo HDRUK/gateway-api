@@ -72,11 +72,18 @@ class Dataset extends Model
     /**
      * The named_entities that belong to the dataset.
      */
-    public function namedEntities()
+    public function namedEntities(): HasManyThrough
     {
-        return $this->hasManyThrough(NamedEntities::class, DatasetVersion::class, 'dataset_id', 'id', 'id', 'id');
+        return $this->hasManyThrough(
+            NamedEntities::class,    // Final model
+            DatasetVersion::class,   // Intermediate model
+            'dataset_id',            // Foreign key on the intermediate model
+            'id',                    // Foreign key on the final model
+            'id',                    // Local key on the base model
+            'id'                     // Local key on the intermediate model
+        );
     }
-
+    
     /**
      * The version history of metadata that respond to this dataset.
      */
