@@ -28,7 +28,7 @@ return new class extends Migration
         $oldData = DB::table('dataset_has_named_entities')->get();
 
         foreach ($oldData as $data) {
-            $datasetVersion = DB::table('dataset_versions')->where('dataset_id', $data->dataset_id)->first();
+            $datasetVersion = DB::table('dataset_versions')->where('dataset_id', $data->dataset_id)->latest('created_at')->first();
 
             if ($datasetVersion) {
                 DB::table('dataset_version_has_named_entities')->insert([
@@ -67,7 +67,7 @@ return new class extends Migration
         $newData = DB::table('dataset_version_has_named_entities')->get();
 
         foreach ($newData as $data) {
-            $dataset = DB::table('dataset_versions')->where('id', $data->dataset_version_id)->first();
+            $dataset = DB::table('dataset_versions')->where('id', $data->dataset_version_id)->latest('created_at')->first();
 
             if ($dataset) {
                 DB::table('dataset_has_named_entities')->insert([
