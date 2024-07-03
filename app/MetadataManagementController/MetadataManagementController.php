@@ -212,7 +212,6 @@ class MetadataManagementController {
 
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
-            $hasTechnicalMetadata = $this->getHasTechnicalMetadata($metadata);
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -228,7 +227,7 @@ class MetadataManagementController {
                 'containsTissue' => $containsTissue,
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
-                'hasTechnicalMetadata' => $hasTechnicalMetadata,
+                'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], 0)),
                 'named_entities' => $datasetMatch->namedEntities->pluck('name')->all(),
                 'collectionName' => $datasetMatch->collections->pluck('name')->all(),
                 'dataUseTitles' => $datasetMatch->durs->pluck('project_title')->all(),
@@ -323,7 +322,7 @@ class MetadataManagementController {
      * @param mixed $default The default value to return if none of the keys are found.
      * @return mixed The value of the first key found, or the default value if none are found.
      */
-    private function getValueByPossibleKeys(array $array, array $keys, $default = null)
+    public function getValueByPossibleKeys(array $array, array $keys, $default = null)
     {
         foreach ($keys as $key) {
             $value = Arr::get($array, $key, null);
@@ -401,14 +400,5 @@ class MetadataManagementController {
             return false;
         }
         return count($materialTypes) > 0;
-    }
-
-    public function getHasTechnicalMetadata(array $metadata){
-        $structuralMetadata = Arr::get($metadata, 'metadata.structuralMetadata', null);
-        $hasTechnicalMetadata = false;
-        if (!is_null($structuralMetadata)) {
-            $hasTechnicalMetadata = count($structuralMetadata) > 0;
-        } 
-        return  $hasTechnicalMetadata;
     }
 }
