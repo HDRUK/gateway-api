@@ -6,7 +6,6 @@ use Config;
 use Auditor;
 use Exception;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
 use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
@@ -18,7 +17,7 @@ use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Models\DataProviderHasTeam;
 use App\Http\Controllers\Controller;
-use App\Models\CollectionHasDatasetVersion;
+use App\Models\CollectionHasDataset;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
 use App\Models\DataProviderCollHasTeam;
@@ -816,20 +815,15 @@ class CollectionController extends Controller
     // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null) 
     {
-        $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
+        $cols = CollectionHasDataset::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
             if (!in_array($col->dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deleteCollectionHasDatasetVersion($collectionId, $col->dataset_id);
+                $this->deleteCollectionHasDatasets($collectionId, $col->dataset_id);
             }
         }
 
         foreach ($inDatasets as $dataset) {
-            $datasetVersion = DatasetVersion::where('dataset_id', $dataset['id'])->first();
-            if (!$datasetVersion) {
-                continue;
-            }
-
-            $checking = $this->checkInCollectionHasDatasets($collectionId, $datasetVersion->dataset_id);
+            $checking = $this->checkInCollectionHasDatasets($collectionId, (int) $dataset['id']);
 
             if (!$checking) {
                 $this->addCollectionHasDataset($collectionId, $dataset, $userId, $appId);
@@ -839,17 +833,12 @@ class CollectionController extends Controller
         }
     }
 
-    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $userId = null, int $appId = null)
+    private function addCollectionHasDataset(int $collectionId, array $dataset, int $userId = null, int $appId = null)
     {
         try {
-            $datasetVersion = DatasetVersion::where('dataset_id', $dataset['id'])->first();
-            if (!$datasetVersion) {
-                return;
-            }
-
             $arrCreate = [
                 'collection_id' => $collectionId,
-                'dataset_id' => $datasetVersion->dataset_id,
+                'dataset_id' => $dataset['id'],
             ];
 
             if (array_key_exists('user_id', $dataset)) {
@@ -871,39 +860,39 @@ class CollectionController extends Controller
                 $arrCreate['application_id'] = $appId;
             }
 
-            return CollectionHasDatasetVersion::updateOrCreate(
+            return CollectionHasDataset::updateOrCreate(
                 $arrCreate,
                 [
                     'collection_id' => $collectionId,
-                    'dataset_id' => $datasetVersion->dataset_id,
+                    'dataset_id' => $dataset['id'],
                 ]
             );
         } catch (Exception $e) {
-            throw new Exception("addCollectionHasDatasetVersion :: " . $e->getMessage());
+            throw new Exception("addCollectionHasDataset :: " . $e->getMessage());
         }
     }
 
-    private function checkInCollectionHasDatasetVersion(int $collectionId, int $datasetId)
+    private function checkInCollectionHasDatasets(int $collectionId, int $datasetId)
     {
         try {
-            return CollectionHasDatasetVersion::where([
+            return CollectionHasDataset::where([
                 'collection_id' => $collectionId,
                 'dataset_id' => $datasetId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInCollectionHasDatasetVersion :: " . $e->getMessage());
+            throw new Exception("checkInCollectionHasDatasets :: " . $e->getMessage());
         }
     }
 
-    private function deleteCollectionHasDatasetVersion(int $collectionId, int $datasetId)
+    private function deleteCollectionHasDatasets(int $collectionId, int $datasetId)
     {
         try {
-            return CollectionHasDatasetVersion::where([
+            return CollectionHasDataset::where([
                 'collection_id' => $collectionId,
                 'dataset_id' => $datasetId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteCollectionHasDatasetVersion :: " . $e->getMessage());
+            throw new Exception("deleteCollectionHasDatasets :: " . $e->getMessage());
         }
     }
 
