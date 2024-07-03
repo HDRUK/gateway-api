@@ -7,6 +7,7 @@ use Config;
 use Exception;
 use App\Models\Role;
 use App\Models\Team;
+use App\Models\User;
 use App\Models\TeamHasUser;
 use Illuminate\Http\Request;
 use App\Models\TeamUserHasRole;
