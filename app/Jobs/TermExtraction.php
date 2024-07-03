@@ -93,12 +93,7 @@ class TermExtraction implements ShouldQueue
             }
 
         } catch (Exception $e) {
-            Log::error('Error in postToTermExtractionDirector: ' . $e->getMessage(), [
-                'datasetId' => $datasetId,
-                'dataset' => $dataset,
-            ]);
-
-            throw new Exception('Error processing term extraction: ' . $e->getMessage());
+            throw new Exception($e->getMessage());
         }
     }
 
