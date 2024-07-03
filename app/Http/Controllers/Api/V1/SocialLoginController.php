@@ -197,8 +197,6 @@ class SocialLoginController extends Controller
                 $oidc->authenticate();
                 $response = $oidc->requestUserInfo('email');
 
-                dd($response);
-
                 $socialUser = array();
                 foreach($oidc as $key => $value) {
                     if (is_array($value)) {
@@ -208,9 +206,7 @@ class SocialLoginController extends Controller
                     }
                     $socialUser[$key] = $v;
                 }
-                dd($socialUser);
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
-                var_dump('social use details');
             } else {
                 $socialUser = Socialite::driver($provider)->user();
 
