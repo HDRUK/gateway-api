@@ -83,9 +83,14 @@ class Dataset extends Model
      **/
     public function latestVersion(): DatasetVersion
     {
-        return DatasetVersion::where('dataset_id', $this->id)
-            ->latest('version')->first();
+        $version = DatasetVersion::where('dataset_id', $this->id)
+            ->select(['version','id'])
+            ->latest('version')
+            ->first()
+            ->id;
+        return DatasetVersion::findOrFail($version);
     }
+
 
     /**
      * The very latest metadata via a hasOne relation
