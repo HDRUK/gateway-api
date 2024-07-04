@@ -538,6 +538,7 @@ class IntegrationDatasetController extends Controller
                 // Dispatch term extraction to a subprocess as it may take some time
                 TermExtraction::dispatch(
                     $dataset->id,
+                    '1',
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
                 );
 

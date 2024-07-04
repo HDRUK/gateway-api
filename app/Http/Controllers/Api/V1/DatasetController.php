@@ -366,7 +366,7 @@ class DatasetController extends Controller
     {
         try {
 
-            // Step 1: Retrieve the dataset with collections, publications, and counts
+            // Retrieve the dataset with collections, publications, and counts
             $dataset = Dataset::with(['collections', 'publications'])
             ->withCount(['durs', 'publications'])
             ->find($id);
@@ -375,8 +375,10 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
 
-            // Step 2: Retrieve the latest version and its named entities
+            // Retrieve the latest version 
             $version = $dataset->latestVersion();
+
+            // inject named entities
             $dataset->setAttribute('named_entities', $version ? $version->namedEntities : collect());
                 
             $outputSchemaModel = $request->query('schema_model');
@@ -384,6 +386,7 @@ class DatasetController extends Controller
 
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
+                $version = $dataset->latestVersion();
                 $withLinks = DatasetVersion::where('id', $version['id'])
                     ->with(['linkedDatasetVersions'])
                     ->first();
@@ -393,6 +396,7 @@ class DatasetController extends Controller
             }
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
+                $version = $dataset->latestVersion();
                 $translated = MMC::translateDataModelType(
                     json_encode($version->metadata),
                     $outputSchemaModel,
