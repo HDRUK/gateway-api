@@ -22,6 +22,10 @@ return new class extends Migration
             $table->foreign('named_entities_id')->references('id')->on('named_entities')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
+
+            // Add composite primary key
+            $table->primary(['dataset_version_id', 'named_entities_id']);
+
         });
 
         // Retrieve the correct dataset_version_id and insert data into the new table

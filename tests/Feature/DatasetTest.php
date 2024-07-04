@@ -40,12 +40,6 @@ class DatasetTest extends TestCase
         $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
     }
 
-    protected function logWarning($message)
-    {
-        // Log the warning message to standard error
-        fwrite(STDERR, $message . "\n");
-    }
-
     /**
      * Get All Datasets with success
      * 
@@ -524,24 +518,6 @@ class DatasetTest extends TestCase
         $contentCreateActiveDataset = $responseCreateActiveDataset->decodeResponseJson();
         $activeDatasetId = $contentCreateActiveDataset['data'];
 
-        // create draft dataset
-        $responseCreateDraftDataset = $this->json(
-            'POST',
-            self::TEST_URL_DATASET,
-            [
-                'team_id' => $teamId,
-                'user_id' => $userId,
-                'metadata' => $this->metadata,
-                'create_origin' => Dataset::ORIGIN_MANUAL,
-                'status' => Dataset::STATUS_DRAFT,
-            ],
-            $this->header,
-        );
-
-        $responseCreateDraftDataset->assertStatus(201);
-        $contentCreateDraftDataset = $responseCreateDraftDataset->decodeResponseJson();
-        $draftDatasetId = $contentCreateDraftDataset['data'];
-
         // get one active dataset
         $responseGetOneActive = $this->json('GET', self::TEST_URL_DATASET . '/' . $activeDatasetId, [], $this->header);
 
@@ -560,12 +536,43 @@ class DatasetTest extends TestCase
 
         $respArrayActive = $responseGetOneActive->decodeResponseJson();
         $this->assertArrayHasKey('named_entities', $respArrayActive['data']);
+        
         if(env('TED_ENABLED')){
             $this->assertNotEmpty($respArrayActive['data']['named_entities']);
         };
         $this->assertArrayHasKey(
             'linked_dataset_versions', $respArrayActive['data']['versions'][0]
         );
+
+        // delete active dataset
+        $responseDeleteActiveDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $activeDatasetId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteActiveDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteActiveDataset->assertStatus(200);
+
+        // create draft dataset
+        $responseCreateDraftDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header,
+        );
+
+        $responseCreateDraftDataset->assertStatus(201);
+        $contentCreateDraftDataset = $responseCreateDraftDataset->decodeResponseJson();
+        $draftDatasetId = $contentCreateDraftDataset['data'];
 
         // get one draft dataset
         $responseGetOneDraft = $this->json('GET', self::TEST_URL_DATASET . '/' . $draftDatasetId, [], $this->header);
@@ -589,23 +596,8 @@ class DatasetTest extends TestCase
         // The named_entities field is empty for draft datasets. 
         // The TermExtraction job is responsible for populating the named_entities field,
         // is not run for draft datasets, thus the field remains empty and the following breaks the code.
-        // Issue a warning if named_entities is not empty
-        if (!empty($respArrayDraft['data']['named_entities'])) {
-            $this->logWarning('Warning: named_entities array is not empty.');
-        }
-
-
-        // delete active dataset
-        $responseDeleteActiveDataset = $this->json(
-            'DELETE',
-            self::TEST_URL_DATASET . '/' . $activeDatasetId . '?deletePermanently=true',
-            [],
-            $this->header
-        );
-        $responseDeleteActiveDataset->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteActiveDataset->assertStatus(200);
+        
+        $this->assertEmpty($respArrayDraft['data']['named_entities']);
 
         // delete draft dataset
         $responseDeleteDraftDataset = $this->json(

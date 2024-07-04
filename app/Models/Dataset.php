@@ -69,20 +69,6 @@ class Dataset extends Model
         'is_cohort_discovery' => 'boolean',
     ];
 
-    /**
-     * The named_entities that belong to the dataset.
-     */
-    public function namedEntities(): HasManyThrough
-    {
-        return $this->hasManyThrough(
-            NamedEntities::class,    // Final model
-            DatasetVersion::class,   // Intermediate model
-            'dataset_id',            // Foreign key on the intermediate model
-            'id',                    // Foreign key on the final model
-            'id',                    // Local key on the base model
-            'id'                     // Local key on the intermediate model
-        );
-    }
     
     /**
      * The version history of metadata that respond to this dataset.
@@ -90,27 +76,6 @@ class Dataset extends Model
     public function versions(): HasMany
     {
         return $this->hasMany(DatasetVersion::class, 'dataset_id');
-    }
-
-    /**
-     * The collections that the dataset belongs to.
-     */
-    public function collections(): BelongsToMany
-    {
-        return $this->belongsToMany(Collection::class, 'collection_has_datasets');
-    }
-
-    /**
-     * Helper function to use JSON functions to search by title within metadata.
-     */
-    public function searchByTitle(string $title): DatasetVersion
-    {
-        return DatasetVersion::where('dataset_id', $this->id)
-            ->whereRaw(
-                "
-                LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$title%')
-                "
-            )->latest('version')->first();
     }
 
     /**
@@ -145,6 +110,49 @@ class Dataset extends Model
             ->latest('version')->select('metadata')->first();
         return  $datasetVersion['metadata'];
     }
+
+    /**
+     * The named_entities that belong to the dataset.
+     */
+    public function namedEntities(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            NamedEntities::class,
+            DatasetVersion::class,
+            'dataset_id',        // Foreign key on DatasetVersion table
+            'id',                // Foreign key on NamedEntities table
+            'id',                // Local key on Dataset table
+            'id'                 // Local key on DatasetVersion table
+        )->wherePivot('dataset_version_id', function ($query) {
+            $query->select('id')
+                ->from('dataset_versions')
+                ->whereColumn('dataset_versions.dataset_id', 'datasets.id')
+                ->latest('version')
+                ->limit(1);
+        });
+    }
+
+    /**
+     * The collections that the dataset belongs to.
+     */
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(Collection::class, 'collection_has_datasets');
+    }
+
+    /**
+     * Helper function to use JSON functions to search by title within metadata.
+     */
+    public function searchByTitle(string $title): DatasetVersion
+    {
+        return DatasetVersion::where('dataset_id', $this->id)
+            ->whereRaw(
+                "
+                LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$title%')
+                "
+            )->latest('version')->first();
+    }
+
     
     /**
      * The spatial coverage that belong to the dataset.

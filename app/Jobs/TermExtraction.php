@@ -26,6 +26,7 @@ class TermExtraction implements ShouldQueue
     public $timeout = 300;
     
     private string $datasetId = '';
+    private int $version;
     private string $data = '';
 
     private bool $reIndexElastic = false;
@@ -33,9 +34,10 @@ class TermExtraction implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, string $data, ?string $elasticIndex = "on")
+    public function __construct(string $datasetId, int $version, string $data, ?string $elasticIndex = "on")
     {
         $this->datasetId = $datasetId;
+        $this->version = $version;
         $this->data = $data;
 
         $this->reIndexElastic = ($elasticIndex === "on" ? true : false);
@@ -77,13 +79,15 @@ class TermExtraction implements ShouldQueue
                 'application/json'
             )->post(env('TED_SERVICE_URL', 'http://localhost:8001'));
 
-            // Assuming you want the latest dataset version
-            $datasetVersion = DatasetVersion::where('dataset_id', $datasetId)->latest()->firstOrFail();
+            // Fetch the specified dataset version
+            $datasetVersion = DatasetVersion::where('dataset_id', $datasetId)
+                                ->where('version', $this->version)
+                                ->firstOrFail();
 
             if ($response->successful() && array_key_exists('extracted_terms', $response->json())) {
                 foreach ($response->json()['extracted_terms'] as $term) {
                     // Check if the named entity already exists
-                    $namedEntity = NamedEntities::firstOrCreate(['name' => $term]);
+                    $namedEntity = NamedEntities::create(['name' => $term]);
 
                     DatasetVersionHasNamedEntities::updateOrCreate([
                         'dataset_version_id' => $datasetVersion->id,
