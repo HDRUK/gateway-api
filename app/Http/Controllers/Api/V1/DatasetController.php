@@ -392,9 +392,6 @@ class DatasetController extends Controller
                     ->first();
                 if ($withLinks) {
                     $dataset->versions = [$withLinks];
-
-                $namedEntities = $latestVersion ? $latestVersion->namedEntities : collect();
-
                 }
             }
 
