@@ -376,11 +376,12 @@ class DatasetController extends Controller
             }
 
             // Retrieve the latest version 
-            $version = $dataset->latestVersion();
+            $latestVersion = $dataset->versions()->latest('version')->first();
+        
 
             // inject named entities
-            $dataset->setAttribute('named_entities', $version ? $version->namedEntities : collect());
-                
+            $dataset->setAttribute('named_entities', $latestVersion ? $latestVersion->namedEntities : collect());
+   
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
@@ -391,7 +392,7 @@ class DatasetController extends Controller
                     ->with(['linkedDatasetVersions'])
                     ->first();
                 if ($withLinks) {
-                    $dataset->versions = [$withLinks];
+                    $dataset->setAttribute('versions', [$withLinks]);
                 }
             }
 
