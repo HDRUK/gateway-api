@@ -313,6 +313,7 @@ class IntegrationDatasetController extends Controller
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
             $dataset = Dataset::with(['namedEntities', 'collections','versions'])->findOrFail($id);
 
+            
             $this->checkAppCanHandleDataset($dataset->team_id,$request);
         
             $outputSchemaModel = $request->query('schema_model');

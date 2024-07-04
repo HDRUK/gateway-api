@@ -377,9 +377,7 @@ class DatasetController extends Controller
 
             // Step 2: Retrieve the latest version and its named entities
             $latestVersion = $dataset->latestVersion();
-            $namedEntities = $latestVersion ? $latestVersion->namedEntities : collect();
-
-            $dataset->named_entities = $namedEntities;
+            $dataset->setAttribute('named_entities', $latestVersion ? $latestVersion->namedEntities : collect());
                 
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
@@ -628,7 +626,7 @@ class DatasetController extends Controller
 
                 // map coverage/spatial field to controlled list for filtering
                 $this->mapCoverage($input['metadata'], $dataset);
-                
+
                 // Dispatch term extraction to a subprocess if the dataset is marked as active
                 if($request['status'] === Dataset::STATUS_ACTIVE){
                     TermExtraction::dispatch(
