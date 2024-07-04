@@ -311,9 +311,18 @@ class IntegrationDatasetController extends Controller
         try {
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-            $dataset = Dataset::with(['namedEntities', 'collections','versions'])->findOrFail($id);
+            $dataset = Dataset::with(['collections', 'publications'])->findOrFail($id);
 
-            
+            if (!$dataset) {
+                return response()->json(['message' => 'Dataset not found'], 404);
+            }
+
+            // Retrieve the latest version 
+            $latestVersion = $dataset->versions()->latest('version')->first();
+        
+            // inject named entities
+            $dataset->setAttribute('named_entities', $latestVersion ? $latestVersion->namedEntities : collect());
+   
             $this->checkAppCanHandleDataset($dataset->team_id,$request);
         
             $outputSchemaModel = $request->query('schema_model');
