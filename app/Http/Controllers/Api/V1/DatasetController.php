@@ -782,11 +782,11 @@ class DatasetController extends Controller
                 ]);
 
                 // Determine the last version of metadata
-                $VersionNumber = $currDataset->lastMetadataVersionNumber()->version;
+                $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
                 if ($currDataset->status !== Dataset::STATUS_DRAFT) {
-                    $VersionNumber = $VersionNumber + 1;
+                    $versionNumber = $versionNumber + 1;
                 }
-                $VersionCode = $this->getVersion($VersionNumber);
+                $versionCode = $this->getVersion($versionNumber);
 
                 $lastMetadata = $currDataset->lastMetadata();
      
@@ -794,7 +794,7 @@ class DatasetController extends Controller
                 $input['metadata']['metadata']['required']['modified'] = $updateTime;
                 if(version_compare(Config::get('metadata.GWDM.version'),"1.0",">")){   
                     if(version_compare($lastMetadata['gwdmVersion'],"1.0",">")){
-                        $VersionCode = $lastMetadata['metadata']['required']['version'];
+                        $versionCode = $lastMetadata['metadata']['required']['version'];
                     }
                 }
                 
@@ -803,34 +803,34 @@ class DatasetController extends Controller
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $input['metadata']['metadata']['required']['revisions'][] = [
-                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$VersionCode, 
-                    "version"=>$VersionCode
+                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$versionCode, 
+                    "version"=>$versionCode
                 ];
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
                 // Update or create new metadata version based on draft status
                 if ($currDataset->status !== Dataset::STATUS_DRAFT) {
-                        DatasetVersion::create([
-                            'dataset_id' => $currDataset->id,
-                            'metadata' => json_encode($input['metadata']),
-                            'version' => ($VersionNumber),
-                        ]);
-                    } else {
-                        // Update the existing version
-                        DatasetVersion::where([
-                            'dataset_id' => $currDataset->id,
-                            'version' => $VersionNumber,
-                        ])->update([
-                            'metadata' => json_encode($input['metadata']),
-                        ]);
+                    DatasetVersion::create([
+                        'dataset_id' => $currDataset->id,
+                        'metadata' => json_encode($input['metadata']),
+                        'version' => ($VersionNumber),
+                    ]);
+                } else {
+                    // Update the existing version
+                    DatasetVersion::where([
+                        'dataset_id' => $currDataset->id,
+                        'version' => $VersionNumber,
+                    ])->update([
+                        'metadata' => json_encode($input['metadata']),
+                    ]);
                     }
 
                 // Dispatch term extraction to a subprocess if the dataset moves from draft to active
                 if($request['status'] === Dataset::STATUS_ACTIVE){
                     TermExtraction::dispatch(
                         $currDataset->id,
-                        $VersionNumber,
+                        $versionNumber,
                         base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
                         $elasticIndexing
                     );
@@ -843,7 +843,7 @@ class DatasetController extends Controller
                     'team_id' => $teamId,
                     'action_type' => 'UPDATE',
                     'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset " . $id . " with version " . ($VersionNumber + 1) . " updated",
+                    'description' => "Dataset " . $id . " with version " . ($versionNumber + 1) . " updated",
                 ]);
 
                 return response()->json([
