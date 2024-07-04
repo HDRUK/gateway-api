@@ -376,15 +376,14 @@ class DatasetController extends Controller
             }
 
             // Step 2: Retrieve the latest version and its named entities
-            $latestVersion = $dataset->latestVersion();
-            $dataset->setAttribute('named_entities', $latestVersion ? $latestVersion->namedEntities : collect());
+            $version = $dataset->latestVersion();
+            $dataset->setAttribute('named_entities', $version ? $version->namedEntities : collect());
                 
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
-                $version = $dataset->latestVersion();
                 $withLinks = DatasetVersion::where('id', $version['id'])
                     ->with(['linkedDatasetVersions'])
                     ->first();
@@ -394,8 +393,6 @@ class DatasetController extends Controller
             }
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
-                $version = $dataset->latestVersion();
-
                 $translated = MMC::translateDataModelType(
                     json_encode($version->metadata),
                     $outputSchemaModel,
