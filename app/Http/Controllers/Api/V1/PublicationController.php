@@ -36,7 +36,14 @@ class PublicationController extends Controller
      *    summary="PublicationController@index",
      *    description="Get All Publications",
      *    security={{"bearerAuth":{}}},
-     *    @OA\Response(
+     *    @OA\Parameter(
+     *       name="paper_title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter tools by paper title"
+     *    ),
+      *    @OA\Response(
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
@@ -58,8 +65,12 @@ class PublicationController extends Controller
         try {
             $input = $request->all();
             $mongoId = $request->query('mongo_id', null);
+            $paperTitle = $request->query('paper_title', null);
 
-            $publications = Publication::when($mongoId, function ($query) use ($mongoId) {
+            $publications = Publication::when($paperTitle, function ($query) use ($paperTitle) {
+                return $query->where('paper_title', 'LIKE', '%' . $paperTitle . '%');
+            })
+            ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
             })
             ->with([
@@ -222,7 +233,8 @@ class PublicationController extends Controller
                 'authors' => $input['authors'],
                 'year_of_publication' => $input['year_of_publication'],
                 'paper_doi' => $input['paper_doi'],
-                'publication_type' => $input['publication_type'],
+                'publication_type' => array_key_exists('publication_type', $input) ? $input['publication_type'] : '',
+                'publication_type_mk1' => array_key_exists('publication_type_mk1', $input) ? $input['publication_type_mk1'] : '',
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
@@ -360,7 +372,8 @@ class PublicationController extends Controller
                 'authors' => $input['authors'],
                 'year_of_publication' => $input['year_of_publication'],
                 'paper_doi' => $input['paper_doi'],
-                'publication_type' => $input['publication_type'],
+                'publication_type' => array_key_exists('publication_type', $input) ? $input['publication_type'] : '',
+                'publication_type_mk1' => array_key_exists('publication_type_mk1', $input) ? $input['publication_type_mk1'] : '',
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
@@ -495,6 +508,7 @@ class PublicationController extends Controller
                 'year_of_publication',
                 'paper_doi',
                 'publication_type',
+                'publication_type_mk1',
                 'journal_name',
                 'abstract',
                 'url',

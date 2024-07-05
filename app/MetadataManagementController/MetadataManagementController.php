@@ -11,6 +11,7 @@ use App\Models\Dataset;
 use App\Models\DataProviderColl;
 use App\Models\DataProviderCollHasTeam;
 use App\Models\DatasetVersion;
+use App\Models\Team;
 use Elastic\Elasticsearch\Client;
 use Elastic\Elasticsearch\ClientBuilder;
 use Http\Client\HttpClient;
@@ -217,7 +218,6 @@ class MetadataManagementController {
 
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
-            $hasTechnicalMetadata = $this->getHasTechnicalMetadata($metadata);
 
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
@@ -229,10 +229,11 @@ class MetadataManagementController {
                 'publisherName' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.publisher.name', 'metadata.summary.publisher.publisherName'], ''),
                 'startDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.startDate'], null),
                 'endDate' => $this->getValueByPossibleKeys($metadata, ['metadata.provenance.temporal.endDate'], Carbon::now()->addYears(180)),
+                'dataType' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.datasetType'], ''),
                 'containsTissue' => $containsTissue,
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
-                'hasTechnicalMetadata' => $hasTechnicalMetadata,
+                'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
                 'named_entities' =>  $namedEntities->pluck('name')->all(),
                 'collectionName' => $datasetMatch->collections->pluck('name')->all(),
                 'dataUseTitles' => $datasetMatch->durs->pluck('project_title')->all(),
@@ -262,6 +263,64 @@ class MetadataManagementController {
     }
 
     /**
+     * Calls a re-indexing of Elastic search when a data procider id is given.
+     * 
+     * @param string $teamId The team id from the DB.
+     * 
+     * @return void
+     */
+    public function reindexElasticDataProvider(string $teamId): void
+    {
+        try {
+            $datasets = Dataset::where('team_id', $teamId)
+                ->with(['spatialCoverage'])
+                ->get();
+
+            $datasetTitles = array();
+            $locations = array();
+            $dataTypes = array();
+            foreach ($datasets as $dataset) {
+                $metadata = $dataset->latestVersion()->metadata;
+                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+                if (!in_array($metadata['metadata']['summary']['datasetType'], $dataTypes)) {
+                    $dataTypes[] = $metadata['metadata']['summary']['datasetType'];
+                }
+                foreach ($dataset['spatialCoverage'] as $loc) {
+                    if (!in_array($loc['region'], $locations)) {
+                        $locations[] = $loc['region'];
+                    }
+                }  
+            }
+            usort($datasetTitles, 'strcasecmp');
+
+            $toIndex = [
+                'name' => Team::findOrFail($teamId)->name,
+                'datasetTitles' => $datasetTitles,
+                'geographicLocation' => $locations,
+                'dataType' => $dataTypes,
+            ];
+
+            $params = [
+                'index' => 'dataprovider',
+                'id' => $teamId,
+                'body' => $toIndex,
+                'headers' => 'application/json'
+            ];
+
+            $client = $this->getElasticClient();
+            $client->index($params);
+
+        } catch (Exception $e) {
+            \Log::error('Error reindexing ElasticSearch', [
+                'teamId' => $teamId,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * Search for a value in an array by trying multiple possible keys in order.
      *
      * @param array $array The array to search.
@@ -269,7 +328,7 @@ class MetadataManagementController {
      * @param mixed $default The default value to return if none of the keys are found.
      * @return mixed The value of the first key found, or the default value if none are found.
      */
-    private function getValueByPossibleKeys(array $array, array $keys, $default = null)
+    public function getValueByPossibleKeys(array $array, array $keys, $default = null)
     {
         foreach ($keys as $key) {
             $value = Arr::get($array, $key, null);
@@ -347,14 +406,5 @@ class MetadataManagementController {
             return false;
         }
         return count($materialTypes) > 0;
-    }
-
-    public function getHasTechnicalMetadata(array $metadata){
-        $structuralMetadata = Arr::get($metadata, 'metadata.structuralMetadata', null);
-        $hasTechnicalMetadata = false;
-        if (!is_null($structuralMetadata)) {
-            $hasTechnicalMetadata = count($structuralMetadata) > 0;
-        } 
-        return  $hasTechnicalMetadata;
     }
 }

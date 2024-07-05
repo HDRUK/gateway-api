@@ -1107,4 +1107,135 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['_id'] === '1');
     }
+
+    /**
+     * Search using a query with success
+     * 
+     * @return void
+     */
+    public function test_data_provider_search_with_success(): void
+    {
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers", ["query" => "term"], ['Accept' => 'application/json']);
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source' => [
+		                'name',
+                        'datasetTitles',
+                        'geographicLocations',
+                        'dataType',
+                        'updated_at'
+                    ],
+                    'name',
+                    'team_logo'
+                ],
+            ],
+            'aggregations',
+            'elastic_total',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source',
+                    'name',
+                    'team_logo'
+                ],
+            ],
+            'aggregations',
+            'elastic_total',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        $this->assertTrue($response['data'][0]['_source']['name'] === 'Third Provider');
+
+        // Test sorting by name    
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=name:asc', ["query" => "term"], ['Accept' => 'application/json']); 
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source',
+                    'name',
+                    'team_logo'
+                ],
+            ],
+            'aggregations',
+            'elastic_total',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Provider');
+
+        // Test sorting by created_at desc        
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']); 
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source',
+                    'name',
+                    'team_logo'
+                ],
+            ],
+            'aggregations',
+            'elastic_total',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        $this->assertTrue($response['data'][0]['_id'] === '1');
+    }
 }

@@ -7,7 +7,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\FromCollection;
 
-class DataProviderExport implements WithHeadings, FromCollection, WithMapping
+class DataProviderCollExport implements WithHeadings, FromCollection, WithMapping
 {
     use Exportable;
 
@@ -28,6 +28,8 @@ class DataProviderExport implements WithHeadings, FromCollection, WithMapping
         // Define the headings for your Excel file
         return [
             'Data Provider Name',
+            'Dataset Titles',
+            'Geographic Locations',
         ];
     }
 
@@ -35,6 +37,8 @@ class DataProviderExport implements WithHeadings, FromCollection, WithMapping
     {
         return [
             $row['name'],
+            $row['datasetTitles'],
+            $row['geographicLocations'],
         ];
     }
 
@@ -43,9 +47,13 @@ class DataProviderExport implements WithHeadings, FromCollection, WithMapping
         $array = [];
         foreach ($data as $item) {
             $name = $this->getValueFromPath($item, 'name');
+            $datasetTitles = $this->getValueFromPath($item, 'datasetTitles');
+            $geographicLocations = $this->getValueFromPath($item, 'geographicLocations');
             
             $array[] = [
                 'name' => $name,
+                'datasetTitles' => !is_array($datasetTitles) ? $datasetTitles : (count($datasetTitles) ? implode(', ', $datasetTitles) : ''),
+                'geographicLocations' => !is_array($geographicLocations) ? $geographicLocations : (count($geographicLocations) ? implode(', ', $geographicLocations) : ''),
             ];
         }
 

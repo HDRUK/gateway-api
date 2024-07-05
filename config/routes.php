@@ -2442,6 +2442,15 @@ return [
         'middleware' => [],
         'constraint' => [],
     ],
+    [
+        'name' => 'search.data_providers',
+        'method' => 'post',
+        'path' => '/search/data_providers',
+        'methodController' => 'SearchController@dataProviders',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
 
     // categories
     [
@@ -2694,6 +2703,15 @@ return [
         'method' => 'get',
         'path' => '/dur',
         'methodController' => 'DurController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dur.count-field',
+        'method' => 'get',
+        'path' => '/dur/count/{field}',
+        'methodController' => 'DurController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],

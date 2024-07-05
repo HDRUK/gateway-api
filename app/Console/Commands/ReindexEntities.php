@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Dataset;
 use App\Models\Publication;
+use App\Models\Team;
 use Illuminate\Console\Command;
 use App\Http\Controllers\Api\V1\PublicationController;
 use MetadataManagementController AS MMC;
@@ -62,6 +63,20 @@ class ReindexEntities extends Command
           
             $publicationController->indexElasticPublication($id);
            
+            $progressbar->advance();
+            sleep(0.5); 
+        }
+        $progressbar->finish();
+    }
+
+    private function dataProviders(){
+        $providerIds = array_unique(Dataset::pluck('team_id')->toArray());
+        $progressbar = $this->output->createProgressBar(count($providerIds));
+        foreach ($providerIds as $id) {
+            $team = Team::find($id);
+            if($team){
+                MMC::reindexElasticDataProvider($team->id);
+            }
             $progressbar->advance();
             sleep(0.5); 
         }
