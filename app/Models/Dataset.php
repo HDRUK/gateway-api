@@ -122,13 +122,7 @@ class Dataset extends Model
      */
     public function getLatestNamedEntities()
     {
-        $latestVersion = $this->latestVersion();
-
-        if ($latestVersion) {
-            return NamedEntities::where('dataset_version_id', $latestVersion->id)->get();
-        }
-
-        return collect();
+        return NamedEntities::where('dataset_version_id', $this->latestVersion()->id)->get();
     }
 
     /**
