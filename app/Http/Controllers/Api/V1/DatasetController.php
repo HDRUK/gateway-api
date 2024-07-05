@@ -376,9 +376,8 @@ class DatasetController extends Controller
             }
 
             // Retrieve the latest version 
-            $latestVersion = $dataset->versions()->latest('version')->first();
+            $latestVersion = $dataset->latestVersion();
         
-
             // inject named entities
             $dataset->setAttribute('named_entities', $latestVersion ? $latestVersion->namedEntities : collect());
    
@@ -387,8 +386,7 @@ class DatasetController extends Controller
 
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
-                $version = $dataset->latestVersion();
-                $withLinks = DatasetVersion::where('id', $version['id'])
+                $withLinks = DatasetVersion::where('id', $latestVersion['id'])
                     ->with(['linkedDatasetVersions'])
                     ->first();
                 if ($withLinks) {
@@ -397,9 +395,8 @@ class DatasetController extends Controller
             }
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
-                $version = $dataset->latestVersion();
                 $translated = MMC::translateDataModelType(
-                    json_encode($version->metadata),
+                    json_encode($latestVersion->metadata),
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
                     Config::get('metadata.GWDM.name'),
@@ -407,7 +404,7 @@ class DatasetController extends Controller
                 );
 
                 if ($translated['wasTranslated']) {
-                    $withLinks = DatasetVersion::where('id', $version['id'])
+                    $withLinks = DatasetVersion::where('id', $latestVersion['id'])
                         ->with(['linkedDatasetVersions'])
                         ->first();
                     $withLinks['metadata'] = json_encode(['metadata' => $translated['metadata']]);
@@ -771,7 +768,7 @@ class DatasetController extends Controller
 
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
-                $updatedDataset = $currDataset->update([
+                $currDataset->update([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
                     'updated' => $updateTime,
@@ -814,13 +811,13 @@ class DatasetController extends Controller
                     DatasetVersion::create([
                         'dataset_id' => $currDataset->id,
                         'metadata' => json_encode($input['metadata']),
-                        'version' => ($VersionNumber),
+                        'version' => ($versionNumber),
                     ]);
                 } else {
                     // Update the existing version
                     DatasetVersion::where([
                         'dataset_id' => $currDataset->id,
-                        'version' => $VersionNumber,
+                        'version' => $versionNumber,
                     ])->update([
                         'metadata' => json_encode($input['metadata']),
                     ]);
