@@ -81,14 +81,6 @@ class DatasetVersion extends Model
             ["%$filterTitle%"]
         );
     }
-    
-    /**
-     *  Datasets that belong to the dataset version.
-     */
-    public function dataset(): BelongsTo
-    {
-        return $this->belongsTo(Dataset::class, 'dataset_id');
-    }
 
     /**
      *  Named entities that belong to the dataset version.
