@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
             FederationSeeder::class,
             TeamHasFederationSeeder::class,
             NamedEntitiesSeeder::class,
-            DatasetHasNamedEntitiesSeeder::class,
+            DatasetVersionHasNamedEntitiesSeeder::class,
             CohortRequestSeeder::class,
             TeamUserHasNotificationSeeder::class,
             CollectionHasKeywordSeeder::class,
