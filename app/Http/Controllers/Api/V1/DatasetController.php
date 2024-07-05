@@ -374,15 +374,15 @@ class DatasetController extends Controller
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
-
-            // Retrieve the latest version 
-            $latestVersion = $dataset->latestVersion();
         
             // inject named entities
-            $dataset->setAttribute('named_entities', $latestVersion ? $latestVersion->namedEntities : collect());
+            $dataset->setAttribute('named_entities', $dataset->getLatestNamedEntities());
    
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
+
+            // Retrieve the latest version 
+            $latestVersion = $dataset->latestVersion();
 
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
@@ -899,41 +899,33 @@ class DatasetController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             if ($request->has('unarchive')) {
-                $datasetModel = Dataset::withTrashed()
-                    ->where(['id' => $id])
-                    ->first();
+                $datasetModel = Dataset::withTrashed() ->where(['id' => $id]) ->first();
 
-                if ($request['status'] !== Dataset::STATUS_ARCHIVED) {
-                    if (in_array($request['status'], [
-                        Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT
-                    ])) {
-                        $datasetModel->status = $request['status'];
-                        $datasetModel->deleted_at = null;
-                        $datasetModel->save();
+                if (in_array($request['status'], [Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT])) {
+                    $datasetModel->status = $request['status'];
+                    $datasetModel->deleted_at = null;
+                    $datasetModel->save();
 
-                        $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)
-                            ->latest()->first();
-                        $metadata->deleted_at = null;
-                        $metadata->save();
+                    $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)->latest()->first();
+                    $metadata->deleted_at = null;
+                    $metadata->save();
 
-                        if ($request['status'] === Dataset::STATUS_ACTIVE) {
-                            MMC::reindexElastic($id);
-                        }
-
-                        Auditor::log([
-                            'user_id' => (int) $jwtUser['id'],
-                            'team_id' => $datasetModel['team_id'],
-                            'action_type' => 'UPDATE',
-                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                            'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
-                        ]);
-                    } else {
-                        throw new Exception('unknown status type');
+                    if ($request['status'] === Dataset::STATUS_ACTIVE) {
+                        MMC::reindexElastic($id);
                     }
+
+                    Auditor::log([
+                        'user_id' => (int) $jwtUser['id'],
+                        'team_id' => $datasetModel['team_id'],
+                        'action_type' => 'UPDATE',
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                        'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                    ]);
+                } else {
+                    throw new Exception('unknown status type');
                 }
             } else {
-                $datasetModel = Dataset::where(['id' => $id])
-                    ->first();
+                $datasetModel = Dataset::where(['id' => $id])->first();
 
                 if ($datasetModel['status'] === Dataset::STATUS_ARCHIVED) {
                     return response()->json([
@@ -944,7 +936,6 @@ class DatasetController extends Controller
                 if (in_array($request['status'], [
                     Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT
                 ])) {
-                    $previousDatasetStatus = $datasetModel->status;
                     $datasetModel->status = $request['status'];
                     $datasetModel->save();
                 } else {

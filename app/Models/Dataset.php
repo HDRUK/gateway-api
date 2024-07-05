@@ -5,8 +5,8 @@ namespace App\Models;
 use App\Models\Application;
 use App\Models\Collection;
 use App\Models\DataVersion;
-use App\Models\Dur;
 use App\Models\NamedEntities;
+use App\Models\Dur;
 use App\Models\Publication;
 use App\Models\SpatialCoverage;
 use Illuminate\Database\Eloquent\Model;
@@ -117,24 +117,18 @@ class Dataset extends Model
     }
 
     /**
-     * The named_entities that belong to the dataset.
+     * Get the latest version's named entities.
+     *
      */
-    public function namedEntities(): HasManyThrough
+    public function getLatestNamedEntities()
     {
-        return $this->hasManyThrough(
-            NamedEntities::class,
-            DatasetVersion::class,
-            'dataset_id',        // Foreign key on DatasetVersion table
-            'id',                // Foreign key on NamedEntities table
-            'id',                // Local key on Dataset table
-            'id'                 // Local key on DatasetVersion table
-        )->wherePivot('dataset_version_id', function ($query) {
-            $query->select('id')
-                ->from('dataset_versions')
-                ->whereColumn('dataset_versions.dataset_id', 'datasets.id')
-                ->latest('version')
-                ->limit(1);
-        });
+        $latestVersion = $this->latestVersion();
+
+        if ($latestVersion) {
+            return NamedEntities::where('dataset_version_id', $latestVersion->id)->get();
+        }
+
+        return collect();
     }
 
     /**

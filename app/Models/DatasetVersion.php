@@ -95,8 +95,7 @@ class DatasetVersion extends Model
      */
     public function namedEntities(): BelongsToMany
     {
-        return $this->belongsToMany(NamedEntities::class, 'dataset_version_has_named_entities', 'dataset_version_id', 'named_entities_id')
-                    ->withTimestamps();
+        return $this->belongsToMany(NamedEntities::class, 'dataset_version_has_named_entities');
     }
 
 

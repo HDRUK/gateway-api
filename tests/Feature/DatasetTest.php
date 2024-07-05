@@ -745,16 +745,16 @@ class DatasetTest extends TestCase
         $datasetId = $contentCreateDataset['data'];
 
         // archive dataset
-        $responseDeleteDataset = $this->json(
+        $responseArchiveDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $datasetId,
             [],
             $this->header
         );
-        $responseDeleteDataset->assertJsonStructure([
+        $responseArchiveDataset->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteDataset->assertStatus(200);
+        $responseArchiveDataset->assertStatus(200);
 
         // unarchive dataset
         $responseUnarchiveDataset = $this->json(
@@ -768,6 +768,8 @@ class DatasetTest extends TestCase
         $responseUnarchiveDataset->assertJsonStructure([
             'message'
         ]);
+
+        
         $responseUnarchiveDataset->assertStatus(200);
 
         // change dataset status

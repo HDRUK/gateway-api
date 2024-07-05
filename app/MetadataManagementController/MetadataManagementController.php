@@ -204,10 +204,16 @@ class MetadataManagementController {
     {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
-                ->with(['namedEntities', 'collections', 'durs', 'spatialCoverage'])
+                ->with(['collections', 'durs', 'spatialCoverage'])
                 ->firstOrFail();
 
             $metadata = $datasetMatch->latestVersion()->metadata;
+
+            // Retrieve the latest version 
+            $latestVersion = $datasetMatch->latestVersion();
+        
+            // inject named entities
+            $namedEntities = $datasetMatch->getLatestNamedEntities();
 
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
@@ -227,7 +233,7 @@ class MetadataManagementController {
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => $hasTechnicalMetadata,
-                'named_entities' => $datasetMatch->namedEntities->pluck('name')->all(),
+                'named_entities' =>  $namedEntities->pluck('name')->all(),
                 'collectionName' => $datasetMatch->collections->pluck('name')->all(),
                 'dataUseTitles' => $datasetMatch->durs->pluck('project_title')->all(),
                 'geographicLocation' => $datasetMatch->spatialCoverage->pluck('region')->all(),
