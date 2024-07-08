@@ -182,6 +182,7 @@ class Dur extends Model
             'Project ID',
             'Organisation Name',
             'Organisation Sector',
+            'Sector ID',
             'Lay Summary',
             'Technical Summary',
             'Latest Approval Date',
@@ -205,6 +206,8 @@ class Dur extends Model
             'Request Category Type',
             'Request Frequency',
             'Access Type',
+            'DAR ID', // Intentionally renamed to not reveal our internal field names
+            'Technical Summary',
             'Enabled',
             'Last Activity',
             'Counter',
@@ -215,6 +218,7 @@ class Dur extends Model
             'Created At',
             'Updated At',
             'Applicant ID',
+            'Status',
         ];
     }
 }
