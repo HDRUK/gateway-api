@@ -41,11 +41,6 @@ class UpdateLicenses extends Command
                     continue;
                 }
                 $label = $license['pref_label']['en'];
-                $resource = $license['resource'];
-
-                if (strpos($resource, $this->urlLicense) === false) {
-                    continue;
-                }
 
                 $licenseId = (string) $license['id'];
 
