@@ -2199,10 +2199,14 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 {
-    "query": "asthma icd10",
-    "download": true,
-    "download_type": "list"
+    "query": "asthma icd10"
 }
+
+# {
+#     "query": "asthma icd10",
+#     "download": true,
+#     "download_type": "list"
+# }
 // download_type = list or table (for datasets only)
 
 #### search for dur - download
@@ -2275,12 +2279,6 @@ Authorization: Bearer {{accessToken}}
 ### Tests
 #### test pubsub service
 GET {{baseUrl}}/api/{{apiVersion}}/test-pubsub-service HTTP/1.1
-Content-Type: application/json
-
-
-### Data Provider
-#### get all data provider
-GET {{baseUrl}}/api/{{apiVersion}}/data_providers HTTP/1.1
 Content-Type: application/json
 
 
@@ -2396,3 +2394,14 @@ Authorization: Bearer {{accessToken}}
 #     ],
 #     "sort_order": "score:desc"
 # }
+
+
+### Data Provider
+#### get all data provider
+GET {{baseUrl}}/api/{{apiVersion}}/data_provider_colls HTTP/1.1
+Content-Type: application/json
+
+#### get one data provider by id
+GET {{baseUrl}}/api/{{apiVersion}}/data_provider_colls/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}

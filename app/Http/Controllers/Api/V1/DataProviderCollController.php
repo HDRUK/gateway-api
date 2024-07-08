@@ -6,17 +6,18 @@ use Config;
 use Auditor;
 use Exception;
 
-use App\Models\Dataset;
 use App\Models\Team;
+use App\Models\Dataset;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
+use App\Models\DatasetVersion;
 
-use MetadataManagementController as MMC;
-
-use App\Http\Controllers\Controller;
 use App\Models\DataProviderColl;
+
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 use App\Models\DataProviderCollHasTeam;
+use MetadataManagementController as MMC;
 
 class DataProviderCollController extends Controller
 {
@@ -119,9 +120,12 @@ class DataProviderCollController extends Controller
     public function show(Request $request, int $id): JsonResponse
     {
         try {
-            $dps = DataProviderColl::with([
-                'teams',
-                ])->where('id', $id)->firstOrFail();
+            $dp = DataProviderColl::select('id', 'name', 'img_url')->where([
+                'id' => $id,
+                'enabled' => 1,
+            ])->first();
+
+            $newDps = $this->getTeams($dp);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -131,11 +135,62 @@ class DataProviderCollController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $dps
+                'data' => $newDps,
             ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+
+    public function getTeams(DataProviderColl $dp)
+    {
+        $return = [];
+        $idTeams = DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
+
+        foreach ($idTeams as $idTeam) {
+            $tmp = [];
+
+            $team = Team::select('id', 'name')->where(['id' => $idTeam])->first();
+            $tmp['id'] = $team->id;
+            $tmp['name'] = $team->name;
+            $datasets = $this->getDatasets((int) $team->id);
+            $tmp['datasets'] = $datasets;
+            $return[] = $tmp;
+
+            unset($tmp);
+        }
+
+        return $return;
+    }
+
+    public function getDatasets(int $teamId)
+    {
+        $return = [];
+
+        $datasets = Dataset::select('id', 'status')->where(['team_id' => $teamId])->get();
+
+        foreach ($datasets as $dataset) {
+            $tmp = [];
+
+            $tmp['id'] = $dataset->id;
+            $tmp['status'] = $dataset->status;
+            $dataset = Dataset::where(['id' => $dataset->id])
+                ->with(['durs', 'collections', 'publications'])
+                ->first();
+            $version = $dataset->latestVersion();
+            $withLinks = DatasetVersion::where('id', $version['id'])
+                ->with(['linkedDatasetVersions'])
+                ->first();
+            if ($withLinks) {
+                $dataset->versions = [$withLinks];
+            }
+            $tmp['dataset'] = $dataset;
+            $return[] = $tmp;
+
+            unset($tmp);
+        }
+
+        return $return;
     }
 
     /**
