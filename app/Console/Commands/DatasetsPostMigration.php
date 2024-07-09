@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Config;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use Illuminate\Console\Command;
@@ -97,6 +98,10 @@ class DatasetsPostMigration extends Command
  
     private function curateDatasets()
     {
+        if(version_compare(Config::get('metadata.GWDM.version'),"2.0","<")){
+            $this->error("You cannot run this script for GWDM versions older than 2.0");
+            return;
+        }
 
         $doiPattern = '/^10.\d{4,9}\/[-._;()\/:a-zA-Z0-9]+$/';
 
@@ -136,20 +141,28 @@ class DatasetsPostMigration extends Command
             //note: to be implemented in the future
             //- this was an AC dropped from GAT-4404 
             //$syntheticDataWebLink = $csv['Synthetic dataset link'];
-
             
             // Check if the variable matches the pattern
             if($doiName) {   
                 if (preg_match($doiPattern, $doiName)) {
                     $metadata['metadata']['summary']['doiName'] = $doiName;
-                    DatasetVersion::where('id', $dataset->id)->update([
-                        'metadata' => json_encode(json_encode($metadata)),
-                    ]);
                 }
                 else{
                     $this->warn($doiName . " is not a valid doi");
                 }
             }
+
+            if($datasetType){
+                $metadata['metadata']['summary']['datasetType'] = $datasetType;
+            }
+
+            if($datasetSubType){
+                $metadata['metadata']['summary']['datasetSubType'] = $datasetType;
+            }
+
+            DatasetVersion::where('id', $dataset->id)->update([
+                'metadata' => json_encode(json_encode($metadata)),
+            ]);
 
             $progressbar->advance();
 
