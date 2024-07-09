@@ -36,7 +36,7 @@ class DatasetsPostMigration extends Command
         $reindex = $this->argument('reindex');
         $reindexEnabled = $reindex !== null;
 
-        $this->migrateAccessServiceCategory();
+        //$this->migrateAccessServiceCategory();
         $this->curateDatasets();
 
         if ($reindexEnabled) {
@@ -98,6 +98,8 @@ class DatasetsPostMigration extends Command
     private function curateDatasets()
     {
 
+        $doiPattern = '/^10.\d{4,9}\/[-._;()\/:a-zA-Z0-9]+$/';
+
         $csvData = $this->readMigrationFile(storage_path() . '/migration_files/datasets_curation_july2024.csv');
                
         $progressbar = $this->output->createProgressBar(count($csvData));
@@ -111,7 +113,7 @@ class DatasetsPostMigration extends Command
             ])->first();
 
             if (!$dataset) {
-                $this->warn("Not found datasetid=". $datasetid);
+                //$this->warn("Not found datasetid=". $datasetid);
                 continue;
             }
             $datasetVersion = DatasetVersion::where([
@@ -122,7 +124,7 @@ class DatasetsPostMigration extends Command
                 $this->error("cannot find a datasetverison associated with this dataset");
                 continue;
             }
-            $metadata = $datasetVersion->metadata['metadata'];
+            $metadata = $datasetVersion->metadata;
 
             $doiName = $csv['doiName'];
             $datasetType = $csv['Mapped Data type'];
@@ -132,13 +134,21 @@ class DatasetsPostMigration extends Command
             $toolLink = $csv['Github tool link'];
             
             //note: to be implemented in the future
+            //- this was an AC dropped from GAT-4404 
             //$syntheticDataWebLink = $csv['Synthetic dataset link'];
 
-            $this->info("...Updating doiName");
-            if($doiName){
-                $this->info($metadata['summary']['doiName']);
-                $this->warn($doiName);
-                $this->info("...Updating doiName");
+            
+            // Check if the variable matches the pattern
+            if($doiName) {   
+                if (preg_match($doiPattern, $doiName)) {
+                    $metadata['metadata']['summary']['doiName'] = $doiName;
+                    DatasetVersion::where('id', $dataset->id)->update([
+                        'metadata' => json_encode(json_encode($metadata)),
+                    ]);
+                }
+                else{
+                    $this->warn($doiName . " is not a valid doi");
+                }
             }
 
             $progressbar->advance();
