@@ -39,6 +39,17 @@ class DatasetsPostMigration extends Command
         $this->migrateAccessServiceCategory();
         $this->curateDatasets();
 
+        if ($reindexEnabled) {
+            $datasetIds = Dataset::pluck('id');
+            $progressbar = $this->output->createProgressBar(count($datasetIds));
+            foreach ($datasetIds as $id) {
+                MMC::reindexElastic($id);
+                sleep(1); // to not kill ElasticSearch
+                $progressbar->advance();
+            }
+            $progressbar->finish();
+        }  
+
     }
 
     /**
@@ -75,11 +86,7 @@ class DatasetsPostMigration extends Command
                     DatasetVersion::where('id', $dataset->id)->update([
                         'metadata' => json_encode(json_encode($metadata)),
                     ]);
-                }
-                if ($reindexEnabled) {
-                    MMC::reindexElastic($dataset->id);
-                    sleep(1); // to not kill ElasticSearch
-                }                
+                }              
             }
             $progressbar->advance();
            
