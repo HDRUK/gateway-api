@@ -5,19 +5,36 @@ namespace Tests\Feature;
 use Tests\TestCase;
 
 use App\Models\DataProvider;
-use App\Models\DataProviderCollHasTeam;
-use App\Models\DataProviderHasTeam;
-use Database\Seeders\DataProviderCollsSeeder;
-use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\DurSeeder;
+use Database\Seeders\TagSeeder;
+use Tests\Traits\Authorization;
 use Database\Seeders\TeamSeeder;
+use Database\Seeders\ToolSeeder;
+use Tests\Traits\MockExternalApis;
+use App\Models\DataProviderHasTeam;
+
+use Database\Seeders\DatasetSeeder;
+
+use Database\Seeders\KeywordSeeder;
+
+use Database\Seeders\LicenseSeeder;
+use Database\Seeders\CategorySeeder;
+use Database\Seeders\CollectionSeeder;
+use App\Models\DataProviderCollHasTeam;
+use Database\Seeders\ApplicationSeeder;
+use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\DataProviderSeeder;
-
-use Tests\Traits\Authorization;
-
+use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\CollectionHasDurSeeder;
+use Database\Seeders\CollectionHasToolSeeder;
+use Database\Seeders\DataProviderCollsSeeder;
+use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\CollectionHasKeywordSeeder;
+use Database\Seeders\PublicationHasDatasetSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-
-use Tests\Traits\MockExternalApis;
+use Database\Seeders\CollectionHasPublicationSeeder;
 
 class DataProviderCollTest extends TestCase
 {
@@ -39,6 +56,24 @@ class DataProviderCollTest extends TestCase
             TeamSeeder::class,
             TeamHasUserSeeder::class,
             DataProviderCollsSeeder::class,
+            ApplicationSeeder::class,
+            CollectionSeeder::class,
+            DatasetSeeder::class,
+            DatasetVersionSeeder::class,
+            KeywordSeeder::class,
+            CategorySeeder::class,
+            LicenseSeeder::class,
+            ToolSeeder::class,
+            TagSeeder::class,
+            DurSeeder::class,
+            CollectionHasKeywordSeeder::class,
+            CollectionHasDatasetSeeder::class,
+            CollectionHasToolSeeder::class,
+            CollectionHasDurSeeder::class,
+            PublicationSeeder::class,
+            PublicationHasDatasetSeeder::class,
+            CollectionHasPublicationSeeder::class,
+
         ]);
     }
 
@@ -100,6 +135,23 @@ class DataProviderCollTest extends TestCase
         $this->assertTrue(($countTeams === 1));
     }
 
+
+    public function test_get_data_provider_coll_by_id_summary_with_success(): void
+    {
+        $response = $this->json('GET', self::TEST_URL . '/1/summary', [], $this->header);
+
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'message',
+            'data' => [
+                'datasets',
+                'durs',
+                'tools',
+                'publications',
+                'collections',
+            ]
+        ]);
+    }
 
     public function test_create_data_provider_coll_with_success(): void
     {

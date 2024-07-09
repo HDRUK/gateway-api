@@ -2,24 +2,25 @@
 
 namespace App\Models;
 
-use App\Models\Application;
+use App\Models\Dur;
+use App\Models\Tool;
 use App\Models\Collection;
+use App\Models\Application;
 use App\Models\DataVersion;
 use App\Models\NamedEntities;
-use App\Models\Dur;
 use App\Models\Publication;
 use App\Models\SpatialCoverage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Dataset extends Model
 {
@@ -179,11 +180,20 @@ class Dataset extends Model
     {
         return $this->belongsToMany(Publication::class, 'publication_has_dataset');
     }
+
     /**
      * The team for the dataset.
      */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'team_id');
+    }
+
+    /**
+     * The tools that belong to a dataset.
+     */
+    public function tools(): BelongsToMany
+    {
+        return $this->belongsToMany(Tool::class, 'dataset_has_tools');
     }
 }
