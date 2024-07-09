@@ -159,7 +159,7 @@ class DatasetsPostMigration extends Command
             }
 
             if($datasetSubType){
-                $metadata['metadata']['summary']['datasetSubType'] = $datasetType;
+                $metadata['metadata']['summary']['datasetSubType'] = $datasetSubType;
             }
 
             DatasetVersion::where('id', $dataset->id)->update([
