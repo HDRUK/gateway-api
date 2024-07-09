@@ -102,6 +102,8 @@ class DatasetsPostMigration extends Command
             $this->error("You cannot run this script for GWDM versions older than 2.0");
             return;
         }
+        $this->info('');
+        $this->info('Curating datasets...');
 
         $doiPattern = '/^10.\d{4,9}\/[-._;()\/:a-zA-Z0-9]+$/';
 
