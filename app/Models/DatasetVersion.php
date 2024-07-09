@@ -4,6 +4,7 @@ namespace App\Models;
 use App\Models\Tool;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -50,13 +51,20 @@ class DatasetVersion extends Model
      */
     public function getMetadataAttribute($value): array
     {
-        $normalised = $value;
-
-        if (gettype($normalised) === 'array') {
-            $normalised = json_encode($normalised);
+        // If the value is already an array, return it directly
+        if (is_array($value)) {
+            return $value;
         }
 
-        return json_decode(json_decode($normalised, true), true);
+        // Decode the value if it's a JSON string
+        $decodedValue = json_decode($value, true);
+
+        // If the value is still a JSON string after decoding, decode it again
+        if (is_string($decodedValue)) {
+            return json_decode($decodedValue, true);
+        }
+
+        return $decodedValue;
     }
 
      /**
@@ -73,6 +81,15 @@ class DatasetVersion extends Model
             ["%$filterTitle%"]
         );
     }
+
+    /**
+     *  Named entities that belong to the dataset version.
+     */
+    public function namedEntities(): BelongsToMany
+    {
+        return $this->belongsToMany(NamedEntities::class, 'dataset_version_has_named_entities');
+    }
+
 
     /**
      * The tools that belong to the dataset version.
