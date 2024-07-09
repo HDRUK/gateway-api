@@ -36,7 +36,7 @@ class DatasetsPostMigration extends Command
         $reindex = $this->argument('reindex');
         $reindexEnabled = $reindex !== null;
 
-        //$this->migrateAccessServiceCategory();
+        $this->migrateAccessServiceCategory();
         $this->curateDatasets();
 
         if ($reindexEnabled) {
