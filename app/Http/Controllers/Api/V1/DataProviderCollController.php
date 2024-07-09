@@ -152,20 +152,20 @@ class DataProviderCollController extends Controller
     /**
      * @OA\Get(
      *      path="/api/v1/data_provider_colls/{id}/aggregation",
-     *      summary="Return a single DataProviderColl aggregation",
-     *      description="Return a single DataProviderColl aggregation",
+     *      summary="Return a single DataProviderColl - aggregation",
+     *      description="Return a single DataProviderColl - aggregation",
      *      tags={"DataProviderColl"},
      *      summary="DataProviderColl@showAggregation",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="DataProviderColl ID",
+     *         description="DataProviderColl ID - aggregation",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="DataProviderColl ID",
+     *            description="DataProviderColl ID - aggregation",
      *         ),
      *      ),
      *      @OA\Response(
