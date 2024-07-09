@@ -151,21 +151,21 @@ class DataProviderCollController extends Controller
 
     /**
      * @OA\Get(
-     *      path="/api/v1/data_provider_colls/{id}/aggregation",
-     *      summary="Return a single DataProviderColl - aggregation",
-     *      description="Return a single DataProviderColl - aggregation",
+     *      path="/api/v1/data_provider_colls/{id}/summary",
+     *      summary="Return a single DataProviderColl - summary",
+     *      description="Return a single DataProviderColl - summary",
      *      tags={"DataProviderColl"},
-     *      summary="DataProviderColl@showAggregation",
+     *      summary="DataProviderColl@showSummary",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
      *         name="id",
      *         in="path",
-     *         description="DataProviderColl ID - aggregation",
+     *         description="DataProviderColl ID - summary",
      *         required=true,
      *         example="1",
      *         @OA\Schema(
      *            type="integer",
-     *            description="DataProviderColl ID - aggregation",
+     *            description="DataProviderColl ID - summary",
      *         ),
      *      ),
      *      @OA\Response(
@@ -191,7 +191,7 @@ class DataProviderCollController extends Controller
      *      )
      * )
      */
-    public function showAggregation(Request $request, int $id): JsonResponse
+    public function showSummary(Request $request, int $id): JsonResponse
     {
         try {
             $dp = DataProviderColl::select('id', 'name', 'img_url')->where([

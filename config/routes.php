@@ -3145,10 +3145,10 @@ return [
         ],
     ],
     [
-        'name' => 'data_provider_colls_aggregation',
+        'name' => 'data_provider_colls_summary',
         'method' => 'get',
-        'path' => '/data_provider_colls/{id}/aggregation',
-        'methodController' => 'DataProviderCollController@showAggregation',
+        'path' => '/data_provider_colls/{id}/summary',
+        'methodController' => 'DataProviderCollController@showSummary',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
