@@ -182,7 +182,7 @@ class RoleSeeder extends Seeder
                     'dar.decision',
                     'workflows.read',
                     'workflows.create',
-                    'workflows.update', 
+                    'workflows.update',
                     'workflows.delete',
                     'workflow.assign',
                     'dar-config.update',
