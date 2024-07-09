@@ -178,7 +178,7 @@ class ToolsPostMigrationProcess extends Command
      * @param integer $id
      * @return void
      */
-    private function indexElasticTool(int $id): void 
+    public function indexElasticTool(int $id): void 
     {
         $tool = Tool::where('id', $id)
             ->with(['programmingLanguages', 'programmingPackages', 'tag', 'category', 'typeCategory', 'license'])

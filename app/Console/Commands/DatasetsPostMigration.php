@@ -68,10 +68,11 @@ class DatasetsPostMigration extends Command
 
                 if ($reindexEnabled) {
                     MMC::reindexElastic($dataset->id);
+                    sleep(1); // to not kill ElasticSearch
                 }                
             }
             $progressbar->advance();
-            sleep(1); // to not kill ElasticSearch
+           
         }
 
         $progressbar->finish();
