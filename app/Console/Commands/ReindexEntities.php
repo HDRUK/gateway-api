@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Dataset;
 use App\Models\Publication;
 use App\Models\Team;
+use App\Models\Dur;
 use App\Models\Tool;
 use Illuminate\Console\Command;
 use App\Http\Controllers\Api\V1\PublicationController;
