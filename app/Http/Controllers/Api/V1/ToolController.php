@@ -1189,7 +1189,7 @@ class ToolController extends Controller
      * @param integer $toolId
      * @return void
      */
-    private function indexElasticTools(int $toolId): void 
+    public function indexElasticTools(int $toolId): void 
     {
         try {
             $tool = Tool::where('id', $toolId)
