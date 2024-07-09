@@ -16,11 +16,21 @@ use App\Models\DataProviderColl;
 
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Models\Collection;
 use App\Models\DataProviderCollHasTeam;
+use App\Models\Dur;
+use App\Models\Publication;
+use App\Models\Tool;
 use MetadataManagementController as MMC;
 
 class DataProviderCollController extends Controller
 {
+    private $datasets = [];
+    private $durs = [];
+    private $tools = [];
+    private $publications = [];
+    private $collections = [];
+
     /**
      * @OA\Get(
      *      path="/api/v1/data_provider_colls",
@@ -125,7 +135,7 @@ class DataProviderCollController extends Controller
                 'enabled' => 1,
             ])->first();
 
-            $newDps = $this->getTeams($dp);
+            $this->getTeams($dp);
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -135,7 +145,13 @@ class DataProviderCollController extends Controller
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $newDps,
+                'data' => [
+                    'datasets' => $this->datasets,
+                    'durs' => Dur::select('id', 'project_title', 'organisation_name')->whereIn('id', $this->durs)->get()->toArray(),
+                    'tools' => Tool::select('id', 'name')->with(['user'])->whereIn('id', $this->tools)->get()->toArray(),
+                    'publications' => Publication::select('id', 'paper_title', 'authors', 'publication_type', 'publication_type_mk1')->whereIn('id', $this->publications)->get()->toArray(),
+                    'collections' => Collection::select('id', 'name', 'image_link')->whereIn('id', $this->collections)->get()->toArray(),
+                ],
             ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -144,54 +160,61 @@ class DataProviderCollController extends Controller
 
     public function getTeams(DataProviderColl $dp)
     {
-        $return = [];
         $idTeams = DataProviderCollHasTeam::where(['data_provider_coll_id' => $dp->id])->pluck('team_id')->toArray();
 
         foreach ($idTeams as $idTeam) {
-            $tmp = [];
-
             $team = Team::select('id', 'name')->where(['id' => $idTeam])->first();
-            $tmp['id'] = $team->id;
-            $tmp['name'] = $team->name;
-            $datasets = $this->getDatasets((int) $team->id);
-            $tmp['datasets'] = $datasets;
-            $return[] = $tmp;
+            $this->getDatasets((int) $team->id);
+            $teamCollections = Collection::where(['team_id' => $idTeam])->pluck('id')->toArray();
 
-            unset($tmp);
+            $this->collections = array_unique([...$this->collections, ...$teamCollections]);
         }
-
-        return $return;
     }
 
     public function getDatasets(int $teamId)
     {
-        $return = [];
+        $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
 
-        $datasets = Dataset::select('id', 'status')->where(['team_id' => $teamId])->get();
+        foreach ($datasetIds as $datasetId) {
+            $this->checkingDataset($datasetId);
+        }
+    }
 
-        foreach ($datasets as $dataset) {
-            $tmp = [];
+    public function checkingDataset(int $datasetId)
+    {
+        $dataset = Dataset::where(['id' => $datasetId])
+            ->with(['durs', 'collections', 'publications', 'tools'])
+            ->first();
 
-            $tmp['id'] = $dataset->id;
-            $tmp['status'] = $dataset->status;
-            $dataset = Dataset::where(['id' => $dataset->id])
-                ->with(['durs', 'collections', 'publications'])
-                ->first();
-            $version = $dataset->latestVersion();
-            $withLinks = DatasetVersion::where('id', $version['id'])
-                ->with(['linkedDatasetVersions'])
-                ->first();
-            if ($withLinks) {
-                $dataset->versions = [$withLinks];
-            }
-            $tmp['dataset'] = $dataset;
-            $return[] = $tmp;
-
-            unset($tmp);
+        if (!$dataset) {
+            return;
         }
 
-        return $return;
+        $version = $dataset->latestVersion();
+        $withLinks = DatasetVersion::where('id', $version['id'])
+            ->with(['linkedDatasetVersions'])
+            ->first();
+
+        if (!$withLinks) {
+            return;
+        }
+
+        // $dataset->versions = [$withLinks];
+        $dataset->setAttribute('versions', [$withLinks]);
+        $this->datasets[] = [
+            'id' => $dataset->id,
+            'status' => $dataset->status,
+            'title' => $dataset['versions'][0]['metadata']['original_metadata']['summary']['title'],
+            'populationSize' => MMC::getValueByPossibleKeys($dataset['versions'][0]['metadata']['metadata']['summary'], ['populationSize'], -1),
+            'datasetType' => MMC::getValueByPossibleKeys($dataset['versions'][0]['metadata']['metadata']['summary'], ['datasetType'], ''),
+        ];
+
+        $this->durs = array_unique([...$this->durs, ...$dataset->durs->pluck('id')->toArray()]);
+        $this->publications = array_unique([...$this->publications, ...$dataset->publications->pluck('id')->toArray()]);
+        $this->tools = array_unique([...$this->tools, ...$dataset->tools->pluck('id')->toArray()]);
+        $this->collections = array_unique([...$this->collections, ...$dataset->collections->pluck('id')->toArray()]);
     }
+
 
     /**
      * @OA\Post(
