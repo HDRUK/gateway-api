@@ -36,15 +36,8 @@ class DatasetsPostMigration extends Command
         $reindex = $this->argument('reindex');
         $reindexEnabled = $reindex !== null;
 
-    
-        //$this->migrateAccessServiceCategory();
+        $this->migrateAccessServiceCategory();
         $this->curateDatasets();
-
-        /*
-        if ($reindexEnabled) {
-            MMC::reindexElastic($dataset->id);
-        }   
-        */
 
     }
 
@@ -130,8 +123,11 @@ class DatasetsPostMigration extends Command
 
             $associatedMedia = $csv['Annotation note link'];
             $toolLink = $csv['Github tool link'];
-            $syntheticDataWebLink = $csv['Synthetic dataset link'];
+            
+            //note: to be implemented in the future
+            //$syntheticDataWebLink = $csv['Synthetic dataset link'];
 
+            $this->info("...Updating doiName");
             if($doiName){
                 $this->info($metadata['summary']['doiName']);
                 $this->warn($doiName);
