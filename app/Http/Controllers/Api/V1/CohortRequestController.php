@@ -969,6 +969,82 @@ class CohortRequestController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *    path="/api/v1/cohort_requests/access",
+     *    operationId="access_cohort_requests",
+     *    tags={"Cohort Requests"},
+     *    summary="CohortRequestController@checkAccess",
+     *    description="access cohort request by jwt",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Error response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource not found"),
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function checkAccess(Request $request)
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            if (array_key_exists('id', $input)) {
+                throw new Exception('Unauthorized');
+            }
+
+            $userId = (int) $jwtUser['id'];
+
+            $checkingCohortRequest = CohortRequest::where([
+                'user_id' => $userId,
+                'request_status' => 'APPROVED',
+                'cohort_status' => 1,
+            ])->first();
+
+            if ($checkingCohortRequest) {
+                throw new Exception('Unauthorized for access');
+            }
+
+            $request->session()->put('cohort_request_uid', $userId);
+
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Access rquest for user",
+            ]);
+
+            $rquestInitUrl = Config::get('services.rquest.init_url');
+            return redirect()->to($rquestInitUrl);
+        } catch (Exception $exception) {
+            throw new Exception("Cohort Request send email :: " . $exception->getMessage());
+        }
+    }
+
     private function sendEmail($cohortId, $admin = null)
     {
         try {
@@ -1036,4 +1112,5 @@ class CohortRequestController extends Controller
             throw new Exception("Cohort Request send email :: " . $exception->getMessage());
         }
     }
+
 }
