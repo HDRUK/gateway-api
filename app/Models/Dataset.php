@@ -8,9 +8,7 @@ use App\Models\Collection;
 use App\Models\Application;
 use App\Models\DataVersion;
 use App\Models\NamedEntities;
-use App\Models\Dur;
 use App\Models\Publication;
-use App\Models\NamedEntities;
 use App\Models\SpatialCoverage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -23,7 +21,6 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Dataset extends Model
 {
