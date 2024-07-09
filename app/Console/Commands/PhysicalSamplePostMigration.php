@@ -46,6 +46,10 @@ class PhysicalSamplePostMigration extends Command
             $mongoPid = $csv['mongo_pid'];
             $samples = $csv['physical_samples'];
 
+            //The following $samplesList needs to be cleaned and fixed....
+            // - it should be a controlled list
+            // - this is taking directly from Mk1 and contains nonsense 
+            //GAT-4628 has been creaed for someone to do this
             $samplesList = explode(";", $samples); 
 
             $formattedSamplesArray = [];
