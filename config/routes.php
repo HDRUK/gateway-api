@@ -3145,6 +3145,17 @@ return [
         ],
     ],
     [
+        'name' => 'data_provider_colls_aggregation',
+        'method' => 'get',
+        'path' => '/data_provider_colls/{id}/aggregation',
+        'methodController' => 'DataProviderCollController@showAggregation',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'id' => '[0-9]+',
+        ],
+    ],
+    [
         'name' => 'data_provider_colls',
         'method' => 'post',
         'path' => '/data_provider_colls',
