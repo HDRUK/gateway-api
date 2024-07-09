@@ -14,7 +14,7 @@ class PublicationTypePostMigration extends Command
      *
      * @var string
      */
-    protected $signature = 'app:publication-type-post-migration {reindex?}';
+    protected $signature = '`app:publication-type-post-migration `{reindex?}';
 
     private $csvData = [];
 

@@ -131,7 +131,7 @@ class TeamUserController extends Controller
             $sendEmail = $request->has('email') ? $request->boolean('email') : true;
 
             $teamHasUsers = $this->teamHasUser($teamId, $userId);
-            
+
             $this->teamUsersHasRoles($teamHasUsers, $permissions, $teamId, $userId, $jwtUser, $sendEmail);
 
             $this->storeAuditLog($jwtUser["id"], $input['userId'], $teamId, $input, class_basename($this) . '@'.__FUNCTION__);
