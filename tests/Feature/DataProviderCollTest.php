@@ -144,6 +144,9 @@ class DataProviderCollTest extends TestCase
         $response->assertJsonStructure([
             'message',
             'data' => [
+                'id',
+                'name',
+                'img_url',
                 'datasets',
                 'durs',
                 'tools',
