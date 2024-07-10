@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Services\PubSubService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Models\CohortRequestHasPermission;
 
 class TestController extends Controller
 {
@@ -49,5 +50,17 @@ class TestController extends Controller
         ]);
 
         return response()->json(['status' => 'success']);
+    }
+
+    public function testSomething(Request $request)
+    {
+        $checkingCohortPerms = CohortRequestHasPermission::where([
+            'cohort_request_id' => 3
+        ])->count();
+        
+        return response()->json([
+            'status' => 'success',
+            'data' => $checkingCohortPerms
+        ]);
     }
 }

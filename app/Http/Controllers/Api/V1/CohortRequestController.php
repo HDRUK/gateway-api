@@ -1025,11 +1025,19 @@ class CohortRequestController extends Controller
                 'cohort_status' => 1,
             ])->first();
 
-            if ($checkingCohortRequest) {
-                throw new Exception('Unauthorized for access');
+            if (!$checkingCohortRequest) {
+                throw new Exception('Unauthorized for access :: The request is not approved');
             }
 
-            $request->session()->put('cohort_request_uid', $userId);
+            $checkingCohortPerms = CohortRequestHasPermission::where([
+                'cohort_request_id' => $checkingCohortRequest->id
+            ])->count();
+
+            if (!$checkingCohortPerms) {
+                throw new Exception('Unauthorized for access :: There are not enough permissions allocated for the cohort request');
+            }
+
+            $request->session()->put('cr_uid', $userId);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
