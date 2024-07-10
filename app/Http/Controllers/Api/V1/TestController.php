@@ -51,16 +51,4 @@ class TestController extends Controller
 
         return response()->json(['status' => 'success']);
     }
-
-    public function testSomething(Request $request)
-    {
-        $checkingCohortPerms = CohortRequestHasPermission::where([
-            'cohort_request_id' => 3
-        ])->count();
-        
-        return response()->json([
-            'status' => 'success',
-            'data' => $checkingCohortPerms
-        ]);
-    }
 }

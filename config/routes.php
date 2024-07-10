@@ -3467,16 +3467,4 @@ return [
         ],
         'constraint' => [],
     ],
-
-    // test
-    [
-        'name' => 'test_something',
-        'method' => 'get',
-        'path' => '/test-something',
-        'methodController' => 'TestController@testSomething',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-        ],
-        'constraint' => [],
-    ],
 ];

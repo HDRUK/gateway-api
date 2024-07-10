@@ -2422,6 +2422,6 @@ Authorization: Bearer {{accessToken}}
 
 
 ### Tests
-#### test pubsub service
-GET {{baseUrl}}/api/{{apiVersion}}/test-something HTTP/1.1
-Content-Type: application/json
+# #### test pubsub service
+# GET {{baseUrl}}/api/{{apiVersion}}/test-something HTTP/1.1
+# Content-Type: application/json
