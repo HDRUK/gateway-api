@@ -60,8 +60,6 @@ class ToolsPostMigrationProcess extends Command
 
         // Traverse the CSV data and update migrations accordingly
         foreach ($this->csvData as $csv) {
-            // var_dump($csv);
-            // exit();
             try {
                 $tool = Tool::where('mongo_object_id', $csv['_id'])->first();
                 if ($tool) {
