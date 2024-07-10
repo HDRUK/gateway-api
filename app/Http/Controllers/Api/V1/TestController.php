@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use App\Services\PubSubService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
-use App\Models\CohortRequestHasPermission;
 
 class TestController extends Controller
 {
