@@ -70,6 +70,11 @@ Route::any('/services/daras{any}',
     'daras', 
 ] )->where('any', '.*');
 
+# bcplatform
+
+
+
+
 // stop all all other routes
 Route::any('{path}', function() {
     $response = [
