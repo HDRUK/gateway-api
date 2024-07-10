@@ -2283,11 +2283,6 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 
-### Tests
-#### test pubsub service
-GET {{baseUrl}}/api/{{apiVersion}}/test-pubsub-service HTTP/1.1
-Content-Type: application/json
-
 
 ### LICENSES
 #### get all licenses
@@ -2422,3 +2417,11 @@ Authorization: Bearer {{accessToken}}
 GET {{baseUrl}}/api/{{apiVersion}}/datasets/220 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
+
+
+
+
+### Tests
+#### test pubsub service
+GET {{baseUrl}}/api/{{apiVersion}}/test-something HTTP/1.1
+Content-Type: application/json
