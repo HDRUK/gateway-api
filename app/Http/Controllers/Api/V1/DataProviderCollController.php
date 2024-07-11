@@ -677,7 +677,7 @@ class DataProviderCollController extends Controller
 
         $this->durs = array_unique([...$this->durs, ...$dataset->durs->pluck('id')->toArray()]);
         $this->publications = array_unique([...$this->publications, ...$dataset->publications->pluck('id')->toArray()]);
-        $this->tools = array_unique([...$this->tools, ...$dataset->tools->pluck('id')->toArray()]);
+        $this->tools = array_unique(array_merge($this->tools, $dataset->tools->pluck('id')->toArray()));
         $this->collections = array_unique([...$this->collections, ...$dataset->collections->pluck('id')->toArray()]);
     }
 }
