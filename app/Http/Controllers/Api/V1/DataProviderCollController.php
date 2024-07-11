@@ -588,14 +588,8 @@ class DataProviderCollController extends Controller
             $datasets = Dataset::where('team_id', $team['id'])->with('versions')->get();
 
             foreach ($datasets as $dataset) {
-                $latestVersion = $dataset->versions->first();
-                
-                if ($latestVersion) {
-                    $metadata = $latestVersion->metadata;
-                    if (isset($metadata['metadata']['summary']['shortTitle'])) {
-                        $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-                    }
-                }
+                $metadata = $dataset['versions'][0];
+                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
 
                 $latestSpatialCoverage = $dataset->getLatestSpatialCoverage();
                 foreach ($latestSpatialCoverage as $loc) {
@@ -605,7 +599,6 @@ class DataProviderCollController extends Controller
                 }
             }
         }
-
         usort($datasetTitles, 'strcasecmp');
 
         try {
