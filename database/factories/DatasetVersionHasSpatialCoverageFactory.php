@@ -14,8 +14,8 @@ class DatasetVersionHasSpatialCoverageFactory extends Factory
     public function definition()
     {
         return [
-            'dataset_version_id' => DatasetVersion::factory(),
-            'spatial_coverage_id' => SpatialCoverage::factory(),
+            'dataset_version_id' => DatasetVersion::all()->random()->id,
+            'spatial_coverage_id' => SpatialCoverage::all()->random()->id,
         ];
     }
 }

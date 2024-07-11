@@ -14,8 +14,8 @@ class DatasetVersionHasNamedEntitiesFactory extends Factory
     public function definition()
     {
         return [
-            'dataset_version_id' => DatasetVersion::factory(),
-            'named_entities_id' => NamedEntities::factory(),
+            'dataset_version_id' => DatasetVersion::all()->random()->id,
+            'named_entities_id' => NamedEntities::all()->random()->id,
         ];
     }
 }

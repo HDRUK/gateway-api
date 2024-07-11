@@ -19,8 +19,8 @@ class EnquiryThreadHasDatasetVersionFactory extends Factory
     public function definition()
     {
         return [
-            'enquiry_thread_id' => EnquiryThread::factory(),
-            'dataset_version_id' => DatasetVersion::factory(),
+            'enquiry_thread_id' => EnquiryThread::all()->random()->id,
+            'dataset_version_id' => DatasetVersion::all()->random()->id,
             'interest_type' => $this->faker->randomElement(['PRIMARY', 'SECONDARY']),
         ];
     }
