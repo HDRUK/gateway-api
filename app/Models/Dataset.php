@@ -173,6 +173,12 @@ class Dataset extends Model
         return Tool::whereIn('id', $toolIds)->get();
     }
 
+     // Add an accessor for tools
+     public function getToolsAttribute()
+     {
+         return $this->getLatestTools();
+     }
+
     /**
      * Order by raw metadata extract
      */
