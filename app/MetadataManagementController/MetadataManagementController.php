@@ -272,14 +272,15 @@ class MetadataManagementController {
     public function reindexElasticDataProvider(string $teamId): void
     {
         try {
-            $datasets = Dataset::where('team_id', $teamId)
-                ->with(['spatialCoverage'])
-                ->get();
-
+            $datasets = Dataset::where('team_id', $teamId) ->get();
+            
+                
+            
             $datasetTitles = array();
             $locations = array();
             $dataTypes = array();
             foreach ($datasets as $dataset) {
+                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
                 $metadata = $dataset->latestVersion()->metadata;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
                 if (!in_array($metadata['metadata']['summary']['datasetType'], $dataTypes)) {
