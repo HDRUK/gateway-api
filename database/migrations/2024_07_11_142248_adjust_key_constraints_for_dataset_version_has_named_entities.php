@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('dataset_version_has_named_entities', function (Blueprint $table) {
-            // First, drop the existing foreign keys with cascade
+            // Drop the existing foreign keys with cascade
             $table->dropForeign(['dataset_version_id']);
             $table->dropForeign(['named_entities_id']);
 
@@ -28,7 +28,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('dataset_version_has_named_entities', function (Blueprint $table) {
-            // First, drop the existing foreign keys
+            // Drop the existing foreign keys
             $table->dropForeign(['dataset_version_id']);
             $table->dropForeign(['named_entities_id']);
 
