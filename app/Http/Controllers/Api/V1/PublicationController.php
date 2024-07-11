@@ -66,6 +66,8 @@ class PublicationController extends Controller
             $input = $request->all();
             $mongoId = $request->query('mongo_id', null);
             $paperTitle = $request->query('paper_title', null);
+            $perPage = request('per_page', Config::get('constants.per_page'));
+            $withRelated = $request->boolean('with_related', true);
 
             $publications = Publication::when($paperTitle, function ($query) use ($paperTitle) {
                 return $query->where('paper_title', 'LIKE', '%' . $paperTitle . '%');
@@ -73,11 +75,8 @@ class PublicationController extends Controller
             ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
             })
-            ->with([
-                'datasets',
-                'tools',
-            ])
-            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            ->when($withRelated, fn($query) => $query->with(['datasets', 'tools']))
+            ->paginate($perPage, ['*'], 'page');
 
             Auditor::log([
                 'action_type' => 'GET',

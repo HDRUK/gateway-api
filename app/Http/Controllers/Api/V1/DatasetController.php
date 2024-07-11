@@ -127,6 +127,7 @@ class DatasetController extends Controller
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
             $mongoPId = $request->query('mongo_pid', null);
+            $withMetadata = $request->boolean('with_metadata', true);
     
             $sort = $request->query('sort',"created:desc");   
             
@@ -203,8 +204,8 @@ class DatasetController extends Controller
     
             // perform query for the matching datasets with ordering and pagination. 
             // Include soft-deleted versions.
-            $datasets = Dataset::with('latestMetadata') 
-                ->whereIn('id', $matches)
+            $datasets = Dataset::whereIn('id', $matches)
+                ->when($withMetadata, fn($query) => $query->with('latestMetadata'))
                 ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                     function ($query) {
                         return $query->withTrashed();
