@@ -163,6 +163,17 @@ class Dataset extends Model
     }
 
     /**
+     * The tools that belong to a dataset.
+     */
+    public function getLatestTools()
+    {
+        $toolIds = DatasetVersionHasTool::where('dataset_version_id', $this->latestVersion()->id)
+            ->pluck('tool_id');
+
+        return Tool::whereIn('id', $toolIds)->get();
+    }
+
+    /**
      * Order by raw metadata extract
      */
     public function scopeOrderByMetadata(Builder $query, string $field, string $direction): Builder
@@ -194,13 +205,5 @@ class Dataset extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'team_id');
-    }
-
-    /**
-     * The tools that belong to a dataset.
-     */
-    public function tools(): BelongsToMany
-    {
-        return $this->belongsToMany(Tool::class, 'dataset_has_tools');
     }
 }

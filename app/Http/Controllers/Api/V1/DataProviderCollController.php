@@ -646,9 +646,12 @@ class DataProviderCollController extends Controller
     public function checkingDataset(int $datasetId)
     {
         $dataset = Dataset::where(['id' => $datasetId])
-            ->with(['durs', 'collections', 'publications', 'tools'])
+            ->with(['durs', 'collections', 'publications'])
             ->first();
 
+        // inject tools
+        $dataset->setAttribute('tools', $dataset->getLatestTools());
+            
         if (!$dataset) {
             return;
         }
