@@ -11,7 +11,7 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
-use App\Models\DatasetHasSpatialCoverage;
+use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 
 use App\Jobs\TermExtraction;
@@ -1056,11 +1056,18 @@ class IntegrationDatasetController extends Controller
         $ukCoverages = SpatialCoverage::whereNot('region', 'Rest of the world')->get();
         $worldId = SpatialCoverage::where('region', 'Rest of the world')->first()->id;
 
+        // Retrieve the latest version of the dataset
+        $latestVersion = $dataset->versions()->latest('created_at')->first();
+
+        if (!$latestVersion) {
+            return; // If there's no latest version, exit the function
+        }
+
         $matchFound = false;
         foreach ($ukCoverages as $c) {
             if (str_contains($coverage, strtolower($c['region']))) {
-                DatasetHasSpatialCoverage::updateOrCreate([
-                    'dataset_id' => (int) $dataset['id'],
+                DatasetVersionHasSpatialCoverage::updateOrCreate([
+                    'dataset_version_id' => (int) $latestVersion['id'],
                     'spatial_coverage_id' => (int) $c['id'],
                 ]);
                 $matchFound = true;
@@ -1070,14 +1077,14 @@ class IntegrationDatasetController extends Controller
         if (!$matchFound) {
             if (str_contains($coverage, 'united kingdom')) {
                 foreach ($ukCoverages as $c) {
-                    DatasetHasSpatialCoverage::updateOrCreate([
-                        'dataset_id' => (int) $dataset['id'],
+                    DatasetVersionHasSpatialCoverage::updateOrCreate([
+                        'dataset_version_id' => (int) $latestVersion['id'],
                         'spatial_coverage_id' => (int) $c['id'],
                     ]);
                 }
             } else {
-                DatasetHasSpatialCoverage::updateOrCreate([
-                    'dataset_id' => (int) $dataset['id'],
+                DatasetVersionHasSpatialCoverage::updateOrCreate([
+                    'dataset_version_id' => (int) $latestVersion['id'],
                     'spatial_coverage_id' => (int) $worldId,
                 ]);
             }

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EnquiryThreadHasDataset extends Model
+class EnquiryThreadHasDatasetVersion extends Model
 {
     use HasFactory;
 
@@ -14,7 +14,7 @@ class EnquiryThreadHasDataset extends Model
      * 
      * @var string
      */
-    protected $table = 'enquiry_thread_has_datasets';
+    protected $table = 'enquiry_thread_has_dataset_version';
 
     /**
      * Indicates if this model is timestamped
@@ -25,7 +25,7 @@ class EnquiryThreadHasDataset extends Model
 
     protected $fillable = [
         'enquiry_thread_id',
-        'dataset_id',
+        'dataset_version_id',
         'interest_type',
     ];
 }

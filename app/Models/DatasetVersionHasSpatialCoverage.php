@@ -5,12 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DatasetHasSpatialCoverage extends Model
+class DatasetVersionHasSpatialCoverage extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'dataset_id',
+        'dataset_version_id',
         'spatial_coverage_id',
     ];
 
@@ -19,7 +19,7 @@ class DatasetHasSpatialCoverage extends Model
      * 
      * @var string
      */
-    protected $table = 'dataset_has_spatial_coverage';
+    protected $table = 'dataset_version_has_spatial_coverage';
 
     /**
      * Indicates if the model should be timestamped or not

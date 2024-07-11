@@ -537,6 +537,11 @@ class DatasetTest extends TestCase
         $respArrayActive = $responseGetOneActive->decodeResponseJson();
         $this->assertArrayHasKey('named_entities', $respArrayActive['data']);
         
+        // Assert named entities contain name
+        foreach ($respArrayActive['data']['named_entities'] as $entity) {
+            $this->assertArrayHasKey('name', $entity);
+        }
+        
         if(env('TED_ENABLED')){
             $this->assertNotEmpty($respArrayActive['data']['named_entities']);
         };

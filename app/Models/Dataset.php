@@ -154,10 +154,14 @@ class Dataset extends Model
     /**
      * The spatial coverage that belong to the dataset.
      */
-    public function spatialCoverage(): BelongsToMany
+    public function getLatestSpatialCoverage()
     {
-        return $this->belongsToMany(SpatialCoverage::class, 'dataset_has_spatial_coverage');
+        $entityIds = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $this->latestVersion()->id)
+            ->pluck('spatial_coverage_id');
+
+        return SpatialCoverage::whereIn('id', $entityIds)->get();
     }
+
     /**
      * Order by raw metadata extract
      */
@@ -168,6 +172,9 @@ class Dataset extends Model
                             ->latest()->limit(1),$direction);
     }
 
+    /**
+     * The durs that belong to a dataset.
+     */
     public function durs(): BelongsToMany
     {
         return $this->belongsToMany(Dur::class, 'dur_has_datasets');

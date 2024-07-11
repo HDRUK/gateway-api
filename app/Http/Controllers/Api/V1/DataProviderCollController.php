@@ -581,20 +581,31 @@ class DataProviderCollController extends Controller
     {
         $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 
-        $datasetTitles = array();
-        $locations = array();
+        $datasetTitles = [];
+        $locations = [];
+
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with(['versions', 'spatialCoverage'])->get();
+            $datasets = Dataset::where('team_id', $team['id'])->with('versions')->get();
+
             foreach ($datasets as $dataset) {
-                $metadata = $dataset['versions'][0];
-                $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
-                foreach ($dataset['spatialCoverage'] as $loc) {
-                    if (!in_array($loc['region'], $locations)) {
-                        $locations[] = $loc['region'];
+                $latestVersion = $dataset->versions->first();
+                
+                if ($latestVersion) {
+                    $metadata = $latestVersion->metadata;
+                    if (isset($metadata['metadata']['summary']['shortTitle'])) {
+                        $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+                    }
+                }
+
+                $latestSpatialCoverage = $dataset->getLatestSpatialCoverage();
+                foreach ($latestSpatialCoverage as $loc) {
+                    if (!in_array($loc->region, $locations)) {
+                        $locations[] = $loc->region;
                     }
                 }
             }
         }
+
         usort($datasetTitles, 'strcasecmp');
 
         try {
