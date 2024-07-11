@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // Create the new table with the updated name and columns
-        Schema::create('enquiry_thread_has_dataset_versions', function (Blueprint $table) {
+        Schema::create('enquiry_thread_has_dataset_version', function (Blueprint $table) {
             $table->bigInteger('enquiry_thread_id')->unsigned();
             $table->bigInteger('dataset_version_id')->unsigned();
             $table->enum('interest_type', ['PRIMARY', 'SECONDARY']); // Determines primary Dataset interest or secondary
@@ -33,7 +33,7 @@ return new class extends Migration
             $datasetVersion = DB::table('dataset_versions')->where('dataset_id', $data->dataset_id)->latest('created_at')->first();
 
             if ($datasetVersion) {
-                DB::table('enquiry_thread_has_dataset_versions')->insert([
+                DB::table('enquiry_thread_has_dataset_version')->insert([
                     'enquiry_thread_id' => $data->enquiry_thread_id,
                     'dataset_version_id' => $datasetVersion->id,
                     'interest_type' => $data->interest_type,
@@ -85,7 +85,7 @@ return new class extends Migration
         }
 
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('enquiry_thread_has_dataset_versions');  
+        Schema::dropIfExists('enquiry_thread_has_dataset_version');  
         Schema::enableForeignKeyConstraints();
     }
 };
