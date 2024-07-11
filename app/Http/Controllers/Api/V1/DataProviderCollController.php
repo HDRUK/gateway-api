@@ -581,20 +581,19 @@ class DataProviderCollController extends Controller
     {
         $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 
-        $datasetTitles = [];
-        $locations = [];
-
+        
+        $datasetTitles = array();
+        $locations = array();
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with('versions')->get();
+            $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
 
             foreach ($datasets as $dataset) {
+                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
                 $metadata = $dataset['versions'][0];
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
-
-                $latestSpatialCoverage = $dataset->getLatestSpatialCoverage();
-                foreach ($latestSpatialCoverage as $loc) {
-                    if (!in_array($loc->region, $locations)) {
-                        $locations[] = $loc->region;
+                foreach ($dataset['spatialCoverage'] as $loc) {
+                    if (!in_array($loc['region'], $locations)) {
+                        $locations[] = $loc['region'];
                     }
                 }
             }
