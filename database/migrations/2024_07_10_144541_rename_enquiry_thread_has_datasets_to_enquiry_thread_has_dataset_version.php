@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('dataset_version_id')->references('id')->on('dataset_versions')->onDelete('cascade');
+            $table->foreign('dataset_version_id')->references('id')->on('dataset_versions');
 
             // Add composite primary key
             $table->primary(['enquiry_thread_id', 'dataset_version_id']);
@@ -62,7 +62,7 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('dataset_id')->references('id')->on('datasets')->onDelete('cascade');
+            $table->foreign('dataset_id')->references('id')->on('datasets');
 
             $table->primary(['enquiry_thread_id', 'dataset_id']);
         });

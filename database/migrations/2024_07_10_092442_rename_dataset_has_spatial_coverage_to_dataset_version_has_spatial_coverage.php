@@ -17,8 +17,8 @@ return new class extends Migration
             $table->bigInteger('dataset_version_id')->unsigned();
             $table->bigInteger('spatial_coverage_id')->unsigned();
 
-            $table->foreign('dataset_version_id')->references('id')->on('dataset_versions')->onDelete('cascade');
-            $table->foreign('spatial_coverage_id')->references('id')->on('spatial_coverage')->onDelete('cascade');
+            $table->foreign('dataset_version_id')->references('id')->on('dataset_versions');
+            $table->foreign('spatial_coverage_id')->references('id')->on('spatial_coverage');
             $table->timestamps();
             $table->softDeletes();
 
@@ -58,8 +58,8 @@ return new class extends Migration
             $table->bigInteger('dataset_id')->unsigned();
             $table->bigInteger('spatial_coverage_id')->unsigned();
 
-            $table->foreign('dataset_id')->references('id')->on('datasets')->onDelete('cascade');
-            $table->foreign('spatial_coverage_id')->references('id')->on('spatial_coverage')->onDelete('cascade');
+            $table->foreign('dataset_id')->references('id')->on('datasets');
+            $table->foreign('spatial_coverage_id')->references('id')->on('spatial_coverage');
 
             $table->timestamps();
         });

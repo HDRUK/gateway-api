@@ -18,8 +18,8 @@ return new class extends Migration
             $table->bigInteger('dataset_version_id')->unsigned();
             $table->bigInteger('named_entities_id')->unsigned();
 
-            $table->foreign('dataset_version_id')->references('id')->on('dataset_versions')->onDelete('cascade');
-            $table->foreign('named_entities_id')->references('id')->on('named_entities')->onDelete('cascade');
+            $table->foreign('dataset_version_id')->references('id')->on('dataset_versions');
+            $table->foreign('named_entities_id')->references('id')->on('named_entities');
             $table->timestamps();
             $table->softDeletes();
 
@@ -61,8 +61,8 @@ return new class extends Migration
             $table->bigInteger('dataset_id')->unsigned();
             $table->bigInteger('named_entities_id')->unsigned();
 
-            $table->foreign('dataset_id')->references('id')->on('datasets')->onDelete('cascade');
-            $table->foreign('named_entities_id')->references('id')->on('named_entities')->onDelete('cascade');
+            $table->foreign('dataset_id')->references('id')->on('datasets');
+            $table->foreign('named_entities_id')->references('id')->on('named_entities');
 
             $table->timestamps();
         });
