@@ -159,6 +159,7 @@ class DurController extends Controller
             $teamId = $request->query('team_id',null);
             $filterStatus = $request->query('status', null);
             $perPage = request('perPage', Config::get('constants.per_page'));
+            $withRelated = $request->boolean('with_related', true);
             $durs = Dur::when($mongoId, function ($query) use ($mongoId) {
                     return $query->where('mongo_id', '=', $mongoId);
                 })->when($projectTitle, function ($query) use ($projectTitle) {
@@ -171,27 +172,29 @@ class DurController extends Controller
                 })->when($filterStatus, 
                     function ($query) use ($filterStatus) {
                         return $query->where('status', '=', $filterStatus);
-                })->with([
-                    'datasets',
-                    'publications', 
-                    'tools',
-                    'keywords',
-                    'userDatasets' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'userPublications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applicationDatasets' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applicationPublications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'user',
-                    'team',
-                    'application',
-                ]);
+                })->when($withRelated, fn($query) => $query
+                    ->with([
+                        'datasets',
+                        'publications', 
+                        'tools',
+                        'keywords',
+                        'userDatasets' => function ($query) {
+                            $query->distinct('id');
+                        },
+                        'userPublications' => function ($query) {
+                            $query->distinct('id');
+                        },
+                        'applicationDatasets' => function ($query) {
+                            $query->distinct('id');
+                        },
+                        'applicationPublications' => function ($query) {
+                            $query->distinct('id');
+                        },
+                        'user',
+                        'team',
+                        'application',
+                    ])
+                );
 
             foreach ($sort as $key => $value) {
                 $durs->orderBy('dur.' . $key, strtoupper($value));

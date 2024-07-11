@@ -134,6 +134,7 @@ class ToolController extends Controller
             $mongoId = $request->query('mongo_id', null);
             $teamId = $request->query('team_id', null);
             $filterTitle = $request->query('title', null);
+            $perPage = request('per_page', Config::get('constants.per_page'));
 
             $sort = $request->query('sort', 'name:desc');
             $tmp = explode(":", $sort);
@@ -171,7 +172,7 @@ class ToolController extends Controller
             })
             ->where('enabled', 1)
             ->orderBy($sortField, $sortDirection)
-            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            ->paginate($perPage, ['*'], 'page');
 
             Auditor::log([
                 'action_type' => 'GET',
