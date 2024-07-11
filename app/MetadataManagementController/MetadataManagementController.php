@@ -273,9 +273,7 @@ class MetadataManagementController {
     {
         try {
             $datasets = Dataset::where('team_id', $teamId) ->get();
-            
-                
-            
+
             $datasetTitles = array();
             $locations = array();
             $dataTypes = array();
