@@ -45,7 +45,7 @@ return new class extends Migration
 
         // Drop the old table
         Schema::disableForeignKeyConstraints();
-        Schema::drop('enquiry_thread_has_datasets');
+        Schema::dropIfExists('enquiry_thread_has_datasets');
         Schema::enableForeignKeyConstraints();
     }
 
@@ -85,7 +85,7 @@ return new class extends Migration
         }
 
         Schema::disableForeignKeyConstraints();
-        Schema::drop('enquiry_thread_has_dataset_version');  
+        Schema::dropIfExists('enquiry_thread_has_dataset_version');  
         Schema::enableForeignKeyConstraints();
     }
 };
