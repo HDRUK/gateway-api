@@ -14,7 +14,7 @@ class DropDatasetsHasToolTable extends Migration
     public function up()
     {
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('dataset_has_tools');
+        Schema::dropIfExists('datasets_has_tool');
         Schema::enableForeignKeyConstraints();
     }
 
