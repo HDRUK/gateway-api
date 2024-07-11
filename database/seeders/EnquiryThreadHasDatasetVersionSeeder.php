@@ -14,7 +14,7 @@ class EnquiryThreadHasDatasetVersionSeeder extends Seeder
      */
     public function run()
     {
-        // Generate 50 records for testing
+        // Generate 10 records for testing
         EnquiryThreadHasDatasetVersion::factory()->count(10)->create();
     }
 }
