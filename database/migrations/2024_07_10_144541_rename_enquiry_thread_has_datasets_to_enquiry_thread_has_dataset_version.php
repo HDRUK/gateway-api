@@ -45,7 +45,7 @@ return new class extends Migration
 
         // Drop the old table
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('enquiry_thread_has_datasets');
+        Schema::drop('enquiry_thread_has_datasets');
         Schema::enableForeignKeyConstraints();
     }
 
@@ -68,7 +68,7 @@ return new class extends Migration
         });
 
         // Retrieve the correct dataset_id and insert data back into the old table
-        $newData = DB::table('enquiry_thread_has_dataset_versions')->get();
+        $newData = DB::table('enquiry_thread_has_dataset_version')->get();
 
         foreach ($newData as $data) {
             $dataset = DB::table('dataset_versions')->where('id', $data->dataset_version_id)->first();
@@ -85,7 +85,7 @@ return new class extends Migration
         }
 
         Schema::disableForeignKeyConstraints();
-        Schema::dropIfExists('enquiry_thread_has_dataset_version');  
+        Schema::drop('enquiry_thread_has_dataset_version');  
         Schema::enableForeignKeyConstraints();
     }
 };
