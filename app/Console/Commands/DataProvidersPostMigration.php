@@ -106,8 +106,9 @@ class DataProvidersPostMigration extends Command
         $datasetTitles = array();
         $locations = array();
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with(['versions', 'spatialCoverage'])->get();
+            $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
             foreach ($datasets as $dataset) {
+                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
                 $metadata = $dataset['versions'][0];
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
                 foreach ($dataset['spatialCoverage'] as $loc) {

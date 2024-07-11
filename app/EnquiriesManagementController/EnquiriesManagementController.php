@@ -12,12 +12,13 @@ use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\TeamHasUser;
 use App\Models\EnquiryThread;
 use App\Models\EmailTemplate;
 use App\Models\EnquiryMessage;
 use App\Models\TeamUserHasRole;
-use App\Models\EnquiryThreadHasDataset;
+use App\Models\EnquiryThreadHasDatasetVersion;
 
 class EnquiriesManagementController {
     public function determineDARManagersFromTeamId(int $teamId, int $jwtUser): ?array
@@ -72,10 +73,11 @@ class EnquiriesManagementController {
         ]);
 
         if ($enquiryThread) {
-            foreach ($input['datasets'] as $dataset) {
-                $enquiryThreadHasDataset = EnquiryThreadHasDataset::create([
+            foreach ($input['datasets'] as $dataset){
+                $datasetVersion = DatasetVersion::where("dataset_id", $dataset["id"])->latest('created_at')->first();
+                $enquiryThreadHasDataset = EnquiryThreadHasDatasetVersion::create([
                     'enquiry_thread_id' => $enquiryThread->id,
-                    'dataset_id' => $dataset['dataset_id'],
+                    'dataset_version_id' =>  $datasetVersion->id,
                     'interest_type' => $dataset['interest_type'],
                 ]);
             }

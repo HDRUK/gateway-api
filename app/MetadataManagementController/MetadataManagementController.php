@@ -205,7 +205,7 @@ class MetadataManagementController {
     {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
-                ->with(['collections', 'durs', 'spatialCoverage'])
+                ->with(['collections', 'durs'])
                 ->firstOrFail();
 
             $metadata = $datasetMatch->latestVersion()->metadata;
@@ -215,7 +215,7 @@ class MetadataManagementController {
         
             // inject named entities
             $namedEntities = $datasetMatch->getLatestNamedEntities();
-
+            $spatialCoverage = $datasetMatch->getLatestSpatialCoverage();
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
 
@@ -237,7 +237,7 @@ class MetadataManagementController {
                 'named_entities' =>  $namedEntities->pluck('name')->all(),
                 'collectionName' => $datasetMatch->collections->pluck('name')->all(),
                 'dataUseTitles' => $datasetMatch->durs->pluck('project_title')->all(),
-                'geographicLocation' => $datasetMatch->spatialCoverage->pluck('region')->all(),
+                'geographicLocation' => $spatialCoverage->pluck('region')->all(),
                 'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], ''),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
             ];
@@ -272,14 +272,13 @@ class MetadataManagementController {
     public function reindexElasticDataProvider(string $teamId): void
     {
         try {
-            $datasets = Dataset::where('team_id', $teamId)
-                ->with(['spatialCoverage'])
-                ->get();
+            $datasets = Dataset::where('team_id', $teamId) ->get();
 
             $datasetTitles = array();
             $locations = array();
             $dataTypes = array();
             foreach ($datasets as $dataset) {
+                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
                 $metadata = $dataset->latestVersion()->metadata;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
                 if (!in_array($metadata['metadata']['summary']['datasetType'], $dataTypes)) {

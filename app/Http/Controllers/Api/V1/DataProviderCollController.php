@@ -581,11 +581,14 @@ class DataProviderCollController extends Controller
     {
         $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 
+        
         $datasetTitles = array();
         $locations = array();
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with(['versions', 'spatialCoverage'])->get();
+            $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
+
             foreach ($datasets as $dataset) {
+                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
                 $metadata = $dataset['versions'][0];
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
                 foreach ($dataset['spatialCoverage'] as $loc) {
@@ -643,9 +646,12 @@ class DataProviderCollController extends Controller
     public function checkingDataset(int $datasetId)
     {
         $dataset = Dataset::where(['id' => $datasetId])
-            ->with(['durs', 'collections', 'publications', 'tools'])
+            ->with(['durs', 'collections', 'publications'])
             ->first();
 
+        // inject tools
+        $dataset->setAttribute('tools', $dataset->getLatestTools());
+            
         if (!$dataset) {
             return;
         }
@@ -671,7 +677,7 @@ class DataProviderCollController extends Controller
 
         $this->durs = array_unique([...$this->durs, ...$dataset->durs->pluck('id')->toArray()]);
         $this->publications = array_unique([...$this->publications, ...$dataset->publications->pluck('id')->toArray()]);
-        $this->tools = array_unique([...$this->tools, ...$dataset->tools->pluck('id')->toArray()]);
+        $this->tools = array_unique(array_merge($this->tools, $dataset->tools->pluck('id')->toArray()));
         $this->collections = array_unique([...$this->collections, ...$dataset->collections->pluck('id')->toArray()]);
     }
 }

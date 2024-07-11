@@ -154,10 +154,31 @@ class Dataset extends Model
     /**
      * The spatial coverage that belong to the dataset.
      */
-    public function spatialCoverage(): BelongsToMany
+    public function getLatestSpatialCoverage()
     {
-        return $this->belongsToMany(SpatialCoverage::class, 'dataset_has_spatial_coverage');
+        $entityIds = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $this->latestVersion()->id)
+            ->pluck('spatial_coverage_id');
+
+        return SpatialCoverage::whereIn('id', $entityIds)->get();
     }
+
+    /**
+     * The tools that belong to a dataset.
+     */
+    public function getLatestTools()
+    {
+        $toolIds = DatasetVersionHasTool::where('dataset_version_id', $this->latestVersion()->id)
+            ->pluck('tool_id');
+
+        return Tool::whereIn('id', $toolIds)->get();
+    }
+
+     // Add an accessor for tools
+     public function getToolsAttribute()
+     {
+         return $this->getLatestTools();
+     }
+
     /**
      * Order by raw metadata extract
      */
@@ -168,6 +189,9 @@ class Dataset extends Model
                             ->latest()->limit(1),$direction);
     }
 
+    /**
+     * The durs that belong to a dataset.
+     */
     public function durs(): BelongsToMany
     {
         return $this->belongsToMany(Dur::class, 'dur_has_datasets');
@@ -187,13 +211,5 @@ class Dataset extends Model
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'team_id');
-    }
-
-    /**
-     * The tools that belong to a dataset.
-     */
-    public function tools(): BelongsToMany
-    {
-        return $this->belongsToMany(Tool::class, 'dataset_has_tools');
     }
 }
