@@ -681,7 +681,7 @@ class DataProviderCollController extends Controller
         $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
 
         if (empty($title) || $title === '') {
-            Log::error('Dataset title is empty or unknown', ['datasetId' => $dataset->id]);
+            Log::error('DataProviderCollController: Dataset title is empty or unknown', ['datasetId' => $dataset->id]);
         }
 
         $this->datasets[] = [
