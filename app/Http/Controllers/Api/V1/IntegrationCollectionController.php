@@ -1156,7 +1156,7 @@ class IntegrationCollectionController extends Controller
      * @param integer $collectionId
      * @return void
      */
-    public function indexElasticCollections(int $collectionId): void 
+    private function indexElasticCollections(int $collectionId): void 
     {
         $collection = Collection::with(['team', 'datasets', 'keywords'])->where('id', $collectionId)->first()->toArray();
         $team = $collection['team'];
