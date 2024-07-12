@@ -125,7 +125,7 @@ class ReindexEntities extends Command
                 MMC::reindexElasticDataProvider($team->id);
             }
             $progressbar->advance();
-            sleep(0.5); 
+            usleep($this->sleepTimeInMicroseconds);
         }
         $progressbar->finish();
     }
