@@ -30,7 +30,7 @@ class RunPostMigrations extends Command
         $sleep = $this->argument("sleep");
         $commands = [
             'app:add-super-admin-to-all-teams' => [], //users
-            'app:post-run-update-full-name-role' => [], //users
+            'app:post-run-update-full-name-role' => ['--no-interaction' => true], //users
             // 'app:sync-hubspot-contacts' => [], // What is this?
             'app:data-providers-post-migration' => [], //seed dataproviders
             // 'app:add-data-provider-network' => [], // What is this?
