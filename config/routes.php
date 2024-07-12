@@ -2295,7 +2295,7 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'cohort_requests',
+        'name' => 'cohort_requests_access',
         'method' => 'get',
         'path' => '/cohort_requests/access',
         'methodController' => 'CohortRequestController@checkAccess',
@@ -3479,15 +3479,4 @@ return [
         'constraint' => [],
     ],
 
-    // test
-    [
-        'name' => 'test_something',
-        'method' => 'get',
-        'path' => '/test-something',
-        'methodController' => 'TestController@testSomething',
-        'namespaceController' => 'App\Http\Controllers\Api\V1',
-        'middleware' => [
-        ],
-        'constraint' => [],
-    ],
 ];

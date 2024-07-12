@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Auditor;
+use CloudLogger;
 use Illuminate\Http\Request;
 use App\Services\PubSubService;
 use Illuminate\Http\JsonResponse;
@@ -49,17 +50,5 @@ class TestController extends Controller
         ]);
 
         return response()->json(['status' => 'success']);
-    }
-
-    public function testSomething(Request $request)
-    {
-        $checkingCohortPerms = CohortRequestHasPermission::where([
-            'cohort_request_id' => 3
-        ])->count();
-        
-        return response()->json([
-            'status' => 'success',
-            'data' => $checkingCohortPerms
-        ]);
     }
 }

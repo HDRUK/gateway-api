@@ -199,6 +199,7 @@ return [
         App\Providers\AliasReplyScannerProvider::class,
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
         App\Providers\EnquiriesManagementControllerServiceProvider::class,
+        App\Providers\CloudLoggerProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
     ],
 
