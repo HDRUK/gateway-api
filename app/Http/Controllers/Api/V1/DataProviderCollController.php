@@ -174,6 +174,9 @@ class DataProviderCollController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
      *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
@@ -210,11 +213,14 @@ class DataProviderCollController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [
+                    'id' => $dp->id,
+                    'name' => $dp->name,
+                    'img_url' => $dp->img_url,
                     'datasets' => $this->datasets,
-                    'durs' => Dur::select('id', 'project_title', 'organisation_name')->whereIn('id', $this->durs)->get()->toArray(),
-                    'tools' => Tool::select('id', 'name')->with(['user'])->whereIn('id', $this->tools)->get()->toArray(),
-                    'publications' => Publication::select('id', 'paper_title', 'authors', 'publication_type', 'publication_type_mk1')->whereIn('id', $this->publications)->get()->toArray(),
-                    'collections' => Collection::select('id', 'name', 'image_link')->whereIn('id', $this->collections)->get()->toArray(),
+                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
+                    'tools' => Tool::select('id', 'name', 'enabled', 'created_at', 'updated_at')->with(['user'])->whereIn('id', $this->tools)->get()->toArray(),
+                    'publications' => Publication::select('id', 'paper_title', 'authors', 'publication_type', 'publication_type_mk1', 'created_at', 'updated_at')->whereIn('id', $this->publications)->get()->toArray(),
+                    'collections' => Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray(),
                 ],
             ]);
         } catch (Exception $e) {
