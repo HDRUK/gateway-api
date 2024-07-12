@@ -7,10 +7,12 @@ use App\Models\Publication;
 use App\Models\Team;
 use App\Models\Dur;
 use App\Models\Tool;
+use App\Models\Collection;
 use Illuminate\Console\Command;
 use App\Http\Controllers\Api\V1\PublicationController;
 use App\Http\Controllers\Api\V1\ToolController;
 use App\Http\Controllers\Api\V1\DurController;
+use App\Http\Controllers\Api\V1\CollectionController;
 use MetadataManagementController AS MMC;
 
 class ReindexEntities extends Command
@@ -96,6 +98,18 @@ class ReindexEntities extends Command
         $progressbar = $this->output->createProgressBar(count($durIds));
         foreach ($durIds as $id) {
             $durController->indexElasticDur($id);
+            usleep($this->sleepTimeInMicroseconds); 
+            $progressbar->advance();
+        }
+        $progressbar->finish();
+    }
+
+    private function collections(){
+        $collectionController = new CollectionController();
+        $collectionIds = Collection::pluck('id');
+        $progressbar = $this->output->createProgressBar(count($durIds));
+        foreach ($collectionIds as $id) {
+            $collectionController->indexElasticCollections($id);
             usleep($this->sleepTimeInMicroseconds); 
             $progressbar->advance();
         }
