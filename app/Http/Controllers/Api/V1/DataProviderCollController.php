@@ -676,7 +676,7 @@ class DataProviderCollController extends Controller
 
         $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
 
-        $title = MMC::getValueByPossibleKeys($metadataSummary, ['summary.title'], '');
+        $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
         $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
         $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
 
