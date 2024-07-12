@@ -26,6 +26,7 @@ use App\Http\Requests\Dur\DeleteDur;
 use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Requests\Dur\UploadDur;
 use App\Exceptions\NotFoundException;
+use Illuminate\Support\Carbon;
 
 use App\Models\DataProviderCollHasTeam;
 use MetadataManagementController AS MMC;
@@ -51,6 +52,13 @@ class DurController extends Controller
      *       @OA\Schema(
      *           type="project_title:asc,updated_at:asc"
      *       )
+     *    ),
+     *    @OA\Parameter(
+     *       name="project_title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter tools by project title"
      *    ),
      *    @OA\Response(
      *       response=200,
@@ -148,33 +156,45 @@ class DurController extends Controller
 
             $mongoId = $request->query('mongo_id', null);
             $projectTitle = $request->query('project_title', null);
+            $teamId = $request->query('team_id',null);
+            $filterStatus = $request->query('status', null);
             $perPage = request('perPage', Config::get('constants.per_page'));
-            $durs = Dur::where('enabled', 1)
-                ->when($mongoId, function ($query) use ($mongoId) {
+            $withRelated = $request->boolean('with_related', true);
+            $durs = Dur::when($mongoId, function ($query) use ($mongoId) {
                     return $query->where('mongo_id', '=', $mongoId);
                 })->when($projectTitle, function ($query) use ($projectTitle) {
                     return $query->where('project_title', 'like', '%'. $projectTitle .'%');
-                })->with([
-                    'datasets',
-                    'publications', 
-                    'tools',
-                    'keywords',
-                    'userDatasets' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'userPublications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applicationDatasets' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'applicationPublications' => function ($query) {
-                        $query->distinct('id');
-                    },
-                    'user',
-                    'team',
-                    'application',
-                ]);
+                })->when($teamId, function ($query) use ($teamId) {
+                    return $query->where('team_id', '=', $teamId);
+                })->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
+                    function ($query) {
+                        return $query->withTrashed();
+                })->when($filterStatus, 
+                    function ($query) use ($filterStatus) {
+                        return $query->where('status', '=', $filterStatus);
+                })->when($withRelated, fn($query) => $query
+                    ->with([
+                        'datasets',
+                        'publications', 
+                        'tools',
+                        'keywords',
+                        'userDatasets' => function ($query) {
+                            $query->distinct('id');
+                        },
+                        'userPublications' => function ($query) {
+                            $query->distinct('id');
+                        },
+                        'applicationDatasets' => function ($query) {
+                            $query->distinct('id');
+                        },
+                        'applicationPublications' => function ($query) {
+                            $query->distinct('id');
+                        },
+                        'user',
+                        'team',
+                        'application',
+                    ])
+                );
 
             foreach ($sort as $key => $value) {
                 $durs->orderBy('dur.' . $key, strtoupper($value));
@@ -216,6 +236,26 @@ class DurController extends Controller
             return response()->json(
                 $durs
             );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function count(Request $request, string $field): JsonResponse
+    {
+        try {
+            $teamId = $request->query('team_id',null);
+            $counts = Dur::when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
+            })->withTrashed()
+                ->select($field)
+                ->get()
+                ->groupBy($field)
+                ->map->count();
+
+            return response()->json([
+                "data" => $counts
+            ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -526,7 +566,7 @@ class DurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $durId)->first();
-            if($request['enabled'] === 1 && $currentDurStatus === 'ACTIVE'){
+            if($currentDurStatus->status === 'ACTIVE'){
                 $this->indexElasticDur($durId);
             }
             
@@ -768,14 +808,6 @@ class DurController extends Controller
                 throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
             }
 
-            if ($initDur === 'ARCHIVED' && (array_key_exists('status', $input) && $input['status'] !== 'ARCHIVED')) {
-                Dur::withTrashed()->where('id', $id)->restore();
-                DurHasDataset::withTrashed()->where('dur_id', $id)->restore();
-                DurHasKeyword::withTrashed()->where('dur_id', $id)->restore();
-                DurHasPublication::withTrashed()->where('dur_id', $id)->restore();
-                DurHasTool::withTrashed()->where('dur_id', $id)->restore();
-            }
-
             $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
             if (array_key_exists('organisation_sector', $array)) {
@@ -811,16 +843,8 @@ class DurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $id)->first();
-            if($request['enabled'] === 1 && $currentDurStatus->status === 'ACTIVE'){
+            if($currentDurStatus->status === 'ACTIVE'){
                 $this->indexElasticDur($id);
-            }
-
-            if ($currentDurStatus->status === 'ARCHIVED') {
-                Dur::where('id', $id)->delete();
-                DurHasDataset::where('dur_id', $id)->delete();
-                DurHasKeyword::where('dur_id', $id)->delete();
-                DurHasPublication::where('dur_id', $id)->delete();
-                DurHasTool::where('dur_id', $id)->delete();
             }
 
             Auditor::log([
@@ -1012,26 +1036,33 @@ class DurController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             if ($request->has('unarchive')) {
-                // Restore the Dur and related models
-                Dur::withTrashed()->where('id', $id)->restore();
-                DurHasDataset::withTrashed()->where('dur_id', $id)->restore();
-                DurHasKeyword::withTrashed()->where('dur_id', $id)->restore();
-                DurHasPublication::withTrashed()->where('dur_id', $id)->restore();
-                DurHasTool::withTrashed()->where('dur_id', $id)->restore();
-                Dur::where('id', $id)->update(['status' => 'DRAFT']);
+                $durModel = Dur::withTrashed()
+                    ->find($id);
+                if ($request['status'] !== Dur::STATUS_ARCHIVED) {
+                    if (in_array($request['status'], [
+                        Dur::STATUS_ACTIVE, Dur::STATUS_DRAFT
+                    ])) {
+                        $durModel->status = $request['status'];
+                        $durModel->deleted_at = null;
+                        $durModel->save();
 
-                Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
-                    'action_type' => 'UPDATE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dur " . $id . " unarchived",
-                ]);
-    
+                        // TODO: need to consider how we re-link datasets, publications etc. 
+                        // Currently, the checkPublications() etc do not consider the case where
+                        // we want to restore an existing soft-deleted DurHasX.
+                        
+                        Auditor::log([
+                            'user_id' => (int) $jwtUser['id'],
+                            'action_type' => 'UPDATE',
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => "Dur " . $id . " unarchived and marked as " . strtoupper($request['status']),
+                        ]);
+                    }
+                }
+
                 return response()->json([
                     'message' => 'success',
                     'data' => $this->getDurById($id),
                 ], Config::get('statuscodes.STATUS_OK.code'));
-            
             } else {
                 $initDur = Dur::withTrashed()->where('id', $id)->first();
                 $userId = null;
@@ -1091,14 +1122,6 @@ class DurController extends Controller
                 if ($initDur === 'ARCHIVED' && !array_key_exists('status', $input)) {
                     throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
                 }
-    
-                if ($initDur === 'ARCHIVED' && (array_key_exists('status', $input) && $input['status'] !== 'ARCHIVED')) {
-                    Dur::withTrashed()->where('id', $id)->restore();
-                    DurHasDataset::withTrashed()->where('dur_id', $id)->restore();
-                    DurHasKeyword::withTrashed()->where('dur_id', $id)->restore();
-                    DurHasPublication::withTrashed()->where('dur_id', $id)->restore();
-                    DurHasTool::withTrashed()->where('dur_id', $id)->restore();
-                }
 
                 $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
@@ -1143,16 +1166,8 @@ class DurController extends Controller
                 }
 
                 $currentDurStatus = Dur::where('id', $id)->first();
-                if($request['enabled'] === 1 && $currentDurStatus === 'ACTIVE'){
+                if($currentDurStatus->status === 'ACTIVE'){
                     $this->indexElasticDur($id);
-                }
-
-                if ($currentDurStatus->status === 'ARCHIVED') {
-                    Dur::where('id', $id)->delete();
-                    DurHasDataset::where('dur_id', $id)->delete();
-                    DurHasKeyword::where('dur_id', $id)->delete();
-                    DurHasPublication::where('dur_id', $id)->delete();
-                    DurHasTool::where('dur_id', $id)->delete();
                 }
 
                 Auditor::log([
@@ -1223,7 +1238,10 @@ class DurController extends Controller
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
-            Dur::where(['id' => $id])->delete();
+            $dur = Dur::where(['id' => $id])->first();
+            $dur->deleted_at = Carbon::now();
+            $dur->status = Dur::STATUS_ARCHIVED;
+            $dur->save();
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],

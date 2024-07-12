@@ -11,7 +11,7 @@ use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Carbon;
 use App\Http\Enums\TeamMemberOf;
-
+use App\Models\NamedEntities;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetTest extends TestCase
@@ -35,11 +35,9 @@ class DatasetTest extends TestCase
             SpatialCoverageSeeder::class,
         ]);
 
-        $this->metadata = $this->getFakeDataset();
+        $this->metadata = $this->getMetadata();
         $this->metadataAlt = $this->metadata;
         $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
-
-        $this->metadataUpdate = $this->getFakeUpdateDataset();
     }
 
     /**
@@ -520,24 +518,6 @@ class DatasetTest extends TestCase
         $contentCreateActiveDataset = $responseCreateActiveDataset->decodeResponseJson();
         $activeDatasetId = $contentCreateActiveDataset['data'];
 
-        // create draft dataset
-        $responseCreateDraftDataset = $this->json(
-            'POST',
-            self::TEST_URL_DATASET,
-            [
-                'team_id' => $teamId,
-                'user_id' => $userId,
-                'metadata' => $this->metadata,
-                'create_origin' => Dataset::ORIGIN_MANUAL,
-                'status' => Dataset::STATUS_DRAFT,
-            ],
-            $this->header,
-        );
-
-        $responseCreateDraftDataset->assertStatus(201);
-        $contentCreateDraftDataset = $responseCreateDraftDataset->decodeResponseJson();
-        $draftDatasetId = $contentCreateDraftDataset['data'];
-
         // get one active dataset
         $responseGetOneActive = $this->json('GET', self::TEST_URL_DATASET . '/' . $activeDatasetId, [], $this->header);
 
@@ -556,9 +536,64 @@ class DatasetTest extends TestCase
 
         $respArrayActive = $responseGetOneActive->decodeResponseJson();
         $this->assertArrayHasKey('named_entities', $respArrayActive['data']);
+        
+        // Assert named entities contain name
+
+        foreach ($respArrayActive['data']['named_entities'] as $entity) {
+            // Assert that the array contains a key named 'name'
+            $this->assertArrayHasKey('name', $entity);
+            $this->assertNotNull($entity['name'], 'The "name" key should not have a null value.');
+    
+            // Assert that the array contains a key named 'id'
+            $this->assertArrayHasKey('id', $entity);
+            $this->assertNotNull($entity['id'], 'The "id" key should not have a null value.');
+    
+            // Retrieve the named entity from the database
+            $namedEntity = NamedEntities::find($entity['id']);
+            $this->assertNotNull($namedEntity, 'The named entity should exist in the database.');
+    
+            // Compare each field in the response array with the corresponding field in the database
+            $this->assertEquals($namedEntity->name, $entity['name'], 'The name in the response does not match the name in the database.');
+        }
+        
+
+
         if(env('TED_ENABLED')){
             $this->assertNotEmpty($respArrayActive['data']['named_entities']);
         };
+        $this->assertArrayHasKey(
+            'linked_dataset_versions', $respArrayActive['data']['versions'][0]
+        );
+
+        // delete active dataset
+        $responseDeleteActiveDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $activeDatasetId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteActiveDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteActiveDataset->assertStatus(200);
+
+        // create draft dataset
+        $responseCreateDraftDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_DRAFT,
+            ],
+            $this->header,
+        );
+
+        $responseCreateDraftDataset->assertStatus(201);
+        $contentCreateDraftDataset = $responseCreateDraftDataset->decodeResponseJson();
+        $draftDatasetId = $contentCreateDraftDataset['data'];
 
         // get one draft dataset
         $responseGetOneDraft = $this->json('GET', self::TEST_URL_DATASET . '/' . $draftDatasetId, [], $this->header);
@@ -582,19 +617,8 @@ class DatasetTest extends TestCase
         // The named_entities field is empty for draft datasets. 
         // The TermExtraction job is responsible for populating the named_entities field,
         // is not run for draft datasets, thus the field remains empty and the following breaks the code.
+        
         $this->assertEmpty($respArrayDraft['data']['named_entities']);
-
-        // delete active dataset
-        $responseDeleteActiveDataset = $this->json(
-            'DELETE',
-            self::TEST_URL_DATASET . '/' . $activeDatasetId . '?deletePermanently=true',
-            [],
-            $this->header
-        );
-        $responseDeleteActiveDataset->assertJsonStructure([
-            'message'
-        ]);
-        $responseDeleteActiveDataset->assertStatus(200);
 
         // delete draft dataset
         $responseDeleteDraftDataset = $this->json(
@@ -742,16 +766,16 @@ class DatasetTest extends TestCase
         $datasetId = $contentCreateDataset['data'];
 
         // archive dataset
-        $responseDeleteDataset = $this->json(
+        $responseArchiveDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $datasetId,
             [],
             $this->header
         );
-        $responseDeleteDataset->assertJsonStructure([
+        $responseArchiveDataset->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteDataset->assertStatus(200);
+        $responseArchiveDataset->assertStatus(200);
 
         // unarchive dataset
         $responseUnarchiveDataset = $this->json(
@@ -765,6 +789,8 @@ class DatasetTest extends TestCase
         $responseUnarchiveDataset->assertJsonStructure([
             'message'
         ]);
+
+        
         $responseUnarchiveDataset->assertStatus(200);
 
         // change dataset status
@@ -928,7 +954,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'metadata' => $this->metadataUpdate,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],

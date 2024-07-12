@@ -36,7 +36,14 @@ class PublicationController extends Controller
      *    summary="PublicationController@index",
      *    description="Get All Publications",
      *    security={{"bearerAuth":{}}},
-     *    @OA\Response(
+     *    @OA\Parameter(
+     *       name="paper_title",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter tools by paper title"
+     *    ),
+      *    @OA\Response(
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(
@@ -58,15 +65,18 @@ class PublicationController extends Controller
         try {
             $input = $request->all();
             $mongoId = $request->query('mongo_id', null);
+            $paperTitle = $request->query('paper_title', null);
+            $perPage = request('per_page', Config::get('constants.per_page'));
+            $withRelated = $request->boolean('with_related', true);
 
-            $publications = Publication::when($mongoId, function ($query) use ($mongoId) {
+            $publications = Publication::when($paperTitle, function ($query) use ($paperTitle) {
+                return $query->where('paper_title', 'LIKE', '%' . $paperTitle . '%');
+            })
+            ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
             })
-            ->with([
-                'datasets',
-                'tools',
-            ])
-            ->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            ->when($withRelated, fn($query) => $query->with(['datasets', 'tools']))
+            ->paginate($perPage, ['*'], 'page');
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -222,7 +232,8 @@ class PublicationController extends Controller
                 'authors' => $input['authors'],
                 'year_of_publication' => $input['year_of_publication'],
                 'paper_doi' => $input['paper_doi'],
-                'publication_type' => $input['publication_type'],
+                'publication_type' => array_key_exists('publication_type', $input) ? $input['publication_type'] : '',
+                'publication_type_mk1' => array_key_exists('publication_type_mk1', $input) ? $input['publication_type_mk1'] : '',
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
@@ -360,7 +371,8 @@ class PublicationController extends Controller
                 'authors' => $input['authors'],
                 'year_of_publication' => $input['year_of_publication'],
                 'paper_doi' => $input['paper_doi'],
-                'publication_type' => $input['publication_type'],
+                'publication_type' => array_key_exists('publication_type', $input) ? $input['publication_type'] : '',
+                'publication_type_mk1' => array_key_exists('publication_type_mk1', $input) ? $input['publication_type_mk1'] : '',
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
@@ -495,6 +507,7 @@ class PublicationController extends Controller
                 'year_of_publication',
                 'paper_doi',
                 'publication_type',
+                'publication_type_mk1',
                 'journal_name',
                 'abstract',
                 'url',
@@ -634,16 +647,24 @@ class PublicationController extends Controller
 
             $datasetTitles = array();
             $datasetLinkTypes = array();
+
+            if(!array_key_exists('datasets',$pubMatch)){
+                throw new Exception("datasets not found on publication!");
+            }
+
             foreach ($pubMatch['datasets'] as $d) {
-                $metadata = Dataset::where(['id' => $d])
+                $datasetId = $d['id'];
+                $metadata = Dataset::where(['id' => $datasetId])
                     ->first()
                     ->latestVersion()
                     ->metadata;
+
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
 
+                //needs a check for this!?
                 $datasetLinkTypes[] = PublicationHasDataset::where([
                     ['publication_id', '=', (int) $id],
-                    ['dataset_id', '=', (int) $d]
+                    ['dataset_id', '=', (int) $datasetId]
                 ])->first()['link_type'];
             }
 

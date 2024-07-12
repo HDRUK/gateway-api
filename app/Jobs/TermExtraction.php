@@ -6,8 +6,9 @@ use Exception;
 use MetadataManagementController AS MMC;
 
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\NamedEntities;
-use App\Models\DatasetHasNamedEntities;
+use App\Models\DatasetVersionHasNamedEntities;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -25,6 +26,7 @@ class TermExtraction implements ShouldQueue
     public $timeout = 300;
     
     private string $datasetId = '';
+    private int $version;
     private string $data = '';
 
     private bool $reIndexElastic = false;
@@ -32,9 +34,10 @@ class TermExtraction implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(string $datasetId, string $data, ?string $elasticIndex = "on")
+    public function __construct(string $datasetId, int $version, string $data, ?string $elasticIndex = "on")
     {
         $this->datasetId = $datasetId;
+        $this->version = $version;
         $this->data = $data;
 
         $this->reIndexElastic = ($elasticIndex === "on" ? true : false);
@@ -52,8 +55,9 @@ class TermExtraction implements ShouldQueue
 
         $tedUrl = env('TED_SERVICE_URL');
         $tedEnabled = env('TED_ENABLED');
-
-        $this->postToTermExtractionDirector(json_encode($data['metadata']), $this->datasetId);
+        if($tedEnabled === true){
+            $this->postToTermExtractionDirector(json_encode($data['metadata']), $this->datasetId);
+        }
 
         if ($this->reIndexElastic) {
             MMC::reindexElastic($this->datasetId);
@@ -75,14 +79,19 @@ class TermExtraction implements ShouldQueue
                 'application/json'
             )->post(env('TED_SERVICE_URL', 'http://localhost:8001'));
 
-            if ($response->json() && array_key_exists('extracted_terms', $response->json())) {
-                foreach ($response->json()['extracted_terms'] as $n) {
-                    $named_entities = NamedEntities::create([
-                        'name' => $n,
-                    ]);
-                    DatasetHasNamedEntities::updateOrCreate([
-                        'dataset_id' => $datasetId,
-                        'named_entities_id' => $named_entities->id
+            // Fetch the specified dataset version
+            $datasetVersion = DatasetVersion::where('dataset_id', $datasetId)
+                                ->where('version', $this->version)
+                                ->firstOrFail();
+
+            if ($response->successful() && array_key_exists('extracted_terms', $response->json())) {
+                foreach ($response->json()['extracted_terms'] as $term) {
+                    // Check if the named entity already exists
+                    $namedEntity = NamedEntities::create(['name' => $term]);
+
+                    DatasetVersionHasNamedEntities::updateOrCreate([
+                        'dataset_version_id' => $datasetVersion->id,
+                        'named_entities_id' => $namedEntity->id
                     ]);
                 }
             }
@@ -90,7 +99,7 @@ class TermExtraction implements ShouldQueue
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
-
     }
+
 
 }

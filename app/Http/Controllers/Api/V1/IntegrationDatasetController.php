@@ -11,7 +11,7 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
-use App\Models\DatasetHasSpatialCoverage;
+use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
 
 use App\Jobs\TermExtraction;
@@ -311,8 +311,18 @@ class IntegrationDatasetController extends Controller
         try {
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-            $dataset = Dataset::with(['namedEntities', 'collections','versions'])->findOrFail($id);
+            $dataset = Dataset::with(['collections', 'publications'])->findOrFail($id);
 
+            if (!$dataset) {
+                return response()->json(['message' => 'Dataset not found'], 404);
+            }
+
+            // Retrieve the latest version 
+            $latestVersion = $dataset->versions()->latest('version')->first();
+        
+            // inject named entities
+            $dataset->setAttribute('named_entities', $latestVersion ? $latestVersion->namedEntities : collect());
+   
             $this->checkAppCanHandleDataset($dataset->team_id,$request);
         
             $outputSchemaModel = $request->query('schema_model');
@@ -532,11 +542,12 @@ class IntegrationDatasetController extends Controller
                 ]);
 
                 // map coverage/spatial field to controlled list for filtering
-                $this->mapCoverage($input['metadata'], $dataset);
+                $this->mapCoverage($input['metadata'], $version);
 
                 // Dispatch term extraction to a subprocess as it may take some time
                 TermExtraction::dispatch(
                     $dataset->id,
+                    '1',
                     base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6))
                 );
 
@@ -1039,8 +1050,12 @@ class IntegrationDatasetController extends Controller
     }
 
 
-    private function mapCoverage(array $metadata, Dataset $dataset): void 
+    private function mapCoverage(array $metadata, DatasetVersion $version): void 
     {
+        if (!isset($metadata['metadata']['coverage']['spatial'])) {
+            return;
+        }
+
         $coverage = strtolower($metadata['metadata']['coverage']['spatial']);
         $ukCoverages = SpatialCoverage::whereNot('region', 'Rest of the world')->get();
         $worldId = SpatialCoverage::where('region', 'Rest of the world')->first()->id;
@@ -1048,8 +1063,9 @@ class IntegrationDatasetController extends Controller
         $matchFound = false;
         foreach ($ukCoverages as $c) {
             if (str_contains($coverage, strtolower($c['region']))) {
-                DatasetHasSpatialCoverage::updateOrCreate([
-                    'dataset_id' => (int) $dataset['id'],
+                
+                DatasetVersionHasSpatialCoverage::updateOrCreate([
+                    'dataset_version_id' => (int) $version['id'],
                     'spatial_coverage_id' => (int) $c['id'],
                 ]);
                 $matchFound = true;
@@ -1059,14 +1075,14 @@ class IntegrationDatasetController extends Controller
         if (!$matchFound) {
             if (str_contains($coverage, 'united kingdom')) {
                 foreach ($ukCoverages as $c) {
-                    DatasetHasSpatialCoverage::updateOrCreate([
-                        'dataset_id' => (int) $dataset['id'],
+                    DatasetVersionHasSpatialCoverage::updateOrCreate([
+                        'dataset_version_id' => (int) $version['id'],
                         'spatial_coverage_id' => (int) $c['id'],
                     ]);
                 }
             } else {
-                DatasetHasSpatialCoverage::updateOrCreate([
-                    'dataset_id' => (int) $dataset['id'],
+                DatasetVersionHasSpatialCoverage::updateOrCreate([
+                    'dataset_version_id' => (int) $version['id'],
                     'spatial_coverage_id' => (int) $worldId,
                 ]);
             }

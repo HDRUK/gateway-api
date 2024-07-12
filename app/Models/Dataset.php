@@ -2,22 +2,25 @@
 
 namespace App\Models;
 
-use App\Models\Application;
-use App\Models\Collection;
-use App\Models\DataVersion;
 use App\Models\Dur;
+use App\Models\Tool;
+use App\Models\Collection;
+use App\Models\Application;
+use App\Models\DataVersion;
 use App\Models\NamedEntities;
 use App\Models\Publication;
 use App\Models\SpatialCoverage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Dataset extends Model
 {
@@ -67,14 +70,7 @@ class Dataset extends Model
         'is_cohort_discovery' => 'boolean',
     ];
 
-    /**
-     * The named_entities that belong to the dataset.
-     */
-    public function namedEntities(): BelongsToMany
-    {
-        return $this->belongsToMany(NamedEntities::class, 'dataset_has_named_entities');
-    }
-
+    
     /**
      * The version history of metadata that respond to this dataset.
      */
@@ -84,34 +80,18 @@ class Dataset extends Model
     }
 
     /**
-     * The collections that the dataset belongs to.
-     */
-    public function collections(): BelongsToMany
-    {
-        return $this->belongsToMany(Collection::class, 'collection_has_datasets');
-    }
-
-    /**
-     * Helper function to use JSON functions to search by title within metadata.
-     */
-    public function searchByTitle(string $title): DatasetVersion
-    {
-        return DatasetVersion::where('dataset_id', $this->id)
-            ->whereRaw(
-                "
-                LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$title%')
-                "
-            )->latest('version')->first();
-    }
-
-    /**
      * The very latest version of a DatasetVersion object that corresponds to this dataset.
      **/
     public function latestVersion(): DatasetVersion
     {
-        return DatasetVersion::where('dataset_id', $this->id)
-            ->latest('version')->first();
+        $version = DatasetVersion::where('dataset_id', $this->id)
+            ->select(['version','id'])
+            ->latest('version')
+            ->first()
+            ->id;
+        return DatasetVersion::findOrFail($version);
     }
+
 
     /**
      * The very latest metadata via a hasOne relation
@@ -136,14 +116,69 @@ class Dataset extends Model
             ->latest('version')->select('metadata')->first();
         return  $datasetVersion['metadata'];
     }
+
+    /**
+     * Get the latest version's named entities.
+     *
+     */
+    public function getLatestNamedEntities()
+    {  
+        $entityIds = DatasetVersionHasNamedEntities::where('dataset_version_id', $this->latestVersion()->id)
+            ->pluck('named_entities_id');
+
+        return NamedEntities::whereIn('id', $entityIds)->get();
+    }
+
+    /**
+     * The collections that the dataset belongs to.
+     */
+    public function collections(): BelongsToMany
+    {
+        return $this->belongsToMany(Collection::class, 'collection_has_datasets');
+    }
+
+    /**
+     * Helper function to use JSON functions to search by title within metadata.
+     */
+    public function searchByTitle(string $title): DatasetVersion
+    {
+        return DatasetVersion::where('dataset_id', $this->id)
+            ->whereRaw(
+                "
+                LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$title%')
+                "
+            )->latest('version')->first();
+    }
+
     
     /**
      * The spatial coverage that belong to the dataset.
      */
-    public function spatialCoverage(): BelongsToMany
+    public function getLatestSpatialCoverage()
     {
-        return $this->belongsToMany(SpatialCoverage::class, 'dataset_has_spatial_coverage');
+        $entityIds = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $this->latestVersion()->id)
+            ->pluck('spatial_coverage_id');
+
+        return SpatialCoverage::whereIn('id', $entityIds)->get();
     }
+
+    /**
+     * The tools that belong to a dataset.
+     */
+    public function getLatestTools()
+    {
+        $toolIds = DatasetVersionHasTool::where('dataset_version_id', $this->latestVersion()->id)
+            ->pluck('tool_id');
+
+        return Tool::whereIn('id', $toolIds)->get();
+    }
+
+     // Add an accessor for tools
+     public function getToolsAttribute()
+     {
+         return $this->getLatestTools();
+     }
+
     /**
      * Order by raw metadata extract
      */
@@ -154,6 +189,9 @@ class Dataset extends Model
                             ->latest()->limit(1),$direction);
     }
 
+    /**
+     * The durs that belong to a dataset.
+     */
     public function durs(): BelongsToMany
     {
         return $this->belongsToMany(Dur::class, 'dur_has_datasets');
@@ -165,5 +203,13 @@ class Dataset extends Model
     public function publications(): BelongsToMany
     {
         return $this->belongsToMany(Publication::class, 'publication_has_dataset');
+    }
+
+    /**
+     * The team for the dataset.
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class, 'team_id');
     }
 }

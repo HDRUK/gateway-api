@@ -84,7 +84,7 @@ class DatasetIntegrationTest extends TestCase
         
         // Lengthy process, but a more consistent representation
         // of an incoming dataset
-        $this->metadata = $this->getFakeDataset();
+        $this->metadata = $this->getMetadata();
     }
 
     /**
