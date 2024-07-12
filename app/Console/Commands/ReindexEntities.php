@@ -107,7 +107,7 @@ class ReindexEntities extends Command
     private function collections(){
         $collectionController = new CollectionController();
         $collectionIds = Collection::pluck('id');
-        $progressbar = $this->output->createProgressBar(count($durIds));
+        $progressbar = $this->output->createProgressBar(count($collectionIds));
         foreach ($collectionIds as $id) {
             $collectionController->indexElasticCollections($id);
             usleep($this->sleepTimeInMicroseconds); 
