@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
+use CloudLogger;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\Permission;
@@ -13,6 +14,7 @@ use App\Models\CohortRequest;
 use App\Models\EmailTemplate;
 use Illuminate\Support\Carbon;
 use App\Models\CohortRequestLog;
+use App\Services\LoggingService;
 use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
@@ -1013,7 +1015,7 @@ class CohortRequestController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            if (array_key_exists('id', $input)) {
+            if (!array_key_exists('id', $jwtUser)) {
                 throw new Exception('Unauthorized');
             }
 
@@ -1037,7 +1039,14 @@ class CohortRequestController extends Controller
                 throw new Exception('Unauthorized for access :: There are not enough permissions allocated for the cohort request');
             }
 
-            $request->session()->put('cr_uid', $userId);
+            // save the user id in session
+            session(['cr_uid' => $userId]);
+
+            // delete after implementation
+            CloudLogger::write('cohort request access :: ' . json_encode([
+                'userId' => $userId,
+                'sessionId' => session()->getId()
+            ]));
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -1047,7 +1056,7 @@ class CohortRequestController extends Controller
             ]);
 
             $rquestInitUrl = Config::get('services.rquest.init_url');
-            return redirect()->to($rquestInitUrl);
+            return redirect()->away($rquestInitUrl);
         } catch (Exception $exception) {
             throw new Exception("Cohort Request send email :: " . $exception->getMessage());
         }

@@ -199,6 +199,7 @@ return [
         App\Providers\AliasReplyScannerProvider::class,
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
         App\Providers\EnquiriesManagementControllerServiceProvider::class,
+        App\Providers\CloudLoggerProvider::class,
     ],
 
     /*
@@ -217,6 +218,7 @@ return [
         'MetadataManagementController' => App\MetadataManagementController\MetadataManagementControllerFacade::class,
         'AliasReplyScanner' => App\AliasReplyScanner\AliasReplyScannerFacade::class,
         'EnquiriesManagementController' => App\EnquiriesManagementController\EnquiriesManagementControllerFacade::class,
+        'CloudLogger' => App\Facades\CloudLoggerFacade::class,
     ])->toArray(),
 
 ];

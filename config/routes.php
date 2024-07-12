@@ -2284,7 +2284,7 @@ return [
         'constraint' => [],
     ],
     [
-        'name' => 'cohort_requests',
+        'name' => 'cohort_requests_access',
         'method' => 'get',
         'path' => '/cohort_requests/access',
         'methodController' => 'CohortRequestController@checkAccess',
@@ -3464,6 +3464,17 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
+        ],
+        'constraint' => [],
+    ],
+
+    [
+        'name' => 'test_gcp_logger',
+        'method' => 'get',
+        'path' => '/test-gcplogger',
+        'methodController' => 'TestController@testGCPLogger',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
         ],
         'constraint' => [],
     ],
