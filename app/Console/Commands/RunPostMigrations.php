@@ -29,26 +29,28 @@ class RunPostMigrations extends Command
     {
         $sleep = $this->argument("sleep");
         $commands = [
-            'app:data-providers-post-migration',
-            //'app:add-data-provider-network', - what is this/?
-            'app:post-run-update-full-name-role',
-            'app:update-eu-licenses',
-            'app:physical-sample-post-migration',
-            'app:datasets-post-migration',
-            'app:publication-type-post-migration',
-            'app:dataset-publication-linkage-post-migration',
-            'app:reindex-entities datasets '.$sleep,
-            'app:reindex-entities tools '.$sleep,
-            'app:reindex-entities publications '.$sleep,
-            'app:reindex-entities durs '.$sleep,
-
+            'app:add-super-admin-to-all-teams' => [], //users
+            'app:post-run-update-full-name-role' => [], //users
+            // 'app:sync-hubspot-contacts' => [], // What is this?
+            'app:data-providers-post-migration' => [], //seed dataproviders
+            // 'app:add-data-provider-network' => [], // What is this?
+            'app:physical-sample-post-migration' => [], //datasets
+            'app:datasets-post-migration' => [], //datasets
+            'app:update-eu-licenses' => [], //add licences before post-migrating tools?
+            'app:tools-post-migration-process' => [], //tools
+            'app:publication-type-post-migration' => [], //publications
+            'app:dataset-publication-linkage-post-migration' => [], //dataset linkage
+            'app:reindex-entities' => ['entity' => 'datasets', 'sleep' => $sleep],
+            'app:reindex-entities' => ['entity' => 'tools', 'sleep' => $sleep],
+            'app:reindex-entities' => ['entity' => 'publications', 'sleep' => $sleep],
+            'app:reindex-entities' => ['entity' => 'durs', 'sleep' => $sleep],
+            'app:reindex-entities' => ['entity' => 'collections', 'sleep' => $sleep],
+            'app:reindex-entities' => ['entity' => 'dataProviders', 'sleep' => $sleep],
         ];
 
-        foreach ($commands as $command) {
-            $this->call($command, [
-                '--nthreads' => 30,
-            ]);
+        foreach ($commands as $command => $arguments) {
+            $this->call($command, $arguments);
         }
-
         return 0;
     }
+}
