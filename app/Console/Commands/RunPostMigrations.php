@@ -29,28 +29,29 @@ class RunPostMigrations extends Command
     {
         $sleep = $this->argument("sleep");
         $commands = [
-            'app:add-super-admin-to-all-teams' => [], //users
-            'app:post-run-update-full-name-role' => ['--no-interaction' => true], //users
-            // 'app:sync-hubspot-contacts' => [], // What is this?
-            'app:data-providers-post-migration' => [], //seed dataproviders
-            // 'app:add-data-provider-network' => [], // What is this?
-            'app:physical-sample-post-migration' => [], //datasets
-            'app:datasets-post-migration' => [], //datasets
-            'app:update-eu-licenses' => [], //add licences before post-migrating tools?
-            'app:tools-post-migration-process' => [], //tools
-            'app:publication-type-post-migration' => [], //publications
-            'app:dataset-publication-linkage-post-migration' => [], //dataset linkage
-            'app:reindex-entities' => ['entity' => 'datasets', 'sleep' => $sleep],
-            'app:reindex-entities' => ['entity' => 'tools', 'sleep' => $sleep],
-            'app:reindex-entities' => ['entity' => 'publications', 'sleep' => $sleep],
-            'app:reindex-entities' => ['entity' => 'durs', 'sleep' => $sleep],
-            'app:reindex-entities' => ['entity' => 'collections', 'sleep' => $sleep],
-            'app:reindex-entities' => ['entity' => 'dataProviders', 'sleep' => $sleep],
+            ['command' => 'app:add-super-admin-to-all-teams', 'arguments' => []],
+            ['command' => 'app:post-run-update-full-name-role', 'arguments' => ['--no-interaction' => true]], 
+            // ['command' => 'app:sync-hubspot-contacts', 'arguments' => []], // What is this?
+            ['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
+            // ['command' => 'app:add-data-provider-network', 'arguments' => []], // What is this?
+            ['command' => 'app:physical-sample-post-migration', 'arguments' => []], // datasets
+            ['command' => 'app:datasets-post-migration', 'arguments' => []], // datasets
+            ['command' => 'app:update-eu-licenses', 'arguments' => []], // add licenses before post-migrating tools?
+            ['command' => 'app:tools-post-migration-process', 'arguments' => []], // tools
+            ['command' => 'app:publication-type-post-migration', 'arguments' => []], // publications
+            ['command' => 'app:dataset-publication-linkage-post-migration', 'arguments' => []], // dataset linkage
+            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'datasets', 'sleep' => $sleep]],
+            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'tools', 'sleep' => $sleep]],
+            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'publications', 'sleep' => $sleep]],
+            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'durs', 'sleep' => $sleep]],
+            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'collections', 'sleep' => $sleep]],
+            ['command' => 'app:reindex-entities', 'arguments' => ['entity' => 'dataProviders', 'sleep' => $sleep]],
         ];
-
-        foreach ($commands as $command => $arguments) {
-            $this->call($command, $arguments);
+        
+        foreach ($commands as $commandInfo) {
+            $this->call($commandInfo['command'], $commandInfo['arguments']);
         }
+        
         return 0;
     }
 }
