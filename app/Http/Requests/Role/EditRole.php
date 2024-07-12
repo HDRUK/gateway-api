@@ -36,6 +36,10 @@ class EditRole extends BaseFormRequest
             'permissions' => [
                 'array',
             ],
+            'full_name' => [
+                'nullable',
+                'string',
+            ],
         ];
     }
 

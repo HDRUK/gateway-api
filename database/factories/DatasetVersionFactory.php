@@ -26,7 +26,7 @@ class DatasetVersionFactory extends Factory
         $dataset = Dataset::all()->random();
         return [
             'dataset_id' => $dataset->id,
-            'metadata' => json_encode($this->getFakeDataset()),
+            'metadata' => json_encode($this->getMetadata()),
             'version' => fake()->unique()->numberBetween(1, 50),
             'provider_team_id' => $dataset->team_id,
             'application_type' => fake()->word(),

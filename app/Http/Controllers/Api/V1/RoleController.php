@@ -46,7 +46,8 @@ class RoleController extends Controller
      *             type="array",
      *             @OA\Items(type="object", 
      *                @OA\Property(property="id", type="integer", example="1"),
-     *                @OA\Property(property="name", type="string", example="hdruk.superadmin"),
+     *                @OA\Property(property="name", type="string", example="custodian.team.admin"),
+     *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -114,7 +115,8 @@ class RoleController extends Controller
      *             type="array",
      *             @OA\Items(type="object", 
      *                @OA\Property(property="id", type="integer", example="1"),
-     *                @OA\Property(property="name", type="string", example="hdruk.superadmin"),
+     *                @OA\Property(property="name", type="string", example="custodian.team.admin"),
+     *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -150,9 +152,7 @@ class RoleController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $roles = Role::with(['permissions'])
-                ->where(['id' => $id])
-                ->get();
+            $roles = Role::with(['permissions'])->where(['id' => $id])->get();
 
             if ($roles->count()) {
                 Auditor::log([
@@ -189,6 +189,7 @@ class RoleController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property( property="name", type="string", example="this.is.a.new.role" ),
+     *             @OA\Property( property="full_name", type="string", example="TEAM ADMIN" ),
      *             @OA\Property( property="enabled", type="boolean", example="true" ),
      *             @OA\Property( property="permissions", type="array",   
      *                @OA\Items(
@@ -239,6 +240,7 @@ class RoleController extends Controller
             $role = Role::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
+                'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : NULL,
             ]);
 
             $roleId = $role->id;
@@ -295,6 +297,7 @@ class RoleController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property( property="name", type="string", example="this.is.a.new.role" ),
+     *             @OA\Property( property="full_name", type="string", example="TEAM ADMIN" ),
      *             @OA\Property( property="enabled", type="boolean", example="true" ),
      *             @OA\Property( property="permissions", type="array",   
      *                @OA\Items(
@@ -323,6 +326,7 @@ class RoleController extends Controller
      *             @OA\Items(type="object", 
      *                @OA\Property(property="id", type="integer", example="1"),
      *                @OA\Property(property="name", type="string", example="hdruk.superadmin"),
+     *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -354,6 +358,7 @@ class RoleController extends Controller
             Role::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
+                'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : NULL,
             ]);
 
             RoleHasPermission::where('role_id', $id)->delete();
@@ -410,6 +415,7 @@ class RoleController extends Controller
      *          mediaType="application/json",
      *          @OA\Schema(
      *             @OA\Property( property="name", type="string", example="this.is.a.new.role" ),
+     *             @OA\Property( property="full_name", type="string", example="TEAM ADMIN" ),
      *             @OA\Property( property="enabled", type="boolean", example="true" ),
      *             @OA\Property( property="permissions", type="array",   
      *                @OA\Items(
@@ -437,7 +443,8 @@ class RoleController extends Controller
      *             type="array",
      *             @OA\Items(type="object", 
      *                @OA\Property(property="id", type="integer", example="1"),
-     *                @OA\Property(property="name", type="string", example="hdruk.superadmin"),
+     *                @OA\Property(property="name", type="string", example="custodian.team.admin"),
+     *                @OA\Property(property="full_name", type="string", example="TEAM ADMIN"),
      *                @OA\Property(property="enabled", type="boolean", example="1"),
      *                @OA\Property(property="created_at", type="datetime", example="2023-04-11 12:00:00"),
      *                @OA\Property(property="updated_at", type="datetime", example="2023-04-11 12:00:00"),
@@ -469,6 +476,7 @@ class RoleController extends Controller
             $arrayKeys = [
                 'name',
                 'enabled',
+                'full_name',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);

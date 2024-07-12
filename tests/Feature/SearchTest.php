@@ -51,7 +51,7 @@ class SearchTest extends TestCase
     const TEST_URL_SEARCH = '/api/v1/search';
 
     protected $header = [];
-    protected $metadataUpdate;
+    protected $metadata;
 
     /**
      * Set up the database
@@ -88,7 +88,7 @@ class SearchTest extends TestCase
             DurHasToolSeeder::class,
         ]);
 
-        $this->metadataUpdate = $this->getFakeUpdateDataset();
+        $this->metadata = $this->getMetadata();
     }
 
     /**
@@ -235,7 +235,9 @@ class SearchTest extends TestCase
         $metadata = $response['data'][0]['metadata'];
 
         $this->assertTrue(isset($metadata['additional']['containsTissue']));
-        $this->assertTrue(isset($metadata['accessibility']['access']['accessServiceCategory']));
+        if(version_compare(Config::get('metadata.GWDM.version'),"2.0",">=")){
+            $this->assertTrue(isset($metadata['accessibility']['access']['accessServiceCategory']));
+        }
         $this->assertTrue(isset($metadata['additional']['hasTechnicalMetadata']));
 
         $this->assertFalse(isset($metadata['coverage']));
@@ -589,9 +591,9 @@ class SearchTest extends TestCase
         $userId = (int) User::all()->random()->id;
         $teamId = (int) Team::all()->random()->id;
         Dur::query()->update(['status' => 'ACTIVE']);
-        $metadata = $this->metadataUpdate;
+        $metadata = $this->metadata;
         MMC::shouldReceive("translateDataModelType")
-            ->with(json_encode($this->metadataUpdate), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
+            ->with(json_encode($this->metadata), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
             ->andReturnUsing(function(string $metadata){
             return [
                 "traser_message" => "",
@@ -606,13 +608,13 @@ class SearchTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'metadata' => $this->metadataUpdate,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
             $this->header,
         );
-        $metadata = $this->getFakeUpdateDataset();
+        $metadata = $this->getMetadata();
 
         // update dur with id 1 to include updated dataset and another
         $mockData = [
@@ -691,7 +693,7 @@ class SearchTest extends TestCase
         // Test dataset titles are alphabetical - "updated" will be at the end
         $endTitle = array_key_last($response['data'][0]['datasetTitles']);
                 
-        $this->assertTrue($response['data'][0]['datasetTitles'][$endTitle] === 'Updated HDR UK Papers & Preprints');
+        $this->assertTrue($response['data'][0]['datasetTitles'][$endTitle] === 'HDR UK Papers & Preprints');
 
         // Test search result with id not in db is not returned
         $content = $response->decodeResponseJson();
@@ -1086,6 +1088,137 @@ class SearchTest extends TestCase
                     'name',
                     'datasetTitles',
                     'geographicLocations',
+                ],
+            ],
+            'aggregations',
+            'elastic_total',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        $this->assertTrue($response['data'][0]['_id'] === '1');
+    }
+
+    /**
+     * Search using a query with success
+     * 
+     * @return void
+     */
+    public function test_data_provider_search_with_success(): void
+    {
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers", ["query" => "term"], ['Accept' => 'application/json']);
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source' => [
+		                'name',
+                        'datasetTitles',
+                        'geographicLocations',
+                        'dataType',
+                        'updated_at'
+                    ],
+                    'name',
+                    'team_logo'
+                ],
+            ],
+            'aggregations',
+            'elastic_total',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=score:asc', ["query" => "term"], ['Accept' => 'application/json']);   
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source',
+                    'name',
+                    'team_logo'
+                ],
+            ],
+            'aggregations',
+            'elastic_total',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        $this->assertTrue($response['data'][0]['_source']['name'] === 'Third Provider');
+
+        // Test sorting by name    
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=name:asc', ["query" => "term"], ['Accept' => 'application/json']); 
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source',
+                    'name',
+                    'team_logo'
+                ],
+            ],
+            'aggregations',
+            'elastic_total',
+            'current_page',
+            'first_page_url',
+            'from',
+            'last_page',
+            'last_page_url',
+            'links',
+            'next_page_url',
+            'path',
+            'per_page',
+            'prev_page_url',
+            'to',
+            'total',                
+        ]);
+        $this->assertTrue($response['data'][0]['_source']['name'] === 'Another Provider');
+
+        // Test sorting by created_at desc        
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/data_providers" . '?sort=updated_at:desc', ["query" => "term"], ['Accept' => 'application/json']); 
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                0 => [
+                    '_id',
+                    'highlight',
+                    '_source',
+                    'name',
+                    'team_logo'
                 ],
             ],
             'aggregations',

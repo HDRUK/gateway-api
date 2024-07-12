@@ -55,7 +55,8 @@ class ToolsPostMigrationProcess extends Command
      */
     public function handle()
     {
-        $this->readMigrationFile(storage_path() . '/migration_files/tool_metadata_export_mapping.csv');
+        // $this->readMigrationFile(storage_path() . '/migration_files/tool_metadata_export_mapping.csv');
+        $this->readMigrationFile(storage_path() . '/migration_files/tool_metadata_export_mapping_IOv2.csv');
 
         // Traverse the CSV data and update migrations accordingly
         foreach ($this->csvData as $csv) {
@@ -124,8 +125,8 @@ class ToolsPostMigrationProcess extends Command
                      * Final Step. Set license type for migrated tool and save record
                      */
                     $licenceId = NULL;
-                    if ($csv['License MK2'] !== '') {
-                        $licences = License::where(['label' => trim($csv['License MK2'])])->first();
+                    if ($csv['license'] !== '') {
+                        $licences = License::where(['code' => trim($csv['license'])])->first();
                         if (!is_null($licences)) {
                             $licenceId = $licences->id;
                         }
@@ -178,7 +179,7 @@ class ToolsPostMigrationProcess extends Command
      * @param integer $id
      * @return void
      */
-    private function indexElasticTool(int $id): void 
+    public function indexElasticTool(int $id): void 
     {
         $tool = Tool::where('id', $id)
             ->with(['programmingLanguages', 'programmingPackages', 'tag', 'category', 'typeCategory', 'license'])

@@ -29,6 +29,7 @@ class Publication extends Model
         'year_of_publication',
         'paper_doi',
         'publication_type',
+        'publication_type_mk1',
         'journal_name',
         'abstract',
         'url',

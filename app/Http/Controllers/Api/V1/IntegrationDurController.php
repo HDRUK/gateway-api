@@ -529,7 +529,7 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $durId)->first();
-            if($currentDurStatus === 'ACTIVE'){
+            if($currentDurStatus->status === 'ACTIVE'){
                 $this->indexElasticDur($durId);
             }
 
@@ -1089,7 +1089,7 @@ class IntegrationDurController extends Controller
             }
 
             $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus === 'ACTIVE'){
+            if($currentDurStatus->status === 'ACTIVE'){
                 $this->indexElasticDur($id);
             }
 

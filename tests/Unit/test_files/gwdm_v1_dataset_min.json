@@ -68,8 +68,7 @@
                 "dataProcessor": "HDR UK",
                 "accessRights": "https://raw.githubusercontent.com/HDRUK/papers/master/LICENSE",
                 "accessService": "https://github.com/HDRUK/papers",
-                "accessRequestCost": "Free",
-                "accessServiceCategory": "Something Here"
+                "accessRequestCost": "Free"
             },
             "usage": {
                 "dataUseLimitation": "GENERAL RESEARCH USE",

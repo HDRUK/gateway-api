@@ -3,10 +3,13 @@
 namespace App\Http\Traits;
 
 use Config;        
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Sector;
 use App\Services\Hubspot;
+use App\Models\TeamHasUser;
 use App\Models\CohortRequest;
+use App\Models\TeamUserHasRole;
 use App\Http\Enums\UserContactPreference;
 
 trait HubspotContacts
@@ -39,6 +42,8 @@ trait HubspotContacts
                 'user_id' => $user->id,
                 'request_status' => 'APPROVED',
             ])->first();
+
+            $rolesFullNamesByUserId = $this->getUserRoleNames($user->id);
     
             $hubspot = [
                 'firstname' => $user->firstname,
@@ -49,7 +54,7 @@ trait HubspotContacts
                 'company' => $user->organisation,
                 'communication_preference' => count($commPreference) ? implode(";", $commPreference) : '',
                 'gateway_registered_user' => 'Yes',
-                'gateway_roles' => 'User',
+                'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(";", $rolesFullNamesByUserId) : ''),
                 'cohort_registered_user' => $cohortRequest ? 'Yes' : 'No',
             ];
     
@@ -89,5 +94,21 @@ trait HubspotContacts
                 $hubspotService->updateContactById((int) $user->hubspot_id, $hubspot);
             }
         }
+    }
+
+    private function getUserRoleNames(int $userId): array
+    {
+        $teamUserIds = TeamHasUser::where([
+            'user_id' => $userId,
+        ])->pluck('id');
+
+        if (!count($teamUserIds)) {
+            return [];
+        }
+
+        $roleIds = TeamUserHasRole::whereIn('team_has_user_id', $teamUserIds)->pluck('role_id')->toArray();
+        $roleNames = Role::whereNotNull('full_name')->whereIn('id', $roleIds)->pluck('full_name')->toArray();
+
+        return $roleNames;
     }
 }
