@@ -32,8 +32,8 @@ class RunPostMigrations extends Command
             ['command' => 'app:add-super-admin-to-all-teams', 'arguments' => []],
             ['command' => 'app:post-run-update-full-name-role', 'arguments' => ['--no-interaction' => true]], 
             // ['command' => 'app:sync-hubspot-contacts', 'arguments' => []], // What is this?
-            ['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
-            // ['command' => 'app:add-data-provider-network', 'arguments' => []], // What is this?
+            //['command' => 'app:data-providers-post-migration', 'arguments' => []], // seed dataproviders
+            ['command' => 'app:add-data-provider-network', 'arguments' => []], // seed dataproviders
             ['command' => 'app:physical-sample-post-migration', 'arguments' => []], // datasets
             ['command' => 'app:datasets-post-migration', 'arguments' => []], // datasets
             ['command' => 'app:update-eu-licenses', 'arguments' => []], // add licenses before post-migrating tools?
