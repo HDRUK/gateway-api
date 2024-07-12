@@ -22,6 +22,11 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 class Collection extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable, DatasetFetch;
+
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_DRAFT = 'DRAFT';
+    public const STATUS_ARCHIVED = 'ARCHIVED';
+
     /**
      * The table associated with the model.
      * 
@@ -42,6 +47,7 @@ class Collection extends Model
         'created_at',
         'updated_at',
         'updated_on',
+        'status',
     ];
     
     protected $casts = [
