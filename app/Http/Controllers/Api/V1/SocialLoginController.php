@@ -101,15 +101,13 @@ class SocialLoginController extends Controller
             $oidc->addScope(array('openid'));
             $oidc->setAllowImplicitFlow(true);
             $oidc->addAuthParam(array('response_mode' => 'form_post'));
-            $oidc->setRedirectUrl('http://localhost:8000/api/v1/auth/openathens/callback');
+            $oidc->setRedirectUrl(Config::get('services.openathens.redirect'));
             $oidc->authenticate();
-        }
 
-        if ($provider === 'openathens') {
             $params = [
                 'client_id' => Config::get('services.openathens.client_id'),
                 'client_secret' => Config::get('services.openathens.client_secret'),
-                'redirect_uri' => 'http://localhost:8000/api/v1/auth/openathens/callback',
+                'redirect_uri' => Config::get('services.openathens.redirect'),
                 'response_type' => 'code',
                 'scope' => 'openid',
             ];
@@ -170,10 +168,10 @@ class SocialLoginController extends Controller
                     Config::get('services.openathens.client_secret')
                 );
                 $oidc->providerConfigParam([
-                    'authorization_endpoint' => 'https://connect.openathens.net/oidc/auth',
-                    'jwks_uri' => 'https://connect.openathens.net/oidc/jwks',
-                    'token_endpoint' => 'https://connect.openathens.net/oidc/token',
-                    'userinfo_endpoint' => 'https://connect.openathens.net/oidc/userinfo',
+                    'authorization_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/auth',
+                    'jwks_uri' => env('OPENATHENS_ISSUER_URL') . '/oidc/jwks',
+                    'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
+                    'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
                 ]);
                 $oidc->addScope(['openid','profile','email']);
 
