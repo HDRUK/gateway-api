@@ -29,10 +29,6 @@ class OpenIdController extends Controller
     ];
     protected $subject_types_supported = ["public"];
     protected $id_token_signing_alg_values_supported = [
-        "HS256",
-        "ES256",
-        "EdDSA",
-        "PS256",
         "RS256"
     ];
 

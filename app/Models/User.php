@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
-use App\Http\Enums\UserPreferredEmail;
+use App\Models\Role;
 use App\Models\Team;
 use App\Models\Tool;
-use App\Models\Role;
+use App\Models\Permission;
 // use Laravel\Sanctum\HasApiTokens;
 use App\Models\Application;
 use App\Http\Traits\WithJwtUser;
+use Laravel\Passport\HasApiTokens;
+use App\Http\Enums\UserPreferredEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -16,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -90,7 +91,7 @@ class User extends Authenticatable
             'cohort_request_id' => $cohortRequest->id
         ])->pluck('permission_id')->toArray();
 
-        $cohortRequestRoles = Role::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
+        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
 
         return $cohortRequestRoles;
     }
