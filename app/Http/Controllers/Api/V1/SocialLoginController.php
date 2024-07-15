@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-session_start();
-
 use Auditor;
 use Config;
 use Exception;
