@@ -16,11 +16,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
     use WithJwtUser;
+    use HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -68,6 +70,30 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'terms' => 'boolean',
     ];
+
+    protected $appends = ['rquestroles'];
+
+    public function getRquestrolesAttribute()
+    {
+        $id = $this->id;
+
+        $cohortRequest = CohortRequest::where([
+            'user_id' => $id,
+            'request_status' => 'APPROVED',
+        ])->first();
+
+        if (!$cohortRequest) {
+            return [];
+        }
+
+        $cohortRequestRoleIds = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequest->id
+        ])->pluck('permission_id')->toArray();
+
+        $cohortRequestRoles = Role::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
+
+        return $cohortRequestRoles;
+    }
 
     /**
      * Get the tool that owns the user
