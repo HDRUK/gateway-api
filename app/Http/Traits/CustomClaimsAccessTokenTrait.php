@@ -7,6 +7,7 @@ use App\Models\User;
 use Lcobucci\JWT\Token;
 use App\Models\CohortRequest;
 use App\Models\CohortRequestHasPermission;
+use App\Models\Permission;
 use League\OAuth2\Server\Entities\Traits\AccessTokenTrait;
 
 trait CustomClaimsAccessTokenTrait
@@ -66,7 +67,7 @@ trait CustomClaimsAccessTokenTrait
             'cohort_request_id' => $cohortRequest->id
         ])->pluck('permission_id')->toArray();
 
-        $cohortRequestRoles = Role::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
+        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
 
         return $cohortRequestRoles;
     }
