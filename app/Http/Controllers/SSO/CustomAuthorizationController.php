@@ -43,37 +43,19 @@ class CustomAuthorizationController extends Controller
      * Authorize a client to access the user's account.
      *
      * @param  \Psr\Http\Message\ServerRequestInterface  $psrRequest
-     * @param  \Illuminate\Http\Request  $request
      */
     public function customAuthorize(
         ServerRequestInterface $psrRequest, 
-        Request $request,
-        ClientRepository $clients,
     )
     {
         $userId = session('cr_uid');
 
         CloudLogger::write('Start authorization for userId :: ' . $userId);
 
-        return $this->withErrorHandling(function () use ($psrRequest, $request, $userId) {
+        return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);
             return $this->approveRequest($authRequest, $userId);
         });
-    }
-
-    /**
-     * Transform the authorization requests's scopes into Scope instances.
-     *
-     * @param  AuthRequest  $request
-     * @return array
-     */
-    protected function parseScopes($authRequest)
-    {
-        return Passport::scopesFor(
-            collect($authRequest->getScopes())->map(function ($scope) {
-                return $scope->getIdentifier();
-            })->unique()->all()
-        );
     }
 
     /**
