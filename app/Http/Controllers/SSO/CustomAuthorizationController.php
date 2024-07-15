@@ -2,26 +2,41 @@
 
 namespace App\Http\Controllers\SSO;
 
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\SSO\HandlesOAuthErrors;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use CloudLogger;
 use Illuminate\Http\Request;
-use Laravel\Passport\Passport;
+use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Bridge\User;
+use Laravel\Passport\Passport;
+use League\OAuth2\Server\AuthorizationServer;
+use League\OAuth2\Server\RequestTypes\AuthorizationRequest;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
-use League\OAuth2\Server\AuthorizationServer;
-use App\Http\Controllers\SSO\HandlesOAuthErrors;
-use League\OAuth2\Server\RequestTypes\AuthorizationRequest;
 
-class CustomAuthorizationController
+class CustomAuthorizationController extends Controller
 {
     use HandlesOAuthErrors;
     
+    /**
+     * The authorization server.
+     *
+     * @var \League\OAuth2\Server\AuthorizationServer
+     */
     protected $server;
 
-    public function __construct(
-        AuthorizationServer $server,
-    ) {
+    /**
+     * The response factory implementation.
+     *
+     * @var \Illuminate\Contracts\Routing\ResponseFactory
+     */
+    protected $response;
+
+    public function __construct(AuthorizationServer $server, ResponseFactory $response)
+    {
         $this->server = $server;
+        $this->response = $response;
     }
 
     /**
@@ -33,6 +48,7 @@ class CustomAuthorizationController
     public function customAuthorize(
         ServerRequestInterface $psrRequest, 
         Request $request,
+        ClientRepository $clients,
     )
     {
         $userId = session('cr_uid');
