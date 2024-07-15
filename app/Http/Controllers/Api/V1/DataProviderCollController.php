@@ -659,15 +659,16 @@ class DataProviderCollController extends Controller
     public function checkingDataset(int $datasetId)
     {
         $dataset = Dataset::where(['id' => $datasetId])
-            ->with(['durs', 'collections', 'publications'])
+            ->with(['durs', 'publications'])
             ->first();
 
         if (!$dataset) {
             return;
         }
 
-        // Tools are automatically accessed through the accessor
+        // Accessed through the accessors
         $tools = $dataset->tools;
+        $collections = $dataset->collections;
 
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])
@@ -701,6 +702,6 @@ class DataProviderCollController extends Controller
         $this->durs = array_unique(array_merge($this->durs, $dataset->durs->pluck('id')->toArray()));
         $this->publications = array_unique(array_merge($this->publications, $dataset->publications->pluck('id')->toArray()));
         $this->tools = array_unique(array_merge($this->tools, $tools->pluck('id')->toArray()));
-        $this->collections = array_unique(array_merge($this->collections, $dataset->collections->pluck('id')->toArray()));
+        $this->collections = array_unique(array_merge($this->collections, $collections->pluck('id')->toArray()));
     }
 }

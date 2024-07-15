@@ -368,7 +368,7 @@ class DatasetController extends Controller
         try {
 
             // Retrieve the dataset with collections, publications, and counts
-            $dataset = Dataset::with(['collections', 'publications'])
+            $dataset = Dataset::with(['publications'])
             ->withCount(['durs', 'publications'])
             ->find($id);
 
@@ -376,8 +376,9 @@ class DatasetController extends Controller
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
         
-            // inject named entities
+            // inject dataset Version Atributes
             $dataset->setAttribute('named_entities', $dataset->getLatestNamedEntities());
+            $dataset->setAttribute('collections', $dataset->getLatestCollections());
    
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');

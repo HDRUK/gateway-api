@@ -311,7 +311,7 @@ class IntegrationDatasetController extends Controller
         try {
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-            $dataset = Dataset::with(['collections', 'publications'])->findOrFail($id);
+            $dataset = Dataset::with(['publications'])->findOrFail($id);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
@@ -322,6 +322,7 @@ class IntegrationDatasetController extends Controller
         
             // inject named entities
             $dataset->setAttribute('named_entities', $latestVersion ? $latestVersion->namedEntities : collect());
+            $dataset->setAttribute('collections', $latestVersion ? $latestVersion->collections : collect());
    
             $this->checkAppCanHandleDataset($dataset->team_id,$request);
         

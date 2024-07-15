@@ -52,10 +52,37 @@ class Collection extends Model
         return $this->belongsToMany(Keyword::class, 'collection_has_keywords');
     }
 
+     /**
+     * Get the latest datasets for this collection.
+     */
+    public function getLatestDatasets()
+    {
+        $datasetVersionIds = CollectionHasDatasetVersion::
+            where('collection_id', $this->id)
+            ->pluck('dataset_version_id');
+
+        $datasetIds = DatasetVersion::whereIn('id', $datasetVersionIds)
+            ->distinct()
+            ->pluck('dataset_id');
+
+        return Dataset::whereIn('id', $datasetIds)->get();
+    }
+
+    /**
+     * Add an accessor for datasets to get the latest versions.
+     */
+    public function getDatasetsAttribute()
+    {
+        return $this->getLatestDatasets();
+    }
+
+    /**
+     * Define the relationship for datasets with the pivot table.
+     */
     public function datasets(): BelongsToMany
     {
-        return $this->belongsToMany(Dataset::class, 'collection_has_datasets')
-        ->withPivot('collection_id', 'dataset_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
+        return $this->belongsToMany(Dataset::class, 'collection_has_dataset_version', 'collection_id', 'dataset_version_id')
+            ->withPivot('collection_id', 'dataset_version_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
     }
 
     public function tools(): BelongsToMany
@@ -76,10 +103,7 @@ class Collection extends Model
         ->withPivot('collection_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
     }
 
-    public function userDatasets(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'collection_has_datasets');
-    }
+    
 
     public function userTools(): BelongsToMany
     {
@@ -91,9 +115,28 @@ class Collection extends Model
         return $this->belongsToMany(User::class, 'collection_has_publications');
     }
 
-    public function applicationDatasets(): BelongsToMany
+    public function userDatasets()
     {
-        return $this->belongsToMany(Application::class, 'collection_has_datasets');
+        return $this->hasManyThrough(
+            User::class,
+            CollectionHasDatasetVersion::class,
+            'collection_id', // Foreign key on the CollectionHasDatasetVersion table
+            'id',            // Local key on the Collection table
+            'id',            // Local key on the User table
+            'user_id'        // Foreign key on the CollectionHasDatasetVersion table
+        );
+    }
+
+    public function applicationDatasets()
+    {
+        return $this->hasManyThrough(
+            Application::class,
+            CollectionHasDatasetVersion::class,
+            'collection_id', // Foreign key on the CollectionHasDatasetVersion table
+            'id',            // Local key on the Collection table
+            'id',            // Local key on the Application table
+            'application_id' // Foreign key on the CollectionHasDatasetVersion table
+        );
     }
 
     public function applicationTools(): BelongsToMany

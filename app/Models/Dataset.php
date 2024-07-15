@@ -110,6 +110,9 @@ class Dataset extends Model
             ->latest('version')->select('version')->first();
     }
 
+    /**
+     * The very last metadata as an array
+     */
     public function lastMetadata(): array
     {
         $datasetVersion = DatasetVersion::where('dataset_id', $this->id)
@@ -129,30 +132,14 @@ class Dataset extends Model
         return NamedEntities::whereIn('id', $entityIds)->get();
     }
 
-    /**
-     * The collections that the dataset belongs to.
-     */
-    public function collections(): BelongsToMany
+    // Add an accessor for  named entities
+    public function getNamedEntitiesAttribute()
     {
-        return $this->belongsToMany(Collection::class, 'collection_has_datasets');
+        return $this->getLatestNamedEntities();
     }
 
     /**
-     * Helper function to use JSON functions to search by title within metadata.
-     */
-    public function searchByTitle(string $title): DatasetVersion
-    {
-        return DatasetVersion::where('dataset_id', $this->id)
-            ->whereRaw(
-                "
-                LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$title%')
-                "
-            )->latest('version')->first();
-    }
-
-    
-    /**
-     * The spatial coverage that belong to the dataset.
+     * Get the latest version's spatial coverage.
      */
     public function getLatestSpatialCoverage()
     {
@@ -162,8 +149,14 @@ class Dataset extends Model
         return SpatialCoverage::whereIn('id', $entityIds)->get();
     }
 
+    // Add an accessor for spatial coverage
+    public function getSpatialCoverageAttribute()
+    {
+        return $this->getLatestSpatialCoverage();
+    }
+
     /**
-     * The tools that belong to a dataset.
+     * Get the latest version's tools.
      */
     public function getLatestTools()
     {
@@ -178,6 +171,36 @@ class Dataset extends Model
      {
          return $this->getLatestTools();
      }
+
+    /**
+     * The latest versions collections
+     */
+    public function getLatestCollections()
+    {
+        $collectionIds = CollectionHasDatasetVersion::where('dataset_version_id', $this->latestVersion()->id)
+            ->pluck('collection_id');
+
+        return Collection::whereIn('id', $collectionIds)->get();
+    }
+
+     // Add an accessor for collections
+     public function getCollectionsAttribute()
+     {
+         return $this->getLatestCollections();
+     }
+
+    /**
+     * Helper function to use JSON functions to search by title within metadata.
+     */
+    public function searchByTitle(string $title): DatasetVersion
+    {
+        return DatasetVersion::where('dataset_id', $this->id)
+            ->whereRaw(
+                "
+                LOWER(JSON_EXTRACT(metadata, '$.metadata.summary.title')) LIKE LOWER('%$title%')
+                "
+            )->latest('version')->first();
+    }
 
     /**
      * Order by raw metadata extract

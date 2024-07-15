@@ -4,12 +4,12 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Collection;
-use App\Models\CollectionHasDataset;
+use App\Models\CollectionHasDatasetVersion;
 use App\Models\Dataset;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
-class CollectionHasDatasetSeeder extends Seeder
+class CollectionHasDatasetVersionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -21,15 +21,15 @@ class CollectionHasDatasetSeeder extends Seeder
             $userId = User::all()->random()->id;
             $datasetId = Dataset::all()->random()->id;
 
-            $collectionHasDataset = CollectionHasDataset::where([
+            $collectionHasDataset = CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-                'dataset_id' => $datasetId,
+                'dataset_version_id' => $datasetId,
             ])->first();
 
             if (!$collectionHasDataset) {
-                CollectionHasDataset::create([
+                CollectionHasDatasetVersion::create([
                     'collection_id' => $collectionId,
-                    'dataset_id' => $datasetId,
+                    'dataset_version_id' => $datasetId,
                     'user_id' => $userId,
                 ]);
             }

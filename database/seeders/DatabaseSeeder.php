@@ -50,7 +50,7 @@ class DatabaseSeeder extends Seeder
             CohortRequestSeeder::class,
             TeamUserHasNotificationSeeder::class,
             CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetSeeder::class,
+            CollectionHasDatasetVersionSeeder::class,
             SavedSearchSeeder::class,
             SavedSearchHasFilterSeeder::class,
             DurSeeder::class,

@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class CollectionHasDataset extends Model
+class CollectionHasDatasetVersion extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;
 
     protected $fillable = [
         'collection_id',
-        'dataset_id',
+        'dataset_version_id',
         'user_id',
         'application_id',
         'reason',
@@ -27,7 +27,7 @@ class CollectionHasDataset extends Model
      * 
      * @var string
      */
-    protected $table = 'collection_has_datasets';
+    protected $table = 'collection_has_dataset_version';
 
     /**
      * Indicates if the model should be timestamped

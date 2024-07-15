@@ -205,20 +205,18 @@ class MetadataManagementController {
     {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
-                ->with(['collections', 'durs'])
+                ->with(['durs'])
                 ->firstOrFail();
 
             $metadata = $datasetMatch->latestVersion()->metadata;
 
-            // Retrieve the latest version 
-            $latestVersion = $datasetMatch->latestVersion();
-        
-            // inject named entities
+            // inject relationships via datasetVersionss
             $namedEntities = $datasetMatch->getLatestNamedEntities();
             $spatialCoverage = $datasetMatch->getLatestSpatialCoverage();
+            $collections = $datasetMatch->getLatestCollections();
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
-
+            
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
                 'keywords' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], ''),
@@ -235,7 +233,7 @@ class MetadataManagementController {
                 'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
                 'named_entities' =>  $namedEntities->pluck('name')->all(),
-                'collectionName' => $datasetMatch->collections->pluck('name')->all(),
+                'collectionName' => $collections->pluck('name')->all(),
                 'dataUseTitles' => $datasetMatch->durs->pluck('project_title')->all(),
                 'geographicLocation' => $spatialCoverage->pluck('region')->all(),
                 'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], ''),
