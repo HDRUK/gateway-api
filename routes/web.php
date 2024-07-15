@@ -23,7 +23,7 @@ Route::get('/', function () {
 Route::get('/oauth/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
 
 Route::get('/oauth/.well-known/jwks', [JwksController::class, 'getJwks']);
-Route::get('/oauth/.well-knwown/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
+Route::get('/oauth/.well-known/openid-configuration', [OpenIdController::class, 'getOpenIdConfiguration']);
 
 Route::middleware('auth:api')->get('/oauth/userinfo', function (Request $request) {
     return $request->user();
