@@ -56,7 +56,6 @@ class OpenIdController extends Controller
             "grant_types_supported"     => $this->grant_types_supported,
             "token_endpoint_auth_methods_supported" => [],
             "claims_supported"          => [],
-            "grant_types_supported"     => [],
 
             // logme out
             "revocation_endpoint"       => env('APP_URL') . "/oauth/logmeout",
