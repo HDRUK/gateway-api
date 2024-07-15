@@ -93,8 +93,6 @@ class SocialLoginController extends Controller
         }
 
         session(['redirectUrl' => $redirectUrl]);
-        // $CONFIG['http.cookie.samesite'] = 'None';
-        // session(['same_site' => 'none']);
 
         if ($provider === 'openathens') {
             $oidc = new OpenIDConnectClient(
@@ -163,8 +161,6 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
-        // session(['same_site' => 'none']);
-        // $CONFIG['http.cookie.samesite'] = 'None';
         try {
             if ($provider === 'linkedin') {
                 $provider = 'linkedin-openid';
@@ -182,30 +178,17 @@ class SocialLoginController extends Controller
                     'userinfo_endpoint' => 'https://connect.openathens.net/oidc/userinfo',
                 ]);
                 $oidc->addScope(['openid','profile','email']);
-                // $oidc->addAuthParam(array('response_type' => 'code'));
-                // $oidc->setRedirectUrl('http://localhost:8000/api/v1/auth/openathens/callback');
 
                 $oidc->setVerifyHost(false);
                 $oidc->setVerifyPeer(false);
                 $oidc->setResponseTypes(['id_token']);
                 $oidc->setAllowImplicitFlow(true);
                 $oidc->addAuthParam(['response_mode' => 'form_post']);
-                // $oidc->setCertPath('/path/to/my.cert');
-                // $oidc->authenticate();
-                // $sub = $oidc->getVerifiedClaims('sub');
 
                 $oidc->authenticate();
-                $response = $oidc->requestUserInfo('email');
+                $response = $oidc->requestUserInfo();
+                $socialUser = json_decode(json_encode($response), true);
 
-                $socialUser = array();
-                foreach($oidc as $key => $value) {
-                    if (is_array($value)) {
-                        $v = implode(', ', $value);
-                    } else {
-                        $v = $value;
-                    }
-                    $socialUser[$key] = $v;
-                }
                 $socialUserDetails = $this->openathensResponse($socialUser, $provider);
             } else {
                 $socialUser = Socialite::driver($provider)->user();
@@ -234,7 +217,7 @@ class SocialLoginController extends Controller
             if (!$user) {
                 $user = $this->saveUser($socialUserDetails);
             } else {
-                $user = $this->updateUser($user, $socialUserDetails);
+                $user = $this->updateUser($user, $socialUserDetails, $provider);
             }
 
             $jwt = $this->createJwt($user);
@@ -327,11 +310,11 @@ class SocialLoginController extends Controller
     private function openathensResponse(array $data, string $provider): array
     {
         return [
-            'providerid' => $data['sub'],
-            'name' => $data['name'],
-            'firstname' => $data['given_name'],
-            'lastname' => $data['family_name'],
-            'email' => $data['email'],
+            'providerid' => $data['eduPersonTargetedID'],
+            'name' => '',
+            'firstname' => '',
+            'lastname' => '',
+            'email' => $data['eduPersonTargetedID'] . $data['eduPersonScopedAffiliation'],
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
@@ -342,18 +325,23 @@ class SocialLoginController extends Controller
      * 
      * @param User $user
      * @param array $data
+     * @param string $provider
      * @return User
      */
-    private function updateUser(User $user, array $data): User
+    private function updateUser(User $user, array $data, string $provider): User
     {
-        $user->providerid = $data['providerid'];
-        $user->name = $data['name'];
-        $user->firstname = $data['firstname'];
-        $user->lastname = $data['lastname'];
-        $user->email = $data['email'];
-        $user->provider = $data['provider'];
-        $user->password = $data['password'];
-        $user->update();
+        if ($provider == 'openathens') {
+            $user->providerid = $data['providerid'];
+        } else {
+            $user->providerid = $data['providerid'];
+            $user->name = $data['name'];
+            $user->firstname = $data['firstname'];
+            $user->lastname = $data['lastname'];
+            $user->email = $data['email'];
+            $user->provider = $data['provider'];
+            $user->password = $data['password'];
+            $user->update();
+        }
 
         return $user;
     }
