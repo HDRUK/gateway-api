@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\SSO;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\SSO\HandlesOAuthErrors;
-use Illuminate\Contracts\Routing\ResponseFactory;
 use CloudLogger;
 use Illuminate\Http\Request;
-use Laravel\Passport\ClientRepository;
-use Laravel\Passport\Bridge\User;
+use App\Models\CohortRequest;
 use Laravel\Passport\Passport;
-use League\OAuth2\Server\AuthorizationServer;
-use League\OAuth2\Server\RequestTypes\AuthorizationRequest;
+use Laravel\Passport\Bridge\User;
+use App\Http\Controllers\Controller;
+use Laravel\Passport\ClientRepository;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
+use League\OAuth2\Server\AuthorizationServer;
+use App\Http\Controllers\SSO\HandlesOAuthErrors;
+use Illuminate\Contracts\Routing\ResponseFactory;
+use League\OAuth2\Server\RequestTypes\AuthorizationRequest;
 
 class CustomAuthorizationController extends Controller
 {
@@ -48,7 +49,13 @@ class CustomAuthorizationController extends Controller
         ServerRequestInterface $psrRequest, 
     )
     {
-        $userId = session('cr_uid');
+        // $userId = session('cr_uid');
+
+        // mock user id for with we need:
+        // - cohort_regests.request_status = 'APPROVED'
+        $cohortRequests = CohortRequest::where(['request_status' => 'APPROVED'])->first();
+        $userId = $cohortRequests->user_id;
+        // end mock user id
 
         CloudLogger::write('Start authorization for userId :: ' . $userId);
 
