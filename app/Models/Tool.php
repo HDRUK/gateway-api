@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Models\Dur;
 use App\Models\Tag;
+use App\Models\User;
 use App\Models\License;
 use App\Models\Category;
-use App\Models\Publication;
 use App\Models\Collection;
+use App\Models\Publication;
 use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -59,8 +60,7 @@ class Tool extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class)
-            ->select('firstname', 'lastname');
+        return $this->belongsTo(User::class);
     }
 
     public function tag(): BelongsToMany
