@@ -53,5 +53,8 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         Passport::useAccessTokenEntity(CustomAccessToken::class);
+
+        Passport::tokensExpireIn(now()->addDays(15));
+        Passport::refreshTokensExpireIn(now()->addDays(30));
     }
 }
