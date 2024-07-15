@@ -13,9 +13,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Collection extends Model
 {
@@ -115,7 +116,7 @@ class Collection extends Model
         return $this->belongsToMany(User::class, 'collection_has_publications');
     }
 
-    public function userDatasets()
+    public function userDatasets(): HasManyThrough
     {
         return $this->hasManyThrough(
             User::class,
@@ -127,7 +128,7 @@ class Collection extends Model
         );
     }
 
-    public function applicationDatasets()
+    public function applicationDatasets(): HasManyThrough
     {
         return $this->hasManyThrough(
             Application::class,
@@ -138,6 +139,7 @@ class Collection extends Model
             'application_id' // Foreign key on the CollectionHasDatasetVersion table
         );
     }
+
 
     public function applicationTools(): BelongsToMany
     {
