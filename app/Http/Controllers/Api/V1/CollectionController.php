@@ -97,7 +97,6 @@ class CollectionController extends Controller
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $collections = Collection::with([
                 'keywords',
-                'datasets',
                 'tools',
                 'dur',
                 'publications',
@@ -123,6 +122,9 @@ class CollectionController extends Controller
                 $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
                 $collection->setRelation('applications', $applications);
 
+                // Set the datasets attribute with the latest datasets
+                $collection->setAttribute('datasets', $collection->getLatestDatasets());
+
                 // Remove unwanted relations
                 unset(
                     $collection->userDatasets, 
@@ -142,13 +144,12 @@ class CollectionController extends Controller
                 'description' => "Collection get all",
             ]);
 
-            return response()->json(
-                $collections
-            );
+            return response()->json($collections);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
     }
+
 
     /**
      * @OA\Get(
@@ -776,7 +777,6 @@ class CollectionController extends Controller
         $collection = Collection::where(['id' => $collectionId])
             ->with([
                 'keywords',
-                'datasets',
                 'tools',
                 'dur',
                 'publications',
@@ -788,6 +788,10 @@ class CollectionController extends Controller
                 'applicationPublications',
                 'team',
             ])->first();
+        
+            // Set the datasets attribute with the latest datasets
+        $collection->setAttribute('datasets', $collection->getLatestDatasets());
+
 
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
@@ -1211,50 +1215,61 @@ class CollectionController extends Controller
      */
     private function indexElasticCollections(int $collectionId): void 
     {
-        $collection = Collection::with(['team', 'datasets', 'keywords'])->where('id', $collectionId)->first()->toArray();
-        $team = $collection['team'];
-
-        $datasetTitles = array();
-        $datasetAbstracts = array();
-        foreach ($collection['datasets'] as $d) {
-            $metadata = Dataset::where(['id' => $d])
-                ->first()
-                ->latestVersion()
-                ->metadata;
-            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
-        }
-        
-        $keywords = array();
-        foreach ($collection['keywords'] as $k) {
-            $keywords[] = $k['name'];
-        }
-
-        $dataProviderColl = [];
-        if (array_key_exists('team_id', $collection)) {
-            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $collection['team_id'])
-                ->pluck('data_provider_coll_id')
-                ->all();
-            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
-                ->pluck('name')
-                ->all();   
-        }
-
         try {
+            // Retrieve collection with related models
+            $collection = Collection::with(['team', 'keywords'])->findOrFail($collectionId);
+
+            // Set the datasets attribute with the latest datasets
+            $collection->setAttribute('datasets', $collection->getLatestDatasets());
+
+            // Convert collection to array after setting the attribute
+            $collectionArray = $collection->toArray();
+
+            // Extract team information
+            $teamName = $collectionArray['team']['name'] ?? '';
+
+            // Fetch dataset titles and abstracts
+            $datasetTitles = [];
+            $datasetAbstracts = [];
+            foreach ($collectionArray['datasets'] as $dataset) {
+                $latestVersion = Dataset::find($dataset['id'])->latestVersion();
+                $metadata = $latestVersion->metadata ?? [];
+
+                $datasetTitles[] = $metadata['summary']['shortTitle'] ?? '';
+                $datasetAbstracts[] = $metadata['summary']['abstract'] ?? '';
+            }
+
+            // Extract keywords
+            $keywords = array_column($collectionArray['keywords'], 'name');
+
+            // Fetch data provider collection names
+            $dataProviderColl = [];
+            if (isset($collectionArray['team_id'])) {
+                $dataProviderCollIds = DataProviderCollHasTeam::where('team_id', $collectionArray['team_id'])
+                    ->pluck('data_provider_coll_id')
+                    ->all();
+                $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollIds)
+                    ->pluck('name')
+                    ->all();
+            }
+
+            // Prepare data to index
             $toIndex = [
-                'publisherName' => isset($team['name']) ? $team['name'] : '',
-                'description' => $collection['description'],
-                'name' => $collection['name'],
+                'publisherName' => $teamName,
+                'description' => $collectionArray['description'],
+                'name' => $collectionArray['name'],
                 'datasetTitles' => $datasetTitles,
                 'datasetAbstracts' => $datasetAbstracts,
                 'keywords' => $keywords,
                 'dataProviderColl' => $dataProviderColl
             ];
+
+            // Index the data
             $params = [
                 'index' => 'collection',
                 'id' => $collectionId,
                 'body' => $toIndex,
-                'headers' => 'application/json'
+                'headers' => ['Content-Type' => 'application/json']
             ];
 
             $client = MMC::getElasticClient();

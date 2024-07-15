@@ -77,15 +77,6 @@ class Collection extends Model
         return $this->getLatestDatasets();
     }
 
-    /**
-     * Define the relationship for datasets with the pivot table.
-     */
-    public function datasets(): BelongsToMany
-    {
-        return $this->belongsToMany(Dataset::class, 'collection_has_dataset_version', 'collection_id', 'dataset_version_id')
-            ->withPivot('collection_id', 'dataset_version_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
-    }
-
     public function tools(): BelongsToMany
     {
         return $this->belongsToMany(Tool::class, 'collection_has_tools')

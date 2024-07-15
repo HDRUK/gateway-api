@@ -98,7 +98,6 @@ class IntegrationCollectionController extends Controller
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $collections = Collection::with([
                 'keywords',
-                'datasets',
                 'tools',
                 'dur',
                 'publications',
@@ -124,6 +123,7 @@ class IntegrationCollectionController extends Controller
                 $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
                 $collection->setRelation('applications', $applications);
 
+                $collection->setAttribute('datasets', $collection->getLatestDatasets());
                 // Remove unwanted relations
                 unset(
                     $collection->userDatasets, 
@@ -772,7 +772,6 @@ class IntegrationCollectionController extends Controller
         $collection = Collection::where(['id' => $collectionId])
             ->with([
                 'keywords',
-                'datasets',
                 'tools',
                 'dur',
                 'publications',
@@ -785,6 +784,7 @@ class IntegrationCollectionController extends Controller
                 'team',
             ])->first();
 
+        $collection->setAttribute('datasets', $collection->getLatestDatasets());    
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
         $userPublications = $collection->userPublications;
@@ -1209,39 +1209,49 @@ class IntegrationCollectionController extends Controller
      */
     private function indexElasticCollections(int $collectionId): void 
     {
-        $collection = Collection::with(['team', 'datasets', 'keywords'])->where('id', $collectionId)->first()->toArray();
-        $team = $collection['team'];
-
-        $datasetTitles = array();
-        $datasetAbstracts = array();
-        foreach ($collection['datasets'] as $d) {
-            $metadata = Dataset::where(['id' => $d])
-                ->first()
-                ->latestVersion()
-                ->metadata;
-            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
-        }
-        
-        $keywords = array();
-        foreach ($collection['keywords'] as $k) {
-            $keywords[] = $k['name'];
-        }
-
         try {
+            // Retrieve collection with related models
+            $collection = Collection::with(['team', 'keywords'])->findOrFail($collectionId);
+
+            // Set the datasets attribute with the latest datasets
+            $collection->setAttribute('datasets', $collection->getLatestDatasets());
+
+            // Convert collection to array after setting the attribute
+            $collectionArray = $collection->toArray();
+
+            // Extract team information
+            $teamName = $collectionArray['team']['name'] ?? '';
+
+            // Fetch dataset titles and abstracts
+            $datasetTitles = [];
+            $datasetAbstracts = [];
+            foreach ($collectionArray['datasets'] as $dataset) {
+                $latestVersion = Dataset::find($dataset['id'])->latestVersion();
+                $metadata = $latestVersion->metadata ?? [];
+
+                $datasetTitles[] = $metadata['summary']['shortTitle'] ?? '';
+                $datasetAbstracts[] = $metadata['summary']['abstract'] ?? '';
+            }
+
+            // Extract keywords
+            $keywords = array_column($collectionArray['keywords'], 'name');
+
+            // Prepare data to index
             $toIndex = [
-                'publisherName' => isset($team['name']) ? $team['name'] : '',
-                'description' => $collection['description'],
-                'name' => $collection['name'],
+                'publisherName' => $teamName,
+                'description' => $collectionArray['description'],
+                'name' => $collectionArray['name'],
                 'datasetTitles' => $datasetTitles,
                 'datasetAbstracts' => $datasetAbstracts,
                 'keywords' => $keywords
             ];
+
+            // Index the data
             $params = [
                 'index' => 'collection',
                 'id' => $collectionId,
                 'body' => $toIndex,
-                'headers' => 'application/json'
+                'headers' => ['Content-Type' => 'application/json']
             ];
 
             $client = MMC::getElasticClient();
