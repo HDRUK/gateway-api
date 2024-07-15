@@ -160,7 +160,16 @@ class ToolController extends Controller
             }
 
             // Perform query for the matching tools with filters, sorting, and pagination
-            $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications', 'durs', 'collections', 'datasetVersions'])
+            $tools = Tool::with([
+                'user',
+                'tag',
+                'team',
+                'license',
+                'publications',
+                'durs',
+                'collections',
+                'datasetVersions',
+            ])
             ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
             })
