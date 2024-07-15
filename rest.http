@@ -2423,18 +2423,3 @@ GET {{baseUrl}}/api/{{apiVersion}}/datasets/220 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
-
-
-
-### Tests
-# #### test pubsub service
-GET {{baseUrl}}/api/{{apiVersion}}/test-gcplogger HTTP/1.1
-Content-Type: application/json
-
-#### test jwks
-GET {{baseUrl}}/oauth/.well-known/jwks HTTP/1.1
-Content-Type: application/json
-
-#### test openid-configuration
-GET {{baseUrl}}/oauth/.well-knwown/openid-configuration HTTP/1.1
-Content-Type: application/json

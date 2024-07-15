@@ -11,7 +11,7 @@ use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Carbon;
 use App\Http\Enums\TeamMemberOf;
-
+use App\Models\NamedEntities;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetTest extends TestCase
@@ -537,6 +537,27 @@ class DatasetTest extends TestCase
         $respArrayActive = $responseGetOneActive->decodeResponseJson();
         $this->assertArrayHasKey('named_entities', $respArrayActive['data']);
         
+        // Assert named entities contain name
+
+        foreach ($respArrayActive['data']['named_entities'] as $entity) {
+            // Assert that the array contains a key named 'name'
+            $this->assertArrayHasKey('name', $entity);
+            $this->assertNotNull($entity['name'], 'The "name" key should not have a null value.');
+    
+            // Assert that the array contains a key named 'id'
+            $this->assertArrayHasKey('id', $entity);
+            $this->assertNotNull($entity['id'], 'The "id" key should not have a null value.');
+    
+            // Retrieve the named entity from the database
+            $namedEntity = NamedEntities::find($entity['id']);
+            $this->assertNotNull($namedEntity, 'The named entity should exist in the database.');
+    
+            // Compare each field in the response array with the corresponding field in the database
+            $this->assertEquals($namedEntity->name, $entity['name'], 'The name in the response does not match the name in the database.');
+        }
+        
+
+
         if(env('TED_ENABLED')){
             $this->assertNotEmpty($respArrayActive['data']['named_entities']);
         };

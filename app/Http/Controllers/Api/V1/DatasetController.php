@@ -28,7 +28,7 @@ use App\Exceptions\NotFoundException;
 use MetadataManagementController AS MMC;
 
 use App\Http\Requests\Dataset\GetDataset;
-use App\Models\DatasetHasSpatialCoverage;
+use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Http\Requests\Dataset\EditDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
@@ -127,6 +127,7 @@ class DatasetController extends Controller
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
             $mongoPId = $request->query('mongo_pid', null);
+            $withMetadata = $request->boolean('with_metadata', true);
     
             $sort = $request->query('sort',"created:desc");   
             
@@ -203,8 +204,8 @@ class DatasetController extends Controller
     
             // perform query for the matching datasets with ordering and pagination. 
             // Include soft-deleted versions.
-            $datasets = Dataset::with('latestMetadata') 
-                ->whereIn('id', $matches)
+            $datasets = Dataset::whereIn('id', $matches)
+                ->when($withMetadata, fn($query) => $query->with('latestMetadata'))
                 ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                     function ($query) {
                         return $query->withTrashed();
@@ -623,7 +624,7 @@ class DatasetController extends Controller
                 ]);
 
                 // map coverage/spatial field to controlled list for filtering
-                $this->mapCoverage($input['metadata'], $dataset);
+                $this->mapCoverage($input['metadata'], $version);
 
                 // Dispatch term extraction to a subprocess if the dataset is marked as active
                 if($request['status'] === Dataset::STATUS_ACTIVE){
@@ -1188,12 +1189,12 @@ class DatasetController extends Controller
     }
 
 
-    private function mapCoverage(array $metadata, Dataset $dataset): void 
+    private function mapCoverage(array $metadata, DatasetVersion $version): void 
     {
         if (!isset($metadata['metadata']['coverage']['spatial'])) {
             return;
         }
-
+        
         $coverage = strtolower($metadata['metadata']['coverage']['spatial']);
         $ukCoverages = SpatialCoverage::whereNot('region', 'Rest of the world')->get();
         $worldId = SpatialCoverage::where('region', 'Rest of the world')->first()->id;
@@ -1201,8 +1202,9 @@ class DatasetController extends Controller
         $matchFound = false;
         foreach ($ukCoverages as $c) {
             if (str_contains($coverage, strtolower($c['region']))) {
-                DatasetHasSpatialCoverage::updateOrCreate([
-                    'dataset_id' => (int) $dataset['id'],
+                
+                DatasetVersionHasSpatialCoverage::updateOrCreate([
+                    'dataset_version_id' => (int) $version['id'],
                     'spatial_coverage_id' => (int) $c['id'],
                 ]);
                 $matchFound = true;
@@ -1212,14 +1214,14 @@ class DatasetController extends Controller
         if (!$matchFound) {
             if (str_contains($coverage, 'united kingdom')) {
                 foreach ($ukCoverages as $c) {
-                    DatasetHasSpatialCoverage::updateOrCreate([
-                        'dataset_id' => (int) $dataset['id'],
+                    DatasetVersionHasSpatialCoverage::updateOrCreate([
+                        'dataset_version_id' => (int) $version['id'],
                         'spatial_coverage_id' => (int) $c['id'],
                     ]);
                 }
             } else {
-                DatasetHasSpatialCoverage::updateOrCreate([
-                    'dataset_id' => (int) $dataset['id'],
+                DatasetVersionHasSpatialCoverage::updateOrCreate([
+                    'dataset_version_id' => (int) $version['id'],
                     'spatial_coverage_id' => (int) $worldId,
                 ]);
             }

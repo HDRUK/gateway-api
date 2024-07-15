@@ -45,7 +45,38 @@ class PhysicalSamplePostMigration extends Command
         foreach ($this->csvData as $csv) {
             $mongoPid = $csv['mongo_pid'];
             $samples = $csv['physical_samples'];
-            $samplesList = str_replace(";", ",", $samples);
+
+            //The following $samplesList should have been cleaned and fixed....
+            // - it should be a controlled list
+            // - this is taking directly from Mk1 and contains nonsense...
+            //GAT-4628 has been creaed for someone to do this
+            //See: 
+            // - https://github.com/HDRUK/traser-mapping-files/blob/master/maps/HDRUK/2.2.0/HDRUK/2.1.2/translation.jsonata#L10-L24
+            // - https://github.com/HDRUK/traser-mapping-files/blob/master/maps/HDRUK/2.2.0/HDRUK/2.1.2/translation.jsonata#L39-L45
+            /*
+                $allowedMaterialTypes := [
+                    "Blood",
+                    "DNA",
+                    "Faeces",
+                    "Immortalized Cell Lines",
+                    "Isolated Pathogen",
+                    "Other",
+                    "Plasma",
+                    "RNA",
+                    "Saliva",
+                    "Serum",
+                    "Tissue (Frozen)",
+                    "Tissue (FFPE)",
+                    "Urine"
+                 ];
+            */
+            $samplesList = explode(";", $samples); 
+
+            $formattedSamplesArray = [];
+            foreach ($samplesList as $sample) {
+                $formattedSamplesArray[] = ['materialType' => $sample];
+            }
+
             $dataset = Dataset::where([
                 'mongo_pid' => $mongoPid,
             ])->first();
@@ -59,24 +90,21 @@ class PhysicalSamplePostMigration extends Command
                     $metadata = $datasetVersion->metadata;
 
                     if (array_key_exists('tissuesSampleCollection', $metadata['metadata'])) {
-                        if (is_null($metadata['metadata']['tissuesSampleCollection'])) {
-                            $metadata['metadata']['tissuesSampleCollection'] = [['materialType' => $samplesList]];
-                        } else {
-                            $metadata['metadata']['tissuesSampleCollection'][0]['materialType'] = $samplesList;
-                        }
+                        $metadata['metadata']['tissuesSampleCollection'] = $formattedSamplesArray;
                     }
 
                     DatasetVersion::where('id', $dataset->id)->update([
                         'metadata' => json_encode(json_encode($metadata)),
                     ]);
+
                 }
 
                 if ($reindexEnabled) {
                     MMC::reindexElastic($dataset->id);
+                    sleep(1);
                 }                
             }
             $progressbar->advance();
-            sleep(1);
         }
 
         $progressbar->finish();

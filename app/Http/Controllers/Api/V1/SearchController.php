@@ -1507,8 +1507,9 @@ class SearchController extends Controller
     {
         $locations = array();
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with('spatialCoverage')->get();
+            $datasets = Dataset::where('team_id', $team['id'])->get();
             foreach ($datasets as $dataset) {
+                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
                 foreach ($dataset['spatialCoverage'] as $loc) {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];

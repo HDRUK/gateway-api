@@ -174,6 +174,9 @@ class DataProviderCollController extends Controller
      *          @OA\JsonContent(
      *              @OA\Property(property="message", type="string"),
      *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
      *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
@@ -210,11 +213,14 @@ class DataProviderCollController extends Controller
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
                 'data' => [
+                    'id' => $dp->id,
+                    'name' => $dp->name,
+                    'img_url' => $dp->img_url,
                     'datasets' => $this->datasets,
-                    'durs' => Dur::select('id', 'project_title', 'organisation_name')->whereIn('id', $this->durs)->get()->toArray(),
-                    'tools' => Tool::select('id', 'name')->with(['user'])->whereIn('id', $this->tools)->get()->toArray(),
-                    'publications' => Publication::select('id', 'paper_title', 'authors', 'publication_type', 'publication_type_mk1')->whereIn('id', $this->publications)->get()->toArray(),
-                    'collections' => Collection::select('id', 'name', 'image_link')->whereIn('id', $this->collections)->get()->toArray(),
+                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
+                    'tools' => Tool::select('id', 'name', 'enabled', 'created_at', 'updated_at')->with(['user'])->whereIn('id', $this->tools)->get()->toArray(),
+                    'publications' => Publication::select('id', 'paper_title', 'authors', 'publication_type', 'publication_type_mk1', 'created_at', 'updated_at')->whereIn('id', $this->publications)->get()->toArray(),
+                    'collections' => Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray(),
                 ],
             ]);
         } catch (Exception $e) {
@@ -581,11 +587,14 @@ class DataProviderCollController extends Controller
     {
         $provider = DataProviderColl::where('id', $id)->with('teams')->first();
 
+        
         $datasetTitles = array();
         $locations = array();
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with(['versions', 'spatialCoverage'])->get();
+            $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
+
             foreach ($datasets as $dataset) {
+                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
                 $metadata = $dataset['versions'][0];
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
                 foreach ($dataset['spatialCoverage'] as $loc) {
@@ -643,9 +652,12 @@ class DataProviderCollController extends Controller
     public function checkingDataset(int $datasetId)
     {
         $dataset = Dataset::where(['id' => $datasetId])
-            ->with(['durs', 'collections', 'publications', 'tools'])
+            ->with(['durs', 'collections', 'publications'])
             ->first();
 
+        // inject tools
+        $dataset->setAttribute('tools', $dataset->getLatestTools());
+            
         if (!$dataset) {
             return;
         }
@@ -671,7 +683,7 @@ class DataProviderCollController extends Controller
 
         $this->durs = array_unique([...$this->durs, ...$dataset->durs->pluck('id')->toArray()]);
         $this->publications = array_unique([...$this->publications, ...$dataset->publications->pluck('id')->toArray()]);
-        $this->tools = array_unique([...$this->tools, ...$dataset->tools->pluck('id')->toArray()]);
+        $this->tools = array_unique(array_merge($this->tools, $dataset->tools->pluck('id')->toArray()));
         $this->collections = array_unique([...$this->collections, ...$dataset->collections->pluck('id')->toArray()]);
     }
 }
