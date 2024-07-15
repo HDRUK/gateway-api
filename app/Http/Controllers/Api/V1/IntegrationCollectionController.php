@@ -44,6 +44,14 @@ class IntegrationCollectionController extends Controller
      *    tags={"Integration Collections"},
      *    summary="IntegrationCollectionController@index",
      *    description="Returns a list of collections",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="name",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="string"),
+     *       description="Filter collections by name"
+     *    ),
      *    @OA\Response(
      *       response=200,
      *       description="Success",
@@ -95,7 +103,12 @@ class IntegrationCollectionController extends Controller
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
-            $collections = Collection::with([
+            $name = $request->query('name', null);
+
+            $collections = Collection::when($name, function ($query) use ($name) {
+                return $query->where('name', 'LIKE', '%' . $name . '%');
+            })
+            ->with([
                 'keywords',
                 'datasets',
                 'tools',
