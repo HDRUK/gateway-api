@@ -51,6 +51,7 @@ class DataProviderCollController extends Controller
      *                      @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                      @OA\Property(property="name", type="string", example="Name"),
+     *                      @OA\Property(property="summary", type="string", example="Summary"),
      *                      @OA\Property(property="enabled", type="boolean", example="1")
      *                  )
      *              )
@@ -114,6 +115,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="enabled", type="boolean", example="1")
      *              )
      *          ),
@@ -177,6 +179,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="id", type="integer", example=1),
      *                  @OA\Property(property="name", type="string", example="Name"),
      *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
+     *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
@@ -223,6 +226,7 @@ class DataProviderCollController extends Controller
                     'id' => $dp->id,
                     'name' => $dp->name,
                     'img_url' => $dp->img_url,
+                    'summary' => $dp->summary,
                     'datasets' => $this->datasets,
                     'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
                     'tools' => Tool::select('id', 'name', 'enabled', 'created_at', 'updated_at')->with(['user'])->whereIn('id', $this->tools)->get()->toArray(),
@@ -247,8 +251,9 @@ class DataProviderCollController extends Controller
      *          required=true,
      *          description="DataProviderColl definition",
      *          @OA\JsonContent(
-     *              required={"name", "enabled", "team_ids"},
+     *              required={"name", "summary", "enabled", "team_ids"},
      *              @OA\Property(property="name", type="string", example="Name"),
+     *              @OA\Property(property="summary", type="string", example="Summary"),
      *              @OA\Property(property="enabled", type="boolean", example="true"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
      *                  @OA\Items(
@@ -284,6 +289,7 @@ class DataProviderCollController extends Controller
                 'enabled' => $input['enabled'],
                 'name' => $input['name'],
                 'img_url' => $input['img_url'],
+                'summary' => $input['summary'],
             ]);
 
             Auditor::log([
@@ -341,8 +347,9 @@ class DataProviderCollController extends Controller
      *          required=true,
      *          description="DataProviderColl definition",
      *          @OA\JsonContent(
-     *              required={"name", "enabled", "team_ids"},
+     *              required={"name", "summary", "enabled", "team_ids"},
      *              @OA\Property(property="name", type="string", example="Name"),
+     *              @OA\Property(property="summary", type="string", example="Summary"),
      *              @OA\Property(property="enabled", type="string", example="true"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
      *                  @OA\Items(
@@ -369,6 +376,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="enabled", type="boolean", example="1")
      *              )
      *          ),
@@ -393,6 +401,7 @@ class DataProviderCollController extends Controller
             $dps->enabled = $input['enabled'];
             $dps->name = $input['name'];
             $dps->img_url = $input['img_url'];
+            $dps->summary = $input['summary'];
             $dps->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
@@ -442,6 +451,7 @@ class DataProviderCollController extends Controller
      *          description="DataProviderColl definition",
      *          @OA\JsonContent(
      *              @OA\Property(property="name", type="string", example="Name"),
+     *              @OA\Property(property="summary", type="string", example="Summary"),
      *              @OA\Property(property="enabled", type="string", example="true"),
      *              @OA\Property(property="team_ids", type="array", example="{3, 4, 5}",
      *                  @OA\Items(
@@ -468,6 +478,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="enabled", type="boolean", example="1")
      *              )
      *          ),
@@ -492,6 +503,7 @@ class DataProviderCollController extends Controller
             $dps->enabled = (isset($input['enabled']) ? $input['enabled'] : $dps->enabled);
             $dps->name = (isset($input['name']) ? $input['name'] : $dps->name);
             $dps->img_url = (isset($input['img_url']) ? $input['img_url'] : $dps->img_url);
+            $dps->summary = (isset($input['summary']) ? $input['summary'] : $dps->summary);
             $dps->save();
 
             if (isset($input['team_ids']) && !empty($input['team_ids'])) {
