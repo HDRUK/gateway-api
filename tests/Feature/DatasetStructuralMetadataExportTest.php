@@ -28,11 +28,11 @@ class DatasetStructuralMetadataExportTest extends TestCase
     {
         Storage::fake('local');
 
-        $export = Arr::has($this->testMetadata, 'metadata.structuralMetadata') ? 
+        $data = Arr::has($this->testMetadata, 'metadata.structuralMetadata') ? 
             $this->testMetadata['metadata']['structuralMetadata'] : 
             [];
 
-        $export = new DatasetStructuralMetadataExport($export);
+        $export = new DatasetStructuralMetadataExport($data);
 
         $fileName = 'dataset-structural-metadata.csv';
         Excel::store($export, $fileName, 'local');
