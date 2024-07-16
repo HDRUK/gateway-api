@@ -33,19 +33,12 @@ class DatasetStructuralMetadataExportTest extends TestCase
         $this->metadata = $this->getMetadata();
     }
 
-    protected $testMetadata;
-
-    // public function setUp(): void
-    // {
-    //     $this->testMetadata = $this->getMetadata();
-    // }
-
     public function test_generates_excel_dataset_structural_metadata_download(): void
     {
         Storage::fake('local');
 
-        $data = Arr::has($this->testMetadata, 'metadata.structuralMetadata') ? 
-            $this->testMetadata['metadata']['structuralMetadata'] : 
+        $data = Arr::has($this->metadata, 'metadata.structuralMetadata') ? 
+            $this->metadata['metadata']['structuralMetadata'] : 
             [];
 
         $export = new DatasetStructuralMetadataExport($data);

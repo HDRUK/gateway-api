@@ -23,6 +23,8 @@
     <env name="QUEUE_CONNECTION" value="sync"/>
     <env name="SESSION_DRIVER" value="array"/>
     <env name="TELESCOPE_ENABLED" value="false"/>
+    <env name="GOOGLE_CLOUD_LOGGING_ENABLED" value="false"/>
+    <env name="GOOGLE_CLOUD_PUBSUB_ENABLED" value="false"/>
   </php>
   <source>
     <include>
