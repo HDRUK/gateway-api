@@ -59,10 +59,19 @@ Route::get('/services/traser', function(Request $request) {
 });
 
 
-Route::any('/services/quba{any}', 
-    [ServiceLayerController::class, 
-    'quba', 
-] )->where('any', '.*');
+Route::any('/services/darq{any}', 
+    [
+        ServiceLayerController::class, 
+        'darq', 
+    ])
+    ->where('any', '.*')
+    ->middleware(
+        [
+            'jwt.verify',
+            'sanitize.input',
+            'check.access:roles,hdruk.superadmin'
+        ]
+    );
 
 
 Route::any('/services/daras{any}', 
