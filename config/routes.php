@@ -2057,6 +2057,7 @@ return [
         ],
         'constraint' => [],
     ],
+
     // datasets integrations
     [
         'name' => 'datasets.integrations',

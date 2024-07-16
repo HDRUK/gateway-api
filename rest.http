@@ -493,9 +493,15 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get one dataset by id
-GET {{baseUrl}}/api/{{apiVersion}}/datasets/1 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/datasets/835 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
+
+#### get one dataset by id export
+GET {{baseUrl}}/api/{{apiVersion}}/datasets/835?export=structuralMetadata HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
 
 #### create dataset
 # POST {{baseUrl}}/api/{{apiVersion}}/datasets HTTP/1.1
