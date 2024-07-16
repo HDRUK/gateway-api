@@ -22,6 +22,8 @@ class DatasetStructuralMetadataExportTest extends TestCase
         setUp as commonSetUp;
     }
 
+    protected $testMetadata;
+
     public function setUp(): void
     {
         $this->commonSetUp();
@@ -30,15 +32,15 @@ class DatasetStructuralMetadataExportTest extends TestCase
             SpatialCoverageSeeder::class,
         ]);
 
-        $this->metadata = $this->getMetadata();
+        $this->testMetadata = $this->getMetadata();
     }
 
     public function test_generates_excel_dataset_structural_metadata_download(): void
     {
         Storage::fake('local');
 
-        $data = Arr::has($this->metadata, 'metadata.structuralMetadata') ? 
-            $this->metadata['metadata']['structuralMetadata'] : 
+        $data = Arr::has($this->testMetadata, 'metadata.structuralMetadata') ? 
+            $this->testMetadata['metadata']['structuralMetadata'] : 
             [];
 
         $export = new DatasetStructuralMetadataExport($data);
