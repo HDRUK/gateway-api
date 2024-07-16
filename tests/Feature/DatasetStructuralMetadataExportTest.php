@@ -8,6 +8,7 @@ use Tests\Traits\Authorization;
 use Tests\Traits\MockExternalApis;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
+use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\WithFaker;
 use App\Exports\DatasetStructuralMetadataExport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,16 +16,31 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetStructuralMetadataExportTest extends TestCase
 {
-    use RefreshDatabase, MockExternalApis;
-
-    protected $testMetadata;
+    use RefreshDatabase;
+    use Authorization;
+    use MockExternalApis {
+        setUp as commonSetUp;
+    }
 
     public function setUp(): void
     {
-        $this->testMetadata = $this->getMetadata();
+        $this->commonSetUp();
+
+        $this->seed([
+            SpatialCoverageSeeder::class,
+        ]);
+
+        $this->metadata = $this->getMetadata();
     }
 
-    public function test_generates_excel_dataset_structural_metadata_download_type_table(): void
+    protected $testMetadata;
+
+    // public function setUp(): void
+    // {
+    //     $this->testMetadata = $this->getMetadata();
+    // }
+
+    public function test_generates_excel_dataset_structural_metadata_download(): void
     {
         Storage::fake('local');
 
