@@ -36,7 +36,7 @@ class RunPostMigrations extends Command
             ['command' => 'app:add-data-provider-network', 'arguments' => []], // seed dataproviders
             ['command' => 'app:physical-sample-post-migration', 'arguments' => []], // datasets
             ['command' => 'app:datasets-post-migration', 'arguments' => []], // datasets
-            //['command' => 'app:update-eu-licenses', 'arguments' => []], // add licenses before post-migrating tools? - not working!!!!
+            ['command' => 'app:update-eu-licenses', 'arguments' => []], // add licenses before post-migrating tools? - not working!!!!
             ['command' => 'app:tools-post-migration-process', 'arguments' => []], // tools
             ['command' => 'app:publication-type-post-migration', 'arguments' => []], // publications
             ['command' => 'app:dataset-publication-linkage-post-migration', 'arguments' => []], // dataset linkage
