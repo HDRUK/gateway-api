@@ -438,7 +438,19 @@ class DatasetController extends Controller
             
             if ($exportStructuralMetadata === 'structuralMetadata') {
                 $arrayDataset = $dataset->toArray();
-                $export = MMC::getValueByPossibleKeys($arrayDataset, ['versions.0.metadata.metadata.structuralMetadata'], []);
+                $latestVersionId = $latestVersion->id;
+                $versions = MMC::getValueByPossibleKeys($arrayDataset, ['versions'], []);
+
+                $count = 0;
+                if (count($versions)) {
+                    foreach ($versions as $version) {
+                        if ((int) $version['id'] === (int) $latestVersionId) {
+                            break;
+                        }
+                        $count++;
+                    }
+                }
+                $export = count($versions) ? MMC::getValueByPossibleKeys($arrayDataset, ['versions.' . $count . '.metadata.metadata.structuralMetadata'], []) : [];
                 
                 Auditor::log([
                     'action_type' => 'GET',
