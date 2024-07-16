@@ -28,8 +28,8 @@ class DatasetStructuralMetadataExportTest extends TestCase
     {
         Storage::fake('local');
 
-        $export = Arr::has($this->testMetadata, 'versions.0.metadata.metadata.structuralMetadata') ? 
-            $this->testMetadata['versions'][0]['metadata']['metadata']['structuralMetadata'] : 
+        $export = Arr::has($this->testMetadata, 'metadata.structuralMetadata') ? 
+            $this->testMetadata['metadata']['structuralMetadata'] : 
             [];
 
         $export = new DatasetStructuralMetadataExport($export);
