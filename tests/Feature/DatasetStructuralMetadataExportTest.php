@@ -24,12 +24,14 @@ class DatasetStructuralMetadataExportTest extends TestCase
 
     public function setUp(): void
     {
-        $this->testMetadata = $this->getMetadata();
+        $this->testMetadata = json_decode($this->getMetadata(), true);
     }
 
     public function test_generates_excel_dataset_structural_metadata_download_type_table(): void
     {
         Storage::fake('local');
+        var_dump($this->testMetadata);
+        exit();
 
         $export = Arr::has($this->testMetadata, 'versions.0.metadata.metadata.structuralMetadata') ? 
             $this->testMetadata['versions'][0]['metadata']['metadata']['structuralMetadata'] : 
