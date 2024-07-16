@@ -375,7 +375,7 @@ class DatasetController extends Controller
      */
     public function show(GetDataset $request, int $id): JsonResponse|BinaryFileResponse
     {
-        // try {
+        try {
             $exportStructuralMetadata = $request->query('export', null);
 
             // Retrieve the dataset with collections, publications, and counts
@@ -460,9 +460,9 @@ class DatasetController extends Controller
                 'data' => $dataset,
             ], 200);
 
-        // } catch (Exception $e) {
-        //     throw new Exception($e->getMessage());
-        // }
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     /**
