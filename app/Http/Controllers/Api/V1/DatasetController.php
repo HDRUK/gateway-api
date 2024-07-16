@@ -323,6 +323,12 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
+     *       name="export",
+     *       in="query",
+     *       description="Alternative output schema model.",
+     *       @OA\Schema(type="string", example="structuralMetadata")
+     *    ),
+      *    @OA\Parameter(
      *       name="schema_model",
      *       in="query",
      *       description="Alternative output schema model.",
