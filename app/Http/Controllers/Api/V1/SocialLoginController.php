@@ -82,9 +82,6 @@ class SocialLoginController extends Controller
      */
     public function login(Request $request, string $provider): mixed
     {
-        if ($provider === 'linkedin') {
-            $provider = 'linkedin-openid';
-        }
         $redirectUrl = env('GATEWAY_URL');
         if($request->has("redirect")){
             $redirectUrl = $redirectUrl . $request->query('redirect');
@@ -115,6 +112,9 @@ class SocialLoginController extends Controller
 
             return redirect()->away($oaUrl);
         } else {
+            if ($provider === 'linkedin') {
+                $provider = 'linkedin-openid';
+            }
             return Socialite::driver($provider)
                 ->redirect();
         }
