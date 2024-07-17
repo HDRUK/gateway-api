@@ -157,7 +157,7 @@ class ServiceLayerController extends Controller
         // Forward the request to the external API service
         $response = Http::withHeaders($headers)
             ->withOptions(['query' => $query, 'body' => $content])
-            ->withCookies(['apiJwt' => $jwt], $domain)
+            ->withCookies(['jwtToken' => $jwt], $domain)
             ->send($request->method(), $url);
 
         $statusCode = $response->status();
