@@ -806,7 +806,7 @@ class DurController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            if ($initDur === 'ARCHIVED' && !array_key_exists('status', $input)) {
+            if ($initDur['status'] === 'ARCHIVED' && !array_key_exists('status', $input)) {
                 throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
             }
 
@@ -1121,7 +1121,7 @@ class DurController extends Controller
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
 
-                if ($initDur === 'ARCHIVED' && !array_key_exists('status', $input)) {
+                if ($initDur['status'] === 'ARCHIVED' && !array_key_exists('status', $input)) {
                     throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
                 }
 
