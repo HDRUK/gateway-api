@@ -69,7 +69,7 @@ Route::any('/services/darq{any}',
         [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdruk.superadmin'
+            'check.access:roles,hdruk.superadmin'//in future, open to dar admins too
         ]
     );
 

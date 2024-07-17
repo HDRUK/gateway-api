@@ -13,10 +13,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\JwtController;
 
+use App\Http\Traits\UserRolePermissions;
+
 class AuthController extends Controller
 {
+    use UserRolePermissions;
     private JwtController $jwt;
-
     /**
      * constructor
      */
@@ -117,6 +119,8 @@ class AuthController extends Controller
             'id' => (string) $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'is_admin' => $user->is_admin,
+            'role_perms' => $this->getUserRolePerms($user->id),
         ];
 
         $arrayClaims = [
