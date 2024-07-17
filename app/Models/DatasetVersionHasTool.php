@@ -15,6 +15,7 @@ class DatasetVersionHasTool extends Model
     protected $fillable = [
         'dataset_version_id',
         'tool_id',
+        'link_type',
     ];
 
     /**

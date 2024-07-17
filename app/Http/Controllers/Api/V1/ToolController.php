@@ -364,7 +364,7 @@ class ToolController extends Controller
             $tool = Tool::create($array);
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
-            if (array_key_exists('dataset_ids', $input)) {
+            if (array_key_exists('dataset', $input)) {
                 $this->insertDatasetVersionHasTool($input['dataset_ids'], (int) $tool->id);
             }
             if (array_key_exists('programming_language', $input)) {
