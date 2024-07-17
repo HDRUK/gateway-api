@@ -980,33 +980,23 @@ class CohortRequestController extends Controller
      *    description="access cohort request by jwt",
      *    security={{"bearerAuth":{}}},
      *    @OA\Response(
-     *       response="200",
-     *       description="Success response",
-     *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
-     *       )
-     *    ),
+     *      response=302,
+     *      description="Redirect to external URL",
+     *      @OA\Header(
+     *         header="Location",
+     *         description="URL to which the client should be redirected",
+     *         @OA\Schema(
+     *            type="string"
+     *         )
+     *       }
+     *    )
      *    @OA\Response(
-     *       response=404,
-     *       description="Error response",
+     *       response=500,
+     *       description="Error",
      *       @OA\JsonContent(
-     *          @OA\Property(property="message", type="string", example="Resource not found"),
+     *          @OA\Property(property="message", type="string", example="Unauthorized for access :: The request is not approved"),
      *       )
-     *    ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthorized",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="unauthorized")
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Error",
-     *          @OA\JsonContent(
-     *              @OA\Property(property="message", type="string", example="error"),
-     *          )
-     *      )
+     *    )
      * )
      */
     public function checkAccess(Request $request)
