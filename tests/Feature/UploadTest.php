@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 
+use App\Models\Dur;
+use App\Models\Team;
 use App\Models\Upload;
 use Tests\Traits\Authorization;
 
@@ -186,5 +188,59 @@ class UploadTest extends TestCase
         ]);
         $this->assertEquals($response['message'], 'success');
         $this->assertNotNull($response['data']['content']);
+    }
+
+    /**
+     * Upload a dur with success
+     * 
+     * @return void
+     */
+    public function test_dur_from_upload_with_success(): void
+    {
+        $countBefore = Dur::count();
+        $team = Team::all()->random()->id;
+        $file = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/DataUseUploadTemplate_v2.xlsx', 
+            'DataUseUploadTemplate_v2.xlsx',
+        );
+        // post file to files endpoint
+        $response = $this->json(
+            'POST', 
+            self::TEST_URL . '?entity_flag=dur-from-upload&team_id=' . $team, 
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'created_at',
+                'updated_at',
+                'filename',
+                'file_location',
+                'user_id',
+                'status', 
+                'error'
+            ]
+        ]);
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $durId = $content['data']['entity_id'];
+
+        $countAfter = Dur::count();
+
+        $this->assertTrue($countAfter - $countBefore === 1);
+
+        $dur = Dur::findOrFail($durId);
+
+        $this->assertEquals($dur->team_id, $team);
+        $this->assertEquals($dur->organisation_name, "Test");
+        $this->assertIsArray($dur->non_gateway_applicants);
     }
 }
