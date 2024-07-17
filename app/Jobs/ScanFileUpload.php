@@ -91,36 +91,46 @@ class ScanFileUpload implements ShouldQueue
             Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
 
             if ($this->entityFlag === 'dur-from-upload') {
-                $entityId = $this->createDurFromFile($loc);
+                $this->createDurFromFile($loc, $upload);
             }
-
-            $upload->update([
-                'status' => 'PROCESSED',
-                'file_location' => $loc
-            ]);
 
             Auditor::log([
                 'action_type' => 'SCAN',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Uploaded file passed malware scan",
+                'description' => "Uploaded file passed malware scan and processed",
             ]);
         }
     }
 
-    private function createDurFromFile(string $loc): int 
+    private function createDurFromFile(string $loc, Upload $upload): void
     {
-        $data = [
-            'user_id' => $this->userId,
-            'team_id' => $this->teamId,
-        ];
-        $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+        try {
+            $data = [
+                'user_id' => $this->userId,
+                'team_id' => $this->teamId,
+            ];
+            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
 
-        $import = new ImportDur($data);
-        Excel::import($import, $path);
+            $import = new ImportDur($data);
+            Excel::import($import, $path);
 
-        $durId = $import->durImport->durId;
+            $durId = $import->durImport->durId;
 
-        return $durId;
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $loc,
+                'entity_type' => 'dur',
+                'entity_id' => $durId
+            ]);
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+            throw new Exception($e->getMessage());
+        }
     }
 
 }

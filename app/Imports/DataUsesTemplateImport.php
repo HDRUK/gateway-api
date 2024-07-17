@@ -42,9 +42,9 @@ class DataUsesTemplateImport implements ToModel, WithStartRow
             'organisation_name' => $row[1],
             'organisation_id' => $row[2],
             'organisation_sector' => $this->mapOrganisationSector($row[3]),
-            'non_gateway_applicants' => $row[4],
+            'non_gateway_applicants' => explode(",", $row[4]),
             'applicant_id' => $row[5],
-            'funders_and_sponsors' => $row[6],
+            'funders_and_sponsors' => explode(",", $row[6]),
             'accredited_researcher_status' => $row[7],
             'sublicence_arrangements' => $row[8],
             'project_title' => $row[9],
@@ -52,11 +52,11 @@ class DataUsesTemplateImport implements ToModel, WithStartRow
             'public_benefit_statement' => $row[11],
             'request_category_type' => $row[12],
             'technical_summary' => $row[13],
-            'other_approval_committees' => $row[14],
+            'other_approval_committees' => explode(",", $row[14]),
             'project_start_date' => $this->calculateExcelDate($row[15]),
             'project_end_date' =>  $this->calculateExcelDate($row[16]),
             'latest_approval_date' => $this->calculateExcelDate($row[17]),
-            'non_gateway_datasets' => $row[18], // ??? Gateway datasets or not ???
+            'non_gateway_datasets' => explode(",", $row[18]), // ??? Gateway datasets or not ???
             'data_sensitivity_level' => $row[19],
             'legal_basis_for_data_article6' => $row[20],
             'legal_basis_for_data_article9' => $row[21],
@@ -68,7 +68,7 @@ class DataUsesTemplateImport implements ToModel, WithStartRow
             'access_date' => $this->calculateExcelDate($row[27]),
             'access_type' => $row[28],
             'privacy_enhancements' => $row[29],
-            'non_gateway_outputs' => $row[30], // ??? non or gateway research outputs ???
+            'non_gateway_outputs' => explode(",", $row[30]), // ??? non or gateway research outputs ???
             'status' => 'DRAFT',
             'enabled' => true,
             'user_id' => $this->data['user_id'],
