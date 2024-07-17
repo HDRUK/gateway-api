@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Mail;
 use Elastic\Elasticsearch\ClientBuilder;
 use MetadataManagementController AS MMC;
 use App\Http\Controllers\Api\V1\UserController;
-use App\Http\Controllers\Api\V1\CohortRequestController;
 use Elastic\Elasticsearch\Response\Elasticsearch;
+use App\Http\Controllers\Api\V1\CohortRequestController;
 
 trait MockExternalApis
 {
