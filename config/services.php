@@ -44,6 +44,14 @@ return [
         'open_id' => true,
     ],
 
+    'openathens' => [
+        'client_id' => env('OPENATHENS_CLIENT_ID'),
+        'client_secret' => env('OPENATHENS_CLIENT_SECRET'),
+        'redirect' => env('OPENATHENS_REDIRECT_URL'),
+        'issuer' => env('OPENATHENS_ISSUER_URL'),
+        'open_id' => true,
+    ],
+
     'azure' => [
         'client_id' => env('AZURE_CLIENT_ID'),
         'client_secret' => env('AZURE_CLIENT_SECRET'),

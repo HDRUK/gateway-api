@@ -4,10 +4,11 @@ namespace App\Models;
 
 use App\Models\Dur;
 use App\Models\Tag;
+use App\Models\User;
 use App\Models\License;
 use App\Models\Category;
-use App\Models\Publication;
 use App\Models\Collection;
+use App\Models\Publication;
 use App\Models\DatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -48,6 +49,7 @@ class Tool extends Model
         'enabled',
         'associated_authors', 
         'contact_address',
+        'any_dataset',
     ];
 
     /**
@@ -55,12 +57,12 @@ class Tool extends Model
      */
     protected $casts = [
         'enabled' => 'boolean',
+        'any_dataset' => 'boolean',
     ];
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class)
-            ->select('firstname', 'lastname');
+        return $this->belongsTo(User::class)->select(['id', 'firstname', 'lastname']);
     }
 
     public function tag(): BelongsToMany

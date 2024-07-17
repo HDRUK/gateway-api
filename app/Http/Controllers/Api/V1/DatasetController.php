@@ -2,39 +2,44 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use App\Jobs\TermExtraction;
-use Illuminate\Http\Request;
 
+use App\Models\DataProvider;
+use Illuminate\Http\Request;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
-use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
 
 use Illuminate\Support\Carbon;
 use App\Models\SpatialCoverage;
 
 use Illuminate\Http\JsonResponse;
+use App\Models\DataProviderHasTeam;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
-use App\Exceptions\NotFoundException;
-use MetadataManagementController AS MMC;
+use Maatwebsite\Excel\Facades\Excel;
 
+use App\Exceptions\NotFoundException;
+use Illuminate\Support\Facades\Storage;
+use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
-use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Http\Requests\Dataset\EditDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\DeleteDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
+use App\Exports\DatasetStructuralMetadataExport;
+use App\Models\DatasetVersionHasSpatialCoverage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DatasetController extends Controller
 {
@@ -319,6 +324,12 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
+     *       name="export",
+     *       in="query",
+     *       description="Alternative output schema model.",
+     *       @OA\Schema(type="string", example="structuralMetadata")
+     *    ),
+      *    @OA\Parameter(
      *       name="schema_model",
      *       in="query",
      *       description="Alternative output schema model.",
@@ -363,10 +374,12 @@ class DatasetController extends Controller
      * )
      * 
      */
-    public function show(GetDataset $request, int $id): JsonResponse
+    public function show(GetDataset $request, int $id): JsonResponse|BinaryFileResponse
     {
         try {
-            // Retrieve the dataset with publications and counts
+            $exportStructuralMetadata = $request->query('export', null);
+
+            // Retrieve the dataset with collections, publications, and counts
             $dataset = Dataset::find($id);
 
             if (!$dataset) {
@@ -423,6 +436,31 @@ class DatasetController extends Controller
                 throw new Exception('You have given a schema_model but not a schema_version');
             } elseif ($outputSchemaModelVersion) {
                 throw new Exception('You have given a schema_version but not schema_model');
+            }
+            
+            if ($exportStructuralMetadata === 'structuralMetadata') {
+                $arrayDataset = $dataset->toArray();
+                $latestVersionId = $latestVersion->id;
+                $versions = MMC::getValueByPossibleKeys($arrayDataset, ['versions'], []);
+
+                $count = 0;
+                if (count($versions)) {
+                    foreach ($versions as $version) {
+                        if ((int) $version['id'] === (int) $latestVersionId) {
+                            break;
+                        }
+                        $count++;
+                    }
+                }
+                $export = count($versions) ? MMC::getValueByPossibleKeys($arrayDataset, ['versions.' . $count . '.metadata.metadata.structuralMetadata'], []) : [];
+                
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset get " . $id . " download structural metadata",
+                ]);
+
+                return Excel::download(new DatasetStructuralMetadataExport($export), 'dataset-structural-metadata.csv');
             }
 
             Auditor::log([
@@ -1153,6 +1191,30 @@ class DatasetController extends Controller
         $response->headers->set('Cache-Control','max-age=0');
         
         return $response;
+    }
+
+    public function exportMock(Request $request)
+    {
+        try {
+            $exportType = $request->query('type', null);
+            $file = '';
+
+            switch ($exportType) {
+                case 'dataset_structural_metadata':
+                    $file = Config::get('mock_data.dataset_structural_metadata');
+                    break;
+                default:
+                    return response()->json(['error' => 'File not found.'], 404);
+            }
+
+            if (!Storage::disk('mock')->exists($file)) {
+                return response()->json(['error' => 'File not found.'], 404);
+            }
+            
+            return Storage::disk('mock')->download($file)->setStatusCode(Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     private function getVersion(int $version){

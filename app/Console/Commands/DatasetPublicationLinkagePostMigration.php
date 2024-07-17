@@ -60,7 +60,6 @@ class DatasetPublicationLinkagePostMigration extends Command
             if (!$datasetVersion) {
                 echo 'Failed to find dataset with title ' . $datasetTitle . "\n";
                 $progressbar->advance();
-                sleep(0.1);
                 continue;
             }
 
@@ -72,7 +71,6 @@ class DatasetPublicationLinkagePostMigration extends Command
             if (!$publication) {
                 echo 'Failed to find paper with doi ' . $paperDOI . "\n";
                 $progressbar->advance();
-                sleep(0.1);
                 continue;
             }
 
@@ -81,7 +79,6 @@ class DatasetPublicationLinkagePostMigration extends Command
             // Check that the supplied Publication name matches the one found
             if ($publication->paper_title != $paperName) {
                 $progressbar->advance();
-                sleep(0.1);
                 echo 'WARNING! Found paper by DOI but titles do not match. Will not create or update this record.' . "\n";
                 echo $publication->paper_title . ' vs ' . $paperName . "\n";
                 continue;
@@ -103,10 +100,10 @@ class DatasetPublicationLinkagePostMigration extends Command
 
             if ($reindexEnabled) {
                 $publicationController->indexElasticPublication($publicationId);
+                sleep(1);
             }
 
             $progressbar->advance();
-            sleep(0.1);
         }
 
         $progressbar->finish();

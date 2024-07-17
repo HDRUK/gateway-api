@@ -44,7 +44,7 @@ class PublicationController extends Controller
      *       @OA\Schema(type="string"),
      *       description="Filter tools by paper title"
      *    ),
-      *    @OA\Response(
+     *    @OA\Response(
      *       response="200",
      *       description="Success response",
      *       @OA\JsonContent(

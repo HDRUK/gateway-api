@@ -199,6 +199,7 @@ return [
         App\Providers\AliasReplyScannerProvider::class,
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
         App\Providers\EnquiriesManagementControllerServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
     ],
 
     /*
@@ -217,6 +218,7 @@ return [
         'MetadataManagementController' => App\MetadataManagementController\MetadataManagementControllerFacade::class,
         'AliasReplyScanner' => App\AliasReplyScanner\AliasReplyScannerFacade::class,
         'EnquiriesManagementController' => App\EnquiriesManagementController\EnquiriesManagementControllerFacade::class,
+        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
     ])->toArray(),
 
 ];

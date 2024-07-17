@@ -131,6 +131,10 @@ class CreateTool extends BaseFormRequest
                 'integer',
                 'exists:datasets,id',
             ],
+            'any_dataset' => [
+                'nullable', 
+                'boolean',
+            ],
         ];
     }
 }
