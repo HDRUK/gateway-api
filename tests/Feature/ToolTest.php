@@ -132,6 +132,7 @@ class ToolTest extends TestCase
                     'durs',
                     'collections',
                     'dataset_versions',
+                    'any_dataset',
                 ]
             ],
             'current_page',
@@ -185,6 +186,7 @@ class ToolTest extends TestCase
                 'durs',
                 'collections',
                 'dataset_versions',
+                'any_dataset',
             ]
         ]);
         $response->assertStatus(200);
@@ -221,6 +223,7 @@ class ToolTest extends TestCase
             "publications" => $this->generatePublications(),
             "durs" => [],
             "collections" => $this->generateCollections(),
+            "any_dataset" => false,
         ];
 
         $response = $this->json(
@@ -397,6 +400,7 @@ class ToolTest extends TestCase
                 'publications' => [],
                 'durs' => [],
                 'collections' => [],
+                'any_dataset' => false,
             ],
             $this->header
         );
@@ -425,6 +429,7 @@ class ToolTest extends TestCase
                 'publications' => [],
                 'durs' => [],
                 'collections' => $this->generateCollections(),
+                'any_dataset' => false,
             ],
             $this->header
         );
@@ -453,6 +458,7 @@ class ToolTest extends TestCase
                 'publications' => [],
                 'durs' => [1, 2],
                 'collections' => [],
+                'any_dataset' => false,
             ],
             $this->header
         );
@@ -612,6 +618,7 @@ class ToolTest extends TestCase
             "publications" => $this->generatePublications(),
             "durs" => [],
             "collections" => $this->generateCollections(),
+            "any_dataset" => false,
         );
         $responseIns = $this->json(
             'POST',
@@ -658,6 +665,7 @@ class ToolTest extends TestCase
             "publications" => $generatedPublications,
             "durs" => [1, 2],
             "collections" => $generatedCollections,
+            "any_dataset" => false,
         );
 
         $responseUpdate = $this->json(
@@ -743,6 +751,7 @@ class ToolTest extends TestCase
             "publications" => $this->generatePublications(),
             "durs" => [],
             "collections" => $this->generateCollections(),
+            "any_dataset" => false,
         );
         $responseIns = $this->json(
             'POST',
@@ -880,6 +889,7 @@ class ToolTest extends TestCase
             "type_category" => array(1),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "any_dataset" => false,
         );
 
         $responseIns = $this->json(
@@ -938,10 +948,6 @@ class ToolTest extends TestCase
         $responseDeleteAgain->assertStatus(200);
     }
 
-
-
-    
-
     /**
      * Update Tool with success by id and generate an exception
      *
@@ -965,6 +971,7 @@ class ToolTest extends TestCase
             "type_category" => array(1),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "any_dataset" => false,
         );
         $id = 10000;
 
