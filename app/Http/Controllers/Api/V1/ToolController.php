@@ -160,7 +160,16 @@ class ToolController extends Controller
             }
 
             // Perform query for the matching tools with filters, sorting, and pagination
-            $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications', 'durs', 'collections', 'datasetVersions'])
+            $tools = Tool::with([
+                'user',
+                'tag',
+                'team',
+                'license',
+                'publications',
+                'durs',
+                'collections',
+                'datasetVersions',
+            ])
             ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
             })
@@ -282,6 +291,7 @@ class ToolController extends Controller
      *             @OA\Property( property="publications", type="array", @OA\Items() ),
      *             @OA\Property( property="durs", type="array", @OA\Items() ),
      *             @OA\Property( property="collections", type="array", @OA\Items() ),
+     *             @OA\Property( property="any_dataset", type="boolean", example=false ),
      *          ),
      *       ),
      *    ),
@@ -347,6 +357,7 @@ class ToolController extends Controller
                 'mongo_id',
                 'associated_authors', 
                 'contact_address',
+                'any_dataset'
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -437,6 +448,7 @@ class ToolController extends Controller
      *             @OA\Property( property="publications", type="array", @OA\Items() ),
      *             @OA\Property( property="durs", type="array", @OA\Items() ),
      *             @OA\Property( property="collections", type="array", @OA\Items() ),
+     *             @OA\Property( property="any_dataset", type="boolean", example=false ),
      *          ),
      *       ),
      *    ),
@@ -503,6 +515,7 @@ class ToolController extends Controller
                 'mongo_id',
                 'associated_authors', 
                 'contact_address',
+                'any_dataset',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -610,6 +623,7 @@ class ToolController extends Controller
      *             @OA\Property( property="publications", type="array", @OA\Items() ),
      *             @OA\Property( property="durs", type="array", @OA\Items() ),
      *             @OA\Property( property="collections", type="array", @OA\Items() ),
+     *             @OA\Property( property="any_dataset", type="boolean", example=false ),
      *          ),
      *       ),
      *    ),
@@ -699,6 +713,7 @@ class ToolController extends Controller
                 'mongo_id',
                 'associated_authors', 
                 'contact_address',
+                'any_dataset',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -762,8 +777,6 @@ class ToolController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
-
 
     /**
      * @OA\Delete(
@@ -1252,11 +1265,15 @@ class ToolController extends Controller
                 ->all();
 
             $datasetTitles = array();
-            foreach ($datasets as $dataset) {
-                $dataset_version = $dataset['versions'][0];
-                $datasetTitles[] = $dataset_version['metadata']['metadata']['summary']['shortTitle'];
+            if ($tool->any_dataset) {
+                $datasetTitles[] = '_Can be used with any dataset';
+            } else {
+                foreach ($datasets as $dataset) {
+                    $dataset_version = $dataset['versions'][0];
+                    $datasetTitles[] = $dataset_version['metadata']['metadata']['summary']['shortTitle'];
+                }
+                usort($datasetTitles, 'strcasecmp');
             }
-            usort($datasetTitles, 'strcasecmp');
 
             $toIndex = [
                 'name' => $tool['name'],
