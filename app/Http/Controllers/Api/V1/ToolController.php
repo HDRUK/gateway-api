@@ -1266,7 +1266,7 @@ class ToolController extends Controller
 
             $datasetTitles = array();
             if ($tool->any_dataset) {
-                $datasetTitles[] = 'Can be used with any dataset';
+                $datasetTitles[] = '_Can be used with any dataset';
             } else {
                 foreach ($datasets as $dataset) {
                     $dataset_version = $dataset['versions'][0];
