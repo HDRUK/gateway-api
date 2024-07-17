@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('tools', function (Blueprint $table) {
-            $table->boolean('any_dataset')->default('false');
+            $table->boolean('any_dataset')->default(0);
         });
     }
 
