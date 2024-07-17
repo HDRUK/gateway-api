@@ -160,7 +160,7 @@ class PublicationTest extends TestCase
                     ],
                 ],
                 'tools' => $this->generateTools(),
-                'status' => 'ACTIVE'
+                'status' => 'ACTIVE',
             ],
             $this->header,
         );
@@ -284,14 +284,14 @@ class PublicationTest extends TestCase
             $this->header,
         );
 
-        $content = $responseUpdate->decodeResponseJson()['data'];
-        $this->assertEquals($content['paper_title'], 'Not A Test Paper Title');
-
         $responseUpdate->assertStatus(200);
         $responseUpdate->assertJsonStructure([
             'message',
             'data'
         ]);
+
+        $content = $responseUpdate->decodeResponseJson()['data'];
+        $this->assertEquals($content['paper_title'], 'Not A Test Paper Title');
     }
 
     public function test_can_count_with_success(): void{
@@ -394,9 +394,9 @@ class PublicationTest extends TestCase
     }
 
     /**
-     * SoftDelete Publication by id with success
+     * SoftDelete Publication by id with success, and unarchive with success
      */
-    public function test_soft_delete_publication_with_success(): void
+    public function test_soft_delete_and_unarchive_publication_with_success(): void
     {
         $countBefore = Publication::where('id', 1)->count();
         
@@ -408,6 +408,17 @@ class PublicationTest extends TestCase
 
         $this->assertTrue($countTrashed === 1);
         $this->assertTrue($countAfter < $countBefore);
+
+        $response = $this->json('PATCH', self::TEST_URL . '/1?unarchive', ['status' => 'ACTIVE'], $this->header);
+        $response->assertStatus(200);
+
+        $countTrashedAfterUnarchiving = Publication::onlyTrashed()->where('id', 1)->count();
+        $countAfterUnarchiving = Publication::where('id', 1)->count();
+
+        $this->assertEquals($countTrashedAfterUnarchiving, 0);
+        $this->assertTrue($countAfter < $countAfterUnarchiving);
+        $this->assertTrue($countBefore === $countAfterUnarchiving);
+
     }
 
     private function generateTools()
