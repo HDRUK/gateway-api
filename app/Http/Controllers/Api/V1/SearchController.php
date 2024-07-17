@@ -15,7 +15,7 @@ use App\Models\License;
 use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\Publication;
-use App\Models\PublicationHasDataset;
+use App\Models\PublicationHasDatasetVersion;
 use App\Models\DataProvider;
 use App\Models\TypeCategory;
 
@@ -989,7 +989,7 @@ class SearchController extends Controller
 
                 foreach ($pubArray as $i => $p) {
                     $foundFlag = false;
-                    foreach ($pubModels as $model){
+                    foreach ($pubModels as $model) {
                         if ((int) $p['_id'] === $model['id']) {
                             $pubArray[$i]['_source']['created_at'] = $model['created_at'];
                             $pubArray[$i]['paper_title'] = $model['paper_title'];
@@ -1001,16 +1001,30 @@ class SearchController extends Controller
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
                             $pubArray[$i]['url'] = $model['url'];
-                            $pubArray[$i]['datasetLinkTypes'] = PublicationHasDataset::where('publication_id', $model['id'])->pluck('link_type')->all();
+                            
+                            // Use accessor to get datasets and their link types
+                            $datasets = $model->getLatestDatasets();
+                            $datasetLinkTypes = [];
+                            foreach ($datasets as $dataset) {
+                                $datasetVersionId=$dataset->latestVersion()->id;
+                                $linkType = PublicationHasDatasetVersion::where([
+                                    ['publication_id', '=', $model['id']],
+                                    ['dataset_version_id', '=', $datasetVersionId]
+                                ])->pluck('link_type')->first();
+                                $datasetLinkTypes[] = $linkType ?? 'UNKNOWN';
+                            }
+
+                            $pubArray[$i]['datasetLinkTypes'] = $datasetLinkTypes;
+
                             $foundFlag = true;
                             break;
                         }
                     }
                     if (!$foundFlag) {
                         unset($pubArray[$i]);
-                        continue;
                     }
                 }
+
             } else {
 
                 $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';

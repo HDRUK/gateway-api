@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Publication;
+use App\Models\CollectionHasDatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;

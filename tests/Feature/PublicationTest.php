@@ -12,14 +12,14 @@ use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\LicenseSeeder;
-use App\Models\PublicationHasDataset;
+use App\Models\PublicationHasDatasetVersion;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PublicationTest extends TestCase
@@ -49,7 +49,7 @@ class PublicationTest extends TestCase
             PublicationSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
@@ -159,7 +159,7 @@ class PublicationTest extends TestCase
             ],
             $this->header,
         );
-
+        
         $response->assertStatus(201);
         $response->assertJsonStructure([
             'message',
@@ -167,7 +167,7 @@ class PublicationTest extends TestCase
         ]);
 
         $pubId = $response->decodeResponseJson()['data'];
-        $relation = PublicationHasDataset::where('publication_id', $pubId)->first();
+        $relation = PublicationHasDatasetVersion::where('publication_id', $pubId)->first();
         $this->assertNotNull($relation);
         $this->assertEquals($relation['link_type'], "USING");
 

@@ -32,7 +32,7 @@ use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
 
@@ -71,7 +71,7 @@ class DataProviderCollTest extends TestCase
             CollectionHasToolSeeder::class,
             CollectionHasDurSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             CollectionHasPublicationSeeder::class,
 
         ]);

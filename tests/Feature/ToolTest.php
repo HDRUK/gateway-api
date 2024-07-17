@@ -45,7 +45,7 @@ use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\DatasetVersionHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ToolTest extends TestCase
@@ -86,7 +86,7 @@ class ToolTest extends TestCase
             ToolSeeder::class,
             ToolHasTagSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             PublicationHasToolSeeder::class,
             ApplicationSeeder::class,
             DurSeeder::class,

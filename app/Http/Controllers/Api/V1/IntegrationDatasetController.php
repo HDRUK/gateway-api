@@ -311,9 +311,10 @@ class IntegrationDatasetController extends Controller
         try {
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-            $dataset = Dataset::with(['publications'])->findOrFail($id);
+            $dataset = Dataset::findOrFail($id);
 
             // inject dataset Version Atributes
+            $dataset->setAttribute('publications', $dataset->getLatestPublications());
             $dataset->setAttribute('named_entities', $dataset->getLatestNamedEntities());
             $dataset->setAttribute('collections', $dataset->getLatestCollections());
 

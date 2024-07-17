@@ -33,7 +33,7 @@ use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
 
@@ -75,7 +75,7 @@ class CollectionIntegrationTest extends TestCase
             CollectionHasToolSeeder::class,
             CollectionHasDurSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             CollectionHasPublicationSeeder::class,
         ]);
 

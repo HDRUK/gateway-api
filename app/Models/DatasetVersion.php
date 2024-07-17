@@ -4,7 +4,6 @@ namespace App\Models;
 use App\Models\Tool;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\hasMany;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Builder;
@@ -114,6 +113,14 @@ class DatasetVersion extends Model
     public function durHasDatasetVersions(): HasMany
     {
         return $this->hasMany(DurHasDatasetVersion::class);
+    }
+
+    /**
+     * The publications that belong to the dataset version.
+     */
+    public function publicationHasDatasetVersions(): HasMany
+    {
+        return $this->hasMany(PublicationHasDatasetVersion::class);
     }
 
         /**

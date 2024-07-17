@@ -56,7 +56,7 @@ class DatabaseSeeder extends Seeder
             DurSeeder::class,
             TeamSeederAddPid::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             DataAccessApplicationAnswerSeeder::class,
             DataAccessApplicationSeeder::class,
             DataAccessTemplateSeeder::class,

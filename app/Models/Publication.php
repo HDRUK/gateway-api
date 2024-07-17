@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Tool;
 use App\Models\Dataset;
+use App\Models\PublicationHasDatasetVersion;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -37,11 +38,27 @@ class Publication extends Model
     ];
 
     /**
-     * The datasets that belong to a publication.
+     * Get the latest datasets for this publication.
      */
-    public function datasets(): BelongsToMany
+    public function getLatestDatasets()
     {
-        return $this->belongsToMany(Dataset::class, 'publication_has_dataset');
+        $datasetVersionIds = PublicationHasDatasetVersion::
+            where('publication_id', $this->id)
+            ->pluck('dataset_version_id');
+
+        $datasetIds = DatasetVersion::whereIn('id', $datasetVersionIds)
+            ->distinct()
+            ->pluck('dataset_id');
+
+        return Dataset::whereIn('id', $datasetIds)->get();
+    }
+
+    /**
+     * Add an accessor for datasets to get the latest versions.
+     */
+    public function getDatasetsAttribute()
+    {
+        return $this->getLatestDatasets();
     }
 
     /**

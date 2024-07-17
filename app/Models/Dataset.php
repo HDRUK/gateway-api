@@ -206,6 +206,23 @@ class Dataset extends Model
          return $this->getLatestDurs();
      }
 
+         /**
+     * The latest versions publications
+     */
+    public function getLatestPublications()
+    {
+        $publicationIds = PublicationHasDatasetVersion::where('dataset_version_id', $this->latestVersion()->id)
+            ->pluck('publication_id');
+
+        return Dur::whereIn('id', $publicationIds)->get();
+    }
+
+     // Add an accessor for publications
+     public function getPublicationsAttribute()
+     {
+         return $this->getLatestPublications();
+     }
+
     /**
      * Helper function to use JSON functions to search by title within metadata.
      */
@@ -227,14 +244,6 @@ class Dataset extends Model
         return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')") 
                             ->whereColumn('datasets.id','dataset_versions.dataset_id')
                             ->latest()->limit(1),$direction);
-    }
-
-    /**
-     * The publications that belong to a dataset.
-     */
-    public function publications(): BelongsToMany
-    {
-        return $this->belongsToMany(Publication::class, 'publication_has_dataset');
     }
 
     /**

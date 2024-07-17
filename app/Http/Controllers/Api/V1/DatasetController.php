@@ -367,9 +367,7 @@ class DatasetController extends Controller
     {
         try {
             // Retrieve the dataset with publications and counts
-            $dataset = Dataset::with(['publications'])
-                ->withCount(['publications'])
-                ->find($id);
+            $dataset = Dataset::find($id);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
@@ -377,8 +375,10 @@ class DatasetController extends Controller
 
             // Inject attributes via the dataset version table
             $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
+            $dataset->setAttribute('publications_count', $dataset->latestVersion()->publicationHasDatasetVersions()->count());
 
             $dataset->setAttribute('durs', $dataset->getLatestDurs());
+            $dataset->setAttribute('publications', $dataset->getLatestPublications());
             $dataset->setAttribute('named_entities', $dataset->getLatestNamedEntities());
             $dataset->setAttribute('collections', $dataset->getLatestCollections());
 
