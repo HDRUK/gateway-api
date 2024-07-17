@@ -68,16 +68,22 @@ Route::any('/services/darq{any}',
     ->middleware(
         [
             'jwt.verify',
-            'sanitize.input',
-            'check.access:roles,hdruk.superadmin'//in future, open to dar admins too
         ]
     );
 
 
 Route::any('/services/daras{any}', 
-    [ServiceLayerController::class, 
-    'daras', 
-] )->where('any', '.*');
+    [
+        ServiceLayerController::class, 
+        'daras', 
+    ])
+    ->where('any', '.*')
+    ->middleware(
+        [
+            'jwt.verify',
+        ]
+    );
+
 
 // stop all all other routes
 Route::any('{path}', function() {
