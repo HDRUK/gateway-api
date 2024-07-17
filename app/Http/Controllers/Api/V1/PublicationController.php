@@ -843,13 +843,10 @@ class PublicationController extends Controller
         }
     }
 
-    private function extractInputIdToArray(array $input): Array
+    private function extractInputIdToArray(array $input): array
     {
-        $response = [];
-        foreach ($input as $value) {
-            $response[] = $value['id'];
-        }
-
-        return $response;
+        return array_map(function($value) {
+            return $value['id'];
+        }, $input);
     }
 }
