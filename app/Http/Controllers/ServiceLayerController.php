@@ -9,7 +9,6 @@ use App\Models\Federation;
 use App\Models\Dataset;
 
 use App\Http\Controllers\Api\V1\DatasetController;
-use App\Http\Controllers\JwtController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http; 
@@ -150,11 +149,6 @@ class ServiceLayerController extends Controller
         $query = $request->query();
         $jwt = $query['jwt'];
 
-        $jwtController = new JwtController();
-        $jwtController->setJwt($jwt);
-        $payloadJwt = $jwtController->decode();
-
-        return response()->json($payloadJwt);
         unset($query['jwt_user']);
         unset($query['jwt']);
 
