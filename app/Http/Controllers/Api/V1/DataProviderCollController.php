@@ -658,9 +658,7 @@ class DataProviderCollController extends Controller
 
     public function checkingDataset(int $datasetId)
     {
-        $dataset = Dataset::where(['id' => $datasetId])
-            ->with(['publications'])
-            ->first();
+        $dataset = Dataset::where(['id' => $datasetId])->first();
 
         if (!$dataset) {
             return;
@@ -668,6 +666,7 @@ class DataProviderCollController extends Controller
 
         // Accessed through the accessors
         $tools = $dataset->tools;
+        $publications = $dataset->publications;
         $durs = $dataset->durs;
         $collections = $dataset->collections;
 
@@ -701,7 +700,7 @@ class DataProviderCollController extends Controller
         ];
 
         $this->durs = array_unique(array_merge($this->durs, $durs->pluck('id')->toArray()));
-        $this->publications = array_unique(array_merge($this->publications, $dataset->publications->pluck('id')->toArray()));
+        $this->publications = array_unique(array_merge($this->publications, $publications->pluck('id')->toArray()));
         $this->tools = array_unique(array_merge($this->tools, $tools->pluck('id')->toArray()));
         $this->collections = array_unique(array_merge($this->collections, $collections->pluck('id')->toArray()));
     }

@@ -1006,12 +1006,11 @@ class SearchController extends Controller
                             $datasets = $model->getLatestDatasets();
                             $datasetLinkTypes = [];
                             foreach ($datasets as $dataset) {
-                                $datasetVersionId=$dataset->latestVersion()->id;
                                 $linkType = PublicationHasDatasetVersion::where([
                                     ['publication_id', '=', $model['id']],
-                                    ['dataset_version_id', '=', $datasetVersionId]
-                                ])->pluck('link_type')->first();
-                                $datasetLinkTypes[] = $linkType ?? 'UNKNOWN';
+                                    ['dataset_version_id', '=', $dataset->id]
+                                ])->value('link_type') ?? 'UNKNOWN';
+                                $datasetLinkTypes[] = $linkType;
                             }
 
                             $pubArray[$i]['datasetLinkTypes'] = $datasetLinkTypes;
