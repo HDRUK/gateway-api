@@ -418,7 +418,6 @@ class PublicationTest extends TestCase
         $this->assertEquals($countTrashedAfterUnarchiving, 0);
         $this->assertTrue($countAfter < $countAfterUnarchiving);
         $this->assertTrue($countBefore === $countAfterUnarchiving);
-
     }
 
     private function generateTools()
