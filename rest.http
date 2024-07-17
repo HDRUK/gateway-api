@@ -477,6 +477,11 @@ GET http://localhost:8000/api/v1/datasets?mongo_pid=628e9ad9-28c5-4d58-9ec5-04a6
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
+#### download file dataset_structural_metadta mock
+GET {{baseUrl}}/api/{{apiVersion}}/datasets/export/mock?type=dataset_structural_metadata HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
 #### get all datasets/ withTrashed
 GET {{baseUrl}}/api/{{apiVersion}}/datasets?withTrashed=true HTTP/1.1
 Content-Type: application/json

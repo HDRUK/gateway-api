@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 
 use App\Exceptions\NotFoundException;
+use Illuminate\Support\Facades\Storage;
 use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
 use App\Http\Requests\Dataset\EditDataset;
@@ -1189,6 +1190,30 @@ class DatasetController extends Controller
         $response->headers->set('Cache-Control','max-age=0');
         
         return $response;
+    }
+
+    public function exportMock(Request $request)
+    {
+        try {
+            $exportType = $request->query('type', null);
+            $file = '';
+
+            switch ($exportType) {
+                case 'dataset_structural_metadata':
+                    $file = Config::get('mock_data.dataset_structural_metadata');
+                    break;
+                default:
+                    return response()->json(['error' => 'File not found.'], 404);
+            }
+
+            if (!Storage::disk('mock')->exists($file)) {
+                return response()->json(['error' => 'File not found.'], 404);
+            }
+            
+            return Storage::disk('mock')->download($file)->setStatusCode(Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     private function getVersion(int $version){
