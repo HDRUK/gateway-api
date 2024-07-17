@@ -3,16 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class DurHasDataset extends Model
+class DurHasDatasetVersion extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, Prunable;
 
     protected $fillable = [
         'dur_id',
-        'dataset_id',
+        'dataset_version_id',
         'user_id',
         'application_id',
         'is_locked',
@@ -30,7 +32,7 @@ class DurHasDataset extends Model
      * 
      * @var string
      */
-    protected $table = 'dur_has_datasets';
+    protected $table = 'dur_has_dataset_version';
 
     /**
      * Indicates if the model should be timestamped

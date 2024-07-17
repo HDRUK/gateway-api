@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
@@ -106,25 +107,57 @@ class Dur extends Model
         'non_gateway_outputs' => 'array',
     ];
 
+     /**
+     * Get the latest datasets for this Dur.
+     */
+    public function getLatestDatasets()
+    {
+        $datasetVersionIds = DurHasDatasetVersion::
+            where('Dur_id', $this->id)
+            ->pluck('dataset_version_id');
+
+        $datasetIds = DatasetVersion::whereIn('id', $datasetVersionIds)
+            ->distinct()
+            ->pluck('dataset_id');
+
+        return Dataset::whereIn('id', $datasetIds)->get();
+    }
+
+    /**
+     * Add an accessor for datasets to get the latest versions.
+     */
+    public function getDatasetsAttribute()
+    {
+        return $this->getLatestDatasets();
+    }
+
     public function keywords(): BelongsToMany
     {
         return $this->belongsToMany(Keyword::class, 'dur_has_keywords');
     }
 
-    public function datasets(): BelongsToMany
+    public function userDatasets(): HasManyThrough
     {
-        return $this->belongsToMany(Dataset::class, 'dur_has_datasets')
-            ->withPivot('dur_id', 'dataset_id', 'user_id', 'application_id', 'is_locked', 'reason', 'created_at', 'updated_at');
+        return $this->hasManyThrough(
+            User::class,
+            DurHasDatasetVersion::class,
+            'dur_id', // Foreign key on the CollectionHasDatasetVersion table
+            'id',            // Local key on the Collection table
+            'id',            // Local key on the User table
+            'user_id'        // Foreign key on the CollectionHasDatasetVersion table
+        );
     }
 
-    public function userDatasets(): BelongsToMany
+    public function applicationDatasets(): HasManyThrough
     {
-        return $this->belongsToMany(User::class, 'dur_has_datasets');
-    }
-
-    public function applicationDatasets(): BelongsToMany
-    {
-        return $this->belongsToMany(Application::class, 'dur_has_datasets');
+        return $this->hasManyThrough(
+            Application::class,
+            DurHasDatasetVersion::class,
+            'dur_id', // Foreign key on the CollectionHasDatasetVersion table
+            'id',            // Local key on the Collection table
+            'id',            // Local key on the Application table
+            'application_id' // Foreign key on the CollectionHasDatasetVersion table
+        );
     }
 
     public function publications(): BelongsToMany

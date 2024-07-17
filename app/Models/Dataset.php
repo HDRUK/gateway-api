@@ -190,6 +190,23 @@ class Dataset extends Model
      }
 
     /**
+     * The latest versions durs
+     */
+    public function getLatestDurs()
+    {
+        $durIds = DurHasDatasetVersion::where('dataset_version_id', $this->latestVersion()->id)
+            ->pluck('dur_id');
+
+        return Dur::whereIn('id', $durIds)->get();
+    }
+
+     // Add an accessor for durs
+     public function getDursAttribute()
+     {
+         return $this->getLatestDurs();
+     }
+
+    /**
      * Helper function to use JSON functions to search by title within metadata.
      */
     public function searchByTitle(string $title): DatasetVersion
@@ -210,14 +227,6 @@ class Dataset extends Model
         return $query->orderBy(DatasetVersion::selectRaw("JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.".$field."')") 
                             ->whereColumn('datasets.id','dataset_versions.dataset_id')
                             ->latest()->limit(1),$direction);
-    }
-
-    /**
-     * The durs that belong to a dataset.
-     */
-    public function durs(): BelongsToMany
-    {
-        return $this->belongsToMany(Dur::class, 'dur_has_datasets');
     }
 
     /**

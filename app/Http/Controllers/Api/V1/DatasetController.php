@@ -366,20 +366,22 @@ class DatasetController extends Controller
     public function show(GetDataset $request, int $id): JsonResponse
     {
         try {
-
-            // Retrieve the dataset with collections, publications, and counts
+            // Retrieve the dataset with publications and counts
             $dataset = Dataset::with(['publications'])
-            ->withCount(['durs', 'publications'])
-            ->find($id);
+                ->withCount(['publications'])
+                ->find($id);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
-        
-            // inject dataset Version Atributes
+
+            // Inject attributes via the dataset version table
+            $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
+
+            $dataset->setAttribute('durs', $dataset->getLatestDurs());
             $dataset->setAttribute('named_entities', $dataset->getLatestNamedEntities());
             $dataset->setAttribute('collections', $dataset->getLatestCollections());
-   
+
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
@@ -388,7 +390,7 @@ class DatasetController extends Controller
 
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
-                $withLinks = DatasetVersion::where('id', $latestVersion['id'])
+                $withLinks = DatasetVersion::where('id', $latestVersion->id)
                     ->with(['linkedDatasetVersions'])
                     ->first();
                 if ($withLinks) {
@@ -406,29 +408,26 @@ class DatasetController extends Controller
                 );
 
                 if ($translated['wasTranslated']) {
-                    $withLinks = DatasetVersion::where('id', $latestVersion['id'])
+                    $withLinks = DatasetVersion::where('id', $latestVersion->id)
                         ->with(['linkedDatasetVersions'])
                         ->first();
-                    $withLinks['metadata'] = json_encode(['metadata' => $translated['metadata']]);
-                    $dataset['versions'] = [$withLinks];
-                }
-                else {
+                    $withLinks->metadata = json_encode(['metadata' => $translated['metadata']]);
+                    $dataset->setAttribute('versions', [$withLinks]);
+                } else {
                     return response()->json([
                         'message' => 'failed to translate',
                         'details' => $translated
                     ], 400);
                 }
-            }
-            elseif ($outputSchemaModel) {
+            } elseif ($outputSchemaModel) {
                 throw new Exception('You have given a schema_model but not a schema_version');
-            }
-            elseif ($outputSchemaModelVersion) {
+            } elseif ($outputSchemaModelVersion) {
                 throw new Exception('You have given a schema_version but not schema_model');
             }
-            
+
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Dataset get " . $id,
             ]);
 

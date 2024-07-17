@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\Api\V1;
-
 use Config;
 use Auditor;
 use Exception;
@@ -829,8 +828,6 @@ class CollectionController extends Controller
         }
 
         foreach ($inDatasets as $dataset) {
-
-            
             $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
             $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);
         
@@ -874,13 +871,7 @@ class CollectionController extends Controller
                 $arrCreate['application_id'] = $appId;
             }
 
-            return CollectionHasDatasetVersion::updateOrCreate(
-                $arrCreate,
-                [
-                    'collection_id' => $collectionId,
-                    'dataset_version_id' => $datasetVersionId,
-                ]
-            );
+            return CollectionHasDatasetVersion::updateOrCreate($arrCreate);
         } catch (Exception $e) {
             throw new Exception("addCollectionHasDatasetVersion :: " . $e->getMessage());
         }

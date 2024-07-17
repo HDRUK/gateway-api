@@ -1,7 +1,7 @@
 <?php
 
 namespace Tests\Feature;
-
+use Exception;
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
@@ -12,7 +12,6 @@ use App\Models\Keyword;
 use App\Models\Permission;
 use App\Models\Application;
 use Database\Seeders\DurSeeder;
-
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
@@ -33,6 +32,7 @@ use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DurIntegrationTest extends TestCase
@@ -75,6 +75,7 @@ class DurIntegrationTest extends TestCase
             PublicationHasToolSeeder::class,
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
+            DurHasDatasetVersionSeeder::class,
         ]);
 
         $this->integration = Application::where('id', 1)->first();
@@ -108,7 +109,6 @@ class DurIntegrationTest extends TestCase
     public function test_get_all_integration_dur_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
-
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -274,7 +274,7 @@ class DurIntegrationTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => [$this->generateDatasets()],
+            'datasets' => $this->generateDatasets(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -289,9 +289,9 @@ class DurIntegrationTest extends TestCase
             self::TEST_URL,
             $mockData,
             $this->header
-        );
+        );  
         $response->assertStatus(201);
-
+        
         $countAfter = Dur::count();
         $countNewRow = $countAfter - $countBefore;
 
@@ -317,7 +317,7 @@ class DurIntegrationTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => [$this->generateDatasets()],
+            'datasets' => $this->generateDatasets(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -349,7 +349,7 @@ class DurIntegrationTest extends TestCase
         );
         // update
         $mockDataUpdate = [
-            'datasets' => [$this->generateDatasets()],
+            'datasets' => $this->generateDatasets(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -385,7 +385,7 @@ class DurIntegrationTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => [$this->generateDatasets()],
+            'datasets' => $this->generateDatasets(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -420,11 +420,16 @@ class DurIntegrationTest extends TestCase
 
     private function generateKeywords()
     {
+        $keywords = Keyword::where(['enabled' => 1])->get();
+        if ($keywords->isEmpty()) {
+            throw new Exception('No keywords available to generate.');
+        }
+
         $return = [];
-        $iterations = rand(1, 5);
+        $iterations = rand(1, min(5, $keywords->count()));
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = Keyword::where(['enabled' => 1])->get()->random()->name;
+            $return[] = $keywords->random()->name;
         }
 
         return array_unique($return);
@@ -432,11 +437,21 @@ class DurIntegrationTest extends TestCase
 
     private function generateDatasets()
     {
-        $return = [];
+        $datasets = Dataset::all();
+        if ($datasets->isEmpty()) {
+            throw new Exception('No datasets available to generate.');
+        }
 
-        $return['id'] = Dataset::all()->random()->id;
-        $return['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
-        $return['is_locked'] = fake()->randomElement([0, 1]);
+        $return = [];
+        $iterations = rand(1, min(5, $datasets->count()));
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = $datasets->random()->id;
+            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $temp['is_locked'] = fake()->randomElement([0, 1]);
+            $return[] = $temp;
+        }
 
         return $return;
     }

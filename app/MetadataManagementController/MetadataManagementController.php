@@ -205,15 +205,18 @@ class MetadataManagementController {
     {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
-                ->with(['durs'])
                 ->firstOrFail();
 
+            # Pull metadata from json    
             $metadata = $datasetMatch->latestVersion()->metadata;
 
-            // inject relationships via datasetVersionss
+            // inject relationships via Dataset model functions
             $namedEntities = $datasetMatch->getLatestNamedEntities();
+            $durs = $datasetMatch->getLatestDurs();
             $spatialCoverage = $datasetMatch->getLatestSpatialCoverage();
             $collections = $datasetMatch->getLatestCollections();
+
+            // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
             
@@ -234,7 +237,7 @@ class MetadataManagementController {
                 'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
                 'named_entities' =>  $namedEntities->pluck('name')->all(),
                 'collectionName' => $collections->pluck('name')->all(),
-                'dataUseTitles' => $datasetMatch->durs->pluck('project_title')->all(),
+                'dataUseTitles' => $durs->pluck('project_title')->all(),
                 'geographicLocation' => $spatialCoverage->pluck('region')->all(),
                 'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], ''),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),

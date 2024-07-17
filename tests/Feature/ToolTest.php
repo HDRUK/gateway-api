@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use Config;
+use Exception;
 use Tests\TestCase;
-
 use App\Models\Tool;
 use ReflectionClass;
 use App\Http\Enums\TeamMemberOf;
@@ -1000,31 +1000,41 @@ class ToolTest extends TestCase
 
     private function generatePublications()
     {
+        $publications = Publication::all();
+        if ($publications->isEmpty()) {
+            throw new Exception('No publications available to generate.');
+        }
+
         $return = [];
-        $iterations = rand(1, 5);
+        $iterations = rand(1, min(5, $publications->count()));
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = Publication::all()->random()->id;
+            $temp['id'] = $publications->random()->id;
             $return[] = $temp;
         }
 
-        // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
+        // Remove duplicate entries
         return array_map("unserialize", array_unique(array_map("serialize", $return)));
     }
 
     private function generateCollections()
     {
+        $collections = Collection::all();
+        if ($collections->isEmpty()) {
+            throw new Exception('No collections available to generate.');
+        }
+
         $return = [];
-        $iterations = rand(1, 5);
+        $iterations = rand(1, min(5, $collections->count()));
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = Collection::all()->random()->id;
+            $temp['id'] = $collections->random()->id;
             $return[] = $temp;
         }
 
-        // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
+        // Remove duplicate entries
         return array_map("unserialize", array_unique(array_map("serialize", $return)));
     }
 }

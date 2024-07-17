@@ -787,12 +787,14 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->with('datasets')->get();
+            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
-                foreach ($durModels as $model){
+                foreach ($durModels as $model) {
                     if ((int) $dur['_id'] === $model['id']) {
+                        // Set the latest datasets
+                        $model->setAttribute('datasets', $model->getLatestDatasets());
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
                         $durArray[$i]['organisationName'] = $model['organisation_name'];

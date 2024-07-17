@@ -5,6 +5,7 @@ use App\Models\Tool;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\hasMany;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -90,6 +91,14 @@ class DatasetVersion extends Model
         return $this->belongsToMany(NamedEntities::class, 'dataset_version_has_named_entities');
     }
 
+        /**
+     *  Spatial coverage that belong to the dataset version.
+     */
+    public function spatialCoverage(): BelongsToMany
+    {
+        return $this->belongsToMany(NamedEntities::class, 'dataset_version_has_spatial_coverage');
+    }
+
 
     /**
      * The tools that belong to the dataset version.
@@ -97,6 +106,22 @@ class DatasetVersion extends Model
     public function tools(): BelongsToMany
     {
         return $this->belongsToMany(Tool::class, 'dataset_version_has_tool');
+    }
+
+    /**
+     * The durs that belong to the dataset version.
+     */
+    public function durHasDatasetVersions(): HasMany
+    {
+        return $this->hasMany(DurHasDatasetVersion::class);
+    }
+
+        /**
+     * The collections that belong to the dataset version.
+     */
+    public function collections(): HasMany
+    {
+        return $this->hasMany(CollectionHasDatasetVersion::class);
     }
 
     /**
