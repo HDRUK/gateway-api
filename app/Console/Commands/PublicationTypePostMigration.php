@@ -53,14 +53,12 @@ class PublicationTypePostMigration extends Command
             if (!$publications) {
                 echo 'Failed to find paper with doi ' . $paperDOI . "\n";
                 $progressbar->advance();
-                sleep(0.1);
                 continue;
             }
             
             foreach ($publications as $publication) {
                 if ($publication->paper_title != $paperName) {
                     $progressbar->advance();
-                    sleep(0.1);
                     echo 'WARNING! Found paper by DOI but titles do not match. Will not create or update this record.' . "\n";
                     echo $publication->paper_title . ' vs ' . $paperName . "\n";
                     continue;
@@ -74,11 +72,11 @@ class PublicationTypePostMigration extends Command
             
                 if ($reindexEnabled) {
                     $publicationController->indexElasticPublication($publication->id);
+                    sleep(1);
                 }
             }
             
             $progressbar->advance();
-            sleep(0.1);
         }
 
         $progressbar->finish();
