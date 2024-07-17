@@ -36,6 +36,13 @@ return [
             'throw' => false,
         ],
 
+        'mock' => [
+            'driver' => 'local',
+            'root' => storage_path('mock'),
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         'local_scan' => [
             'unscanned' => [
                 'driver' => 'local',
