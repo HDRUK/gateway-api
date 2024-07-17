@@ -50,8 +50,12 @@ class OpenIdController extends Controller
             "registration_endpoint"     => "",
             "scopes_supported"          => $this->scopes_supported,
             "grant_types_supported"     => $this->grant_types_supported,
-            "token_endpoint_auth_methods_supported" => [],
-            "claims_supported"          => [],
+            "claims_supported"          => [
+                'openid',
+                'email',
+                'profile',
+                'rquestroles',
+            ],
 
             // logme out
             "revocation_endpoint"       => env('APP_URL') . "/oauth/logmeout",
