@@ -2057,6 +2057,16 @@ return [
         ],
         'constraint' => [],
     ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/export/mock',
+        'methodController' => 'DatasetController@exportMock',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
 
     // datasets integrations
     [
