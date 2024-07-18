@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Services\CloudLoggerService;
 use Illuminate\Support\ServiceProvider;
 
 class CloudLoggerProvider extends ServiceProvider
@@ -12,7 +11,9 @@ class CloudLoggerProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton('cloudlogger', function ($app) {
+            return new \App\Services\CloudLoggerService;
+        });
     }
 
     /**
@@ -20,8 +21,5 @@ class CloudLoggerProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->app->bind('cloudlogger', function ($app) {
-            return new CloudLoggerService();
-        });
     }
 }

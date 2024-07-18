@@ -219,8 +219,6 @@ return [
         'MetadataManagementController' => App\MetadataManagementController\MetadataManagementControllerFacade::class,
         'AliasReplyScanner' => App\AliasReplyScanner\AliasReplyScannerFacade::class,
         'EnquiriesManagementController' => App\EnquiriesManagementController\EnquiriesManagementControllerFacade::class,
-        'CloudLogger' => App\Facades\CloudLoggerFacade::class,
-        'CloudPubSub' => App\Facades\CloudPubSubFacade::class,
     ])->toArray(),
 
 ];
