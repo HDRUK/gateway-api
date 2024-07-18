@@ -33,11 +33,6 @@ class CloudLoggerService
             'resource' => ['type' => 'global']
         ]);
 
-        $entry = $this->logger->entry($message, [
-            'severity' => $severity,
-            'resource' => ['type' => 'global']
-        ]);
-
         return $this->logger->write($entry);
     }
 
