@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Services\AuditorService;
+use App\Services\CloudLoggerService;
+use App\Services\CloudPubSubService;
 use Illuminate\Support\ServiceProvider;
 
 class AuditorServiceProvider extends ServiceProvider
@@ -16,7 +18,7 @@ class AuditorServiceProvider extends ServiceProvider
     {
         // Bind the CloudLoggerService class to the service container
         $this->app->singleton('auditor', function ($app) {
-            return new AuditorService();
+            return new AuditorService($app->make(CloudPubSubService::class), $app->make(CloudLoggerService::class));
         });
     }
 

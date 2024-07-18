@@ -201,8 +201,6 @@ return [
         App\Providers\EnquiriesManagementControllerServiceProvider::class,
         App\Providers\CloudLoggerProvider::class,
         App\Providers\CloudPubSubProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
-
     ],
 
     /*
@@ -223,7 +221,6 @@ return [
         'EnquiriesManagementController' => App\EnquiriesManagementController\EnquiriesManagementControllerFacade::class,
         'CloudLogger' => App\Facades\CloudLoggerFacade::class,
         'CloudPubSub' => App\Facades\CloudPubSubFacade::class,
-        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
     ])->toArray(),
 
 ];
