@@ -14,4 +14,5 @@ class CloudLoggerFacade extends Facade
     {
         return CloudLoggerService::class;
     }
+    
 }
