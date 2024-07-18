@@ -28,13 +28,7 @@ class Auditor {
         $this->cloudPubSub = $cloudPubSub;
     }
 
-    /**
-     * Send Audit Log
-     *
-     * @param array $log
-     * @return AuditLog
-     */
-    public function log(array $log): AuditLog
+    public function log(array $log)
     {
         try {
             $arrayKeys = [
