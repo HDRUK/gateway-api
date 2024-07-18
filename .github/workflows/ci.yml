@@ -27,8 +27,11 @@ jobs:
     - name: Composer install
       run: "composer install"
 
-    - name: Run static analysis
-      run: "composer run phpstan"
+    # - name: Run static analysis
+    #   run: "composer run phpstan"
+    - name: PHPStan Analysis
+      run: |
+        ./vendor/bin/phpstan analyse --configuration=phpstan.neon --memory-limit=512M
   
     - name: Run unit tests
       run: "php artisan test"

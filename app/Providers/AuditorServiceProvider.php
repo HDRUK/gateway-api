@@ -24,7 +24,7 @@ class AuditorServiceProvider extends ServiceProvider
             return new CloudPubSubService();
         });
 
-        $this->app->singleton(Auditor::class, function($app) {
+        $this->app->singleton('auditor', function($app) {
             return new Auditor(
                 $app->make(CloudLoggerService::class),
                 $app->make(CloudPubSubService::class)

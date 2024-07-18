@@ -59,6 +59,7 @@ RUN composer install \
     && php artisan optimize:clear \
     && php artisan optimize \
     && php artisan config:clear \
+    && php artisan cache:clear \
     && php artisan ide-helper:generate \
     && composer dumpautoload
 
