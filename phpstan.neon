@@ -10,8 +10,8 @@ parameters:
     level: 3
 
     ignoreErrors:
-        - '#Call to an undefined method [a-zA-Z0-9\\_]+::publish\(\)#'
-        - '#Call to an undefined method [a-zA-Z0-9\\_]+::clearPubSubClient\(\)#'
+        - '#Call to an undefined method App\\Facades\\CloudPubSubFacade\:\:publish\(\)#'
+        - '#Call to an undefined method App\\Facades\\CloudPubSubFacade\:\:clearPubSubClient\(\)#'
 
 #    ignoreErrors:
 #        - '#PHPDoc tag @var#'
