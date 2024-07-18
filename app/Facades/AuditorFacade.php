@@ -12,6 +12,6 @@ class AuditorFacade extends Facade {
 
     protected static function getFacadeAccessor()
     {
-        return AuditorService::class;
+        return 'auditor';
     }
 }

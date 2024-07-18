@@ -7,8 +7,6 @@ use Exception;
 use CloudLogger;
 use CloudPubSub;
 use App\Models\AuditLog;
-use Carbon\CarbonImmutable;
-use Illuminate\Container\Container;
 use App\Http\Traits\RequestTransformation;
 
 class AuditorService {

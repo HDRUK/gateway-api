@@ -12,6 +12,6 @@ class CloudLoggerFacade extends Facade
 {
     protected static function getFacadeAccessor()
     {
-        return CloudLoggerService::class;
+        return 'cloudlogger';
     }
 }

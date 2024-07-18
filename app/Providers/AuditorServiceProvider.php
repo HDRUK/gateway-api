@@ -15,7 +15,7 @@ class AuditorServiceProvider extends ServiceProvider
     public function register(): void
     {
         // Bind the CloudLoggerService class to the service container
-        $this->app->singleton(AuditorService::class, function ($app) {
+        $this->app->singleton('auditor', function ($app) {
             return new AuditorService();
         });
     }

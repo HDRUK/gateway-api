@@ -12,8 +12,7 @@ class CloudPubSubProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Bind the CloudLoggerService class to the service container
-        $this->app->singleton(CloudPubSubService::class, function ($app) {
+        $this->app->singleton('cloudpubsub', function ($app) {
             return new CloudPubSubService();
         });
     }
