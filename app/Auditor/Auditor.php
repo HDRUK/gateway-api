@@ -37,7 +37,7 @@ class Auditor {
             $data['action_name'] = strtolower($data['action_name']);
             $data['created_at'] = gettimeofday(true) * 1000000;
 
-            $publish = CloudPubSub::sendMessage($data);
+            $publish = CloudPubSub::send($data);
             CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
 
             CloudPubSub::clearPubSubClient();
