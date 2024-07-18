@@ -213,7 +213,7 @@ return [
     */
 
     'aliases' => Facade::defaultAliases()->merge([
-        'Auditor' => App\Auditor\AuditorFacade::class,
+        'Auditor' => App\Facades\Auditor::class,
         'MetadataManagementController' => App\MetadataManagementController\MetadataManagementControllerFacade::class,
         'AliasReplyScanner' => App\AliasReplyScanner\AliasReplyScannerFacade::class,
         'EnquiriesManagementController' => App\EnquiriesManagementController\EnquiriesManagementControllerFacade::class,
