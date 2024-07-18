@@ -9,6 +9,10 @@ parameters:
     # Level 9 is the highest level
     level: 3
 
+    ignoreErrors:
+        - '#Call to an undefined method [a-zA-Z0-9\\_]+::publish\(\)#'
+        - '#Call to an undefined method [a-zA-Z0-9\\_]+::clearPubSubClient\(\)#'
+
 #    ignoreErrors:
 #        - '#PHPDoc tag @var#'
 #

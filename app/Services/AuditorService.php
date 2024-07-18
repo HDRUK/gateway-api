@@ -5,19 +5,17 @@ namespace App\Services;
 use Config;
 use Exception;
 use CloudLogger;
+use CloudPubSub;
 use App\Models\AuditLog;
-use App\Services\CloudPubSubService;
 use App\Http\Traits\RequestTransformation;
 
 class AuditorService {
 
     use RequestTransformation;
 
-    protected $cloudPubSub;
-
-    public function __construct(CloudPubSubService $cloudPubSub)
+    public function __construct()
     {
-        $this->cloudPubSub = $cloudPubSub;
+        //
     }
 
     /**
@@ -46,7 +44,9 @@ class AuditorService {
 
             if (Config::get('services.googlepubsub.enabled')) {
                 $data['created_at'] = gettimeofday(true) * 1000000;
-                $publish = $this->cloudPubSub->publish($data);
+                $publish = CloudPubSub::publish($data);
+                CloudPubSub::clearPubSubClient();
+                gc_collect_cycles();
 
                 if (Config::get('services.googlelogging.enabled')) {
                     CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
