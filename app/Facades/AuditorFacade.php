@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Facade;
  */
 class AuditorFacade extends Facade {
 
-    public static function getFacadeAccessor()
+    protected static function getFacadeAccessor()
     {
         return AuditorService::class;
     }

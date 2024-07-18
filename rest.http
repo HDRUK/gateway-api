@@ -2307,7 +2307,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get one license by id
-GET {{baseUrl}}/api/{{apiVersion}}/licenses/151 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/licenses/152 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
