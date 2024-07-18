@@ -8,6 +8,6 @@ class AuditorFacade extends Facade {
 
     protected static function getFacadeAccessor()
     {
-        return 'auditor';
+        return 'App\Auditor\Auditor';
     }
 }
