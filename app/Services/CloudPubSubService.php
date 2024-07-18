@@ -16,7 +16,7 @@ class CloudPubSubService
         ]);
     }
 
-    public function publishMessage(array $data)
+    public function sendMessage(array $data)
     {
         if (!Config::get('services.googlepubsub.enabled')) {
             return;

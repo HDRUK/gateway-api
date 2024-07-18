@@ -35,7 +35,7 @@ class CloudLoggerService
         return $this->logger->write($entry);
     }
 
-    public function clearLogging()
+    public function clearLogger()
     {
         $this->logging = null;
         $this->logger = null;

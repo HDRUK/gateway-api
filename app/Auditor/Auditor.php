@@ -2,13 +2,11 @@
 
 namespace App\Auditor;
 
-use Config;
 use CloudLogger;
 use CloudPubSub;
 use Exception;
 use App\Models\AuditLog;
 use App\Http\Traits\RequestTransformation;
-use Carbon\CarbonImmutable;
 
 class Auditor {
 
@@ -39,11 +37,11 @@ class Auditor {
             $data['action_name'] = strtolower($data['action_name']);
             $data['created_at'] = gettimeofday(true) * 1000000;
 
-            $publish = CloudPubSub::publishMessage($data);
+            $publish = CloudPubSub::sendMessage($data);
             CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
 
             CloudPubSub::clearPubSubClient();
-            CloudLogger::clearLogging();
+            CloudLogger::clearLogger();
 
             $audit = AuditLog::create($data);
 
