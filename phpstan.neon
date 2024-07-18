@@ -9,10 +9,6 @@ parameters:
     # Level 9 is the highest level
     level: 3
 
-    ignoreErrors:
-        - '#Call to an undefined method App\\Facades\\CloudPubSubFacade\:\:publish\(\)#'
-        - '#Call to an undefined method App\\Facades\\CloudPubSubFacade\:\:clearPubSubClient\(\)#'
-
 #    ignoreErrors:
 #        - '#PHPDoc tag @var#'
 #

@@ -13,9 +13,11 @@ class AuditorService {
 
     use RequestTransformation;
 
+    protected $cloudPubSub;
+
     public function __construct()
     {
-        //
+        $this->cloudPubSub = new CloudPubSubService();
     }
 
     /**
@@ -44,8 +46,8 @@ class AuditorService {
 
             if (Config::get('services.googlepubsub.enabled')) {
                 $data['created_at'] = gettimeofday(true) * 1000000;
-                $publish = CloudPubSub::publish($data);
-                CloudPubSub::clearPubSubClient();
+                $publish = $this->cloudPubSub->publish($data);
+                $this->cloudPubSub->clearPubSubClient();
                 gc_collect_cycles();
 
                 if (Config::get('services.googlelogging.enabled')) {
