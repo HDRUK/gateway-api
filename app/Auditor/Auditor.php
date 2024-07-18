@@ -22,10 +22,12 @@ class Auditor {
      * @param CloudLoggerService $cloudLogger
      * @param CloudPubSubService $cloudPubSub
      */
-    public function __construct(CloudLoggerService $cloudLogger, CloudPubSubService $cloudPubSub)
+    public function __construct()
     {
-        $this->cloudLogger = $cloudLogger;
-        $this->cloudPubSub = $cloudPubSub;
+        // $this->cloudLogger = $cloudLogger;
+        // $this->cloudPubSub = $cloudPubSub;
+        $this->cloudLogger = new CloudLoggerService();
+        $this->cloudPubSub = new CloudPubSubService();
     }
 
     public function log(array $log)
