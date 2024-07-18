@@ -16,15 +16,15 @@ class AuditorServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(CloudLoggerService::class, function ($app) {
+        $this->app->bind(CloudLoggerService::class, function ($app) {
             return new CloudLoggerService();
         });
 
-        $this->app->singleton(CloudPubSubService::class, function ($app) {
+        $this->app->bind(CloudPubSubService::class, function ($app) {
             return new CloudPubSubService();
         });
 
-        $this->app->singleton('auditor', function($app) {
+        $this->app->bind('auditor', function($app) {
             return new Auditor(
                 $app->make(CloudLoggerService::class),
                 $app->make(CloudPubSubService::class)

@@ -16,6 +16,12 @@ class Auditor {
     protected $cloudLogger;
     protected $cloudPubSub;
 
+    /**
+     * Constructor
+     *
+     * @param CloudLoggerService $cloudLogger
+     * @param CloudPubSubService $cloudPubSub
+     */
     public function __construct(CloudLoggerService $cloudLogger, CloudPubSubService $cloudPubSub)
     {
         $this->cloudLogger = $cloudLogger;
@@ -23,12 +29,12 @@ class Auditor {
     }
 
     /**
-     * Logs an action to the audit trail
-     * 
+     * Send Audit Log
+     *
      * @param array $log
-     * @return bool
+     * @return AuditLog
      */
-    public function log(array $log): bool
+    public function log(array $log): AuditLog
     {
         try {
             $arrayKeys = [
@@ -51,12 +57,8 @@ class Auditor {
             $this->cloudLogger->write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
 
             $audit = AuditLog::create($data);
-
-            if (!$audit) {
-                return false;
-            }
-    
-            return true;        
+            
+            return $audit;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
