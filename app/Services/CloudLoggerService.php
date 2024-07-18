@@ -7,12 +7,14 @@ use Google\Cloud\Logging\LoggingClient;
 class CloudLoggerService
 {
     protected $logging;
+    protected $logger;
     
     public function __construct()
     {
         $this->logging = new LoggingClient([
             'projectId' => Config::get('services.googlelogging.project_id'),
         ]);
+        $this->logger = $this->logging->logger(Config::get('services.googlelogging.log_name'));
     }
 
     public function write($data, $severity = 'INFO')
@@ -23,22 +25,19 @@ class CloudLoggerService
             return;
         }
 
-        if (is_array($data)) {
-            $message = json_encode($data);
-        } elseif (is_string($data)) {
-            $message = $data;
-        } else {
-            $message = json_encode($data);
-        }
+        $message = is_string($data) ? $data : json_encode($data);
 
-        $logger = $this->logging->logger(Config::get('services.googlelogging.log_name'));
-        $entry = $logger->entry($message, [
+        $entry = $this->logger->entry($message, [
             'severity' => $severity,
-            'resource' => [
-                'type' => 'global'
-            ]
+            'resource' => ['type' => 'global']
         ]);
 
-        return $logger->write($entry);
+        return $this->logger->write($entry);
+    }
+
+    public function clearLogging()
+    {
+        $this->logging = null;
+        $this->logger = null;
     }
 }

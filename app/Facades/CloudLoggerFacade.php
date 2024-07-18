@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Facade;
  */
 class CloudLoggerFacade extends Facade
 {
-    public static function getFacadeAccessor()
+    protected static function getFacadeAccessor()
     {
-        return CloudLoggerService::class;
+        return 'cloudlogger';
     }
 }

@@ -3,9 +3,10 @@
 namespace App\Auditor;
 
 use Config;
+use CloudLogger;
+use CloudPubSub;
 use Exception;
 use App\Models\AuditLog;
-use App\Jobs\SendAuditLogToPubSub;
 use App\Http\Traits\RequestTransformation;
 use Carbon\CarbonImmutable;
 
@@ -36,10 +37,13 @@ class Auditor {
 
             $data['action_service'] = env('AUDIT_ACTION_SERVICE', 'gateway_api');
             $data['action_name'] = strtolower($data['action_name']);
+            $data['created_at'] = gettimeofday(true) * 1000000;
 
-            if (Config::get('services.googlepubsub.enabled')) {
-                SendAuditLogToPubSub::dispatch($data);
-            }
+            $publish = CloudPubSub::publishMessage($data);
+            CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
+
+            CloudPubSub::clearPubSubClient();
+            CloudLogger::clearLogging();
 
             $audit = AuditLog::create($data);
 

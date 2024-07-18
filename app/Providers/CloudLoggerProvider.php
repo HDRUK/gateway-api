@@ -12,8 +12,7 @@ class CloudLoggerProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Bind the CloudLoggerService class to the service container
-        $this->app->singleton(CloudLoggerService::class, function ($app) {
+        $this->app->singleton('cloudlogger', function ($app) {
             return new CloudLoggerService();
         });
     }
