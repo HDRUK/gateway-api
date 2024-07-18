@@ -2,7 +2,6 @@
 
 namespace App\Facades;
 
-use App\Services\CloudLoggerService;
 use Illuminate\Support\Facades\Facade;
 
 /**

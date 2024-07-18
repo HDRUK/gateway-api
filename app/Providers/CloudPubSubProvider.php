@@ -12,9 +12,7 @@ class CloudPubSubProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton('cloudpubsub', function ($app) {
-            return new CloudPubSubService();
-        });
+        //
     }
 
     /**
@@ -22,6 +20,8 @@ class CloudPubSubProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $this->app->bind('cloudpubsub', function ($app) {
+            return new CloudPubSubService();
+        });
     }
 }

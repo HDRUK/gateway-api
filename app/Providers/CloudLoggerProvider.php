@@ -12,9 +12,7 @@ class CloudLoggerProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton('cloudlogger', function ($app) {
-            return new CloudLoggerService();
-        });
+        //
     }
 
     /**
@@ -22,6 +20,8 @@ class CloudLoggerProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        $this->app->bind('cloudlogger', function ($app) {
+            return new CloudLoggerService();
+        });
     }
 }
