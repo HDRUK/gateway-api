@@ -76,4 +76,8 @@ return [
         'base_url' => env('HUBSPOT_BASE_URL', 'http://hub.local'),
         'key' => env('HUBSPOT_KEY', 'hubspot_key'),
     ],
+
+    'rquest' => [
+        'init_url' => env('RQUEST_INIT_URL', 'http://rquest.local'),
+    ]
 ];

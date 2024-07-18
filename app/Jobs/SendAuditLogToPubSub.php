@@ -3,9 +3,9 @@
 namespace App\Jobs;
 
 use Config;
+use CloudLogger;
 use Illuminate\Bus\Queueable;
 use App\Services\PubSubService;
-use App\Services\LoggingService;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -37,11 +37,6 @@ class SendAuditLogToPubSub implements ShouldQueue
         $pubSubService = new PubSubService();
         $publish = $pubSubService->publishMessage($this->data);
 
-        if (!Config::get('services.googlelogging.enabled')) {
-            return;
-        }
-
-        $loggingService = new LoggingService();
-        $loggingService->writeLog('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
-    }
+        CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
+   }
 }

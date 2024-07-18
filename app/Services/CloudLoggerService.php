@@ -4,7 +4,7 @@ namespace App\Services;
 use Config;
 use Google\Cloud\Logging\LoggingClient;
 
-class LoggingService
+class CloudLoggerService
 {
     protected $logging;
     
@@ -15,8 +15,22 @@ class LoggingService
         ]);
     }
 
-    public function writeLog(string $message, $severity = 'INFO')
+    public function write($data, $severity = 'INFO')
     {
+        $message = '';
+
+        if (!Config::get('services.googlelogging.enabled')) {
+            return;
+        }
+
+        if (is_array($data)) {
+            $message = json_encode($data);
+        } elseif (is_string($data)) {
+            $message = $data;
+        } else {
+            $message = json_encode($data);
+        }
+
         $logger = $this->logging->logger(Config::get('services.googlelogging.log_name'));
         $entry = $logger->entry($message, [
             'severity' => $severity,

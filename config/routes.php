@@ -2295,6 +2295,17 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'cohort_requests_access',
+        'method' => 'get',
+        'path' => '/cohort_requests/access',
+        'methodController' => 'CohortRequestController@checkAccess',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
         'name' => 'cohort_requests',
         'method' => 'get',
         'path' => '/cohort_requests/{id}',

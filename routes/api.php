@@ -1,13 +1,14 @@
 <?php
 
-use MetadataManagementController AS MMC;
+use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Route;
+use MetadataManagementController AS MMC;
 use App\Http\Controllers\FilterController;
+
 use App\Http\Controllers\ServiceLayerController;
 use App\Http\Controllers\Api\V1\DatasetController;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SSO\CustomAuthorizationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,6 +70,11 @@ Route::any('/services/daras{any}',
     [ServiceLayerController::class, 
     'daras', 
 ] )->where('any', '.*');
+
+# bcplatform
+Route::get('/sso/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
+
+
 
 // stop all all other routes
 Route::any('{path}', function() {
