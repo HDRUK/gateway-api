@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use Config;
+use CloudLogger;
 use Google\Cloud\PubSub\PubSubClient;
 use Google\Cloud\PubSub\MessageBuilder;
 
@@ -24,6 +25,10 @@ class CloudPubSubService
 
         $topic = $this->pubSubClient->topic(Config::get('services.googlepubsub.pubsub_topic'));
         $message = (new MessageBuilder)->setData(json_encode($data))->build();
+        $publish = $topic->publish($message);
+        
+        CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
+
         return $topic->publish($message);
     }
     

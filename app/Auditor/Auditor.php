@@ -2,7 +2,6 @@
 
 namespace App\Auditor;
 
-use CloudLogger;
 use CloudPubSub;
 use Exception;
 use App\Models\AuditLog;
@@ -37,11 +36,8 @@ class Auditor {
             $data['action_name'] = strtolower($data['action_name']);
             $data['created_at'] = gettimeofday(true) * 1000000;
 
-            $publish = CloudPubSub::send($data);
-            CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
-
+            CloudPubSub::send($data);
             CloudPubSub::clearPubSubClient();
-            CloudLogger::clearLogger();
 
             $audit = AuditLog::create($data);
 
