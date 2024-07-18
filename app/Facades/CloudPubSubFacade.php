@@ -2,16 +2,16 @@
 
 namespace App\Facades;
 
-use App\Services\CloudLoggerService;
+use App\Services\CloudPubSubService;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * CloudLoggerFacade
+ * CloudPubSubFacade
  */
-class CloudLoggerFacade extends Facade
+class CloudPubSubFacade extends Facade
 {
     public static function getFacadeAccessor()
     {
-        return CloudLoggerService::class;
+        return CloudPubSubService::class;
     }
 }

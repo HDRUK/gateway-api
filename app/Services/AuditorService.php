@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Auditor;
+namespace App\Services;
 
 use Config;
 use Exception;
+use CloudLogger;
+use CloudPubSub;
 use App\Models\AuditLog;
 use Carbon\CarbonImmutable;
-use App\Services\PubSubService;
-use App\Services\LoggingService;
-use App\Jobs\SendAuditLogToPubSub;
+use Illuminate\Container\Container;
 use App\Http\Traits\RequestTransformation;
 
-class Auditor {
+class AuditorService {
 
     use RequestTransformation;
 
@@ -41,12 +41,15 @@ class Auditor {
 
             if (Config::get('services.googlepubsub.enabled')) {
                 $data['created_at'] = gettimeofday(true) * 1000000;
-                $pubSubService = new PubSubService();
-                $publish = $pubSubService->publishMessage($data);
+                $publish = CloudPubSub::publish($data);
+                CloudPubSub::clearPubSubClient();
+                gc_collect_cycles();
 
                 if (Config::get('services.googlelogging.enabled')) {
-                    $loggingService = new LoggingService();
-                    $loggingService->writeLog('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
+                    CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
+                    CloudLogger::write($data);
+                    CloudLogger::clearLogging();
+                    gc_collect_cycles();
                 }
         
             }
