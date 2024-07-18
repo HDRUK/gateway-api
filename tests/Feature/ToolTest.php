@@ -952,7 +952,7 @@ class ToolTest extends TestCase
         $responseUnarchive = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $toolIdInsert . '?unarchive',
-            [],
+            ['status' => 'DRAFT'],
             $this->header
         );
         $responseUnarchive->assertJsonStructure([
