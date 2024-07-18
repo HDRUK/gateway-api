@@ -14,10 +14,7 @@ class AuditorServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Bind the CloudLoggerService class to the service container
-        $this->app->singleton('auditor', function ($app) {
-            return new AuditorService();
-        });
+        //
     }
 
     /**
@@ -27,6 +24,8 @@ class AuditorServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // 
+        $this->app->singleton('auditor', function ($app) {
+            return new AuditorService();
+        });
     }
 }
