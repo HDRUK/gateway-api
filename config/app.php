@@ -200,8 +200,9 @@ return [
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
         App\Providers\EnquiriesManagementControllerServiceProvider::class,
         App\Providers\CloudLoggerProvider::class,
-        App\Providers\CloudLoggerProvider::class,
+        App\Providers\CloudPubSubProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
+
     ],
 
     /*
