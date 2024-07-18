@@ -4,13 +4,22 @@ namespace App\Auditor;
 
 use Exception;
 use App\Models\AuditLog;
-use App\Facades\CloudLogger;
-use App\Facades\CloudPubSub;
 use App\Http\Traits\RequestTransformation;
+use App\Services\CloudLoggerService;
+use App\Services\CloudPubSubService;
 
 class Auditor {
 
     use RequestTransformation;
+
+    protected $cloudLogger;
+    protected $cloudPubSub;
+
+    public function __construct(CloudLoggerService $cloudLogger, CloudPubSubService $cloudPubSub)
+    {
+        $this->cloudLogger = $cloudLogger;
+        $this->cloudPubSub = $cloudPubSub;
+    }
 
     /**
      * Logs an action to the audit trail
@@ -37,11 +46,8 @@ class Auditor {
             $data['action_name'] = strtolower($data['action_name']);
             $data['created_at'] = gettimeofday(true) * 1000000;
 
-            $publish = CloudPubSub::send($data);
-            CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
-
-            CloudPubSub::clearPubSubClient();
-            CloudLogger::clearLogger();
+            $publish = $this->cloudPubSub->send($data);
+            $this->cloudLogger->write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
 
             $audit = AuditLog::create($data);
 

@@ -3,16 +3,19 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Auditor;
-use CloudLogger;
 use Illuminate\Http\Request;
 use App\Services\PubSubService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use App\Services\CloudLoggerService;
 
 class TestController extends Controller
 {
-    public function __construct() 
+    protected $cloudLogger;
+
+    public function __construct(CloudLoggerService $cloudLogger) 
     {
+        $this->cloudLogger = $cloudLogger;
     }
 
     /**
@@ -54,14 +57,14 @@ class TestController extends Controller
 
     public function testGCPLogger(Request $request): JsonResponse
     {
-        CloudLogger::write([
+        $this->cloudLogger->write([
             'type' => 'send array',
             'user_id' => 1,
             'action_type' => 'CREATE',
             'action_name' => 'action service test',
             'description' => 'description test',
         ]);
-        CloudLogger::write('send string');
+        $this->cloudLogger->write('send string');
 
         return response()->json(['status' => 'success']);
     }

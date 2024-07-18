@@ -8,6 +8,7 @@ use App\Models\CohortRequest;
 use Laravel\Passport\Passport;
 use Laravel\Passport\Bridge\User;
 use App\Http\Controllers\Controller;
+use App\Services\CloudLoggerService;
 use Laravel\Passport\ClientRepository;
 use Nyholm\Psr7\Response as Psr7Response;
 use Psr\Http\Message\ServerRequestInterface;
@@ -34,10 +35,13 @@ class CustomAuthorizationController extends Controller
      */
     protected $response;
 
-    public function __construct(AuthorizationServer $server, ResponseFactory $response)
+    protected $cloudLogger;
+
+    public function __construct(AuthorizationServer $server, ResponseFactory $response, CloudLoggerService $cloudLogger)
     {
         $this->server = $server;
         $this->response = $response;
+        $this->cloudLogger = $cloudLogger;
     }
 
     /**
@@ -57,7 +61,7 @@ class CustomAuthorizationController extends Controller
         $userId = $cohortRequests->user_id;
         // end mock user id
 
-        CloudLogger::write('Start authorization for userId :: ' . $userId);
+        $this->cloudLogger->write('Start authorization for userId :: ' . $userId);
 
         return $this->withErrorHandling(function () use ($psrRequest, $userId) {
             $authRequest = $this->server->validateAuthorizationRequest($psrRequest);

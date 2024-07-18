@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-use CloudLogger;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\Permission;
@@ -19,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\HubspotContacts;
+use App\Services\CloudLoggerService;
 use App\Models\CohortRequestHasPermission;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -32,9 +32,11 @@ class CohortRequestController extends Controller
 {
     use HubspotContacts;
 
-    public function __construct()
+    protected $cloudLogger;
+
+    public function __construct(CloudLoggerService $cloudLogger)
     {
-        //
+        $this->cloudLogger = $cloudLogger;
     }
 
     /**
@@ -1033,7 +1035,7 @@ class CohortRequestController extends Controller
             session(['cr_uid' => $userId]);
 
             // delete after implementation
-            CloudLogger::write('cohort request access :: ' . json_encode([
+            $this->cloudLogger->write('cohort request access :: ' . json_encode([
                 'userId' => $userId,
                 'sessionId' => session()->getId()
             ]));
