@@ -2,6 +2,7 @@
 
 namespace App\Auditor;
 
+use App\Facades\CloudLoggerFacade;
 use Exception;
 use App\Models\AuditLog;
 use App\Http\Traits\RequestTransformation;

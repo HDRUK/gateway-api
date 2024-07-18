@@ -5,7 +5,8 @@ namespace App\Auditor;
 use Illuminate\Support\Facades\Facade;
 
 class AuditorFacade extends Facade {
-    protected static function getFacadeAccessor(): string
+
+    protected static function getFacadeAccessor()
     {
         return 'auditor';
     }
