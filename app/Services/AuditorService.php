@@ -47,7 +47,6 @@ class AuditorService {
 
                 if (Config::get('services.googlelogging.enabled')) {
                     CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
-                    CloudLogger::write($data);
                     CloudLogger::clearLogging();
                     gc_collect_cycles();
                 }

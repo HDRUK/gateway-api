@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
-use CloudLogger;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\Permission;
@@ -27,14 +26,17 @@ use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
 use App\Http\Requests\CohortRequest\AssignAdminCohortRequest;
 use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
+use App\Services\CloudLoggerService;
 
 class CohortRequestController extends Controller
 {
     use HubspotContacts;
 
-    public function __construct()
+    protected $logger;
+
+    public function __construct(CloudLoggerService $logger)
     {
-        //
+        $this->logger = $logger;
     }
 
     /**
@@ -1033,7 +1035,7 @@ class CohortRequestController extends Controller
             session(['cr_uid' => $userId]);
 
             // delete after implementation
-            CloudLogger::write('cohort request access :: ' . json_encode([
+            $this->logger->write('cohort request access :: ' . json_encode([
                 'userId' => $userId,
                 'sessionId' => session()->getId()
             ]));
