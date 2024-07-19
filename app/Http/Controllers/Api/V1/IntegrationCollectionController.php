@@ -1193,6 +1193,7 @@ class IntegrationCollectionController extends Controller
             $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
             $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
         }
+        
         $keywords = array();
         foreach ($collection['keywords'] as $k) {
             $keywords[] = $k['name'];
