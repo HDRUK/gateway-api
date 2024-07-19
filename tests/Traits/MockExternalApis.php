@@ -74,6 +74,9 @@ trait MockExternalApis
     {
         parent::setUp();
 
+        Config::set('services.googlelogging.enabled', false);
+        Config::set('services.googlepubsub.enabled', false);
+
         $this->seed([
             SectorSeeder::class,
         ]);

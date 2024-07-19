@@ -2,21 +2,22 @@
 
 namespace Tests\Feature;
 
-use Mockery;
+use Config;
 use Tests\TestCase;
-use App\Services\PubSubService;
-use Google\Cloud\PubSub\PubSubClient;
 use Google\Cloud\PubSub\Topic;
+use App\Services\CloudPubSubService;
 use Google\Cloud\PubSub\MessageBuilder;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 
-class PubSubServiceTest extends TestCase
+class CloudPubSubServiceTest extends TestCase
 {
-    public function testPublishMessageWhenEnabled()
+    public function test_publish_message()
     {
-        Config::set('GOOGLE_CLOUD_PROJECT_ID', 'fake-project-id');
-        Config::set('GOOGLE_CLOUD_PUBSUB_TOPIC', 'fake-topic-name');
-        Config::set('GOOGLE_CLOUD_PUBSUB_ENABLED', true);
+        Config::set('services.googlepubsub.project_id', 'fake-project-id');
+        Config::set('services.googlepubsub.pubsub_topic', 'fake-topic-name');
+        Config::set('services.googlepubsub.enabled', true);
 
         // Mock the Topic class
         $topic = Mockery::mock(Topic::class);
@@ -34,8 +35,11 @@ class PubSubServiceTest extends TestCase
             ->once()
             ->andReturn($topic);
 
-        $message = ['message' => 'fake test message'];
-        $service = new PubSubService();
-        $service->publishMessage(['test' => 'Test message']);
+        // Act
+        $service = new CloudPubSubService($pubSubClient);
+        $result = $service->publishMessage(['test' => 'Test message']);
+
+        // Assert
+        $this->assertNull($result); // Assuming your publishMessage doesn't return any value
     }
 }

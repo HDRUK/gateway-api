@@ -2,8 +2,8 @@
 
 namespace App\Jobs;
 
+use App\Services\CloudLoggerService;
 use App\Services\CloudPubSubService;
-use CloudLogger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -16,6 +16,7 @@ class AuditLogJob implements ShouldQueue
 
     protected array $data;
     protected CloudPubSubService $cloudPubSub;
+    protected CloudLoggerService $cloudLogger;
 
     public function __construct(array $auditLog)
     {
@@ -25,11 +26,11 @@ class AuditLogJob implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(CloudPubSubService $cloudPubSub): void
+    public function handle(CloudPubSubService $cloudPubSub, CloudLoggerService $cloudLogger): void
     {
         $this->cloudPubSub = $cloudPubSub;
+        $this->cloudLogger = $cloudLogger;
         $publish = $this->cloudPubSub->publishMessage($this->data);
-        CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
-        CloudLogger::write($this->data);
+        $this->cloudLogger->write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
     }
 }

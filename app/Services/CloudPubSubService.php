@@ -16,6 +16,11 @@ class CloudPubSubService
         ]);
     }
 
+    public function setPubSubClient(PubSubClient $pubSubClient)
+    {
+        $this->pubSubClient = $pubSubClient;
+    }
+
     public function publishMessage(array $data)
     {
         if (!Config::get('services.googlepubsub.enabled')) {
