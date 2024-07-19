@@ -2,6 +2,7 @@
 
 namespace Tests\Traits;
 
+use Auditor;
 use Config;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
@@ -1056,6 +1057,13 @@ trait MockExternalApis
                 }
             },
         ]);
+
+        Auditor::shouldReceive('log')
+            ->once()
+            ->with([
+                'action_name' => 'action name test'
+            ])
+            ->andReturn(true);
 
     }
 
