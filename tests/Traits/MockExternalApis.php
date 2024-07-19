@@ -80,8 +80,6 @@ trait MockExternalApis
             SectorSeeder::class,
         ]);
 
-        $this->mockAuditor();
-
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
@@ -1072,20 +1070,4 @@ trait MockExternalApis
     {
         return count($client->getTransport()->getClient()->getRequests());
     }
-
-    protected function mockAuditor()
-    {
-        if ($this->auditorMock) {
-            Mockery::close();
-        }
-        
-        $this->auditorMock = Mockery::mock(Auditor::class);
-        
-        $this->auditorMock->shouldReceive('log')
-                          ->with(Mockery::type('array'))
-                          ->andReturn(true);
-
-        $this->app->instance(Auditor::class, $this->auditorMock);
-    }
-
 }
