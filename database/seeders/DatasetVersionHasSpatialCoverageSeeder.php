@@ -6,6 +6,7 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\NamedEntities;
+use App\Models\SpatialCoverage;
 use Database\Factories\DatasetVersionHasNamedEntitiesFactory;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -19,7 +20,7 @@ class DatasetVersionHasSpatialCoverageSeeder extends Seeder
     {
         for ($count = 1; $count <= 50; $count++) {
             $datasetVersionId = DatasetVersion::all()->random()->id;
-            $spatialCoverageId = NamedEntities::all()->random()->id;
+            $spatialCoverageId = SpatialCoverage::all()->random()->id;
 
             $datasetHasSpatialCoverage = DatasetVersionHasSpatialCoverage::where([
                 'dataset_version_id' => $datasetVersionId,
