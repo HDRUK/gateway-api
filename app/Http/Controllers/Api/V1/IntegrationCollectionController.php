@@ -780,48 +780,6 @@ class IntegrationCollectionController extends Controller
         }
     }
 
-    private function getCollectionById(int $collectionId)
-    {
-        $collection = Collection::where(['id' => $collectionId])
-            ->with([
-                'keywords',
-                'tools',
-                'dur',
-                'publications',
-                'userDatasets',
-                'userTools',
-                'userPublications',
-                'applicationDatasets',
-                'applicationTools',
-                'applicationPublications',
-                'team',
-            ])->first();
-
-        $collection->setAttribute('datasets', $collection->getLatestDatasets());    
-        $userDatasets = $collection->userDatasets;
-        $userTools = $collection->userTools;
-        $userPublications = $collection->userPublications;
-        $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
-        $collection->setRelation('users', $users);
-
-        $applicationDatasets = $collection->applicationDatasets;
-        $applicationTools = $collection->applicationTools;
-        $applicationPublications = $collection->applicationPublications;
-        $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
-        $collection->setRelation('applications', $applications);
-
-        unset(
-            $collection->userDatasets,
-            $collection->userTools,
-            $collection->userPublications,
-            $collection->applicationDatasets,
-            $collection->applicationTools,
-            $collection->applicationPublications
-        );
-
-        return $collection;
-    }
-
     // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null) 
     {
@@ -1273,5 +1231,46 @@ class IntegrationCollectionController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
+    }
+    private function getCollectionById(int $collectionId)
+    {
+        $collection = Collection::where(['id' => $collectionId])
+            ->with([
+                'keywords',
+                'tools',
+                'dur',
+                'publications',
+                'userDatasets',
+                'userTools',
+                'userPublications',
+                'applicationDatasets',
+                'applicationTools',
+                'applicationPublications',
+                'team',
+            ])->first();
+
+        $collection->setAttribute('datasets', $collection->getLatestDatasets());    
+        $userDatasets = $collection->userDatasets;
+        $userTools = $collection->userTools;
+        $userPublications = $collection->userPublications;
+        $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
+        $collection->setRelation('users', $users);
+
+        $applicationDatasets = $collection->applicationDatasets;
+        $applicationTools = $collection->applicationTools;
+        $applicationPublications = $collection->applicationPublications;
+        $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
+        $collection->setRelation('applications', $applications);
+
+        unset(
+            $collection->userDatasets,
+            $collection->userTools,
+            $collection->userPublications,
+            $collection->applicationDatasets,
+            $collection->applicationTools,
+            $collection->applicationPublications
+        );
+
+        return $collection;
     }
 }

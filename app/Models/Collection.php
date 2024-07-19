@@ -60,7 +60,7 @@ class Collection extends Model
       /**
      * Get the latest datasets
      */
-    public function getLatestDatasets()
+    public function Datasets()
     {
         // Step 1: Retrieve all version IDs associated with this instance
         $versionIds = $this->versions()->pluck('dataset_version_id')->toArray();

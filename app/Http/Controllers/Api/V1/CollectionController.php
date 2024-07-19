@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api\V1;
+
 use Config;
 use Auditor;
 use Exception;
@@ -814,11 +815,11 @@ class CollectionController extends Controller
         $collection->setRelation('applications', $applications);
 
         unset(
-            $collection->userDatasets,
-            $collection->userTools,
-            $collection->userPublications,
-            $collection->applicationDatasets,
-            $collection->applicationTools,
+            $collection->userDatasets, 
+            $collection->userTools, 
+            $collection->userPublications, 
+            $collection->applicationDatasets, 
+            $collection->applicationTools, 
             $collection->applicationPublications
         );
 

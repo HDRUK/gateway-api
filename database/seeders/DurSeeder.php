@@ -227,14 +227,6 @@ class DurSeeder extends Seeder
                 'dur_id' => $dur->id,
                 'keyword_id' => $keywordId,
             ]);
-
-        //    DurHasDatasetVersion::create([
-        //        'dur_id' => $dur->id,
-        //        'dataset_version_id' => $datasetVersionId,
-        //        'user_id' => $userId,
-        //        'reason' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-        //        'is_locked' => fake()->randomElement([0, 1])
-        //    ]);
         }
     }
 }

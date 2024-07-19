@@ -9,7 +9,6 @@ use Exception;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
-use App\Models\Collection;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
