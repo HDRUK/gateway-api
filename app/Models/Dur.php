@@ -111,14 +111,6 @@ class Dur extends Model
     ];
 
     /**
-     * Add an accessor for datasets to get the latest versions.
-     */
-    public function getLatestDatasetsAttribute()
-    {
-        return $this->getLatestDatasets();
-    }
-
-    /**
      * Get all datasets associated with the latest versions.
      */
     public function getAllDatasets()
