@@ -238,6 +238,7 @@ class PublicationController extends Controller
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
+                'owner_id' => (int) $jwtUser['id'],
             ]);
             $publicationId = (int) $publication->id;
 
