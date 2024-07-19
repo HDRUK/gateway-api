@@ -661,45 +661,59 @@ class DataProviderCollController extends Controller
 
     public function getDatasets(int $teamId)
     {
-        $datasetIDs = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
+        $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
 
-        foreach ($datasetIDs as $datasetID) {
-
-            $dataset = Dataset::where(['id' => $datasetID])->first();
-            $durs = $dataset->AllDurs;
-            $collections = $dataset->AllCollections;
-            $publications = $dataset->AllPublications;
-            $tools = $dataset->AllTools;
-            
-            $version = $dataset->latestVersion();
-            $withLinks = DatasetVersion::where('id', $version['id'])
-                ->with(['linkedDatasetVersions'])
-                ->first();
-
-            $dataset->setAttribute('versions', [$withLinks]);
-
-            $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
-
-            $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
-            $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
-            $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
-
-            if (empty($title) || $title === '') {
-                Log::error('DataProviderCollController: Dataset title is empty or unknown', ['datasetId' => $dataset->id]);
-            }
-
-            $this->datasets[] = [
-                'id' => $dataset->id,
-                'status' => $dataset->status,
-                'title' => $title,
-                'populationSize' => $populationSize,
-                'datasetType' => $datasetType
-            ];
-
-            $this->durs = collect($this->durs)->merge($durs->pluck('id'))->unique()->values()->all();
-            $this->publications = collect($this->publications)->merge($publications->pluck('id'))->unique()->values()->all();
-            $this->tools = collect($this->tools)->merge($tools->pluck('id'))->unique()->values()->all();
-            $this->collections = collect($this->collections)->merge($collections->pluck('id'))->unique()->values()->all();
+        foreach ($datasetIds as $datasetId) {
+            $this->checkingDataset($datasetId);
         }
+    }
+
+    public function checkingDataset(int $datasetId)
+    {
+        $dataset = Dataset::where(['id' => $datasetId])->first();
+
+        if (!$dataset) {
+            return;
+        }
+
+        // Accessed through the accessor
+        $durs = $dataset->AllDurs;
+        $collections = $dataset->AllCollections;
+        $publications = $dataset->AllPublications;
+        $tools = $dataset->AllTools;
+
+        $version = $dataset->latestVersion();
+        $withLinks = DatasetVersion::where('id', $version['id'])
+            ->with(['linkedDatasetVersions'])
+            ->first();
+
+        if (!$withLinks) {
+            return;
+        }
+
+        $dataset->setAttribute('versions', [$withLinks]);
+
+        $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
+
+        $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
+        $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
+        $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+
+        if (empty($title) || $title === '') {
+            Log::error('DataProviderCollController: Dataset title is empty or unknown', ['datasetId' => $dataset->id]);
+        }
+
+        $this->datasets[] = [
+            'id' => $dataset->id,
+            'status' => $dataset->status,
+            'title' => $title,
+            'populationSize' => $populationSize,
+            'datasetType' => $datasetType
+        ];
+
+        $this->durs = collect($this->durs)->merge($durs->pluck('id'))->unique()->values()->all();
+        $this->publications = collect($this->publications)->merge($publications->pluck('id'))->unique()->values()->all();
+        $this->tools = collect($this->tools)->merge($tools->pluck('id'))->unique()->values()->all();
+        $this->collections = collect($this->collections)->merge($collections->pluck('id'))->unique()->values()->all();
     }
 }

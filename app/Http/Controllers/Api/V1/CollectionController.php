@@ -160,7 +160,6 @@ class CollectionController extends Controller
         }
     }
 
-
     /**
      * @OA\Get(
      *    path="/api/v1/collections/{id}",
@@ -1216,66 +1215,61 @@ class CollectionController extends Controller
      */
     public function indexElasticCollections(int $collectionId): void 
     {
+        $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
+        $datasets = $collection->AllDatasets;
+
+        $datasetIds = array_map(function ($dataset) {
+            return $dataset['id'];
+        }, $datasets);
+
+        $collection = $collection->toArray();
+        $team = $collection['team'];
+
+        $datasetTitles = array();
+        $datasetAbstracts = array();
+        foreach ($datasetIds as $d) {
+            $metadata = Dataset::where(['id' => $d])
+                ->first()
+                ->latestVersion()
+                ->metadata;
+            $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
+            $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
+        }
+
+        $keywords = array();
+        foreach ($collection['keywords'] as $k) {
+            $keywords[] = $k['name'];
+        }
+
+        $dataProviderColl = [];
+        if (array_key_exists('team_id', $collection)) {
+            $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $collection['team_id'])
+                ->pluck('data_provider_coll_id')
+                ->all();
+            $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollId)
+                ->pluck('name')
+                ->all();   
+        }
+
         try {
-            // Retrieve collection with related models
-            $collection = Collection::with(['team', 'keywords'])->findOrFail($collectionId);
-
-            // Set the datasets attribute with the latest datasets
-            $datasets = $collection->AllDatasets;
-
-            // Convert collection to array after setting the attribute
-            $collectionArray = $collection->toArray();
-
-            // Extract team information
-            $teamName = $collectionArray['team']['name'] ?? '';
-
-            // Fetch dataset titles and abstracts
-            $datasetTitles = [];
-            $datasetAbstracts = [];
-            foreach ($datasets as $dataset) {
-                $latestVersion = Dataset::find($dataset['id'])->latestVersion();
-                $metadata = $latestVersion->metadata ?? [];
-
-                $datasetTitles[] = $metadata['summary']['shortTitle'] ?? '';
-                $datasetAbstracts[] = $metadata['summary']['abstract'] ?? '';
-            }
-
-            // Extract keywords
-            $keywords = array_column($collectionArray['keywords'], 'name');
-
-            // Fetch data provider collection names
-            $dataProviderColl = [];
-            if (isset($collectionArray['team_id'])) {
-                $dataProviderCollIds = DataProviderCollHasTeam::where('team_id', $collectionArray['team_id'])
-                    ->pluck('data_provider_coll_id')
-                    ->all();
-                $dataProviderColl = DataProviderColl::whereIn('id', $dataProviderCollIds)
-                    ->pluck('name')
-                    ->all();
-            }
-
-            // Prepare data to index
             $toIndex = [
-                'publisherName' => $teamName,
-                'description' => $collectionArray['description'],
-                'name' => $collectionArray['name'],
+                'publisherName' => isset($team['name']) ? $team['name'] : '',
+                'description' => $collection['description'],
+                'name' => $collection['name'],
                 'datasetTitles' => $datasetTitles,
                 'datasetAbstracts' => $datasetAbstracts,
                 'keywords' => $keywords,
                 'dataProviderColl' => $dataProviderColl
             ];
-
-            // Index the data
             $params = [
                 'index' => 'collection',
                 'id' => $collectionId,
                 'body' => $toIndex,
-                'headers' => ['Content-Type' => 'application/json']
+                'headers' => 'application/json'
             ];
 
             $client = MMC::getElasticClient();
             $client->index($params);
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
