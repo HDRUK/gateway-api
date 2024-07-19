@@ -661,10 +661,11 @@ class DataProviderCollController extends Controller
 
     public function getDatasets(int $teamId)
     {
-        $datasets = Dataset::where(['team_id' => $teamId]);
+        $datasetIDs = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
 
-        foreach ($datasets as $dataset) {
+        foreach ($datasetIDs as $datasetID) {
 
+            $dataset = Dataset::where(['id' => $datasetID])->first();
             $durs = $dataset->AllDurs;
             $collections = $dataset->AllCollections;
             $publications = $dataset->AllPublications;
