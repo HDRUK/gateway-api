@@ -73,8 +73,6 @@ trait Authorization
         }
 
         $response = $this->json('POST', '/api/v1/auth', $authData, ['Accept' => 'application/json']);
-        dd($response);
-        exit();
         
         return $response['access_token'];
     }

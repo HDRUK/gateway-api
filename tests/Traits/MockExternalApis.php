@@ -4,6 +4,7 @@ namespace Tests\Traits;
 
 use Auditor;
 use Config;
+use Mockery;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
 
@@ -75,12 +76,12 @@ trait MockExternalApis
     {
         parent::setUp();
 
-        Config::set('services.googlelogging.enabled', false);
-        Config::set('services.googlepubsub.enabled', false);
-
         $this->seed([
             SectorSeeder::class,
         ]);
+
+        $this->mockAuditor();
+
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
@@ -1058,12 +1059,32 @@ trait MockExternalApis
             },
         ]);
 
+        Auditor::shouldReceive('log')
+            ->once()
+            ->with([
+                'action_name' => 'fake action name'
+            ]);
+
     }
 
     // Count requests made to the elastic mock client
     public function countElasticClientRequests(object $client): int
     {
         return count($client->getTransport()->getClient()->getRequests());
+    }
+
+    protected function mockAuditor()
+    {
+        // Create a mock of the Auditor class
+        $this->auditorMock = Mockery::mock(Auditor::class);
+
+        // Define the behavior of the log method
+        $this->auditorMock->shouldReceive('log')
+                          ->with(Mockery::type('array'))
+                          ->andReturn(true);
+
+        // Bind the mock to the service container
+        $this->app->instance(Auditor::class, $this->auditorMock);
     }
 
 }
