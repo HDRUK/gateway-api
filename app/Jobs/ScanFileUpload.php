@@ -5,8 +5,11 @@ namespace App\Jobs;
 use Auditor;
 use Exception;
 
+use App\Models\Team;
 use App\Models\Upload;
 use App\Imports\ImportDur;
+
+use App\Http\Traits\MetadataOnboard;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,13 +24,16 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ScanFileUpload implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, MetadataOnboard;
     
     private int $uploadId = 0;
     private string $fileSystem = '';
     private string $entityFlag = '';
     private int | null $userId = null;
     private int | null $teamId = null;
+    private string | null $inputSchema = null;
+    private string | null $inputVersion = null;
+    private bool $elasticIndexing = true;
 
     /**
      * Create a new job instance.
@@ -37,7 +43,10 @@ class ScanFileUpload implements ShouldQueue
         string $fileSystem, 
         string $entityFlag, 
         int | null $userId, 
-        int | null $teamId
+        int | null $teamId,
+        string | null $inputSchema,
+        string | null $inputVersion,
+        bool $elasticIndexing,
     )
     {
         $this->uploadId = $uploadId;
@@ -45,6 +54,9 @@ class ScanFileUpload implements ShouldQueue
         $this->entityFlag = $entityFlag;
         $this->userId = $userId;
         $this->teamId = $teamId;
+        $this->inputSchema = $inputSchema;
+        $this->inputVersion = $inputVersion;
+        $this->elasticIndexing = $elasticIndexing;
     }
 
     /**
@@ -92,6 +104,8 @@ class ScanFileUpload implements ShouldQueue
 
             if ($this->entityFlag === 'dur-from-upload') {
                 $this->createDurFromFile($loc, $upload);
+            } else if ($this->entityFlag === 'dataset-from-upload') {
+                $this->createDatasetFromFile($loc, $upload);
             }
 
             Auditor::log([
@@ -122,6 +136,56 @@ class ScanFileUpload implements ShouldQueue
                 'entity_type' => 'dur',
                 'entity_id' => $durId
             ]);
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function createDatasetFromFile(string $loc, Upload $upload): void
+    {
+        try {
+            $team = Team::findOrFail($this->teamId)->toArray();
+
+            $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
+            $input = [
+                'metadata' => ['metadata' => json_decode($content)],
+                'status' => 'DRAFT',
+                'create_origin' => 'MANUAL',
+                'user_id' => $this->userId,
+                'team_id' => $this->teamId,
+            ];
+            $metadataResult = $this->metadataOnboard(
+                $input, $team, $this->inputSchema, $this->inputVersion, $this->elasticIndexing
+            );
+
+            if ($metadataResult['translated']) {
+                $upload->update([
+                    'status' => 'PROCESSED',
+                    'file_location' => $loc,
+                    'entity_type' => 'dataset',
+                    'entity_id' => $metadataResult['dataset_id']
+                ]);
+
+                Auditor::log([
+                    'user_id' => $this->userId,
+                    'team_id' => $this->teamId,
+                    'action_type' => 'CREATE',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset " . $metadataResult['dataset_id'] . " with version " . $metadataResult['version_id'] . " created",
+                ]);
+            } else {
+                $upload->update([
+                    'status' => 'FAILED',
+                    'file_location' => $loc,
+                    'error' => $metadataResult['response']
+                ]);
+            }
         } catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([

@@ -12,6 +12,7 @@ use App\Models\Dataset;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use App\Jobs\TermExtraction;
+use App\Http\Traits\MetadataOnboard;
 
 use App\Models\DataProvider;
 use Illuminate\Http\Request;
@@ -43,6 +44,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DatasetController extends Controller
 {
+    use MetadataOnboard;
+
     /**
      * @OA\Get(
      *    path="/api/v1/datasets",
@@ -537,7 +540,7 @@ class DatasetController extends Controller
             $teamId = (int)$input['team_id'];
 
             $team = Team::where('id', $teamId)->first()->toArray();
-            $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
+            // $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 
@@ -551,146 +554,29 @@ class DatasetController extends Controller
                 ], 400);
             }
 
-            //send the payload to traser
-            // - traser will return the input unchanged if the data is
-            //   already in the GWDM with GWDM_CURRENT_VERSION
-            // - if it is not, traser will try to work out what the metadata is
-            //   and translate it into the GWDM
-            // - otherwise traser will return a non-200 error 
-
-            $payload = $input['metadata'];
-            $payload['extra'] = [
-                "id"=>"placeholder",
-                "pid"=>"placeholder",
-                "datasetType"=>"Healthdata",
-                "publisherId"=>$team['pid'],
-                "publisherName"=>$team['name']
-            ];
-
-            $traserResponse = MMC::translateDataModelType(
-                json_encode($payload),
-                Config::get('metadata.GWDM.name'),
-                Config::get('metadata.GWDM.version'),
-                $inputSchema,
-                $inputVersion,
-                $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
-                $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
+            $metadataResult = $this->metadataOnboard(
+                $input, $team, $inputSchema, $inputVersion, $elasticIndexing
             );
 
-            if ($traserResponse['wasTranslated']) {
-                $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
-                $input['metadata']['metadata'] = $traserResponse['metadata'];
+            if ($metadataResult['translated']) {
 
-                $mongo_object_id = array_key_exists('mongo_object_id', $input) ? $input['mongo_object_id'] : null;
-                $mongo_id = array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null;
-                $mongo_pid = array_key_exists('mongo_pid', $input) ? $input['mongo_pid'] : null;
-                $datasetid = array_key_exists('datasetid', $input) ? $input['datasetid'] : null;
-
-                $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
-
-                $dataset = MMC::createDataset([
-                    'user_id' => $input['user_id'],
-                    'team_id' => $input['team_id'],
-                    'mongo_object_id' => $mongo_object_id,
-                    'mongo_id' => $mongo_id,
-                    'mongo_pid' => $mongo_pid,
-                    'datasetid' => $datasetid,
-                    'created' => now(),
-                    'updated' => now(),
-                    'submitted' => now(),
-                    'pid' => $pid,
-                    'create_origin' => $input['create_origin'],
-                    'status' => $request['status'],
-                    'is_cohort_discovery' => $isCohortDiscovery,
-                ]);
-
-                $publisher = null;
-                $required = [
-                        'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
-                        'gatewayPid' => $dataset->pid,
-                        'issued' => $dataset->created,
-                        'modified' => $dataset->updated,
-                        'revisions' => []
-                    ];
-
-                // ------------------------------------------------------------------- 
-                // * Create a new 'required' section for the metadata to be saved
-                //    - otherwise this section is filled with placeholders by all translations to GWDM
-                // * Force correct publisher field based on the team associated with 
-                //
-                // Note: 
-                //     - This is hopefully a rare scenario when the BE has to be changed due to an update 
-                //        to the GWDM 
-                //     - future releases of the GWDM will hopefully not modify anything that we need to
-                //       set via the MMC
-                //     - we can't pass the publisherId nor the gatewayPid of the dataset to traser before  
-                //       they have been created, this is why we are doing this..
-                //     - GWDM >= 1.1 versions have a change related to these sections of the GWDM
-                //         - addition of the field 'version' in the required field 
-                //         - restructure of the 'publisher' in the summary field 
-                //            - publisher.publisherId --> publisher.gatewayId
-                //            - publisher.publisherName --> publisher.name
-                // ------------------------------------------------------------------- 
-                if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
-                    $publisher = [
-                        'publisherId' => $team['pid'],
-                        'publisherName' => $team['name'],
-                    ];
-                } else{
-                    $version = $this->getVersion(1);
-                    if(array_key_exists( 'version', $input['metadata']['metadata']['required'])){
-                       $version = $input['metadata']['metadata']['required']['version'];
-                    }
-                    $required['version'] = $version;
-                    $publisher = [
-                        'gatewayId' => $team['pid'],
-                        'name' => $team['name'],
-                    ];
-                }
-
-                $input['metadata']['metadata']['required'] = $required;
-                $input['metadata']['metadata']['summary']['publisher'] = $publisher;
-
-                //include a note of what the metadata was (i.e. which GWDM version)
-                $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
-
-                $version = MMC::createDatasetVersion([
-                    'dataset_id' => $dataset->id,
-                    'metadata' => json_encode($input['metadata']),
-                    'version' => 1,
-                ]);
-
-                // map coverage/spatial field to controlled list for filtering
-                $this->mapCoverage($input['metadata'], $version);
-
-                // Dispatch term extraction to a subprocess if the dataset is marked as active
-                if($request['status'] === Dataset::STATUS_ACTIVE){
-                    TermExtraction::dispatch(
-                        $dataset->id,
-                        '1',
-                        base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
-                        $elasticIndexing
-                    );
-                }
-                
                 Auditor::log([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
                     'action_type' => 'CREATE',
                     'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset " . $dataset->id . " with version " . $version->id . " created",
+                    'description' => "Dataset " . $metadataResult['dataset_id'] . " with version " . $metadataResult['version_id'] . " created",
                 ]);
 
                 return response()->json([
                     'message' => 'created',
-                    'data' => $dataset->id,
-                    'version' => $version->id,
+                    'data' => $metadataResult['dataset_id'],
+                    'version' => $metadataResult['version_id'],
                 ], 201);
-            }
-            else {
+            } else {
                 return response()->json([
                     'message' => 'metadata is in an unknown format and cannot be processed',
-                    'details' => $traserResponse,
+                    'details' => $metadataResult['response'],
                 ], 400);
             }
         } catch (Exception $e) {
@@ -1216,20 +1102,6 @@ class DatasetController extends Controller
         }
     }
 
-    private function getVersion(int $version){
-        if($version>999) throw new Exception("too many versions");
-
-        $version = max(0, $version);
-
-        $hundreds = floor($version / 100);
-        $tens = floor(($version % 100) / 10);
-        $units = $version % 10;
-
-        $formattedVersion = "{$hundreds}.{$tens}.{$units}";
-
-        return $formattedVersion;
-    }
-
     private function extractMetadata (Mixed $metadata){
 
         // Pre-process check for incoming data from a resource that passes strings
@@ -1247,45 +1119,5 @@ class DatasetController extends Controller
             $metadata = $tmpMetadata;
         }
         return $metadata;
-    }
-
-
-    private function mapCoverage(array $metadata, DatasetVersion $version): void 
-    {
-        if (!isset($metadata['metadata']['coverage']['spatial'])) {
-            return;
-        }
-        
-        $coverage = strtolower($metadata['metadata']['coverage']['spatial']);
-        $ukCoverages = SpatialCoverage::whereNot('region', 'Rest of the world')->get();
-        $worldId = SpatialCoverage::where('region', 'Rest of the world')->first()->id;
-
-        $matchFound = false;
-        foreach ($ukCoverages as $c) {
-            if (str_contains($coverage, strtolower($c['region']))) {
-                
-                DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version['id'],
-                    'spatial_coverage_id' => (int) $c['id'],
-                ]);
-                $matchFound = true;
-            }
-        }
-
-        if (!$matchFound) {
-            if (str_contains($coverage, 'united kingdom')) {
-                foreach ($ukCoverages as $c) {
-                    DatasetVersionHasSpatialCoverage::updateOrCreate([
-                        'dataset_version_id' => (int) $version['id'],
-                        'spatial_coverage_id' => (int) $c['id'],
-                    ]);
-                }
-            } else {
-                DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version['id'],
-                    'spatial_coverage_id' => (int) $worldId,
-                ]);
-            }
-        }
     }
 }
