@@ -63,7 +63,7 @@ class DatasetPublicationLinkagePostMigration extends Command
                 continue;
             }
 
-            // Find Dataset ID associated to this row
+            // Find Dataset Version ID associated to this row
             $datasetVersionId = $datasetVersion->id;
 
             // Find Publication associated to this row
