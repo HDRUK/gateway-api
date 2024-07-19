@@ -273,7 +273,7 @@ class MetadataManagementController {
             $locations = array();
             $dataTypes = array();
             foreach ($datasets as $dataset) {
-                $dataset->spatialCoverage = $dataset->AllSpatialCoverage;
+                $dataset->setAttribute('spatialCoverage', $dataset->latestSpatialCoverages);
                 $metadata = $dataset->latestVersion()->metadata;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
                 if (!in_array($metadata['metadata']['summary']['datasetType'], $dataTypes)) {

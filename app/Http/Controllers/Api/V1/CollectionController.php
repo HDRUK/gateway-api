@@ -126,7 +126,8 @@ class CollectionController extends Controller
                 $userPublications = $collection->userPublications;
                 $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
                 $collection->setRelation('users', $users);
-                $collection->datasets = $collection->AllDatasets;
+                $collection->setAttribute('datasets', $collection->AllDatasets);
+
                 $applicationDatasets = $collection->applicationDatasets;
                 $applicationTools = $collection->applicationTools;
                 $applicationPublications = $collection->applicationPublications;
@@ -1219,7 +1220,7 @@ class CollectionController extends Controller
             $collection = Collection::with(['team', 'keywords'])->findOrFail($collectionId);
 
             // Set the datasets attribute with the latest datasets
-            $collection->datasets = $collection->AllDatasets;
+            $datasets = $collection->AllDatasets;
 
             // Convert collection to array after setting the attribute
             $collectionArray = $collection->toArray();
@@ -1230,7 +1231,7 @@ class CollectionController extends Controller
             // Fetch dataset titles and abstracts
             $datasetTitles = [];
             $datasetAbstracts = [];
-            foreach ($collectionArray['datasets'] as $dataset) {
+            foreach ($datasets as $dataset) {
                 $latestVersion = Dataset::find($dataset['id'])->latestVersion();
                 $metadata = $latestVersion->metadata ?? [];
 

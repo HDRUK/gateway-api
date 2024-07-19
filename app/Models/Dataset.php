@@ -22,6 +22,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * @property array $dataset_version_ids
+ */
 class Dataset extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;

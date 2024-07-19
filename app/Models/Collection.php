@@ -19,6 +19,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
+/**
+ * @property array $dataset_version_ids
+ */
 class Collection extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable;

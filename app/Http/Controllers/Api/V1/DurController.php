@@ -213,7 +213,7 @@ class DurController extends Controller
             $durs->getCollection()->transform(function ($dur) {
                 $userDatasets = $dur->userDatasets;
                 $userPublications = $dur->userPublications;
-                $dur->datasets = $dur->AllDatasets;
+                $dur->setAttribute('datasets', $dur->AllDatasets);
                 $applicationDatasets = $dur->applicationDatasets;
                 $applicationPublications = $dur->applicationPublications;
                 $users = $userDatasets->merge($userPublications)->unique('id');
@@ -1869,14 +1869,14 @@ class DurController extends Controller
             $dur = Dur::with(['keywords', 'team', 'sector'])->findOrFail($id);
 
             // Set the datasets attribute with the latest datasets
-            $dur->datasets = $dur->AllDatasets;
+            $datasets = $dur->AllDatasets;
 
             // Convert Dur to array after setting the attribute
             $durArray = $dur->toArray();
 
             // Fetch dataset titles
             $datasetTitles = [];
-            foreach ($durArray['datasets'] as $dataset) {
+            foreach ($datasets as $dataset) {
                 $latestVersion = Dataset::find($dataset['id'])->latestVersion();
                 $metadata = $latestVersion->metadata ?? [];
                 $datasetTitles[] = $metadata['summary']['shortTitle'] ?? '';

@@ -197,7 +197,8 @@ class IntegrationDurController extends Controller
 
                 $applicationDatasets = $dur->applicationDatasets;
                 $applicationPublications = $dur->applicationPublications;
-                $dur->datasets = $dur->AllDatasets;
+                $dur->setAttribute('datasets', $dur->AllDatasets);
+
                 $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
                 $dur->setRelation('applications', $applications);
                 
@@ -1228,8 +1229,7 @@ class IntegrationDurController extends Controller
             $dataset->new_key = 'Value or Computation here';
             $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
         }
-        $dur->datasets = $datasets;
-
+        $dur->setAttribute('datasets', $dur->AllDatasets);
         return $dur->toArray();
     }
 
@@ -1541,14 +1541,14 @@ class IntegrationDurController extends Controller
             $dur = Dur::with(['keywords', 'team', 'sector'])->findOrFail($id);
 
             // Set the datasets attribute with the latest datasets
-            $dur->datasets = $dur->AllDatasets;
+            $datasets = $dur->AllDatasets;
 
             // Convert Dur to array after setting the attribute
             $durArray = $dur->toArray();
 
             // Fetch dataset titles
             $datasetTitles = [];
-            foreach ($durArray['datasets'] as $dataset) {
+            foreach ($datasets as $dataset) {
                 $latestVersion = Dataset::find($dataset['id'])->latestVersion();
                 $metadata = $latestVersion->metadata ?? [];
                 $datasetTitles[] = $metadata['summary']['shortTitle'] ?? '';

@@ -793,8 +793,7 @@ class SearchController extends Controller
                 $foundFlag = false;
                 foreach ($durModels as $model) {
                     if ((int) $dur['_id'] === $model['id']) {
-                        // Set the latest datasets
-                        $model->datasets = $model->AllDatasets;
+                        $model->setAttribute('datasets', $model->AllDatasets);
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
                         $durArray[$i]['organisationName'] = $model['organisation_name'];
@@ -1524,8 +1523,8 @@ class SearchController extends Controller
         foreach ($provider['teams'] as $team) {
             $datasets = Dataset::where('team_id', $team['id'])->get();
             foreach ($datasets as $dataset) {
-                $dataset->spatialCoverage = $dataset->AllSpatialCoverages;
-                foreach ($dataset['spatialCoverage'] as $loc) {
+                $spatialCoverage = $dataset->AllSpatialCoverages;
+                foreach ($spatialCoverage as $loc) {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
                     }
