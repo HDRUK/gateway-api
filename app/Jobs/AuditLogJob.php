@@ -2,24 +2,21 @@
 
 namespace App\Jobs;
 
-use Config;
+use App\Services\CloudPubSubService;
 use CloudLogger;
 use Illuminate\Bus\Queueable;
-use App\Services\PubSubService;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
-class SendAuditLogToPubSub implements ShouldQueue
+class AuditLogJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $data;
+    protected array $data;
+    protected CloudPubSubService $cloudPubSub;
 
-    /**
-     * Create a new job instance.
-     */
     public function __construct(array $auditLog)
     {
         $this->data = $auditLog;
@@ -28,15 +25,11 @@ class SendAuditLogToPubSub implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(CloudPubSubService $cloudPubSub): void
     {
-        if (!Config::get('services.googlepubsub.enabled')) {
-            return;
-        }
-
-        $pubSubService = new PubSubService();
-        $publish = $pubSubService->publishMessage($this->data);
-
+        $this->cloudPubSub = $cloudPubSub;
+        $publish = $this->cloudPubSub->publishMessage($this->data);
         CloudLogger::write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
-   }
+        CloudLogger::write($this->data);
+    }
 }

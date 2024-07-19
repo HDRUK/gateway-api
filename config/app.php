@@ -200,8 +200,7 @@ return [
         Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
         App\Providers\EnquiriesManagementControllerServiceProvider::class,
         App\Providers\CloudLoggerProvider::class,
-        Maatwebsite\Excel\ExcelServiceProvider::class,
-
+        App\Providers\CloudPubSubProvider::class,
     ],
 
     /*
@@ -221,7 +220,7 @@ return [
         'AliasReplyScanner' => App\AliasReplyScanner\AliasReplyScannerFacade::class,
         'EnquiriesManagementController' => App\EnquiriesManagementController\EnquiriesManagementControllerFacade::class,
         'CloudLogger' => App\Facades\CloudLoggerFacade::class,
-        'Excel' => Maatwebsite\Excel\Facades\Excel::class,
+        'CloudPubSub' => App\Facades\CloudPubSubFacade::class,
     ])->toArray(),
 
 ];
