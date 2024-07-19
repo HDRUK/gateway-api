@@ -14,7 +14,9 @@ class Upload extends Model
         'file_location',
         'user_id',
         'status',
-        'error'
+        'error',
+        'entity_type',
+        'entity_id'
     ];
 
     /**
