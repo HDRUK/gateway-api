@@ -613,7 +613,7 @@ class DataProviderCollController extends Controller
             $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
 
             foreach ($datasets as $dataset) {
-                $dataset->spatialCoverage = $dataset->LatestSpatialCoverages;
+                $dataset->setAttribute('spatialCoverage', $dataset->latestSpatialCoverages);
                 $metadata = $dataset['versions'][0];
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
                 foreach ($dataset['spatialCoverage'] as $loc) {

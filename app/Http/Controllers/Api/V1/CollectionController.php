@@ -126,15 +126,12 @@ class CollectionController extends Controller
                 $userPublications = $collection->userPublications;
                 $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
                 $collection->setRelation('users', $users);
-
+                $collection->datasets = $collection->AllDatasets;
                 $applicationDatasets = $collection->applicationDatasets;
                 $applicationTools = $collection->applicationTools;
                 $applicationPublications = $collection->applicationPublications;
                 $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
                 $collection->setRelation('applications', $applications);
-
-                // Set the datasets attribute with the latest datasets
-                $collection->datasets = $collection->AllDatasets;
 
                 // Remove unwanted relations
                 unset(
@@ -800,9 +797,8 @@ class CollectionController extends Controller
                 'team',
             ])->first();
         
-            // Set the datasets attribute with the latest datasets
-        $collection->datasets = $collection->AllDatasets;
-
+        // Set the datasets attribute with the latest datasets
+        $collection->setAttribute('datasets', $collection->AllDatasets);
 
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
