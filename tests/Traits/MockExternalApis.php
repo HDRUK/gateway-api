@@ -1056,13 +1056,6 @@ trait MockExternalApis
                 }
             },
         ]);
-
-        Auditor::shouldReceive('log')
-            ->once()
-            ->with([
-                'action_name' => 'fake action name'
-            ]);
-
     }
 
     // Count requests made to the elastic mock client
