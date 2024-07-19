@@ -1559,7 +1559,7 @@ class DurController extends Controller
             $dataset->new_key = 'Value or Computation here';
             $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
         }
-        $dur->datasets = $datasets;
+        $dur->setRelation('datasets', $datasets);
 
         return $dur->toArray();
     }
