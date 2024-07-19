@@ -661,15 +661,9 @@ class DataProviderCollController extends Controller
 
     public function getDatasets(int $teamId)
     {
-        $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
+        $datasets = Dataset::where(['team_id' => $teamId]);
 
-        foreach ($datasetIds as $datasetId) {
-            
-            $dataset = Dataset::where(['id' => $datasetId])->first();
-
-            if (!$dataset) {
-                return;
-            }
+        foreach ($datasets as $dataset) {
 
             $durs = $dataset->AllDurs;
             $collections = $dataset->AllCollections;
@@ -701,10 +695,10 @@ class DataProviderCollController extends Controller
                 'datasetType' => $datasetType
             ];
 
-            $this->durs = array_unique(array_merge($this->durs, $durs->pluck('id')->toArray()));
-            $this->publications = array_unique(array_merge($this->publications, $publications->pluck('id')->toArray()));
-            $this->tools = array_unique(array_merge($this->tools, $tools->pluck('id')->toArray()));
-            $this->collections = array_unique(array_merge($this->collections, $collections->pluck('id')->toArray()));
+            $this->durs = collect($this->durs)->merge($durs->pluck('id'))->unique()->values()->all();
+            $this->publications = collect($this->publications)->merge($publications->pluck('id'))->unique()->values()->all();
+            $this->tools = collect($this->tools)->merge($tools->pluck('id'))->unique()->values()->all();
+            $this->collections = collect($this->collections)->merge($collections->pluck('id'))->unique()->values()->all();
         }
     }
 }

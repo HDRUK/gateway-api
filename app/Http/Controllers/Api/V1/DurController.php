@@ -1555,11 +1555,15 @@ class DurController extends Controller
 
         // Fetch datasets using the accessor
         $datasets = $dur->AllDatasets;
+
         foreach ($datasets as $dataset) {
+            // Dynamically set new attributes
             $dataset->new_key = 'Value or Computation here';
             $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
         }
-        $dur->setRelation('datasets', $datasets);
+
+        // Update the relationship with the modified datasets
+        $dur->setAttribute('datasets', $datasets);
 
         return $dur->toArray();
     }
