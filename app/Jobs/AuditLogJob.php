@@ -29,8 +29,6 @@ class AuditLogJob implements ShouldQueue
     public $timeout = 10;
 
     protected array $data;
-    protected CloudPubSubService $cloudPubSub;
-    protected CloudLoggerService $cloudLogger;
 
     public function __construct(array $auditLog)
     {
@@ -42,9 +40,7 @@ class AuditLogJob implements ShouldQueue
      */
     public function handle(CloudPubSubService $cloudPubSub, CloudLoggerService $cloudLogger): void
     {
-        $this->cloudPubSub = $cloudPubSub;
-        $this->cloudLogger = $cloudLogger;
-        $publish = $this->cloudPubSub->publishMessage($this->data);
-        $this->cloudLogger->write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
+        $publish = $cloudPubSub->publishMessage($this->data);
+        $cloudLogger->write('Message sent to pubsub from "SendAuditLogToPubSub" job ' . json_encode($publish));
     }
 }
