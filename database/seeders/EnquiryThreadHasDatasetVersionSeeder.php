@@ -23,13 +23,13 @@ class EnquiryThreadHasDatasetVersionSeeder extends Seeder
 
             $enquireThreadHasDatasetVersion = EnquiryThreadHasDatasetVersion::where([
                 'enquiry_thread_id' => $enquiryThreadId,
-                'dataset_version_id' => $interestType,
+                'dataset_version_id' => $datasetVersionId,
             ])->first();
 
             if (is_null($enquireThreadHasDatasetVersion)) {
                 EnquiryThreadHasDatasetVersion::create([
                     'enquiry_thread_id' => $enquiryThreadId,
-                    'dataset_version_id' => $interestType,
+                    'dataset_version_id' => $datasetVersionId,
                     'interest_type' => $interestType,
                 ]);
             }
