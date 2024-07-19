@@ -16,10 +16,6 @@ use App\Http\Controllers\SSO\CustomAuthorizationController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Route::get('/oauth/authorize', [CustomAuthorizationController::class, 'customAuthorize']);
 
 Route::get('/oauth/.well-known/jwks', [JwksController::class, 'getJwks']);
