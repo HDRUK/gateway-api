@@ -1224,19 +1224,19 @@ class IntegrationCollectionController extends Controller
     private function getCollectionById(int $collectionId)
     {
         $collection = Collection::where(['id' => $collectionId])
-            ->with([
-                'keywords',
-                'tools',
-                'dur',
-                'publications',
-                'userDatasets',
-                'userTools',
-                'userPublications',
-                'applicationDatasets',
-                'applicationTools',
-                'applicationPublications',
-                'team',
-            ])->first();
+        ->with([
+            'keywords',
+            'tools', 
+            'dur',
+            'publications',
+            'userDatasets', 
+            'userTools', 
+            'userPublications',
+            'applicationDatasets',
+            'applicationTools',
+            'applicationPublications',
+            'team',
+        ])->first();
         
         // Set the datasets attribute with the latest datasets
         $collection->setAttribute('datasets', $collection->AllDatasets);
