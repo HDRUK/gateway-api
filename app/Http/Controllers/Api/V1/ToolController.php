@@ -365,7 +365,7 @@ class ToolController extends Controller
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
             if (array_key_exists('dataset', $input)) {
-                $this->insertDatasetVersionHasTool($input['dataset_ids'], (int) $tool->id);
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $tool->id);
             }
             if (array_key_exists('programming_language', $input)) {
                 $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
@@ -526,8 +526,8 @@ class ToolController extends Controller
             $this->insertToolHasTag($input['tag'], (int) $id);
 
             DatasetVersionHasTool::where('tool_id', $id)->delete();
-            if (array_key_exists('dataset_ids', $input)) {
-                $this->insertDatasetVersionHasTool($input['dataset_ids'], (int) $id);
+            if (array_key_exists('dataset', $input)) {
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
             }
             ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
             if (array_key_exists('programming_language', $input)) {
@@ -725,9 +725,9 @@ class ToolController extends Controller
                 $this->insertToolHasTag($input['tag'], (int) $id);
             };
 
-            if (array_key_exists('dataset_ids', $input)) {
+            if (array_key_exists('dataset', $input)) {
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
-                $this->insertDatasetVersionHasTool($input['dataset_ids'], (int) $id);
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
             }
 
             if (array_key_exists('programming_language', $input)) {
@@ -916,13 +916,25 @@ class ToolController extends Controller
     {
         try {
             foreach ($datasetIds as $value) {
-                $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
+                if (is_array($value)) {
+                    $datasetVersionIDs = DatasetVersion::where('dataset_id', $value['id'])->pluck('id')->all();
     
-                foreach ($datasetVersionIDs as $datasetVersionID) {
-                    DatasetVersionHasTool::updateOrCreate([
-                        'tool_id' => $toolId,
-                        'dataset_version_id' => $datasetVersionID,
-                    ]);
+                    foreach ($datasetVersionIDs as $datasetVersionID) {
+                        DatasetVersionHasTool::updateOrCreate([
+                            'tool_id' => $toolId,
+                            'dataset_version_id' => $datasetVersionID,
+                            'link_type' => $value['link_type'],
+                        ]);
+                    }
+                } else {
+                    $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
+    
+                    foreach ($datasetVersionIDs as $datasetVersionID) {
+                        DatasetVersionHasTool::updateOrCreate([
+                            'tool_id' => $toolId,
+                            'dataset_version_id' => $datasetVersionID,
+                        ]);
+                    }
                 }
             }
             return true;
