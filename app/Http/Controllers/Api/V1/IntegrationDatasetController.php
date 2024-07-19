@@ -313,9 +313,9 @@ class IntegrationDatasetController extends Controller
             $dataset = Dataset::findOrFail($id);
 
             // inject dataset Version Atributes
-            $dataset->setAttribute('publications', $dataset->getLatestPublications());
-            $dataset->setAttribute('named_entities', $dataset->getLatestNamedEntities());
-            $dataset->setAttribute('collections', $dataset->getLatestCollections());
+            $dataset->setAttribute('publications', $dataset->AllPublications);
+            $dataset->setAttribute('named_entities', $dataset->AllNamedEntities);
+            $dataset->setAttribute('collections', $dataset->AllCollections);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);

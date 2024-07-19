@@ -136,7 +136,7 @@ class IntegrationCollectionController extends Controller
                 $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
                 $collection->setRelation('applications', $applications);
 
-                $collection->setAttribute('datasets', $collection->getLatestDatasets());
+                $collection->setAttribute('datasets', $collection->AllDatasets);
                 // Remove unwanted relations
                 unset(
                     $collection->userDatasets, 
@@ -792,8 +792,6 @@ class IntegrationCollectionController extends Controller
         }
 
         foreach ($inDatasets as $dataset) {
-
-            
             $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
             $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);
         
@@ -812,6 +810,7 @@ class IntegrationCollectionController extends Controller
             if (!$datasetId) {
                 throw new Exception("Dataset version not found for dataset ID: " . $datasetId);
             }
+
             $arrCreate = [
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
@@ -836,13 +835,7 @@ class IntegrationCollectionController extends Controller
                 $arrCreate['application_id'] = $appId;
             }
 
-            return CollectionHasDatasetVersion::updateOrCreate(
-                $arrCreate,
-                [
-                    'collection_id' => $collectionId,
-                    'dataset_version_id' => $datasetVersionId,
-                ]
-            );
+            return CollectionHasDatasetVersion::updateOrCreate($arrCreate);
         } catch (Exception $e) {
             throw new Exception("addCollectionHasDatasetVersion :: " . $e->getMessage());
         }
@@ -1185,7 +1178,7 @@ class IntegrationCollectionController extends Controller
             $collection = Collection::with(['team', 'keywords'])->findOrFail($collectionId);
 
             // Set the datasets attribute with the latest datasets
-            $collection->setAttribute('datasets', $collection->getLatestDatasets());
+            $datasets =$collection->AllDatasets;
 
             // Convert collection to array after setting the attribute
             $collectionArray = $collection->toArray();
@@ -1196,7 +1189,7 @@ class IntegrationCollectionController extends Controller
             // Fetch dataset titles and abstracts
             $datasetTitles = [];
             $datasetAbstracts = [];
-            foreach ($collectionArray['datasets'] as $dataset) {
+            foreach ($datasets as $dataset) {
                 $latestVersion = Dataset::find($dataset['id'])->latestVersion();
                 $metadata = $latestVersion->metadata ?? [];
 
@@ -1248,8 +1241,10 @@ class IntegrationCollectionController extends Controller
                 'applicationPublications',
                 'team',
             ])->first();
+        
+        // Set the datasets attribute with the latest datasets
+        $collection->setAttribute('datasets', $collection->AllDatasets);
 
-        $collection->setAttribute('datasets', $collection->getLatestDatasets());    
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
         $userPublications = $collection->userPublications;
@@ -1263,11 +1258,11 @@ class IntegrationCollectionController extends Controller
         $collection->setRelation('applications', $applications);
 
         unset(
-            $collection->userDatasets,
-            $collection->userTools,
-            $collection->userPublications,
-            $collection->applicationDatasets,
-            $collection->applicationTools,
+            $collection->userDatasets, 
+            $collection->userTools, 
+            $collection->userPublications, 
+            $collection->applicationDatasets, 
+            $collection->applicationTools, 
             $collection->applicationPublications
         );
 
