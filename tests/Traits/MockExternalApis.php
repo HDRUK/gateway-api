@@ -2,9 +2,7 @@
 
 namespace Tests\Traits;
 
-use Auditor;
 use Config;
-use Mockery;
 use Http\Mock\Client;
 use Nyholm\Psr7\Response;
 
@@ -12,14 +10,11 @@ use Tests\Traits\Authorization;
 
 use Database\Seeders\SectorSeeder;
 
-use App\Http\Traits\HubspotContacts;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Elastic\Elasticsearch\ClientBuilder;
 use MetadataManagementController AS MMC;
-use App\Http\Controllers\Api\V1\UserController;
 use Elastic\Elasticsearch\Response\Elasticsearch;
-use App\Http\Controllers\Api\V1\CohortRequestController;
 
 trait MockExternalApis
 {
