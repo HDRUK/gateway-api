@@ -1075,15 +1075,16 @@ trait MockExternalApis
 
     protected function mockAuditor()
     {
-        // Create a mock of the Auditor class
+        if ($this->auditorMock) {
+            Mockery::close();
+        }
+        
         $this->auditorMock = Mockery::mock(Auditor::class);
-
-        // Define the behavior of the log method
+        
         $this->auditorMock->shouldReceive('log')
                           ->with(Mockery::type('array'))
                           ->andReturn(true);
 
-        // Bind the mock to the service container
         $this->app->instance(Auditor::class, $this->auditorMock);
     }
 
