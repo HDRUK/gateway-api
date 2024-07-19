@@ -36,7 +36,9 @@ class Auditor {
             $data['action_name'] = strtolower($data['action_name']);
             $data['created_at'] = gettimeofday(true) * 1000000;
 
-            AuditLogJob::dispatch($data);
+            if (Config::get('services.googlepubsub.enabled')) {
+                AuditLogJob::dispatch($data);
+            }
 
             $audit = AuditLog::create($data);
 
