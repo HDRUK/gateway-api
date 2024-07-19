@@ -52,5 +52,7 @@ class CloudPubSubServiceTest extends TestCase
         $result = $service->publishMessage($data);
 
         $this->assertEquals($messageId, $result);
+
+        Config::set('services.googlepubsub.enabled', false);
     }
 }

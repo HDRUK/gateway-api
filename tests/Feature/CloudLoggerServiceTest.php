@@ -61,5 +61,7 @@ class CloudLoggerServiceTest extends TestCase
 
         // Assert
         $this->assertTrue($result);
+
+        Config::set('services.googlelogging.enabled', false);
     }
 }
