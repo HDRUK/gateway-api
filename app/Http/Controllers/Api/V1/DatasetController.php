@@ -389,7 +389,7 @@ class DatasetController extends Controller
             // Inject attributes via the dataset version table
             $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
             $dataset->setAttribute('publications_count', $dataset->latestVersion()->publicationHasDatasetVersions()->count());
-            $dataset->setAttribute('spatialCoverage', $dataset->latestSpatialCoverages);
+            $dataset->setAttribute('spatialCoverage', $dataset->AllSpatialCoverages);
             $dataset->setAttribute('durs', $dataset->AllDurs);
             $dataset->setAttribute('publications', $dataset->AllPublications);
             $dataset->setAttribute('named_entities', $dataset->AllNamedEntities);
