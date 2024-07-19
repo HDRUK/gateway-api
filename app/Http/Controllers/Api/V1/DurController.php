@@ -213,14 +213,14 @@ class DurController extends Controller
             $durs->getCollection()->transform(function ($dur) {
                 $userDatasets = $dur->userDatasets;
                 $userPublications = $dur->userPublications;
-                $users = $userDatasets->merge($userPublications)->unique('id');
-                $dur->setRelation('users', $users);
-
+                $dur->datasets = $dur->AllDatasets;
                 $applicationDatasets = $dur->applicationDatasets;
                 $applicationPublications = $dur->applicationPublications;
+                $users = $userDatasets->merge($userPublications)->unique('id');
                 $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
+                $dur->setRelation('users', $users);
                 $dur->setRelation('applications', $applications);
-                $dur->setAttribute('datasets', $dur->getLatestDatasets());
+                
 
                 unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
 
@@ -1554,12 +1554,12 @@ class DurController extends Controller
         unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
 
         // Fetch datasets using the accessor
-        $datasets = $dur->datasets;
+        $datasets = $dur->AllDatasets;
         foreach ($datasets as $dataset) {
             $dataset->new_key = 'Value or Computation here';
             $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
         }
-        $dur->setRelation('datasets', $datasets);
+        $dur->datasets = $datasets;
 
         return $dur->toArray();
     }
@@ -1869,7 +1869,7 @@ class DurController extends Controller
             $dur = Dur::with(['keywords', 'team', 'sector'])->findOrFail($id);
 
             // Set the datasets attribute with the latest datasets
-            $dur->setAttribute('datasets', $dur->getLatestDatasets());
+            $dur->datasets = $dur->AllDatasets;
 
             // Convert Dur to array after setting the attribute
             $durArray = $dur->toArray();

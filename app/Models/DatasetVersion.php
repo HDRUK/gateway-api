@@ -106,7 +106,7 @@ class DatasetVersion extends Model
     {
         return $this->belongsToMany(Tool::class, 'dataset_version_has_tool');
     }
-
+    
     /**
      * The durs that belong to the dataset version.
      */

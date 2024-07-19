@@ -71,6 +71,7 @@ class DatabaseSeeder extends Seeder
             DurHasDatasetVersionSeeder::class,
             LibrarySeeder::class,
             EnquiryThreadHasDatasetVersionSeeder::class,
+            DatasetVersionHasSpatialCoverageSeeder::class,
         ]);
     }
 }

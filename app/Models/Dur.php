@@ -107,28 +107,91 @@ class Dur extends Model
         'non_gateway_outputs' => 'array',
     ];
 
-     /**
-     * Get the latest datasets for this Dur.
+      /**
+     * Get the latest datasets
      */
     public function getLatestDatasets()
     {
-        $datasetVersionIds = DurHasDatasetVersion::
-            where('Dur_id', $this->id)
-            ->pluck('dataset_version_id');
+        // Step 1: Retrieve all version IDs associated with this instance
+        $versionIds = $this->versions()->pluck('dataset_version_id')->toArray();
 
-        $datasetIds = DatasetVersion::whereIn('id', $datasetVersionIds)
-            ->distinct()
-            ->pluck('dataset_id');
+        // Step 2: Use the version IDs to find all related dataset IDs through the linkage table
+        $datasetIds = DatasetVersion::whereIn('id', $versionIds)
+            ->pluck('dataset_id')
+            ->unique()
+            ->toArray();
 
-        return Dataset::whereIn('id', $datasetIds)->get();
+        // Step 3: Retrieve all datasets using the collected dataset IDs
+        $datasets = Dataset::whereIn('id', $datasetIds)->get();
+
+        // Initialize an array to store transformed datasets
+        $transformedDatasets = [];
+
+        // Iterate through each dataset and add associated dataset versions
+        foreach ($datasets as $dataset) {
+            // Retrieve dataset version IDs associated with the current dataset
+            $latestVersionId = $dataset->latestVersion()->id;
+            
+            if(in_array($latestVersionId, $versionIds)) {
+                $dataset->dataset_version_ids = [$latestVersionId];
+            } else {
+                $dataset->dataset_version_ids = [];
+            }
+            // Add the enhanced dataset to the transformed datasets array
+            $transformedDatasets[] = $dataset;
+        }
+
+        // Return the array of transformed datasets
+        return $transformedDatasets;
     }
 
     /**
      * Add an accessor for datasets to get the latest versions.
      */
-    public function getDatasetsAttribute()
+    public function getLatestDatasetsAttribute()
     {
         return $this->getLatestDatasets();
+    }
+
+    /**
+     * Get all datasets associated with the latest versions.
+     */
+    public function getAllDatasets()
+    {
+        // Step 1: Retrieve all version IDs associated with this instance
+        $versionIds = $this->versions()->pluck('dataset_version_id')->toArray();
+
+        // Step 2: Use the version IDs to find all related dataset IDs through the linkage table
+        $datasetIds = DatasetVersion::whereIn('id', $versionIds)
+            ->pluck('dataset_id')
+            ->unique()
+            ->toArray();
+
+        // Step 3: Retrieve all datasets using the collected dataset IDs
+        $datasets = Dataset::whereIn('id', $datasetIds)->get();
+
+        // Initialize an array to store transformed datasets
+        $transformedDatasets = [];
+
+        // Iterate through each dataset and add associated dataset versions
+        foreach ($datasets as $dataset) {
+            // Retrieve dataset version IDs associated with the current dataset
+            $datasetVersionIds = $dataset->versions()->whereIn('id', $versionIds)->pluck('id')->toArray();
+
+            // Add associated dataset versions to the dataset object
+            $dataset->dataset_version_ids = $datasetVersionIds;
+            // Add the enhanced dataset to the transformed datasets array
+            $transformedDatasets[] = $dataset;
+        }
+
+        // Return the array of transformed datasets
+        return $transformedDatasets;
+    }
+
+    // Accessor for all datasets associated with this object
+    public function getAllDatasetsAttribute()
+    {
+        return $this->getAllDatasets();
     }
 
     public function keywords(): BelongsToMany
@@ -253,5 +316,18 @@ class Dur extends Model
             'Applicant ID',
             'Status',
         ];
+    }
+
+    /**
+     * Retrieve versions associated with this dur
+     */
+    public function versions()
+    {
+        return $this->belongsToMany(DatasetVersion::class, 'dur_has_dataset_version', 'dur_id', 'dataset_version_id');
+    }
+
+    public function datasetVersions()
+    {
+        return $this->hasMany(DurHasDatasetVersion::class, 'dur_id');
     }
 }

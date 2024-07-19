@@ -168,7 +168,6 @@ class ToolController extends Controller
                 'publications',
                 'durs',
                 'collections',
-                'datasetVersions',
             ])
             ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
@@ -182,6 +181,12 @@ class ToolController extends Controller
             ->where('enabled', 1)
             ->orderBy($sortField, $sortDirection)
             ->paginate($perPage, ['*'], 'page');
+
+            // Transform collection to include datasets
+            $tools->map(function ($tool) {
+                $tool->datasets = $tool->AllDatasets;
+                return $tool;
+            });
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -871,11 +876,11 @@ class ToolController extends Controller
             'publications',
             'durs',
             'collections',
-            'datasetVersions',
         ])->where([
             'id' => $toolId,
         ])->first();
 
+        $tool->datasets = $tool->AllDatasets;
         return $tool;
     }
 

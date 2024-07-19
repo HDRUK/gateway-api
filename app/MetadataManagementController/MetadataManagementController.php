@@ -210,12 +210,6 @@ class MetadataManagementController {
             # Pull metadata from json    
             $metadata = $datasetMatch->latestVersion()->metadata;
 
-            // inject relationships via Dataset model functions
-            $namedEntities = $datasetMatch->getLatestNamedEntities();
-            $durs = $datasetMatch->getLatestDurs();
-            $spatialCoverage = $datasetMatch->getLatestSpatialCoverage();
-            $collections = $datasetMatch->getLatestCollections();
-
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
@@ -235,10 +229,10 @@ class MetadataManagementController {
                 'sampleAvailability' => $materialTypes,
                 'conformsTo' => explode(',', $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.formatAndStandards.conformsTo'], '')),
                 'hasTechnicalMetadata' => (bool) count($this->getValueByPossibleKeys($metadata, ['metadata.structuralMetadata'], [])),
-                'named_entities' =>  $namedEntities->pluck('name')->all(),
-                'collectionName' => $collections->pluck('name')->all(),
-                'dataUseTitles' => $durs->pluck('project_title')->all(),
-                'geographicLocation' => $spatialCoverage->pluck('region')->all(),
+                'named_entities' =>  array_map(fn($entity) => $entity->name, $datasetMatch->AllNamedEntities),
+                'collectionName' => array_map(fn($collection) => $collection->name, $datasetMatch->AllCollections),
+                'dataUseTitles' => array_map(fn($dur) => $dur->project_title, $datasetMatch->AllDurs),
+                'geographicLocation' => array_map(fn($spatialCoverage) => $spatialCoverage->region, $datasetMatch->AllSpatialCoverages),
                 'accessService' => $this->getValueByPossibleKeys($metadata, ['metadata.accessibility.access.accessServiceCategory'], ''),
                 'dataProviderColl' => DataProviderColl::whereIn('id', DataProviderCollHasTeam::where('team_id', $datasetMatch->team_id)->pluck('data_provider_coll_id'))->pluck('name')->all(),
             ];
@@ -279,7 +273,7 @@ class MetadataManagementController {
             $locations = array();
             $dataTypes = array();
             foreach ($datasets as $dataset) {
-                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
+                $dataset->spatialCoverage = $dataset->AllSpatialCoverage;
                 $metadata = $dataset->latestVersion()->metadata;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
                 if (!in_array($metadata['metadata']['summary']['datasetType'], $dataTypes)) {

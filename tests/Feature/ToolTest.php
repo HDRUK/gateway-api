@@ -131,7 +131,7 @@ class ToolTest extends TestCase
                     'publications',
                     'durs',
                     'collections',
-                    'dataset_versions',
+                    'datasets',
                     'any_dataset',
                 ]
             ],
@@ -185,7 +185,7 @@ class ToolTest extends TestCase
                 'publications',
                 'durs',
                 'collections',
-                'dataset_versions',
+                'datasets',
                 'any_dataset',
             ]
         ]);

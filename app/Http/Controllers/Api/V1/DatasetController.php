@@ -390,10 +390,10 @@ class DatasetController extends Controller
             $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
             $dataset->setAttribute('publications_count', $dataset->latestVersion()->publicationHasDatasetVersions()->count());
 
-            $dataset->setAttribute('durs', $dataset->getLatestDurs());
-            $dataset->setAttribute('publications', $dataset->getLatestPublications());
-            $dataset->setAttribute('named_entities', $dataset->getLatestNamedEntities());
-            $dataset->setAttribute('collections', $dataset->getLatestCollections());
+            $dataset->durs =  $dataset->AllDurs;
+            $dataset->publications = $dataset->AllPublications;
+            $dataset->named_entities =  $dataset->AllNamedEntities;
+            $dataset->collections =  $dataset->AllCollections;
 
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');

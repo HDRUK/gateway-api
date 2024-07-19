@@ -613,7 +613,7 @@ class DataProviderCollController extends Controller
             $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
 
             foreach ($datasets as $dataset) {
-                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
+                $dataset->spatialCoverage = $dataset->LatestSpatialCoverages;
                 $metadata = $dataset['versions'][0];
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
                 foreach ($dataset['spatialCoverage'] as $loc) {
@@ -664,56 +664,47 @@ class DataProviderCollController extends Controller
         $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
 
         foreach ($datasetIds as $datasetId) {
-            $this->checkingDataset($datasetId);
+            
+            $dataset = Dataset::where(['id' => $datasetId])->first();
+
+            if (!$dataset) {
+                return;
+            }
+
+            $durs = $dataset->AllDurs;
+            $collections = $dataset->AllCollections;
+            $publications = $dataset->AllPublications;
+            $tools = $dataset->AllTools;
+            
+            $version = $dataset->latestVersion();
+            $withLinks = DatasetVersion::where('id', $version['id'])
+                ->with(['linkedDatasetVersions'])
+                ->first();
+
+            $dataset->setAttribute('versions', [$withLinks]);
+
+            $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
+
+            $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
+            $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
+            $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+
+            if (empty($title) || $title === '') {
+                Log::error('DataProviderCollController: Dataset title is empty or unknown', ['datasetId' => $dataset->id]);
+            }
+
+            $this->datasets[] = [
+                'id' => $dataset->id,
+                'status' => $dataset->status,
+                'title' => $title,
+                'populationSize' => $populationSize,
+                'datasetType' => $datasetType
+            ];
+
+            $this->durs = array_unique(array_merge($this->durs, $durs->pluck('id')->toArray()));
+            $this->publications = array_unique(array_merge($this->publications, $publications->pluck('id')->toArray()));
+            $this->tools = array_unique(array_merge($this->tools, $tools->pluck('id')->toArray()));
+            $this->collections = array_unique(array_merge($this->collections, $collections->pluck('id')->toArray()));
         }
-    }
-
-    public function checkingDataset(int $datasetId)
-    {
-        $dataset = Dataset::where(['id' => $datasetId])->first();
-
-        if (!$dataset) {
-            return;
-        }
-
-        // Accessed through the accessors
-        $tools = $dataset->tools;
-        $publications = $dataset->publications;
-        $durs = $dataset->durs;
-        $collections = $dataset->collections;
-
-        $version = $dataset->latestVersion();
-        $withLinks = DatasetVersion::where('id', $version['id'])
-            ->with(['linkedDatasetVersions'])
-            ->first();
-
-        if (!$withLinks) {
-            return;
-        }
-
-        $dataset->setAttribute('versions', [$withLinks]);
-
-        $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
-
-        $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
-        $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
-        $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
-
-        if (empty($title) || $title === '') {
-            Log::error('DataProviderCollController: Dataset title is empty or unknown', ['datasetId' => $dataset->id]);
-        }
-
-        $this->datasets[] = [
-            'id' => $dataset->id,
-            'status' => $dataset->status,
-            'title' => $title,
-            'populationSize' => $populationSize,
-            'datasetType' => $datasetType
-        ];
-
-        $this->durs = array_unique(array_merge($this->durs, $durs->pluck('id')->toArray()));
-        $this->publications = array_unique(array_merge($this->publications, $publications->pluck('id')->toArray()));
-        $this->tools = array_unique(array_merge($this->tools, $tools->pluck('id')->toArray()));
-        $this->collections = array_unique(array_merge($this->collections, $collections->pluck('id')->toArray()));
     }
 }

@@ -83,7 +83,7 @@ class CollectionTest extends TestCase
     public function test_get_all_collections_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
-
+        
         $response->assertJsonStructure([
             'data' => [
                 0 => [

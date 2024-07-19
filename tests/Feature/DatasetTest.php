@@ -791,7 +791,6 @@ class DatasetTest extends TestCase
         $responseUnarchiveDataset->assertJsonStructure([
             'message'
         ]);
-
         $responseUnarchiveDataset->assertStatus(200);
 
         // change dataset status

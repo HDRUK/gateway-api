@@ -134,7 +134,7 @@ class CollectionController extends Controller
                 $collection->setRelation('applications', $applications);
 
                 // Set the datasets attribute with the latest datasets
-                $collection->setAttribute('datasets', $collection->getLatestDatasets());
+                $collection->datasets = $collection->AllDatasets;
 
                 // Remove unwanted relations
                 unset(
@@ -801,7 +801,7 @@ class CollectionController extends Controller
             ])->first();
         
             // Set the datasets attribute with the latest datasets
-        $collection->setAttribute('datasets', $collection->getLatestDatasets());
+        $collection->datasets = $collection->AllDatasets;
 
 
         $userDatasets = $collection->userDatasets;
@@ -1223,7 +1223,7 @@ class CollectionController extends Controller
             $collection = Collection::with(['team', 'keywords'])->findOrFail($collectionId);
 
             // Set the datasets attribute with the latest datasets
-            $collection->setAttribute('datasets', $collection->getLatestDatasets());
+            $collection->datasets = $collection->AllDatasets;
 
             // Convert collection to array after setting the attribute
             $collectionArray = $collection->toArray();

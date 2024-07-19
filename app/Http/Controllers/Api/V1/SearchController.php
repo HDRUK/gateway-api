@@ -794,7 +794,7 @@ class SearchController extends Controller
                 foreach ($durModels as $model) {
                     if ((int) $dur['_id'] === $model['id']) {
                         // Set the latest datasets
-                        $model->setAttribute('datasets', $model->getLatestDatasets());
+                        $model->datasets = $model->AllDatasets;
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
                         $durArray[$i]['organisationName'] = $model['organisation_name'];
@@ -1003,7 +1003,7 @@ class SearchController extends Controller
                             $pubArray[$i]['url'] = $model['url'];
                             
                             // Use accessor to get datasets and their link types
-                            $datasets = $model->getLatestDatasets();
+                            $datasets = $model->AllDatasets;
                             $datasetLinkTypes = [];
                             foreach ($datasets as $dataset) {
                                 $linkType = PublicationHasDatasetVersion::where([
@@ -1524,7 +1524,7 @@ class SearchController extends Controller
         foreach ($provider['teams'] as $team) {
             $datasets = Dataset::where('team_id', $team['id'])->get();
             foreach ($datasets as $dataset) {
-                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
+                $dataset->spatialCoverage = $dataset->AllSpatialCoverages;
                 foreach ($dataset['spatialCoverage'] as $loc) {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
