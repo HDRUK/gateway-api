@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Models\Tool;
 use App\Models\PublicationHasDatasetVersion;
-use App\Http\Traits\GetDatasetViaDatasetVersions;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Publication extends Model
 {
-    use HasFactory, SoftDeletes, Prunable, GetDatasetViaDatasetVersions;
+    use HasFactory, SoftDeletes, Prunable, DatasetFetch;
 
 
     public const STATUS_ACTIVE = 'ACTIVE';

@@ -1611,9 +1611,9 @@ class IntegrationDurController extends Controller
         // Fetch datasets using the accessor
         $datasets = $dur->AllDatasets;
 
-        foreach ($datasets as $dataset) {
-            $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
-            $dataset->new_key = 'Value or Computation here';
+        foreach ($datasets as &$dataset) {
+            $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
+            $dataset['new_key'] = 'Value or Computation here';
         }
 
         // Update the relationship with the modified datasets

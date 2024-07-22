@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Models\DatasetVersionHasSpatialCoverage;
-use App\Http\Traits\GetDatasetViaDatasetVersions;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SpatialCoverage extends Model
 {
-    use HasFactory, GetDatasetViaDatasetVersions;
+    use HasFactory, DatasetFetch;
 
     protected $fillable = [
         'region',

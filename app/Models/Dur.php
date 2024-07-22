@@ -9,7 +9,7 @@ use App\Models\DurHasDatasetVersion;
 use App\Models\Keyword;
 use App\Models\Application;
 use App\Models\Publication;
-use App\Http\Traits\GetDatasetViaDatasetVersions;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Dur extends Model
 {
-    use HasFactory, SoftDeletes, Prunable, GetDatasetViaDatasetVersions;
+    use HasFactory, SoftDeletes, Prunable, DatasetFetch;
 
     public const STATUS_ACTIVE = 'ACTIVE';
     public const STATUS_DRAFT = 'DRAFT';

@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\DatasetVersionHasNamedEntities;
-use App\Http\Traits\GetDatasetViaDatasetVersions;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class NamedEntities extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable, GetDatasetViaDatasetVersions;
+    use HasFactory, Notifiable, SoftDeletes, Prunable, DatasetFetch;
 
     /**
      * The table associated with the model.

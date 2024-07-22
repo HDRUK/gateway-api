@@ -11,7 +11,7 @@ use App\Models\Collection;
 use App\Models\Publication;
 use App\Models\DatasetVersionHasTool;
 use App\Models\DatasetVersion;
-use App\Http\Traits\GetDatasetViaDatasetVersions;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tool extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable, GetDatasetViaDatasetVersions;
+    use HasFactory, Notifiable, SoftDeletes, Prunable, DatasetFetch;
 
     /**
      * The table associated with the model.

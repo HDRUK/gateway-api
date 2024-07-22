@@ -9,7 +9,7 @@ use App\Models\User;
 use App\Models\Keyword;
 use App\Models\Publication;
 use App\Models\CollectionHasDatasetVersion;
-use App\Http\Traits\GetDatasetViaDatasetVersions;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Collection extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable, GetDatasetViaDatasetVersions;
+    use HasFactory, Notifiable, SoftDeletes, Prunable, DatasetFetch;
     /**
      * The table associated with the model.
      * 

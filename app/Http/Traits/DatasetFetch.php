@@ -5,7 +5,7 @@ namespace App\Http\Traits;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 
-trait GetDatasetViaDatasetVersions
+trait DatasetFetch
 {
     /**
      * Get all datasets associated with the latest versions.
@@ -24,22 +24,16 @@ trait GetDatasetViaDatasetVersions
         // Step 3: Retrieve all datasets using the collected dataset IDs
         $datasets = Dataset::whereIn('id', $datasetIds)->get();
 
-        // Initialize an array to store transformed datasets
-        $transformedDatasets = [];
-
         // Iterate through each dataset and add associated dataset versions
         foreach ($datasets as $dataset) {
             // Retrieve dataset version IDs associated with the current dataset
             $datasetVersionIds = $dataset->versions()->whereIn('id', $versionIds)->pluck('id')->toArray();
 
             // Add associated dataset versions to the dataset object
-            $dataset->dataset_version_ids = $datasetVersionIds;
-
-            // Add the enhanced dataset to the transformed datasets array
-            $transformedDatasets[] = $dataset;
+            $dataset->setAttribute('dataset_version_ids', $datasetVersionIds);
         }
 
-        // Return the array of transformed datasets
-        return $transformedDatasets;
+        // Return the collection of datasets with injected dataset version IDs
+        return $datasets->toArray();
     }
 }
