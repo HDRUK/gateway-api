@@ -355,7 +355,6 @@ class PublicationTest extends TestCase
             ],
             $this->header,
         );
-
         $response->assertStatus(200);
         $countAfter = Publication::all()->count();
         $this->assertTrue(($countBefore - $countAfter) === 1);
