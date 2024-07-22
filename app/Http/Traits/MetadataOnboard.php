@@ -3,6 +3,7 @@
 namespace App\Http\Traits;
 
 use Config;
+use Exception;
 
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
