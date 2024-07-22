@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use Config;
-use Exception;
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
@@ -177,6 +176,7 @@ class DurTest extends TestCase
     {
         $durId = (int) Dur::all()->where('status', 'ACTIVE')->random()->id;
         $response = $this->json('GET', self::TEST_URL . '/' . $durId, [], $this->header);
+
         $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
             'data' => [
@@ -762,6 +762,7 @@ class DurTest extends TestCase
             $mockData,
             $this->header
         );
+
         $response->assertStatus(201);
         $durId = (int) $response['data'];
 
@@ -807,6 +808,7 @@ class DurTest extends TestCase
             $temp['is_locked'] = fake()->randomElement([0, 1]);
             $return[] = $temp;
         }
+
         return $return;
     }
 
@@ -832,7 +834,7 @@ class DurTest extends TestCase
             $temp['id'] = Publication::all()->random()->id;
             $return[] = $temp;
         }
-        
+
         return $return;
     }
 }

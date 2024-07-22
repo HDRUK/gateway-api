@@ -1,7 +1,6 @@
 <?php
 
 namespace Tests\Feature;
-use Exception;
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
@@ -438,6 +437,7 @@ class DurIntegrationTest extends TestCase
         $return['id'] = Dataset::all()->random()->id;
         $return['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
         $return['is_locked'] = fake()->randomElement([0, 1]);
+
         return $return;
     }
 }
