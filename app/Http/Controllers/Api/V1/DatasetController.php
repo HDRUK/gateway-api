@@ -534,13 +534,12 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
-            $elasticIndexing = $request->has('elastic_indexing') ? $request->query('elastic_indexing') : true;
+            $elasticIndexing = $request->boolean('elastic_indexing', true);
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $teamId = (int)$input['team_id'];
 
             $team = Team::where('id', $teamId)->first()->toArray();
-            // $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 

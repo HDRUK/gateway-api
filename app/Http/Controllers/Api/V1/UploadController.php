@@ -63,7 +63,7 @@ class UploadController extends Controller
         $teamId = $request->query('team_id', null);
         $inputSchema = $request->query("input_schema",null);
         $inputVersion = $request->query("input_version",null);
-        $elasticIndexing = $request->has('elastic_indexing') ? $request->query('elastic_indexing') : true;
+        $elasticIndexing = $request->boolean('elastic_indexing', true);
         $datasetId = $request->query('dataset_id', null);
         
         // store unscanned
