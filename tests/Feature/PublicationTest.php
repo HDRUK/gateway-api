@@ -160,6 +160,7 @@ class PublicationTest extends TestCase
                     ],
                 ],
                 'tools' => $this->generateTools(),
+                'status' => 'ACTIVE'
             ],
             $this->header,
         );
@@ -244,6 +245,7 @@ class PublicationTest extends TestCase
                     ],
                 ],
                 'tools' => $this->generateTools(),
+                'status' => 'ACTIVE'
             ],
             $this->header,
         );

@@ -754,7 +754,7 @@ class PublicationController extends Controller
     public function indexElasticPublication(string $id): void
     {
         try {
-            $pubMatch = Publication::where(['id' => $id])
+            $pubMatch = Publication::withTrashed()->where(['id' => $id])
                 ->with('datasets')
                 ->first()
                 ->toArray();
