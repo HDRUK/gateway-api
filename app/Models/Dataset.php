@@ -154,7 +154,7 @@ class Dataset extends Model
         return $this->getRelationsViaDatasetVersion(
             DatasetVersionHasNamedEntities::class, 
             NamedEntities::class, 
-            'named_entities_id'
+            'named_entities_id' 
         );
     }
 
