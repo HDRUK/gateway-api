@@ -1078,7 +1078,6 @@ class DatasetController extends Controller
         return $this->update($request,$dataset->id);
     }
 
-
     /**
      * @OA\Get(
      *    path="/api/v1/datasets/export",
@@ -1192,6 +1191,53 @@ class DatasetController extends Controller
         return $response;
     }
 
+    /**
+     * @OA\Get(
+     *    path="/api/v1/datasets/export/mock",
+     *    operationId="export_mock_dataset",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@exportMock",
+     *    description="Export Mock",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="type",
+     *       in="query",
+     *       description="type export",
+     *       required=true,
+     *       example="dataset_structural_metadata",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="type export",
+     *          enum={"dataset_structural_metadata", "dataset_general_metadata"}
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="CSV file",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema(
+     *             type="string",
+     *             example="Title,""Publisher name"",Version,""Last Activity"",""Method of dataset creation"",Status,""Metadata detail""\n""Publications mentioning HDRUK"",""Health Data Research UK"",2.0.0,""2023-04-21T11:31:00.000Z"",MANUAL,ACTIVE,""{""properties\/accessibility\/usage\/dataUseRequirements"":{""id"":""95c37b03-54c4-468b-bda4-4f53f9aaaadd"",""namespace"":""hdruk.profile"",""key"":""properties\/accessibility\/usage\/dataUseRequirements"",""value"":""N\/A"",""lastUpdated"":""2023-12-14T11:31:11.312Z""},""properties\/required\/gatewayId"":{""id"":""8214d549-db98-453f-93e8-d88c6195ad93"",""namespace"":""hdruk.profile"",""key"":""properties\/required\/gatewayId"",""value"":""1234"",""lastUpdated"":""2023-12-14T11:31:11.311Z""}""",
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="File Not Found",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="file_not_found")
+     *       ),
+     *    ),
+     * )
+     */
     public function exportMock(Request $request)
     {
         try {
@@ -1201,6 +1247,9 @@ class DatasetController extends Controller
             switch ($exportType) {
                 case 'dataset_structural_metadata':
                     $file = Config::get('mock_data.dataset_structural_metadata');
+                    break;
+                case 'dataset_general_metadata':
+                    $file = Config::get('mock_data.dataset_general_metadata');
                     break;
                 default:
                     return response()->json(['error' => 'File not found.'], 404);
