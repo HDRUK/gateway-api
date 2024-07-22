@@ -177,7 +177,6 @@ class DurTest extends TestCase
     {
         $durId = (int) Dur::all()->where('status', 'ACTIVE')->random()->id;
         $response = $this->json('GET', self::TEST_URL . '/' . $durId, [], $this->header);
-
         $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
             'data' => [
@@ -763,6 +762,8 @@ class DurTest extends TestCase
             $mockData,
             $this->header
         );
+        
+        var_dump($response);
         $response->assertStatus(201);
         $durId = (int) $response['data'];
 

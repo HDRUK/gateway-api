@@ -6,10 +6,10 @@ use App\Models\Dur;
 use App\Models\Team;
 use App\Models\Tool;
 use App\Models\User;
-use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Publication;
 use App\Models\CollectionHasDatasetVersion;
+use App\Http\Traits\GetDatasetViaDatasetVersions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -18,14 +18,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-
 /**
  * @property array $dataset_version_ids
  */
 class Collection extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
-
+    use HasFactory, Notifiable, SoftDeletes, Prunable, GetDatasetViaDatasetVersions;
     /**
      * The table associated with the model.
      * 
@@ -52,58 +50,18 @@ class Collection extends Model
         'enabled' => 'boolean',
     ];
 
-    public function keywords(): BelongsToMany
-    {
-        return $this->belongsToMany(Keyword::class, 'collection_has_keywords');
-    }
-
-    /**
-     * Get all datasets associated with the latest versions.
-     */
-    public function getAllDatasets()
-    {
-        // Step 1: Retrieve all version IDs associated with this instance
-        $versionIds = $this->versions()->pluck('dataset_version_id')->toArray();
-
-        // Step 2: Use the version IDs to find all related dataset IDs through the linkage table
-        $datasetIds = DatasetVersion::whereIn('id', $versionIds)
-            ->pluck('dataset_id')
-            ->unique()
-            ->toArray();
-
-        // Step 3: Retrieve all datasets using the collected dataset IDs
-        $datasets = Dataset::whereIn('id', $datasetIds)->get();
-
-        // Initialize an array to store transformed datasets
-        $transformedDatasets = [];
-
-        // Iterate through each dataset and add associated dataset versions
-        foreach ($datasets as $dataset) {
-            // Retrieve dataset version IDs associated with the current dataset
-            $datasetVersionIds = $dataset->versions()->whereIn('id', $versionIds)->pluck('id')->toArray();
-
-            // Add associated dataset versions to the dataset object
-            $dataset->dataset_version_ids = $datasetVersionIds;
-            // Add the enhanced dataset to the transformed datasets array
-            $transformedDatasets[] = $dataset;
-        }
-
-        // Return the array of transformed datasets
-        return $transformedDatasets;
-    }
-
     // Accessor for all datasets associated with this object
     public function getAllDatasetsAttribute()
     {
-        return $this->getAllDatasets();
+        return $this->getDatasetsViaDatasetVersion(
+            CollectionHasDatasetVersion::class,
+            'collection_id'
+        );
     }
 
-    /**
-     * Retrieve versions associated with this Collection
-     */
-    public function versions()
+    public function keywords(): BelongsToMany
     {
-        return $this->belongsToMany(DatasetVersion::class, 'collection_has_dataset_version', 'collection_id', 'dataset_version_id');
+        return $this->belongsToMany(Keyword::class, 'collection_has_keywords');
     }
 
     public function tools(): BelongsToMany

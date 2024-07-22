@@ -2,16 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\DatasetVersionHasSpatialCoverage;
+use App\Http\Traits\GetDatasetViaDatasetVersions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * @property array $dataset_version_ids
  */
 class SpatialCoverage extends Model
 {
-    use HasFactory;
+    use HasFactory, GetDatasetViaDatasetVersions;
 
     protected $fillable = [
         'region',
@@ -50,45 +50,13 @@ class SpatialCoverage extends Model
      */
     private $enabled = false;
 
-    /**
-     * Get all datasets associated with the latest versions.
-     */
-    public function getAllDatasets()
-    {
-        // Step 1: Retrieve all version IDs associated with this instance
-        $versionIds = $this->versions()->pluck('dataset_version_id')->toArray();
-
-        // Step 2: Use the version IDs to find all related dataset IDs through the linkage table
-        $datasetIds = DatasetVersion::whereIn('id', $versionIds)
-            ->pluck('dataset_id')
-            ->unique()
-            ->toArray();
-
-        // Step 3: Retrieve all datasets using the collected dataset IDs
-        $datasets = Dataset::whereIn('id', $datasetIds)->get();
-
-        // Initialize an array to store transformed datasets
-        $transformedDatasets = [];
-
-        // Iterate through each dataset and add associated dataset versions
-        foreach ($datasets as $dataset) {
-            // Retrieve dataset version IDs associated with the current dataset
-            $datasetVersionIds = $dataset->versions()->whereIn('id', $versionIds)->pluck('id')->toArray();
-
-            // Add associated dataset versions to the dataset object
-            $dataset->dataset_version_ids = $datasetVersionIds;
-            // Add the enhanced dataset to the transformed datasets array
-            $transformedDatasets[] = $dataset;
-        }
-
-        // Return the array of transformed datasets
-        return $transformedDatasets;
-    }
-
     // Accessor for all datasets associated with this object
     public function getAllDatasetsAttribute()
     {
-        return $this->getAllDatasets();
+        return $this->getDatasetsViaDatasetVersion(
+            DatasetVersionHasSpatialCoverage::class,
+            'spatial_coverage_id'
+        );
     }
 
     /**

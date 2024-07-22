@@ -82,7 +82,7 @@ class PublicationController extends Controller
             // Ensure datasets are loaded via the accessor
             if ($withRelated) {
                 $publications->getCollection()->transform(function ($publication) {
-                    $publication->setAttribute('datasets', $publication->getLatestDatasets());
+                    $publication->setAttribute('datasets', $publication->AllDatasets);
                     return $publication;
                 });
             }
@@ -626,7 +626,7 @@ class PublicationController extends Controller
         try {
             $pubMatch = Publication::where(['id' => $id])->first();
 
-            $datasets = $pubMatch->getLatestDatasets();
+            $datasets = $pubMatch->AllDatasets;
             $datasetTitles = [];
             $datasetLinkTypes = [];
             foreach ($datasets as $dataset) {
@@ -679,7 +679,7 @@ class PublicationController extends Controller
             'id' => $publicationId
         ])->first();
 
-        $publication->setAttribute('datasets', $publication->getLatestDatasets());
+        $publication->setAttribute('datasets', $publication->AllDatasets);
 
         return $publication;
     }

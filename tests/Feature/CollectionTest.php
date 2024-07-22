@@ -197,6 +197,7 @@ class CollectionTest extends TestCase
         $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
+        
         $response->assertStatus(201);
 
         $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
