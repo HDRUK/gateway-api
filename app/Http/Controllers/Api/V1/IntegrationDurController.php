@@ -198,10 +198,8 @@ class IntegrationDurController extends Controller
                 $applicationDatasets = $dur->applicationDatasets;
                 $applicationPublications = $dur->applicationPublications;
                 $dur->setAttribute('datasets', $dur->AllDatasets);
-
                 $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
                 $dur->setRelation('applications', $applications);
-                
 
                 unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
 
@@ -771,7 +769,7 @@ class IntegrationDurController extends Controller
             if ($initDur === 'ARCHIVED' && !array_key_exists('status', $input)) {
                 throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
             }
-            
+
             if ($initDur === 'ARCHIVED' && (array_key_exists('status', $input) && $input['status'] !== 'ARCHIVED')) {
                 Dur::withTrashed()->where('id', $id)->restore();
                 DurHasDatasetVersion::withTrashed()->where('dur_id', $id)->restore();
@@ -1211,10 +1209,6 @@ class IntegrationDurController extends Controller
         try {
 
             $datasetId = $dataset['id']; 
-           
-            if (!$datasetId) {
-                throw new Exception("Dataset version not found for dataset ID: " . $datasetId);
-            }
 
             $arrCreate = [
                 'dur_id' => $durId,
