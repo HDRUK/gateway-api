@@ -39,7 +39,8 @@ class Publication extends Model
         'abstract',
         'url',
         'mongo_id',
-        'owner_id'
+        'owner_id',
+        'status'
     ];
 
     /**
