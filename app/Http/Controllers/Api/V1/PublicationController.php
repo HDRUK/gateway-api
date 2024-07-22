@@ -701,7 +701,7 @@ class PublicationController extends Controller
         
             if (!$checking) {
                 $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
-                //MMC::reindexElastic($dataset['id']);
+                MMC::reindexElastic($dataset['id']);
             }
         }
     }

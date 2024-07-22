@@ -24,6 +24,10 @@ return new class extends Migration
 
             $table->foreign('publication_id')->references('id')->on('publications');
             $table->foreign('dataset_version_id')->references('id')->on('dataset_versions');
+
+            // Add indexes
+            $table->index('publication_id');
+            $table->index('dataset_version_id');
         });
 
         // Retrieve the correct dataset_version_id and insert data into the new table
@@ -65,6 +69,11 @@ return new class extends Migration
 
             $table->foreign('publication_id')->references('id')->on('publications');
             $table->foreign('dataset_id')->references('id')->on('datasets');
+
+            // Add indexes
+            $table->index('publication_id');
+            $table->index('dataset_id');
+
         });
 
         // Retrieve the correct dataset_id and insert data back into the old table
