@@ -1815,65 +1815,65 @@ class DurController extends Controller
     public function indexElasticDur(string $id): void
     {
         try {
-            // Retrieve Dur with related models
-            $dur = Dur::with(['keywords', 'team', 'sector'])->findOrFail($id);
 
-            // Set the datasets attribute with the latest datasets
-            $datasets = $dur->AllDatasets;
+            $durMatch = Dur::where(['id' => $id])
+                ->with(['keywords', 'team', 'sector'])
+                ->first();
 
-            // Convert Dur to array after setting the attribute
-            $durArray = $dur->toArray();
+            $datasets= $durMatch->AllDatasets;
 
-            // Fetch dataset titles
-            $datasetTitles = [];
-            foreach ($datasets as $dataset) {
-                $latestVersion = Dataset::find($dataset['id'])->latestVersion();
-                $metadata = $latestVersion->metadata ?? [];
-                $datasetTitles[] = $metadata['summary']['shortTitle'] ?? '';
+            $datasetIds = array_map(function ($dataset) {
+                return $dataset['id'];
+            }, $datasets);
+
+            $durMatch = $durMatch->toArray();
+
+            $datasetTitles = array();
+            foreach ($datasetIds as $d) {
+                $metadata = Dataset::where(['id' => $d])
+                    ->first()
+                    ->latestVersion()
+                    ->metadata;
+                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
             }
 
-            // Extract keywords
-            $keywords = array_column($durArray['keywords'], 'name');
-
-            // Fetch sector name
-            $sector = $durArray['sector']['name'] ?? null;
-
-            // Fetch data provider collection names
-            $dataProvider = [];
-            if (isset($durArray['team_id'])) {
-                $dataProviderId = DataProviderCollHasTeam::where('team_id', $durArray['team_id'])
-                    ->pluck('data_provider_coll_id')
-                    ->all();
-                $dataProvider = DataProviderColl::whereIn('id', $dataProviderId)
-                    ->pluck('name')
-                    ->all();
+            $keywords = array();
+            foreach ($durMatch['keywords'] as $k) {
+                $keywords[] = $k['name'];
             }
 
-            // Prepare data to index
+            $sector = ($durMatch['sector'] != null) ? Sector::where(['id' => $durMatch['sector']])->first()->name : null;
+
+            $dataProviderId = DataProviderCollHasTeam::where('team_id', $durMatch['team_id'])
+                ->pluck('data_provider_coll_id')
+                ->all();
+            $dataProvider = DataProviderColl::whereIn('id', $dataProviderId)
+                ->pluck('name')
+                ->all();
+
             $toIndex = [
-                'projectTitle' => $durArray['project_title'],
-                'laySummary' => $durArray['lay_summary'],
-                'publicBenefitStatement' => $durArray['public_benefit_statement'],
-                'technicalSummary' => $durArray['technical_summary'],
-                'fundersAndSponsors' => $durArray['funders_and_sponsors'],
-                'publisherName' => $durArray['team']['name'] ?? '',
-                'organisationName' => $durArray['organisation_name'],
+                'projectTitle' => $durMatch['project_title'],
+                'laySummary' => $durMatch['lay_summary'],
+                'publicBenefitStatement' => $durMatch['public_benefit_statement'],
+                'technicalSummary' => $durMatch['technical_summary'],
+                'fundersAndSponsors' => $durMatch['funders_and_sponsors'],
+                'publisherName' => $durMatch['team']['name'],
+                'organisationName' => $durMatch['organisation_name'],
                 'datasetTitles' => $datasetTitles,
                 'keywords' => $keywords,
                 'sector' => $sector,
                 'dataProvider' => $dataProvider
             ];
 
-            // Index the data
             $params = [
                 'index' => 'datauseregister',
                 'id' => $id,
                 'body' => $toIndex,
-                'headers' => ['Content-Type' => 'application/json']
+                'headers' => 'application/json'
             ];
-
+            
             $client = MMC::getElasticClient();
-            $client->index($params);
+            $response = $client->index($params);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
