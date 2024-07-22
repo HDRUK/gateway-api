@@ -1540,13 +1540,6 @@ class DurController extends Controller
     private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
     {
         try {
-
-            $datasetId = $dataset['id']; 
-           
-            if (!$datasetId) {
-                throw new Exception("Dataset version not found for dataset ID: " . $datasetId);
-            }
-
             $arrCreate = [
                 'dur_id' => $durId,
                 'dataset_version_id' => $datasetVersionId,

@@ -709,12 +709,6 @@ class PublicationController extends Controller
     private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
     {
         try {
-            $datasetId = $dataset['id']; 
-        
-            if (!$datasetId) {
-                throw new Exception("Dataset version not found for dataset ID: " . $datasetId);
-            }
-
             $arrCreate = [
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,

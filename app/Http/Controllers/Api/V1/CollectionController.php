@@ -852,12 +852,6 @@ class CollectionController extends Controller
     private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
     {
         try {
-            $datasetId = $dataset['id']; 
-           
-            if (!$datasetId) {
-                throw new Exception("Dataset version not found for dataset ID: " . $datasetId);
-            }
-
             $arrCreate = [
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
