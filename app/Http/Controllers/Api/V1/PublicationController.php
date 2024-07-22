@@ -624,38 +624,26 @@ class PublicationController extends Controller
     public function indexElasticPublication(string $id): void
     {
         try {
-            $pubMatch = Publication::where(['id' => $id])
-                ->first();
-
-            $datasets = $pubMatch->AllDatasets; 
-
-            $datasetIds = array_map(function ($dataset) {
-                return $dataset['id'];
-            }, $datasets);
-
-            $pubMatch = $pubMatch ->toArray();
-
-            $datasetTitles = array();
-            $datasetLinkTypes = array();
-
-            if(!array_key_exists('datasets',$pubMatch)){
-                throw new Exception("datasets not found on publication!");
+            $pubMatch = Publication::where(['id' => $id])->first();
+            if (!$pubMatch) {
+                throw new Exception("Publication not found!");
             }
-
-            foreach ($datasetIds as $d) {
-                $datasetId = $d['id'];
+            $datasets = $pubMatch->getLatestDatasets();
+            $datasetTitles = [];
+            $datasetLinkTypes = [];
+            foreach ($datasets as $dataset) {
+                $datasetId = $dataset->id;
                 $metadata = Dataset::where(['id' => $datasetId])
                     ->first()
                     ->latestVersion()
                     ->metadata;
-
+                $latestVersionID = $dataset -> latestVersion()->id;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-
-                //needs a check for this!?
-                $datasetLinkTypes[] = PublicationHasDataset::where([
+                $linkType = PublicationHasDatasetVersion::where([
                     ['publication_id', '=', (int) $id],
-                    ['dataset_id', '=', (int) $datasetId]
-                ])->first()['link_type'];
+                    ['dataset_version_id', '=', (int) $latestVersionID]
+                ])->first()->link_type ?? 'UNKNOWN';
+                $datasetLinkTypes[] = $linkType;
             }
 
             // Split string to array of strings
