@@ -93,7 +93,7 @@ class DurTest extends TestCase
     public function test_get_all_dur_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
-        
+
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -289,7 +289,8 @@ class DurTest extends TestCase
             self::TEST_URL,
             $mockData,
             $this->header
-        ); 
+        );
+
         $response->assertStatus(201);
 
         $countAfter = Dur::count();
@@ -429,10 +430,9 @@ class DurTest extends TestCase
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
 
-        $datasets = $this->generateDatasets();
         // update
         $mockDataUpdate = [
-            'datasets' => $datasets,
+            'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
@@ -451,7 +451,7 @@ class DurTest extends TestCase
 
         // update
         $mockDataEdit = [
-            'datasets' => $datasets,
+            'datasets' => $this->generateDatasets(),
             'publications' => $this->generatePublications(),
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
@@ -773,16 +773,11 @@ class DurTest extends TestCase
 
     private function generateKeywords()
     {
-        $keywords = Keyword::where(['enabled' => 1])->get();
-        if ($keywords->isEmpty()) {
-            throw new Exception('No keywords available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $keywords->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = $keywords->random()->name;
+            $return[] = Keyword::where(['enabled' => 1])->get()->random()->name;
         }
 
         return array_unique($return);
@@ -790,16 +785,11 @@ class DurTest extends TestCase
 
     private function generateTools()
     {
-        $tools = Tool::where(['enabled' => 1])->get();
-        if ($tools->isEmpty()) {
-            throw new Exception('No tools available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $tools->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = $tools->random()->id;
+            $return[] = Tool::where(['enabled' => 1])->get()->random()->id;
         }
 
         return array_unique($return);
@@ -807,37 +797,26 @@ class DurTest extends TestCase
 
     private function generateDatasets()
     {
-        $datasets = Dataset::all();
-        if ($datasets->isEmpty()) {
-            throw new Exception('No datasets available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $datasets->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = $datasets->random()->id;
+            $temp['id'] = Dataset::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $temp['is_locked'] = fake()->randomElement([0, 1]);
             $return[] = $temp;
         }
-
         return $return;
     }
 
     private function generateUploadDatasets()
     {
-        $datasets = Dataset::all();
-        if ($datasets->isEmpty()) {
-            throw new Exception('No datasets available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $datasets->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = $datasets->random()->id;
+            $return[] = Dataset::all()->random()->id;
         }
 
         return $return;
@@ -845,20 +824,15 @@ class DurTest extends TestCase
 
     private function generatePublications()
     {
-        $publications = Publication::all();
-        if ($publications->isEmpty()) {
-            throw new Exception('No publications available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $publications->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = $publications->random()->id;
+            $temp['id'] = Publication::all()->random()->id;
             $return[] = $temp;
         }
-
+        
         return $return;
     }
 }

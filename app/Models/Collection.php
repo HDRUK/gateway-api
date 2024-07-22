@@ -48,6 +48,11 @@ class Collection extends Model
         'enabled' => 'boolean',
     ];
 
+    public function keywords(): BelongsToMany
+    {
+        return $this->belongsToMany(Keyword::class, 'collection_has_keywords');
+    }
+
     // Accessor for all datasets associated with this object
     public function getAllDatasetsAttribute()
     {
@@ -55,11 +60,6 @@ class Collection extends Model
             CollectionHasDatasetVersion::class,
             'collection_id'
         );
-    }
-
-    public function keywords(): BelongsToMany
-    {
-        return $this->belongsToMany(Keyword::class, 'collection_has_keywords');
     }
 
     public function tools(): BelongsToMany
@@ -79,17 +79,6 @@ class Collection extends Model
         return $this->belongsToMany(Publication::class, 'collection_has_publications')
         ->withPivot('collection_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
     }
-
-    public function userTools(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'collection_has_tools');
-    }
-
-    public function userPublications(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'collection_has_publications');
-    }
-
     public function userDatasets(): HasManyThrough
     {
         return $this->hasManyThrough(
@@ -100,6 +89,16 @@ class Collection extends Model
             'id',            // Local key on the User table
             'user_id'        // Foreign key on the CollectionHasDatasetVersion table
         );
+    }
+
+    public function userTools(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'collection_has_tools');
+    }
+
+    public function userPublications(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'collection_has_publications');
     }
 
     public function applicationDatasets(): HasManyThrough

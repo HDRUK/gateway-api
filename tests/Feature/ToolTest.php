@@ -1007,41 +1007,31 @@ class ToolTest extends TestCase
 
     private function generatePublications()
     {
-        $publications = Publication::all();
-        if ($publications->isEmpty()) {
-            throw new Exception('No publications available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $publications->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = $publications->random()->id;
+            $temp['id'] = Publication::all()->random()->id;
             $return[] = $temp;
         }
 
-        // Remove duplicate entries
+        // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
         return array_map("unserialize", array_unique(array_map("serialize", $return)));
     }
 
     private function generateCollections()
     {
-        $collections = Collection::all();
-        if ($collections->isEmpty()) {
-            throw new Exception('No collections available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $collections->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = $collections->random()->id;
+            $temp['id'] = Collection::all()->random()->id;
             $return[] = $temp;
         }
 
-        // Remove duplicate entries
+        // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
         return array_map("unserialize", array_unique(array_map("serialize", $return)));
     }
 }

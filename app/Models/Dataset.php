@@ -92,10 +92,6 @@ class Dataset extends Model
         return DatasetVersion::findOrFail($version);
     }
 
-
-    /**
-     * The very latest metadata via a hasOne relation
-     */
     public function latestMetadata(): HasOne
     {
         return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()->latest('version');

@@ -83,7 +83,7 @@ class CollectionTest extends TestCase
     public function test_get_all_collections_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
-        
+
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -197,7 +197,6 @@ class CollectionTest extends TestCase
         $countNewRow = $countAfter - $countBefore;
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
-        
         $response->assertStatus(201);
 
         $elasticCountAfter = $this->countElasticClientRequests($this->testElasticClient);
@@ -399,16 +398,11 @@ class CollectionTest extends TestCase
 
     private function generateKeywords()
     {
-        $keywords = Keyword::where(['enabled' => 1])->get();
-        if ($keywords->isEmpty()) {
-            throw new Exception('No keywords available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $keywords->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = $keywords->random()->name;
+            $return[] = Keyword::where(['enabled' => 1])->get()->random()->name;
         }
 
         return array_unique($return);
@@ -416,81 +410,57 @@ class CollectionTest extends TestCase
 
     private function generateDatasets()
     {
-        $datasets = Dataset::all();
-        if ($datasets->isEmpty()) {
-            throw new Exception('No datasets available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $datasets->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = $datasets->random()->id;
+            $temp['id'] = Dataset::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $return[] = $temp;
         }
-
         return $return;
     }
 
     private function generateTools()
     {
-        $tools = Tool::all();
-        if ($tools->isEmpty()) {
-            throw new Exception('No tools available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $tools->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = $tools->random()->id;
+            $temp['id'] = Tool::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $return[] = $temp;
         }
-
         return $return;
     }
 
     private function generateDurs()
     {
-        $durs = Dur::all();
-        if ($durs->isEmpty()) {
-            throw new Exception('No Durs available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $durs->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = $durs->random()->id;
+            $temp['id'] = Dur::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $return[] = $temp;
         }
-
         return $return;
     }
 
     private function generatePublications()
     {
-        $publications = Publication::all();
-        if ($publications->isEmpty()) {
-            throw new Exception('No publications available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $publications->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = $publications->random()->id;
+            $temp['id'] = Publication::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $return[] = $temp;
         }
-
         return $return;
     }
 }

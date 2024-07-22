@@ -109,6 +109,7 @@ class DurIntegrationTest extends TestCase
     public function test_get_all_integration_dur_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL, [], $this->header);
+
         $response->assertJsonStructure([
             'data' => [
                 0 => [
@@ -289,9 +290,9 @@ class DurIntegrationTest extends TestCase
             self::TEST_URL,
             $mockData,
             $this->header
-        );  
+        );
         $response->assertStatus(201);
-        
+
         $countAfter = Dur::count();
         $countNewRow = $countAfter - $countBefore;
 
