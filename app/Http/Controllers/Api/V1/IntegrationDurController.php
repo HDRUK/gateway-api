@@ -1208,8 +1208,6 @@ class IntegrationDurController extends Controller
     {
         try {
 
-            $datasetId = $dataset['id']; 
-
             $arrCreate = [
                 'dur_id' => $durId,
                 'dataset_version_id' => $datasetVersionId,
@@ -1485,53 +1483,55 @@ class IntegrationDurController extends Controller
     public function indexElasticDur(string $id): void
     {
         try {
-            // Retrieve Dur with related models
-            $dur = Dur::with(['keywords', 'team', 'sector'])->findOrFail($id);
 
-            // Set the datasets attribute with the latest datasets
-            $datasets = $dur->AllDatasets;
+            $durMatch = Dur::where(['id' => $id])
+                ->with(['keywords', 'sector'])
+                ->first();
 
-            // Convert Dur to array after setting the attribute
-            $durArray = $dur->toArray();
+            $datasets = $durMatch->AllDatasets;
 
-            // Fetch dataset titles
-            $datasetTitles = [];
-            foreach ($datasets as $dataset) {
-                $latestVersion = Dataset::find($dataset['id'])->latestVersion();
-                $metadata = $latestVersion->metadata ?? [];
-                $datasetTitles[] = $metadata['summary']['shortTitle'] ?? '';
+            $datasetIds = array_map(function ($dataset) {
+                return $dataset['id'];
+            }, $datasets);
+
+            $durMatch =  $durMatch->toArray();
+
+            $datasetTitles = array();
+            foreach ($datasetIds as $d) {
+                $metadata = Dataset::where(['id' => $d])
+                    ->first()
+                    ->latestVersion()
+                    ->metadata;
+                $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
             }
 
-            // Extract keywords
-            $keywords = array_column($durArray['keywords'], 'name');
+            $keywords = array();
+            foreach ($durMatch['keywords'] as $k) {
+                $keywords[] = $k['name'];
+            }
 
-            // Fetch sector name
-            $sector = $durArray['sector']['name'] ?? null;
+            $sector = ($durMatch['sector'] != null) ? Sector::where(['id' => $durMatch['sector']])->first()->name : null;
 
-            // Prepare data to index
             $toIndex = [
-                'projectTitle' => $durArray['project_title'],
-                'laySummary' => $durArray['lay_summary'],
-                'publicBenefitStatement' => $durArray['public_benefit_statement'],
-                'technicalSummary' => $durArray['technical_summary'],
-                'fundersAndSponsors' => $durArray['funders_and_sponsors'],
-                'publisherName' => $durArray['team']['name'] ?? '',
-                'organisationName' => $durArray['organisation_name'],
+                'projectTitle' => $durMatch['project_title'],
+                'laySummary' => $durMatch['lay_summary'],
+                'publicBenefitStatement' => $durMatch['public_benefit_statement'],
+                'technicalSummary' => $durMatch['technical_summary'],
+                'fundersAndSponsors' => $durMatch['funders_and_sponsors'],
                 'datasetTitles' => $datasetTitles,
                 'keywords' => $keywords,
                 'sector' => $sector,
             ];
 
-            // Index the data
             $params = [
-                'index' => 'datauseregister',
+                'index' => 'data_uses',
                 'id' => $id,
                 'body' => $toIndex,
-                'headers' => ['Content-Type' => 'application/json']
+                'headers' => 'application/json'
             ];
-
+            
             $client = MMC::getElasticClient();
-            $client->index($params);
+            $response = $client->index($params);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -1596,19 +1596,16 @@ class IntegrationDurController extends Controller
                 'team',
             ])->first();
 
-        // Set related users
         $userDatasets = $dur->userDatasets;
         $userPublications = $dur->userPublications;
         $users = $userDatasets->merge($userPublications)->unique('id');
         $dur->setRelation('users', $users);
 
-        // Set related applications
         $applicationDatasets = $dur->applicationDatasets;
         $applicationPublications = $dur->applicationPublications;
         $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
         $dur->setRelation('applications', $applications);
 
-        // Unset intermediate relations
         unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
 
         // Fetch datasets using the accessor
@@ -1623,6 +1620,6 @@ class IntegrationDurController extends Controller
         // Update the relationship with the modified datasets
         $dur->setAttribute('datasets', $datasets);
 
-        return $dur->toArray();
+        return $dur;
     }
 }
