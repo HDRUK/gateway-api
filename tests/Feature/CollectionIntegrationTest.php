@@ -1,7 +1,6 @@
 <?php
 
 namespace Tests\Feature;
-use Exception;
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
@@ -488,6 +487,7 @@ class CollectionIntegrationTest extends TestCase
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $return[] = $temp;
         }
+
         return $return;
     }
 }
