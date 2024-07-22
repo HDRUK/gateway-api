@@ -61,6 +61,10 @@ class UploadController extends Controller
         $fileSystem = env('SCANNING_FILESYSTEM_DISK', 'local_scan');
         $entityFlag = $request->query('entity_flag', 'none');
         $teamId = $request->query('team_id', null);
+        $inputSchema = $request->query("input_schema",null);
+        $inputVersion = $request->query("input_version",null);
+        $elasticIndexing = $request->boolean('elastic_indexing', true);
+        $datasetId = $request->query('dataset_id', null);
         
         // store unscanned
         $storedFilename = time() . '_' . $file->getClientOriginalName();
@@ -78,7 +82,15 @@ class UploadController extends Controller
 
         // spawn scan job
         ScanFileUpload::dispatch(
-            (int) $upload->id, $fileSystem, $entityFlag, (int) $jwtUser['id'], (int) $teamId
+            (int) $upload->id, 
+            $fileSystem, 
+            $entityFlag, 
+            (int) $jwtUser['id'], 
+            (int) $teamId,
+            $inputSchema,
+            $inputVersion,
+            $elasticIndexing,
+            $datasetId
         );
 
         // audit log

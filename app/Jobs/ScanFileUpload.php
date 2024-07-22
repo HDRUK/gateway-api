@@ -5,8 +5,13 @@ namespace App\Jobs;
 use Auditor;
 use Exception;
 
+use App\Models\Dataset;
+use App\Models\Team;
 use App\Models\Upload;
 use App\Imports\ImportDur;
+use App\Imports\ImportStructuralMetadata;
+
+use App\Http\Traits\MetadataOnboard;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,13 +26,17 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ScanFileUpload implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, MetadataOnboard;
     
     private int $uploadId = 0;
     private string $fileSystem = '';
     private string $entityFlag = '';
     private int | null $userId = null;
     private int | null $teamId = null;
+    private string | null $inputSchema = null;
+    private string | null $inputVersion = null;
+    private bool $elasticIndexing = true;
+    private int | null $datasetId = null;
 
     /**
      * Create a new job instance.
@@ -37,7 +46,11 @@ class ScanFileUpload implements ShouldQueue
         string $fileSystem, 
         string $entityFlag, 
         int | null $userId, 
-        int | null $teamId
+        int | null $teamId,
+        string | null $inputSchema,
+        string | null $inputVersion,
+        bool $elasticIndexing,
+        int | null $datasetId
     )
     {
         $this->uploadId = $uploadId;
@@ -45,6 +58,10 @@ class ScanFileUpload implements ShouldQueue
         $this->entityFlag = $entityFlag;
         $this->userId = $userId;
         $this->teamId = $teamId;
+        $this->inputSchema = $inputSchema;
+        $this->inputVersion = $inputVersion;
+        $this->elasticIndexing = $elasticIndexing;
+        $this->datasetId = $datasetId;
     }
 
     /**
@@ -92,6 +109,10 @@ class ScanFileUpload implements ShouldQueue
 
             if ($this->entityFlag === 'dur-from-upload') {
                 $this->createDurFromFile($loc, $upload);
+            } else if ($this->entityFlag === 'dataset-from-upload') {
+                $this->createDatasetFromFile($loc, $upload);
+            } else if ($this->entityFlag === 'structural-metadata-upload') {
+                $this->attachStructuralMetadata($loc, $upload, $this->datasetId);
             }
 
             Auditor::log([
@@ -131,6 +152,113 @@ class ScanFileUpload implements ShouldQueue
             ]);
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function createDatasetFromFile(string $loc, Upload $upload): void
+    {
+        try {
+            $team = Team::findOrFail($this->teamId)->toArray();
+
+            $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
+            $input = [
+                'metadata' => ['metadata' => json_decode($content)],
+                'status' => 'DRAFT',
+                'create_origin' => 'MANUAL',
+                'user_id' => $this->userId,
+                'team_id' => $this->teamId,
+            ];
+            $metadataResult = $this->metadataOnboard(
+                $input, $team, $this->inputSchema, $this->inputVersion, $this->elasticIndexing
+            );
+
+            if ($metadataResult['translated']) {
+                $upload->update([
+                    'status' => 'PROCESSED',
+                    'file_location' => $loc,
+                    'entity_type' => 'dataset',
+                    'entity_id' => $metadataResult['dataset_id']
+                ]);
+
+                Auditor::log([
+                    'user_id' => $this->userId,
+                    'team_id' => $this->teamId,
+                    'action_type' => 'CREATE',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset " . $metadataResult['dataset_id'] . " with version " . $metadataResult['version_id'] . " created",
+                ]);
+            } else {
+                $upload->update([
+                    'status' => 'FAILED',
+                    'file_location' => $loc,
+                    'error' => $metadataResult['response']
+                ]);
+            }
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function attachStructuralMetadata(string $loc, Upload $upload, int $datasetId)
+    {
+        try {
+            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+            $dataset = Dataset::findOrFail($datasetId);
+            $import = Excel::toArray(new ImportStructuralMetadata(), $path);
+
+            $structuralMetadata = array();
+            foreach ($import[0] as $row) {
+                if (!$this->allNull($row)) {
+                    $structuralMetadata[] = [
+                        'name' => $row['table_name'],
+                        'description' => $row['table_description'],
+                        'columns' => array([
+                            'name' => $row['column_name'],
+                            'description' => $row['column_description'],
+                            'dataType' => $row['data_type'],
+                            'sensitive' => $row['sensitive']
+                        ])
+                    ];
+                }
+            }
+
+            $version = $dataset->latestVersion();
+            $metadata = $version->metadata;
+            $metadata['metadata']['structuralMetadata'] = $structuralMetadata;
+            $version->update([
+                'metadata' => $metadata
+            ]);
+
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $loc,
+                'entity_type' => 'dataset',
+                'entity_id' => $datasetId
+            ]);
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function allNull(array $array): bool
+    {
+        foreach ($array as $a) {
+            if (!is_null($a)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
