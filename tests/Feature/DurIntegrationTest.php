@@ -421,16 +421,11 @@ class DurIntegrationTest extends TestCase
 
     private function generateKeywords()
     {
-        $keywords = Keyword::where(['enabled' => 1])->get();
-        if ($keywords->isEmpty()) {
-            throw new Exception('No keywords available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $keywords->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = $keywords->random()->name;
+            $return[] = Keyword::where(['enabled' => 1])->get()->random()->name;
         }
 
         return array_unique($return);
@@ -438,22 +433,11 @@ class DurIntegrationTest extends TestCase
 
     private function generateDatasets()
     {
-        $datasets = Dataset::all();
-        if ($datasets->isEmpty()) {
-            throw new Exception('No datasets available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $datasets->count()));
 
-        for ($i = 1; $i <= $iterations; $i++) {
-            $temp = [];
-            $temp['id'] = $datasets->random()->id;
-            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
-            $temp['is_locked'] = fake()->randomElement([0, 1]);
-            $return[] = $temp;
-        }
-
+        $return['id'] = Dataset::all()->random()->id;
+        $return['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+        $return['is_locked'] = fake()->randomElement([0, 1]);
         return $return;
     }
 }
