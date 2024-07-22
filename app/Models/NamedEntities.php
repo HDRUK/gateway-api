@@ -55,6 +55,4 @@ class NamedEntities extends Model
     {
         return $this->belongsToMany(DatasetVersion::class, 'dataset_version_has_named_entities', 'named_entities_id', 'dataset_version_id');
     }
-
-    
 }
