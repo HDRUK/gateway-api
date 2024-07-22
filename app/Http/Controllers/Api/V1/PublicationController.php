@@ -624,17 +624,11 @@ class PublicationController extends Controller
                 'status'
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
+            $array['deleted_at'] = $request['status'] !== Publication::STATUS_ARCHIVED ? null : Carbon::now();
+
             Publication::withTrashed()->where('id', $id)->update($array);
             $publication = $this->getPublicationById($id); 
 
-            if($request['status'] !== $publication->status){ //if status has changed
-                if ($request['status'] !== Publication::STATUS_ARCHIVED) {
-                    $publication->deleted_at = null;
-                } else{
-                    $publication->deleted_at = Carbon::now();
-                }
-                $publication->save();
-            }
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();
@@ -651,7 +645,7 @@ class PublicationController extends Controller
                 $tools = $input['tools'];
                 $this->checkTools($id, $tools, $jwtUser['id']);
             }
-            //$this->indexElasticPublication((int) $id);
+            $this->indexElasticPublication((int) $id);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],

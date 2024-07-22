@@ -81,6 +81,8 @@ class PublicationTest extends TestCase
                     'abstract',
                     'url',
                     'mongo_id',
+                    'owner_id',
+                    'status',
                     'datasets',
                     'tools',
                 ],
@@ -121,6 +123,8 @@ class PublicationTest extends TestCase
                 'abstract',
                 'url',
                 'mongo_id',
+                'owner_id',
+                'status',
                 'datasets',
                 'tools',
             ]
@@ -288,10 +292,110 @@ class PublicationTest extends TestCase
         ]);
     }
 
+    public function test_can_count_with_success(): void{
+
+        $responseCount = $this->json('GET', self::TEST_URL . 
+            '/count/status',
+            [],
+            $this->header
+        );
+        $responseCount->assertStatus(200);
+        $countDraft = $responseCount['data']['DRAFT'];
+        $this->assertTrue($countDraft===10);
+
+
+        Publication::factory(1)->create(['status'=>'ACTIVE']);
+
+        $responseCount = $this->json('GET', self::TEST_URL . 
+            '/count/status',
+            [],
+            $this->header
+        );
+        $responseCount->assertStatus(200);
+        $countActive = $responseCount['data']['ACTIVE'];
+        $this->assertTrue($countActive===1);
+
+        //now delete one
+        $response = $this->json('DELETE', self::TEST_URL . '/1', [], $this->header);
+        $response->assertStatus(200);
+
+        $responseCount = $this->json('GET', self::TEST_URL . 
+            '/count/status',
+            [],
+            $this->header
+        );
+        $responseCount->assertStatus(200);
+        $countArchived = $responseCount['data']['ARCHIVED'];
+        $this->assertTrue($countArchived===1);
+
+        $ownerId = 1;
+        Publication::take(5)->update(['owner_id'=>$ownerId]);
+    
+        $responseCount = $this->json('GET', self::TEST_URL . 
+            '/count/status?owner_id='. $ownerId,
+            [],
+            $this->header
+        );
+        $responseCount->assertStatus(200);
+        $countDraft = $responseCount['data']['DRAFT'];
+        $this->assertTrue($countDraft===5);
+
+    }
+
+    public function test_patch_publication_status_with_success(): void
+    {
+        $countBefore = Publication::all()->count();
+        $response = $this->json(
+            'PATCH',
+            self::TEST_URL . "/1" ,
+            [
+                'status' => 'ARCHIVED'
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(200);
+        $countAfter = Publication::all()->count();
+        $this->assertTrue(($countBefore - $countAfter) === 1);
+
+
+        $response = $this->json(
+            'PATCH',
+            self::TEST_URL . "/2" ,
+            [
+                'status' => 'ACTIVE'
+            ],
+            $this->header,
+        );
+
+        $response->assertStatus(200);
+        $countActive = Publication::where("status",Publication::STATUS_ACTIVE)->count();
+        $countDraft = Publication::where("status",Publication::STATUS_DRAFT)->count();
+        $countArchived = Publication::withTrashed()->where("status",Publication::STATUS_ARCHIVED)->count();
+        $this->assertTrue($countActive === 1);
+        $this->assertTrue($countArchived === 1);
+        $this->assertTrue($countDraft === ($countBefore - 2));
+
+    }
+
+    public function test_can_filter_publications(): void
+    {
+        $firstPublicationTitle = Publication::where("id",1)->get()->first()->paper_title;
+        $response = $this->json(
+            'GET',
+            self::TEST_URL . "?paper_title=" . $firstPublicationTitle,
+            $this->header,
+        );
+
+        $response->assertStatus(200);
+        $this->assertCount(1, $response['data']);
+
+    }
+
     /**
      * SoftDelete Publication by id with success
      */
-    public function test_soft_delete_tag_with_success(): void
+    public function test_soft_delete_publication_with_success(): void
     {
         $countBefore = Publication::where('id', 1)->count();
         
