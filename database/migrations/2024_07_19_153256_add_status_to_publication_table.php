@@ -6,15 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('publications', function (Blueprint $table) {
             Schema::table('publications', function (Blueprint $table) {
-                $table->unsignedBigInteger('owner_id')->nullable()->index();
-                $table->foreign('owner_id')->references('id')->on('users')->onDelete('set null');
+                $table->enum('status', ['ACTIVE', 'DRAFT', 'ARCHIVED'])->default('DRAFT');
             });
         });
     }
@@ -26,9 +22,7 @@ return new class extends Migration
     {
         if (Schema::hasTable('publications')) {
             Schema::table('publications', function (Blueprint $table) {
-                $table->dropForeign(['owner_id']);
-                $table->dropIndex(['owner_id']);
-                $table->dropColumn('owner_id');
+                $table->dropColumn('status');
             });
         }
     }

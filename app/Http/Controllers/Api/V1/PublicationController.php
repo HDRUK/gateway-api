@@ -14,6 +14,7 @@ use App\Models\PublicationHasDataset;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Carbon;
 
 use App\Http\Requests\Publication\GetPublication;
 use App\Http\Requests\Publication\EditPublication;
@@ -43,6 +44,23 @@ class PublicationController extends Controller
      *       @OA\Schema(type="string"),
      *       description="Filter tools by paper title"
      *    ),
+     *    @OA\Parameter(
+     *       name="owner_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="int"),
+     *       description="Filter tools by owner id"
+     *    ),
+     *    @OA\Parameter(
+     *       name="status",
+     *       in="query",
+     *       description="Publication status to filter by ('ACTIVE', 'DRAFT', 'ARCHIVED')",
+     *       example="ACTIVE",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="Publication status to filter by",
+     *       ),
+     *    ),
      *    @OA\Response(
      *       response="200",
      *       description="Success response",
@@ -66,8 +84,15 @@ class PublicationController extends Controller
             $input = $request->all();
             $mongoId = $request->query('mongo_id', null);
             $paperTitle = $request->query('paper_title', null);
+            $ownerId = $request->query('owner_id', null);
+            $filterStatus = $request->query('status', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
             $withRelated = $request->boolean('with_related', true);
+
+            $sort = $request->query('sort',"created_at:desc");   
+            $tmp = explode(":", $sort);
+            $sortField = $tmp[0];
+            $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
 
             $publications = Publication::when($paperTitle, function ($query) use ($paperTitle) {
                 return $query->where('paper_title', 'LIKE', '%' . $paperTitle . '%');
@@ -75,7 +100,21 @@ class PublicationController extends Controller
             ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
             })
+            ->when($ownerId, function ($query) use ($ownerId) {
+                return $query->where('owner_id', '=', $ownerId);
+            })
+            ->when($request->has('withTrashed') || $filterStatus === Publication::STATUS_ARCHIVED, 
+                function ($query) {
+                    return $query->withTrashed();
+            })
+            ->when($filterStatus, 
+                function ($query) use ($filterStatus) {
+                    return $query->where('status', '=', $filterStatus);
+            })
             ->when($withRelated, fn($query) => $query->with(['datasets', 'tools']))
+            ->when($sort, 
+                    fn($query) => $query->orderBy($sortField, $sortDirection)
+                )
             ->paginate($perPage, ['*'], 'page');
 
             Auditor::log([
@@ -87,6 +126,74 @@ class PublicationController extends Controller
             return response()->json(
                 $publications
             );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/publication/count/{field}",
+     *    operationId="count_unique_fields_publications",
+     *    tags={"publications"},
+     *    summary="Publication@count",
+     *    description="Get Counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="status field",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="owner_id",
+     *       in="query",
+     *       description="owner id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="owner id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(Request $request, string $field): JsonResponse
+    {
+        try {
+            $ownerId = $request->query('owner_id',null);
+            $counts = Publication::when($ownerId, function ($query) use ($ownerId) {
+                return $query->where('owner_id', '=', $ownerId);
+            })->withTrashed()
+                ->select($field)
+                ->get()
+                ->groupBy($field)
+                ->map->count();
+    
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Publication count",
+            ]);
+
+            return response()->json([
+                "data" => $counts
+            ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -239,6 +346,7 @@ class PublicationController extends Controller
                 'url' => $input['url'],
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
                 'owner_id' => (int) $jwtUser['id'],
+                'status' => $request['status'],
             ]);
             $publicationId = (int) $publication->id;
 
@@ -513,9 +621,20 @@ class PublicationController extends Controller
                 'abstract',
                 'url',
                 'mongo_id',
+                'status'
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            Publication::where('id', $id)->update($array);
+            Publication::withTrashed()->where('id', $id)->update($array);
+            $publication = $this->getPublicationById($id); 
+
+            if($request['status'] !== $publication->status){ //if status has changed
+                if ($request['status'] !== Publication::STATUS_ARCHIVED) {
+                    $publication->deleted_at = null;
+                } else{
+                    $publication->deleted_at = Carbon::now();
+                }
+                $publication->save();
+            }
 
             $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
             PublicationHasDataset::where('publication_id', $id)->delete();
@@ -532,8 +651,7 @@ class PublicationController extends Controller
                 $tools = $input['tools'];
                 $this->checkTools($id, $tools, $jwtUser['id']);
             }
-
-            $this->indexElasticPublication((int) $id);
+            //$this->indexElasticPublication((int) $id);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -607,17 +725,18 @@ class PublicationController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $publication = Publication::findOrFail($id);
+            $publication = $this->getPublicationById($id);
             if ($publication) {
-                PublicationHasDataset::where('publication_id', $id)->delete();
-                PublicationHasTool::where(['publication_id' => $id])->delete();
-                $publication->delete();
+
+                $publication->deleted_at = Carbon::now();
+                $publication->status = Publication::STATUS_ARCHIVED;
+                $publication->save();
 
                 Auditor::log([
                     'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'DELETE',
                     'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Publication " . $id . " deleted",
+                    'description' => "Publication " . $id . " soft deleted",
                 ]);
     
                 return response()->json([
@@ -700,7 +819,7 @@ class PublicationController extends Controller
 
     private function getPublicationById(int $publicationId)
     {
-        $publication = Publication::with([
+        $publication = Publication::withTrashed()->with([
             'datasets', 
             'tools', 
         ])->where([

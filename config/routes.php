@@ -2840,6 +2840,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'publications-count-field',
+        'method' => 'get',
+        'path' => '/publications/count/{field}',
+        'methodController' => 'PublicationController@count',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'publications.show',
         'method' => 'get',
         'path' => 'publications/{id}',

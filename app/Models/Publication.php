@@ -14,6 +14,11 @@ class Publication extends Model
 {
     use HasFactory, SoftDeletes, Prunable;
 
+
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_DRAFT = 'DRAFT';
+    public const STATUS_ARCHIVED = 'ARCHIVED';
+
     /**
      * The table associated with this model.
      * 
@@ -34,6 +39,7 @@ class Publication extends Model
         'abstract',
         'url',
         'mongo_id',
+        'owner_id'
     ];
 
     /**
