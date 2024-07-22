@@ -181,7 +181,7 @@ class UserAdminsSeeder extends Seeder
             'lastname' => $lastname,
             'email' => $email,
             'provider' => 'service',
-            'password' => Hash::make($password),
+            'password' => $password,
             'is_admin' => $isAdmin,
         ]);
 
