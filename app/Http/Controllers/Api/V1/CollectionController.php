@@ -154,7 +154,9 @@ class CollectionController extends Controller
                 'description' => "Collection get all",
             ]);
 
-            return response()->json($collections);
+            return response()->json(
+                $collections
+            );
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -784,19 +786,19 @@ class CollectionController extends Controller
     private function getCollectionById(int $collectionId)
     {
         $collection = Collection::where(['id' => $collectionId])
-            ->with([
-                'keywords',
-                'tools',
-                'dur',
-                'publications',
-                'userDatasets',
-                'userTools',
-                'userPublications',
-                'applicationDatasets',
-                'applicationTools',
-                'applicationPublications',
-                'team',
-            ])->first();
+        ->with([
+            'keywords', 
+            'tools', 
+            'dur',
+            'publications',
+            'userDatasets', 
+            'userTools', 
+            'userPublications',
+            'applicationDatasets',
+            'applicationTools',
+            'applicationPublications',
+            'team',
+        ])->first();
         
         // Set the datasets attribute with the latest datasets
         $collection->setAttribute('datasets', $collection->AllDatasets);
@@ -1200,11 +1202,14 @@ class CollectionController extends Controller
         }
     }
 
-    private function extractInputIdToArray(array $input): array
+    private function extractInputIdToArray(array $input): Array
     {
-        return array_map(function($value) {
-            return $value['id'];
-        }, $input);
+        $response = [];
+        foreach ($input as $value) {
+            $response[] = $value['id'];
+        }
+
+        return $response;
     }
 
     /**

@@ -1525,11 +1525,14 @@ class IntegrationDurController extends Controller
             throw new Exception("deleteDurHasTools :: " . $e->getMessage());
         }
     }
-    private function extractInputIdToArray(array $input): array
+    private function extractInputIdToArray(array $input): Array
     {
-        return array_map(function($value) {
-            return $value['id'];
-        }, $input);
+        $response = [];
+        foreach ($input as $value) {
+            $response[] = $value['id'];
+        }
+
+        return $response;
     }
 
     /**

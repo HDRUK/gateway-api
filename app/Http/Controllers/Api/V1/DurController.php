@@ -1514,60 +1514,6 @@ class DurController extends Controller
         }
     }
 
-    //Get Durs
-    private function getDurById(int $durId)
-    {
-        $dur = Dur::where(['id' => $durId])
-            ->with([
-                'keywords',
-                'publications', 
-                'tools', 
-                'userDatasets' => function ($query) {
-                    $query->distinct('id');
-                }, 
-                'userPublications' => function ($query) {
-                    $query->distinct('id');
-                }, 
-                'applicationDatasets' => function ($query) {
-                    $query->distinct('id');
-                },
-                'applicationPublications' => function ($query) {
-                    $query->distinct('id');
-                },
-                'user',
-                'team',
-            ])->first();
-
-        // Set related users
-        $userDatasets = $dur->userDatasets;
-        $userPublications = $dur->userPublications;
-        $users = $userDatasets->merge($userPublications)->unique('id');
-        $dur->setRelation('users', $users);
-
-        // Set related applications
-        $applicationDatasets = $dur->applicationDatasets;
-        $applicationPublications = $dur->applicationPublications;
-        $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
-        $dur->setRelation('applications', $applications);
-
-        // Unset intermediate relations
-        unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
-
-        // Fetch datasets using the accessor
-        $datasets = $dur->AllDatasets;
-
-        foreach ($datasets as $dataset) {
-            // Dynamically set new attributes
-            $dataset->new_key = 'Value or Computation here';
-            $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
-        }
-
-        // Update the relationship with the modified datasets
-        $dur->setAttribute('datasets', $datasets);
-
-        return $dur->toArray();
-    }
-
     // datasets
     private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null) 
     {
@@ -1966,5 +1912,59 @@ class DurController extends Controller
             ->metadata;
         $title = $metadata['metadata']['summary']['shortTitle'];
         return $title;
+    }
+
+    //Get Durs
+    private function getDurById(int $durId)
+    {
+        $dur = Dur::where(['id' => $durId])
+            ->with([
+                'keywords',
+                'publications', 
+                'tools', 
+                'userDatasets' => function ($query) {
+                    $query->distinct('id');
+                }, 
+                'userPublications' => function ($query) {
+                    $query->distinct('id');
+                }, 
+                'applicationDatasets' => function ($query) {
+                    $query->distinct('id');
+                },
+                'applicationPublications' => function ($query) {
+                    $query->distinct('id');
+                },
+                'user',
+                'team',
+            ])->first();
+
+        // Set related users
+        $userDatasets = $dur->userDatasets;
+        $userPublications = $dur->userPublications;
+        $users = $userDatasets->merge($userPublications)->unique('id');
+        $dur->setRelation('users', $users);
+
+        // Set related applications
+        $applicationDatasets = $dur->applicationDatasets;
+        $applicationPublications = $dur->applicationPublications;
+        $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
+        $dur->setRelation('applications', $applications);
+
+        // Unset intermediate relations
+        unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
+
+        // Fetch datasets using the accessor
+        $datasets = $dur->AllDatasets;
+
+        foreach ($datasets as $dataset) {
+            // Dynamically set new attributes
+            $dataset->new_key = 'Value or Computation here';
+            $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
+        }
+
+        // Update the relationship with the modified datasets
+        $dur->setAttribute('datasets', $datasets);
+
+        return $dur->toArray();
     }
 }

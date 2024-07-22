@@ -403,7 +403,7 @@ class DatasetController extends Controller
 
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
-                $withLinks = DatasetVersion::where('id', $latestVersion->id)
+                $withLinks = DatasetVersion::where('id', $latestVersion['id'])
                     ->with(['linkedDatasetVersions'])
                     ->first();
                 if ($withLinks) {
@@ -421,10 +421,10 @@ class DatasetController extends Controller
                 );
 
                 if ($translated['wasTranslated']) {
-                    $withLinks = DatasetVersion::where('id', $latestVersion->id)
+                    $withLinks = DatasetVersion::where('id', $latestVersion['id'])
                         ->with(['linkedDatasetVersions'])
                         ->first();
-                    $withLinks->metadata = json_encode(['metadata' => $translated['metadata']]);
+                    $withLinks['metadata'] = json_encode(['metadata' => $translated['metadata']]);
                     $dataset->setAttribute('versions', [$withLinks]);
                 } else {
                     return response()->json([
@@ -465,7 +465,7 @@ class DatasetController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dataset get " . $id,
             ]);
 

@@ -72,7 +72,7 @@ class DataProviderCollController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => 'DataProviderColl list'
             ]);
 
