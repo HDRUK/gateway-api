@@ -1275,6 +1275,7 @@ class CollectionController extends Controller
 
             $client = MMC::getElasticClient();
             $client->index($params);
+
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

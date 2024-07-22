@@ -72,7 +72,7 @@ class DataProviderCollController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'DataProviderColl list'
             ]);
 
@@ -671,10 +671,6 @@ class DataProviderCollController extends Controller
     public function checkingDataset(int $datasetId)
     {
         $dataset = Dataset::where(['id' => $datasetId])->first();
-
-      //  if (!$dataset) {
-      //      return;
-      //  }
 
         // Accessed through the accessor
         $durs = $dataset->AllDurs;

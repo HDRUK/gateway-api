@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Api\V1;
+
 use Config;
 use Auditor;
 use Exception;
@@ -1169,7 +1170,7 @@ class DurController extends Controller
                 if($currentDurStatus->status === 'ACTIVE'){
                     $this->indexElasticDur($id);
                 }
-                
+
                 Auditor::log([
                     'user_id' => (int) $jwtUser['id'],
                     'action_type' => 'UPDATE',
@@ -1566,6 +1567,10 @@ class DurController extends Controller
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
 
+            if (array_key_exists('is_locked', $dataset)) {
+                $arrCreate['is_locked'] = (bool) $dataset['is_locked'];
+            }
+
             if ($appId) {
                 $arrCreate['application_id'] = $appId;
             }
@@ -1576,7 +1581,6 @@ class DurController extends Controller
             throw new Exception("addDurHasDatasetVersion :: " . $e->getMessage());
         }
     }
-
 
     private function checkInDurHasDatasetVersion(int $durId, int $datasetVersionId)
     {
@@ -1589,7 +1593,7 @@ class DurController extends Controller
             throw new Exception("checkInDurHasDatasetVersion :: " . $e->getMessage());
         }
     }
-        private function deleteDurHasDatasetVersion(int $durId, int $datasetVersionId)
+    private function deleteDurHasDatasetVersion(int $durId, int $datasetVersionId)
     {
         try {
             return DurHasDatasetVersion::where([

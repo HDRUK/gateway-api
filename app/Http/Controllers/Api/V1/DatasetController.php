@@ -432,9 +432,11 @@ class DatasetController extends Controller
                         'details' => $translated
                     ], 400);
                 }
-            } elseif ($outputSchemaModel) {
+            }
+            elseif ($outputSchemaModel) {
                 throw new Exception('You have given a schema_model but not a schema_version');
-            } elseif ($outputSchemaModelVersion) {
+            }
+            elseif ($outputSchemaModelVersion) {
                 throw new Exception('You have given a schema_version but not schema_model');
             }
             
@@ -949,7 +951,7 @@ class DatasetController extends Controller
                     $metadata->save();
 
                     if ($request['status'] === Dataset::STATUS_ACTIVE) {
-                      MMC::reindexElastic($id);
+                        MMC::reindexElastic($id);
                     }
 
                     Auditor::log([
