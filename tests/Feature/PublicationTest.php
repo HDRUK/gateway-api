@@ -1,7 +1,7 @@
 <?php
 
 namespace Tests\Feature;
-use Exception;
+
 use Config;
 use Tests\TestCase;
 use App\Models\Tool;
@@ -159,7 +159,7 @@ class PublicationTest extends TestCase
             ],
             $this->header,
         );
-        
+
         $response->assertStatus(201);
         $response->assertJsonStructure([
             'message',
@@ -307,18 +307,12 @@ class PublicationTest extends TestCase
 
     private function generateTools()
     {
-        $tools = Tool::all();
-        if ($tools->isEmpty()) {
-            throw new Exception('No tools available to generate.');
-        }
-
         $return = [];
-        $iterations = rand(1, min(5, $tools->count()));
+        $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = $tools->random()->id;
-            $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
+            $temp['id'] = Tool::all()->random()->id;
             $return[] = $temp;
         }
 

@@ -1,6 +1,7 @@
 <?php
 
 namespace Tests\Feature;
+
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
@@ -11,6 +12,7 @@ use App\Models\Keyword;
 use App\Models\Permission;
 use App\Models\Application;
 use Database\Seeders\DurSeeder;
+
 use Database\Seeders\TagSeeder;
 use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
@@ -274,7 +276,7 @@ class DurIntegrationTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -317,7 +319,7 @@ class DurIntegrationTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -349,7 +351,7 @@ class DurIntegrationTest extends TestCase
         );
         // update
         $mockDataUpdate = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,
@@ -385,7 +387,7 @@ class DurIntegrationTest extends TestCase
         $teamId = (int) Team::all()->random()->id;
         $countBefore = Dur::count();
         $mockData = [
-            'datasets' => $this->generateDatasets(),
+            'datasets' => [$this->generateDatasets()],
             'keywords' => $this->generateKeywords(),
             'user_id' => $userId,
             'team_id' => $teamId,

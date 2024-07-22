@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Config;
+
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Team;
