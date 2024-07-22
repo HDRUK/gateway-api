@@ -84,6 +84,10 @@ class CreatePublication extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'status' => [
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
+            ],
         ];
     }
 }
