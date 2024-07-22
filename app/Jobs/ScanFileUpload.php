@@ -5,9 +5,11 @@ namespace App\Jobs;
 use Auditor;
 use Exception;
 
+use App\Models\Dataset;
 use App\Models\Team;
 use App\Models\Upload;
 use App\Imports\ImportDur;
+use App\Imports\ImportStructuralMetadata;
 
 use App\Http\Traits\MetadataOnboard;
 
@@ -34,6 +36,7 @@ class ScanFileUpload implements ShouldQueue
     private string | null $inputSchema = null;
     private string | null $inputVersion = null;
     private bool $elasticIndexing = true;
+    private int | null $datasetId = null;
 
     /**
      * Create a new job instance.
@@ -47,6 +50,7 @@ class ScanFileUpload implements ShouldQueue
         string | null $inputSchema,
         string | null $inputVersion,
         bool $elasticIndexing,
+        int $datasetId
     )
     {
         $this->uploadId = $uploadId;
@@ -57,6 +61,7 @@ class ScanFileUpload implements ShouldQueue
         $this->inputSchema = $inputSchema;
         $this->inputVersion = $inputVersion;
         $this->elasticIndexing = $elasticIndexing;
+        $this->datasetId = $datasetId;
     }
 
     /**
@@ -106,6 +111,8 @@ class ScanFileUpload implements ShouldQueue
                 $this->createDurFromFile($loc, $upload);
             } else if ($this->entityFlag === 'dataset-from-upload') {
                 $this->createDatasetFromFile($loc, $upload);
+            } else if ($this->entityFlag === 'structural-metadata-upload') {
+                $this->attachStructuralMetadata($loc, $upload, $this->datasetId);
             }
 
             Auditor::log([
@@ -195,6 +202,63 @@ class ScanFileUpload implements ShouldQueue
             ]);
             throw new Exception($e->getMessage());
         }
+    }
+
+    private function attachStructuralMetadata(string $loc, Upload $upload, int $datasetId)
+    {
+        try {
+            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
+            $dataset = Dataset::findOrFail($datasetId);
+            $import = Excel::toArray(new ImportStructuralMetadata(), $path);
+
+            $structuralMetadata = array();
+            foreach ($import[0] as $row) {
+                if (!$this->allNull($row)) {
+                    $structuralMetadata[] = [
+                        'name' => $row['table_name'],
+                        'description' => $row['table_description'],
+                        'columns' => array([
+                            'name' => $row['column_name'],
+                            'description' => $row['column_description'],
+                            'dataType' => $row['data_type'],
+                            'sensitive' => $row['sensitive']
+                        ])
+                    ];
+                }
+            }
+
+            $version = $dataset->latestVersion();
+            $metadata = $version->metadata;
+            $metadata['metadata']['structuralMetadata'] = $structuralMetadata;
+            $version->update([
+                'metadata' => $metadata
+            ]);
+
+            $upload->update([
+                'status' => 'PROCESSED',
+                'file_location' => $loc,
+                'entity_type' => 'dataset',
+                'entity_id' => $datasetId
+            ]);
+        } catch (Exception $e) {
+            // Record exception in uploads table
+            $upload->update([
+                'status' => 'FAILED',
+                'file_location' => $loc,
+                'error' => $e->getMessage()
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    private function allNull(array $array): bool
+    {
+        foreach ($array as $a) {
+            if (!is_null($a)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
