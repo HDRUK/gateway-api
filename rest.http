@@ -1364,6 +1364,11 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 ### Cohort Requests
+#### get all cohort requests test
+GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests/access HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
 #### get all cohort requests
 GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests HTTP/1.1
 Content-Type: application/json
@@ -1420,6 +1425,13 @@ DELETE {{baseUrl}}/api/{{apiVersion}}/cohort_requests/24/admin HTTP/1.1
 Content-Type: application/json
 Accept: application/json
 Authorization: Bearer {{accessToken}}
+
+#### get all cohort requests
+GET {{baseUrl}}/api/{{apiVersion}}/cohort_requests/access HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+
 
 ### Keywords
 #### get all
@@ -2287,11 +2299,6 @@ Accept: application/json
 Authorization: Bearer {{accessToken}}
 
 
-### Tests
-#### test pubsub service
-GET {{baseUrl}}/api/{{apiVersion}}/test-pubsub-service HTTP/1.1
-Content-Type: application/json
-
 
 ### LICENSES
 #### get all licenses
@@ -2300,7 +2307,7 @@ Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
 #### get one license by id
-GET {{baseUrl}}/api/{{apiVersion}}/licenses/2 HTTP/1.1
+GET {{baseUrl}}/api/{{apiVersion}}/licenses/8 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
 
@@ -2426,3 +2433,24 @@ Authorization: Bearer {{accessToken}}
 GET {{baseUrl}}/api/{{apiVersion}}/datasets/220 HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer {{accessToken}}
+
+### Dataset export mock
+#### get dataset export dataset_structural_metadata
+GET {{baseUrl}}/api/{{apiVersion}}/datasets/export/mock?type=template_dataset_structural_metadata HTTP/1.1
+Content-Type: application/json
+
+#### get dataset export dataset_general_metadata
+GET {{baseUrl}}/api/{{apiVersion}}/datasets/export/mock?type=dataset_metadata HTTP/1.1
+Content-Type: application/json
+
+
+### OIDC
+#### get well_known jwks
+GET {{baseUrl}}/oauth/.well-known/jwks HTTP/1.1
+Content-Type: application/json
+
+#### get well_known openid configuration
+GET {{baseUrl}}/oauth/.well-known/openid-configuration HTTP/1.1
+Content-Type: application/json
+
+/oauth/.well-known/openid-configuration

@@ -2295,6 +2295,17 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'cohort_requests_access',
+        'method' => 'get',
+        'path' => '/cohort_requests/access',
+        'methodController' => 'CohortRequestController@checkAccess',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
         'name' => 'cohort_requests',
         'method' => 'get',
         'path' => '/cohort_requests/{id}',
@@ -2824,6 +2835,15 @@ return [
         'method' => 'get',
         'path' => 'publications',
         'methodController' => 'PublicationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'publications-count-field',
+        'method' => 'get',
+        'path' => '/publications/count/{field}',
+        'methodController' => 'PublicationController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],
