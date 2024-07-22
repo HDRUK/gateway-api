@@ -50,7 +50,7 @@ class ScanFileUpload implements ShouldQueue
         string | null $inputSchema,
         string | null $inputVersion,
         bool $elasticIndexing,
-        int $datasetId
+        int | null $datasetId
     )
     {
         $this->uploadId = $uploadId;

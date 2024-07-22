@@ -47,8 +47,8 @@ class UploadTest extends TestCase
         $this->seed([
             MinimalUserSeeder::class,
             SpatialCoverageSeeder::class,
-            // DatasetSeeder::class,
-            // DatasetVersionSeeder::class,
+            DatasetSeeder::class,
+            DatasetVersionSeeder::class,
         ]);
     }
 
@@ -366,17 +366,17 @@ class UploadTest extends TestCase
         $response->assertStatus(200);
 
         // Get the latest version and check that the structural metadata matches test data
-        $latestVersion = $response->decodeResponseJson()['data']['versions'][0];
+        $latestVersion = $response->decodeResponseJson()['data']['versions'][0]['metadata'];
 
         $this->assertIsArray($latestVersion['metadata']['structuralMetadata']);
         $this->assertEquals(
             $latestVersion['metadata']['structuralMetadata'][0]['name'], 'Test Table'
         );
         $this->assertIsArray(
-            $latestVersion['metadata']['structuralMetadata'][0]['name']['columns']
+            $latestVersion['metadata']['structuralMetadata'][0]['columns']
         );
         $this->assertEquals(
-            $latestVersion['metadata']['structuralMetadata'][0]['name']['columns'][0]['name'],
+            $latestVersion['metadata']['structuralMetadata'][0]['columns'][0]['name'],
             'Test Column'
         );        
     }
