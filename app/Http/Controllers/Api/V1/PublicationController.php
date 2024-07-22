@@ -625,9 +625,7 @@ class PublicationController extends Controller
     {
         try {
             $pubMatch = Publication::where(['id' => $id])->first();
-            if (!$pubMatch) {
-                throw new Exception("Publication not found!");
-            }
+
             $datasets = $pubMatch->getLatestDatasets();
             $datasetTitles = [];
             $datasetLinkTypes = [];
