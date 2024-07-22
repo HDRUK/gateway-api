@@ -11,9 +11,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-/**
- * @property array $dataset_version_ids
- */
 class Publication extends Model
 {
     use HasFactory, SoftDeletes, Prunable, GetDatasetViaDatasetVersions;

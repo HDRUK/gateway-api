@@ -18,9 +18,6 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-/**
- * @property array $dataset_version_ids
- */
 class Dur extends Model
 {
     use HasFactory, SoftDeletes, Prunable, GetDatasetViaDatasetVersions;

@@ -755,7 +755,6 @@ class IntegrationCollectionController extends Controller
         try {
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-
             CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
             CollectionHasTool::where(['collection_id' => $id])->delete();
             CollectionHasDur::where(['collection_id' => $id])->delete();

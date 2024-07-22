@@ -206,7 +206,7 @@ class MetadataManagementController {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
                 ->firstOrFail();
-  
+
             $metadata = $datasetMatch->latestVersion()->metadata;
 
             // inject relationships via Local functions

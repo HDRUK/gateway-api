@@ -6,9 +6,7 @@ use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Http\Traits\GetDatasetViaDatasetVersions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-/**
- * @property array $dataset_version_ids
- */
+
 class SpatialCoverage extends Model
 {
     use HasFactory, GetDatasetViaDatasetVersions;

@@ -1020,9 +1020,9 @@ class SearchController extends Controller
                     }
                     if (!$foundFlag) {
                         unset($pubArray[$i]);
+                        continue;
                     }
                 }
-
             } else {
 
                 $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';

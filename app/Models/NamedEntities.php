@@ -10,9 +10,6 @@ use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-/**
- * @property array $dataset_version_ids
- */
 class NamedEntities extends Model
 {
     use HasFactory, Notifiable, SoftDeletes, Prunable, GetDatasetViaDatasetVersions;

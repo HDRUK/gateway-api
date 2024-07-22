@@ -1942,19 +1942,16 @@ class DurController extends Controller
                 'team',
             ])->first();
 
-        // Set related users
         $userDatasets = $dur->userDatasets;
         $userPublications = $dur->userPublications;
         $users = $userDatasets->merge($userPublications)->unique('id');
         $dur->setRelation('users', $users);
 
-        // Set related applications
         $applicationDatasets = $dur->applicationDatasets;
         $applicationPublications = $dur->applicationPublications;
         $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
         $dur->setRelation('applications', $applications);
 
-        // Unset intermediate relations
         unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
 
         // Fetch datasets using the accessor
