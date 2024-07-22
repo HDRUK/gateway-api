@@ -625,11 +625,9 @@ class PublicationController extends Controller
     {
         try {
             $pubMatch = Publication::where(['id' => $id])
-                ->with('datasets')
-                ->first()
-                ->toArray();
+                ->first();
 
-            $datasets = $pubMatch->AllDatasets;
+            $datasets = $pubMatch->AllDatasets; 
 
             $datasetIds = array_map(function ($dataset) {
                 return $dataset['id'];
