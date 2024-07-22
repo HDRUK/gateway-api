@@ -124,8 +124,6 @@ class Collection extends Model
         ->withPivot('collection_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
     }
 
-    
-
     public function userTools(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'collection_has_tools');
@@ -159,8 +157,6 @@ class Collection extends Model
             'application_id' // Foreign key on the CollectionHasDatasetVersion table
         );
     }
-
-
     public function applicationTools(): BelongsToMany
     {
         return $this->belongsToMany(Application::class, 'collection_has_tools');

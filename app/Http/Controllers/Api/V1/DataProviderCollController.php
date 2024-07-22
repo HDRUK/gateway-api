@@ -672,15 +672,22 @@ class DataProviderCollController extends Controller
     {
         $dataset = Dataset::where(['id' => $datasetId])->first();
 
-        if (!$dataset) {
-            return;
-        }
+      //  if (!$dataset) {
+      //      return;
+      //  }
 
         // Accessed through the accessor
         $durs = $dataset->AllDurs;
         $collections = $dataset->AllCollections;
         $publications = $dataset->AllPublications;
         $tools = $dataset->AllTools;
+
+        $durIds = is_array($durs) ? array_map(fn($dur) => $dur->id, $durs) : $durs->pluck('id')->toArray();
+        $collectionIds = is_array($collections) ? array_map(fn($collection) => $collection->id, $collections) : $collections->pluck('id')->toArray();
+        $publicationIds = is_array($publications) ? array_map(fn($publication) => $publication->id, $publications) : $publications->pluck('id')->toArray();
+        $toolIds = is_array($tools) ? array_map(fn($tool) => $tool->id, $tools) : $tools->pluck('id')->toArray();
+
+        
 
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])
@@ -711,9 +718,9 @@ class DataProviderCollController extends Controller
             'datasetType' => $datasetType
         ];
 
-        $this->durs = collect($this->durs)->merge($durs->pluck('id'))->unique()->values()->all();
-        $this->publications = collect($this->publications)->merge($publications->pluck('id'))->unique()->values()->all();
-        $this->tools = collect($this->tools)->merge($tools->pluck('id'))->unique()->values()->all();
-        $this->collections = collect($this->collections)->merge($collections->pluck('id'))->unique()->values()->all();
+        $this->durs = array_unique(array_merge($this->durs, $durIds));
+        $this->publications = array_unique(array_merge($this->publications, $collectionIds));
+        $this->tools = array_unique(array_merge($this->tools, $toolIds));
+        $this->collections = array_unique(array_merge($this->collections, $collectionIds));
     }
 }

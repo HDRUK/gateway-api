@@ -1612,8 +1612,6 @@ class IntegrationDurController extends Controller
         $datasets = $dur->AllDatasets;
 
         foreach ($datasets as $dataset) {
-            // Dynamically set new attributes
-            $dataset->new_key = 'Value or Computation here';
             $dataset->shortTitle = $this->getDatasetTitle($dataset->id);
         }
 

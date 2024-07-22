@@ -141,7 +141,6 @@ class DataProviderCollTest extends TestCase
     public function test_get_data_provider_coll_by_id_summary_with_success(): void
     {
         $response = $this->json('GET', self::TEST_URL . '/1/summary', [], $this->header);
-
         $response->assertStatus(200);
         $response->assertJsonStructure([
             'message',

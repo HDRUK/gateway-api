@@ -949,7 +949,7 @@ class DatasetController extends Controller
                     $metadata->save();
 
                     if ($request['status'] === Dataset::STATUS_ACTIVE) {
-                        MMC::reindexElastic($id);
+                      MMC::reindexElastic($id);
                     }
 
                     Auditor::log([

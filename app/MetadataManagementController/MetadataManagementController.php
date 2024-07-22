@@ -206,14 +206,13 @@ class MetadataManagementController {
         try {
             $datasetMatch = Dataset::where('id', $datasetId)
                 ->firstOrFail();
-
-            # Pull metadata from json    
+  
             $metadata = $datasetMatch->latestVersion()->metadata;
 
             // inject relationships via Local functions
             $materialTypes = $this->getMaterialTypes($metadata);
             $containsTissue = $this->getContainsTissues($materialTypes);
-            
+
             $toIndex = [
                 'abstract' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.abstract'], ''),
                 'keywords' => $this->getValueByPossibleKeys($metadata, ['metadata.summary.keywords'], ''),

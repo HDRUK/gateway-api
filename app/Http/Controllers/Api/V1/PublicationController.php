@@ -624,55 +624,62 @@ class PublicationController extends Controller
     public function indexElasticPublication(string $id): void
     {
         try {
-            $pubMatch = Publication::where(['id' => $id])->first();
+            $pubMatch = Publication::where(['id' => $id])
+                ->with('datasets')
+                ->first()
+                ->toArray();
 
-            if (!$pubMatch) {
-                throw new Exception("Publication not found!");
+            $datasets = $pubMatch->AllDatasets;
+
+            $datasetIds = array_map(function ($dataset) {
+                return $dataset['id'];
+            }, $datasets);
+
+            $pubMatch = $pubMatch ->toArray();
+
+            $datasetTitles = array();
+            $datasetLinkTypes = array();
+
+            if(!array_key_exists('datasets',$pubMatch)){
+                throw new Exception("datasets not found on publication!");
             }
 
-            $datasets = $pubMatch->getLatestDatasets();
-            $datasetTitles = [];
-            $datasetLinkTypes = [];
-
-            foreach ($datasets as $dataset) {
-                $datasetId = $dataset->id;
+            foreach ($datasetIds as $d) {
+                $datasetId = $d['id'];
                 $metadata = Dataset::where(['id' => $datasetId])
                     ->first()
                     ->latestVersion()
                     ->metadata;
 
-                $latestVersionID = $dataset -> latestVersion()->id;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
 
-                $linkType = PublicationHasDatasetVersion::where([
+                //needs a check for this!?
+                $datasetLinkTypes[] = PublicationHasDataset::where([
                     ['publication_id', '=', (int) $id],
-                    ['dataset_version_id', '=', (int) $latestVersionID]
-                ])->first()->link_type ?? 'UNKNOWN';
-
-                $datasetLinkTypes[] = $linkType;
+                    ['dataset_id', '=', (int) $datasetId]
+                ])->first()['link_type'];
             }
 
             // Split string to array of strings
-            $publicationTypes = explode(",", $pubMatch->publication_type);
+            $publicationTypes = explode(",", $pubMatch['publication_type']); 
 
             $toIndex = [
-                'title' => $pubMatch->paper_title,
-                'journalName' => $pubMatch->journal_name,
-                'abstract' => $pubMatch->abstract,
-                'authors' => $pubMatch->authors,
-                'publicationDate' => $pubMatch->year_of_publication,
+                'title' => $pubMatch['paper_title'],
+                'journalName' => $pubMatch['journal_name'],
+                'abstract' => $pubMatch['abstract'],
+                'authors' => $pubMatch['authors'],
+                'publicationDate' => $pubMatch['year_of_publication'],
                 'datasetTitles' => $datasetTitles,
                 'publicationType' => $publicationTypes,
                 'datasetLinkTypes' => $datasetLinkTypes,
             ];
-
             $params = [
                 'index' => 'publication',
                 'id' => $id,
                 'body' => $toIndex,
                 'headers' => 'application/json'
             ];
-
+            
             $client = MMC::getElasticClient();
             $client->index($params);
 
@@ -680,8 +687,6 @@ class PublicationController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
-
     private function getPublicationById(int $publicationId)
     {
         $publication = Publication::with([
