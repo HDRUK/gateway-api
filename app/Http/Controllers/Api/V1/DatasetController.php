@@ -1204,11 +1204,10 @@ class DatasetController extends Controller
      *       in="query",
      *       description="type export",
      *       required=true,
-     *       example="dataset_structural_metadata",
      *       @OA\Schema(
      *          type="string",
      *          description="type export",
-     *          enum={"dataset_structural_metadata", "dataset_general_metadata"}
+     *          enum={"template_dataset_structural_metadata", "dataset_metadata"}
      *       ),
      *    ),
      *    @OA\Response(
@@ -1245,11 +1244,11 @@ class DatasetController extends Controller
             $file = '';
 
             switch ($exportType) {
-                case 'dataset_structural_metadata':
-                    $file = Config::get('mock_data.dataset_structural_metadata');
+                case 'template_dataset_structural_metadata':
+                    $file = Config::get('mock_data.template_dataset_structural_metadata');
                     break;
-                case 'dataset_general_metadata':
-                    $file = Config::get('mock_data.dataset_general_metadata');
+                case 'dataset_metadata':
+                    $file = Config::get('mock_data.mock_dataset_metadata');
                     break;
                 default:
                     return response()->json(['error' => 'File not found.'], 404);

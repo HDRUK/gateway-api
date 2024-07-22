@@ -1302,15 +1302,15 @@ class DatasetTest extends TestCase
         Storage::fake('mock');
 
         // Put a fake file in the mock disk
-        $filePath = 'dataset-structural-metadata.csv';
+        $filePath = 'structural_metadata_template.xlsx';
         Storage::disk('mock')->put($filePath, 'fake content');
 
         // Mock the config
-        Config::set('mock_data.dataset_structural_metadata', $filePath);
+        Config::set('mock_data.template_dataset_structural_metadata', $filePath);
         Config::set('statuscodes.STATUS_OK.code', 200);
 
         // Make the request
-        $response = $this->get('/api/v1/datasets/export/mock?type=dataset_structural_metadata');
+        $response = $this->get('/api/v1/datasets/export/mock?type=template_dataset_structural_metadata');
 
         // Assert the file is downloaded
         $response->assertStatus(200);
@@ -1320,21 +1320,21 @@ class DatasetTest extends TestCase
         Storage::disk('mock')->delete($filePath);
     }
 
-    public function test_can_download_mock_dataset_general_metadata_file()
+    public function test_can_download_mock_dataset_metadata_file()
     {
         // Mock the storage disk
         Storage::fake('mock');
 
         // Put a fake file in the mock disk
-        $filePath = 'dataset_general_metadata.csv';
+        $filePath = 'example_dataset_metadata.xlsx';
         Storage::disk('mock')->put($filePath, 'fake content');
 
         // Mock the config
-        Config::set('mock_data.dataset_general_metadata', $filePath);
+        Config::set('mock_data.mock_dataset_metadata', $filePath);
         Config::set('statuscodes.STATUS_OK.code', 200);
 
         // Make the request
-        $response = $this->get('/api/v1/datasets/export/mock?type=dataset_general_metadata');
+        $response = $this->get('/api/v1/datasets/export/mock?type=dataset_metadata');
 
         // Assert the file is downloaded
         $response->assertStatus(200);
