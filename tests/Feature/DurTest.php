@@ -35,7 +35,7 @@ use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -78,7 +78,7 @@ class DurTest extends TestCase
             ToolSeeder::class,
             DurSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             PublicationHasToolSeeder::class,
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
@@ -177,7 +177,6 @@ class DurTest extends TestCase
     {
         $durId = (int) Dur::all()->where('status', 'ACTIVE')->random()->id;
         $response = $this->json('GET', self::TEST_URL . '/' . $durId, [], $this->header);
-
         $this->assertCount(1, $response['data']);
         $response->assertJsonStructure([
             'data' => [
