@@ -763,7 +763,7 @@ class DurTest extends TestCase
             $this->header
         );
         
-        var_dump($response);
+        
         $response->assertStatus(201);
         $durId = (int) $response['data'];
 
