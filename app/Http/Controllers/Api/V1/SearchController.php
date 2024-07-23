@@ -789,11 +789,14 @@ class SearchController extends Controller
 
             $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
+            foreach ($durModels as $model) {
+                $model->setAttribute('datasets', $model->AllDatasets);
+            }
+
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
                 foreach ($durModels as $model) {
                     if ((int) $dur['_id'] === $model['id']) {
-                        $model->setAttribute('datasets', $model->AllDatasets);
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
                         $durArray[$i]['organisationName'] = $model['organisation_name'];

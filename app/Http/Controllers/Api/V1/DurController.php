@@ -1066,7 +1066,7 @@ class DurController extends Controller
                     'data' => $this->getDurById($id),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             } else {
-                $initDur = Dur::withTrashed()->where('id', $id)->first();
+                $initDur = Dur::where('id', $id)->first();
                 $userId = null;
                 $appId = null;
                 if (array_key_exists('user_id', $input)) {
@@ -1134,28 +1134,20 @@ class DurController extends Controller
                 Dur::where('id', $id)->update($array);
 
                 // link/unlink dur with datasets
-                if (array_key_exists('datasets', $input)) {
-                    $datasets = $input['datasets'];
-                    $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
-                }
+                $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+                $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
 
                 // link/unlink dur with publications
-                if (array_key_exists('publications', $input)) {
-                    $publications = $input['publications'];
-                    $this->checkPublications($id, $publications, $userIdFinal, $appId);
-                }
+                $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+                $this->checkPublications($id, $publications, $userIdFinal, $appId);
 
                 // link/unlink dur with keywords
-                if (array_key_exists('keywords', $input)) {
-                    $keywords = $input['keywords'];
-                    $this->checkKeywords($id, $keywords);
-                }
+                $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
+                $this->checkKeywords($id, $keywords);
 
                 // link/unlink dur with tools
-                if (array_key_exists('tools', $input)) {
-                    $tools = $input['tools'];
-                    $this->checkTools($id, $tools);
-                }
+                $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+                $this->checkTools($id, $tools);
 
                 // for migration from mongo database
                 if (array_key_exists('created_at', $input)) {
@@ -1482,8 +1474,7 @@ class DurController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             $nonGatewayApplicants = array_key_exists('non_gateway_applicants', $input) ? explode("|", $input['non_gateway_applicants']) : [];
-            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-
+           
             if (count($nonGatewayApplicants)) {
                 $array['non_gateway_applicants'] = $nonGatewayApplicants;
             }
@@ -1491,14 +1482,22 @@ class DurController extends Controller
             $dur = Dur::create($array);
             $durId = $dur->id;
 
-            foreach ($datasets as $datasetId) {
-                $datasetVersionId = Dataset::where('id', $datasetId)->first()->latestVersion()->id;
-                DurHasDatasetVersion::create([
-                    'dur_id' => $durId,
-                    'dataset_version_id' => $datasetVersionId,
-                    'user_id' => $array['user_id'],
-                ]);
-            }
+            // link/unlink dur with datasets
+            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+            $this->checkDatasets($durId, $datasets, $array['user_id']); 
+            //$this->checkDatasets($durId, $datasets, $array['user_id']);
+    
+            // link/unlink dur with publications
+            $publications = array_key_exists('publications', $input) ? (array) $input['publications'] : [];
+            $this->checkPublications($durId, $publications, $array['user_id']);
+    
+            // link/unlink dur with keywords
+            $keywords = array_key_exists('keywords', $input) ? (array) $input['keywords'] : [];
+            $this->checkKeywords($durId, $keywords);
+    
+            // link/unlink dur with tools
+            $tools = array_key_exists('tools', $input) ? (array) $input['tools'] : [];
+            $this->checkTools($durId, $tools);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],

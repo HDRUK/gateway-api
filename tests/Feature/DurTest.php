@@ -763,7 +763,6 @@ class DurTest extends TestCase
             $mockData,
             $this->header
         );
-
         $response->assertStatus(201);
         $durId = (int) $response['data'];
 
@@ -819,7 +818,9 @@ class DurTest extends TestCase
         $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = Dataset::all()->random()->id;
+            $temp = [];
+            $temp['id'] = Dataset::all()->random()->id;
+            $return[] = $temp;
         }
 
         return $return;
