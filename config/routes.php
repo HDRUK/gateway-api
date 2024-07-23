@@ -30,7 +30,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin',
+            'provider' => 'google|azure|linkedin|openathens',
         ],
     ],
     [
@@ -41,7 +41,7 @@ return [
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [
-            'provider' => 'google|azure|linkedin',
+            'provider' => 'google|azure|linkedin|openathens',
         ],
     ],
 
@@ -2057,6 +2057,17 @@ return [
         ],
         'constraint' => [],
     ],
+    [
+        'name' => 'datasets',
+        'method' => 'get',
+        'path' => '/datasets/export/mock',
+        'methodController' => 'DatasetController@exportMock',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+
+
     // datasets integrations
     [
         'name' => 'datasets.integrations',
@@ -2277,6 +2288,17 @@ return [
         'method' => 'get',
         'path' => '/cohort_requests',
         'methodController' => 'CohortRequestController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [
+            'jwt.verify',
+        ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'cohort_requests_access',
+        'method' => 'get',
+        'path' => '/cohort_requests/access',
+        'methodController' => 'CohortRequestController@checkAccess',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [
             'jwt.verify',
@@ -2813,6 +2835,15 @@ return [
         'method' => 'get',
         'path' => 'publications',
         'methodController' => 'PublicationController@index',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'publications-count-field',
+        'method' => 'get',
+        'path' => '/publications/count/{field}',
+        'methodController' => 'PublicationController@count',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],

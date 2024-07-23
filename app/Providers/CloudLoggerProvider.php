@@ -2,18 +2,18 @@
 
 namespace App\Providers;
 
-use App\Services\PubSubService;
+use App\Services\CloudLoggerService;
 use Illuminate\Support\ServiceProvider;
 
-class PubSubServiceProvider extends ServiceProvider
+class CloudLoggerProvider extends ServiceProvider
 {
     /**
      * Register services.
      */
     public function register(): void
     {
-        $this->app->bind(PubSubService::class, function ($app) {
-            return new PubSubService();
+        $this->app->singleton(CloudLoggerService::class, function ($app) {
+            return new CloudLoggerService();
         });
     }
 

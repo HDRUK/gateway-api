@@ -49,6 +49,7 @@ class Tool extends Model
         'enabled',
         'associated_authors', 
         'contact_address',
+        'any_dataset',
     ];
 
     /**
@@ -56,6 +57,7 @@ class Tool extends Model
      */
     protected $casts = [
         'enabled' => 'boolean',
+        'any_dataset' => 'boolean',
     ];
 
     public function user(): BelongsTo

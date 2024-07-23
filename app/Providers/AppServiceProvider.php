@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use Config;
+use Laravel\Passport\Passport;
 use Illuminate\Support\ServiceProvider;
+use App\Http\Controllers\SSO\CustomAccessToken;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
                 \Log::warning("SQL query: " . $sql, ['time' => $query->time]);
             });
         }
+
+        // Passport::ignoreRoutes();
     }
 
     /**
@@ -41,6 +45,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        Passport::tokensCan([
+            'openid' => 'openid',
+            'email' => 'email',
+            'profile' => 'profile',
+            'rquestroles' => 'rquestroles',
+        ]);
+
+        Passport::useAccessTokenEntity(CustomAccessToken::class);
+
+        Passport::tokensExpireIn(now()->addDays(15));
+        Passport::refreshTokensExpireIn(now()->addDays(30));
     }
 }

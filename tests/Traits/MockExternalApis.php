@@ -10,13 +10,10 @@ use Tests\Traits\Authorization;
 
 use Database\Seeders\SectorSeeder;
 
-use App\Http\Traits\HubspotContacts;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Elastic\Elasticsearch\ClientBuilder;
 use MetadataManagementController AS MMC;
-use App\Http\Controllers\Api\V1\UserController;
-use App\Http\Controllers\Api\V1\CohortRequestController;
 use Elastic\Elasticsearch\Response\Elasticsearch;
 
 trait MockExternalApis
@@ -77,6 +74,7 @@ trait MockExternalApis
         $this->seed([
             SectorSeeder::class,
         ]);
+
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
@@ -1053,7 +1051,6 @@ trait MockExternalApis
                 }
             },
         ]);
-
     }
 
     // Count requests made to the elastic mock client
@@ -1061,5 +1058,4 @@ trait MockExternalApis
     {
         return count($client->getTransport()->getClient()->getRequests());
     }
-
 }

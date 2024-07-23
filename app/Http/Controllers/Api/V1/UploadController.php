@@ -24,6 +24,26 @@ class UploadController extends Controller
      *      description="Upload a file to the gateway-api via scanning sub-service",
      *      tags={"Upload"},
      *      summary="Upload@upload",
+     *      @OA\Parameter(
+     *          name="entity_flag",
+     *          in="query",
+     *          description="Flag to indicate the purpose of the file upload e.g. dur-from-upload",
+     *          example="dur-from-upload",
+     *          @OA\Schema(
+     *              type="string",
+     *              description="Flag to indicate the purpose of the file upload (dur-from-upload, dataset-from-upload, structural-upload, team-image, collection-image)",
+     *          ),
+     *      ),
+     *      @OA\Parameter(
+     *          name="team_id",
+     *          in="query",
+     *          description="Id of team associated with the file upload",
+     *          example="10",
+     *          @OA\Schema(
+     *              type="integer",
+     *              description="Id of team associated with the file upload if applicable",
+     *          ),
+     *      ),
      *      @OA\Response(
      *          response=200,
      *          description="Upload complete",
@@ -39,6 +59,12 @@ class UploadController extends Controller
         $file  = $request->file('file');
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
         $fileSystem = env('SCANNING_FILESYSTEM_DISK', 'local_scan');
+        $entityFlag = $request->query('entity_flag', 'none');
+        $teamId = $request->query('team_id', null);
+        $inputSchema = $request->query("input_schema",null);
+        $inputVersion = $request->query("input_version",null);
+        $elasticIndexing = $request->boolean('elastic_indexing', true);
+        $datasetId = $request->query('dataset_id', null);
         
         // store unscanned
         $storedFilename = time() . '_' . $file->getClientOriginalName();
@@ -55,7 +81,17 @@ class UploadController extends Controller
         ]);
 
         // spawn scan job
-        ScanFileUpload::dispatch((int) $upload->id, $fileSystem);
+        ScanFileUpload::dispatch(
+            (int) $upload->id, 
+            $fileSystem, 
+            $entityFlag, 
+            (int) $jwtUser['id'], 
+            (int) $teamId,
+            $inputSchema,
+            $inputVersion,
+            $elasticIndexing,
+            $datasetId
+        );
 
         // audit log
         Auditor::log([

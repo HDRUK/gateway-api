@@ -140,6 +140,13 @@ class UpdateTool extends BaseFormRequest
                 'integer',
                 'exists:datasets,id',
             ],
+            'dataset.*.link_type'  => [
+                'string',
+            ],
+            'any_dataset' => [
+                'nullable', 
+                'boolean',
+            ],
         ];
     }
 

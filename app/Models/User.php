@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
-use App\Http\Enums\UserPreferredEmail;
+use App\Models\Role;
 use App\Models\Team;
 use App\Models\Tool;
-use App\Models\Role;
+use App\Models\Permission;
 // use Laravel\Sanctum\HasApiTokens;
 use App\Models\Application;
 use App\Http\Traits\WithJwtUser;
+use Laravel\Passport\HasApiTokens;
+use App\Http\Enums\UserPreferredEmail;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -21,6 +23,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, SoftDeletes;
     use WithJwtUser;
+    use HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -68,6 +71,30 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'terms' => 'boolean',
     ];
+
+    protected $appends = ['rquestroles'];
+
+    public function getRquestrolesAttribute()
+    {
+        $id = $this->id;
+
+        $cohortRequest = CohortRequest::where([
+            'user_id' => $id,
+            'request_status' => 'APPROVED',
+        ])->first();
+
+        if (!$cohortRequest) {
+            return [];
+        }
+
+        $cohortRequestRoleIds = CohortRequestHasPermission::where([
+            'cohort_request_id' => $cohortRequest->id
+        ])->pluck('permission_id')->toArray();
+
+        $cohortRequestRoles = Permission::whereIn('id', $cohortRequestRoleIds)->pluck('name')->toArray();
+
+        return $cohortRequestRoles;
+    }
 
     /**
      * Get the tool that owns the user

@@ -17,6 +17,7 @@ use App\Models\DurHasDataset;
 use App\Models\DurHasKeyword;
 use App\Models\DataProviderColl;
 use App\Http\Requests\Dur\GetDur;
+use App\Http\Traits\MapOrganisationSector;
 use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\Dur\EditDur;
@@ -35,7 +36,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DurController extends Controller
 {
-    use RequestTransformation;
+    use RequestTransformation, MapOrganisationSector;
 
     /**
      * @OA\Get(
@@ -1885,23 +1886,6 @@ class DurController extends Controller
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
-    }
-
-    /**
-     * Map the input string to the index of one of the standard mapped sector names.
-     * 
-     * Return null if not found.
-     * @return ?int
-     */
-    private function mapOrganisationSector(string $organisationSector): ?int
-    {
-        $sector = strtolower($organisationSector);
-        $categories = Sector::all();
-
-        // Look up mapped sector, with default to null
-        $category = Config::get('sectors.' . $sector, null);
-        
-        return (!is_null($category)) ? $categories->where('name', $category)->first()['id'] : null;
     }
 
     /**

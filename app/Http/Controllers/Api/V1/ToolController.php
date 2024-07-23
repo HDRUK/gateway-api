@@ -280,8 +280,11 @@ class ToolController extends Controller
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
-     *             @OA\Property( property="dataset_ids", type="array", @OA\Items()),
-     *             @OA\Property( property="dataset_version", type="array", @OA\Items()),
+     *             @OA\Property( property="dataset", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="link_type", type="string", example="Other" ),
+     *             )),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
@@ -291,6 +294,7 @@ class ToolController extends Controller
      *             @OA\Property( property="publications", type="array", @OA\Items() ),
      *             @OA\Property( property="durs", type="array", @OA\Items() ),
      *             @OA\Property( property="collections", type="array", @OA\Items() ),
+     *             @OA\Property( property="any_dataset", type="boolean", example=false ),
      *          ),
      *       ),
      *    ),
@@ -356,14 +360,15 @@ class ToolController extends Controller
                 'mongo_id',
                 'associated_authors', 
                 'contact_address',
+                'any_dataset'
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
             $tool = Tool::create($array);
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
-            if (array_key_exists('dataset_ids', $input)) {
-                $this->insertDatasetVersionHasTool($input['dataset_ids'], (int) $tool->id);
+            if (array_key_exists('dataset', $input)) {
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $tool->id);
             }
             if (array_key_exists('programming_language', $input)) {
                 $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
@@ -436,7 +441,11 @@ class ToolController extends Controller
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
-     *             @OA\Property( property="dataset_ids", type="array", @OA\Items()),
+     *             @OA\Property( property="dataset", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="link_type", type="string", example="Other" ),
+     *             )),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
@@ -446,6 +455,7 @@ class ToolController extends Controller
      *             @OA\Property( property="publications", type="array", @OA\Items() ),
      *             @OA\Property( property="durs", type="array", @OA\Items() ),
      *             @OA\Property( property="collections", type="array", @OA\Items() ),
+     *             @OA\Property( property="any_dataset", type="boolean", example=false ),
      *          ),
      *       ),
      *    ),
@@ -512,6 +522,7 @@ class ToolController extends Controller
                 'mongo_id',
                 'associated_authors', 
                 'contact_address',
+                'any_dataset',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -522,8 +533,8 @@ class ToolController extends Controller
             $this->insertToolHasTag($input['tag'], (int) $id);
 
             DatasetVersionHasTool::where('tool_id', $id)->delete();
-            if (array_key_exists('dataset_ids', $input)) {
-                $this->insertDatasetVersionHasTool($input['dataset_ids'], (int) $id);
+            if (array_key_exists('dataset', $input)) {
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
             }
             ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
             if (array_key_exists('programming_language', $input)) {
@@ -609,7 +620,11 @@ class ToolController extends Controller
      *             @OA\Property( property="user_id", type="integer", example=1 ),
      *             @OA\Property( property="team_id", type="integer", example=1 ),
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
-     *             @OA\Property( property="dataset_ids", type="array", @OA\Items()),
+     *             @OA\Property( property="dataset", type="array", @OA\Items(
+     *                type="object",
+     *                @OA\Property( property="id", type="integer", example=1 ),
+     *                @OA\Property( property="link_type", type="string", example="Other" ),
+     *             )),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
@@ -619,6 +634,7 @@ class ToolController extends Controller
      *             @OA\Property( property="publications", type="array", @OA\Items() ),
      *             @OA\Property( property="durs", type="array", @OA\Items() ),
      *             @OA\Property( property="collections", type="array", @OA\Items() ),
+     *             @OA\Property( property="any_dataset", type="boolean", example=false ),
      *          ),
      *       ),
      *    ),
@@ -708,6 +724,7 @@ class ToolController extends Controller
                 'mongo_id',
                 'associated_authors', 
                 'contact_address',
+                'any_dataset',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -719,9 +736,9 @@ class ToolController extends Controller
                 $this->insertToolHasTag($input['tag'], (int) $id);
             };
 
-            if (array_key_exists('dataset_ids', $input)) {
+            if (array_key_exists('dataset', $input)) {
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
-                $this->insertDatasetVersionHasTool($input['dataset_ids'], (int) $id);
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
             }
 
             if (array_key_exists('programming_language', $input)) {
@@ -771,8 +788,6 @@ class ToolController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
-
 
     /**
      * @OA\Delete(
@@ -912,13 +927,25 @@ class ToolController extends Controller
     {
         try {
             foreach ($datasetIds as $value) {
-                $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
+                if (is_array($value)) {
+                    $datasetVersionIDs = DatasetVersion::where('dataset_id', $value['id'])->pluck('id')->all();
     
-                foreach ($datasetVersionIDs as $datasetVersionID) {
-                    DatasetVersionHasTool::updateOrCreate([
-                        'tool_id' => $toolId,
-                        'dataset_version_id' => $datasetVersionID,
-                    ]);
+                    foreach ($datasetVersionIDs as $datasetVersionID) {
+                        DatasetVersionHasTool::updateOrCreate([
+                            'tool_id' => $toolId,
+                            'dataset_version_id' => $datasetVersionID,
+                            'link_type' => $value['link_type'],
+                        ]);
+                    }
+                } else {
+                    $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
+    
+                    foreach ($datasetVersionIDs as $datasetVersionID) {
+                        DatasetVersionHasTool::updateOrCreate([
+                            'tool_id' => $toolId,
+                            'dataset_version_id' => $datasetVersionID,
+                        ]);
+                    }
                 }
             }
             return true;
@@ -1261,11 +1288,15 @@ class ToolController extends Controller
                 ->all();
 
             $datasetTitles = array();
-            foreach ($datasets as $dataset) {
-                $dataset_version = $dataset['versions'][0];
-                $datasetTitles[] = $dataset_version['metadata']['metadata']['summary']['shortTitle'];
+            if ($tool->any_dataset) {
+                $datasetTitles[] = '_Can be used with any dataset';
+            } else {
+                foreach ($datasets as $dataset) {
+                    $dataset_version = $dataset['versions'][0];
+                    $datasetTitles[] = $dataset_version['metadata']['metadata']['summary']['shortTitle'];
+                }
+                usort($datasetTitles, 'strcasecmp');
             }
-            usort($datasetTitles, 'strcasecmp');
 
             $toIndex = [
                 'name' => $tool['name'],
