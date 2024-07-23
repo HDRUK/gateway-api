@@ -725,7 +725,7 @@ class PublicationController extends Controller
                 PublicationHasDatasetVersion::where('publication_id', $id)->delete();
                 PublicationHasTool::where(['publication_id' => $id])->delete();
                 $publication->deleted_at = Carbon::now();
-                $publication-> status = Publication::STATUS_ARCHIVED;
+                $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
                 //Publication::where(['id' => $id])->delete();
 
