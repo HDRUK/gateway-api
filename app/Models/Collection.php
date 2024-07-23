@@ -112,6 +112,7 @@ class Collection extends Model
             'application_id' // Foreign key on the CollectionHasDatasetVersion table
         );
     }
+
     public function applicationTools(): BelongsToMany
     {
         return $this->belongsToMany(Application::class, 'collection_has_tools');

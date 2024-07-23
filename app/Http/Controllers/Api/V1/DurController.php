@@ -846,7 +846,7 @@ class DurController extends Controller
 
             $currentDurStatus = Dur::where('id', $id)->first();
             if($currentDurStatus->status === 'ACTIVE'){
-              $this->indexElasticDur($id);
+                $this->indexElasticDur($id);
             }
 
             Auditor::log([
