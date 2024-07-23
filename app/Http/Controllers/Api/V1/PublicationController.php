@@ -726,7 +726,6 @@ class PublicationController extends Controller
                 $publication->deleted_at = Carbon::now();
                 $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
-                //Publication::where(['id' => $id])->delete();
 
                 Auditor::log([
                     'user_id' => (int) $jwtUser['id'],
