@@ -79,6 +79,7 @@ class Collection extends Model
         return $this->belongsToMany(Publication::class, 'collection_has_publications')
         ->withPivot('collection_id', 'publication_id', 'user_id', 'application_id', 'reason', 'created_at', 'updated_at');
     }
+
     public function userDatasets(): HasManyThrough
     {
         return $this->hasManyThrough(
