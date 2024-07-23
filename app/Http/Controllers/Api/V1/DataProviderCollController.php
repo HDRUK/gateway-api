@@ -678,19 +678,20 @@ class DataProviderCollController extends Controller
         $publications = $dataset->AllPublications;
         $tools = $dataset->AllTools;
 
-        $durIds = is_array($durs) ? array_map(fn($dur) => $dur->id, $durs) : $durs->pluck('id')->toArray();
-        $collectionIds = is_array($collections) ? array_map(fn($collection) => $collection->id, $collections) : $collections->pluck('id')->toArray();
-        $publicationIds = is_array($publications) ? array_map(fn($publication) => $publication->id, $publications) : $publications->pluck('id')->toArray();
-        $toolIds = is_array($tools) ? array_map(fn($tool) => $tool->id, $tools) : $tools->pluck('id')->toArray();
+        $durs = $dataset->AllDurs ?? [];
+        $collections = $dataset->AllCollections ?? [];
+        $publications = $dataset->AllPublications ?? [];
+        $tools = $dataset->AllTools ?? [];
+        
+        $durIds = array_filter(array_map(fn($dur) => $dur->id ?? null, $durs));
+        $collectionIds = array_filter(array_map(fn($collection) => $collection->id ?? null, $collections));
+        $publicationIds = array_filter(array_map(fn($publication) => $publication->id ?? null, $publications));
+        $toolIds = array_filter(array_map(fn($tool) => $tool->id ?? null, $tools));
 
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])
             ->with(['linkedDatasetVersions'])
             ->first();
-
-        if (!$withLinks) {
-            return;
-        }
 
         $dataset->setAttribute('versions', [$withLinks]);
 
