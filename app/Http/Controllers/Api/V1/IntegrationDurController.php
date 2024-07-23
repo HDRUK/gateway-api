@@ -1259,7 +1259,7 @@ class IntegrationDurController extends Controller
         try {
             return DurHasDatasetVersion::where([
                 'dur_id' => $durId,
-                //'dataset_version_id' => $datasetVersionId,
+                'dataset_version_id' => $datasetVersionId,
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteDurHasDatasetVersion :: " . $e->getMessage());
