@@ -28,9 +28,11 @@ trait DatasetFetch
         foreach ($datasets as $dataset) {
             // Retrieve dataset version IDs associated with the current dataset
             $datasetVersionIds = $dataset->versions()->whereIn('id', $versionIds)->pluck('id')->toArray();
-
+            // $metadata =$dataset->latestMetadata(); // This can be modified to return metadata
+            
             // Add associated dataset versions to the dataset object
             $dataset->setAttribute('dataset_version_ids', $datasetVersionIds);
+            // $dataset->setAttribute('latest_metadata', $metadata); // This can be modified to return metadata
         }
 
         // Return the collection of datasets with injected dataset version IDs
