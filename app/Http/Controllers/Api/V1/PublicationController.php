@@ -101,7 +101,6 @@ class PublicationController extends Controller
             ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
             })
-              
             ->when($ownerId, function ($query) use ($ownerId) {
                 return $query->where('owner_id', '=', $ownerId);
             })
@@ -117,7 +116,6 @@ class PublicationController extends Controller
             ->when($sort, 
                     fn($query) => $query->orderBy($sortField, $sortDirection)
                 )
-
             ->paginate($perPage, ['*'], 'page');
 
             // Ensure datasets are loaded via the accessor
@@ -726,9 +724,8 @@ class PublicationController extends Controller
                 PublicationHasDatasetVersion::where('publication_id', $id)->delete();
                 PublicationHasTool::where(['publication_id' => $id])->delete();
                 $publication->deleted_at = Carbon::now();
-                $publication-> status = Publication::STATUS_ARCHIVED;
+                $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
-                //Publication::where(['id' => $id])->delete();
 
                 Auditor::log([
                     'user_id' => (int) $jwtUser['id'],
