@@ -116,7 +116,6 @@ class PublicationController extends Controller
             ->when($sort, 
                     fn($query) => $query->orderBy($sortField, $sortDirection)
                 )
-
             ->paginate($perPage, ['*'], 'page');
 
             // Ensure datasets are loaded via the accessor
