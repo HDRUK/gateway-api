@@ -65,6 +65,7 @@ class UploadController extends Controller
         $inputVersion = $request->query("input_version",null);
         $elasticIndexing = $request->boolean('elastic_indexing', true);
         $datasetId = $request->query('dataset_id', null);
+        $collectionId = $request->query('collection_id', null);
         
         // store unscanned
         $storedFilename = time() . '_' . $file->getClientOriginalName();
@@ -90,7 +91,8 @@ class UploadController extends Controller
             $inputSchema,
             $inputVersion,
             $elasticIndexing,
-            $datasetId
+            $datasetId,
+            $collectionId,
         );
 
         // audit log
