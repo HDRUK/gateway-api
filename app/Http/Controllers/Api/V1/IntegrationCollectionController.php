@@ -839,7 +839,7 @@ class IntegrationCollectionController extends Controller
         try {
             return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-                'dataset_version_id' => $datasetVersionId,
+                //'dataset_version_id' => $datasetVersionId,
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInCollectionHasDatasetVersions :: " . $e->getMessage());

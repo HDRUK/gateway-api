@@ -899,7 +899,7 @@ class CollectionController extends Controller
         try {
             return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-                'dataset_version_id' => $datasetVersionId,
+                //'dataset_version_id' => $datasetVersionId,
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteCollectionHasDatasetVersions :: " . $e->getMessage());

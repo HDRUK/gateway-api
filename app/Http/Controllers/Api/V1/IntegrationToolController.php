@@ -9,6 +9,8 @@ use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\ToolHasTag;
 use App\Models\Application;
+use App\Models\DatasetVersion;
+use App\Models\DatasetVersionHasTool;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\PublicationHasTool;
@@ -162,6 +164,7 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items() ),
      *             @OA\Property( property="type_category", type="array", @OA\Items() ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
@@ -234,6 +237,10 @@ class IntegrationToolController extends Controller
             ]);
 
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
+            if (array_key_exists('dataset', $input)) {
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $tool->id);
+            }
+            $this->insertToolHasTag($input['tag'], (int) $tool->id);
             if (array_key_exists('programming_language', $input)) {
                 $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
             }
@@ -298,6 +305,7 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items() ),
      *             @OA\Property( property="type_category", type="array", @OA\Items() ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
@@ -377,6 +385,11 @@ class IntegrationToolController extends Controller
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
 
+            if (array_key_exists('dataset', $input)) {
+                DatasetVersionHasTool::where('tool_id', $id)->delete();
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
+            }
+
             if (array_key_exists('programming_language', $input)) {
                 ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
                 $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
@@ -442,6 +455,7 @@ class IntegrationToolController extends Controller
      *             @OA\Property( property="tags", type="array", collectionFormat="multi", @OA\Items( type="integer", format="int64", example=1 ), ),
      *             @OA\Property( property="programming_language", type="array", @OA\Items() ),
      *             @OA\Property( property="programming_package", type="array", @OA\Items() ),
+     *             @OA\Property( property="dataset", type="array", @OA\Items() ),
      *             @OA\Property( property="type_category", type="array", @OA\Items() ),
      *             @OA\Property( property="enabled", type="integer", example=1 ),
      *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
@@ -521,6 +535,11 @@ class IntegrationToolController extends Controller
                 ToolHasTag::where('tool_id', $id)->delete();
                 $this->insertToolHasTag($input['tag'], (int) $id);
             };
+
+            if (array_key_exists('dataset', $input)) {
+                DatasetVersionHasTool::where('tool_id', $id)->delete();
+                $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
+            }
 
             if (array_key_exists('programming_language', $input)) {
                 ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
@@ -682,6 +701,44 @@ class IntegrationToolController extends Controller
                 ]);
             }
 
+            return true;
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Insert data into DatasetVersionHasTool
+     *
+     * @param array $datasetIds
+     * @param integer $toolId
+     * @return mixed
+     */
+    private function insertDatasetVersionHasTool(array $datasetIds, int $toolId): mixed
+    {
+        try {
+            foreach ($datasetIds as $value) {
+                if (is_array($value)) {
+                    $datasetVersionIDs = DatasetVersion::where('dataset_id', $value['id'])->pluck('id')->all();
+    
+                    foreach ($datasetVersionIDs as $datasetVersionID) {
+                        DatasetVersionHasTool::updateOrCreate([
+                            'tool_id' => $toolId,
+                            'dataset_version_id' => $datasetVersionID,
+                            'link_type' => $value['link_type'],
+                        ]);
+                    }
+                } else {
+                    $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
+    
+                    foreach ($datasetVersionIDs as $datasetVersionID) {
+                        DatasetVersionHasTool::updateOrCreate([
+                            'tool_id' => $toolId,
+                            'dataset_version_id' => $datasetVersionID,
+                        ]);
+                    }
+                }
+            }
             return true;
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
