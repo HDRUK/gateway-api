@@ -213,13 +213,17 @@ class Dataset extends Model
      */
     public function getRelationsViaDatasetVersion($linkageTable, $targetTable, $foreignTableId)
     {
+        // Step 1: Get the dataset version IDs 
         $versionIds = $this->versions()->pluck('id')->toArray();
-        $linkage = $linkageTable::whereIn('dataset_version_id', $versionIds);
-        $entityIds = $linkage->pluck($foreignTableId)->unique()->toArray();
-        $entities = $targetTable::whereIn('id', $entityIds)->get();
 
-        // Initialize an array to store transformed entities
-        $transformedNamedEntities = [];
+        // Step 2: Use the version IDs to find all related entityIDs through the linkage table
+        $entityIds = $linkageTable::whereIn('dataset_version_id', $versionIds)
+            ->pluck($foreignTableId)
+            ->unique()
+            ->toArray();
+            
+        // Step 3: Retrieve all entities using the collected entities IDs    
+        $entities = $targetTable::whereIn('id', $entityIds)->get();
 
         // Iterate through each entity and add associated dataset versions
         foreach ($entities as $entity) {
@@ -229,14 +233,11 @@ class Dataset extends Model
                 ->pluck('dataset_version_id')
                 ->toArray();
 
-            // Inject the dataset version ID
-            $entity->dataset_version_ids = $datasetVersionIds;   
-
-             // Add response to array
-            $transformedNamedEntities[] = $entity;
-            }
+            // Add associated dataset versions to the entity object
+            $entity->setAttribute('dataset_version_ids', $datasetVersionIds);  
+        }
 
         // Return the collection of entities with injected dataset version IDs
-        return $transformedNamedEntities;
+        return $entities->toArray();
     }
 }

@@ -617,14 +617,24 @@ class PublicationController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            if (array_key_exists('status', $input)){
-                $array['deleted_at'] = $input['status'] !== Publication::STATUS_ARCHIVED ? null : Carbon::now();
+            // Handle the 'deleted_at' field based on 'status'
+            if (isset($input['status']) && ($input['status'] === Publication::STATUS_ARCHIVED)) {
+                $array['deleted_at'] = Carbon::now();
+
+            } else {
+                $array['deleted_at'] = null;
             }
-            
+
+            if (isset($input['status']) && ($input['status'] === Publication::STATUS_ARCHIVED || $input['status'] === Publication::STATUS_DRAFT)) {
+                PublicationHasDatasetVersion::where('publication_id', $id)->delete();
+                PublicationHasTool::where(['publication_id' => $id])->delete();
+            } 
+
+            // Update the publication including soft-deleted ones
             Publication::withTrashed()->where('id', $id)->update($array);
 
-            if ($input['status'] == Publication::STATUS_ACTIVE) {
-
+            // Check and update related datasets and tools if the publication is active
+            if ($input['status'] === Publication::STATUS_ACTIVE) {
                 if (array_key_exists('datasets', $input)) {
                     $datasets = $input['datasets'];
                     $this->checkDatasets($id, $datasets);
@@ -632,13 +642,13 @@ class PublicationController extends Controller
 
                 if (array_key_exists('tools', $input)) {
                     $tools = $input['tools'];
-                    $this->checkTools($id, $tools, $jwtUser['id']);
+                    $this->checkTools($id, $tools, $jwtUser['id'] ?? null);
                 }
-                    
+
+                // Index the updated publication in Elasticsearch
                 $this->indexElasticPublication((int) $id);
             }
             
-
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
