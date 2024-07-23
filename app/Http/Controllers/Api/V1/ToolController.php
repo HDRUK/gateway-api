@@ -537,8 +537,8 @@ class ToolController extends Controller
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
 
-            DatasetVersionHasTool::where('tool_id', $id)->delete();
             if (array_key_exists('dataset', $input)) {
+                DatasetVersionHasTool::where('tool_id', $id)->delete();
                 $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
             }
             ToolHasProgrammingLanguage::where('tool_id', $id)->delete();

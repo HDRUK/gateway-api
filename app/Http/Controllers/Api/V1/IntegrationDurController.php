@@ -1189,13 +1189,13 @@ class IntegrationDurController extends Controller
         foreach ($durDatasets as $durDataset) {
             $dataset_id = DatasetVersion::where("id", $durDataset->dataset_version_id)->first()->dataset_id;
             if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deleteDurHasDatasetVersion($durId, $durDataset->dataset_version_id);
+                $this->deleteDurHasDatasetVersion($durId);
             }
         }
 
         foreach ($inDatasets as $dataset) {
             $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
-            $checking = $this->checkInDurHasDatasetVersion($durId, $datasetVersionId);
+            $checking = $this->checkInDurHasDatasetVersion($durId);
 
             if (!$checking) {
                 $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId, $appId);
@@ -1207,7 +1207,6 @@ class IntegrationDurController extends Controller
     private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
     {
         try {
-
             $arrCreate = [
                 'dur_id' => $durId,
                 'dataset_version_id' => $datasetVersionId,
@@ -1228,39 +1227,35 @@ class IntegrationDurController extends Controller
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
 
+            if (array_key_exists('is_locked', $dataset)) {
+                $arrCreate['is_locked'] = (bool) $dataset['is_locked'];
+            }
+
             if ($appId) {
                 $arrCreate['application_id'] = $appId;
             }
 
-            if (array_key_exists('is_locked', $dataset)) {
-                $arrCreate['is_locked'] = (bool) $dataset['is_locked'];
-
             return DurHasDatasetVersion::updateOrCreate($arrCreate);
-            }
+            
         } catch (Exception $e) {
             throw new Exception("addDurHasDatasetVersion :: " . $e->getMessage());
         }
     }
 
-
-    private function checkInDurHasDatasetVersion(int $durId, int $datasetVersionId)
+    private function checkInDurHasDatasetVersion(int $durId)
     {
         try {
             return DurHasDatasetVersion::where([
-                'dur_id' => $durId,
-                'dataset_version_id' => $datasetVersionId,
+                'dur_id' => $durId
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInDurHasDatasetVersion :: " . $e->getMessage());
         }
     }
-        private function deleteDurHasDatasetVersion(int $durId, int $datasetVersionId)
+    private function deleteDurHasDatasetVersion(int $durId)
     {
         try {
-            return DurHasDatasetVersion::where([
-                'dur_id' => $durId,
-                'dataset_version_id' => $datasetVersionId,
-            ])->delete();
+            return DurHasDatasetVersion::where(['dur_id' => $durId])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteDurHasDatasetVersion :: " . $e->getMessage());
         }

@@ -786,13 +786,13 @@ class IntegrationCollectionController extends Controller
         foreach ($cols as $col) {
             $dataset_id = DatasetVersion::where("id", $col->dataset_version_id)->first()->dataset_id;
             if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
+                $this->deleteCollectionHasDatasetVersions($collectionId);
             }
         }
 
         foreach ($inDatasets as $dataset) {
             $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
-            $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);
+            $checking = $this->checkInCollectionHasDatasetVersions($collectionId);
         
             if (!$checking) {
                 $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId, $appId);
@@ -834,25 +834,19 @@ class IntegrationCollectionController extends Controller
         }
     }
 
-    private function checkInCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
+    private function checkInCollectionHasDatasetVersions(int $collectionId)
     {
         try {
-            return CollectionHasDatasetVersion::where([
-                'collection_id' => $collectionId,
-                'dataset_version_id' => $datasetVersionId,
-            ])->first();
+            return CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->first();
         } catch (Exception $e) {
             throw new Exception("checkInCollectionHasDatasetVersions :: " . $e->getMessage());
         }
     }
 
-    private function deleteCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
+    private function deleteCollectionHasDatasetVersions(int $collectionId)
     {
         try {
-            return CollectionHasDatasetVersion::where([
-                'collection_id' => $collectionId,
-                'dataset_version_id' => $datasetVersionId,
-            ])->delete();
+            return CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteCollectionHasDatasetVersions :: " . $e->getMessage());
         }
