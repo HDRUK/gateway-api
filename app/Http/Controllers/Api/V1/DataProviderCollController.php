@@ -683,8 +683,6 @@ class DataProviderCollController extends Controller
         $publicationIds = is_array($publications) ? array_map(fn($publication) => $publication->id, $publications) : $publications->pluck('id')->toArray();
         $toolIds = is_array($tools) ? array_map(fn($tool) => $tool->id, $tools) : $tools->pluck('id')->toArray();
 
-        
-
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])
             ->with(['linkedDatasetVersions'])
