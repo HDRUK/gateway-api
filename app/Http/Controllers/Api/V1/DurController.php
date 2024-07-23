@@ -1522,13 +1522,13 @@ class DurController extends Controller
         foreach ($durDatasets as $durDataset) {
             $dataset_id = DatasetVersion::where("id", $durDataset->dataset_version_id)->first()->dataset_id;
             if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deleteDurHasDatasetVersion($durId);
+                $this->deleteDurHasDatasetVersion($durId, $durDataset->dataset_version_id);
             }
         }
 
         foreach ($inDatasets as $dataset) {
             $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
-            $checking = $this->checkInDurHasDatasetVersion($durId);
+            $checking = $this->checkInDurHasDatasetVersion($durId, $datasetVersionId);
 
             if (!$checking) {
                 $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId, $appId);
@@ -1575,20 +1575,24 @@ class DurController extends Controller
         }
     }
 
-    private function checkInDurHasDatasetVersion(int $durId)
+    private function checkInDurHasDatasetVersion(int $durId, int $datasetVersionId)
     {
         try {
             return DurHasDatasetVersion::where([
-                'dur_id' => $durId
+                'dur_id' => $durId,
+               // 'dataset_version_id' => $datasetVersionId,
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInDurHasDatasetVersion :: " . $e->getMessage());
         }
     }
-    private function deleteDurHasDatasetVersion(int $durId)
+    private function deleteDurHasDatasetVersion(int $durId, int $datasetVersionId)
     {
         try {
-            return DurHasDatasetVersion::where(['dur_id' => $durId])->delete();
+            return DurHasDatasetVersion::where([
+                'dur_id' => $durId,
+               // 'dataset_version_id' => $datasetVersionId,
+            ])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteDurHasDatasetVersion :: " . $e->getMessage());
         }

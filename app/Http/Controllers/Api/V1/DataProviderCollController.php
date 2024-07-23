@@ -715,7 +715,7 @@ class DataProviderCollController extends Controller
         ];
 
         $this->durs = array_unique(array_merge($this->durs, $durIds));
-        $this->publications = array_unique(array_merge($this->publications, $collectionIds));
+        $this->publications = array_unique(array_merge($this->publications, $publicationIds));
         $this->tools = array_unique(array_merge($this->tools, $toolIds));
         $this->collections = array_unique(array_merge($this->collections, $collectionIds));
     }
