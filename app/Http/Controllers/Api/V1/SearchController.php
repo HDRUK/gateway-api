@@ -15,7 +15,7 @@ use App\Models\License;
 use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\Publication;
-use App\Models\PublicationHasDataset;
+use App\Models\PublicationHasDatasetVersion;
 use App\Models\DataProvider;
 use App\Models\TypeCategory;
 
@@ -787,11 +787,15 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->with('datasets')->get();
+            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
+
+            foreach ($durModels as $model) {
+                $model->setAttribute('datasets', $model->allDatasets);
+            }
 
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
-                foreach ($durModels as $model){
+                foreach ($durModels as $model) {
                     if ((int) $dur['_id'] === $model['id']) {
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
@@ -987,7 +991,7 @@ class SearchController extends Controller
 
                 foreach ($pubArray as $i => $p) {
                     $foundFlag = false;
-                    foreach ($pubModels as $model){
+                    foreach ($pubModels as $model) {
                         if ((int) $p['_id'] === $model['id']) {
                             $pubArray[$i]['_source']['created_at'] = $model['created_at'];
                             $pubArray[$i]['paper_title'] = $model['paper_title'];
@@ -999,7 +1003,20 @@ class SearchController extends Controller
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
                             $pubArray[$i]['url'] = $model['url'];
-                            $pubArray[$i]['datasetLinkTypes'] = PublicationHasDataset::where('publication_id', $model['id'])->pluck('link_type')->all();
+                            
+                            // Use accessor to get datasets and their link types
+                            $datasets = $model->allDatasets;
+                            $datasetLinkTypes = [];
+                            foreach ($datasets as $dataset) {
+                                $linkType = PublicationHasDatasetVersion::where([
+                                    ['publication_id', '=', $model['id']],
+                                    ['dataset_version_id', '=', $dataset->id]
+                                ])->value('link_type') ?? 'UNKNOWN';
+                                $datasetLinkTypes[] = $linkType;
+                            }
+
+                            $pubArray[$i]['datasetLinkTypes'] = $datasetLinkTypes;
+
                             $foundFlag = true;
                             break;
                         }
@@ -1509,8 +1526,8 @@ class SearchController extends Controller
         foreach ($provider['teams'] as $team) {
             $datasets = Dataset::where('team_id', $team['id'])->get();
             foreach ($datasets as $dataset) {
-                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
-                foreach ($dataset['spatialCoverage'] as $loc) {
+                $spatialCoverage = $dataset->allSpatialCoverages;
+                foreach ($spatialCoverage as $loc) {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
                     }

@@ -383,17 +383,21 @@ class DatasetController extends Controller
             $exportStructuralMetadata = $request->query('export', null);
 
             // Retrieve the dataset with collections, publications, and counts
-            $dataset = Dataset::with(['collections', 'publications'])
-            ->withCount(['durs', 'publications'])
-            ->find($id);
+            $dataset = Dataset::find($id);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
-        
-            // inject named entities
-            $dataset->setAttribute('named_entities', $dataset->getLatestNamedEntities());
-   
+
+            // Inject attributes via the dataset version table
+            $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
+            $dataset->setAttribute('publications_count', $dataset->latestVersion()->publicationHasDatasetVersions()->count());
+            $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
+            $dataset->setAttribute('durs', $dataset->allDurs  ?? []);
+            $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
+            $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
+            $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
+
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
@@ -424,9 +428,8 @@ class DatasetController extends Controller
                         ->with(['linkedDatasetVersions'])
                         ->first();
                     $withLinks['metadata'] = json_encode(['metadata' => $translated['metadata']]);
-                    $dataset['versions'] = [$withLinks];
-                }
-                else {
+                    $dataset->setAttribute('versions', [$withLinks]);
+                } else {
                     return response()->json([
                         'message' => 'failed to translate',
                         'details' => $translated

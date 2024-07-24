@@ -9,6 +9,7 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
+use App\Models\DatasetVersion;
 use App\Models\DataProvider;
 use Illuminate\Http\Request;
 use App\Models\CollectionHasDur;
@@ -17,7 +18,7 @@ use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Models\DataProviderHasTeam;
 use App\Http\Controllers\Controller;
-use App\Models\CollectionHasDataset;
+use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
 use App\Models\DataProviderCollHasTeam;
@@ -108,7 +109,6 @@ class CollectionController extends Controller
             })
             ->with([
                 'keywords',
-                'datasets',
                 'tools',
                 'dur',
                 'publications',
@@ -127,6 +127,7 @@ class CollectionController extends Controller
                 $userPublications = $collection->userPublications;
                 $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
                 $collection->setRelation('users', $users);
+                $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
                 $applicationDatasets = $collection->applicationDatasets;
                 $applicationTools = $collection->applicationTools;
@@ -759,7 +760,7 @@ class CollectionController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            CollectionHasDataset::where(['collection_id' => $id])->delete();
+            CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
             CollectionHasTool::where(['collection_id' => $id])->delete();
             CollectionHasDur::where(['collection_id' => $id])->delete();
             CollectionHasKeyword::where(['collection_id' => $id])->delete();
@@ -786,8 +787,7 @@ class CollectionController extends Controller
     {
         $collection = Collection::where(['id' => $collectionId])
         ->with([
-            'keywords',
-            'datasets', 
+            'keywords', 
             'tools', 
             'dur',
             'publications',
@@ -799,6 +799,9 @@ class CollectionController extends Controller
             'applicationPublications',
             'team',
         ])->first();
+        
+        // Set the datasets attribute with the latest datasets
+        $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
@@ -827,30 +830,38 @@ class CollectionController extends Controller
     // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null) 
     {
-        $cols = CollectionHasDataset::where(['collection_id' => $collectionId])->get();
+        $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
-            if (!in_array($col->dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deleteCollectionHasDatasets($collectionId, $col->dataset_id);
+            $dataset_id = DatasetVersion::where("id", $col->dataset_version_id)->first()->dataset_id;
+            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
+                $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
             }
         }
 
         foreach ($inDatasets as $dataset) {
-            $checking = $this->checkInCollectionHasDatasets($collectionId, (int) $dataset['id']);
-
+            $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
+            $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);
+        
             if (!$checking) {
-                $this->addCollectionHasDataset($collectionId, $dataset, $userId, $appId);
+                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId, $appId);
+                MMC::reindexElastic($dataset['id']);
             }
-
-            MMC::reindexElastic($dataset['id']);
         }
     }
 
-    private function addCollectionHasDataset(int $collectionId, array $dataset, int $userId = null, int $appId = null)
+    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
     {
         try {
+
+            $searchArray = [
+                'collection_id' => $collectionId,
+                'dataset_version_id' => $datasetVersionId,
+            ];
+
             $arrCreate = [
                 'collection_id' => $collectionId,
-                'dataset_id' => $dataset['id'],
+                'dataset_version_id' => $datasetVersionId,
+                'deleted_at' => null,
             ];
 
             if (array_key_exists('user_id', $dataset)) {
@@ -872,39 +883,33 @@ class CollectionController extends Controller
                 $arrCreate['application_id'] = $appId;
             }
 
-            return CollectionHasDataset::updateOrCreate(
-                $arrCreate,
-                [
-                    'collection_id' => $collectionId,
-                    'dataset_id' => $dataset['id'],
-                ]
-            );
+            return CollectionHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
         } catch (Exception $e) {
-            throw new Exception("addCollectionHasDataset :: " . $e->getMessage());
+            throw new Exception("addCollectionHasDatasetVersion :: " . $e->getMessage());
         }
     }
 
-    private function checkInCollectionHasDatasets(int $collectionId, int $datasetId)
+    private function checkInCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {
         try {
-            return CollectionHasDataset::where([
+            return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-                'dataset_id' => $datasetId,
+                'dataset_version_id' => $datasetVersionId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInCollectionHasDatasets :: " . $e->getMessage());
+            throw new Exception("checkInCollectionHasDatasetVersions :: " . $e->getMessage());
         }
     }
 
-    private function deleteCollectionHasDatasets(int $collectionId, int $datasetId)
+    private function deleteCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {
         try {
-            return CollectionHasDataset::where([
+            return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-                'dataset_id' => $datasetId,
+                'dataset_version_id' => $datasetVersionId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteCollectionHasDatasets :: " . $e->getMessage());
+            throw new Exception("deleteCollectionHasDatasetVersions :: " . $e->getMessage());
         }
     }
 
@@ -1216,12 +1221,19 @@ class CollectionController extends Controller
      */
     public function indexElasticCollections(int $collectionId): void 
     {
-        $collection = Collection::with(['team', 'datasets', 'keywords'])->where('id', $collectionId)->first()->toArray();
+        $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
+        $datasets = $collection->allDatasets  ?? [];
+
+        $datasetIds = array_map(function ($dataset) {
+            return $dataset['id'];
+        }, $datasets);
+
+        $collection = $collection->toArray();
         $team = $collection['team'];
 
         $datasetTitles = array();
         $datasetAbstracts = array();
-        foreach ($collection['datasets'] as $d) {
+        foreach ($datasetIds as $d) {
             $metadata = Dataset::where(['id' => $d])
                 ->first()
                 ->latestVersion()
@@ -1229,7 +1241,7 @@ class CollectionController extends Controller
             $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
             $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
         }
-        
+
         $keywords = array();
         foreach ($collection['keywords'] as $k) {
             $keywords[] = $k['name'];

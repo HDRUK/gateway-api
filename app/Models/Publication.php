@@ -3,7 +3,8 @@
 namespace App\Models;
 
 use App\Models\Tool;
-use App\Models\Dataset;
+use App\Models\PublicationHasDatasetVersion;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Publication extends Model
 {
-    use HasFactory, SoftDeletes, Prunable;
+    use HasFactory, SoftDeletes, Prunable, DatasetFetch;
 
 
     public const STATUS_ACTIVE = 'ACTIVE';
@@ -43,12 +44,21 @@ class Publication extends Model
         'status'
     ];
 
-    /**
-     * The datasets that belong to a publication.
-     */
-    public function datasets(): BelongsToMany
+    // Accessor for all datasets associated with this object
+    public function getAllDatasetsAttribute()
     {
-        return $this->belongsToMany(Dataset::class, 'publication_has_dataset');
+        return $this->getDatasetsViaDatasetVersion(
+            PublicationHasDatasetVersion::class,
+            'publication_id'
+        );
+    }
+
+    /**
+     * Retrieve versions associated with this publication.
+     */
+    public function versions()
+    {
+        return $this->belongsToMany(DatasetVersion::class, 'publication_has_dataset_version', 'publication_id', 'dataset_version_id');
     }
 
     /**

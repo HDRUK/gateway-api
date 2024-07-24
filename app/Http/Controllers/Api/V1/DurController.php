@@ -9,11 +9,12 @@ use App\Models\Dur;
 use App\Models\Tool;
 use App\Models\Sector;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\Keyword;
 use App\Models\DurHasTool;
 use App\Models\Application;
 use Illuminate\Http\Request;
-use App\Models\DurHasDataset;
+use App\Models\DurHasDatasetVersion;
 use App\Models\DurHasKeyword;
 use App\Models\DataProviderColl;
 use App\Http\Requests\Dur\GetDur;
@@ -175,7 +176,6 @@ class DurController extends Controller
                         return $query->where('status', '=', $filterStatus);
                 })->when($withRelated, fn($query) => $query
                     ->with([
-                        'datasets',
                         'publications', 
                         'tools',
                         'keywords',
@@ -215,13 +215,14 @@ class DurController extends Controller
             $durs->getCollection()->transform(function ($dur) {
                 $userDatasets = $dur->userDatasets;
                 $userPublications = $dur->userPublications;
-                $users = $userDatasets->merge($userPublications)->unique('id');
-                $dur->setRelation('users', $users);
-
+                $dur->setAttribute('datasets', $dur->allDatasets  ?? []);
                 $applicationDatasets = $dur->applicationDatasets;
                 $applicationPublications = $dur->applicationPublications;
+                $users = $userDatasets->merge($userPublications)->unique('id');
                 $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
+                $dur->setRelation('users', $users);
                 $dur->setRelation('applications', $applications);
+                
 
                 unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
 
@@ -1133,28 +1134,20 @@ class DurController extends Controller
                 Dur::where('id', $id)->update($array);
 
                 // link/unlink dur with datasets
-                if (array_key_exists('datasets', $input)) {
-                    $datasets = $input['datasets'];
-                    $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
-                }
+                $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+                $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
 
                 // link/unlink dur with publications
-                if (array_key_exists('publications', $input)) {
-                    $publications = $input['publications'];
-                    $this->checkPublications($id, $publications, $userIdFinal, $appId);
-                }
+                $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+                $this->checkPublications($id, $publications, $userIdFinal, $appId);
 
                 // link/unlink dur with keywords
-                if (array_key_exists('keywords', $input)) {
-                    $keywords = $input['keywords'];
-                    $this->checkKeywords($id, $keywords);
-                }
+                $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
+                $this->checkKeywords($id, $keywords);
 
                 // link/unlink dur with tools
-                if (array_key_exists('tools', $input)) {
-                    $tools = $input['tools'];
-                    $this->checkTools($id, $tools);
-                }
+                $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
+                $this->checkTools($id, $tools);
 
                 // for migration from mongo database
                 if (array_key_exists('created_at', $input)) {
@@ -1235,7 +1228,7 @@ class DurController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            DurHasDataset::where(['dur_id' => $id])->delete();
+            DurHasDatasetVersion::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
@@ -1481,8 +1474,7 @@ class DurController extends Controller
             $array = $this->checkEditArray($input, $arrayKeys);
 
             $nonGatewayApplicants = array_key_exists('non_gateway_applicants', $input) ? explode("|", $input['non_gateway_applicants']) : [];
-            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-
+           
             if (count($nonGatewayApplicants)) {
                 $array['non_gateway_applicants'] = $nonGatewayApplicants;
             }
@@ -1490,13 +1482,21 @@ class DurController extends Controller
             $dur = Dur::create($array);
             $durId = $dur->id;
 
-            foreach ($datasets as $datasetId) {
-                DurHasDataset::create([
-                    'dur_id' => $durId,
-                    'dataset_id' => $datasetId,
-                    'user_id' => $array['user_id'],
-                ]);
-            }
+            // link/unlink dur with datasets
+            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+            $this->checkDatasets($durId, $datasets, $array['user_id']); 
+    
+            // link/unlink dur with publications
+            $publications = array_key_exists('publications', $input) ? (array) $input['publications'] : [];
+            $this->checkPublications($durId, $publications, $array['user_id']);
+    
+            // link/unlink dur with keywords
+            $keywords = array_key_exists('keywords', $input) ? (array) $input['keywords'] : [];
+            $this->checkKeywords($durId, $keywords);
+    
+            // link/unlink dur with tools
+            $tools = array_key_exists('tools', $input) ? (array) $input['tools'] : [];
+            $this->checkTools($durId, $tools);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -1517,30 +1517,38 @@ class DurController extends Controller
     // datasets
     private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null) 
     {
-        $ds = DurHasDataset::where(['dur_id' => $durId])->get();
-        foreach ($ds as $d) {
-            if (!in_array($d->dataset_id, $this->extractInputDatasetIdToArray($inDatasets))) {
-                $this->deleteDurHasDatasets($durId, $d->dataset_id);
+        $durDatasets = DurHasDatasetVersion::where(['dur_id' => $durId])->get();
+        foreach ($durDatasets as $durDataset) {
+            $dataset_id = DatasetVersion::where("id", $durDataset->dataset_version_id)->first()->dataset_id;
+            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
+                $this->deleteDurHasDatasetVersion($durId, $durDataset->dataset_version_id);
             }
         }
 
         foreach ($inDatasets as $dataset) {
-            $checking = $this->checkInDurHasDatasets($durId, (int) $dataset['id']);
+            $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
+            $checking = $this->checkInDurHasDatasetVersion($durId, $datasetVersionId);
 
             if (!$checking) {
-                $this->addDurHasDataset($durId, $dataset, $userId, $appId);
+                $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId, $appId);
+                MMC::reindexElastic($dataset['id']);
             }
-
-            MMC::reindexElastic($dataset['id']);
         }
     }
 
-    private function addDurHasDataset(int $durId, array $dataset, int $userId = null, int $appId = null)
+    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
     {
         try {
+
+            $searchArray= [
+                'dur_id' => $durId,
+                'dataset_version_id' => $datasetVersionId,
+            ];
+
             $arrCreate = [
                 'dur_id' => $durId,
-                'dataset_id' => $dataset['id'],
+                'dataset_version_id' => $datasetVersionId,
+                'deleted_at' => null,
             ];
 
             if (array_key_exists('user_id', $dataset)) {
@@ -1566,27 +1574,33 @@ class DurController extends Controller
                 $arrCreate['application_id'] = $appId;
             }
 
-            return DurHasDataset::updateOrCreate(
-                $arrCreate,
-                [
-                    'dur_id' => $durId,
-                    'dataset_id' => $dataset['id'],
-                ]
-            );
+            return DurHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
+            
         } catch (Exception $e) {
-            throw new Exception("addDurHasDataset :: " . $e->getMessage());
+            throw new Exception("addDurHasDatasetVersion :: " . $e->getMessage());
         }
     }
 
-    private function checkInDurHasDatasets(int $durId, int $datasetId)
+    private function checkInDurHasDatasetVersion(int $durId, int $datasetVersionId)
     {
         try {
-            return DurHasDataset::where([
+            return DurHasDatasetVersion::where([
                 'dur_id' => $durId,
-                'dataset_id' => $datasetId,
+                'dataset_version_id' => $datasetVersionId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInDurHasDatasets :: " . $e->getMessage());
+            throw new Exception("checkInDurHasDatasetVersion :: " . $e->getMessage());
+        }
+    }
+    private function deleteDurHasDatasetVersion(int $durId, int $datasetVersionId)
+    {
+        try {
+            return DurHasDatasetVersion::where([
+                'dur_id' => $durId,
+                'dataset_version_id' => $datasetVersionId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deleteDurHasDatasetVersion :: " . $e->getMessage());
         }
     }
 
@@ -1595,7 +1609,7 @@ class DurController extends Controller
     {
         $pubs = DurHasPublication::where(['publication_id' => $durId])->get();
         foreach ($pubs as $p) {
-            if (!in_array($p->publication_id, $this->extractInputPublicationIdToArray($inPublications))) {
+            if (!in_array($p->publication_id, $this->extractInputIdToArray($inPublications))) {
                 $this->deleteDurHasPublications($durId, $p->publication_id);
             }
         }
@@ -1657,18 +1671,6 @@ class DurController extends Controller
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInDurHasPublications :: " . $e->getMessage());
-        }
-    }
-
-    private function deleteDurHasDatasets(int $durId, int $datasetId)
-    {
-        try {
-            return DurHasDataset::where([
-                'dur_id' => $durId,
-                'dataset_id' => $datasetId,
-            ])->delete();
-        } catch (Exception $e) {
-            throw new Exception("deleteDurHasDatasets :: " . $e->getMessage());
         }
     }
 
@@ -1799,25 +1801,11 @@ class DurController extends Controller
             throw new Exception("deleteDurHasTools :: " . $e->getMessage());
         }
     }
-
-    private function extractInputDatasetIdToArray(array $inputDatasets): Array
+    private function extractInputIdToArray(array $input): array
     {
-        $response = [];
-        foreach ($inputDatasets as $inputDataset) {
-            $response[] = $inputDataset['id'];
-        }
-
-        return $response;
-    }
-
-    private function extractInputPublicationIdToArray(array $inputPublications): Array
-    {
-        $response = [];
-        foreach ($inputPublications as $inputPublication) {
-            $response[] = $inputPublication['id'];
-        }
-
-        return $response;
+        return array_map(function($value) {
+            return $value['id'];
+        }, $input);
     }
 
     /**
@@ -1832,12 +1820,19 @@ class DurController extends Controller
         try {
 
             $durMatch = Dur::where(['id' => $id])
-                ->with(['datasets', 'keywords', 'team', 'sector'])
-                ->first()
-                ->toArray();
+                ->with(['keywords', 'team', 'sector'])
+                ->first();
+
+            $datasets= $durMatch->allDatasets  ?? [];
+
+            $datasetIds = array_map(function ($dataset) {
+                return $dataset['id'];
+            }, $datasets);
+
+            $durMatch = $durMatch->toArray();
 
             $datasetTitles = array();
-            foreach ($durMatch['datasets'] as $d) {
+            foreach ($datasetIds as $d) {
                 $metadata = Dataset::where(['id' => $d])
                     ->first()
                     ->latestVersion()
@@ -1858,7 +1853,7 @@ class DurController extends Controller
             $dataProvider = DataProviderColl::whereIn('id', $dataProviderId)
                 ->pluck('name')
                 ->all();
-            
+
             $toIndex = [
                 'projectTitle' => $durMatch['project_title'],
                 'laySummary' => $durMatch['lay_summary'],
@@ -1905,17 +1900,12 @@ class DurController extends Controller
         return $title;
     }
 
+    //Get Durs
     private function getDurById(int $durId)
     {
         $dur = Dur::where(['id' => $durId])
             ->with([
                 'keywords',
-                'datasets' => function ($query) {
-                    $query->get()->each(function ($dataset) {
-                        // Assuming 'new_key' is derived from other attributes, or just a static value
-                        $dataset->new_key = 'Value or Computation here';
-                    });
-                },
                 'publications', 
                 'tools', 
                 'userDatasets' => function ($query) {
@@ -1946,14 +1936,16 @@ class DurController extends Controller
 
         unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
 
-        $dur = $dur->toArray();
+        // Fetch datasets using the accessor
+        $datasets = $dur->allDatasets  ?? [];
 
-        if ($dur && $dur['datasets']) {
-            foreach ($dur['datasets'] as &$dataset) {
-              $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
-            }
+        foreach ($datasets as &$dataset) {
+            $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
         }
 
-        return $dur;
+        // Update the relationship with the modified datasets
+        $dur->setAttribute('datasets', $datasets);
+
+        return $dur->toArray();
     }
 }

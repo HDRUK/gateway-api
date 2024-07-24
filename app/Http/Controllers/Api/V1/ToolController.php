@@ -168,7 +168,6 @@ class ToolController extends Controller
                 'publications',
                 'durs',
                 'collections',
-                'datasetVersions',
             ])
             ->when($mongoId, function ($query) use ($mongoId) {
                 return $query->where('mongo_id', '=', $mongoId);
@@ -182,6 +181,12 @@ class ToolController extends Controller
             ->where('enabled', 1)
             ->orderBy($sortField, $sortDirection)
             ->paginate($perPage, ['*'], 'page');
+
+            // Transform collection to include datasets
+            $tools->map(function ($tool) {
+                $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
+                return $tool;
+            });
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -532,8 +537,8 @@ class ToolController extends Controller
             ToolHasTag::where('tool_id', $id)->delete();
             $this->insertToolHasTag($input['tag'], (int) $id);
 
-            DatasetVersionHasTool::where('tool_id', $id)->delete();
             if (array_key_exists('dataset', $input)) {
+                DatasetVersionHasTool::where('tool_id', $id)->delete();
                 $this->insertDatasetVersionHasTool($input['dataset'], (int) $id);
             }
             ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
@@ -882,11 +887,11 @@ class ToolController extends Controller
             'publications',
             'durs',
             'collections',
-            'datasetVersions',
         ])->where([
             'id' => $toolId,
         ])->first();
 
+        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
         return $tool;
     }
 
@@ -931,19 +936,21 @@ class ToolController extends Controller
                     $datasetVersionIDs = DatasetVersion::where('dataset_id', $value['id'])->pluck('id')->all();
     
                     foreach ($datasetVersionIDs as $datasetVersionID) {
-                        DatasetVersionHasTool::updateOrCreate([
+                        DatasetVersionHasTool::withTrashed()->updateOrCreate([
                             'tool_id' => $toolId,
                             'dataset_version_id' => $datasetVersionID,
                             'link_type' => $value['link_type'],
+                            'deleted_at' => null,
                         ]);
                     }
                 } else {
                     $datasetVersionIDs = DatasetVersion::where('dataset_id', $value)->pluck('id')->all();
     
                     foreach ($datasetVersionIDs as $datasetVersionID) {
-                        DatasetVersionHasTool::updateOrCreate([
+                        DatasetVersionHasTool::withTrashed()->updateOrCreate([
                             'tool_id' => $toolId,
                             'dataset_version_id' => $datasetVersionID,
+                            'deleted_at' => null,
                         ]);
                     }
                 }

@@ -9,8 +9,9 @@ use MetadataManagementController AS MMC;
 
 use App\Exceptions\NotFoundException;
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use App\Models\Publication;
-use App\Models\PublicationHasDataset;
+use App\Models\PublicationHasDatasetVersion;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -111,11 +112,19 @@ class PublicationController extends Controller
                 function ($query) use ($filterStatus) {
                     return $query->where('status', '=', $filterStatus);
             })
-            ->when($withRelated, fn($query) => $query->with(['datasets', 'tools']))
+            ->when($withRelated, fn($query) => $query->with(['tools']))
             ->when($sort, 
                     fn($query) => $query->orderBy($sortField, $sortDirection)
                 )
             ->paginate($perPage, ['*'], 'page');
+
+            // Ensure datasets are loaded via the accessor
+            if ($withRelated) {
+                $publications->getCollection()->transform(function ($publication) {
+                    $publication->setAttribute('datasets', $publication->allDatasets);
+                    return $publication;
+                });
+            }
 
             Auditor::log([
                 'action_type' => 'GET',
@@ -350,19 +359,8 @@ class PublicationController extends Controller
             ]);
             $publicationId = (int) $publication->id;
 
-            $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
-            if ($publication) {
-                foreach ($datasetInput as $dataset) {
-                    $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'USING';
-                    PublicationHasDataset::updateOrCreate([
-                        'publication_id' => (int) $publicationId,
-                        'dataset_id' => (int) $dataset['id'],
-                        'link_type' => $linkType,
-                    ]);
-                }
-            } else {
-                throw new NotFoundException();
-            }
+            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+            $this->checkDatasets($publicationId, $datasets);
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($publicationId, $tools, (int) $jwtUser['id']);
@@ -488,16 +486,8 @@ class PublicationController extends Controller
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
             ]);
 
-            $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
-            PublicationHasDataset::where('publication_id', $id)->delete();
-            foreach ($datasetInput as $dataset) {
-                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'USING';
-                PublicationHasDataset::updateOrCreate([
-                    'publication_id' => (int) $id,
-                    'dataset_id' => (int) $dataset['id'],
-                    'link_type' => $linkType,
-                ]);
-            }
+            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+            $this->checkDatasets($id, $datasets);
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($id, $tools, (int) $jwtUser['id']);
@@ -624,29 +614,39 @@ class PublicationController extends Controller
                 'status'
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            $array['deleted_at'] = $request['status'] !== Publication::STATUS_ARCHIVED ? null : Carbon::now();
 
+            // Handle the 'deleted_at' field based on 'status'
+            if (isset($input['status']) && ($input['status'] === Publication::STATUS_ARCHIVED)) {
+                $array['deleted_at'] = Carbon::now();
+
+            } else {
+                $array['deleted_at'] = null;
+            }
+
+            if (isset($input['status']) && ($input['status'] === Publication::STATUS_ARCHIVED || $input['status'] === Publication::STATUS_DRAFT)) {
+                PublicationHasDatasetVersion::where('publication_id', $id)->delete();
+                PublicationHasTool::where(['publication_id' => $id])->delete();
+            } 
+
+            // Update the publication including soft-deleted ones
             Publication::withTrashed()->where('id', $id)->update($array);
-            $publication = $this->getPublicationById($id); 
 
+            // Check and update related datasets and tools if the publication is active
+            if ($input['status'] === Publication::STATUS_ACTIVE) {
+                if (array_key_exists('datasets', $input)) {
+                    $datasets = $input['datasets'];
+                    $this->checkDatasets($id, $datasets);
+                }
 
-            $datasetInput = array_key_exists('datasets', $input) ? $input['datasets']: [];
-            PublicationHasDataset::where('publication_id', $id)->delete();
-            foreach ($datasetInput as $dataset) {
-                $linkType = array_key_exists('link_type,', $dataset) ? $dataset['link_type'] : 'USING';
-                PublicationHasDataset::updateOrCreate([
-                    'publication_id' => (int) $id,
-                    'dataset_id' => (int) $dataset['id'],
-                    'link_type' => $linkType,
-                ]);
+                if (array_key_exists('tools', $input)) {
+                    $tools = $input['tools'];
+                    $this->checkTools($id, $tools, $jwtUser['id'] ?? null);
+                }
+
+                // Index the updated publication in Elasticsearch
+                $this->indexElasticPublication((int) $id);
             }
-
-            if (array_key_exists('tools', $input)) {
-                $tools = $input['tools'];
-                $this->checkTools($id, $tools, $jwtUser['id']);
-            }
-            $this->indexElasticPublication((int) $id);
-
+            
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
@@ -719,9 +719,10 @@ class PublicationController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $publication = $this->getPublicationById($id);
+            $publication = Publication::where(['id' => $id])->first();
             if ($publication) {
-
+                PublicationHasDatasetVersion::where('publication_id', $id)->delete();
+                PublicationHasTool::where(['publication_id' => $id])->delete();
                 $publication->deleted_at = Carbon::now();
                 $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
@@ -754,32 +755,22 @@ class PublicationController extends Controller
     public function indexElasticPublication(string $id): void
     {
         try {
-            $pubMatch = Publication::withTrashed()->where(['id' => $id])
-                ->with('datasets')
-                ->first()
-                ->toArray();
+            $pubMatch = Publication::where(['id' => $id])->first();
 
-            $datasetTitles = array();
-            $datasetLinkTypes = array();
+            $datasets = $pubMatch->allDatasets;
 
-            if(!array_key_exists('datasets',$pubMatch)){
-                throw new Exception("datasets not found on publication!");
-            }
-
-            foreach ($pubMatch['datasets'] as $d) {
-                $datasetId = $d['id'];
-                $metadata = Dataset::where(['id' => $datasetId])
-                    ->first()
-                    ->latestVersion()
-                    ->metadata;
-
+            
+            $datasetTitles = [];
+            $datasetLinkTypes = [];
+            foreach ($datasets as $dataset) {
+                $metadata = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->metadata;
+                $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
-
-                //needs a check for this!?
-                $datasetLinkTypes[] = PublicationHasDataset::where([
+                $linkType = PublicationHasDatasetVersion::where([
                     ['publication_id', '=', (int) $id],
-                    ['dataset_id', '=', (int) $datasetId]
-                ])->first()['link_type'];
+                    ['dataset_version_id', '=', (int) $latestVersionID]
+                ])->first()->link_type ?? 'UNKNOWN';
+                $datasetLinkTypes[] = $linkType;
             }
 
             // Split string to array of strings
@@ -795,7 +786,6 @@ class PublicationController extends Controller
                 'publicationType' => $publicationTypes,
                 'datasetLinkTypes' => $datasetLinkTypes,
             ];
-
             $params = [
                 'index' => 'publication',
                 'id' => $id,
@@ -810,18 +800,87 @@ class PublicationController extends Controller
             throw new Exception($e->getMessage());
         }
     }
-
     private function getPublicationById(int $publicationId)
     {
-        $publication = Publication::withTrashed()->with([
-            'datasets', 
-            'tools', 
-        ])->where([
+ 
+        $publication = Publication::with(['tools'])->withTrashed()->where([
             'id' => $publicationId
         ])->first();
 
+        $publication->setAttribute('datasets', $publication->allDatasets);
+
         return $publication;
     }
+
+    // datasets
+    private function checkDatasets(int $publicationId, array $inDatasets) 
+    {
+        
+        $pubs = PublicationHasDatasetVersion::where(['publication_id' => $publicationId])->get();
+        foreach ($pubs as $pub) {
+            $dataset_id = DatasetVersion::where("id", $pub->dataset_version_id)->first()->dataset_id;
+            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
+                $this->deletePublicationHasDatasetVersions($publicationId, $pub->dataset_version_id);
+            }
+        }
+
+        foreach ($inDatasets as $dataset) {
+            $datasetVersionId = Dataset::where('id', (int) $dataset['id'])->first()->latestVersion()->id;
+            $checking = $this->checkInPublicationHasDatasetVersions($publicationId, $datasetVersionId);
+        
+            if (!$checking) {
+                $this->addPublicationHasDatasetVersion($publicationId, $dataset, $datasetVersionId);
+                MMC::reindexElastic($dataset['id']);
+            }
+        }
+    }
+
+    private function addPublicationHasDatasetVersion(int $publicationId, array $dataset, int $datasetVersionId)
+    {
+        try {
+            $arrCreate = [
+                'publication_id' => $publicationId,
+                'dataset_version_id' => $datasetVersionId,
+                'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
+                'deleted_at' => null,
+            ];
+
+            if (array_key_exists('updated_at', $dataset)) { // special for migration
+                $arrCreate['created_at'] = $dataset['updated_at'];
+                $arrCreate['updated_at'] = $dataset['updated_at'];
+            }
+
+            return PublicationHasDatasetVersion::withTrashed()->updateOrCreate($arrCreate);
+        } catch (Exception $e) {
+            throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
+        }
+    }
+
+    private function checkInPublicationHasDatasetVersions(int $publicationId, int $datasetVersionId)
+    {
+        try {
+            return PublicationHasDatasetVersion::where([
+                'publication_id' => $publicationId,
+                'dataset_version_id' => $datasetVersionId, 
+            ])->first();
+        } catch (Exception $e) {
+            throw new Exception("checkInPublicationHasDatasetVersions :: " . $e->getMessage());
+        }
+    }
+
+    private function deletePublicationHasDatasetVersions(int $publicationId, int $datasetVersionId)
+    {
+        try {
+            return PublicationHasDatasetVersion::where([
+                'publication_id' => $publicationId,
+                'dataset_version_id' => $datasetVersionId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deletePublicationHasDatasetVersions :: " . $e->getMessage());
+        }
+    }
+
+
 
     // tools
     private function checkTools(int $publicationId, array $inTools, int $userId = null) 

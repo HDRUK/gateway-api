@@ -613,7 +613,7 @@ class DataProviderCollController extends Controller
             $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
 
             foreach ($datasets as $dataset) {
-                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
+                $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
                 $metadata = $dataset['versions'][0];
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
                 foreach ($dataset['spatialCoverage'] as $loc) {
@@ -670,25 +670,18 @@ class DataProviderCollController extends Controller
 
     public function checkingDataset(int $datasetId)
     {
-        $dataset = Dataset::where(['id' => $datasetId])
-            ->with(['durs', 'collections', 'publications'])
-            ->first();
+        $dataset = Dataset::where(['id' => $datasetId])->first();
 
-        if (!$dataset) {
-            return;
-        }
-
-        // Tools are automatically accessed through the accessor
-        $tools = $dataset->tools;
+        // Accessed through the accessor
+        $durIds = array_column($dataset->allDurs, 'id') ?? [];
+        $collectionIds = array_column($dataset->allCollections, 'id') ?? [];
+        $publicationIds = array_column($dataset->allPublications, 'id') ?? [];
+        $toolIds = array_column($dataset->allTools, 'id') ?? [];
 
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])
             ->with(['linkedDatasetVersions'])
             ->first();
-
-        if (!$withLinks) {
-            return;
-        }
 
         $dataset->setAttribute('versions', [$withLinks]);
 
@@ -710,9 +703,9 @@ class DataProviderCollController extends Controller
             'datasetType' => $datasetType
         ];
 
-        $this->durs = array_unique(array_merge($this->durs, $dataset->durs->pluck('id')->toArray()));
-        $this->publications = array_unique(array_merge($this->publications, $dataset->publications->pluck('id')->toArray()));
-        $this->tools = array_unique(array_merge($this->tools, $tools->pluck('id')->toArray()));
-        $this->collections = array_unique(array_merge($this->collections, $dataset->collections->pluck('id')->toArray()));
+        $this->durs = array_unique(array_merge($this->durs, $durIds));
+        $this->publications = array_unique(array_merge($this->publications, $publicationIds));
+        $this->tools = array_unique(array_merge($this->tools, $toolIds));
+        $this->collections = array_unique(array_merge($this->collections, $collectionIds));
     }
 }

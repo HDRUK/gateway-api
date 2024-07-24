@@ -50,13 +50,13 @@ class DatabaseSeeder extends Seeder
             CohortRequestSeeder::class,
             TeamUserHasNotificationSeeder::class,
             CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetSeeder::class,
+            CollectionHasDatasetVersionSeeder::class,
             SavedSearchSeeder::class,
             SavedSearchHasFilterSeeder::class,
             DurSeeder::class,
             TeamSeederAddPid::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             DataAccessApplicationAnswerSeeder::class,
             DataAccessApplicationSeeder::class,
             DataAccessTemplateSeeder::class,
@@ -68,8 +68,10 @@ class DatabaseSeeder extends Seeder
             PublicationHasToolSeeder::class,
             DataProviderCollsSeeder::class,
             DurHasToolSeeder::class,
+            DurHasDatasetVersionSeeder::class,
             LibrarySeeder::class,
             EnquiryThreadHasDatasetVersionSeeder::class,
+            DatasetVersionHasSpatialCoverageSeeder::class,
         ]);
     }
 }

@@ -33,7 +33,7 @@ use Database\Seeders\DatasetVersionHasDatasetVersionSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\DataProviderSeeder;
@@ -72,7 +72,7 @@ class SearchTest extends TestCase
             ToolSeeder::class,
             CollectionSeeder::class,
             KeywordSeeder::class,
-            CollectionHasDatasetSeeder::class,
+            CollectionHasDatasetVersionSeeder::class,
             CollectionHasKeywordSeeder::class,
             DatasetVersionHasDatasetVersionSeeder::class,
             DatasetVersionHasToolSeeder::class,
