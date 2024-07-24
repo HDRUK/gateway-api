@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use Auditor;
+use Config;
 use Exception;
 
 use App\Models\Collection;
@@ -36,13 +37,13 @@ class ScanFileUpload implements ShouldQueue
     private int $uploadId = 0;
     private string $fileSystem = '';
     private string $entityFlag = '';
-    private int | null $userId = null;
-    private int | null $teamId = null;
-    private string | null $inputSchema = null;
-    private string | null $inputVersion = null;
+    private ?int $userId = null;
+    private ?int $teamId = null;
+    private ?string $inputSchema = null;
+    private ?string $inputVersion = null;
     private bool $elasticIndexing = true;
-    private int | null $datasetId = null;
-    private int | null $collectionId = null;
+    private ?int $datasetId = null;
+    private ?int $collectionId = null;
 
     /**
      * Create a new job instance.
@@ -51,18 +52,18 @@ class ScanFileUpload implements ShouldQueue
         int $uploadId, 
         string $fileSystem, 
         string $entityFlag, 
-        int | null $userId, 
-        int | null $teamId,
-        string | null $inputSchema,
-        string | null $inputVersion,
+        ?int $userId, 
+        ?int $teamId,
+        ?string $inputSchema,
+        ?string $inputVersion,
         bool $elasticIndexing,
-        int | null $datasetId,
-        int | null $collectionId
+        ?int $datasetId,
+        ?int $collectionId
     )
     {
         $this->uploadId = $uploadId;
         $this->fileSystem = $fileSystem;
-        $this->entityFlag = $entityFlag;
+        $this->entityFlag = strtolower($entityFlag);
         $this->userId = $userId;
         $this->teamId = $teamId;
         $this->inputSchema = $inputSchema;
@@ -115,16 +116,22 @@ class ScanFileUpload implements ShouldQueue
             Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
             Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
 
-            if ($this->entityFlag === 'dur-from-upload') {
-                $this->createDurFromFile($loc, $upload);
-            } else if ($this->entityFlag === 'dataset-from-upload') {
-                $this->createDatasetFromFile($loc, $upload);
-            } else if ($this->entityFlag === 'structural-metadata-upload') {
-                $this->attachStructuralMetadata($loc, $upload, $this->datasetId);
-            } else if ($this->entityFlag === 'teams-media') {
-                $this->uploadTeamMedia($loc, $upload, $this->teamId);
-            } else if ($this->entityFlag === 'collections-media') {
-                $this->uploadCollectionMedia($loc, $upload, $this->collectionId);
+            switch ($this->entityFlag) {
+                case 'dur-from-upload':
+                    $this->createDurFromFile($loc, $upload);
+                    break;
+                case 'dataset-from-upload':
+                    $this->createDatasetFromFile($loc, $upload);
+                    break;
+                case 'structural-metadata-upload':
+                    $this->attachStructuralMetadata($loc, $upload, $this->datasetId);
+                    break;
+                case 'teams-media':
+                    $this->uploadTeamMedia($loc, $upload, $this->teamId);
+                    break;
+                case 'collections-media':
+                    $this->uploadCollectionMedia($loc, $upload, $this->collectionId);
+                    break;
             }
 
             Auditor::log([
@@ -265,69 +272,39 @@ class ScanFileUpload implements ShouldQueue
 
     private function uploadTeamMedia(string $loc, Upload $upload, int $teamId): void
     {
-        try {
-            $team = Team::findOrFail($teamId);
-            $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
-
-            $imageValid = $this->validateImage($path);
-
-            if ($imageValid['result']) {
-                $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
-                Storage::disk($this->fileSystem . '.media')->put('/teams' . '/' . $loc, $content);
-                $newPath = '/teams' . '/' . $loc;
-
-                $team->update([
-                    'team_logo' => $newPath
-                ]);
-
-                $upload->update([
-                    'status' => 'PROCESSED',
-                    'file_location' => $newPath,
-                    'entity_type' => 'team',
-                    'entity_id' => $teamId,
-                    'error' => $imageValid['message']
-                ]);
-            } else {
-                $upload->update([
-                    'status' => 'FAILED',
-                    'file_location' => $loc,
-                    'error' => $imageValid['message']
-                ]);
-            }
-        } catch (Exception $e) {
-            // Record exception in uploads table
-            $upload->update([
-                'status' => 'FAILED',
-                'file_location' => $loc,
-                'error' => $e->getMessage()
-            ]);
-            throw new Exception($e->getMessage());
-        }
+        $team = Team::findOrFail($teamId);
+        $this->uploadMedia($loc, $upload, $team, 'teams', 'team_logo');
     }
 
 
     private function uploadCollectionMedia(string $loc, Upload $upload, int $collectionId): void
     {
+        $collection = Collection::findOrFail($collectionId);
+        $this->uploadMedia($loc, $upload, $collection, 'collections', 'image_link');
+    }
+
+    private function uploadMedia(string $loc, Upload $upload, $entity, string $entityName, string $imageCol): void
+    {
         try {
-            $collection = Collection::findOrFail($collectionId);
+            $entityId = $entity->id;
             $path = Storage::disk($this->fileSystem . '.scanned')->path($loc);
 
             $imageValid = $this->validateImage($path);
 
             if ($imageValid['result']) {
                 $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
-                Storage::disk($this->fileSystem . '.media')->put('/collections' . '/' . $loc, $content);
-                $newPath = '/collections' . '/' . $loc;
+                Storage::disk($this->fileSystem . '.media')->put('/' . $entityName . '/' . $loc, $content);
+                $newPath = '/' . $entityName . '/' . $loc;
 
-                $collection->update([
-                    'image_link' => $newPath
+                $entity->update([
+                    $imageCol => $newPath
                 ]);
 
                 $upload->update([
                     'status' => 'PROCESSED',
                     'file_location' => $newPath,
-                    'entity_type' => 'collection',
-                    'entity_id' => $collectionId,
+                    'entity_type' => $entityName,
+                    'entity_id' => $entityId,
                     'error' => $imageValid['message']
                 ]);
             } else {
@@ -366,13 +343,13 @@ class ScanFileUpload implements ShouldQueue
         $height = $size->height();
         $ratio = $size->aspectRatio();
 
-        if ($width < 600 || $height < 300) {
+        if ($width < Config::get('image_uploads.width') || $height < Config::get('image_uploads.height')) {
             $result = false;
             $message = "The image you have uploaded does not meet the minimum 
                 resolution requirements. Please ensure your image is at least 600px 
                 wide, by 300px high. Please either select another image or alternatively 
                 click \"Use default image\" and a default background image will be applied.";
-        } else if ($ratio < 2) {
+        } else if ($ratio < Config::get('image_uploads.aspect')) {
             $message = "The image you have uploaded does not meet the recommended 
                 aspect ratio of 2:1. This may lead to your image not being displayed 
                 as intended. Please either select another image or alternatively click 
