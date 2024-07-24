@@ -11,6 +11,7 @@
         "google/cloud-logging": "^1.30",
         "google/cloud-pubsub": "^2.1",
         "guzzlehttp/guzzle": "^7.2",
+        "intervention/image": "^3.7",
         "jumbojett/openid-connect-php": "^1.0",
         "laravel/framework": "^10.0",
         "laravel/helpers": "^1.6",
