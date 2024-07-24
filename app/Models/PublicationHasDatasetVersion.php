@@ -4,15 +4,16 @@ namespace App\Models;
 
 use App\Models\Dataset;
 
-use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 
 class PublicationHasDatasetVersion extends Model
 {
-    use HasFactory;
+    use HasFactory, Notifiable, SoftDeletes, Prunable;
 
     public $timestamps = false;
 
