@@ -71,7 +71,7 @@ trait UserRolePermissions
         return $return;
     }
 
-    public function getPermsFromRoles(array $roles): array
+    private function getPermsFromRoles(array $roles): array
     {
         if (!$roles) {
             return [];
@@ -88,7 +88,7 @@ trait UserRolePermissions
         return (bool) $user->is_admin;
     }
 
-    public function getUserRolesNoTeam(int $userId): array
+    private function getUserRolesNoTeam(int $userId): array
     {
         $userRoleIds = UserHasRole::where('user_id', $userId)->orderBy('role_id')->pluck('role_id')->toArray();
 

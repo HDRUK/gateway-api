@@ -13,17 +13,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\JwtController;
 
-use App\Http\Traits\UserRolePermissions;
-
-use App\Models\RoleHasPermission;
-use App\Models\UserHasRole;
-use App\Models\Role;
-use App\Models\Permission;
-
 class AuthController extends Controller
 {
-    use UserRolePermissions;
     private JwtController $jwt;
+
     /**
      * constructor
      */
