@@ -1066,7 +1066,7 @@ class DurController extends Controller
                     'data' => $this->getDurById($id),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             } else {
-                $initDur = Dur::where('id', $id)->first();
+                $initDur = Dur::withTrashed()->where('id', $id)->first();
                 $userId = null;
                 $appId = null;
                 if (array_key_exists('user_id', $input)) {
@@ -1485,7 +1485,6 @@ class DurController extends Controller
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($durId, $datasets, $array['user_id']); 
-            //$this->checkDatasets($durId, $datasets, $array['user_id']);
     
             // link/unlink dur with publications
             $publications = array_key_exists('publications', $input) ? (array) $input['publications'] : [];
