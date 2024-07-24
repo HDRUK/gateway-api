@@ -127,7 +127,7 @@ class CollectionController extends Controller
                 $userPublications = $collection->userPublications;
                 $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
                 $collection->setRelation('users', $users);
-                $collection->setAttribute('datasets', $collection->AllDatasets);
+                $collection->setAttribute('datasets', $collection->AllDatasets  ?? []);
 
                 $applicationDatasets = $collection->applicationDatasets;
                 $applicationTools = $collection->applicationTools;
@@ -801,7 +801,7 @@ class CollectionController extends Controller
         ])->first();
         
         // Set the datasets attribute with the latest datasets
-        $collection->setAttribute('datasets', $collection->AllDatasets);
+        $collection->setAttribute('datasets', $collection->AllDatasets  ?? []);
 
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
@@ -899,7 +899,7 @@ class CollectionController extends Controller
         try {
             return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-               // 'dataset_version_id' => $datasetVersionId,
+                'dataset_version_id' => $datasetVersionId,
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteCollectionHasDatasetVersions :: " . $e->getMessage());
@@ -1215,7 +1215,7 @@ class CollectionController extends Controller
     public function indexElasticCollections(int $collectionId): void 
     {
         $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
-        $datasets = $collection->AllDatasets;
+        $datasets = $collection->AllDatasets  ?? [];
 
         $datasetIds = array_map(function ($dataset) {
             return $dataset['id'];

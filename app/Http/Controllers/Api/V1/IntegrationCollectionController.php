@@ -136,7 +136,7 @@ class IntegrationCollectionController extends Controller
                 $applications = $applicationDatasets->merge($applicationTools)->merge($applicationPublications)->unique('id');
                 $collection->setRelation('applications', $applications);
 
-                $collection->setAttribute('datasets', $collection->AllDatasets);
+                $collection->setAttribute('datasets', $collection->AllDatasets  ?? []);
                 // Remove unwanted relations
                 unset(
                     $collection->userDatasets, 
@@ -1167,7 +1167,7 @@ class IntegrationCollectionController extends Controller
     private function indexElasticCollections(int $collectionId): void 
     {
         $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
-        $datasets = $collection->AllDatasets;
+        $datasets = $collection->AllDatasets  ?? [];
 
         $datasetIds = array_map(function ($dataset) {
             return $dataset['id'];
@@ -1234,7 +1234,7 @@ class IntegrationCollectionController extends Controller
         ])->first();
         
         // Set the datasets attribute with the latest datasets
-        $collection->setAttribute('datasets', $collection->AllDatasets);
+        $collection->setAttribute('datasets', $collection->AllDatasets  ?? []);
 
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
