@@ -20,10 +20,6 @@ class Publication extends Model
     public const STATUS_DRAFT = 'DRAFT';
     public const STATUS_ARCHIVED = 'ARCHIVED';
 
-    public const STATUS_ACTIVE = 'ACTIVE';
-    public const STATUS_DRAFT = 'DRAFT';
-    public const STATUS_ARCHIVED = 'ARCHIVED';
-
     /**
      * The table associated with this model.
      * 
