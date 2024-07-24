@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use Auditor;
+use CloudLogger;
 use Config;
 use Exception;
 
@@ -89,11 +90,15 @@ class ScanFileUpload implements ShouldQueue
         ];
         $url = env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file';
         
+        CloudLogger::write('Malware scan initiated');
+        
         $response = Http::post(
             env('CLAMAV_API_URL', 'http://clamav:3001') . '/scan_file',
             ['file' => $filePath, 'storage' => $this->fileSystem]
         );
         $isInfected = $response['isInfected'];
+
+        CloudLogger::write('Malware scan completed');
 
         // Check if the file is infected
         if ($isInfected) {
@@ -103,6 +108,12 @@ class ScanFileUpload implements ShouldQueue
             ]);
             Storage::disk($this->fileSystem . '.unscanned')
                 ->delete($upload->file_location);
+
+            CloudLogger::write([
+                'action_type' => 'SCAN',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Uploaded file failed malware scan',
+            ]);
             
             Auditor::log([
                 'action_type' => 'SCAN',
@@ -110,11 +121,16 @@ class ScanFileUpload implements ShouldQueue
                 'description' => "Uploaded file failed malware scan",
             ]);
         } else {
+
+            CloudLogger::write('Uploaded file passed malware scan');
+            
             $loc = $upload->file_location;
 
             $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
             Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
             Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
+
+            CloudLogger::write('Uploaded file moved to safe scanned storage');
 
             switch ($this->entityFlag) {
                 case 'dur-from-upload':
@@ -133,6 +149,12 @@ class ScanFileUpload implements ShouldQueue
                     $this->uploadCollectionMedia($loc, $upload, $this->collectionId);
                     break;
             }
+
+            CloudLogger::write([
+                'action_type' => 'SCAN',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => 'Uploaded file passed malware scan and processed',
+            ]);
 
             Auditor::log([
                 'action_type' => 'SCAN',
@@ -162,6 +184,9 @@ class ScanFileUpload implements ShouldQueue
                 'entity_type' => 'dur',
                 'entity_id' => $durId
             ]);
+
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+
         } catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([
@@ -169,6 +194,7 @@ class ScanFileUpload implements ShouldQueue
                 'file_location' => $loc,
                 'error' => $e->getMessage()
             ]);
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' failed with ' . $e->getMessage());
             throw new Exception($e->getMessage());
         }
     }
@@ -198,6 +224,8 @@ class ScanFileUpload implements ShouldQueue
                     'entity_id' => $metadataResult['dataset_id']
                 ]);
 
+                CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
+
                 Auditor::log([
                     'user_id' => $this->userId,
                     'team_id' => $this->teamId,
@@ -211,6 +239,8 @@ class ScanFileUpload implements ShouldQueue
                     'file_location' => $loc,
                     'error' => $metadataResult['response']
                 ]);
+
+                CloudLogger::write('Post processing ' . $this->entityFlag . ' failed with ' . $metadataResult['response']);
             }
         } catch (Exception $e) {
             // Record exception in uploads table
@@ -219,6 +249,7 @@ class ScanFileUpload implements ShouldQueue
                 'file_location' => $loc,
                 'error' => $e->getMessage()
             ]);
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' failed with ' . $e->getMessage());
             throw new Exception($e->getMessage());
         }
     }
@@ -259,6 +290,7 @@ class ScanFileUpload implements ShouldQueue
                 'entity_type' => 'dataset',
                 'entity_id' => $datasetId
             ]);
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
         } catch (Exception $e) {
             // Record exception in uploads table
             $upload->update([
@@ -266,6 +298,7 @@ class ScanFileUpload implements ShouldQueue
                 'file_location' => $loc,
                 'error' => $e->getMessage()
             ]);
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' failed with ' . $e->getMessage());
             throw new Exception($e->getMessage());
         }
     }
@@ -307,12 +340,16 @@ class ScanFileUpload implements ShouldQueue
                     'entity_id' => $entityId,
                     'error' => $imageValid['message']
                 ]);
+                CloudLogger::write('Post processing ' . $this->entityFlag . ' completed');
             } else {
                 $upload->update([
                     'status' => 'FAILED',
                     'file_location' => $loc,
                     'error' => $imageValid['message']
                 ]);
+                CloudLogger::write(
+                    'Post processing ' . $this->entityFlag . ' failed with ' . $imageValid['message']
+                );
             }
         } catch (Exception $e) {
             // Record exception in uploads table
@@ -321,6 +358,7 @@ class ScanFileUpload implements ShouldQueue
                 'file_location' => $loc,
                 'error' => $e->getMessage()
             ]);
+            CloudLogger::write('Post processing ' . $this->entityFlag . ' failed with ' . $e->getMessage());
             throw new Exception($e->getMessage());
         }
     }
