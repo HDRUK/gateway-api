@@ -24,3 +24,4 @@ composer.lock
 tiltconf.json
 _ide_helper.php
 *~
+application_default_credentials.json
