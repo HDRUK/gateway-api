@@ -22,7 +22,7 @@ class CheckAccessMiddleware
         $teamId = $request->route('teamId');
 
         if ($jwtUserIsAdminId) {
-            return $next($request);
+            //return $next($request);
         }
 
         if (!count($access)) {
@@ -48,7 +48,6 @@ class CheckAccessMiddleware
 
         if ($type === 'permissions') {
             $checkingPermissions = array_diff($access, $currentUserPermissions);
-
             if (!empty($checkingPermissions)) {
                 throw new UnauthorizedException();
             }

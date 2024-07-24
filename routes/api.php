@@ -60,18 +60,33 @@ Route::get('/services/traser', function(Request $request) {
 });
 
 
-Route::any('/services/darq{any}', 
-    [
-        ServiceLayerController::class, 
-        'darq', 
-    ])
+Route::match(['post'], '/services/darq{any}', [ServiceLayerController::class, 'darq'])
     ->where('any', '.*')
-    ->middleware(
-        [
-            'jwt.verify',
-        ]
-    );
+    ->middleware([
+        'jwt.verify',
+        'check.access:permissions,question-bank.create',
+    ]);
 
+Route::match(['get'], '/services/darq{any}', [ServiceLayerController::class, 'darq'])
+    ->where('any', '.*')
+    ->middleware([
+        'jwt.verify',
+        'check.access:permissions,question-bank.read',
+    ]);
+
+Route::match(['put'], '/services/darq{any}', [ServiceLayerController::class, 'darq'])
+    ->where('any', '.*')
+    ->middleware([
+        'jwt.verify',
+        'check.access:permissions,question-bank.update',
+    ]);
+
+Route::match(['delete'], '/services/darq{any}', [ServiceLayerController::class, 'darq'])
+    ->where('any', '.*')
+    ->middleware([
+        'jwt.verify',
+        'check.access:permissions,question-bank.delete',
+    ]);
 
 Route::any('/services/daras{any}', 
     [

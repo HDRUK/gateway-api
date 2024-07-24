@@ -148,15 +148,18 @@ class ServiceLayerController extends Controller
 
         $query = $request->query();
         $jwt = $query['jwt'];
-
         unset($query['jwt_user']);
         unset($query['jwt']);
 
         $content = $request->getContent();
 
-        // Forward the request to the external API service
+        // Forward the request to the external API servicet
         $response = Http::withHeaders($headers)
-            ->withOptions(['query' => $query, 'body' => $content])
+            ->withOptions(
+                [
+                    'query' => $query, 
+                    'body' => $content,
+                ])
             ->withCookies(['jwtToken' => $jwt], $domain)
             ->send($request->method(), $url);
 
