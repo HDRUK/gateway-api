@@ -2456,6 +2456,15 @@ return [
         'constraint' => [],
     ],
     [
+        'name' => 'search.doiSearch',
+        'method' => 'post',
+        'path' => '/search/doi',
+        'methodController' => 'SearchController@doiSearch',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
         'name' => 'search.data_provider_colls',
         'method' => 'post',
         'path' => '/search/data_provider_colls',
