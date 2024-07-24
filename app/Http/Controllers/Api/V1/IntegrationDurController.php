@@ -1620,7 +1620,6 @@ class IntegrationDurController extends Controller
 
         foreach ($datasets as &$dataset) {
             $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
-            $dataset['new_key'] = 'Value or Computation here';
         }
 
         // Update the relationship with the modified datasets
