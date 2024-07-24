@@ -365,8 +365,8 @@ class PublicationController extends Controller
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($publicationId, $tools, (int) $jwtUser['id']);
 
-            $currentStatus = Publication::where('id', $publicationId)->first();
-            if($currentStatus->status === Publication::STATUS_ACTIVE){
+            $currentPublication = Publication::where('id', $publicationId)->first();
+            if($currentPublication->status === Publication::STATUS_ACTIVE){
                 $this->indexElasticPublication($publicationId);
             }
 
@@ -502,8 +502,8 @@ class PublicationController extends Controller
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($id, $tools, (int) $jwtUser['id']);
 
-            $currentStatus = Publication::where('id', $id)->first();
-            if($currentStatus->status === Publication::STATUS_ACTIVE){
+            $currentPublication = Publication::where('id', $id)->first();
+            if($currentPublication->status === Publication::STATUS_ACTIVE){
                 $this->indexElasticPublication((int) $id);
             }
 
