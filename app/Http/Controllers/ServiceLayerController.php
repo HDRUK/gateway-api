@@ -119,14 +119,25 @@ class ServiceLayerController extends Controller
         }
     }
 
-    public function darq(Request $request){
+    public function handleGatewayService(Request $request, $service){
+        switch ($service) {
+            case 'darq':
+                return $this->darq($request);
+            case 'daras':
+                return $this->daras($request);
+            default:
+                return response()->json(['error' => 'Service '.$service.' not found'], 404);
+        };
+    }
+
+    private function darq(Request $request){
         return $this->forwardRequest($request, 
             env("DARQ_SERVICE"), 
             "api/services/darq/"
         );
     }
 
-     public function daras(Request $request){
+    private function daras(Request $request){
         return $this->forwardRequest($request, 
            env("DARAS_SERVICE"), 
            "api/services/daras/"
@@ -146,12 +157,11 @@ class ServiceLayerController extends Controller
         unset($headers['host']);
         unset($headers['cookie']);
 
+        $jwt = $request->input('jwt');
         $query = $request->query();
-        $jwt = $query['jwt'];
-        unset($query['jwt_user']);
-        unset($query['jwt']);
-
         $content = $request->getContent();
+        unset($query['jwt']);
+        unset($query['jwt_user']);
 
         // Forward the request to the external API servicet
         $response = Http::withHeaders($headers)

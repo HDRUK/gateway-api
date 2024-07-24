@@ -21,9 +21,10 @@ class CheckAccessMiddleware
         $access = explode("|", $data);
         $teamId = $request->route('teamId');
 
-        if ($jwtUserIsAdminId) {
-            return $next($request);
-        }
+        return response()->json("hi from checkaccessmiddleware");
+        //if ($jwtUserIsAdminId) {
+        //    return $next($request);
+       // }
 
         if (!count($access)) {
             throw new UnauthorizedException();
