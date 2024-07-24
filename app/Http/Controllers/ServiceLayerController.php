@@ -119,17 +119,6 @@ class ServiceLayerController extends Controller
         }
     }
 
-    public function handleGatewayService(Request $request, $service){
-        switch ($service) {
-            case 'darq':
-                return $this->darq($request);
-            case 'daras':
-                return $this->daras($request);
-            default:
-                return response()->json(['error' => 'Service '.$service.' not found'], 404);
-        };
-    }
-
     private function darq(Request $request){
         return $this->forwardRequest($request, 
             env("DARQ_SERVICE"), 
