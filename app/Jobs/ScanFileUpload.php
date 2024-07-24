@@ -113,7 +113,7 @@ class ScanFileUpload implements ShouldQueue
 
             $content = Storage::disk($this->fileSystem . '.unscanned')->get($loc);
             Storage::disk($this->fileSystem . '.scanned')->put($loc, $content);
-            // Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
+            Storage::disk($this->fileSystem . '.unscanned')->delete($loc);
 
             if ($this->entityFlag === 'dur-from-upload') {
                 $this->createDurFromFile($loc, $upload);
@@ -274,7 +274,7 @@ class ScanFileUpload implements ShouldQueue
             if ($imageValid['result']) {
                 $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
                 Storage::disk($this->fileSystem . '.media')->put('/teams' . '/' . $loc, $content);
-                $newPath = Storage::disk($this->fileSystem . '.media')->path('/teams' . '/' . $loc);
+                $newPath = '/teams' . '/' . $loc;
 
                 $team->update([
                     'team_logo' => $newPath
@@ -317,7 +317,7 @@ class ScanFileUpload implements ShouldQueue
             if ($imageValid['result']) {
                 $content = Storage::disk($this->fileSystem . '.scanned')->get($loc);
                 Storage::disk($this->fileSystem . '.media')->put('/collections' . '/' . $loc, $content);
-                $newPath = Storage::disk($this->fileSystem . '.media')->path('/collections' . '/' . $loc);
+                $newPath = '/collections' . '/' . $loc;
 
                 $collection->update([
                     'image_link' => $newPath
