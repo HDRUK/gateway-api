@@ -26,18 +26,18 @@ return [
         ],
     ],
     "daras" => [
-        "/templates" => [
+        "/templates{any?}" => [
             "any" => [ #note: needs updating when permissions are implemented!!
                 'jwt.verify',
                 #'check.access:permissions,....',
             ],
         ],
-        "/applications" => [
+        "/applications{any?}" => [
             "post" => [
                 'jwt.verify',
                 'check.access:permissions,application.create',
             ],
-            "get" => [
+            "any" => [
                 'jwt.verify',
                 'check.access:permissions,application.read',
             ],

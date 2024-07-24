@@ -119,14 +119,14 @@ class ServiceLayerController extends Controller
         }
     }
 
-    private function darq(Request $request){
+    public function darq(Request $request){
         return $this->forwardRequest($request, 
             env("DARQ_SERVICE"), 
             "api/services/darq/"
         );
     }
 
-    private function daras(Request $request){
+    public function daras(Request $request){
         return $this->forwardRequest($request, 
            env("DARAS_SERVICE"), 
            "api/services/daras/"
