@@ -184,7 +184,7 @@ class ToolController extends Controller
 
             // Transform collection to include datasets
             $tools->map(function ($tool) {
-                $tool->setAttribute('datasets', $tool->AllDatasets  ?? []);
+                $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
                 return $tool;
             });
 
@@ -891,7 +891,7 @@ class ToolController extends Controller
             'id' => $toolId,
         ])->first();
 
-        $tool->setAttribute('datasets', $tool->AllDatasets  ?? []);
+        $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
         return $tool;
     }
 

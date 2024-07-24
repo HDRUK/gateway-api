@@ -790,7 +790,7 @@ class SearchController extends Controller
             $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
             foreach ($durModels as $model) {
-                $model->setAttribute('datasets', $model->AllDatasets);
+                $model->setAttribute('datasets', $model->allDatasets);
             }
 
             foreach ($durArray as $i => $dur) {
@@ -1005,7 +1005,7 @@ class SearchController extends Controller
                             $pubArray[$i]['url'] = $model['url'];
                             
                             // Use accessor to get datasets and their link types
-                            $datasets = $model->AllDatasets;
+                            $datasets = $model->allDatasets;
                             $datasetLinkTypes = [];
                             foreach ($datasets as $dataset) {
                                 $linkType = PublicationHasDatasetVersion::where([
@@ -1526,7 +1526,7 @@ class SearchController extends Controller
         foreach ($provider['teams'] as $team) {
             $datasets = Dataset::where('team_id', $team['id'])->get();
             foreach ($datasets as $dataset) {
-                $spatialCoverage = $dataset->AllSpatialCoverages;
+                $spatialCoverage = $dataset->allSpatialCoverages;
                 foreach ($spatialCoverage as $loc) {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];

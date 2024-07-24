@@ -613,7 +613,7 @@ class DataProviderCollController extends Controller
             $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
 
             foreach ($datasets as $dataset) {
-                $dataset->setAttribute('spatialCoverage', $dataset->AllSpatialCoverages  ?? []);
+                $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
                 $metadata = $dataset['versions'][0];
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
                 foreach ($dataset['spatialCoverage'] as $loc) {
@@ -674,9 +674,9 @@ class DataProviderCollController extends Controller
 
         // Accessed through the accessor
         $durIds = array_column($dataset->allDurs, 'id') ?? [];
-        $collectionIds = array_column($dataset->AllCollections, 'id') ?? [];
-        $publicationIds = array_column($dataset->AllPublications, 'id') ?? [];
-        $toolIds = array_column($dataset->AllTools, 'id') ?? [];
+        $collectionIds = array_column($dataset->allCollections, 'id') ?? [];
+        $publicationIds = array_column($dataset->allPublications, 'id') ?? [];
+        $toolIds = array_column($dataset->allTools, 'id') ?? [];
 
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])

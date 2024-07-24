@@ -215,7 +215,7 @@ class DurController extends Controller
             $durs->getCollection()->transform(function ($dur) {
                 $userDatasets = $dur->userDatasets;
                 $userPublications = $dur->userPublications;
-                $dur->setAttribute('datasets', $dur->AllDatasets  ?? []);
+                $dur->setAttribute('datasets', $dur->allDatasets  ?? []);
                 $applicationDatasets = $dur->applicationDatasets;
                 $applicationPublications = $dur->applicationPublications;
                 $users = $userDatasets->merge($userPublications)->unique('id');
@@ -1823,7 +1823,7 @@ class DurController extends Controller
                 ->with(['keywords', 'team', 'sector'])
                 ->first();
 
-            $datasets= $durMatch->AllDatasets  ?? [];
+            $datasets= $durMatch->allDatasets  ?? [];
 
             $datasetIds = array_map(function ($dataset) {
                 return $dataset['id'];
@@ -1937,7 +1937,7 @@ class DurController extends Controller
         unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
 
         // Fetch datasets using the accessor
-        $datasets = $dur->AllDatasets  ?? [];
+        $datasets = $dur->allDatasets  ?? [];
 
         foreach ($datasets as &$dataset) {
             $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);

@@ -121,7 +121,7 @@ class PublicationController extends Controller
             // Ensure datasets are loaded via the accessor
             if ($withRelated) {
                 $publications->getCollection()->transform(function ($publication) {
-                    $publication->setAttribute('datasets', $publication->AllDatasets);
+                    $publication->setAttribute('datasets', $publication->allDatasets);
                     return $publication;
                 });
             }
@@ -757,7 +757,7 @@ class PublicationController extends Controller
         try {
             $pubMatch = Publication::where(['id' => $id])->first();
 
-            $datasets = $pubMatch->AllDatasets;
+            $datasets = $pubMatch->allDatasets;
 
             
             $datasetTitles = [];
@@ -807,7 +807,7 @@ class PublicationController extends Controller
             'id' => $publicationId
         ])->first();
 
-        $publication->setAttribute('datasets', $publication->AllDatasets);
+        $publication->setAttribute('datasets', $publication->allDatasets);
 
         return $publication;
     }

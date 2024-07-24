@@ -197,7 +197,7 @@ class IntegrationDurController extends Controller
 
                 $applicationDatasets = $dur->applicationDatasets;
                 $applicationPublications = $dur->applicationPublications;
-                $dur->setAttribute('datasets', $dur->AllDatasets  ?? []);
+                $dur->setAttribute('datasets', $dur->allDatasets  ?? []);
                 $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
                 $dur->setRelation('applications', $applications);
 
@@ -1495,7 +1495,7 @@ class IntegrationDurController extends Controller
                 ->with(['keywords', 'sector'])
                 ->first();
 
-            $datasets = $durMatch->AllDatasets  ?? [];
+            $datasets = $durMatch->allDatasets  ?? [];
 
             $datasetIds = array_map(function ($dataset) {
                 return $dataset['id'];
@@ -1616,7 +1616,7 @@ class IntegrationDurController extends Controller
         unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
 
         // Fetch datasets using the accessor
-        $datasets = $dur->AllDatasets  ?? [];
+        $datasets = $dur->allDatasets  ?? [];
 
         foreach ($datasets as &$dataset) {
             $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);

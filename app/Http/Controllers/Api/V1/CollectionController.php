@@ -127,7 +127,7 @@ class CollectionController extends Controller
                 $userPublications = $collection->userPublications;
                 $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
                 $collection->setRelation('users', $users);
-                $collection->setAttribute('datasets', $collection->AllDatasets  ?? []);
+                $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
                 $applicationDatasets = $collection->applicationDatasets;
                 $applicationTools = $collection->applicationTools;
@@ -801,7 +801,7 @@ class CollectionController extends Controller
         ])->first();
         
         // Set the datasets attribute with the latest datasets
-        $collection->setAttribute('datasets', $collection->AllDatasets  ?? []);
+        $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
@@ -1222,7 +1222,7 @@ class CollectionController extends Controller
     public function indexElasticCollections(int $collectionId): void 
     {
         $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
-        $datasets = $collection->AllDatasets  ?? [];
+        $datasets = $collection->allDatasets  ?? [];
 
         $datasetIds = array_map(function ($dataset) {
             return $dataset['id'];
