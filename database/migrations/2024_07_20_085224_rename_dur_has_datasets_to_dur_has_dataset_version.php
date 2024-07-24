@@ -14,6 +14,7 @@ return new class extends Migration
     {
         // Create the new table with the updated name and columns
         Schema::create('dur_has_dataset_version', function (Blueprint $table) {
+            $table->id();
             $table->bigInteger('dur_id')->unsigned();
             $table->bigInteger('dataset_version_id')->unsigned();
             $table->bigInteger('user_id')->unsigned()->nullable();
@@ -27,9 +28,6 @@ return new class extends Migration
             $table->foreign('dataset_version_id')->references('id')->on('dataset_versions');
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('application_id')->references('id')->on('applications');
-
-            // Add composite primary key
-            $table->primary(['dur_id', 'dataset_version_id']);
 
             // Add indexes
             $table->index('dur_id');

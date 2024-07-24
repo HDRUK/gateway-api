@@ -842,6 +842,7 @@ class PublicationController extends Controller
                 'publication_id' => $publicationId,
                 'dataset_version_id' => $datasetVersionId,
                 'link_type' => $dataset['link_type'] ?? 'USING', // Assuming default link_type is 'USING'
+                'deleted_at' => null,
             ];
 
             if (array_key_exists('updated_at', $dataset)) { // special for migration
@@ -849,7 +850,7 @@ class PublicationController extends Controller
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
 
-            return PublicationHasDatasetVersion::updateOrCreate($arrCreate, ['link_type' => $arrCreate['link_type']]);
+            return PublicationHasDatasetVersion::withTrashed()->updateOrCreate($arrCreate);
         } catch (Exception $e) {
             throw new Exception("addPublicationHasDatasetVersion :: " . $e->getMessage());
         }
@@ -860,7 +861,7 @@ class PublicationController extends Controller
         try {
             return PublicationHasDatasetVersion::where([
                 'publication_id' => $publicationId,
-                //'dataset_version_id' => $datasetVersionId, 
+                'dataset_version_id' => $datasetVersionId, 
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInPublicationHasDatasetVersions :: " . $e->getMessage());
@@ -872,7 +873,7 @@ class PublicationController extends Controller
         try {
             return PublicationHasDatasetVersion::where([
                 'publication_id' => $publicationId,
-                //'dataset_version_id' => $datasetVersionId,
+                'dataset_version_id' => $datasetVersionId,
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deletePublicationHasDatasetVersions :: " . $e->getMessage());

@@ -804,9 +804,16 @@ class IntegrationCollectionController extends Controller
     private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
     {
         try {
+
+            $searchArray = [
+                'collection_id' => $collectionId,
+                'dataset_version_id' => $datasetVersionId,
+            ];
+
             $arrCreate = [
                 'collection_id' => $collectionId,
                 'dataset_version_id' => $datasetVersionId,
+                'deleted_at' => null,
             ];
 
             if (array_key_exists('user_id', $dataset)) {
@@ -828,7 +835,7 @@ class IntegrationCollectionController extends Controller
                 $arrCreate['application_id'] = $appId;
             }
 
-            return CollectionHasDatasetVersion::updateOrCreate($arrCreate);
+            return CollectionHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
         } catch (Exception $e) {
             throw new Exception("addCollectionHasDatasetVersion :: " . $e->getMessage());
         }
@@ -839,7 +846,7 @@ class IntegrationCollectionController extends Controller
         try {
             return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-               // 'dataset_version_id' => $datasetVersionId,
+                'dataset_version_id' => $datasetVersionId,
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInCollectionHasDatasetVersions :: " . $e->getMessage());
@@ -851,7 +858,7 @@ class IntegrationCollectionController extends Controller
         try {
             return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-               // 'dataset_version_id' => $datasetVersionId,
+                'dataset_version_id' => $datasetVersionId,
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteCollectionHasDatasetVersions :: " . $e->getMessage());

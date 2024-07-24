@@ -69,6 +69,7 @@ return new class extends Migration
     {
         // Create the old table with the original name and columns
         Schema::create('collection_has_datasets', function (Blueprint $table) {
+            $table->id();
             $table->bigInteger('collection_id')->unsigned();
             $table->bigInteger('dataset_id')->unsigned();
             $table->bigInteger('user_id')->unsigned()->nullable();
@@ -81,8 +82,6 @@ return new class extends Migration
             $table->foreign('dataset_id')->references('id')->on('datasets');
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('application_id')->references('id')->on('applications');
-
-            $table->primary(['collection_id', 'dataset_id']);
 
             // Add indexes
             $table->index('collection_id');

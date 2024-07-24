@@ -1208,9 +1208,15 @@ class IntegrationDurController extends Controller
     {
         try {
 
+            $searchArray= [
+                'dur_id' => $durId,
+                'dataset_version_id' => $datasetVersionId,
+            ];
+
             $arrCreate = [
                 'dur_id' => $durId,
                 'dataset_version_id' => $datasetVersionId,
+                'deleted_at' => null,
             ];
 
             if (array_key_exists('user_id', $dataset)) {
@@ -1228,15 +1234,16 @@ class IntegrationDurController extends Controller
                 $arrCreate['updated_at'] = $dataset['updated_at'];
             }
 
+            if (array_key_exists('is_locked', $dataset)) {
+                $arrCreate['is_locked'] = (bool) $dataset['is_locked'];
+            }
+
             if ($appId) {
                 $arrCreate['application_id'] = $appId;
             }
 
-            if (array_key_exists('is_locked', $dataset)) {
-                $arrCreate['is_locked'] = (bool) $dataset['is_locked'];
-
-            return DurHasDatasetVersion::updateOrCreate($arrCreate);
-            }
+            return DurHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
+            
         } catch (Exception $e) {
             throw new Exception("addDurHasDatasetVersion :: " . $e->getMessage());
         }
@@ -1248,7 +1255,7 @@ class IntegrationDurController extends Controller
         try {
             return DurHasDatasetVersion::where([
                 'dur_id' => $durId,
-                //'dataset_version_id' => $datasetVersionId,
+                'dataset_version_id' => $datasetVersionId,
             ])->first();
         } catch (Exception $e) {
             throw new Exception("checkInDurHasDatasetVersion :: " . $e->getMessage());
@@ -1259,7 +1266,7 @@ class IntegrationDurController extends Controller
         try {
             return DurHasDatasetVersion::where([
                 'dur_id' => $durId,
-                //'dataset_version_id' => $datasetVersionId,
+                'dataset_version_id' => $datasetVersionId,
             ])->delete();
         } catch (Exception $e) {
             throw new Exception("deleteDurHasDatasetVersion :: " . $e->getMessage());
