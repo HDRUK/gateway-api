@@ -1031,7 +1031,6 @@ class SearchController extends Controller
 
                 $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
                 $input['field'] = ['TITLE','ABSTRACT','METHODS'];
-                $input['filters'] = isset($request['filters']) ? $request['filters'] : [];
                 $response = Http::post($urlString, $input);
 
                 $pubArray = $response['resultList']['result'];
