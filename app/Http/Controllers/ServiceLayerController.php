@@ -119,14 +119,14 @@ class ServiceLayerController extends Controller
         }
     }
 
-    public function quba(Request $request){
+    public function darq(Request $request){
         return $this->forwardRequest($request, 
-            env("QUBA_SERVICE"), 
-            "api/services/quba/"
+            env("DARQ_SERVICE"), 
+            "api/services/darq/"
         );
     }
 
-     public function daras(Request $request){
+    public function daras(Request $request){
         return $this->forwardRequest($request, 
            env("DARAS_SERVICE"), 
            "api/services/daras/"
@@ -140,18 +140,29 @@ class ServiceLayerController extends Controller
         // Build the full URL by appending the request path to the base URL
         $subPath = substr($path, strpos($path,$apiPath) + strlen($apiPath));
         $url = $baseUrl . "/" . $subPath;
+        $domain = parse_url($url)['host'];
 
         $headers = $request->headers->all();
         unset($headers['host']);
-        // Forward the request to the external API service
-        $response = Http::send($request->method(), $url, [
-            'headers' => $headers,
-            'query' => $request->query(),
-            'body' => $request->getContent(),
-        ]);
+        unset($headers['cookie']);
+
+        $jwt = $request->input('jwt');
+        $query = $request->query();
+        $content = $request->getContent();
+        unset($query['jwt']);
+        unset($query['jwt_user']);
+
+        // Forward the request to the external API servicet
+        $response = Http::withHeaders($headers)
+            ->withOptions(
+                [
+                    'query' => $query, 
+                    'body' => $content,
+                ])
+            ->withCookies(['jwtToken' => $jwt], $domain)
+            ->send($request->method(), $url);
 
         $statusCode = $response->status();
-
         $responseData = $response->json();
 
         return response()->json($responseData, $statusCode);
