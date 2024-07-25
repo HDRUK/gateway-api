@@ -402,6 +402,7 @@ class CollectionController extends Controller
                 'mongo_object_id', 
                 'mongo_id',
                 'team_id',
+                'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -444,7 +445,11 @@ class CollectionController extends Controller
             if (array_key_exists('team_id', $input)) {
                 Collection::where('id', $collectionId)->update(['team_id' => $input['team_id']]);
             }
-            $this->indexElasticCollections((int)$collectionId);
+
+            $currentCollection = Collection::where('id', $collectionId)->first();
+            if($currentCollection->status === Collection::STATUS_ACTIVE){
+                $this->indexElasticCollections((int) $collectionId);
+            }
 
             Auditor::log([
                 'user_id' => $array['user_id'],
