@@ -27,7 +27,6 @@ use App\Http\Requests\Publication\DeletePublication;
 use App\Http\Requests\Publication\UpdatePublication;
 
 use App\Http\Traits\RequestTransformation;
-use App\Models\PublicationHasTool;
 
 class PublicationController extends Controller
 {
