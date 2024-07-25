@@ -222,6 +222,7 @@ class CollectionTest extends TestCase
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
+            "status" => "ACTIVE",
         ];
         $responseIns = $this->json(
             'POST',
@@ -245,6 +246,7 @@ class CollectionTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -281,6 +283,7 @@ class CollectionTest extends TestCase
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
+            "status" => "ACTIVE",
         ];
         $responseIns = $this->json(
             'POST',
@@ -304,6 +307,7 @@ class CollectionTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "status" => "DRAFT",
         ];
         $responseUpdate = $this->json(
             'PUT',

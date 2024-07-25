@@ -794,6 +794,7 @@ class CollectionController extends Controller
                     'mongo_object_id', 
                     'mongo_id',
                     'team_id',
+                    'status',
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -809,8 +810,9 @@ class CollectionController extends Controller
                 Collection::withTrashed()->where('id', $id)->update($array);
                 $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
 
+                $updatedCollection = Collection::withTrashed()->where('id', $id)->first();
                 // Check and update related datasets and tools etc if the collection is active
-                if ($input['status'] === Collection::STATUS_ACTIVE) {
+                if ($updatedCollection->status !== Collection::STATUS_ACTIVE) {
                     if (array_key_exists('datasets', $input)) {
                         $datasets = $input['datasets'];
                         $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
