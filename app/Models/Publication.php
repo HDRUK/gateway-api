@@ -41,7 +41,7 @@ class Publication extends Model
         'url',
         'mongo_id',
         'owner_id',
-        'status'
+        'status',
     ];
 
     // Accessor for all datasets associated with this object

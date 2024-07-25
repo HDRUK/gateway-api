@@ -168,9 +168,6 @@ class DurController extends Controller
                     return $query->where('project_title', 'like', '%'. $projectTitle .'%');
                 })->when($teamId, function ($query) use ($teamId) {
                     return $query->where('team_id', '=', $teamId);
-                })->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
-                    function ($query) {
-                        return $query->withTrashed();
                 })->when($filterStatus, 
                     function ($query) use ($filterStatus) {
                         return $query->where('status', '=', $filterStatus);
@@ -567,8 +564,8 @@ class DurController extends Controller
                 Dur::where('id', $durId)->update(['updated_at' => $input['updated_at']]);
             }
 
-            $currentDurStatus = Dur::where('id', $durId)->first();
-            if($currentDurStatus->status === 'ACTIVE'){
+            $currentDur = Dur::where('id', $durId)->first();
+            if($currentDur->status === Dur::STATUS_ACTIVE){
                 $this->indexElasticDur($durId);
             }
             
@@ -806,7 +803,7 @@ class DurController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            if ($initDur === 'ARCHIVED' && !array_key_exists('status', $input)) {
+            if ($initDur['status'] === Dur::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
                 throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
             }
 
@@ -844,8 +841,8 @@ class DurController extends Controller
                 Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
             }
 
-            $currentDurStatus = Dur::where('id', $id)->first();
-            if($currentDurStatus->status === 'ACTIVE'){
+            $currentDur = Dur::where('id', $id)->first();
+            if($currentDur->status === Dur::STATUS_ACTIVE){
                 $this->indexElasticDur($id);
             }
 
@@ -1121,7 +1118,7 @@ class DurController extends Controller
                 ];
                 $array = $this->checkEditArray($input, $arrayKeys);
 
-                if ($initDur === 'ARCHIVED' && !array_key_exists('status', $input)) {
+                if ($initDur['status'] === Dur::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
                     throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
                 }
 
@@ -1159,8 +1156,8 @@ class DurController extends Controller
                     Dur::where('id', $id)->update(['updated_at' => $input['updated_at']]);
                 }
 
-                $currentDurStatus = Dur::where('id', $id)->first();
-                if($currentDurStatus->status === 'ACTIVE'){
+                $currentDur = Dur::where('id', $id)->first();
+                if($currentDur->status === Dur::STATUS_ACTIVE){
                     $this->indexElasticDur($id);
                 }
 
