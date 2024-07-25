@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use CloudLogger;
 use Config;
 use Auditor;
 use Exception;
@@ -1125,7 +1126,18 @@ class SearchController extends Controller
             $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
             $response = Http::post($urlString, $input);
 
-            $pubMatch = $response['resultList']['result'];
+            if (!isset($response['resultList']['result']) || !is_array($response['resultList']['result'])) {
+                    CloudLogger::write([
+                        'action_type' => 'SEARCH',
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                        'description' => 'Malformed response from search service. Response was: ' . json_encode($response->json()),
+                    ]);
+                    return response()->json([
+                        'message' => 'Malformed response from search service. Response was: ' . json_encode($response->json())
+                    ], 404);
+            } else {
+                $pubMatch = $response['resultList']['result'];
+            }
 
             $pubResult = array();
             if (count($pubMatch) === 1) {
