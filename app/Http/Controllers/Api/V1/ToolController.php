@@ -1007,9 +1007,10 @@ class ToolController extends Controller
             'publications',
             'durs',
             'collections',
-        ])->where([
-            'id' => $toolId,
-        ])->first();
+        ])
+        ->withTrashed()
+        ->where(['id' => $toolId])
+        ->first();
 
         $tool->setAttribute('datasets', $tool->allDatasets  ?? []);
         return $tool;

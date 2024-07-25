@@ -872,8 +872,7 @@ class CollectionController extends Controller
 
     private function getCollectionById(int $collectionId)
     {
-        $collection = Collection::where(['id' => $collectionId])
-        ->with([
+        $collection = Collection::with([
             'keywords', 
             'tools', 
             'dur',
@@ -885,7 +884,10 @@ class CollectionController extends Controller
             'applicationTools',
             'applicationPublications',
             'team',
-        ])->first();
+        ])
+        ->withTrashed()
+        ->where(['id' => $collectionId])
+        ->first();
         
         // Set the datasets attribute with the latest datasets
         $collection->setAttribute('datasets', $collection->allDatasets  ?? []);

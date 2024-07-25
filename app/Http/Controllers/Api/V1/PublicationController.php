@@ -856,9 +856,10 @@ class PublicationController extends Controller
     private function getPublicationById(int $publicationId)
     {
  
-        $publication = Publication::with(['tools'])->withTrashed()->where([
-            'id' => $publicationId
-        ])->first();
+        $publication = Publication::with(['tools'])
+        ->withTrashed()
+        ->where(['id' => $publicationId])
+        ->first();
 
         $publication->setAttribute('datasets', $publication->allDatasets);
 
