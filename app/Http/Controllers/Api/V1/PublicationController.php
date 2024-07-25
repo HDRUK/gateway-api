@@ -12,6 +12,9 @@ use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
+use App\Models\PublicationHasTool;
+use App\Models\DurHasPublication;
+use App\Models\CollectionHasPublications;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -634,9 +637,10 @@ class PublicationController extends Controller
                         $publicationModel->deleted_at = null;
                         $publicationModel->save();
 
-                        // TODO: need to consider how we re-link datasets, tools etc. 
-                        // Currently, the checkTools() etc do not consider the case where
-                        // we want to restore an existing soft-deleted PublicationHasX.
+                        PublicationHasDatasetVersion::withTrashed()->where('publication_id', $id)->restore();
+                        PublicationHasTool::withTrashed()->where('publication_id', $id)->restore();
+                        DurHasPublication::withTrashed()->where('publication_id', $id)->restore();
+                        CollectionHasPublications::withTrashed()->where('publication_id', $id)->restore();
                         
                         Auditor::log([
                             'user_id' => (int) $jwtUser['id'],
@@ -776,6 +780,9 @@ class PublicationController extends Controller
             if ($publication) {
                 PublicationHasDatasetVersion::where('publication_id', $id)->delete();
                 PublicationHasTool::where(['publication_id' => $id])->delete();
+                DurHasPublication::where(['publication_id' => $id])->delete();
+                CollectionHasPublications::where(['publication_id' => $id])->delete();
+
                 $publication->deleted_at = Carbon::now();
                 $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();

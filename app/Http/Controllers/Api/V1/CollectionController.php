@@ -764,10 +764,12 @@ class CollectionController extends Controller
                         $collectionModel->deleted_at = null;
                         $collectionModel->save();
 
-                        // TODO: need to consider how we re-link datasets, tools etc. 
-                        // Currently, the checkTools() etc do not consider the case where
-                        // we want to restore an existing soft-deleted CollectionHasX.
-                        
+                        CollectionHasDatasetVersion::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasTool::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasDur::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasKeyword::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasPublication::withTrashed()->where('collection_id', $id)->restore();
+
                         Auditor::log([
                             'user_id' => (int) $jwtUser['id'],
                             'action_type' => 'UPDATE',
