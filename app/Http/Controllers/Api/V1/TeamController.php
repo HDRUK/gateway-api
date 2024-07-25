@@ -299,7 +299,20 @@ class TeamController extends Controller
 
             $tools = Tool::whereIn('id', $this->tools)->select('id', 'name', 'user_id', 'created_at')->get();
             foreach ($tools as $tool) {
-                $tool['user'] = User::where('id', $tool['user_id'])->select('firstname', 'lastname')->first();
+                $user = User::where('id', $tool['user_id'])->select('firstname', 'lastname', 'is_admin')->first()->toArray();
+                // Remove names if the user is an admin
+                if ($user['is_admin']) {
+                    $user['firstname'] = '';
+                    $user['lastname'] = '';
+                }
+                // Reduce the amount of data returned to the bare minimum
+                $arrayKeys = [
+                    'firstname',
+                    'lastname',
+                    'rquestroles',
+                ];
+                $user = $this->checkEditArray($user, $arrayKeys);
+                $tool['user'] = $user;
             }
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
