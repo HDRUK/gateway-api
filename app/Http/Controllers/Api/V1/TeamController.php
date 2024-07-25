@@ -15,6 +15,7 @@ use App\Models\DatasetVersion;
 use App\Models\Dur;
 use App\Models\Tool;
 use App\Models\Publication;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\TeamUserHasRole;
 use Illuminate\Http\JsonResponse;
@@ -841,17 +842,12 @@ class TeamController extends Controller
 
     public function checkingDataset(int $datasetId)
     {
-        $dataset = Dataset::where(['id' => $datasetId])
-            ->with(['durs', 'collections', 'publications'])
-            ->first();
+        $dataset = Dataset::where(['id' => $datasetId])->first();
 
         if (!$dataset) {
             echo "empty";
             return;
         }
-
-        // Tools are automatically accessed through the accessor
-        $tools = $dataset->getLatestTools(['user']);
 
         $version = $dataset->latestVersion();
         $withLinks = DatasetVersion::where('id', $version['id'])
@@ -882,9 +878,9 @@ class TeamController extends Controller
             'datasetType' => $datasetType,
         ];
 
-        $this->durs = array_unique(array_merge($this->durs, $dataset->durs->pluck('id')->toArray()));
-        $this->publications = array_unique(array_merge($this->publications, $dataset->publications->pluck('id')->toArray()));
-        $this->tools = array_unique(array_merge($this->tools, $tools->pluck('id')->toArray()));
-        $this->collections = array_unique(array_merge($this->collections, $dataset->collections->pluck('id')->toArray()));
+        $this->durs = array_unique(array_merge($this->durs, Arr::pluck($dataset->allDurs, 'id')));
+        $this->publications = array_unique(array_merge($this->publications, Arr::pluck($dataset->allPublications, 'id')));
+        $this->tools = array_unique(array_merge($this->tools, Arr::pluck($dataset->allTools, 'id')));
+        $this->collections = array_unique(array_merge($this->collections, Arr::pluck($dataset->allCollections, 'id')));
     }
 }
