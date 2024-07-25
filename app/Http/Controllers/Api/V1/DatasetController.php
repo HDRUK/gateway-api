@@ -409,7 +409,7 @@ class DatasetController extends Controller
 
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
-                $dataset->setAttribute('versions', $latestVersion ?? []);
+                $dataset->setAttribute('versions', $latestVersion);
             }
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
