@@ -866,10 +866,6 @@ class TeamController extends Controller
         $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
         $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
 
-        if (empty($title) || $title === '') {
-            Log::error('TeamController: Dataset title is empty or unknown', ['datasetId' => $dataset->id]);
-        }
-
         $this->datasets[] = [
             'id' => $dataset->id,
             'status' => $dataset->status,
