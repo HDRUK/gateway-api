@@ -132,6 +132,25 @@ class DatasetVersion extends Model
         return $this->hasMany(CollectionHasDatasetVersion::class);
     }
 
+    /**
+     * The dataset versions that belong to the dataset version.
+     */
+    public function linkedDatasetVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DatasetVersion::class, 
+            'dataset_version_has_dataset_version',
+            'dataset_version_source_id',
+            'dataset_version_target_id'
+        )->withPivot(
+            'dataset_version_source_id', 
+            'dataset_version_target_id', 
+            'linkage_type', 
+            'direct_linkage', 
+            'description'
+        );
+    }
+
     // Dataset versions where this version is the source
     public function linkedDatasetVersionsAsSource()
     {

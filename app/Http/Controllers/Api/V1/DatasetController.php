@@ -332,10 +332,16 @@ class DatasetController extends Controller
      *       description="Alternative output schema model.",
      *       @OA\Schema(type="string", example="structuralMetadata")
      *    ),
-      *    @OA\Parameter(
+     *    @OA\Parameter(
      *       name="schema_model",
      *       in="query",
      *       description="Alternative output schema model.",
+     *       @OA\Schema(type="string")
+     *    ),
+     *    @OA\Parameter(
+     *       name="linked_dataset",
+     *       in="query",
+     *       description="Return linked datasets.",
      *       @OA\Schema(type="string")
      *    ),
      *    @OA\Parameter(
@@ -390,7 +396,7 @@ class DatasetController extends Controller
             }
             // Retrieve the latest version 
             $latestVersion = $dataset->latestVersion();
-
+            
             // Inject attributes via the dataset version table
             $dataset->setAttribute('durs_count', $latestVersion->durHasDatasetVersions()->count());
             $dataset->setAttribute('publications_count', $latestVersion->publicationHasDatasetVersions()->count());
@@ -399,18 +405,19 @@ class DatasetController extends Controller
             $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
             $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
             $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
-            $dataset->setAttribute('linked_datasets', $dataset->allLinkedDatasets  ?? []);
 
+            $outputLinkedDatasets = $request->query('linked_datasets');
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
-            // Retrieve the latest version 
-            $latestVersion = $dataset->latestVersion();
+            if ($outputLinkedDatasets){
+                    $dataset->setAttribute('linked_datasets', $dataset->allLinkedDatasets ?? []);
+            }
 
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
-                $dataset->setAttribute('versions', $latestVersion);
-            }
+                    $dataset->setAttribute('versions', [$latestVersion]);
+                }
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
                 $translated = MMC::translateDataModelType(

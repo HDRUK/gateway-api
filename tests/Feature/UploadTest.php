@@ -367,7 +367,8 @@ class UploadTest extends TestCase
 
         // Get the latest version and check that the structural metadata matches test data
         $latestVersion = $response->decodeResponseJson()['data']['versions'][0]['metadata'];
-
+        $structualMetadata = $latestVersion['metadata']['structuralMetadata'];
+        dump($structualMetadata);
         $this->assertIsArray($latestVersion['metadata']['structuralMetadata']);
         $this->assertEquals(
             $latestVersion['metadata']['structuralMetadata'][0]['name'], 'Test Table'
