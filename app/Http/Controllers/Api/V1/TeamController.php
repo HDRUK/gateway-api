@@ -9,6 +9,13 @@ use App\Models\Role;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\TeamHasUser;
+use App\Models\Collection;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\Dur;
+use App\Models\Tool;
+use App\Models\Publication;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\TeamUserHasRole;
 use Illuminate\Http\JsonResponse;
@@ -22,17 +29,24 @@ use App\Http\Requests\Team\DeleteTeam;
 use App\Http\Requests\Team\UpdateTeam;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
+use MetadataManagementController as MMC;
 
 class TeamController extends Controller
 {
     use TeamTransformation;
     use RequestTransformation;
 
+    private $datasets = [];
+    private $durs = [];
+    private $tools = [];
+    private $publications = [];
+    private $collections = [];
+
     /**
      * @OA\Get(
      *      path="/api/v1/teams",
      *      tags={"Teams"},
-     *      summary="List of teams",
+     *      summary="TeamController@index",
      *      description="Returns a list of teams enabled on the system",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
@@ -139,7 +153,7 @@ class TeamController extends Controller
      * @OA\Get(
      *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
-     *      summary="Return a single team",
+     *      summary="TeamController@show",
      *      description="Return a single team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -214,10 +228,117 @@ class TeamController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{id}/summary",
+     *      summary="TeamController@showSummary",
+     *      description="Return a single team summary for use in Data Provider view",
+     *      tags={"Teams"},
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DataProviderColl ID - summary",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DataProviderColl ID - summary",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
+     *                  @OA\Property(property="summary", type="string", example="Summary"),
+     *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="publications", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="collections", type="array", example="{}", @OA\Items()),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function showSummary(Request $request, int $id): JsonResponse
+    {
+        try {
+            // Get this Team
+            $dp = Team::select('id', 'name', 'is_provider')->where([
+                'id' => $id,
+                'enabled' => 1,
+            ])->first();
+
+            if (!$dp) {
+                return response()->json([
+                    'message' => 'Team not found or not enabled',
+                    'data' => null,
+                ], 404);
+            }
+
+            // This sets not only this->datasets, but also this->durs, publications, tools and collections
+            $this->getDatasets($dp->id);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team get ' . $id . ' summary',
+            ]);
+
+            $tools = Tool::whereIn('id', $this->tools)->select('id', 'name', 'user_id', 'created_at')->get();
+            foreach ($tools as $tool) {
+                $user = User::where('id', $tool['user_id'])->select('firstname', 'lastname', 'is_admin')->first()->toArray();
+                // Remove names if the user is an admin
+                if ($user['is_admin']) {
+                    $user['firstname'] = '';
+                    $user['lastname'] = '';
+                }
+                // Reduce the amount of data returned to the bare minimum
+                $arrayKeys = [
+                    'firstname',
+                    'lastname',
+                    'rquestroles',
+                ];
+                $user = $this->checkEditArray($user, $arrayKeys);
+                $tool['user'] = $user;
+            }
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => [
+                    'id' => $dp->id,
+                    'is_provider' => $dp->is_provider,
+                    'name' => $dp->name,
+                    'introduction' => 'Placeholder Intro text until the BE supports it. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+                    'datasets' => $this->datasets,
+                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
+                    'tools' => $tools->toArray(),
+                    // TODO: need to add in `link_type` from publication_has_dataset table.
+                    'publications' => Publication::select('id', 'paper_title', 'authors', 'url')->whereIn('id', $this->publications)->get()->toArray(),
+                    'collections' => Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray(),
+                ],
+            ]);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * @OA\Post(
      *      path="/api/v1/teams",
      *      tags={"Teams"},
-     *      summary="Create a new team",
+     *      summary="TeamController@store",
      *      description="Creates a new team",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
@@ -336,7 +457,7 @@ class TeamController extends Controller
      * @OA\Put(
      *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
-     *      summary="Update a team",
+     *      summary="TeamController@update",
      *      description="Update a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -484,7 +605,7 @@ class TeamController extends Controller
      * @OA\Patch(
      *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
-     *      summary="Edit a team",
+     *      summary="TeamController@edit",
      *      description="Edit a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -620,7 +741,7 @@ class TeamController extends Controller
      * @OA\Delete(
      *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
-     *      summary="Delete a team",
+     *      summary="TeamController@destroy",
      *      description="Delete a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -723,4 +844,51 @@ class TeamController extends Controller
         }
     }
 
+    public function getDatasets(int $teamId)
+    {
+        $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
+
+        foreach ($datasetIds as $datasetId) {
+            $this->checkingDataset($datasetId);
+        }
+    }
+
+    public function checkingDataset(int $datasetId)
+    {
+        $dataset = Dataset::where(['id' => $datasetId])->first();
+
+        if (!$dataset) {
+            return;
+        }
+
+        $version = $dataset->latestVersion();
+        $withLinks = DatasetVersion::where('id', $version['id'])
+            ->with(['linkedDatasetVersions'])
+            ->first(); 
+
+        if (!$withLinks) {
+            return;
+        }
+
+        $dataset->setAttribute('versions', [$withLinks]);
+
+        $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
+
+        $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
+        $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
+        $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+
+        $this->datasets[] = [
+            'id' => $dataset->id,
+            'status' => $dataset->status,
+            'title' => $title,
+            'populationSize' => $populationSize,
+            'datasetType' => $datasetType,
+        ];
+
+        $this->durs = array_unique(array_merge($this->durs, Arr::pluck($dataset->allDurs, 'id')));
+        $this->publications = array_unique(array_merge($this->publications, Arr::pluck($dataset->allPublications, 'id')));
+        $this->tools = array_unique(array_merge($this->tools, Arr::pluck($dataset->allTools, 'id')));
+        $this->collections = array_unique(array_merge($this->collections, Arr::pluck($dataset->allCollections, 'id')));
+    }
 }

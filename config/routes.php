@@ -369,6 +369,17 @@ return [
     ],
     [
         'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/summary',
+        'methodController' => 'TeamController@showSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'teams',
         'method' => 'post',
         'path' => '/teams',
         'methodController' => 'TeamController@store',
