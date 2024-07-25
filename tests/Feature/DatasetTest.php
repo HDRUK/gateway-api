@@ -565,9 +565,7 @@ class DatasetTest extends TestCase
         if(env('TED_ENABLED')){
             $this->assertNotEmpty($respArrayActive['data']['named_entities']);
         };
-        $this->assertArrayHasKey(
-            'linked_dataset_versions', $respArrayActive['data']['versions'][0]
-        );
+        $this->assertArrayHasKey('linked_datasets', $respArrayActive['data']);
 
         // delete active dataset
         $responseDeleteActiveDataset = $this->json(

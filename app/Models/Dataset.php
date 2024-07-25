@@ -240,4 +240,46 @@ class Dataset extends Model
         // Return the collection of entities with injected dataset version IDs
         return $entities->toArray();
     }
+    public function getAllLinkedDatasetsAttribute()
+    {
+        // Collection to store linked datasets
+        $linkedDatasets = collect();
+
+        foreach ($this->versions as $version) {
+            // Get linked versions where this version is the source
+            $linkedVersionsAsSource = $version->linkedDatasetVersionsAsSource()->with('dataset')->get();
+            foreach ($linkedVersionsAsSource as $linkedVersion) {
+                if ($linkedVersion->dataset && $linkedVersion->dataset->id !== $this->id) {
+                    // Setting attributes on the linked dataset model
+                    $linkedDataset = $linkedVersion->dataset;
+                    $linkedDataset->setAttribute('linkage_type', $linkedVersion->pivot->linkage_type);
+                    $linkedDataset->setAttribute('direct_linkage', $linkedVersion->pivot->direct_linkage);
+                    $linkedDataset->setAttribute('description', $linkedVersion->pivot->description);
+                    $linkedDataset->setAttribute('dataset_version_source_id', $linkedVersion->pivot->dataset_version_source_id);
+                    $linkedDataset->setAttribute('dataset_version_target_id', $linkedVersion->pivot->dataset_version_target_id);
+
+                    $linkedDatasets->push($linkedDataset);
+                }
+            }
+
+            // Get linked versions where this version is the target
+            $linkedVersionsAsTarget = $version->linkedDatasetVersionsAsTarget()->with('dataset')->get();
+            foreach ($linkedVersionsAsTarget as $linkedVersion) {
+                if ($linkedVersion->dataset && $linkedVersion->dataset->id !== $this->id) {
+                    // Setting attributes on the linked dataset model
+                    $linkedDataset = $linkedVersion->dataset;
+                    $linkedDataset->setAttribute('linkage_type', $linkedVersion->pivot->linkage_type);
+                    $linkedDataset->setAttribute('direct_linkage', $linkedVersion->pivot->direct_linkage);
+                    $linkedDataset->setAttribute('description', $linkedVersion->pivot->description);
+                    $linkedDataset->setAttribute('dataset_version_source_id', $linkedVersion->pivot->dataset_version_source_id);
+                    $linkedDataset->setAttribute('dataset_version_target_id', $linkedVersion->pivot->dataset_version_target_id);
+
+                    $linkedDatasets->push($linkedDataset);
+                }
+            }
+        }
+
+        return $linkedDatasets->toArray();
+    }
+
 }
