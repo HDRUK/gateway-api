@@ -16,11 +16,6 @@ return new class extends Migration
                 $table->enum('status', ['ACTIVE', 'DRAFT', 'ARCHIVED'])->default('DRAFT');
             });
         }
-        if (Schema::hasTable('collections')) {
-            Schema::table('collections', function (Blueprint $table) {
-                $table->enum('status', ['ACTIVE', 'DRAFT', 'ARCHIVED'])->default('DRAFT');
-            });
-        }
     }
 
     /**
@@ -30,11 +25,6 @@ return new class extends Migration
     {
         if (Schema::hasTable('tools')) {
             Schema::table('tools', function (Blueprint $table) {
-                $table->dropColumn('status');
-            });
-        }
-        if (Schema::hasTable('collections')) {
-            Schema::table('collections', function (Blueprint $table) {
                 $table->dropColumn('status');
             });
         }
