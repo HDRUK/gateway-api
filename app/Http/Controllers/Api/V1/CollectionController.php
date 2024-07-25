@@ -104,8 +104,23 @@ class CollectionController extends Controller
         try {
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $name = $request->query('name', null);
+            $filterStatus = $request->query('status', null);
+
+            $sort = $request->query('sort', 'name:desc');
+            $tmp = explode(":", $sort);
+            $sortField = $tmp[0];
+            $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'desc';
+
             $collections = Collection::when($name, function ($query) use ($name) {
                 return $query->where('name', 'LIKE', '%' . $name . '%');
+            })
+            ->when($request->has('withTrashed') || $filterStatus === Collection::STATUS_ARCHIVED, 
+                function ($query) {
+                    return $query->withTrashed();
+            })
+            ->when($filterStatus, 
+                function ($query) use ($filterStatus) {
+                    return $query->where('status', '=', $filterStatus);
             })
             ->with([
                 'keywords',
@@ -119,7 +134,11 @@ class CollectionController extends Controller
                 'applicationTools',
                 'applicationPublications',
                 'team',
-            ])->paginate((int) $perPage, ['*'], 'page');
+            ])
+            ->when($sort, 
+                    fn($query) => $query->orderBy($sortField, $sortDirection)
+                )
+            ->paginate((int) $perPage, ['*'], 'page');
 
             $collections->getCollection()->transform(function ($collection) {
                 $userDatasets = $collection->userDatasets;
