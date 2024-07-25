@@ -130,35 +130,6 @@ class Dataset extends Model
             )->latest('version')->first();
     }
 
-    
-    /**
-     * The spatial coverage that belong to the dataset.
-     */
-    public function getLatestSpatialCoverage()
-    {
-        $entityIds = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $this->latestVersion()->id)
-            ->pluck('spatial_coverage_id');
-
-        return SpatialCoverage::whereIn('id', $entityIds)->get();
-    }
-
-    /**
-     * The tools that belong to a dataset.
-     */
-    public function getLatestTools(array $extra_fields)
-    {
-        $toolIds = DatasetVersionHasTool::where('dataset_version_id', $this->latestVersion()->id)
-            ->pluck('tool_id');
-
-        return Tool::whereIn('id', $toolIds)->with($extra_fields)->get();
-    }
-
-     // Add an accessor for tools
-     public function getToolsAttribute()
-     {
-         return $this->getLatestTools();
-     }
-
     /**
      * Order by raw metadata extract
      */
