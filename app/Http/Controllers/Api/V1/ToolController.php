@@ -596,6 +596,10 @@ class ToolController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $initTool = Tool::withTrashed()->where('id', $id)->first();
 
+            if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
+                throw new Exception('Cannot update current putoolblication! Status already "ARCHIVED"');
+            }
+
             $userId = null;
             $appId = null;
             if (array_key_exists('user_id', $input)) {
@@ -627,10 +631,6 @@ class ToolController extends Controller
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
-
-            if ($initTool['status'] === Tool::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
-                throw new Exception('Cannot update current tool! Status already "ARCHIVED"');
-            }
 
             Tool::where('id', $id)->first()->update($array);
 

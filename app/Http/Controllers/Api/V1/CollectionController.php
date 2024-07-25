@@ -554,6 +554,12 @@ class CollectionController extends Controller
         try {
             $input = $request->all();
 
+            $initCollection = Collection::withTrashed()->where('id', $id)->first();
+
+            if ($initCollection['status'] === Collection::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
+                throw new Exception('Cannot update current collection! Status already "ARCHIVED"');
+            }
+
             $userId = null;
             $appId = null;
             if (array_key_exists('user_id', $input)) {
@@ -576,6 +582,7 @@ class CollectionController extends Controller
                 'mongo_object_id', 
                 'mongo_id',
                 'team_id',
+                'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -616,7 +623,11 @@ class CollectionController extends Controller
             if (array_key_exists('team_id', $input)) {
                 Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
             }
-            // $this->indexElasticCollections($id);
+
+            $currentCollection = Collection::where('id', $id)->first();
+            if($currentCollection->status === Collection::STATUS_ACTIVE){
+                $this->indexElasticPublication((int) $id);
+            }
 
             Auditor::log([
                 'user_id' => $array['user_id'],
