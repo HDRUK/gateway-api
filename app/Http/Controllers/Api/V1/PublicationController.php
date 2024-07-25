@@ -145,7 +145,7 @@ class PublicationController extends Controller
      *    path="/api/v1/publication/count/{field}",
      *    operationId="count_unique_fields_publications",
      *    tags={"publications"},
-     *    summary="Publication@count",
+     *    summary="PublicationController@count",
      *    description="Get Counts for distinct entries of a field in the model",
      *    security={{"bearerAuth":{}}},
      *    @OA\Parameter(
