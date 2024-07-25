@@ -718,30 +718,30 @@ class ToolController extends Controller
                 // Restore the tool and related models
                 $toolModel = Tool::withTrashed()
                     ->find($id);
-                if ($request['status'] !== Tool::STATUS_ARCHIVED) {
-                    if (in_array($request['status'], [
-                        Tool::STATUS_ACTIVE, Tool::STATUS_DRAFT
-                    ])) {
-                        $toolModel->status = $request['status'];
-                        $toolModel->deleted_at = null;
-                        $toolModel->save();
+                if (($request['status'] !== Tool::STATUS_ARCHIVED) && (in_array($request['status'], [
+                    Tool::STATUS_ACTIVE, Tool::STATUS_DRAFT
+                ]))) {
+                    $toolModel->status = $request['status'];
+                    $toolModel->deleted_at = null;
+                    $toolModel->save();
 
-                        ToolHasTag::withTrashed()->where('tool_id', $id)->restore();
-                        DatasetVersionHasTool::withTrashed()->where('tool_id', $id)->restore();
-                        ToolHasProgrammingLanguage::withTrashed()->where('tool_id', $id)->restore();
-                        ToolHasProgrammingPackage::withTrashed()->where('tool_id', $id)->restore();
-                        ToolHasTypeCategory::withTrashed()->where('tool_id', $id)->restore();
-                        PublicationHasTool::withTrashed()->where('tool_id', $id)->restore();
-                        DurHasTool::withTrashed()->where('tool_id', $id)->restore();
-                        CollectionHasTool::withTrashed()->where('tool_id', $id)->restore();
+                    ToolHasTag::withTrashed()->where('tool_id', $id)->restore();
+                    DatasetVersionHasTool::withTrashed()->where('tool_id', $id)->restore();
+                    ToolHasProgrammingLanguage::withTrashed()->where('tool_id', $id)->restore();
+                    ToolHasProgrammingPackage::withTrashed()->where('tool_id', $id)->restore();
+                    ToolHasTypeCategory::withTrashed()->where('tool_id', $id)->restore();
+                    PublicationHasTool::withTrashed()->where('tool_id', $id)->restore();
+                    DurHasTool::withTrashed()->where('tool_id', $id)->restore();
+                    CollectionHasTool::withTrashed()->where('tool_id', $id)->restore();
 
-                        Auditor::log([
-                            'user_id' => (int) $jwtUser['id'],
-                            'action_type' => 'UPDATE',
-                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                            'description' => "Tool " . $id . " unarchived",
-                        ]);
-                    }
+                    Auditor::log([
+                        'user_id' => (int) $jwtUser['id'],
+                        'action_type' => 'UPDATE',
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                        'description' => "Tool " . $id . " unarchived",
+                    ]);
+                } else {
+                    throw new Exception('Cannot unarchive current tool because valid status not supplied');
                 }
     
             }
