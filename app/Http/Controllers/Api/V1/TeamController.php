@@ -845,7 +845,6 @@ class TeamController extends Controller
         $dataset = Dataset::where(['id' => $datasetId])->first();
 
         if (!$dataset) {
-            echo "empty";
             return;
         }
 
