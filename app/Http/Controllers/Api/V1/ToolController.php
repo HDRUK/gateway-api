@@ -74,7 +74,7 @@ class ToolController extends Controller
      *       @OA\Schema(type="integer"),
      *       description="Filter tools by team ID"
      *    ),
-     *      *    @OA\Parameter(
+     *    @OA\Parameter(
      *       name="user_id",
      *       in="query",
      *       required=false,
