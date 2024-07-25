@@ -488,6 +488,15 @@ class ToolTest extends TestCase
             $this->assertEquals($teamId, $tool['team_id']);
         }
 
+        // Filter by user_id
+        $response = $this->json('GET', self::TEST_URL . '?user_id=' . $userId, [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $this->assertNotEmpty($responseData);
+        foreach ($responseData as $tool) {
+            $this->assertEquals($userId, $tool['user_id']);
+        }
+
         // Filter by title
         $response = $this->json('GET', self::TEST_URL . '?title=' . urlencode($title), [], $this->header);
         $response->assertStatus(200);

@@ -74,6 +74,13 @@ class ToolController extends Controller
      *       @OA\Schema(type="integer"),
      *       description="Filter tools by team ID"
      *    ),
+     *      *    @OA\Parameter(
+     *       name="user_id",
+     *       in="query",
+     *       required=false,
+     *       @OA\Schema(type="integer"),
+     *       description="Filter tools by user ID"
+     *    ),
      *    @OA\Parameter(
      *       name="title",
      *       in="query",
@@ -133,6 +140,7 @@ class ToolController extends Controller
             $matches = [];
             $mongoId = $request->query('mongo_id', null);
             $teamId = $request->query('team_id', null);
+            $userId = $request->query('user_id', null);
             $filterTitle = $request->query('title', null);
             $perPage = request('per_page', Config::get('constants.per_page'));
 
@@ -174,6 +182,9 @@ class ToolController extends Controller
             })
             ->when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
+            })
+            ->when($userId, function ($query) use ($userId) {
+                return $query->where('user_id', '=', $userId);
             })
             ->when($filterTitle, function ($query) use ($filterTitle) {
                 return $query->where('name', 'like', '%' . $filterTitle . '%');
