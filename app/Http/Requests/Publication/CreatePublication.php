@@ -85,7 +85,6 @@ class CreatePublication extends BaseFormRequest
                 'string',
             ],
             'status' => [
-                'sometimes',
                 'string',
                 'in:ACTIVE,ARCHIVED,DRAFT',
             ],

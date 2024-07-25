@@ -139,7 +139,6 @@ class CreateTool extends BaseFormRequest
                 'boolean',
             ],
             'status' => [
-                'sometimes',
                 'string',
                 'in:ACTIVE,ARCHIVED,DRAFT',
             ],
