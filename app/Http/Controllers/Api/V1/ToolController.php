@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
+use App\Exceptions\NotFoundException;
 use App\Models\Tag;
 use App\Models\Tool;
 use App\Models\Dataset;
@@ -967,28 +968,32 @@ class ToolController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $tool = Tool::where(['id' => $id])->first();
-            $tool->deleted_at = Carbon::now();
-            $tool->status = Tool::STATUS_ARCHIVED;
-            $tool->save();
-            ToolHasTag::where('tool_id', $id)->delete();
-            DatasetVersionHasTool::where('tool_id', $id)->delete();
-            ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
-            ToolHasProgrammingPackage::where('tool_id', $id)->delete();
-            ToolHasTypeCategory::where('tool_id', $id)->delete();
-            PublicationHasTool::where('tool_id', $id)->delete();
-            DurHasTool::where('tool_id', $id)->delete();
-            CollectionHasTool::where('tool_id', $id)->delete();
-            
-            Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
-                'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Tool " . $id . " deleted",
-            ]);
+            if ($tool) {
+                $tool->deleted_at = Carbon::now();
+                $tool->status = Tool::STATUS_ARCHIVED;
+                $tool->save();
+                ToolHasTag::where('tool_id', $id)->delete();
+                DatasetVersionHasTool::where('tool_id', $id)->delete();
+                ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
+                ToolHasProgrammingPackage::where('tool_id', $id)->delete();
+                ToolHasTypeCategory::where('tool_id', $id)->delete();
+                PublicationHasTool::where('tool_id', $id)->delete();
+                DurHasTool::where('tool_id', $id)->delete();
+                CollectionHasTool::where('tool_id', $id)->delete();
+                
+                Auditor::log([
+                    'user_id' => (int) $jwtUser['id'],
+                    'action_type' => 'DELETE',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Tool " . $id . " deleted",
+                ]);
 
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-            ], Config::get('statuscodes.STATUS_OK.code'));
+                return response()->json([
+                    'message' => Config::get('statuscodes.STATUS_OK.message'),
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
+
+            throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
