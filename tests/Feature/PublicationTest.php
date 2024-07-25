@@ -398,13 +398,13 @@ class PublicationTest extends TestCase
      */
     public function test_soft_delete_and_unarchive_publication_with_success(): void
     {
-        $countBefore = Publication::where('id', 1)->count();
+        $countBefore = Publication::count();
         
         $response = $this->json('DELETE', self::TEST_URL . '/1', [], $this->header);
         $response->assertStatus(200);
 
-        $countTrashed = Publication::onlyTrashed()->where('id', 1)->count();
-        $countAfter = Publication::where('id', 1)->count();
+        $countTrashed = Publication::onlyTrashed()->count();
+        $countAfter = Publication::count();
 
         $this->assertTrue($countTrashed === 1);
         $this->assertTrue($countAfter < $countBefore);
@@ -412,8 +412,8 @@ class PublicationTest extends TestCase
         $response = $this->json('PATCH', self::TEST_URL . '/1?unarchive', ['status' => 'ACTIVE'], $this->header);
         $response->assertStatus(200);
 
-        $countTrashedAfterUnarchiving = Publication::onlyTrashed()->where('id', 1)->count();
-        $countAfterUnarchiving = Publication::where('id', 1)->count();
+        $countTrashedAfterUnarchiving = Publication::onlyTrashed()->count();
+        $countAfterUnarchiving = Publication::count();
 
         $this->assertEquals($countTrashedAfterUnarchiving, 0);
         $this->assertTrue($countAfter < $countAfterUnarchiving);
