@@ -14,7 +14,7 @@ use App\Models\Publication;
 use App\Models\PublicationHasDatasetVersion;
 use App\Models\PublicationHasTool;
 use App\Models\DurHasPublication;
-use App\Models\CollectionHasPublications;
+use App\Models\CollectionHasPublication;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
@@ -639,7 +639,7 @@ class PublicationController extends Controller
                         PublicationHasDatasetVersion::withTrashed()->where('publication_id', $id)->restore();
                         PublicationHasTool::withTrashed()->where('publication_id', $id)->restore();
                         DurHasPublication::withTrashed()->where('publication_id', $id)->restore();
-                        CollectionHasPublications::withTrashed()->where('publication_id', $id)->restore();
+                        CollectionHasPublication::withTrashed()->where('publication_id', $id)->restore();
                         
                         Auditor::log([
                             'user_id' => (int) $jwtUser['id'],
@@ -780,7 +780,7 @@ class PublicationController extends Controller
                 PublicationHasDatasetVersion::where('publication_id', $id)->delete();
                 PublicationHasTool::where(['publication_id' => $id])->delete();
                 DurHasPublication::where(['publication_id' => $id])->delete();
-                CollectionHasPublications::where(['publication_id' => $id])->delete();
+                CollectionHasPublication::where(['publication_id' => $id])->delete();
 
                 $publication->deleted_at = Carbon::now();
                 $publication->status = Publication::STATUS_ARCHIVED;

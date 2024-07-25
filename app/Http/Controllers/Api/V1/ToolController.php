@@ -269,7 +269,7 @@ class ToolController extends Controller
     public function count(Request $request, string $field): JsonResponse
     {
         try {
-            $ownerId = $request->query('owner_id',null);
+            $teamId = $request->query('team_id',null);
             $counts = Tool::when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })->withTrashed()

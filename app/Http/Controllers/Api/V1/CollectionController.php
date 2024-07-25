@@ -12,6 +12,7 @@ use App\Models\Application;
 use App\Models\DatasetVersion;
 use App\Models\DataProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Models\CollectionHasDur;
 use App\Models\DataProviderColl;
 use App\Models\CollectionHasTool;
@@ -226,7 +227,7 @@ class CollectionController extends Controller
     public function count(Request $request, string $field): JsonResponse
     {
         try {
-            $ownerId = $request->query('owner_id',null);
+            $teamId = $request->query('team_id',null);
             $counts = Collection::when($teamId, function ($query) use ($teamId) {
                 return $query->where('team_id', '=', $teamId);
             })->withTrashed()
@@ -452,7 +453,7 @@ class CollectionController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $array['user_id'],
+                'user_id' => $userId,
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
@@ -626,11 +627,11 @@ class CollectionController extends Controller
 
             $currentCollection = Collection::where('id', $id)->first();
             if($currentCollection->status === Collection::STATUS_ACTIVE){
-                $this->indexElasticPublication((int) $id);
+                $this->indexElasticCollection((int) $id);
             }
 
             Auditor::log([
-                'user_id' => $array['user_id'],
+                'user_id' => $userId,
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
@@ -767,11 +768,10 @@ class CollectionController extends Controller
                         CollectionHasDatasetVersion::withTrashed()->where('collection_id', $id)->restore();
                         CollectionHasTool::withTrashed()->where('collection_id', $id)->restore();
                         CollectionHasDur::withTrashed()->where('collection_id', $id)->restore();
-                        CollectionHasKeyword::withTrashed()->where('collection_id', $id)->restore();
                         CollectionHasPublication::withTrashed()->where('collection_id', $id)->restore();
 
                         Auditor::log([
-                            'user_id' => (int) $jwtUser['id'],
+                            'user_id' => $userId,
                             'action_type' => 'UPDATE',
                             'action_name' => class_basename($this) . '@'.__FUNCTION__,
                             'description' => "Collection " . $id . " unarchived and marked as " . strtoupper($request['status']),
