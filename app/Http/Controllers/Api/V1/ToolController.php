@@ -189,10 +189,6 @@ class ToolController extends Controller
             ->when($userId, function ($query) use ($userId) {
                 return $query->where('user_id', '=', $userId);
             })
-            ->when($request->has('withTrashed') || $filterStatus === Tool::STATUS_ARCHIVED, 
-            function ($query) {
-                return $query->withTrashed();
-            })
             ->when($filterStatus, 
             function ($query) use ($filterStatus) {
                 return $query->where('status', '=', $filterStatus);

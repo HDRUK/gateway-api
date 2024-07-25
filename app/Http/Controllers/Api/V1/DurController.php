@@ -168,9 +168,6 @@ class DurController extends Controller
                     return $query->where('project_title', 'like', '%'. $projectTitle .'%');
                 })->when($teamId, function ($query) use ($teamId) {
                     return $query->where('team_id', '=', $teamId);
-                })->when($request->has('withTrashed') || $filterStatus === Dur::STATUS_ARCHIVED, 
-                    function ($query) {
-                        return $query->withTrashed();
                 })->when($filterStatus, 
                     function ($query) use ($filterStatus) {
                         return $query->where('status', '=', $filterStatus);

@@ -115,10 +115,6 @@ class CollectionController extends Controller
             $collections = Collection::when($name, function ($query) use ($name) {
                 return $query->where('name', 'LIKE', '%' . $name . '%');
             })
-            ->when($request->has('withTrashed') || $filterStatus === Collection::STATUS_ARCHIVED, 
-                function ($query) {
-                    return $query->withTrashed();
-            })
             ->when($filterStatus, 
                 function ($query) use ($filterStatus) {
                     return $query->where('status', '=', $filterStatus);

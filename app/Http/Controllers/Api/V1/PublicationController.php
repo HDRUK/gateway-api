@@ -106,10 +106,6 @@ class PublicationController extends Controller
             ->when($ownerId, function ($query) use ($ownerId) {
                 return $query->where('owner_id', '=', $ownerId);
             })
-            ->when($request->has('withTrashed') || $filterStatus === Publication::STATUS_ARCHIVED, 
-                function ($query) {
-                    return $query->withTrashed();
-            })
             ->when($filterStatus, 
                 function ($query) use ($filterStatus) {
                     return $query->where('status', '=', $filterStatus);
