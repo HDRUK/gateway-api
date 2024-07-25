@@ -48,6 +48,7 @@ use MetadataManagementController as MMC;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 use Illuminate\Database\Eloquent\Casts\Json;
+use App\Http\Requests\Search\DOISearch;
 use App\Http\Requests\Search\PublicationSearch;
 use App\Models\DataProviderColl;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -1116,7 +1117,7 @@ class SearchController extends Controller
      *      )
      * )
      */
-    public function doiSearch(Request $request): Response | JsonResponse
+    public function doiSearch(DOISearch $request): Response | JsonResponse
     {
         try {
             $input = $request->all();
