@@ -627,7 +627,7 @@ class CollectionController extends Controller
 
             $currentCollection = Collection::where('id', $id)->first();
             if($currentCollection->status === Collection::STATUS_ACTIVE){
-                $this->indexElasticCollection((int) $id);
+                $this->indexElasticCollections((int) $id);
             }
 
             Auditor::log([
