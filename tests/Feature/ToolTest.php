@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use Config;
+use Exception;
 use Tests\TestCase;
-
 use App\Models\Tool;
 use ReflectionClass;
 use App\Http\Enums\TeamMemberOf;
@@ -45,7 +45,7 @@ use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\DatasetVersionHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ToolTest extends TestCase
@@ -86,7 +86,7 @@ class ToolTest extends TestCase
             ToolSeeder::class,
             ToolHasTagSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             PublicationHasToolSeeder::class,
             ApplicationSeeder::class,
             DurSeeder::class,
@@ -131,7 +131,7 @@ class ToolTest extends TestCase
                     'publications',
                     'durs',
                     'collections',
-                    'dataset_versions',
+                    'datasets',
                     'any_dataset',
                 ]
             ],
@@ -185,7 +185,7 @@ class ToolTest extends TestCase
                 'publications',
                 'durs',
                 'collections',
-                'dataset_versions',
+                'datasets',
                 'any_dataset',
             ]
         ]);
@@ -486,6 +486,15 @@ class ToolTest extends TestCase
         $this->assertNotEmpty($responseData);
         foreach ($responseData as $tool) {
             $this->assertEquals($teamId, $tool['team_id']);
+        }
+
+        // Filter by user_id
+        $response = $this->json('GET', self::TEST_URL . '?user_id=' . $userId, [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $this->assertNotEmpty($responseData);
+        foreach ($responseData as $tool) {
+            $this->assertEquals($userId, $tool['user_id']);
         }
 
         // Filter by title
@@ -943,7 +952,7 @@ class ToolTest extends TestCase
         $responseUnarchive = $this->json(
             'PATCH',
             self::TEST_URL . '/' . $toolIdInsert . '?unarchive',
-            [],
+            ['status' => 'DRAFT'],
             $this->header
         );
         $responseUnarchive->assertJsonStructure([

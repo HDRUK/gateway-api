@@ -12,14 +12,14 @@ use Database\Seeders\ToolSeeder;
 use Tests\Traits\MockExternalApis;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\LicenseSeeder;
-use App\Models\PublicationHasDataset;
+use App\Models\PublicationHasDatasetVersion;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TeamHasUserSeeder;
 use Database\Seeders\TypeCategorySeeder;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class PublicationTest extends TestCase
@@ -49,7 +49,7 @@ class PublicationTest extends TestCase
             PublicationSeeder::class,
             DatasetSeeder::class,
             DatasetVersionSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             LicenseSeeder::class,
             ToolSeeder::class,
             TagSeeder::class,
@@ -160,7 +160,7 @@ class PublicationTest extends TestCase
                     ],
                 ],
                 'tools' => $this->generateTools(),
-                'status' => 'ACTIVE'
+                'status' => 'ACTIVE',
             ],
             $this->header,
         );
@@ -172,7 +172,7 @@ class PublicationTest extends TestCase
         ]);
 
         $pubId = $response->decodeResponseJson()['data'];
-        $relation = PublicationHasDataset::where('publication_id', $pubId)->first();
+        $relation = PublicationHasDatasetVersion::where('publication_id', $pubId)->first();
         $this->assertNotNull($relation);
         $this->assertEquals($relation['link_type'], "USING");
 
@@ -284,14 +284,14 @@ class PublicationTest extends TestCase
             $this->header,
         );
 
-        $content = $responseUpdate->decodeResponseJson()['data'];
-        $this->assertEquals($content['paper_title'], 'Not A Test Paper Title');
-
         $responseUpdate->assertStatus(200);
         $responseUpdate->assertJsonStructure([
             'message',
             'data'
         ]);
+
+        $content = $responseUpdate->decodeResponseJson()['data'];
+        $this->assertEquals($content['paper_title'], 'Not A Test Paper Title');
     }
 
     public function test_can_count_with_success(): void{
@@ -355,7 +355,6 @@ class PublicationTest extends TestCase
             ],
             $this->header,
         );
-
         $response->assertStatus(200);
         $countAfter = Publication::all()->count();
         $this->assertTrue(($countBefore - $countAfter) === 1);
@@ -395,20 +394,30 @@ class PublicationTest extends TestCase
     }
 
     /**
-     * SoftDelete Publication by id with success
+     * SoftDelete Publication by id with success, and unarchive with success
      */
-    public function test_soft_delete_publication_with_success(): void
+    public function test_soft_delete_and_unarchive_publication_with_success(): void
     {
-        $countBefore = Publication::where('id', 1)->count();
+        $countBefore = Publication::count();
         
         $response = $this->json('DELETE', self::TEST_URL . '/1', [], $this->header);
         $response->assertStatus(200);
 
-        $countTrashed = Publication::onlyTrashed()->where('id', 1)->count();
-        $countAfter = Publication::where('id', 1)->count();
+        $countTrashed = Publication::onlyTrashed()->count();
+        $countAfter = Publication::count();
 
         $this->assertTrue($countTrashed === 1);
         $this->assertTrue($countAfter < $countBefore);
+
+        $response = $this->json('PATCH', self::TEST_URL . '/1?unarchive', ['status' => 'ACTIVE'], $this->header);
+        $response->assertStatus(200);
+
+        $countTrashedAfterUnarchiving = Publication::onlyTrashed()->count();
+        $countAfterUnarchiving = Publication::count();
+
+        $this->assertEquals($countTrashedAfterUnarchiving, 0);
+        $this->assertTrue($countAfter < $countAfterUnarchiving);
+        $this->assertTrue($countBefore === $countAfterUnarchiving);
     }
 
     private function generateTools()

@@ -133,6 +133,11 @@ class UpdateCollection extends BaseFormRequest
             'updated_on' => [
                 'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
             ],
+            'status' => [
+                'sometimes',
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
+            ],
         ];
     }
 

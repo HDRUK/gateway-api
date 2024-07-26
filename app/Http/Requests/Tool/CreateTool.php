@@ -138,6 +138,10 @@ class CreateTool extends BaseFormRequest
                 'nullable', 
                 'boolean',
             ],
+            'status' => [
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
+            ],
         ];
     }
 }

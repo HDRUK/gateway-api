@@ -16,10 +16,10 @@ use App\Models\DurHasTool;
 use App\Models\Application;
 
 use Illuminate\Http\Request;
-use App\Models\DurHasDataset;
 
 use App\Models\DurHasKeyword;
-
+use App\Models\DurHasDatasetVersion;
+use App\Models\DatasetVersion;
 use App\Http\Requests\Dur\GetDur;
 use App\Models\DurHasPublication;
 use Illuminate\Http\JsonResponse;
@@ -154,7 +154,6 @@ class IntegrationDurController extends Controller
             $perPage = request('perPage', Config::get('constants.per_page'));
             $durs = Dur::where('enabled', 1)
                 ->with([
-                    'datasets',
                     'publications', 
                     'tools', 
                     'keywords',
@@ -198,6 +197,7 @@ class IntegrationDurController extends Controller
 
                 $applicationDatasets = $dur->applicationDatasets;
                 $applicationPublications = $dur->applicationPublications;
+                $dur->setAttribute('datasets', $dur->allDatasets  ?? []);
                 $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
                 $dur->setRelation('applications', $applications);
 
@@ -772,7 +772,7 @@ class IntegrationDurController extends Controller
 
             if ($initDur === 'ARCHIVED' && (array_key_exists('status', $input) && $input['status'] !== 'ARCHIVED')) {
                 Dur::withTrashed()->where('id', $id)->restore();
-                DurHasDataset::withTrashed()->where('dur_id', $id)->restore();
+                DurHasDatasetVersion::withTrashed()->where('dur_id', $id)->restore();
                 DurHasKeyword::withTrashed()->where('dur_id', $id)->restore();
                 DurHasPublication::withTrashed()->where('dur_id', $id)->restore();
                 DurHasTool::withTrashed()->where('dur_id', $id)->restore();
@@ -789,6 +789,10 @@ class IntegrationDurController extends Controller
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
+
+            // link/unlink dur with publications
+            $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
+            $this->checkPublications($id, $publications, $userIdFinal, $appId);
 
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
@@ -815,7 +819,7 @@ class IntegrationDurController extends Controller
 
             if ($currentDurStatus->status === 'ARCHIVED') {
                 Dur::where('id', $id)->delete();
-                DurHasDataset::where('dur_id', $id)->delete();
+                DurHasDatasetVersion::where('dur_id', $id)->delete();
                 DurHasKeyword::where('dur_id', $id)->delete();
                 DurHasPublication::where('dur_id', $id)->delete();
                 DurHasTool::where('dur_id', $id)->delete();
@@ -1157,7 +1161,7 @@ class IntegrationDurController extends Controller
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
-            DurHasDataset::where(['dur_id' => $id])->delete();
+            DurHasDatasetVersion::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
             Dur::where(['id' => $id])->delete();
@@ -1178,30 +1182,41 @@ class IntegrationDurController extends Controller
         }
     }
 
+    // datasets
     private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null) 
     {
-        $ds = DurHasDataset::where(['dur_id' => $durId])->get();
-        foreach ($ds as $d) {
-            if (!in_array($d->dataset_id, $this->extractInputDatasetIdToArray($inDatasets))) {
-                $this->deleteDurHasDatasets($durId, $d->dataset_id);
+        $durDatasets = DurHasDatasetVersion::where(['dur_id' => $durId])->get();
+        foreach ($durDatasets as $durDataset) {
+            $dataset_id = DatasetVersion::where("id", $durDataset->dataset_version_id)->first()->dataset_id;
+            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
+                $this->deleteDurHasDatasetVersion($durId, $durDataset->dataset_version_id);
             }
         }
 
         foreach ($inDatasets as $dataset) {
-            $checking = $this->checkInDurHasDatasets($durId, (int) $dataset['id']);
+            $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
+            $checking = $this->checkInDurHasDatasetVersion($durId, $datasetVersionId);
 
             if (!$checking) {
-                $this->addDurHasDataset($durId, $dataset, $userId, $appId);
+                $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId, $appId);
+                MMC::reindexElastic($dataset['id']);
             }
         }
     }
 
-    private function addDurHasDataset(int $durId, array $dataset, int $userId = null, int $appId = null)
+    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
     {
         try {
+
+            $searchArray= [
+                'dur_id' => $durId,
+                'dataset_version_id' => $datasetVersionId,
+            ];
+
             $arrCreate = [
                 'dur_id' => $durId,
-                'dataset_id' => $dataset['id'],
+                'dataset_version_id' => $datasetVersionId,
+                'deleted_at' => null,
             ];
 
             if (array_key_exists('user_id', $dataset)) {
@@ -1227,39 +1242,116 @@ class IntegrationDurController extends Controller
                 $arrCreate['application_id'] = $appId;
             }
 
-            return DurHasDataset::updateOrCreate(
+            return DurHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
+            
+        } catch (Exception $e) {
+            throw new Exception("addDurHasDatasetVersion :: " . $e->getMessage());
+        }
+    }
+
+
+    private function checkInDurHasDatasetVersion(int $durId, int $datasetVersionId)
+    {
+        try {
+            return DurHasDatasetVersion::where([
+                'dur_id' => $durId,
+                'dataset_version_id' => $datasetVersionId,
+            ])->first();
+        } catch (Exception $e) {
+            throw new Exception("checkInDurHasDatasetVersion :: " . $e->getMessage());
+        }
+    }
+        private function deleteDurHasDatasetVersion(int $durId, int $datasetVersionId)
+    {
+        try {
+            return DurHasDatasetVersion::where([
+                'dur_id' => $durId,
+                'dataset_version_id' => $datasetVersionId,
+            ])->delete();
+        } catch (Exception $e) {
+            throw new Exception("deleteDurHasDatasetVersion :: " . $e->getMessage());
+        }
+    }
+
+    // publications
+    private function checkPublications(int $durId, array $inPublications, int $userId = null, int $appId = null) 
+    {
+        $pubs = DurHasPublication::where(['publication_id' => $durId])->get();
+        foreach ($pubs as $p) {
+            if (!in_array($p->publication_id, $this->extractInputIdToArray($inPublications))) {
+                $this->deleteDurHasPublications($durId, $p->publication_id);
+            }
+        }
+
+        foreach ($inPublications as $publication) {
+            $checking = $this->checkInDurHasPublications($durId, (int) $publication['id']);
+
+            if (!$checking) {
+                $this->addDurHasPublication($durId, $publication, $userId, $appId);
+            }
+        }
+    }
+
+    private function addDurHasPublication(int $durId, array $publication, int $userId = null, int $appId = null)
+    {
+        try {
+            $arrCreate = [
+                'dur_id' => $durId,
+                'publication_id' => $publication['id'],
+            ];
+
+            if (array_key_exists('user_id', $publication)) {
+                $arrCreate['user_id'] = (int) $publication['user_id'];
+            } elseif ($userId) {
+                $arrCreate['user_id'] = $userId;
+            }
+
+            if (array_key_exists('reason', $publication)) {
+                $arrCreate['reason'] = $publication['reason'];
+            }
+
+            if (array_key_exists('updated_at', $publication)) { // special for migration
+                $arrCreate['created_at'] = $publication['updated_at'];
+                $arrCreate['updated_at'] = $publication['updated_at'];
+            }
+
+            if ($appId) {
+                $arrCreate['application_id'] = $appId;
+            }
+
+            return DurHasPublication::updateOrCreate(
                 $arrCreate,
                 [
                     'dur_id' => $durId,
-                    'dataset_id' => $dataset['id'],
+                    'publication_id' => $publication['id'],
                 ]
             );
         } catch (Exception $e) {
-            throw new Exception("addDurHasDataset :: " . $e->getMessage());
+            throw new Exception("addDurHasPublication :: " . $e->getMessage());
         }
     }
 
-    private function checkInDurHasDatasets(int $durId, int $datasetId)
+    private function checkInDurHasPublications(int $durId, int $publicationId)
     {
         try {
-            return DurHasDataset::where([
+            return DurHasPublication::where([
                 'dur_id' => $durId,
-                'dataset_id' => $datasetId,
+                'publication_id' => $publicationId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInDurHasDatasets :: " . $e->getMessage());
+            throw new Exception("checkInDurHasPublications :: " . $e->getMessage());
         }
     }
 
-    private function deleteDurHasDatasets(int $durId, int $datasetId)
+    private function deleteDurHasPublications(int $durId, int $publicationId)
     {
         try {
-            return DurHasDataset::where([
+            return DurHasPublication::where([
                 'dur_id' => $durId,
-                'dataset_id' => $datasetId,
+                'publication_id' => $publicationId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+            throw new Exception("deleteDurHasPublications :: " . $e->getMessage());
         }
     }
 
@@ -1378,12 +1470,11 @@ class IntegrationDurController extends Controller
             throw new Exception("deleteDurHasTools :: " . $e->getMessage());
         }
     }
-
-    private function extractInputDatasetIdToArray(array $inputDatasets): Array
+    private function extractInputIdToArray(array $input): Array
     {
         $response = [];
-        foreach ($inputDatasets as $inputDataset) {
-            $response[] = $inputDataset['id'];
+        foreach ($input as $value) {
+            $response[] = $value['id'];
         }
 
         return $response;
@@ -1401,12 +1492,19 @@ class IntegrationDurController extends Controller
         try {
 
             $durMatch = Dur::where(['id' => $id])
-                ->with(['datasets', 'keywords', 'sector'])
-                ->first()
-                ->toArray();
+                ->with(['keywords', 'sector'])
+                ->first();
+
+            $datasets = $durMatch->allDatasets  ?? [];
+
+            $datasetIds = array_map(function ($dataset) {
+                return $dataset['id'];
+            }, $datasets);
+
+            $durMatch =  $durMatch->toArray();
 
             $datasetTitles = array();
-            foreach ($durMatch['datasets'] as $d) {
+            foreach ($datasetIds as $d) {
                 $metadata = Dataset::where(['id' => $d])
                     ->first()
                     ->latestVersion()
@@ -1481,12 +1579,12 @@ class IntegrationDurController extends Controller
         return $title;
     }
 
+    //Get Durs
     private function getDurById(int $durId)
     {
         $dur = Dur::where(['id' => $durId])
             ->with([
                 'keywords',
-                'datasets', 
                 'publications', 
                 'tools', 
                 'userDatasets' => function ($query) {
@@ -1517,13 +1615,15 @@ class IntegrationDurController extends Controller
 
         unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
 
-        $dur = $dur->toArray();
+        // Fetch datasets using the accessor
+        $datasets = $dur->allDatasets  ?? [];
 
-        if ($dur && $dur['datasets']) {
-            foreach ($dur['datasets'] as &$dataset) {
-              $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
-            }
+        foreach ($datasets as &$dataset) {
+            $dataset['shortTitle'] = $this->getDatasetTitle($dataset['id']);
         }
+
+        // Update the relationship with the modified datasets
+        $dur->setAttribute('datasets', $datasets);
 
         return $dur;
     }

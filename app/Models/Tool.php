@@ -9,7 +9,9 @@ use App\Models\License;
 use App\Models\Category;
 use App\Models\Collection;
 use App\Models\Publication;
+use App\Models\DatasetVersionHasTool;
 use App\Models\DatasetVersion;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Prunable;
@@ -20,8 +22,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Tool extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes, Prunable;
+    use HasFactory, Notifiable, SoftDeletes, Prunable, DatasetFetch;
 
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_DRAFT = 'DRAFT';
+    public const STATUS_ARCHIVED = 'ARCHIVED';
+    
     /**
      * The table associated with the model.
      * 
@@ -50,6 +56,7 @@ class Tool extends Model
         'associated_authors', 
         'contact_address',
         'any_dataset',
+        'status',
     ];
 
     /**
@@ -59,6 +66,15 @@ class Tool extends Model
         'enabled' => 'boolean',
         'any_dataset' => 'boolean',
     ];
+
+    // Accessor for all datasets associated with this object
+    public function getAllDatasetsAttribute()
+    {
+        return $this->getDatasetsViaDatasetVersion(
+            DatasetVersionHasTool::class,
+            'tool_id'
+        );
+    }
 
     public function user(): BelongsTo
     {
@@ -120,8 +136,16 @@ class Tool extends Model
         return $this->belongsToMany(Collection::class, 'collection_has_tools');
     }
 
-    public function datasetVersions(): BelongsToMany
+    /**
+     * Retrieve versions associated with this tool
+     */
+    public function versions()
     {
-        return $this->belongsToMany(DatasetVersion::class, 'dataset_version_has_tool');
+        return $this->belongsToMany(DatasetVersion::class, 'dataset_version_has_tool', 'tool_id', 'dataset_version_id');
+    }
+
+    public function datasetVersions()
+    {
+        return $this->hasMany(DatasetVersionHasTool::class, 'tool_id');
     }
 }

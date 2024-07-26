@@ -846,6 +846,27 @@ trait MockExternalApis
             )
         ]);
 
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi' => Http::response([
+                "hitCount" => 1,
+                "resultList" => [
+                    "result" => [
+                        0 => [
+                            "id" => "PPR885146",
+                            "doi" => "10.3310/abcde",
+                            "title" => "DOI test publication",
+                            "authorString" => "",
+                            "journalInfo" => null,
+                            "pubYear" => "2024",
+                            "abstractText" => ""
+                        ]
+                    ]
+                ]
+            ],
+            200,
+            ['application/json'])
+        ]);
+
         // Mock the search service - data providers
         Http::fake([
             env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers*' => Http::response(

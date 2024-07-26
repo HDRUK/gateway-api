@@ -35,7 +35,8 @@ use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
+use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DurTest extends TestCase
@@ -77,10 +78,11 @@ class DurTest extends TestCase
             ToolSeeder::class,
             DurSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             PublicationHasToolSeeder::class,
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
+            DurHasDatasetVersionSeeder::class,
         ]);
     }
     /**
@@ -761,7 +763,6 @@ class DurTest extends TestCase
             $mockData,
             $this->header
         );
-
         $response->assertStatus(201);
         $durId = (int) $response['data'];
 
@@ -817,7 +818,9 @@ class DurTest extends TestCase
         $iterations = rand(1, 5);
 
         for ($i = 1; $i <= $iterations; $i++) {
-            $return[] = Dataset::all()->random()->id;
+            $temp = [];
+            $temp['id'] = Dataset::all()->random()->id;
+            $return[] = $temp;
         }
 
         return $return;

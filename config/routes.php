@@ -369,6 +369,17 @@ return [
     ],
     [
         'name' => 'teams',
+        'method' => 'get',
+        'path' => '/teams/{teamId}/summary',
+        'methodController' => 'TeamController@showSummary',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [
+            'teamId' => '[0-9]+',
+        ],
+    ],
+    [
+        'name' => 'teams',
         'method' => 'post',
         'path' => '/teams',
         'methodController' => 'TeamController@store',
@@ -2451,6 +2462,15 @@ return [
         'method' => 'post',
         'path' => '/search/publications',
         'methodController' => 'SearchController@publications',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'search.doiSearch',
+        'method' => 'post',
+        'path' => '/search/doi',
+        'methodController' => 'SearchController@doiSearch',
         'namespaceController' => 'App\Http\Controllers\Api\V1',
         'middleware' => [],
         'constraint' => [],

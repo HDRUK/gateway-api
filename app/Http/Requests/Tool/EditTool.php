@@ -141,6 +141,11 @@ class EditTool extends BaseFormRequest
                 'nullable', 
                 'boolean',
             ],
+            'status' => [
+                'sometimes',
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
+            ],
         ];
     }
 

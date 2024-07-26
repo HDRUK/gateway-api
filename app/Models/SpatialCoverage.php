@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\DatasetVersionHasSpatialCoverage;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-
 class SpatialCoverage extends Model
 {
-    use HasFactory;
+    use HasFactory, DatasetFetch;
 
     protected $fillable = [
         'region',
@@ -48,11 +48,20 @@ class SpatialCoverage extends Model
      */
     private $enabled = false;
 
-    /**
-     * The datasets that belong to the spatial coverage.
-     */
-    public function datasets(): BelongsToMany
+    // Accessor for all datasets associated with this object
+    public function getAllDatasetsAttribute()
     {
-        return $this->belongsToMany(Dataset::class, 'dataset_has_spatial_coverage');
+        return $this->getDatasetsViaDatasetVersion(
+            DatasetVersionHasSpatialCoverage::class,
+            'spatial_coverage_id'
+        );
+    }
+
+    /**
+     * Retrieve versions associated with this spatial coverage.
+     */
+    public function versions()
+    {
+        return $this->belongsToMany(DatasetVersion::class, 'dataset_version_has_spatial_coverage', 'spatial_coverage_id', 'dataset_version_id');
     }
 }

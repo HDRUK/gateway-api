@@ -9,15 +9,17 @@ use App\Models\Dataset;
 use App\Models\Keyword;
 use App\Models\Collection;
 use App\Models\Application;
+use App\Models\DatasetVersion;
 use App\Models\DataProvider;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use App\Models\CollectionHasDur;
 use App\Models\DataProviderColl;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
 use App\Models\DataProviderHasTeam;
 use App\Http\Controllers\Controller;
-use App\Models\CollectionHasDataset;
+use App\Models\CollectionHasDatasetVersion;
 use App\Models\CollectionHasKeyword;
 use App\Exceptions\NotFoundException;
 use App\Models\DataProviderCollHasTeam;
@@ -103,12 +105,22 @@ class CollectionController extends Controller
         try {
             $perPage = $request->has('perPage') ? (int) $request->get('perPage') : Config::get('constants.per_page');
             $name = $request->query('name', null);
+            $filterStatus = $request->query('status', null);
+
+            $sort = $request->query('sort', 'name:desc');
+            $tmp = explode(":", $sort);
+            $sortField = $tmp[0];
+            $sortDirection = array_key_exists(1, $tmp) ? $tmp[1] : 'desc';
+
             $collections = Collection::when($name, function ($query) use ($name) {
                 return $query->where('name', 'LIKE', '%' . $name . '%');
             })
+            ->when($filterStatus, 
+                function ($query) use ($filterStatus) {
+                    return $query->where('status', '=', $filterStatus);
+            })
             ->with([
                 'keywords',
-                'datasets',
                 'tools',
                 'dur',
                 'publications',
@@ -119,7 +131,11 @@ class CollectionController extends Controller
                 'applicationTools',
                 'applicationPublications',
                 'team',
-            ])->paginate((int) $perPage, ['*'], 'page');
+            ])
+            ->when($sort, 
+                    fn($query) => $query->orderBy($sortField, $sortDirection)
+                )
+            ->paginate((int) $perPage, ['*'], 'page');
 
             $collections->getCollection()->transform(function ($collection) {
                 $userDatasets = $collection->userDatasets;
@@ -127,6 +143,7 @@ class CollectionController extends Controller
                 $userPublications = $collection->userPublications;
                 $users = $userDatasets->merge($userTools)->merge($userPublications)->unique('id');
                 $collection->setRelation('users', $users);
+                $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
                 $applicationDatasets = $collection->applicationDatasets;
                 $applicationTools = $collection->applicationTools;
@@ -156,6 +173,74 @@ class CollectionController extends Controller
             return response()->json(
                 $collections
             );
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/collections/count/{field}",
+     *    operationId="count_unique_fields_collections",
+     *    tags={"Collections"},
+     *    summary="CollectionController@count",
+     *    description="Get Counts for distinct entries of a field in the model",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="field",
+     *       in="path",
+     *       description="name of the field to perform a count on",
+     *       required=true,
+     *       example="status",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="status field",
+     *       ),
+     *    ),
+     *    @OA\Parameter(
+     *       name="team_id",
+     *       in="query",
+     *       description="team id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="team id",
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(
+     *             property="data",
+     *             type="object",
+     *          )
+     *       )
+     *    )
+     * )
+     */
+    public function count(Request $request, string $field): JsonResponse
+    {
+        try {
+            $teamId = $request->query('team_id',null);
+            $counts = Collection::when($teamId, function ($query) use ($teamId) {
+                return $query->where('team_id', '=', $teamId);
+            })->withTrashed()
+                ->select($field)
+                ->get()
+                ->groupBy($field)
+                ->map->count();
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Collection count",
+            ]);
+
+            return response()->json([
+                "data" => $counts
+            ]);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -314,6 +399,7 @@ class CollectionController extends Controller
                 'mongo_object_id', 
                 'mongo_id',
                 'team_id',
+                'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -356,10 +442,14 @@ class CollectionController extends Controller
             if (array_key_exists('team_id', $input)) {
                 Collection::where('id', $collectionId)->update(['team_id' => $input['team_id']]);
             }
-            $this->indexElasticCollections((int)$collectionId);
+
+            $currentCollection = Collection::where('id', $collectionId)->first();
+            if($currentCollection->status === Collection::STATUS_ACTIVE){
+                $this->indexElasticCollections((int) $collectionId);
+            }
 
             Auditor::log([
-                'user_id' => $array['user_id'],
+                'user_id' => $userId,
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
@@ -369,7 +459,7 @@ class CollectionController extends Controller
             return response()->json([
                 'message' => 'created',
                 'data' => $collectionId,
-            ], 201);
+            ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -461,6 +551,12 @@ class CollectionController extends Controller
         try {
             $input = $request->all();
 
+            $initCollection = Collection::withTrashed()->where('id', $id)->first();
+
+            if ($initCollection['status'] === Collection::STATUS_ARCHIVED && !array_key_exists('status', $input)) {
+                throw new Exception('Cannot update current collection! Status already "ARCHIVED"');
+            }
+
             $userId = null;
             $appId = null;
             if (array_key_exists('user_id', $input)) {
@@ -483,6 +579,7 @@ class CollectionController extends Controller
                 'mongo_object_id', 
                 'mongo_id',
                 'team_id',
+                'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
@@ -523,10 +620,14 @@ class CollectionController extends Controller
             if (array_key_exists('team_id', $input)) {
                 Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
             }
-            // $this->indexElasticCollections($id);
+
+            $currentCollection = Collection::where('id', $id)->first();
+            if($currentCollection->status === Collection::STATUS_ACTIVE){
+                $this->indexElasticCollections((int) $id);
+            }
 
             Auditor::log([
-                'user_id' => $array['user_id'],
+                'user_id' => $userId,
                 'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
@@ -536,7 +637,7 @@ class CollectionController extends Controller
             return response()->json([
                 'message' => 'success',
                 'data' => $this->getCollectionById($id),
-            ], 200);
+            ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -549,6 +650,15 @@ class CollectionController extends Controller
      *    summary="Edit a collection",
      *    description="Edit a collection",
      *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="unarchive",
+     *       in="query",
+     *       description="Unarchive a collection",
+     *       @OA\Schema(
+     *          type="string",
+     *          description="instruction to unarchive collection",
+     *       ),
+     *    ),
      *    @OA\Parameter(
      *       name="id",
      *       in="path",
@@ -575,6 +685,7 @@ class CollectionController extends Controller
      *             @OA\Property(property="dur", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="publications", type="array", example="[]", @OA\Items()),
      *             @OA\Property(property="public", type="boolean", example="true"),
+     *             @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *          ),
      *       ),
      *    ),
@@ -611,6 +722,7 @@ class CollectionController extends Controller
      *                   @OA\Property(property="users", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="applications", type="array", example="[]", @OA\Items()),
      *                   @OA\Property(property="team", type="array", example="{}", @OA\Items()),
+     *                   @OA\Property(property="status", type="string", enum={"ACTIVE", "DRAFT", "ARCHIVED"}),
      *              ),
      *        ),
      *    ),
@@ -638,75 +750,120 @@ class CollectionController extends Controller
                 $appId = (int) $input['app']['id'];
             }
 
-            $arrayKeys = [
-                'name', 
-                'description', 
-                'image_link', 
-                'enabled', 
-                'public', 
-                'counter', 
-                'mongo_object_id', 
-                'mongo_id',
-                'team_id',
-            ];
-            $array = $this->checkEditArray($input, $arrayKeys);
+            if ($request->has('unarchive')) {
+                $collectionModel = Collection::withTrashed()
+                    ->find($id);
+                if ($request['status'] !== Collection::STATUS_ARCHIVED) {
+                    if (in_array($request['status'], [
+                        Collection::STATUS_ACTIVE, Collection::STATUS_DRAFT
+                    ])) {
+                        $collectionModel->status = $request['status'];
+                        $collectionModel->deleted_at = null;
+                        $collectionModel->save();
 
-            Collection::where('id', $id)->update($array);
-            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+                        CollectionHasDatasetVersion::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasTool::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasDur::withTrashed()->where('collection_id', $id)->restore();
+                        CollectionHasPublication::withTrashed()->where('collection_id', $id)->restore();
 
-            if (array_key_exists('datasets', $input)) {
-                $datasets = $input['datasets'];
-                $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
+                        Auditor::log([
+                            'user_id' => $userId,
+                            'action_type' => 'UPDATE',
+                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                            'description' => "Collection " . $id . " unarchived and marked as " . strtoupper($request['status']),
+                        ]);
+                    }
+                }
+
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $this->getCollectionById($id),
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            } else {
+                $arrayKeys = [
+                    'name', 
+                    'description', 
+                    'image_link', 
+                    'enabled', 
+                    'public', 
+                    'counter', 
+                    'mongo_object_id', 
+                    'mongo_id',
+                    'team_id',
+                    'status',
+                ];
+                $array = $this->checkEditArray($input, $arrayKeys);
+
+                // Handle the 'deleted_at' field based on 'status'
+                if (isset($input['status']) && ($input['status'] === Collection::STATUS_ARCHIVED)) {
+                    $array['deleted_at'] = Carbon::now();
+
+                } else {
+                    $array['deleted_at'] = null;
+                }
+
+                // Update the collection including soft-deleted ones
+                Collection::withTrashed()->where('id', $id)->update($array);
+                $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
+
+                $updatedCollection = Collection::withTrashed()->where('id', $id)->first();
+                // Check and update related datasets and tools etc if the collection is active
+                if ($updatedCollection->status !== Collection::STATUS_ACTIVE) {
+                    if (array_key_exists('datasets', $input)) {
+                        $datasets = $input['datasets'];
+                        $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
+                    }
+
+                    if (array_key_exists('tools', $input)) {
+                        $tools = $input['tools'];
+                        $this->checkTools($id, $tools, $userIdFinal, $appId);
+                    }
+
+                    if (array_key_exists('dur', $input)) {
+                        $dur = $input['dur'];
+                        $this->checkDurs($id, $dur, $userIdFinal, $appId);
+                    }
+
+                    if (array_key_exists('publications', $input)) {
+                        $publications = $input['publications'];
+                        $this->checkPublications($id, $publications, $userIdFinal, $appId);
+                    }
+
+                    if (array_key_exists('keywords', $input)) {
+                        $keywords = $input['keywords'];
+                        $this->checkKeywords($id, $keywords);
+                    }
+
+                    // for migration from mongo database
+                    if (array_key_exists('created_at', $input)) {
+                        Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
+                    }
+
+                    // for migration from mongo database
+                    if (array_key_exists('updated_at', $input)) {
+                        Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
+                    }
+
+                    // add in a team
+                    if (array_key_exists('team_id', $input)) {
+                        Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
+                    }
+                    $this->indexElasticCollections($id);
+                }
+
+                Auditor::log([
+                    'user_id' => $userIdFinal,
+                    'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
+                    'action_type' => 'UPDATE',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Collection " . $id . " updated",
+                ]);
+
+                return response()->json([
+                    'message' => 'success',
+                    'data' => $this->getCollectionById($id),
+                ], Config::get('statuscodes.STATUS_OK.code'));
             }
-
-            if (array_key_exists('tools', $input)) {
-                $tools = $input['tools'];
-                $this->checkTools($id, $tools, $userIdFinal, $appId);
-            }
-
-            if (array_key_exists('dur', $input)) {
-                $dur = $input['dur'];
-                $this->checkDurs($id, $dur, $userIdFinal, $appId);
-            }
-
-            if (array_key_exists('publications', $input)) {
-                $publications = $input['publications'];
-                $this->checkPublications($id, $publications, $userIdFinal, $appId);
-            }
-
-            if (array_key_exists('keywords', $input)) {
-                $keywords = $input['keywords'];
-                $this->checkKeywords($id, $keywords);
-            }
-
-            // for migration from mongo database
-            if (array_key_exists('created_at', $input)) {
-                Collection::where('id', $id)->update(['created_at' => $input['created_at']]);
-            }
-
-            // for migration from mongo database
-            if (array_key_exists('updated_at', $input)) {
-                Collection::where('id', $id)->update(['updated_at' => $input['updated_at']]);
-            }
-
-            // add in a team
-            if (array_key_exists('team_id', $input)) {
-                Collection::where('id', $id)->update(['team_id' => $input['team_id']]);
-            }
-            $this->indexElasticCollections($id);
-
-            Auditor::log([
-                'user_id' => $userIdFinal,
-                'target_team_id' => array_key_exists('team_id', $array) ? $array['team_id'] : NULL,
-                'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Collection " . $id . " updated",
-            ]);
-
-            return response()->json([
-                'message' => 'success',
-                'data' => $this->getCollectionById($id),
-            ], 200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -759,24 +916,28 @@ class CollectionController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            CollectionHasDataset::where(['collection_id' => $id])->delete();
-            CollectionHasTool::where(['collection_id' => $id])->delete();
-            CollectionHasDur::where(['collection_id' => $id])->delete();
-            CollectionHasKeyword::where(['collection_id' => $id])->delete();
-            CollectionHasPublication::where(['collection_id' => $id])->delete();
-            Collection::where(['id' => $id])->delete();
+            $collection = Collection::where(['id' => $id])->first();
+            if ($collection) {
+                CollectionHasDatasetVersion::where(['collection_id' => $id])->delete();
+                CollectionHasTool::where(['collection_id' => $id])->delete();
+                CollectionHasDur::where(['collection_id' => $id])->delete();
+                CollectionHasKeyword::where(['collection_id' => $id])->delete();
+                CollectionHasPublication::where(['collection_id' => $id])->delete();
+                Collection::where(['id' => $id])->delete();
 
-            Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
-                'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Collection " . $id . " deleted",
-            ]);
+                Auditor::log([
+                    'user_id' => (int) $jwtUser['id'],
+                    'action_type' => 'DELETE',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Collection " . $id . " deleted",
+                ]);
 
-            return response()->json([
-                'message' => 'success',
-            ], 200);
+                return response()->json([
+                    'message' => 'success',
+                ], Config::get('statuscodes.STATUS_OK.code'));
+            }
 
+            throw new NotFoundException();
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
@@ -784,10 +945,8 @@ class CollectionController extends Controller
 
     private function getCollectionById(int $collectionId)
     {
-        $collection = Collection::where(['id' => $collectionId])
-        ->with([
-            'keywords',
-            'datasets', 
+        $collection = Collection::with([
+            'keywords', 
             'tools', 
             'dur',
             'publications',
@@ -798,7 +957,13 @@ class CollectionController extends Controller
             'applicationTools',
             'applicationPublications',
             'team',
-        ])->first();
+        ])
+        ->withTrashed()
+        ->where(['id' => $collectionId])
+        ->first();
+        
+        // Set the datasets attribute with the latest datasets
+        $collection->setAttribute('datasets', $collection->allDatasets  ?? []);
 
         $userDatasets = $collection->userDatasets;
         $userTools = $collection->userTools;
@@ -827,30 +992,38 @@ class CollectionController extends Controller
     // datasets
     private function checkDatasets(int $collectionId, array $inDatasets, int $userId = null, int $appId = null) 
     {
-        $cols = CollectionHasDataset::where(['collection_id' => $collectionId])->get();
+        $cols = CollectionHasDatasetVersion::where(['collection_id' => $collectionId])->get();
         foreach ($cols as $col) {
-            if (!in_array($col->dataset_id, $this->extractInputIdToArray($inDatasets))) {
-                $this->deleteCollectionHasDatasets($collectionId, $col->dataset_id);
+            $dataset_id = DatasetVersion::where("id", $col->dataset_version_id)->first()->dataset_id;
+            if (!in_array($dataset_id, $this->extractInputIdToArray($inDatasets))) {
+                $this->deleteCollectionHasDatasetVersions($collectionId, $col->dataset_version_id);
             }
         }
 
         foreach ($inDatasets as $dataset) {
-            $checking = $this->checkInCollectionHasDatasets($collectionId, (int) $dataset['id']);
-
+            $datasetVersionId=Dataset::where('id',(int) $dataset['id'])->first()->latestVersion()->id;
+            $checking = $this->checkInCollectionHasDatasetVersions($collectionId, $datasetVersionId);
+        
             if (!$checking) {
-                $this->addCollectionHasDataset($collectionId, $dataset, $userId, $appId);
+                $this->addCollectionHasDatasetVersion($collectionId, $dataset, $datasetVersionId, $userId, $appId);
+                MMC::reindexElastic($dataset['id']);
             }
-
-            MMC::reindexElastic($dataset['id']);
         }
     }
 
-    private function addCollectionHasDataset(int $collectionId, array $dataset, int $userId = null, int $appId = null)
+    private function addCollectionHasDatasetVersion(int $collectionId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
     {
         try {
+
+            $searchArray = [
+                'collection_id' => $collectionId,
+                'dataset_version_id' => $datasetVersionId,
+            ];
+
             $arrCreate = [
                 'collection_id' => $collectionId,
-                'dataset_id' => $dataset['id'],
+                'dataset_version_id' => $datasetVersionId,
+                'deleted_at' => null,
             ];
 
             if (array_key_exists('user_id', $dataset)) {
@@ -872,39 +1045,33 @@ class CollectionController extends Controller
                 $arrCreate['application_id'] = $appId;
             }
 
-            return CollectionHasDataset::updateOrCreate(
-                $arrCreate,
-                [
-                    'collection_id' => $collectionId,
-                    'dataset_id' => $dataset['id'],
-                ]
-            );
+            return CollectionHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
         } catch (Exception $e) {
-            throw new Exception("addCollectionHasDataset :: " . $e->getMessage());
+            throw new Exception("addCollectionHasDatasetVersion :: " . $e->getMessage());
         }
     }
 
-    private function checkInCollectionHasDatasets(int $collectionId, int $datasetId)
+    private function checkInCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {
         try {
-            return CollectionHasDataset::where([
+            return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-                'dataset_id' => $datasetId,
+                'dataset_version_id' => $datasetVersionId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInCollectionHasDatasets :: " . $e->getMessage());
+            throw new Exception("checkInCollectionHasDatasetVersions :: " . $e->getMessage());
         }
     }
 
-    private function deleteCollectionHasDatasets(int $collectionId, int $datasetId)
+    private function deleteCollectionHasDatasetVersions(int $collectionId, int $datasetVersionId)
     {
         try {
-            return CollectionHasDataset::where([
+            return CollectionHasDatasetVersion::where([
                 'collection_id' => $collectionId,
-                'dataset_id' => $datasetId,
+                'dataset_version_id' => $datasetVersionId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteCollectionHasDatasets :: " . $e->getMessage());
+            throw new Exception("deleteCollectionHasDatasetVersions :: " . $e->getMessage());
         }
     }
 
@@ -1216,12 +1383,19 @@ class CollectionController extends Controller
      */
     public function indexElasticCollections(int $collectionId): void 
     {
-        $collection = Collection::with(['team', 'datasets', 'keywords'])->where('id', $collectionId)->first()->toArray();
+        $collection = Collection::with(['team', 'keywords'])->where('id', $collectionId)->first();
+        $datasets = $collection->allDatasets  ?? [];
+
+        $datasetIds = array_map(function ($dataset) {
+            return $dataset['id'];
+        }, $datasets);
+
+        $collection = $collection->toArray();
         $team = $collection['team'];
 
         $datasetTitles = array();
         $datasetAbstracts = array();
-        foreach ($collection['datasets'] as $d) {
+        foreach ($datasetIds as $d) {
             $metadata = Dataset::where(['id' => $d])
                 ->first()
                 ->latestVersion()
@@ -1229,7 +1403,7 @@ class CollectionController extends Controller
             $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
             $datasetAbstracts[] = $metadata['metadata']['summary']['abstract'];
         }
-        
+
         $keywords = array();
         foreach ($collection['keywords'] as $k) {
             $keywords[] = $k['name'];

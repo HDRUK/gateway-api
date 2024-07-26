@@ -92,10 +92,6 @@ class Dataset extends Model
         return DatasetVersion::findOrFail($version);
     }
 
-
-    /**
-     * The very latest metadata via a hasOne relation
-     */
     public function latestMetadata(): HasOne
     {
         return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()->latest('version');
@@ -110,6 +106,9 @@ class Dataset extends Model
             ->latest('version')->select('version')->first();
     }
 
+    /**
+     * The very last metadata as an array
+     */
     public function lastMetadata(): array
     {
         $datasetVersion = DatasetVersion::where('dataset_id', $this->id)
@@ -117,25 +116,6 @@ class Dataset extends Model
         return  $datasetVersion['metadata'];
     }
 
-    /**
-     * Get the latest version's named entities.
-     *
-     */
-    public function getLatestNamedEntities()
-    {  
-        $entityIds = DatasetVersionHasNamedEntities::where('dataset_version_id', $this->latestVersion()->id)
-            ->pluck('named_entities_id');
-
-        return NamedEntities::whereIn('id', $entityIds)->get();
-    }
-
-    /**
-     * The collections that the dataset belongs to.
-     */
-    public function collections(): BelongsToMany
-    {
-        return $this->belongsToMany(Collection::class, 'collection_has_datasets');
-    }
 
     /**
      * Helper function to use JSON functions to search by title within metadata.
@@ -150,35 +130,6 @@ class Dataset extends Model
             )->latest('version')->first();
     }
 
-    
-    /**
-     * The spatial coverage that belong to the dataset.
-     */
-    public function getLatestSpatialCoverage()
-    {
-        $entityIds = DatasetVersionHasSpatialCoverage::where('dataset_version_id', $this->latestVersion()->id)
-            ->pluck('spatial_coverage_id');
-
-        return SpatialCoverage::whereIn('id', $entityIds)->get();
-    }
-
-    /**
-     * The tools that belong to a dataset.
-     */
-    public function getLatestTools()
-    {
-        $toolIds = DatasetVersionHasTool::where('dataset_version_id', $this->latestVersion()->id)
-            ->pluck('tool_id');
-
-        return Tool::whereIn('id', $toolIds)->get();
-    }
-
-     // Add an accessor for tools
-     public function getToolsAttribute()
-     {
-         return $this->getLatestTools();
-     }
-
     /**
      * Order by raw metadata extract
      */
@@ -190,26 +141,103 @@ class Dataset extends Model
     }
 
     /**
-     * The durs that belong to a dataset.
-     */
-    public function durs(): BelongsToMany
-    {
-        return $this->belongsToMany(Dur::class, 'dur_has_datasets');
-    }
-
-    /**
-     * The publications that belong to a dataset.
-     */
-    public function publications(): BelongsToMany
-    {
-        return $this->belongsToMany(Publication::class, 'publication_has_dataset');
-    }
-
-    /**
      * The team for the dataset.
      */
     public function team(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'team_id');
+    }
+
+    // Accessor for all named entities
+    public function getAllNamedEntitiesAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            DatasetVersionHasNamedEntities::class, 
+            NamedEntities::class, 
+            'named_entities_id' 
+        );
+    }
+
+    // Accessor for all spatial coverages
+    public function getAllSpatialCoveragesAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            DatasetVersionHasSpatialCoverage::class, 
+            SpatialCoverage::class, 
+            'spatial_coverage_id'
+        );
+    }
+
+    // Accessor for all tools
+    public function getAllToolsAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            DatasetVersionHasTool::class, 
+            Tool::class, 
+            'tool_id'
+        );
+    }
+
+    // Accessor for all collections
+    public function getAllCollectionsAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            CollectionHasDatasetVersion::class, 
+            Collection::class, 
+            'collection_id'
+        );
+    }
+
+    // Accessor for all durs
+    public function getAllDursAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            DurHasDatasetVersion::class, 
+            Dur::class, 
+            'dur_id'
+        );
+    }
+
+    // Accessor for all publications
+    public function getAllPublicationsAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            PublicationHasDatasetVersion::class, 
+            Publication::class, 
+            'publication_id'
+        );
+    }
+
+    /**
+     * Helper function to get stuff linked by datasetVersionHasX
+     */
+    public function getRelationsViaDatasetVersion($linkageTable, $targetTable, $foreignTableId)
+    {
+        // Step 1: Get the dataset version IDs 
+        $versionIds = $this->versions()->pluck('id')->toArray();
+
+        // Step 2: Use the version IDs to find all related entityIDs through the linkage table
+        $entityIds = $linkageTable::whereIn('dataset_version_id', $versionIds)
+            ->pluck($foreignTableId)
+            ->unique()
+            ->toArray();
+            
+        // Step 3: Retrieve all entities using the collected entities IDs    
+        $entities = $targetTable::whereIn('id', $entityIds)->get();
+
+        // Iterate through each entity and add associated dataset versions
+        foreach ($entities as $entity) {
+            // Retrieve dataset version IDs associated with the current entity
+            $datasetVersionIds = $linkageTable::where($foreignTableId, $entity->id)
+                ->whereIn('dataset_version_id', $versionIds)
+                ->pluck('dataset_version_id')
+                ->toArray();
+
+            // Add associated dataset versions to the entity object
+            $entity->setAttribute('dataset_version_ids', $datasetVersionIds);  
+        }
+
+        // Return the collection of entities with injected dataset version IDs
+        return $entities->toArray();
     }
 }

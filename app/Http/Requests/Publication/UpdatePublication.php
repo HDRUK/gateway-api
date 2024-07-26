@@ -89,7 +89,12 @@ class UpdatePublication extends BaseFormRequest
             'mongo_id' => [
                 'nullable',
                 'string',
-            ],       
+            ],
+            'status' => [
+                'sometimes',
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
+            ],
         ];
     }
 
