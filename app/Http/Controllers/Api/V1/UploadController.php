@@ -108,7 +108,13 @@ class UploadController extends Controller
                 'data' => Upload::where('id', $upload->id)->first()
             ]);
         } catch (Exception $e) {
-            dd($e->getMessage());
+            Auditor::log([
+                'action_type' => 'POST',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -168,6 +174,8 @@ class UploadController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]); 
+
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -248,6 +256,8 @@ class UploadController extends Controller
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => $e->getMessage(),
             ]);
+
+            throw new Exception($e->getMessage());
         }
     }
 }
