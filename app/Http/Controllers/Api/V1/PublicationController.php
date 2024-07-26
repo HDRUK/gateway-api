@@ -716,7 +716,6 @@ class PublicationController extends Controller
                     'data' => $this->getPublicationById($id),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
