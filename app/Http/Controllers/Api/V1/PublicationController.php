@@ -108,8 +108,14 @@ class PublicationController extends Controller
             })
             ->when($filterStatus, 
                 function ($query) use ($filterStatus) {
-                    return $query->where('status', '=', $filterStatus);
-            })
+                    return $query->where('status', '=', $filterStatus)
+                        ->when($filterStatus === Publication::STATUS_ARCHIVED, 
+                            function ($query) {
+                                return $query->withTrashed();
+                            }
+                        );
+                }
+            )
             ->when($withRelated, fn($query) => $query->with(['tools']))
             ->when($sort, 
                     fn($query) => $query->orderBy($sortField, $sortDirection)
