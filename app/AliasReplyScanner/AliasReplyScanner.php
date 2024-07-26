@@ -173,7 +173,10 @@ class AliasReplyScanner {
             ],
         ];
 
-        $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', $enquiryMessage->message_body));
+        $messageBody = $enquiryMessage->message_body;
+        $lines = preg_split('/\r\n|\r|\n/', $messageBody);
+        $cleanedText = implode("\n", array_filter($lines));
+        $body = trim(str_replace('P {margin-top:0;margin-bottom:0;}', '', str_replace(["\r\n", "\n"], "<br/>", $cleanedText)));
         $this->sendEmail('dar.notifymessage', $payload, $usersToNotify, $enquiryThread->user_id, $body);
     }
 
