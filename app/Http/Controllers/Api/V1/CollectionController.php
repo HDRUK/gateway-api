@@ -117,7 +117,12 @@ class CollectionController extends Controller
             })
             ->when($filterStatus, 
                 function ($query) use ($filterStatus) {
-                    return $query->where('status', '=', $filterStatus);
+                    return $query->where('status', '=', $filterStatus)
+                        ->when($filterStatus === Collection::STATUS_ARCHIVED, 
+                                    function ($query) {
+                                        return $query->withTrashed();
+                                    }
+                            );
             })
             ->with([
                 'keywords',

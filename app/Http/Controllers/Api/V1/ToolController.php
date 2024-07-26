@@ -190,9 +190,14 @@ class ToolController extends Controller
                 return $query->where('user_id', '=', $userId);
             })
             ->when($filterStatus, 
-            function ($query) use ($filterStatus) {
-                return $query->where('status', '=', $filterStatus);
-            })
+                function ($query) use ($filterStatus) {
+                    return $query->where('status', '=', $filterStatus)
+                        ->when($filterStatus === Tool::STATUS_ARCHIVED, 
+                                    function ($query) {
+                                        return $query->withTrashed();
+                                    }
+                                );
+                })
             ->when($filterTitle, function ($query) use ($filterTitle) {
                 return $query->where('name', 'like', '%' . $filterTitle . '%');
             })
