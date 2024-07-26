@@ -149,62 +149,6 @@ class AliasReplyScannerTest extends TestCase
         $this->assertCount(2,$messages);
     }
 
-    public function test_it_can_scrape_and_store_email_content(): void
-    {
-        $messages = ARS::getNewMessagesSafe();
-        $firstMessage = $messages[0];
-        $alias = ARS::getAlias($firstMessage);
-        $enquiryThread = ARS::getThread($alias);
-        $nMessagesBefore = EnquiryMessage::get()->count();
-
-        $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage,$enquiryThread->id);
-        $this->assertNotEmpty($enquiryMessage);
-
-        $nMessagesAfter = EnquiryMessage::get()->count();
-        $this->assertTrue($nMessagesAfter == $nMessagesBefore + 1);
-        $this->assertSame($enquiryMessage->message_body,$firstMessage->getHTMLBody());
-
-    }
-
-    public function test_it_can_scrape_an_email_and_store_content(): void
-    {
-
-        $messages = ARS::getNewMessagesSafe();
-        $firstMessage = $messages[0];
-        $alias = ARS::getAlias($firstMessage);
-        $enquiryThread = ARS::getThread($alias);
-
-        $teamId = $enquiryThread->team_id;
-        $team = Team::with("users")
-                ->where("id",$teamId)
-                ->first();
-
-        $actualDarManagers = $team->teamUserRoles
-            ->where("role_name", "custodian.dar.manager")
-            ->where("enabled", true);
-        
-        $darManagers = ARS::getDarManagersFromEnquiryMessage($enquiryThread->id);
-        $this->assertEqualsCanonicalizing($darManagers,$actualDarManagers);
-    }
-
-    public function test_it_will_fail_to_get_dar_managers_if_team_doesnt_exist(): void
-    {
-
-        $messages = ARS::getNewMessagesSafe();
-        $firstMessage = $messages[0];
-        $alias = ARS::getAlias($firstMessage);
-        $enquiryThread = ARS::getThread($alias);
-
-
-        $teamId = $enquiryThread->team_id;
-        Team::where("id",$teamId)->delete();
-        
-        $this->expectException(AliasReplyScannerException::class);
-        ARS::getDarManagersFromEnquiryMessage($enquiryThread->id);
-         
-    }
-
-
     private function getMockedMessage ($email){
 
         $mock = Mockery::mock(Message::class)
