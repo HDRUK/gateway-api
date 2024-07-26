@@ -102,11 +102,11 @@ class LibraryController extends Controller
             $libraries = $libraries->paginate($perPage);
 
             $transformedLibraries = $libraries->getCollection()->map(function ($library) {
-                $dataset = $library->dataset->first();
+                $dataset = $library->dataset;
                 $team = $dataset->team->first();
 
                 // Using dynamic attributes to avoid undefined property error
-                $library->setAttribute('dataset_id', (int)$dataset->datasetid);
+                $library->setAttribute('dataset_id', (int)$dataset->id);
                 $library->setAttribute('dataset_status', $dataset->status);
                 $library->setAttribute('data_provider_id', $team->pid);
                 $library->setAttribute('data_provider_dar_status', $team->uses_5_safes);
