@@ -130,19 +130,19 @@ class DatasetController extends Controller
     {
         try {
             $matches = [];
-            $teamId = $request->query('team_id',null);
+            $teamId = $request->query('team_id', null);
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
             $mongoPId = $request->query('mongo_pid', null);
             $withMetadata = $request->boolean('with_metadata', true);
     
-            $sort = $request->query('sort',"created:desc");   
+            $sort = $request->query('sort', 'created:desc');   
             
             $tmp = explode(":", $sort);
             $sortField = $tmp[0];
             $sortDirection = array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
     
-            $sortOnMetadata = str_starts_with($sortField,"metadata.");
+            $sortOnMetadata = str_starts_with($sortField, 'metadata.');
     
             $allFields = collect(Dataset::first())->keys()->toArray();
             if (!$sortOnMetadata && count($allFields) > 0 && !in_array($sortField, $allFields)) {
@@ -156,7 +156,7 @@ class DatasetController extends Controller
             if (!in_array($sortDirection, $validDirections)) {
                 //if the sort direction is not desc or asc then return a bad request
                 return response()->json([
-                    "message" => "Sort direction must be either: " . 
+                    "message" => 'Sort direction must be either: ' . 
                         implode(' OR ',$validDirections) . 
                         '. Not "' . $sortDirection .'"'
                     ], 400);
@@ -226,13 +226,19 @@ class DatasetController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dataset get all",
+                'description' => 'Dataset get all',
             ]);
             
             return response()->json(
                 $datasets
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -295,13 +301,19 @@ class DatasetController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dataset count",
+                'description' => 'Dataset count',
             ]);
 
             return response()->json([
                 "data" => $counts
             ]);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -461,7 +473,7 @@ class DatasetController extends Controller
                 Auditor::log([
                     'action_type' => 'GET',
                     'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset get " . $id . " download structural metadata",
+                    'description' => 'Dataset get ' . $id . ' download structural metadata',
                 ]);
 
                 return Excel::download(new DatasetStructuralMetadataExport($export), 'dataset-structural-metadata.csv');
@@ -470,7 +482,7 @@ class DatasetController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dataset get " . $id,
+                'description' => 'Dataset get ' . $id,
             ]);
 
             return response()->json([
@@ -479,6 +491,12 @@ class DatasetController extends Controller
             ], 200);
 
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -534,19 +552,19 @@ class DatasetController extends Controller
      */
     public function store(CreateDataset $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $elasticIndexing = $request->boolean('elastic_indexing', true);
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        try {
+            $elasticIndexing = $request->boolean('elastic_indexing', true);
             $teamId = (int)$input['team_id'];
 
             $team = Team::where('id', $teamId)->first()->toArray();
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 
-            $inputSchema = $request->query("input_schema",null);
-            $inputVersion = $request->query("input_version",null);
+            $inputSchema = $request->query('input_schema', null);
+            $inputVersion = $request->query('input_version', null);
 
             // Ensure title is present for creating a dataset
             if (empty($input['metadata']['metadata']['summary']['title'])) {
@@ -560,13 +578,13 @@ class DatasetController extends Controller
             );
 
             if ($metadataResult['translated']) {
-
                 Auditor::log([
-                    'user_id' => $input['user_id'],
-                    'team_id' => $input['team_id'],
+                    'user_id' => (int)$jwtUser['id'],
+                    'team_id' => $team['id'],
                     'action_type' => 'CREATE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset " . $metadataResult['dataset_id'] . " with version " . $metadataResult['version_id'] . " created",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Dataset ' . $metadataResult['dataset_id'] . ' with version ' .
+                        $metadataResult['version_id'] . ' created',
                 ]);
 
                 return response()->json([
@@ -581,6 +599,13 @@ class DatasetController extends Controller
                 ], 400);
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -643,11 +668,11 @@ class DatasetController extends Controller
      */
     public function update(UpdateDataset $request, int $id)
     {
-        try {
-            $input = $request->all();
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
-            
+        try {
+            $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);       
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $teamId = (int)$input['team_id'];
@@ -713,8 +738,8 @@ class DatasetController extends Controller
      
                 //update the GWDM modified date and version
                 $input['metadata']['metadata']['required']['modified'] = $updateTime;
-                if(version_compare(Config::get('metadata.GWDM.version'),"1.0",">")){   
-                    if(version_compare($lastMetadata['gwdmVersion'],"1.0",">")){
+                if(version_compare(Config::get('metadata.GWDM.version'), '1.0', '>')){   
+                    if(version_compare($lastMetadata['gwdmVersion'], '1.0', '>')){
                         $versionCode = $lastMetadata['metadata']['required']['version'];
                     }
                 }
@@ -724,8 +749,8 @@ class DatasetController extends Controller
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $input['metadata']['metadata']['required']['revisions'][] = [
-                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$versionCode, 
-                    "version"=>$versionCode
+                    "url" => "https://placeholder.blah/" . $currentPid . '?version=' . $versionCode, 
+                    "version" => $versionCode
                 ];
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
@@ -763,8 +788,8 @@ class DatasetController extends Controller
                     'user_id' => $userId,
                     'team_id' => $teamId,
                     'action_type' => 'UPDATE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset " . $id . " with version " . ($versionNumber + 1) . " updated",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Dataset ' . $id . ' with version ' . ($versionNumber + 1) . ' updated',
                 ]);
 
                 return response()->json([
@@ -779,6 +804,12 @@ class DatasetController extends Controller
                 ], 400);
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -818,10 +849,10 @@ class DatasetController extends Controller
      */
     public function edit(EditDataset $request, int $id)
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             if ($request->has('unarchive')) {
                 $datasetModel = Dataset::withTrashed() ->where(['id' => $id]) ->first();
 
@@ -839,14 +870,24 @@ class DatasetController extends Controller
                     }
 
                     Auditor::log([
-                        'user_id' => (int) $jwtUser['id'],
+                        'user_id' => (int)$jwtUser['id'],
                         'team_id' => $datasetModel['team_id'],
                         'action_type' => 'UPDATE',
-                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                        'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => 'Dataset ' . $id . ' marked as ' . strtoupper($request['status']) . ' updated',
                     ]);
                 } else {
-                    throw new Exception('unknown status type');
+                    $message = 'unknown status type';
+
+                    Auditor::log([
+                        'user_id' => (int)$jwtUser['id'],
+                        'team_id' => $datasetModel['team_id'],
+                        'action_type' => 'EXCEPTION',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => $message,
+                    ]);
+
+                    throw new Exception($message);
                 }
             } else {
                 $datasetModel = Dataset::where(['id' => $id])->first();
@@ -863,18 +904,29 @@ class DatasetController extends Controller
                     $datasetModel->status = $request['status'];
                     $datasetModel->save();
                 } else {
-                    throw new Exception('unknown status type');
+                    $message = 'unknown status type';
+
+                    Auditor::log([
+                        'user_id' => (int)$jwtUser['id'],
+                        'team_id' => $datasetModel['team_id'],
+                        'action_type' => 'EXCEPTION',
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => $message,
+                    ]);
+
+                    throw new Exception($message);
                 }
 
                 // TODO remaining edit steps e.g. if dataset appears in the request 
                 // body validate, translate if needed, update Mauro data model, etc. 
 
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'team_id' => $datasetModel['team_id'],
                     'action_type' => 'UPDATE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Dataset ' . $id . ' marked as ' .
+                        strtoupper($request['status']) . ' updated',
                 ]);
             }
 
@@ -882,6 +934,13 @@ class DatasetController extends Controller
                 'message' => 'success'
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -931,24 +990,30 @@ class DatasetController extends Controller
      */
     public function destroy(DeleteDataset $request, string $id) // softdelete
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             MMC::deleteDataset($id);
             MMC::deleteFromElastic($id, 'dataset');
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dataset " . $id . " deleted",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dataset ' . $id . ' deleted',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
             throw new Exception($e->getMessage());
         }
     }
@@ -1035,11 +1100,17 @@ class DatasetController extends Controller
         // callback function that writes to php://output
         $response = new StreamedResponse(
             function() use ($results) {
-
                 // Open output stream
                 $handle = fopen('php://output', 'w');
                 
-                $headerRow = ['Title', 'Publisher name', 'Last Activity', 'Method of dataset creation', 'Status', 'Metadata detail'];
+                $headerRow = [
+                    'Title',
+                    'Publisher name',
+                    'Last Activity',
+                    'Method of dataset creation',
+                    'Status',
+                    'Metadata detail',
+                ];
 
                 // Add CSV headers
                 fputcsv($handle, $headerRow);
@@ -1056,7 +1127,8 @@ class DatasetController extends Controller
                     }
 
                     $row = [
-                        $metadata['metadata']['summary']['title'] !== null ? $metadata['metadata']['summary']['title'] : '',
+                        $metadata['metadata']['summary']['title'] !== null ?
+                            $metadata['metadata']['summary']['title'] : '',
                         $publisherName !== null ? $publisherName : '',
                         $rowDetails['updated_at'] !== null ? $rowDetails['updated_at'] : '',
                         (string)strtoupper($rowDetails['create_origin']),
@@ -1130,7 +1202,7 @@ class DatasetController extends Controller
             $exportType = $request->query('type', null);
             $file = '';
 
-            switch ($exportType) {
+            switch (strtolower($exportType)) {
                 case 'template_dataset_structural_metadata':
                     $file = Config::get('mock_data.template_dataset_structural_metadata');
                     break;
@@ -1145,7 +1217,9 @@ class DatasetController extends Controller
                 return response()->json(['error' => 'File not found.'], 404);
             }
             
-            return Storage::disk('mock')->download($file)->setStatusCode(Config::get('statuscodes.STATUS_OK.code'));
+            return Storage::disk('mock')
+                ->download($file)
+                ->setStatusCode(Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

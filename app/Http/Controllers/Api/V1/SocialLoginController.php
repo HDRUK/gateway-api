@@ -89,7 +89,7 @@ class SocialLoginController extends Controller
 
         session(['redirectUrl' => $redirectUrl]);
 
-        if ($provider === 'openathens') {
+        if (strtolower($provider) === 'openathens') {
             $oidc = new OpenIDConnectClient(
                 Config::get('services.openathens.issuer'),
                 Config::get('services.openathens.client_id'),
@@ -112,7 +112,7 @@ class SocialLoginController extends Controller
 
             return redirect()->away($oaUrl);
         } else {
-            if ($provider === 'linkedin') {
+            if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
             return Socialite::driver($provider)
@@ -157,11 +157,13 @@ class SocialLoginController extends Controller
      */
     public function callback(Request $request, string $provider): mixed
     {
+        $user = null;
+
         try {
-            if ($provider === 'linkedin') {
+            if (strtolower($provider) === 'linkedin') {
                 $provider = 'linkedin-openid';
             }
-            if ($provider === 'openathens') {
+            if (strtolower($provider) === 'openathens') {
                 $oidc = new OpenIDConnectClient(
                     Config::get('services.openathens.issuer'),
                     Config::get('services.openathens.client_id'),
@@ -173,7 +175,11 @@ class SocialLoginController extends Controller
                     'token_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/token',
                     'userinfo_endpoint' => env('OPENATHENS_ISSUER_URL') . '/oidc/userinfo',
                 ]);
-                $oidc->addScope(['openid','profile','email']);
+                $oidc->addScope([
+                    'openid',
+                    'profile',
+                    'email'
+                ]);
 
                 $oidc->setVerifyHost(false);
                 $oidc->setVerifyPeer(false);
@@ -190,7 +196,7 @@ class SocialLoginController extends Controller
                 $socialUser = Socialite::driver($provider)->user();
 
                 $socialUserDetails = [];
-                switch ($provider) {
+                switch (strtolower($provider)) {
                     case 'google':
                         $socialUserDetails = $this->googleResponse($socialUser, $provider);
                         break;
@@ -222,7 +228,7 @@ class SocialLoginController extends Controller
                 'target_user_id' => $user->id,
                 'action_type' => 'LOGIN',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "User " . $user->id . " with login through " . $user->provider . " has been connected",
+                'description' => 'User ' . $user->id . ' with login through ' . $user->provider . ' has been connected',
             ]);
 
             $cookies = [
@@ -231,6 +237,13 @@ class SocialLoginController extends Controller
             $redirectUrl = session('redirectUrl');
             return redirect()->away($redirectUrl)->withCookies($cookies);
         } catch (Exception $e) {
+            Auditor::log([
+                'target_user_id' => $user->id,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -265,11 +278,11 @@ class SocialLoginController extends Controller
     private function linkedinOpenIdResponse(object $data, string $provider): array
     {
         return [
-            'providerid' => (string) $data->getId(),
-            'name' => (string) $data->getName(),
-            'firstname' => (string) $data->user['given_name'],
-            'lastname' => (string) $data->user['family_name'],
-            'email' => (string) $data->getEmail(),
+            'providerid' => (string)$data->getId(),
+            'name' => (string)$data->getName(),
+            'firstname' => (string)$data->user['given_name'],
+            'lastname' => (string)$data->user['family_name'],
+            'email' => (string)$data->getEmail(),
             'provider' => $provider,
             'password' => Hash::make(json_encode($data)),
         ];
@@ -375,13 +388,13 @@ class SocialLoginController extends Controller
         $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
 
         $arrayClaims = [
-            'iss' => (string) env('APP_URL'),
-            'sub' => (string) $user['name'],
-            'aud' => (string) env('APP_NAME'),
-            'iat' => (string) strtotime($currentTime),
-            'nbf' => (string) strtotime($currentTime),
-            'exp' => (string) strtotime($expireTime),
-            'jti' => (string) env('JWT_SECRET'),
+            'iss' => (string)env('APP_URL'),
+            'sub' => (string)$user['name'],
+            'aud' => (string)env('APP_NAME'),
+            'iat' => (string)strtotime($currentTime),
+            'nbf' => (string)strtotime($currentTime),
+            'exp' => (string)strtotime($expireTime),
+            'jti' => (string)env('JWT_SECRET'),
             'user' => $user,
         ];
 
@@ -389,8 +402,8 @@ class SocialLoginController extends Controller
         $jwt = $this->jwt->create();
 
         AuthorisationCode::createRow([
-            'user_id' => (int) $user->id,
-            'jwt' => (string) $jwt,
+            'user_id' => (int)$user->id,
+            'jwt' => (string)$jwt,
             'created_at' => $currentTime,
             'expired_at' => $expireTime,
         ]);

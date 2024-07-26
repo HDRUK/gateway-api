@@ -53,13 +53,19 @@ class FeatureController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Feature get all",
+                'description' => 'Feature get all',
             ]);
 
             return response()->json(
                 $features
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -133,13 +139,19 @@ class FeatureController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Feature get " . $id,
+                'description' => 'Feature get ' . $id,
             ]);
 
             return response()->json([
                 'message' => 'not found',
             ], 404);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -199,10 +211,10 @@ class FeatureController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Feature " . $feature->id . " created",
+                'description' => 'Feature ' . $feature->id . ' created',
             ]);
 
             return response()->json([
@@ -210,6 +222,13 @@ class FeatureController extends Controller
                 'data' => $feature->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -295,10 +314,10 @@ class FeatureController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Feature " . $id . " updated",
+                'description' => 'Feature ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -306,6 +325,13 @@ class FeatureController extends Controller
                 'data' => Feature::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -398,10 +424,10 @@ class FeatureController extends Controller
             Feature::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Feature " . $id . " updated",
+                'description' => 'Feature ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -409,6 +435,13 @@ class FeatureController extends Controller
                 'data' => Feature::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -478,14 +511,21 @@ class FeatureController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Feature " . $id . " deleted",
+                'description' => 'Feature ' . $id . ' deleted',
             ]);
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

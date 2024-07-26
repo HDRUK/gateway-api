@@ -63,24 +63,36 @@ class DarIntegrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $input = $request->all();
+        $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
         try {
-            $input = $request->all();
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-    
             $dars = DarIntegration::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration DAR get all",
+                'description' => 'Integration DAR get all',
             ]);
 
             return response()->json(
                 $dars
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -140,10 +152,10 @@ class DarIntegrationController extends Controller
      */
     public function show(GetDARIntegration $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-    
+        $input = $request->all();
+        $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
+        try {    
             $dar = DarIntegration::findOrFail($id);
             if ($dar) {
                 return response()->json([
@@ -153,17 +165,29 @@ class DarIntegrationController extends Controller
             }
     
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration DAR get " . $id,
+                'description' => 'Integration DAR get ' . $id,
             ]);
     
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -220,10 +244,10 @@ class DarIntegrationController extends Controller
      */
     public function store(CreateDARIntegration $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+        $input = $request->all();
+        $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
+        try {
             $dar = DarIntegration::create([
                 'enabled' => $input['enabled'],
                 'notification_email' => $input['notification_email'],
@@ -237,11 +261,13 @@ class DarIntegrationController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration DAR " . $dar->id . " created",
+                'description' => 'Integration DAR ' . $dar->id . ' created',
             ]);
 
             return response()->json([
@@ -249,6 +275,16 @@ class DarIntegrationController extends Controller
                 'data' => $dar->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -329,10 +365,10 @@ class DarIntegrationController extends Controller
      */
     public function update(UpdateDARIntegration $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+        $input = $request->all();
+        $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
+        try {
             DarIntegration::where('id', $id)->update([
                 'enabled' => $input['enabled'],
                 'notification_email' => $input['notification_email'],
@@ -346,18 +382,30 @@ class DarIntegrationController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration DAR " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Integration DAR ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => DarIntegration::where('id', $id)->first()
+                'data' => DarIntegration::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -435,9 +483,10 @@ class DarIntegrationController extends Controller
      */
     public function edit(EditDARIntegration $request, int $id): JsonResponse
     {
+        $input = $request->all();
+        $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+
         try {
-            $input = $request->all();
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
             $arrayKeys = [
                 'enabled', 
                 'notification_email', 
@@ -455,18 +504,30 @@ class DarIntegrationController extends Controller
             DarIntegration::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration DAR " . $id . " updated",
+                'description' => 'Integration DAR ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => DarIntegration::where('id', $id)->first()
+                'data' => DarIntegration::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -515,10 +576,10 @@ class DarIntegrationController extends Controller
      */
     public function destroy(DeleteDARIntegration $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
+        $input = $request->all();
+        $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
+        try {
             $dar = DarIntegration::findOrFail($id);
             if ($dar) {
                 $dar->delete();
@@ -529,8 +590,10 @@ class DarIntegrationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Integration DAR " . $id . " deleted",
@@ -538,6 +601,16 @@ class DarIntegrationController extends Controller
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

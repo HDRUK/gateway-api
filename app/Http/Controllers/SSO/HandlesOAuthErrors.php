@@ -34,7 +34,8 @@ trait HandlesOAuthErrors
         } catch (Exception $e) {
             $this->exceptionHandler()->report($e);
 
-            return new Response($this->configuration()->get('app.debug') ? $e->getMessage() : 'Error.', 500);
+            return new Response($this->configuration()->get('app.debug') ?
+                $e->getMessage() : 'Error.', 500);
         }
     }
 

@@ -60,8 +60,8 @@ class FormHydrationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $model = $request->input('model',Config::get('form_hydration.schema.model'));
-        $version = $request->input('version',Config::get('form_hydration.schema.latest_version'));
+        $model = $request->input('model', Config::get('form_hydration.schema.model'));
+        $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
 
         $url = sprintf(Config::get('form_hydration.schema.url'), $model, $version);
 
@@ -71,7 +71,7 @@ class FormHydrationController extends Controller
             return response()->json(["data"=>$payload]);
         } else {
              return response()->json([
-                'message' => "Failed to retrieve form hydration from ".$url,
+                'message' => 'Failed to retrieve form hydration from ' . $url,
             ], Config::get('statuscodes.STATUS_BAD_REQUEST.code'));
         }
 
@@ -133,11 +133,11 @@ class FormHydrationController extends Controller
         $model = $request->input('model', Config::get('form_hydration.schema.model'));
         $version = $request->input('version', Config::get('form_hydration.schema.latest_version'));
         $dataTypes = $request->input('dataTypes', '');
-        $team = $request->input('team_id', null);
+        $teamId = $request->input('team_id', null);
 
         $hydrationJson = MMC::getOnboardingFormHydrated($model, $version, $dataTypes);
-        if ($team) {
-            $hydrationJson['defaultValues'] = $this->getDefaultValues((int) $team);
+        if ($teamId) {
+            $hydrationJson['defaultValues'] = $this->getDefaultValues((int)$teamId);
         } else {
             $hydrationJson['defaultValues'] = $this->generalDefaults();
         }

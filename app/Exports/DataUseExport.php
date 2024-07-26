@@ -61,7 +61,8 @@ class DataUseExport implements WithHeadings, FromCollection, WithMapping
             $array[] = [
                 'projectTitle' => $projectTitle,
                 'organisationName' => $organisationName,
-                'datasetTitles' => !is_array($datasetTitles) ? $datasetTitles : (count($datasetTitles) ? implode(', ', $datasetTitles) : ''),
+                'datasetTitles' => !is_array($datasetTitles) ?
+                    $datasetTitles : (count($datasetTitles) ? implode(', ', $datasetTitles) : ''),
                 'publisher' => $publisher,
             ];
         }

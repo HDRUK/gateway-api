@@ -2,8 +2,8 @@
 
 namespace App\MetadataManagementController;
 
-use Mauro;
 use Config;
+use Auditor;
 use Exception;
 use App\Exceptions\MMCException;
 use App\Models\Filter;
@@ -65,8 +65,8 @@ class MetadataManagementController {
                 'output_version' => $outputVersion,
                 'input_schema' => $inputSchema,
                 'input_version' => $inputVersion,
-                'validate_input' => $validateInput ? "1" : 0 ,
-                'validate_output' => $validateOutput ? "1" : 0 ,
+                'validate_input' => $validateInput ? '1' : 0 ,
+                'validate_output' => $validateOutput ? '1' : 0 ,
             ];
 
             $urlString = env('TRASER_SERVICE_URL', 'http://localhost:8002') . '/translate?' . http_build_query($queryParams);
@@ -122,7 +122,7 @@ class MetadataManagementController {
     public function validateDataModelType(string $dataset, string $input_schema, string $input_version): bool
     {
         try {
-            $urlString = sprintf("%s/validate?input_schema=%s&input_version=%s",
+            $urlString = sprintf('%s/validate?input_schema=%s&input_version=%s',
                 env('TRASER_SERVICE_URL', 'http://localhost:8002'),
                 $input_schema,
                 $input_version
@@ -179,7 +179,7 @@ class MetadataManagementController {
         try {
             $dataset = Dataset::with('versions')->where('id', (int)$id)->first();
             if(!$dataset){
-                throw new Exception('Dataset with id='.$id." cannot be found");
+                throw new Exception('Dataset with id=' . $id . ' cannot be found');
             }
             $dataset->deleted_at = Carbon::now();
             $dataset->status = Dataset::STATUS_ARCHIVED;
@@ -252,6 +252,13 @@ class MetadataManagementController {
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+    
             throw new Exception($e->getMessage());
         }
     }
@@ -282,7 +289,9 @@ class MetadataManagementController {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
                     }
-                }  
+                }
+                
+                unset($metadata); // Only because it's potentially massive.
             }
             usort($datasetTitles, 'strcasecmp');
 
@@ -329,7 +338,10 @@ class MetadataManagementController {
                 return $value;
             }
         }
-        Log::info('No value found for any of the specified keys', ['keys' => $keys, 'array' => $array]);
+        Log::info('No value found for any of the specified keys', [
+            'keys' => $keys,
+            'array' => $array
+        ]);
         return $default;
     }
 
@@ -382,7 +394,10 @@ class MetadataManagementController {
     {
         $materialTypes = null;
         if(version_compare(Config::get('metadata.GWDM.version'),"2.0","<")){
-            $containsTissue = !empty($this->getValueByPossibleKeys($metadata, ['metadata.coverage.biologicalsamples', 'metadata.coverage.physicalSampleAvailability'], ''));
+            $containsTissue = !empty($this->getValueByPossibleKeys($metadata, [
+                'metadata.coverage.biologicalsamples',
+                'metadata.coverage.physicalSampleAvailability',
+            ], ''));
         }
         else{
             $tissues =  Arr::get($metadata, 'metadata.tissuesSampleCollection', null);

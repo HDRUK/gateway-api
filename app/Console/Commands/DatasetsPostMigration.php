@@ -128,7 +128,7 @@ class DatasetsPostMigration extends Command
             ])->first();
 
             if (!$datasetVersion) {
-                $this->error("cannot find a datasetverison associated with this dataset");
+                $this->error('cannot find a datasetverison associated with this dataset');
                 continue;
             }
             $metadata = $datasetVersion->metadata;
@@ -150,7 +150,7 @@ class DatasetsPostMigration extends Command
                     $metadata['metadata']['summary']['doiName'] = $doiName;
                 }
                 else{
-                    $this->warn($doiName . " is not a valid doi");
+                    $this->warn($doiName . ' is not a valid doi');
                 }
             }
 

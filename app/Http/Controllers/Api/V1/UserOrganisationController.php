@@ -34,10 +34,10 @@ class UserOrganisationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             if (count($jwtUser)) {
                 $userIsAdmin = (bool) $jwtUser['is_admin'];
 
@@ -56,10 +56,10 @@ class UserOrganisationController extends Controller
                         ->toArray();
 
                     Auditor::log([
-                        'user_id' => (int) $jwtUser['id'],
+                        'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'GET',
-                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                        'description' => "User Organisation get all",
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => 'User Organisation get all',
                     ]);
 
                     return response()->json([
@@ -75,6 +75,13 @@ class UserOrganisationController extends Controller
             ], 403);
 
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

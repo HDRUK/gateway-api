@@ -105,7 +105,8 @@ class AddDataProviderNetwork extends Command
             'team_id' => (int) $team->id,
         ])->first();
         if ($dataProviderNetworkTeam) {
-            echo 'The team ' . $teamName . ' found in relation with ' . $dataProviderNetworkName . '. skipping ...' . PHP_EOL;
+            echo 'The team ' . $teamName . ' found in relation with ' . 
+                $dataProviderNetworkName . '. skipping ...' . PHP_EOL;
             return false;
         }
 
@@ -114,7 +115,8 @@ class AddDataProviderNetwork extends Command
             'data_provider_coll_id' => (int) $dataProviderNetwork->id,
             'team_id' => (int) $team->id,
         ]);
-        echo 'Was created relation between team (' . $teamName . ') and data provider network (' . $dataProviderNetworkName . '). ID: ' . $createDataProviderNetworkTeam->id . PHP_EOL;
+        echo 'Was created relation between team (' . $teamName . ') and data provider network (' .
+            $dataProviderNetworkName . '). ID: ' . $createDataProviderNetworkTeam->id . PHP_EOL;
 
         return true;
     }

@@ -58,7 +58,8 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
         foreach ($data as $item) {
             $version = $this->getValueFromPath($item, 'metadata/gwdmVersion');
             $title = $this->getValueFromPath($item, 'metadata/metadata/summary/title');
-            $populationSize = ($version !== '1.0') ? $this->getValueFromPath($item, 'metadata/metadata/summary/populationSize') : '';
+            $populationSize = ($version !== '1.0') ?
+                $this->getValueFromPath($item, 'metadata/metadata/summary/populationSize') : '';
             $startDate = $this->getValueFromPath($item, 'metadata/metadata/provenance/temporal/startDate');
             $endData = $this->getValueFromPath($item, 'metadata/metadata/provenance/temporal/endData');
             $accessService = $this->getValueFromPath($item, 'metadata/metadata/accesibility/access/accessService');
@@ -74,12 +75,13 @@ class DatasetTableExport implements WithHeadings, FromCollection, WithMapping
             
             $array[] = [
                 'title' => $title,
-                'populationSize' => (int) $populationSize,
+                'populationSize' => (int)$populationSize,
                 'dataRange' => $this->convertDate($startDate, $endData),
                 'accessService' => $accessService,
                 'dataStandard' => $dataStandard,
                 'cohortDiscovery' => $cohortDiscovery,
-                'structuralMetadata' => ($structuralMetadata === null) ? '' : (count($structuralMetadata) ? 'true' : ''),
+                'structuralMetadata' => ($structuralMetadata === null) ?
+                    '' : (count($structuralMetadata) ? 'true' : ''),
                 'publisher' => $publisher,
             ];
         }

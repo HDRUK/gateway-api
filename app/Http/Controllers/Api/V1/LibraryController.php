@@ -126,14 +126,21 @@ class LibraryController extends Controller
             );
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "library get all",
+                'description' => 'library get all',
             ]);
 
             return response()->json($paginatedTransformedLibraries);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -220,10 +227,10 @@ class LibraryController extends Controller
             unset($library->dataset);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => "library get " . $id,
+                'description' => 'library get ' . $id,
             ]);
 
             return response()->json([
@@ -239,6 +246,13 @@ class LibraryController extends Controller
                 'message' => 'not found',
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'message' => 'An error occurred',
             ], Config::get('statuscodes.STATUS_INTERNAL_SERVER_ERROR.code'));
@@ -287,15 +301,15 @@ class LibraryController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $library = Library::create([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'dataset_id' => $input['dataset_id']
             ]);
             
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "library " . $library->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'library ' . $library->id . ' created',
             ]);
 
             return response()->json([
@@ -303,6 +317,13 @@ class LibraryController extends Controller
                 'data' => $library->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -375,15 +396,15 @@ class LibraryController extends Controller
                 throw new UnauthorizedException('You do not have permission to edit this library');
             }
             $library->update([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'dataset_id' => $input['dataset_id'],
             ]);
             
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "library " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'library ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -391,6 +412,13 @@ class LibraryController extends Controller
                 'data' => Library::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -473,10 +501,10 @@ class LibraryController extends Controller
             $library->update($array);
             
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "library " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'library ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -484,6 +512,13 @@ class LibraryController extends Controller
                 'data' => Library::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -545,10 +580,10 @@ class LibraryController extends Controller
 
                 if ($library->delete()) {
                     Auditor::log([
-                        'user_id' => (int) $jwtUser['id'],
+                        'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'DELETE',
-                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                        'description' => "library " . $id . " deleted",
+                        'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                        'description' => 'library ' . $id . ' deleted',
                     ]);
 
                     return response()->json([
@@ -565,6 +600,13 @@ class LibraryController extends Controller
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

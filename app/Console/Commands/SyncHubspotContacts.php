@@ -71,9 +71,9 @@ class SyncHubspotContacts extends Command
                 'orcid_number' => $user->orcid ? preg_replace('/[^0-9]/', '', $user->orcid) : '',
                 'related_organisation_sector' => $sector ? $sector->name : '',
                 'company' => $user->organisation,
-                'communication_preference' => count($commPreference) ? implode(";", $commPreference) : '',
+                'communication_preference' => count($commPreference) ? implode(';', $commPreference) : '',
                 'gateway_registered_user' => 'Yes',
-                'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(";", $rolesFullNamesByUserId) : ''),
+                'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(';', $rolesFullNamesByUserId) : ''),
                 'cohort_registered_user' => $cohortRequest ? 'Yes' : 'No',
             ];
 

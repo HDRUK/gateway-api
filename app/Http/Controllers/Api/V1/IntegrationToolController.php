@@ -50,8 +50,9 @@ class IntegrationToolController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $tools = Tool::with(['user', 'tag', 'team', 'license', 'publications', 'durs'])
@@ -59,17 +60,29 @@ class IntegrationToolController extends Controller
                 ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration Tool get all",
+                'description' => 'Integration Tool get all',
             ]);
             
             return response()->json(
                 $tools
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -116,18 +129,21 @@ class IntegrationToolController extends Controller
      */
     public function show(GetTool $request, int $id): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $tool = $this->getToolById($id);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration Tool get " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Integration Tool get ' . $id,
             ]);
 
             return response()->json([
@@ -135,6 +151,16 @@ class IntegrationToolController extends Controller
                 'data' => $tool,
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -204,20 +230,21 @@ class IntegrationToolController extends Controller
      */
     public function store(CreateTool $request): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
             $appId = null;
             if (array_key_exists('user_id', $input)) {
-                $userId = (int) $input['user_id'];
+                $userId = (int)$input['user_id'];
             } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
+                $userId = (int)$input['jwt_user']['id'];
             } elseif (array_key_exists('app_user', $input)) {
-                $appId = (int) $input['app']['id'];
+                $appId = (int)$input['app']['id'];
                 $app = Application::where(['id' => $appId])->first();
-                $userId = (int) $app->user_id;
+                $userId = (int)$app->user_id;
             }
 
             $teamId = isset($input['team_id']) ? $input['team_id'] : null;
@@ -242,26 +269,28 @@ class IntegrationToolController extends Controller
             }
             $this->insertToolHasTag($input['tag'], (int) $tool->id);
             if (array_key_exists('programming_language', $input)) {
-                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $tool->id);
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int)$tool->id);
             }
             if (array_key_exists('programming_package', $input)) {
-                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $tool->id);
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int)$tool->id);
             }
             if (array_key_exists('type_category', $input)) {
-                $this->insertToolHasTypeCategory($input['type_category'], (int) $tool->id);
+                $this->insertToolHasTypeCategory($input['type_category'], (int)$tool->id);
             }
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($tool->id, $publications, $userId, $appId);
 
-            $this->indexElasticTools($input, (int) $tool->id);
+            $this->indexElasticTools($input, (int)$tool->id);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration Tool " . $tool->id . " created",
+                'description' => 'Integration Tool ' . $tool->id . ' created',
             ]);
 
             return response()->json([
@@ -269,6 +298,16 @@ class IntegrationToolController extends Controller
                 'data' => $tool->id,
             ], 201);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -345,8 +384,9 @@ class IntegrationToolController extends Controller
      */
     public function update(UpdateTool $request, int $id): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $arrayKeys = [
@@ -364,13 +404,13 @@ class IntegrationToolController extends Controller
             $userId = null;
             $appId = null;
             if (array_key_exists('user_id', $input)) {
-                $userId = (int) $input['user_id'];
+                $userId = (int)$input['user_id'];
             } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
+                $userId = (int)$input['jwt_user']['id'];
             } elseif (array_key_exists('app_user', $input)) {
-                $appId = (int) $input['app']['id'];
+                $appId = (int)$input['app']['id'];
                 $app = Application::where(['id' => $appId])->first();
-                $userId = (int) $app->user_id;
+                $userId = (int)$app->user_id;
             }
             $teamId = isset($input['team_id']) ? $input['team_id'] : null;
             $this->overrideBothTeamAndUserId($teamId, $userId, $request->header());
@@ -383,7 +423,7 @@ class IntegrationToolController extends Controller
                 ->update($array);
 
             ToolHasTag::where('tool_id', $id)->delete();
-            $this->insertToolHasTag($input['tag'], (int) $id);
+            $this->insertToolHasTag($input['tag'], (int)$id);
 
             if (array_key_exists('dataset', $input)) {
                 DatasetVersionHasTool::where('tool_id', $id)->delete();
@@ -392,26 +432,28 @@ class IntegrationToolController extends Controller
 
             if (array_key_exists('programming_language', $input)) {
                 ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
-                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int)$id);
             }
             if (array_key_exists('programming_package', $input)) {
                 ToolHasProgrammingPackage::where('tool_id', $id)->delete();
-                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int)$id);
             }
             if (array_key_exists('type_category', $input)) {
                 ToolHasTypeCategory::where('tool_id', $id)->delete();
-                $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
+                $this->insertToolHasTypeCategory($input['type_category'], (int)$id);
             }
 
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
             $this->checkPublications($id, $publications, $userId, $appId);
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration Tool " . $id . " updated",
+                'description' => 'Integration Tool ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -419,6 +461,16 @@ class IntegrationToolController extends Controller
                 'data' => $this->getToolById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -495,18 +547,19 @@ class IntegrationToolController extends Controller
      */
     public function edit(EditTool $request, int $id): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             $userId = null;
             $appId = null;
             if ($request->has('userId')) {
-                $userId = (int) $input['userId'];
+                $userId = (int)$input['userId'];
             } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
+                $userId = (int)$input['jwt_user']['id'];
             } elseif (array_key_exists('app_user', $input)) {
-                $appId = (int) $input['app']['id'];
+                $appId = (int)$input['app']['id'];
             }
 
             $arrayKeys = [
@@ -533,7 +586,7 @@ class IntegrationToolController extends Controller
 
             if (array_key_exists('tag', $input)) {
                 ToolHasTag::where('tool_id', $id)->delete();
-                $this->insertToolHasTag($input['tag'], (int) $id);
+                $this->insertToolHasTag($input['tag'], (int)$id);
             };
 
             if (array_key_exists('dataset', $input)) {
@@ -543,15 +596,15 @@ class IntegrationToolController extends Controller
 
             if (array_key_exists('programming_language', $input)) {
                 ToolHasProgrammingLanguage::where('tool_id', $id)->delete();
-                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int) $id);
+                $this->insertToolHasProgrammingLanguage($input['programming_language'], (int)$id);
             }
             if (array_key_exists('programming_package', $input)) {
                 ToolHasProgrammingPackage::where('tool_id', $id)->delete();
-                $this->insertToolHasProgrammingPackage($input['programming_package'], (int) $id);
+                $this->insertToolHasProgrammingPackage($input['programming_package'], (int)$id);
             }
             if (array_key_exists('type_category', $input)) {
                 ToolHasTypeCategory::where('tool_id', $id)->delete();
-                $this->insertToolHasTypeCategory($input['type_category'], (int) $id);
+                $this->insertToolHasTypeCategory($input['type_category'], (int)$id);
             }
 
             if (array_key_exists('publications', $input)) {
@@ -560,11 +613,13 @@ class IntegrationToolController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'UPDATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration Tool " . $id . " updated",
+                'description' => 'Integration Tool ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -572,6 +627,16 @@ class IntegrationToolController extends Controller
                 'data' => $this->getToolById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -627,8 +692,9 @@ class IntegrationToolController extends Controller
      */
     public function destroy(DeleteTool $request, int $id): JsonResponse
     {
+        $input = $request->all();
+
         try {
-            $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
 
             // Safe-guard to ensure no one can come along and delete anyone
@@ -649,17 +715,29 @@ class IntegrationToolController extends Controller
             }
             
             Auditor::log([
-                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ? $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
-                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ? $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),    
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Integration Tool " . $id . " deleted",
+                'description' => 'Integration Tool ' . $id . ' deleted',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (isset($applicationOverrideDefaultValues['user_id']) ?
+                    $applicationOverrideDefaultValues['user_id'] : $input['user_id']),
+                'team_id' => (isset($applicationOverrideDefaultValues['team_id']) ?
+                    $applicationOverrideDefaultValues['team_id'] : $input['team_id']),
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -703,6 +781,12 @@ class IntegrationToolController extends Controller
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -766,6 +850,12 @@ class IntegrationToolController extends Controller
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -789,6 +879,12 @@ class IntegrationToolController extends Controller
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -812,6 +908,12 @@ class IntegrationToolController extends Controller
 
             return true;
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -870,7 +972,13 @@ class IntegrationToolController extends Controller
                 ]
             );
         } catch (Exception $e) {
-            throw new Exception("addPublicationHasTool :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addPublicationHasTool :: ' . $e->getMessage());
         }
     }
 
@@ -882,7 +990,13 @@ class IntegrationToolController extends Controller
                 'publication_id' => $publicationId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInPublicationHasTools :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInPublicationHasTools :: ' . $e->getMessage());
         }
     }
 
@@ -894,7 +1008,13 @@ class IntegrationToolController extends Controller
                 'publication_id' => $publicationId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deletePublicationHasTools :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deletePublicationHasTools :: ' . $e->getMessage());
         }
     }
 
@@ -941,6 +1061,12 @@ class IntegrationToolController extends Controller
             $client->index($params);
 
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

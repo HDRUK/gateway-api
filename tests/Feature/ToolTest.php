@@ -927,6 +927,7 @@ class ToolTest extends TestCase
             $mockDataIns,
             $this->header
         );
+
         $responseIns->assertStatus(201);
         $responseIns->assertJsonStructure([
             'message',

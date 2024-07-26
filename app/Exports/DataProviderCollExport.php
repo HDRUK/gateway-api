@@ -52,8 +52,10 @@ class DataProviderCollExport implements WithHeadings, FromCollection, WithMappin
             
             $array[] = [
                 'name' => $name,
-                'datasetTitles' => !is_array($datasetTitles) ? $datasetTitles : (count($datasetTitles) ? implode(', ', $datasetTitles) : ''),
-                'geographicLocations' => !is_array($geographicLocations) ? $geographicLocations : (count($geographicLocations) ? implode(', ', $geographicLocations) : ''),
+                'datasetTitles' => !is_array($datasetTitles) ?
+                    $datasetTitles : (count($datasetTitles) ? implode(', ', $datasetTitles) : ''),
+                'geographicLocations' => !is_array($geographicLocations) ?
+                    $geographicLocations : (count($geographicLocations) ? implode(', ', $geographicLocations) : ''),
             ];
         }
 

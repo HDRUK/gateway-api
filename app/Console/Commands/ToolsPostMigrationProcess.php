@@ -182,7 +182,14 @@ class ToolsPostMigrationProcess extends Command
     public function indexElasticTool(int $id): void 
     {
         $tool = Tool::where('id', $id)
-            ->with(['programmingLanguages', 'programmingPackages', 'tag', 'category', 'typeCategory', 'license'])
+            ->with([
+                'programmingLanguages',
+                'programmingPackages',
+                'tag',
+                'category',
+                'typeCategory',
+                'license',
+            ])
             ->first();
 
         $license = License::where('id', $tool['license'])->first();

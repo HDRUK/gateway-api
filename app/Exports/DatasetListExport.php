@@ -59,7 +59,8 @@ class DatasetListExport implements WithHeadings, FromCollection, WithMapping
             $version = $this->getValueFromPath($item, 'metadata/gwdmVersion');
             $title = $this->getValueFromPath($item, 'metadata/metadata/summary/title');
             $abstract = $this->getValueFromPath($item, 'metadata/metadata/summary/abstract');
-            $populationSize = ($version !== '1.0') ? $this->getValueFromPath($item, 'metadata/metadata/summary/populationSize') : '';
+            $populationSize = ($version !== '1.0') ?
+                $this->getValueFromPath($item, 'metadata/metadata/summary/populationSize') : '';
             $startDate = $this->getValueFromPath($item, 'metadata/metadata/provenance/temporal/startDate');
             $endData = $this->getValueFromPath($item, 'metadata/metadata/provenance/temporal/endData');
             $accessService = $this->getValueFromPath($item, 'metadata/metadata/accesibility/access/accessService');

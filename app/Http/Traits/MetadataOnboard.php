@@ -31,7 +31,8 @@ trait MetadataOnboard
         bool $elasticIndexing
     ): array
     {
-        $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
+        $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ?
+            $input['is_cohort_discovery'] : false;
 
         //send the payload to traser
         // - traser will return the input unchanged if the data is
@@ -42,11 +43,11 @@ trait MetadataOnboard
 
         $payload = $input['metadata'];
         $payload['extra'] = [
-            "id"=>"placeholder",
-            "pid"=>"placeholder",
-            "datasetType"=>"Healthdata",
-            "publisherId"=>$team['pid'],
-            "publisherName"=>$team['name']
+            'id' => 'placeholder',
+            'pid' => 'placeholder',
+            'datasetType' => 'Healthdata',
+            'publisherId' => $team['pid'],
+            'publisherName' => $team['name']
         ];
 
         $traserResponse = MMC::translateDataModelType(
@@ -113,7 +114,7 @@ trait MetadataOnboard
             //            - publisher.publisherId --> publisher.gatewayId
             //            - publisher.publisherName --> publisher.name
             // ------------------------------------------------------------------- 
-            if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
+            if(version_compare(Config::get('metadata.GWDM.version'), '1.1', '<')){
                 $publisher = [
                     'publisherId' => $team['pid'],
                     'publisherName' => $team['name'],
@@ -184,8 +185,8 @@ trait MetadataOnboard
             if (str_contains($coverage, strtolower($c['region']))) {
                 
                 DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version['id'],
-                    'spatial_coverage_id' => (int) $c['id'],
+                    'dataset_version_id' => (int)$version['id'],
+                    'spatial_coverage_id' => (int)$c['id'],
                 ]);
                 $matchFound = true;
             }
@@ -195,21 +196,21 @@ trait MetadataOnboard
             if (str_contains($coverage, 'united kingdom')) {
                 foreach ($ukCoverages as $c) {
                     DatasetVersionHasSpatialCoverage::updateOrCreate([
-                        'dataset_version_id' => (int) $version['id'],
-                        'spatial_coverage_id' => (int) $c['id'],
+                        'dataset_version_id' => (int)$version['id'],
+                        'spatial_coverage_id' => (int)$c['id'],
                     ]);
                 }
             } else {
                 DatasetVersionHasSpatialCoverage::updateOrCreate([
-                    'dataset_version_id' => (int) $version['id'],
-                    'spatial_coverage_id' => (int) $worldId,
+                    'dataset_version_id' => (int)$version['id'],
+                    'spatial_coverage_id' => (int)$worldId,
                 ]);
             }
         }
     }
 
     public function getVersion(int $version){
-        if($version>999) throw new Exception("too many versions");
+        if($version>999) throw new Exception('too many versions');
 
         $version = max(0, $version);
 
@@ -217,7 +218,7 @@ trait MetadataOnboard
         $tens = floor(($version % 100) / 10);
         $units = $version % 10;
 
-        $formattedVersion = "{$hundreds}.{$tens}.{$units}";
+        $formattedVersion = '{$hundreds}.{$tens}.{$units}';
 
         return $formattedVersion;
     }

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Auditor;
 use Exception;
 use MetadataManagementController AS MMC;
 
@@ -97,6 +98,12 @@ class TermExtraction implements ShouldQueue
             }
 
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

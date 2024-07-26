@@ -76,7 +76,7 @@ trait TeamTransformation
                     'hubspot_id' => $user['hubspot_id'],
                 ];
 
-                $teamHasUserId = (int) $user['pivot']['id'];
+                $teamHasUserId = (int)$user['pivot']['id'];
 
                 $roles = TeamHasUser::where('id', $teamHasUserId)->with('roles', 'roles.permissions')->get()->toArray();
 
@@ -104,6 +104,7 @@ trait TeamTransformation
             $response[] = $tmpTeam;
             unset($tmpTeam);
             unset($tmpUser);
+            unset($notifications);
             unset($tmpNotification);
         }
 

@@ -55,7 +55,8 @@ class EnquiriesManagementController {
                 
                 $users[] = [
                     'user' => User::where('id', $thu['user_id'])->first()->toArray(),
-                    'role' => (($roleIdeal ? $roleIdeal->toArray() : ($roleSecondary ? $roleSecondary->toArray() : []))),
+                    'role' => (($roleIdeal ? $roleIdeal->toArray() : ($roleSecondary ?
+                        $roleSecondary->toArray() : []))),
                     'team' => $team->toArray(),
                 ];
             }
@@ -78,7 +79,8 @@ class EnquiriesManagementController {
 
         if ($enquiryThread) {
             foreach ($input['datasets'] as $dataset){
-                $datasetVersion = DatasetVersion::where('dataset_id', $dataset['dataset_id'])->latest('created_at')->first();
+                $datasetVersion = DatasetVersion::where("dataset_id", $dataset["id"])
+                    ->latest('created_at')->first();
                 $enquiryThreadHasDataset = EnquiryThreadHasDatasetVersion::create([
                     'enquiry_thread_id' => $enquiryThread->id,
                     'dataset_version_id' =>  $datasetVersion->id,
@@ -123,7 +125,7 @@ class EnquiriesManagementController {
             foreach ($usersToNotify as $u) {
                 if ($u === null) {
                     Auditor::log([
-                        'user_id' => $jwtUser['id'],
+                        'user_id' => (int)$jwtUser['id'],
                         'action_type' => 'SEND EMAIL',
                         'action_service' => class_basename($this) . '@' . __FUNCTION__,
                         'description' => 'EnquiriesManagementController failed to send email on behalf of ' .
@@ -147,11 +149,10 @@ class EnquiriesManagementController {
             }
         } catch (Exception $e) {
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'SEND EMAIL',
                 'action_service' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'EnquiriesManagementController failed to send email on behalf of ' .
-                    $jwtUser['id'] . ': ' . $e->getMessage(),
+                'description' => $e->getMessage(),
             ]);
         }
     }

@@ -94,12 +94,18 @@ class FilterController extends Controller
                             
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Filter get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Filter get all',
             ]);
 
             return response()->json($paginatedData, 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -158,14 +164,14 @@ class FilterController extends Controller
         try {
             $filter = Filter::findOrFail($id);
             if ($filter) {
-    
                 $urlString = env('SEARCH_SERVICE_URL') . '/filters';
     
                 $response = Http::withBody(
                     json_encode(['filters' => [$filter->toArray()]]), 'application/json'
                 )->post($urlString);
     
-                $filterBuckets = isset($response->json()['filters'][0]) ? $response->json()['filters'][0] : [];
+                $filterBuckets = isset($response->json()['filters'][0]) ?
+                    $response->json()['filters'][0] : [];
                 if (isset($filterBuckets[$filter['type']][$filter['keys']])) {
                     $filter['buckets'] = $filterBuckets[$filter['type']][$filter['keys']]['buckets'];
                 } else {
@@ -174,8 +180,8 @@ class FilterController extends Controller
                 
                 Auditor::log([
                     'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Filter get " . $id,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Filter get ' . $id,
                 ]);
 
                 return response()->json([
@@ -188,6 +194,12 @@ class FilterController extends Controller
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -228,10 +240,10 @@ class FilterController extends Controller
      */
     public function store(CreateFilter $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $filter = Filter::create([
                 'type' => $input['type'],
                 'keys' => $input['keys'],
@@ -239,10 +251,10 @@ class FilterController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Filter " . $filter->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Filter ' . $filter->id . ' created',
             ]);
 
             return response()->json([
@@ -250,6 +262,13 @@ class FilterController extends Controller
                 'data' => $filter->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -316,10 +335,10 @@ class FilterController extends Controller
      */
     public function update(UpdateFilter $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             Filter::where('id', $id)->update([
                 'type' => $input['type'],
                 'keys' => $input['keys'],
@@ -327,17 +346,24 @@ class FilterController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Filter " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Filter ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Filter::where('id', $id)->first()
+                'data' => Filter::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+    
             throw new Exception($e->getMessage());
         }
     }
@@ -403,28 +429,39 @@ class FilterController extends Controller
      */
     public function edit(EditFilter $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $arrayKeys = ['type', 'keys', 'enabled'];
+        try {
+            $arrayKeys = [
+                'type',
+                'keys',
+                'enabled'
+            ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
             Filter::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Filter " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Filter ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Filter::where('id', $id)->first()
+                'data' => Filter::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -473,10 +510,10 @@ class FilterController extends Controller
      */
     public function destroy(DeleteFilter $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $filter = Filter::findOrFail($id);
             if ($filter) {
                 $filter->delete();
@@ -487,14 +524,21 @@ class FilterController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Filter " . $id . " deleted",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Filter ' . $id . ' deleted',
             ]);
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

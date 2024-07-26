@@ -6,7 +6,6 @@ use Config;
 use Exception;
 use App\Models\AuditLog;
 use App\Jobs\AuditLogJob;
-use Carbon\CarbonImmutable;
 use App\Http\Traits\RequestTransformation;
 
 class Auditor {
@@ -37,13 +36,7 @@ class Auditor {
             $data['created_at'] = gettimeofday(true) * 1000000;
 
             if (Config::get('services.googlepubsub.enabled')) {
-                AuditLogJob::dispatch($data);
-            }
-
-            $audit = AuditLog::create($data);
-
-            if (!$audit) {
-                return false;
+                AuditLogJob::dispatchSync($data);
             }
     
             return true;        

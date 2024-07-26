@@ -55,16 +55,23 @@ class TypeCategoryController extends Controller
             $typeCategories = TypeCategory::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Type Category get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Type Category get all',
             ]);
 
             return response()->json(
                 $typeCategories
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -119,10 +126,10 @@ class TypeCategoryController extends Controller
 
             $typeCategory = TypeCategory::findOrFail($id);
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Type Category get " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Type Category get ' . $id,
             ]);
 
             return response()->json([
@@ -131,6 +138,13 @@ class TypeCategoryController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
     
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -183,10 +197,10 @@ class TypeCategoryController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Type Category " . $typeCategory->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Type Category ' . $typeCategory->id . ' created',
             ]);
 
             return response()->json([
@@ -194,6 +208,13 @@ class TypeCategoryController extends Controller
                 'data' => $typeCategory->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+    
             throw new Exception($e->getMessage());
         }
     }
@@ -271,17 +292,24 @@ class TypeCategoryController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Type Category " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Type Category ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => TypeCategory::where('id', $id)->first()
+                'data' => TypeCategory::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -361,17 +389,23 @@ class TypeCategoryController extends Controller
             TypeCategory::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Type Category " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Type Category ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => TypeCategory::where('id', $id)->first()
+                'data' => TypeCategory::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -428,10 +462,10 @@ class TypeCategoryController extends Controller
             $typeCategory->enabled = false;
             if ($typeCategory->save()) {
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'DELETE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Type Category " . $id . " deleted",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Type Category ' . $id . ' deleted',
                 ]);
 
                 return response()->json([
@@ -447,6 +481,12 @@ class TypeCategoryController extends Controller
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

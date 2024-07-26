@@ -222,7 +222,18 @@ class DurController extends Controller
                 $dur->setRelation('applications', $applications);
                 
 
-                unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
+                unset(
+                    $users,
+                    $userDatasets,
+                    $userPublications,
+                    $applications,
+                    $applicationDatasets,
+                    $applicationPublications,
+                    $dur->userDatasets,
+                    $dur->userPublications,
+                    $dur->applicationDatasets,
+                    $dur->applicationPublications
+                );
 
                 return $dur;
             });
@@ -237,6 +248,12 @@ class DurController extends Controller
                 $durs
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -254,9 +271,15 @@ class DurController extends Controller
                 ->map->count();
 
             return response()->json([
-                "data" => $counts
+                'data' => $counts
             ]);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -356,7 +379,7 @@ class DurController extends Controller
             Auditor::log([
                 'action_type' => 'GET',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur get " . $id,
+                'description' => 'Dur get ' . $id,
             ]);
     
             return response()->json([
@@ -364,6 +387,12 @@ class DurController extends Controller
                 'data' => [$dur],
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -460,24 +489,10 @@ class DurController extends Controller
      */
     public function store(CreateDur $request): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-            $userId = null;
-            $appId = null;
-            $teamId = null;
-            if (array_key_exists('user_id', $input)) {
-                $userId = (int) $input['user_id'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
-            } else {
-                $appId = (int) $input['app']['id'];
-                $app = Application::where(['id' => $appId])->first();
-                $userId = (int) $app->user_id;
-                $teamId = (int) $app->team_id;
-            }
-
             $arrayKeys = [
                 'non_gateway_datasets', 
                 'non_gateway_applicants',
@@ -522,11 +537,7 @@ class DurController extends Controller
                 'status',
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
-            $array['user_id'] = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
-            $array['team_id'] = array_key_exists('team_id', $input) ? $input['team_id'] : $teamId;
-            if ($appId) {
-                $array['application_id'] = $appId;
-            }
+            $array['team_id'] = array_key_exists('team_id', $input) ? $input['team_id'] : null;
 
             if (!array_key_exists('team_id', $array)) {
                 throw new NotFoundException("Team Id not found in request.");
@@ -541,11 +552,11 @@ class DurController extends Controller
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            $this->checkDatasets($durId, $datasets, $array['user_id'], $appId);
+            $this->checkDatasets($durId, $datasets, (int)$jwtUser['id']);
 
             // link/unlink dur with publications
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($durId, $publications, $array['user_id'], $appId);
+            $this->checkPublications($durId, $publications, (int)$jwtUser['id']);
 
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
@@ -571,10 +582,10 @@ class DurController extends Controller
             }
             
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur " . $durId . " created",
+                'description' => 'Dur ' . $durId . ' created',
             ]);
 
             return response()->json([
@@ -582,6 +593,13 @@ class DurController extends Controller
                 'data' => $durId,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -745,20 +763,11 @@ class DurController extends Controller
      */
     public function update(UpdateDur $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-            $initDur = Dur::withTrashed()->where('id', $id)->first();
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $userId = null;
-            $appId = null;
-            if (array_key_exists('user_id', $input)) {
-                $userId = (int) $input['user_id'];
-            } elseif (array_key_exists('jwt_user', $input)) {
-                $userId = (int) $input['jwt_user']['id'];
-            } else {
-                $appId = (int) $input['app']['id'];
-            }
+        try {
+            $initDur = Dur::withTrashed()->where('id', $id)->first();
 
             $arrayKeys = [
                 'non_gateway_datasets',
@@ -808,8 +817,6 @@ class DurController extends Controller
                 throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
             }
 
-            $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
-
             if (array_key_exists('organisation_sector', $array)) {
                 $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
             }
@@ -818,11 +825,11 @@ class DurController extends Controller
 
             // link/unlink dur with datasets
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-            $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
+            $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
 
             // link/unlink dur with publications
             $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-            $this->checkPublications($id, $publications, $userIdFinal, $appId);
+            $this->checkPublications($id, $publications, (int)$jwtUser['id']);
 
             // link/unlink dur with keywords
             $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
@@ -848,10 +855,10 @@ class DurController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dur ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -859,6 +866,13 @@ class DurController extends Controller
                 'data' => $this->getDurById($id),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1031,10 +1045,10 @@ class DurController extends Controller
      */
     public function edit(EditDur $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             if ($request->has('unarchive')) {
                 $durModel = Dur::withTrashed()
                     ->find($id);
@@ -1053,8 +1067,8 @@ class DurController extends Controller
                         Auditor::log([
                             'user_id' => (int) $jwtUser['id'],
                             'action_type' => 'UPDATE',
-                            'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                            'description' => "Dur " . $id . " unarchived and marked as " . strtoupper($request['status']),
+                            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                            'description' => 'Dur ' . $id . ' unarchived and marked as ' . strtoupper($request['status']),
                         ]);
                     }
                 }
@@ -1065,15 +1079,6 @@ class DurController extends Controller
                 ], Config::get('statuscodes.STATUS_OK.code'));
             } else {
                 $initDur = Dur::withTrashed()->where('id', $id)->first();
-                $userId = null;
-                $appId = null;
-                if (array_key_exists('user_id', $input)) {
-                    $userId = (int) $input['user_id'];
-                } elseif (array_key_exists('jwt_user', $input)) {
-                    $userId = (int) $input['jwt_user']['id'];
-                } else {
-                    $appId = (int) $input['app']['id'];
-                }
 
                 $arrayKeys = [
                     'non_gateway_datasets',
@@ -1123,8 +1128,6 @@ class DurController extends Controller
                     throw new Exception('Cannot update current data use register! Status already "ARCHIVED"');
                 }
 
-                $userIdFinal = array_key_exists('user_id', $input) ? $input['user_id'] : $userId;
-
                 if (array_key_exists('organisation_sector', $array)) {
                     $array['sector_id'] = $this->mapOrganisationSector($array['organisation_sector']);
                 }
@@ -1133,11 +1136,11 @@ class DurController extends Controller
 
                 // link/unlink dur with datasets
                 $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
-                $this->checkDatasets($id, $datasets, $userIdFinal, $appId);
+                $this->checkDatasets($id, $datasets, (int)$jwtUser['id']);
 
                 // link/unlink dur with publications
                 $publications = array_key_exists('publications', $input) ? $input['publications'] : [];
-                $this->checkPublications($id, $publications, $userIdFinal, $appId);
+                $this->checkPublications($id, $publications, (int)$jwtUser['id']);
 
                 // link/unlink dur with keywords
                 $keywords = array_key_exists('keywords', $input) ? $input['keywords'] : [];
@@ -1163,10 +1166,10 @@ class DurController extends Controller
                 }
 
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'UPDATE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dur " . $id . " updated",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Dur ' . $id . ' updated',
                 ]);
 
                 return response()->json([
@@ -1175,6 +1178,13 @@ class DurController extends Controller
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1222,11 +1232,11 @@ class DurController extends Controller
      */
     public function destroy(DeleteDur $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            DurHasDatasetVersion::where(['dur_id' => $id])->delete();
+        try {
+            DurHasDataset::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
@@ -1236,16 +1246,23 @@ class DurController extends Controller
             $dur->save();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur " . $id . " deleted",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dur ' . $id . ' deleted',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1301,7 +1318,7 @@ class DurController extends Controller
      */
     public function export(Request $request): StreamedResponse
     {
-        $teamId = $request->query('team_id',null);
+        $teamId = $request->query('team_id', null);
         $durId = $request->query('dur_id', null);
         $durs = Dur::when($teamId, function ($query) use ($teamId){
             return $query->where('team_id', '=', $teamId);
@@ -1432,10 +1449,10 @@ class DurController extends Controller
      */
     public function upload(UploadDur $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $arrayKeys = [
                 'user_id', // similar with application id
                 'team_id', // is required if we create a new dur with jwt token
@@ -1471,8 +1488,10 @@ class DurController extends Controller
             ];
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            $nonGatewayApplicants = array_key_exists('non_gateway_applicants', $input) ? explode("|", $input['non_gateway_applicants']) : [];
-           
+            $nonGatewayApplicants = array_key_exists('non_gateway_applicants', $input) ?
+                explode('|', $input['non_gateway_applicants']) : [];
+            $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
+
             if (count($nonGatewayApplicants)) {
                 $array['non_gateway_applicants'] = $nonGatewayApplicants;
             }
@@ -1497,10 +1516,10 @@ class DurController extends Controller
             $this->checkTools($durId, $tools);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPLOAD',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Dur " . $durId . " uploaded",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Dur ' . $durId . ' uploaded',
             ]);
 
             return response()->json([
@@ -1508,6 +1527,12 @@ class DurController extends Controller
                 'data' => $durId,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1559,7 +1584,7 @@ class DurController extends Controller
     }
 
     // datasets
-    private function checkDatasets(int $durId, array $inDatasets, int $userId = null, int $appId = null) 
+    private function checkDatasets(int $durId, array $inDatasets, int $userId = null) 
     {
         $durDatasets = DurHasDatasetVersion::where(['dur_id' => $durId])->get();
         foreach ($durDatasets as $durDataset) {
@@ -1574,16 +1599,15 @@ class DurController extends Controller
             $checking = $this->checkInDurHasDatasetVersion($durId, $datasetVersionId);
 
             if (!$checking) {
-                $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId, $appId);
+                $this->addDurHasDatasetVersion($durId, $dataset, $datasetVersionId, $userId);
                 MMC::reindexElastic($dataset['id']);
             }
         }
     }
 
-    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, int $userId = null, int $appId = null)
+    private function addDurHasDatasetVersion(int $durId, array $dataset, int $datasetVersionId, int $userId = null)
     {
         try {
-
             $searchArray= [
                 'dur_id' => $durId,
                 'dataset_version_id' => $datasetVersionId,
@@ -1614,14 +1638,15 @@ class DurController extends Controller
                 $arrCreate['is_locked'] = (bool) $dataset['is_locked'];
             }
 
-            if ($appId) {
-                $arrCreate['application_id'] = $appId;
-            }
-
-            return DurHasDatasetVersion::withTrashed()->updateOrCreate($searchArray, $arrCreate);
-            
+            return DurHasDataset::updateOrCreate($searchArray, $arrCreate);
         } catch (Exception $e) {
-            throw new Exception("addDurHasDatasetVersion :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addDurHasDataset :: ' . $e->getMessage());
         }
     }
 
@@ -1633,7 +1658,13 @@ class DurController extends Controller
                 'dataset_version_id' => $datasetVersionId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInDurHasDatasetVersion :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInDurHasDatasetVersion :: ' . $e->getMessage());
         }
     }
     private function deleteDurHasDatasetVersion(int $durId, int $datasetVersionId)
@@ -1644,12 +1675,18 @@ class DurController extends Controller
                 'dataset_version_id' => $datasetVersionId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteDurHasDatasetVersion :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteDurHasDatasetVersion :: ' . $e->getMessage());
         }
     }
 
     // publications
-    private function checkPublications(int $durId, array $inPublications, int $userId = null, int $appId = null) 
+    private function checkPublications(int $durId, array $inPublications, int $userId = null) 
     {
         $pubs = DurHasPublication::where(['publication_id' => $durId])->get();
         foreach ($pubs as $p) {
@@ -1659,15 +1696,15 @@ class DurController extends Controller
         }
 
         foreach ($inPublications as $publication) {
-            $checking = $this->checkInDurHasPublications($durId, (int) $publication['id']);
+            $checking = $this->checkInDurHasPublications($durId, (int)$publication['id']);
 
             if (!$checking) {
-                $this->addDurHasPublication($durId, $publication, $userId, $appId);
+                $this->addDurHasPublication($durId, $publication, $userId);
             }
         }
     }
 
-    private function addDurHasPublication(int $durId, array $publication, int $userId = null, int $appId = null)
+    private function addDurHasPublication(int $durId, array $publication, int $userId = null)
     {
         try {
             $arrCreate = [
@@ -1676,7 +1713,7 @@ class DurController extends Controller
             ];
 
             if (array_key_exists('user_id', $publication)) {
-                $arrCreate['user_id'] = (int) $publication['user_id'];
+                $arrCreate['user_id'] = (int)$publication['user_id'];
             } elseif ($userId) {
                 $arrCreate['user_id'] = $userId;
             }
@@ -1690,10 +1727,6 @@ class DurController extends Controller
                 $arrCreate['updated_at'] = $publication['updated_at'];
             }
 
-            if ($appId) {
-                $arrCreate['application_id'] = $appId;
-            }
-
             return DurHasPublication::updateOrCreate(
                 $arrCreate,
                 [
@@ -1702,7 +1735,13 @@ class DurController extends Controller
                 ]
             );
         } catch (Exception $e) {
-            throw new Exception("addDurHasPublication :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addDurHasPublication :: ' . $e->getMessage());
         }
     }
 
@@ -1714,7 +1753,13 @@ class DurController extends Controller
                 'publication_id' => $publicationId,
             ])->first();
         } catch (Exception $e) {
-            throw new Exception("checkInDurHasPublications :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('checkInDurHasPublications :: ' . $e->getMessage());
         }
     }
 
@@ -1726,7 +1771,13 @@ class DurController extends Controller
                 'publication_id' => $publicationId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteDurHasPublications :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteDurHasPublications :: ' . $e->getMessage());
         }
     }
 
@@ -1744,7 +1795,8 @@ class DurController extends Controller
                 continue;
             }
 
-            if (in_array($checkKeyword->name, $inKeywords)) continue;
+            if (in_array($checkKeyword->name, $inKeywords))
+                continue;
 
             if (!in_array($checkKeyword->name, $inKeywords)) {
                 $this->deleteDurHasKeywords($kwId);
@@ -1765,7 +1817,13 @@ class DurController extends Controller
                 'keyword_id' => $keywordId,
             ]);
         } catch (Exception $e) {
-            throw new Exception("addKeywordDur :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('addKeywordDur :: ' . $e->getMessage());
         }
     }
 
@@ -1779,7 +1837,13 @@ class DurController extends Controller
                 'enabled' => 1,
             ]);
         } catch (Exception $e) {
-            throw new Exception("createUpdateKeyword :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('createUpdateKeyword :: ' . $e->getMessage());
         }
     } 
 
@@ -1788,7 +1852,13 @@ class DurController extends Controller
         try {
             return DurHasKeyword::where(['keyword_id' => $keywordId])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteKeywordDur :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteKeywordDur :: ' . $e->getMessage());
         }
     }
 
@@ -1806,7 +1876,8 @@ class DurController extends Controller
                 continue;
             }
 
-            if (in_array($checkTool->id, $inTools)) continue;
+            if (in_array($checkTool->id, $inTools))
+                continue;
 
             if (!in_array($checkTool->id, $inTools)) {
                 $this->deleteDurHasTools($durId, $toolId);
@@ -1830,7 +1901,13 @@ class DurController extends Controller
             ]
         );
         } catch (Exception $e) {
-            throw new Exception("updateOrCreateDurHasTools :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('updateOrCreateDurHasTools :: ' . $e->getMessage());
         }
     }
 
@@ -1842,7 +1919,13 @@ class DurController extends Controller
                 'tool_id' => $tId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deleteDurHasTools :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deleteDurHasTools :: ' . $e->getMessage());
         }
     }
     private function extractInputIdToArray(array $input): array
@@ -1889,7 +1972,11 @@ class DurController extends Controller
                 $keywords[] = $k['name'];
             }
 
-            $sector = ($durMatch['sector'] != null) ? Sector::where(['id' => $durMatch['sector']])->first()->name : null;
+            $sector = ($durMatch['sector'] != null) ? Sector::where(
+                [
+                    'id' => $durMatch['sector']
+                ]
+            )->first()->name : null;
 
             $dataProviderId = DataProviderCollHasTeam::where('team_id', $durMatch['team_id'])
                 ->pluck('data_provider_coll_id')
@@ -1923,6 +2010,12 @@ class DurController extends Controller
             $response = $client->index($params);
 
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -1970,15 +2063,28 @@ class DurController extends Controller
 
         $userDatasets = $dur->userDatasets;
         $userPublications = $dur->userPublications;
-        $users = $userDatasets->merge($userPublications)->unique('id');
+        $users = $userDatasets->merge($userPublications)
+            ->unique('id');
         $dur->setRelation('users', $users);
 
         $applicationDatasets = $dur->applicationDatasets;
         $applicationPublications = $dur->applicationPublications;
-        $applications = $applicationDatasets->merge($applicationPublications)->unique('id');
+        $applications = $applicationDatasets->merge($applicationPublications)
+            ->unique('id');
         $dur->setRelation('applications', $applications);
 
-        unset($dur->userDatasets, $dur->userPublications, $dur->applicationDatasets, $dur->applicationPublications);
+        unset(
+            $users,
+            $userDatasets,
+            $userPublications,
+            $applications,
+            $applicationDatasets,
+            $applicationPublications,
+            $dur->userDatasets,
+            $dur->userPublications,
+            $dur->applicationDatasets,
+            $dur->applicationPublications
+        );
 
         // Fetch datasets using the accessor
         $datasets = $dur->allDatasets  ?? [];

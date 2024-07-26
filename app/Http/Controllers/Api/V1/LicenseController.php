@@ -74,12 +74,18 @@ class LicenseController extends Controller
                             
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Licenses get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Licenses get all',
             ]);
 
             return response()->json($licenses, 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -138,8 +144,8 @@ class LicenseController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "License get " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'License get ' . $id,
             ]);
     
             return response()->json([
@@ -147,6 +153,12 @@ class LicenseController extends Controller
                 'data' => $license,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -205,7 +217,7 @@ class LicenseController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'License ' . $license->id . ' created',
@@ -216,6 +228,13 @@ class LicenseController extends Controller
                 'data' => $license->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -304,10 +323,10 @@ class LicenseController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "License " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'License ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -315,6 +334,13 @@ class LicenseController extends Controller
                 'data' => License::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -407,10 +433,10 @@ class LicenseController extends Controller
             License::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'EDIT',
                 'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "License " . $id . " updated",
+                'description' => 'License ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -418,6 +444,13 @@ class LicenseController extends Controller
                 'data' => License::where('id', $id)->first(),
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -473,7 +506,7 @@ class LicenseController extends Controller
             License::where(['id' => $id])->delete();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
                 'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => 'License ' . $id . ' deleted',
@@ -484,6 +517,13 @@ class LicenseController extends Controller
             ], Config::get('statuscodes.STATUS_OK.code'));
             
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

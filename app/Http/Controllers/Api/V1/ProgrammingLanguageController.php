@@ -52,19 +52,27 @@ class ProgrammingLanguageController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $programming_languages = ProgrammingLanguage::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            $programming_languages = ProgrammingLanguage::where('enabled', 1)
+                ->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "ProgrammingLanguage get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'ProgrammingLanguage get all',
             ]);
 
             return response()->json(
                 $programming_languages
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -120,10 +128,10 @@ class ProgrammingLanguageController extends Controller
             $programming_language = ProgrammingLanguage::findOrFail($id);
             if ($programming_language) {
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "ProgrammingLanguage get " . $id,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'ProgrammingLanguage get ' . $id,
                 ]);
 
                 return response()->json([
@@ -136,6 +144,13 @@ class ProgrammingLanguageController extends Controller
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message')
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -186,10 +201,10 @@ class ProgrammingLanguageController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "ProgrammingLanguage " . $programming_language->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'ProgrammingLanguage ' . $programming_language->id . ' created',
             ]);
 
             return response()->json([
@@ -197,6 +212,13 @@ class ProgrammingLanguageController extends Controller
                 'data' => $programming_language->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -271,10 +293,10 @@ class ProgrammingLanguageController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "ProgrammingLanguage " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'ProgrammingLanguage ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -282,6 +304,13 @@ class ProgrammingLanguageController extends Controller
                 'data' => ProgrammingLanguage::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -359,10 +388,10 @@ class ProgrammingLanguageController extends Controller
             ProgrammingLanguage::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "ProgrammingLanguage " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'ProgrammingLanguage ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -370,6 +399,13 @@ class ProgrammingLanguageController extends Controller
                 'data' => ProgrammingLanguage::where('id', $id)->first()
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -426,10 +462,10 @@ class ProgrammingLanguageController extends Controller
             $programming_language->enabled = false;
             if ($programming_language->save()) {
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'DELETE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "ProgrammingLanguage " . $id . " deleted",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'ProgrammingLanguage ' . $id . ' deleted',
                 ]);
 
                 return response()->json([
@@ -445,6 +481,13 @@ class ProgrammingLanguageController extends Controller
                 'message' => Config::get('statuscodes.STATUS_NOT_FOUND.message'),
             ], Config::get('statuscodes.STATUS_NOT_FOUND.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

@@ -95,7 +95,7 @@ class RegisterController extends Controller
             $input = $request->all();
 
             $array = [
-                "name" => $input['firstname'] . " " . $input['lastname'],
+                "name" => $input['firstname'] . ' ' . $input['lastname'],
                 "firstname" => $input['firstname'],
                 "lastname" => $input['lastname'],
                 "email" => $input['email'],
@@ -109,8 +109,8 @@ class RegisterController extends Controller
             $jwt = $this->createJwt($user);
 
             return response()->json([
-                "access_token" => $jwt,
-                "token_type" => "bearer"
+                'access_token' => $jwt,
+                'token_type' => 'bearer'
             ])->setStatusCode(200);
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -126,19 +126,19 @@ class RegisterController extends Controller
         $expireTime = $currentTime->addSeconds(env('JWT_EXPIRATION'));
 
         $userClaims = [
-            'id' => (string) $user->id,
+            'id' => (string)$user->id,
             'name' => $user->name,
             'email' => $user->email,
         ];
 
         $arrayClaims = [
-            'iss' => (string) env('APP_URL'),
-            'sub' => (string) $user->name,
-            'aud' => (string) env('APP_NAME'),
-            'iat' => (string) strtotime($currentTime),
-            'nbf' => (string) strtotime($currentTime),
-            'exp' => (string) strtotime($expireTime),
-            'jti' => (string) env('JWT_SECRET'),
+            'iss' => (string)env('APP_URL'),
+            'sub' => (string)$user->name,
+            'aud' => (string)env('APP_NAME'),
+            'iat' => (string)strtotime($currentTime),
+            'nbf' => (string)strtotime($currentTime),
+            'exp' => (string)strtotime($expireTime),
+            'jti' => (string)env('JWT_SECRET'),
             'user' => $userClaims,
         ];
 
@@ -146,8 +146,8 @@ class RegisterController extends Controller
         $jwt = $this->jwt->create();
 
         AuthorisationCode::createRow([
-            'user_id' => (int) $user->id,
-            'jwt' => (string) $jwt,
+            'user_id' => (int)$user->id,
+            'jwt' => (string)$jwt,
             'created_at' => $currentTime,
             'expired_at' => $expireTime,
         ]);

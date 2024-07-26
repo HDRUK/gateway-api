@@ -119,7 +119,7 @@ class PublicationController extends Controller
             ->when($withRelated, fn($query) => $query->with(['tools']))
             ->when($sort, 
                     fn($query) => $query->orderBy($sortField, $sortDirection)
-                )
+            )
             ->paginate($perPage, ['*'], 'page');
 
             // Ensure datasets are loaded via the accessor
@@ -132,14 +132,20 @@ class PublicationController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Publication get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Publication get all',
             ]);
 
             return response()->json(
                 $publications
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -189,7 +195,7 @@ class PublicationController extends Controller
     public function count(Request $request, string $field): JsonResponse
     {
         try {
-            $ownerId = $request->query('owner_id',null);
+            $ownerId = $request->query('owner_id', null);
             $counts = Publication::when($ownerId, function ($query) use ($ownerId) {
                 return $query->where('owner_id', '=', $ownerId);
             })->withTrashed()
@@ -200,7 +206,7 @@ class PublicationController extends Controller
     
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
                 'description' => "Publication count",
             ]);
 
@@ -208,6 +214,12 @@ class PublicationController extends Controller
                 "data" => $counts
             ]);
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -271,8 +283,8 @@ class PublicationController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Publication get " . $id,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Publication get ' . $id,
             ]);
 
             return response()->json([
@@ -280,6 +292,12 @@ class PublicationController extends Controller
                 'data' => $publication,
             ], Config::get('statuscodes.STATUS_OK.code'));
     } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -352,22 +370,24 @@ class PublicationController extends Controller
                 'authors' => $input['authors'],
                 'year_of_publication' => $input['year_of_publication'],
                 'paper_doi' => $input['paper_doi'],
-                'publication_type' => array_key_exists('publication_type', $input) ? $input['publication_type'] : '',
-                'publication_type_mk1' => array_key_exists('publication_type_mk1', $input) ? $input['publication_type_mk1'] : '',
+                'publication_type' => array_key_exists('publication_type', $input) ?
+                    $input['publication_type'] : '',
+                'publication_type_mk1' => array_key_exists('publication_type_mk1', $input) ?
+                    $input['publication_type_mk1'] : '',
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
                 'mongo_id' => array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null,
-                'owner_id' => (int) $jwtUser['id'],
-                'status' => $input['status'],
+                'owner_id' => (int)$jwtUser['id'],
+                'status' => $request['status'],
             ]);
-            $publicationId = (int) $publication->id;
+            $publicationId = (int)$publication->id;
 
             $datasets = array_key_exists('datasets', $input) ? $input['datasets'] : [];
             $this->checkDatasets($publicationId, $datasets);
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
-            $this->checkTools($publicationId, $tools, (int) $jwtUser['id']);
+            $this->checkTools($publicationId, $tools, (int)$jwtUser['id']);
 
             $currentPublication = Publication::where('id', $publicationId)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE){
@@ -377,10 +397,10 @@ class PublicationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Publication " . $publication->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Publication ' . $publication->id . ' created',
             ]);
 
             return response()->json([
@@ -388,6 +408,13 @@ class PublicationController extends Controller
                 'data' => $publication->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -493,8 +520,10 @@ class PublicationController extends Controller
                 'authors' => $input['authors'],
                 'year_of_publication' => $input['year_of_publication'],
                 'paper_doi' => $input['paper_doi'],
-                'publication_type' => array_key_exists('publication_type', $input) ? $input['publication_type'] : '',
-                'publication_type_mk1' => array_key_exists('publication_type_mk1', $input) ? $input['publication_type_mk1'] : '',
+                'publication_type' => array_key_exists('publication_type', $input) ?
+                    $input['publication_type'] : '',
+                'publication_type_mk1' => array_key_exists('publication_type_mk1', $input) ?
+                    $input['publication_type_mk1'] : '',
                 'journal_name' => $input['journal_name'],
                 'abstract' => $input['abstract'],
                 'url' => $input['url'],
@@ -506,7 +535,7 @@ class PublicationController extends Controller
             $this->checkDatasets($id, $datasets);
 
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
-            $this->checkTools($id, $tools, (int) $jwtUser['id']);
+            $this->checkTools($id, $tools, (int)$jwtUser['id']);
 
             $currentPublication = Publication::where('id', $id)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE){
@@ -516,10 +545,10 @@ class PublicationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Publication " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Publication ' . $id . ' updated',
             ]);
 
             return response()->json([
@@ -527,6 +556,13 @@ class PublicationController extends Controller
                 'data' => $this->getPublicationById($id),
             ]);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -713,10 +749,10 @@ class PublicationController extends Controller
                 }
                 
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'UPDATE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Publication " . $id . " updated",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Publication ' . $id . ' updated',
                 ]);
 
                 return response()->json([
@@ -725,6 +761,13 @@ class PublicationController extends Controller
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -799,10 +842,10 @@ class PublicationController extends Controller
                 MMC::deleteFromElastic($id, 'publication');
 
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'DELETE',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Publication " . $id . " soft deleted",
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Publication ' . $id . ' soft deleted',
                 ]);
     
                 return response()->json([
@@ -812,6 +855,13 @@ class PublicationController extends Controller
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -827,9 +877,7 @@ class PublicationController extends Controller
     {
         try {
             $pubMatch = Publication::where(['id' => $id])->first();
-
             $datasets = $pubMatch->allDatasets;
-
             
             $datasetTitles = [];
             $datasetLinkTypes = [];
@@ -838,8 +886,8 @@ class PublicationController extends Controller
                 $latestVersionID = Dataset::where(['id' => $dataset['id']])->first()->latestVersion()->id;
                 $datasetTitles[] = $metadata['metadata']['summary']['shortTitle'];
                 $linkType = PublicationHasDatasetVersion::where([
-                    ['publication_id', '=', (int) $id],
-                    ['dataset_version_id', '=', (int) $latestVersionID]
+                    ['publication_id', '=', (int)$id],
+                    ['dataset_version_id', '=', (int)$latestVersionID]
                 ])->first()->link_type ?? 'UNKNOWN';
                 $datasetLinkTypes[] = $linkType;
             }
@@ -868,6 +916,12 @@ class PublicationController extends Controller
             $client->index($params);
 
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -965,7 +1019,7 @@ class PublicationController extends Controller
         }
 
         foreach ($inTools as $tool) {
-            $checking = $this->checkInPublicationHasTools($publicationId, (int) $tool['id']);
+            $checking = $this->checkInPublicationHasTools($publicationId, (int)$tool['id']);
 
             if (!$checking) {
                 $this->addPublicationHasTool($publicationId, $tool, $userId);
@@ -982,7 +1036,7 @@ class PublicationController extends Controller
             ];
 
             if (array_key_exists('user_id', $tool)) {
-                $arrCreate['user_id'] = (int) $tool['user_id'];
+                $arrCreate['user_id'] = (int)$tool['user_id'];
             } elseif ($userId) {
                 $arrCreate['user_id'] = $userId;
             }
@@ -1000,6 +1054,12 @@ class PublicationController extends Controller
                 ]
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception("addPublicationHasTool :: " . $e->getMessage());
         }
     }
@@ -1024,7 +1084,13 @@ class PublicationController extends Controller
                 'tool_id' => $toolId,
             ])->delete();
         } catch (Exception $e) {
-            throw new Exception("deletePublicationHasTools :: " . $e->getMessage());
+            Auditor::log([
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
+            throw new Exception('deletePublicationHasTools :: ' . $e->getMessage());
         }
     }
 

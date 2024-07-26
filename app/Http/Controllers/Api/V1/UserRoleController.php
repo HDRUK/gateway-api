@@ -84,28 +84,37 @@ class UserRoleController extends Controller
      */
     public function store(CreateUserRole $request, int $userId): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $existsUserRole = UserHasRole::where('user_id', $userId)->count();
             if ($existsUserRole) {
-                throw new Exception('User id ' . $userId . ' has roles assigned. To alter the roles assigned to the current user, use other endpoints.');
+                throw new Exception('User id ' . $userId .
+                    ' has roles assigned. To alter the roles assigned to the current user, use other endpoints.');
             }
 
             $this->assignUserRoles($userId, $input['roles']);
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "User Has Role the following roles have been added for user id " . $userId . ":" . implode(",", $input['roles']),
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'User Has Role the following roles have been added for user id ' .
+                    $userId . ':' . implode(',', $input['roles']),
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -175,11 +184,10 @@ class UserRoleController extends Controller
      */
     public function edit(UpdateUserRole $request, int $userId): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
             $this->updateUserRoles($userId, $input['roles']);
 
             $user = User::with('roles')->where('id', $userId)->first();
@@ -192,10 +200,12 @@ class UserRoleController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'EDIT',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "User has role The following roles have been changed for user id " . $userId . ": added " . implode(",", $addRoles) . " and removed " . implode(",", $removeRoles),
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'User has role The following roles have been changed for user id ' .
+                    $userId . ': added ' . implode(',', $addRoles) . ' and removed ' . 
+                    implode(',', $removeRoles),
             ]);
 
             return response()->json([
@@ -203,6 +213,13 @@ class UserRoleController extends Controller
                 'data' => $user,
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+    
             throw new Exception($e->getMessage());
         }
     }
@@ -269,24 +286,30 @@ class UserRoleController extends Controller
      */
     public function destroy(DeleteUserRole $request, int $userId): JsonResponse
     {
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
         try {
-            $input = $request->all();
-
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
             UserHasRole::where(['user_id' => $userId])->delete();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "User has role removed all roles related direct with user id " . $userId,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'User has role removed all roles related direct with user id ' . $userId,
             ]);
 
             return response()->json([
                 'message' => 'success',
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -296,7 +319,8 @@ class UserRoleController extends Controller
         foreach ($roleNames as $roleName) {
             $role = Role::where([ 'name' => $roleName, 'enabled' => 1 ])->first();
 
-            if ($role) UserHasRole::create([ 'user_id' => $userId, 'role_id' => $role->id ]);
+            if ($role)
+                UserHasRole::create([ 'user_id' => $userId, 'role_id' => $role->id ]);
         }
     }
 
@@ -305,15 +329,18 @@ class UserRoleController extends Controller
         foreach ($roleNames as $key => $value) {
             $role = Role::where([ 'name' => $key, 'enabled' => 1 ])->first();
 
-            if (!$role) continue;
+            if (!$role)
+                continue;
 
             $exists = UserHasRole::where([ 'user_id' => $userId, 'role_id' => $role->id ])->first();
 
             // add user-role
-            if ($value && !$exists) UserHasRole::create([ 'user_id' => $userId, 'role_id' => $role->id ]);
+            if ($value && !$exists)
+                UserHasRole::create([ 'user_id' => $userId, 'role_id' => $role->id ]);
 
             // remove user-role
-            if (!$value && $exists) UserHasRole::where([ 'user_id' => $userId, 'role_id' => $role->id ])->delete();
+            if (!$value && $exists)
+                UserHasRole::where([ 'user_id' => $userId, 'role_id' => $role->id ])->delete();
         }
     }
 }

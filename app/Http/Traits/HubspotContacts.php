@@ -52,15 +52,15 @@ trait HubspotContacts
                 'orcid_number' => $user->orcid ? preg_replace('/[^0-9]/', '', $user->orcid) : '',
                 'related_organisation_sector' => $sector ? $sector->name : '',
                 'company' => $user->organisation,
-                'communication_preference' => count($commPreference) ? implode(";", $commPreference) : '',
+                'communication_preference' => count($commPreference) ? implode(';', $commPreference) : '',
                 'gateway_registered_user' => 'Yes',
-                'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(";", $rolesFullNamesByUserId) : ''),
+                'gateway_roles' => 'User' . ($rolesFullNamesByUserId ? ';' . implode(';', $rolesFullNamesByUserId) : ''),
                 'cohort_registered_user' => $cohortRequest ? 'Yes' : 'No',
             ];
     
             // update contact preferences
             if ($user->hubspot_id) {
-                $hubspotService->updateContactById((int) $user->hubspot_id, $hubspot);
+                $hubspotService->updateContactById((int)$user->hubspot_id, $hubspot);
             }
             
             // create new contact hubspot and update users table
@@ -69,7 +69,8 @@ trait HubspotContacts
                 $hubspotId = $hubspotService->getContactByEmail($email);
                 if (!$hubspotId) {
                     $createContact = $hubspotService->createContact($hubspot);
-                    $hubspotId = (is_array($createContact) && array_key_exists('vid', $createContact)) ? $createContact['vid'] : null;
+                    $hubspotId = (is_array($createContact) && 
+                        array_key_exists('vid', $createContact)) ? $createContact['vid'] : null;
                 }
     
                 if ($hubspotId) {

@@ -65,23 +65,30 @@ class RoleController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $roles = Role::with(['permissions'])->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Role get all",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Role get all',
             ]);
 
             return response()->json(
                 $roles
             );
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -148,18 +155,18 @@ class RoleController extends Controller
      */
     public function show(GetRole $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $roles = Role::with(['permissions'])->where(['id' => $id])->get();
 
             if ($roles->count()) {
                 Auditor::log([
-                    'user_id' => (int) $jwtUser['id'],
+                    'user_id' => (int)$jwtUser['id'],
                     'action_type' => 'GET',
-                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Role get " . $id,
+                    'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                    'description' => 'Role get ' . $id,
                 ]);
 
                 return response()->json([
@@ -170,6 +177,13 @@ class RoleController extends Controller
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -233,10 +247,10 @@ class RoleController extends Controller
      */
     public function store(CreateRole $request): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             $role = Role::create([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
@@ -257,10 +271,10 @@ class RoleController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Role " . $role->id . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Role ' . $role->id . ' created',
             ]);
 
             return response()->json([
@@ -268,6 +282,13 @@ class RoleController extends Controller
                 'data' => $role->id,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -351,11 +372,11 @@ class RoleController extends Controller
      */
     public function update(UpdateRole $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            Role::where('id', $id)->update([
+        try {
+            $role = Role::where('id', $id)->update([
                 'name' => $input['name'],
                 'enabled' => $input['enabled'],
                 'full_name' => array_key_exists('full_name', $input) ? $input['full_name'] : NULL,
@@ -375,17 +396,24 @@ class RoleController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Role " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Role ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => 'success',
-                'data' => Role::with(['permissions'])->where(['id' => $id])->first()
+                'data' => $role,
             ], 200);
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -469,11 +497,11 @@ class RoleController extends Controller
      */
     public function edit(EditRole $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $arrayKeys = [
+        try {
+           $arrayKeys = [
                 'name',
                 'enabled',
                 'full_name',
@@ -481,7 +509,7 @@ class RoleController extends Controller
 
             $array = $this->checkEditArray($input, $arrayKeys);
 
-            Role::where('id', $id)->update($array);
+            $role = Role::where('id', $id)->update($array);
 
             if (array_key_exists('permissions', $input)) {
                 RoleHasPermission::where('role_id', $id)->delete();
@@ -499,17 +527,24 @@ class RoleController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Role " . $id . " updated",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Role ' . $id . ' updated',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => Role::with(['permissions'])->where(['id' => $id])->first()
+                'data' => $role,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -557,18 +592,18 @@ class RoleController extends Controller
      */
     public function destroy(DeleteRole $request, int $id): JsonResponse
     {
-        try {
-            $input = $request->all();
-            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+        $input = $request->all();
+        $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
+        try {
             RoleHasPermission::where('role_id', $id)->delete();
             Role::where('id', $id)->delete();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Role " . $id . " deleted",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Role ' . $id . ' deleted',
             ]);
 
             return response()->json([
@@ -577,6 +612,13 @@ class RoleController extends Controller
 
             throw new NotFoundException();
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

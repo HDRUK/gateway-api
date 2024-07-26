@@ -70,7 +70,9 @@ trait IntegrationOverride
         $this->overrideTeamId($teamId, $request->headers->all());
 
         if ($datasetTeamId != $teamId){
-            throw new UnauthorizedException("This Application is not allowed to interact with datasets from another team!");
+            throw new UnauthorizedException(
+                'This Application is not allowed to interact with datasets from another team!'
+            );
         }
     }
 }

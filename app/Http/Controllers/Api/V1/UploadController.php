@@ -61,8 +61,8 @@ class UploadController extends Controller
         $fileSystem = env('SCANNING_FILESYSTEM_DISK', 'local_scan');
         $entityFlag = $request->query('entity_flag', 'none');
         $teamId = $request->query('team_id', null);
-        $inputSchema = $request->query("input_schema",null);
-        $inputVersion = $request->query("input_version",null);
+        $inputSchema = $request->query("input_schema", null);
+        $inputVersion = $request->query("input_version", null);
         $elasticIndexing = $request->boolean('elastic_indexing', true);
         $datasetId = $request->query('dataset_id', null);
         $collectionId = $request->query('collection_id', null);
@@ -77,17 +77,17 @@ class UploadController extends Controller
         $upload = Upload::create([
             'filename' => $file->getClientOriginalName(),
             'file_location' => $filePath,
-            'user_id' => (int) $jwtUser['id'],
+            'user_id' => (int)$jwtUser['id'],
             'status' => 'PENDING'
         ]);
 
         // spawn scan job
         ScanFileUpload::dispatch(
-            (int) $upload->id, 
+            (int)$upload->id, 
             $fileSystem, 
             $entityFlag, 
-            (int) $jwtUser['id'], 
-            (int) $teamId,
+            (int)$jwtUser['id'], 
+            (int)$teamId,
             $inputSchema,
             $inputVersion,
             $elasticIndexing,
@@ -98,8 +98,8 @@ class UploadController extends Controller
         // audit log
         Auditor::log([
             'action_type' => 'POST',
-            'action_name' => class_basename($this) . '@'.__FUNCTION__,
-            'description' => "File upload",
+            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+            'description' => 'File upload',
         ]);
 
         return response()->json([
@@ -149,8 +149,8 @@ class UploadController extends Controller
 
         Auditor::log([
             'action_type' => 'GET',
-            'action_name' => class_basename($this) . '@'.__FUNCTION__,
-            'description' => "Show uploaded file",
+            'action_name' => class_basename($this) . '@' . __FUNCTION__,
+            'description' => 'Show uploaded file',
         ]);
 
         return response()->json([
@@ -197,8 +197,8 @@ class UploadController extends Controller
         if ($upload->status === 'PENDING') {
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Get uploaded file content failed due to pending malware scan",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Get uploaded file content failed due to pending malware scan',
             ]);
             return response()->json([
                 'message' => 'File scan is pending'
@@ -206,8 +206,8 @@ class UploadController extends Controller
         } else if ($upload->status === 'FAILED') {
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Get uploaded file content failed due to failed malware scan",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Get uploaded file content failed due to failed malware scan',
             ]);
             return response()->json([
                 'message' => 'File failed scan, content cannot be retrieved'
@@ -218,8 +218,8 @@ class UploadController extends Controller
                 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Get uploaded file content",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Get uploaded file content: ' . $upload->file_location,
             ]);
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_OK.message'),

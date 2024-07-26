@@ -89,10 +89,10 @@ class TeamNotificationController extends Controller
             $team = Team::where('id', $teamId)->with(['notifications'])->first();
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'GET',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Team Notification get for teams " . $teamId,
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team Notification get for teams ' . $teamId,
             ]);
 
             return response()->json([
@@ -100,6 +100,14 @@ class TeamNotificationController extends Controller
                 'data' => $this->getTeamNotifications($team, $teamId, $jwtUserId)
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -184,16 +192,24 @@ class TeamNotificationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
+                'user_id' => (int)$jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Team Notification for team " . $teamId . " created",
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team Notification for team ' . $teamId . ' created',
             ]);
 
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_CREATED.message'),
             ], Config::get('statuscodes.STATUS_CREATED.code'));
         } catch (Exception $e) {
+            Auditor::log([
+                'user_id' => (int)$jwtUser['id'],
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -247,6 +263,13 @@ class TeamNotificationController extends Controller
                 ]);
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+        
             throw new Exception($e->getMessage());
         }
     }
@@ -259,6 +282,13 @@ class TeamNotificationController extends Controller
                 Notification::where('id', $item)->delete();
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }
@@ -284,6 +314,13 @@ class TeamNotificationController extends Controller
                 ]);
             }
         } catch (Exception $e) {
+            Auditor::log([
+                'team_id' => $teamId,
+                'action_type' => 'EXCEPTION',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => $e->getMessage(),
+            ]);
+
             throw new Exception($e->getMessage());
         }
     }

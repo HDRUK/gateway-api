@@ -45,13 +45,13 @@ class ServiceLayerController extends Controller
     public function getDatasetFromPid(Request $request, string $pid)
     {
         $dataset = Dataset::with(['versions' => fn($version) => $version->withTrashed()->latest()->first()])
-            ->where('pid', "=", $pid)
+            ->where('pid', '=', $pid)
             ->first();
 
         $response = [
-            "pid" => $dataset->pid,
-            "version" => $dataset->versions[0]->version,
-            "metadata" => $dataset->versions[0]->metadata['metadata'],
+            'pid' => $dataset->pid,
+            'version' => $dataset->versions[0]->version,
+            'metadata' => $dataset->versions[0]->metadata['metadata'],
         ];
 
         return response()->json($response);
@@ -63,11 +63,11 @@ class ServiceLayerController extends Controller
         $datasets = Dataset::with('versions')
                     ->when($request->has('team_id'), 
                             function ($query) use ($request) {
-                                return $query->where("team_id","=",$request->query('team_id'));
+                                return $query->where('team_id','=',$request->query('team_id'));
                             })
                     ->when($request->has('create_origin'), 
                             function ($query) use ($request) {
-                                return $query->where("create_origin","=",$request->query('create_origin'));
+                                return $query->where('create_origin','=',$request->query('create_origin'));
                             })
                     ->get();
 
@@ -80,14 +80,14 @@ class ServiceLayerController extends Controller
             $metadataVersions = [];
             foreach($dataset->versions as $version){
                 $gwdmVersion = $version->metadata['gwdmVersion'];
-                if(version_compare($gwdmVersion,"1.0",">")){
+                if(version_compare($gwdmVersion,'1.0','>')){
                     $metadata = $version->metadata['metadata'];
                     $metadataVersions[] = $metadata['required']['version'];
                 }
             }
 
             $response[$dataset->pid] = [
-                "versions" => $metadataVersions,
+                'versions' => $metadataVersions,
             ];
 
             if ($request->has('onlyVersions')) {
@@ -95,7 +95,7 @@ class ServiceLayerController extends Controller
                     continue;
                 }
             }
-            $response[$dataset->pid]["metadata"] = $dataset->versions[0]->metadata['metadata'];
+            $response[$dataset->pid]['metadata'] = $dataset->versions[0]->metadata['metadata'];
 
         }
 
@@ -128,8 +128,8 @@ class ServiceLayerController extends Controller
 
     public function daras(Request $request){
         return $this->forwardRequest($request, 
-           env("DARAS_SERVICE"), 
-           "api/services/daras/"
+           env('DARAS_SERVICE'), 
+           'api/services/daras/'
         );
     }
 

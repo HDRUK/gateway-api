@@ -34,7 +34,10 @@ class AddSuperAdminToAllTeams extends Command
         foreach($teamIds as $teamId){
             foreach($superAdminIds as $adminId){
                 TeamHasUser::updateOrCreate(
-                    ['team_id' => $teamId, 'user_id' => $adminId],
+                    [
+                        'team_id' => $teamId,
+                        'user_id' => $adminId,
+                    ],
                     [] 
                 );
             }
