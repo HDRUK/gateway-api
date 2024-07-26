@@ -203,7 +203,7 @@ class AliasReplyScanner {
                         ],
                     ];
 
-                    $from = 'devreply+' . $arr['enquiry_thread_unique'] . '@healthdatagateway.org';
+                    $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
                     $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
                 }
             }

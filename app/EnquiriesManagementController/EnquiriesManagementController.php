@@ -57,7 +57,6 @@ class EnquiriesManagementController {
                     'user' => User::where('id', $thu['user_id'])->first()->toArray(),
                     'role' => (($roleIdeal ? $roleIdeal->toArray() : ($roleSecondary ? $roleSecondary->toArray() : []))),
                     'team' => $team->toArray(),
-                    'enquiry_thread_unique' => $enquiryThread->unique_key,
                 ];
             }
         }
@@ -142,7 +141,7 @@ class EnquiriesManagementController {
                         ],
                     ];
 
-                    $from = 'devreply+' . $arr['enquiry_thread_unique'] . '@healthdatagateway.org';
+                    $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
                     $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
                 }
             }
