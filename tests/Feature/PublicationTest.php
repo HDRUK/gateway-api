@@ -393,6 +393,72 @@ class PublicationTest extends TestCase
 
     }
 
+    public function test_can_filter_publications_on_status(): void
+    {
+        //all seeded publications are draft 
+        $response = $this->json(
+            'GET',
+            self::TEST_URL . "?status=DRAFT",
+            $this->header,
+        );
+        //check adding a status filter doesnt crash
+        $response->assertStatus(200);
+        $this->assertCount(10, $response['data']);
+
+        //change one of the publications to active
+        $response = $this->json(
+            'PATCH',
+            self::TEST_URL . "/1" ,
+            [
+                'status' => 'ACTIVE'
+            ],
+            $this->header,
+        );
+        $response->assertStatus(200);
+
+        //filter to find this one active publciation
+        $response = $this->json(
+            'GET',
+            self::TEST_URL . "?status=ACTIVE",
+            $this->header,
+        );
+        $response->assertStatus(200);
+        $this->assertCount(1, $response['data']);
+
+
+        //update 2 other publications to be archived
+        $response = $this->json(
+            'PATCH',
+            self::TEST_URL . "/2" ,
+            [
+                'status' => 'ARCHIVED'
+            ],
+            $this->header,
+        );
+        $response->assertStatus(200);
+
+        $response = $this->json(
+            'PATCH',
+            self::TEST_URL . "/3" ,
+            [
+                'status' => 'ARCHIVED'
+            ],
+            $this->header,
+        );
+        $response->assertStatus(200);
+
+        //check archived filter works
+        $response = $this->json(
+            'GET',
+            self::TEST_URL . "?status=ARCHIVED",
+            $this->header,
+        );
+        $response->assertStatus(200);
+        $this->assertCount(2, $response['data']);
+        
+
+    }
+
     /**
      * SoftDelete Publication by id with success, and unarchive with success
      */
