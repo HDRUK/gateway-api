@@ -502,7 +502,7 @@ class PublicationController extends Controller
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($id, $tools, (int) $jwtUser['id']);
 
-            $this->indexElasticPublication((int) $id);
+            //$this->indexElasticPublication((int) $id);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -645,7 +645,7 @@ class PublicationController extends Controller
                 $tools = $input['tools'];
                 $this->checkTools($id, $tools, $jwtUser['id']);
             }
-            $this->indexElasticPublication((int) $id);
+            //$this->indexElasticPublication((int) $id);
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
