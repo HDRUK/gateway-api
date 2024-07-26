@@ -408,6 +408,7 @@ class CollectionTest extends TestCase
             ['status' => 'ACTIVE'],
             $this->header
         );
+
         $response->assertStatus(200);
 
         $countTrashedAfterUnarchiving = Collection::onlyTrashed()->count();

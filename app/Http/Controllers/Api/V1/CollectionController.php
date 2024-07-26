@@ -776,7 +776,7 @@ class CollectionController extends Controller
                         CollectionHasPublication::withTrashed()->where('collection_id', $id)->restore();
 
                         Auditor::log([
-                            'user_id' => $userId,
+                            'user_id' => (int)$jwtUser['id'],
                             'action_type' => 'UPDATE',
                             'action_name' => class_basename($this) . '@' . __FUNCTION__,
                             'description' => 'Collection ' . $id . ' unarchived and marked as ' . strtoupper($request['status']),

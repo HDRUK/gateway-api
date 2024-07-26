@@ -1236,7 +1236,7 @@ class DurController extends Controller
         $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
         try {
-            DurHasDataset::where(['dur_id' => $id])->delete();
+            DurHasDatasetVersion::where(['dur_id' => $id])->delete();
             DurHasKeyword::where(['dur_id' => $id])->delete();
             DurHasPublication::where(['dur_id' => $id])->delete();
             DurHasTool::where(['dur_id' => $id])->delete();
@@ -1638,7 +1638,7 @@ class DurController extends Controller
                 $arrCreate['is_locked'] = (bool) $dataset['is_locked'];
             }
 
-            return DurHasDataset::updateOrCreate($searchArray, $arrCreate);
+            return DurHasDatasetVersion::updateOrCreate($searchArray, $arrCreate);
         } catch (Exception $e) {
             Auditor::log([
                 'action_type' => 'EXCEPTION',
