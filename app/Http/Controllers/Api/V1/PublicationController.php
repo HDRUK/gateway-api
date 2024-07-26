@@ -108,8 +108,14 @@ class PublicationController extends Controller
             })
             ->when($filterStatus, 
                 function ($query) use ($filterStatus) {
-                    return $query->where('status', '=', $filterStatus);
-            })
+                    return $query->where('status', '=', $filterStatus)
+                    ->when($filterStatus === Publication::STATUS_ARCHIVED, 
+                        function ($query) {
+                            return $query->withTrashed();
+                        }
+                    );
+                }
+            )
             ->when($withRelated, fn($query) => $query->with(['tools']))
             ->when($sort, 
                     fn($query) => $query->orderBy($sortField, $sortDirection)
@@ -711,27 +717,7 @@ class PublicationController extends Controller
                     'data' => $this->getPublicationById($id),
                 ], Config::get('statuscodes.STATUS_OK.code'));
             }
-<<<<<<< HEAD
 
-            if (array_key_exists('tools', $input)) {
-                $tools = $input['tools'];
-                $this->checkTools($id, $tools, $jwtUser['id']);
-            }
-            //$this->indexElasticPublication((int) $id);
-
-            Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
-                'action_type' => 'UPDATE',
-                'action_name' => class_basename($this) . '@'.__FUNCTION__,
-                'description' => "Publication " . $id . " updated",
-            ]);
-
-            return response()->json([
-                'message' => Config::get('statuscodes.STATUS_OK.message'),
-                'data' => $this->getPublicationById($id),
-            ], Config::get('statuscodes.STATUS_OK.code'));
-=======
->>>>>>> origin/dev
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
