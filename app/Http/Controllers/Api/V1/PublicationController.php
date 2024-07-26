@@ -109,11 +109,11 @@ class PublicationController extends Controller
             ->when($filterStatus, 
                 function ($query) use ($filterStatus) {
                     return $query->where('status', '=', $filterStatus)
-                    ->when($filterStatus === Publication::STATUS_ARCHIVED, 
-                        function ($query) {
-                            return $query->withTrashed();
-                        }
-                    );
+                        ->when($filterStatus === Publication::STATUS_ARCHIVED, 
+                            function ($query) {
+                                return $query->withTrashed();
+                            }
+                        );
                 }
             )
             ->when($withRelated, fn($query) => $query->with(['tools']))
@@ -506,7 +506,6 @@ class PublicationController extends Controller
             $tools = array_key_exists('tools', $input) ? $input['tools'] : [];
             $this->checkTools($id, $tools, (int) $jwtUser['id']);
 
-            //$this->indexElasticPublication((int) $id);
             $currentPublication = Publication::where('id', $id)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE){
                 $this->indexElasticPublication((int) $id);
