@@ -2,36 +2,37 @@
 
 namespace Tests\Unit;
 
-use App\Mail\Email;
-use App\Models\EmailTemplate;
-use App\Models\EnquiryMessage;
-use App\Models\EnquiryThread;
-use App\Models\Team;
-use App\Models\Role;
-
-use Tests\TestCase;
-use Database\Seeders\EnquiryThreadSeeder;
-use Database\Seeders\EnquiryMessageSeeder;
-use Database\Seeders\UserSeeder;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\TeamSeeder;
-use Database\Seeders\TeamHasUserSeeder;
-use Database\Seeders\TeamUserHasRoleSeeder;
-use Database\Seeders\RoleSeeder;
-use App\Exceptions\AliasReplyScannerException;
-
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
 use Mockery;
-use Webklex\PHPIMAP\ClientManager;
+use App\Mail\Email;
+use Tests\TestCase;
+use App\Models\Role;
+use App\Models\Team;
 use Webklex\PHPIMAP\Client;
+
 use Webklex\PHPIMAP\Message;
-use Webklex\PHPIMAP\Support\MessageCollection;
-
-
 use AliasReplyScanner AS ARS;
+use App\Models\EmailTemplate;
+use App\Models\EnquiryThread;
+use App\Models\EnquiryMessage;
+use Database\Seeders\RoleSeeder;
+use Database\Seeders\TeamSeeder;
+use Database\Seeders\UserSeeder;
 use Tests\Traits\MockExternalApis;
+use Webklex\PHPIMAP\ClientManager;
+
+
+use Database\Seeders\PermissionSeeder;
+
+use Database\Seeders\TeamHasUserSeeder;
+use Database\Seeders\EnquiryThreadSeeder;
+use Database\Seeders\EmailTemplatesSeeder;
+use Database\Seeders\EnquiryMessageSeeder;
+use Database\Seeders\TeamUserHasRoleSeeder;
+
+
+use App\Exceptions\AliasReplyScannerException;
+use Webklex\PHPIMAP\Support\MessageCollection;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 
 class AliasReplyScannerTest extends TestCase
@@ -59,6 +60,7 @@ class AliasReplyScannerTest extends TestCase
             TeamUserHasRoleSeeder::class,
             EnquiryThreadSeeder::class,
             EnquiryMessageSeeder::class,
+            EmailTemplatesSeeder::class,
         ]);
 
         $unique_key = EnquiryThread::get()->first()->unique_key;
@@ -148,6 +150,62 @@ class AliasReplyScannerTest extends TestCase
         $messages = ARS::getNewMessagesSafe();
         $this->assertCount(2,$messages);
     }
+
+    public function test_it_can_scrape_and_store_email_content(): void
+    {
+        $messages = ARS::getNewMessagesSafe();
+        $firstMessage = $messages[0];
+        $alias = ARS::getAlias($firstMessage);
+        $enquiryThread = ARS::getThread($alias);
+        $nMessagesBefore = EnquiryMessage::get()->count();
+
+        $enquiryMessage = ARS::scrapeAndStoreContent($firstMessage,$enquiryThread->id);
+        $this->assertNotEmpty($enquiryMessage);
+
+        $nMessagesAfter = EnquiryMessage::get()->count();
+        $this->assertTrue($nMessagesAfter == $nMessagesBefore + 1);
+        $this->assertSame($enquiryMessage->message_body,$firstMessage->getHTMLBody());
+
+    }
+
+    // public function test_it_can_scrape_an_email_and_store_content(): void
+    // {
+
+    //     $messages = ARS::getNewMessagesSafe();
+    //     $firstMessage = $messages[0];
+    //     $alias = ARS::getAlias($firstMessage);
+    //     $enquiryThread = ARS::getThread($alias);
+
+    //     $teamId = $enquiryThread->team_id;
+    //     $team = Team::with("users")
+    //             ->where("id",$teamId)
+    //             ->first();
+
+    //     $actualDarManagers = $team->teamUserRoles
+    //         ->where("role_name", "custodian.dar.manager")
+    //         ->where("enabled", true);
+        
+    //     $darManagers = ARS::getDarManagersFromEnquiryMessage($enquiryThread->id);
+    //     $this->assertEqualsCanonicalizing($darManagers,$actualDarManagers);
+    // }
+
+    // public function test_it_will_fail_to_get_dar_managers_if_team_doesnt_exist(): void
+    // {
+
+    //     $messages = ARS::getNewMessagesSafe();
+    //     $firstMessage = $messages[0];
+    //     $alias = ARS::getAlias($firstMessage);
+    //     $enquiryThread = ARS::getThread($alias);
+
+
+    //     $teamId = $enquiryThread->team_id;
+    //     Team::where("id",$teamId)->delete();
+        
+    //     $this->expectException(AliasReplyScannerException::class);
+    //     ARS::getDarManagersFromEnquiryMessage($enquiryThread->id);
+         
+    // }
+
 
     private function getMockedMessage ($email){
 
