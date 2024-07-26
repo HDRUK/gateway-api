@@ -84,15 +84,8 @@ class PostMigrationUpdateEmailEnquiry extends Command
                             <mj-column border="none" vertical-align="top" padding="0px 0px 0px 0px" >
                                 <mj-text align="left" color="#3C3C3B" font-family="Museo Sans Rounded,sans-serif" padding="10px 25px 10px 25px" >Dear [[TEAM_NAME]],<br><br>
                                     You have received an enquiry from [[USER_FIRST_NAME]], details of which can be found in the thread below. You can respond by using the reply button within your email client, or by clicking the button below to respond via the Gateway.<br><br>
-                            Submitted information<div>Name: [[USER_FIRST_NAME]] [[USER_LAST_NAME]]</div>
-                            <div>Organisation: [[USER_ORGANISATION]]</div>
-                            <div>Project title: [[PROJECT_TITLE]]</div>
-                            <div>Research Aim: [[RESEARCH_AIM]]</div>
-                            <div>Datasets of interest: [[DATASETS]]</div>
-                            <div>Are there other datasets you would like to link with the ones listed above? [[OTHER_DATASETS_YES_NO]]</div>
-                            <div>Do you know which parts of the datasets you are interested in? [[DATASETS_PARTS_YES_NO]]</div>
-                            <div>Funding:: [[FUNDING]]</div>
-                            <div>Potential research benefits; [[PUBLIC_BENEFIT]]</div>
+                            Submitted information
+                            <div>[[MESSAGE_BODY]]</div>
                             </mj-text>
                             </mj-column>
                             </mj-section>
@@ -117,5 +110,34 @@ class PostMigrationUpdateEmailEnquiry extends Command
             ]);
             echo 'Email Template updated - wording in email template for enquiry.' . PHP_EOL;
         }
+
+        // reply notification message
+        $darNotifyMessage = EmailTemplate::where([
+            'identifier' => 'dar.notifymessage'
+        ])->first();
+
+        $templateDarNotifyMessage = '
+            <mjml>
+                <mj-body>
+                    <mj-section>
+                        <mj-column>
+                        <mj-text>
+                            [[DAR_NOTIFY_MESSAGE]]
+                        </mj-text>
+                        </mj-column>
+                    </mj-section>
+                </mj-body>
+            </mjml>
+        ';
+
+        EmailTemplate::updateOrCreate([
+            'identifier' => 'dar.notifymessage'
+        ],
+        [
+            'identifier' => 'dar.notifymessage',
+            'subject' => 'Reply notification message',
+            'body' => $templateDarNotifyMessage
+        ]
+        );
     }
 }
