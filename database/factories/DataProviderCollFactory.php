@@ -19,6 +19,7 @@ class DataProviderCollFactory extends Factory
         return [
             'enabled' => 1,
             'name' => fake()->word(),
+            'summary' => fake()->text(255),
             'img_url' => 'https://fakeimg.pl/300x200',
         ];
     }

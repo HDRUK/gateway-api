@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use Config;
 use Auditor;
 use Exception;
+use CloudLogger;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\Permission;
@@ -13,6 +14,7 @@ use App\Models\CohortRequest;
 use App\Models\EmailTemplate;
 use Illuminate\Support\Carbon;
 use App\Models\CohortRequestLog;
+use App\Services\LoggingService;
 use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
@@ -969,6 +971,87 @@ class CohortRequestController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *    path="/api/v1/cohort_requests/access",
+     *    operationId="access_cohort_requests",
+     *    tags={"Cohort Requests"},
+     *    summary="CohortRequestController@checkAccess",
+     *    description="access cohort request by jwt",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *      response=302,
+     *      description="Redirect to external URL",
+     *      @OA\Header(
+     *         header="Location",
+     *         description="URL to which the client should be redirected",
+     *         @OA\Schema(
+     *            type="string"
+     *         )
+     *       }
+     *    )
+     *    @OA\Response(
+     *       response=500,
+     *       description="Error",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Unauthorized for access :: The request is not approved"),
+     *       )
+     *    )
+     * )
+     */
+    public function checkAccess(Request $request)
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            if (!array_key_exists('id', $jwtUser)) {
+                throw new Exception('Unauthorized');
+            }
+
+            $userId = (int) $jwtUser['id'];
+
+            $checkingCohortRequest = CohortRequest::where([
+                'user_id' => $userId,
+                'request_status' => 'APPROVED',
+                'cohort_status' => 1,
+            ])->first();
+
+            if (!$checkingCohortRequest) {
+                throw new Exception('Unauthorized for access :: The request is not approved');
+            }
+
+            $checkingCohortPerms = CohortRequestHasPermission::where([
+                'cohort_request_id' => $checkingCohortRequest->id
+            ])->count();
+
+            if (!$checkingCohortPerms) {
+                throw new Exception('Unauthorized for access :: There are not enough permissions allocated for the cohort request');
+            }
+
+            // save the user id in session
+            session(['cr_uid' => $userId]);
+
+            // delete after implementation
+            CloudLogger::write('cohort request access :: ' . json_encode([
+                'userId' => $userId,
+                'sessionId' => session()->getId()
+            ]));
+
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Access rquest for user",
+            ]);
+
+            $rquestInitUrl = Config::get('services.rquest.init_url');
+            return redirect()->away($rquestInitUrl);
+        } catch (Exception $exception) {
+            throw new Exception("Cohort Request send email :: " . $exception->getMessage());
+        }
+    }
+
     private function sendEmail($cohortId, $admin = null)
     {
         try {
@@ -1036,4 +1119,5 @@ class CohortRequestController extends Controller
             throw new Exception("Cohort Request send email :: " . $exception->getMessage());
         }
     }
+
 }

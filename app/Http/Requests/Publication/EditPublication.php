@@ -82,6 +82,11 @@ class EditPublication extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'status' => [
+                'sometimes',
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
+            ],
         ];
     }
 

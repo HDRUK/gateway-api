@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\V1\PublicationController;
 use App\Models\Dataset;
 use App\Models\DatasetVersion;
 use App\Models\Publication;
-use App\Models\PublicationHasDataset;
+use App\Models\PublicationHasDatasetVersion;
 use Illuminate\Console\Command;
 use MetadataManagementController AS MMC;
 
@@ -26,7 +26,7 @@ class DatasetPublicationLinkagePostMigration extends Command
      *
      * @var string
      */
-    protected $description = 'CLI command to post-process migrated datasets and publications from mk1 mongo db. Updates PublicationHasDataset::link_type with values from file by matching titles';
+    protected $description = 'CLI command to post-process migrated datasets and publications from mk1 mongo db. Updates PublicationHasDatasetVersion::link_type with values from file by matching titles';
 
     public function __construct()
     {
@@ -60,19 +60,17 @@ class DatasetPublicationLinkagePostMigration extends Command
             if (!$datasetVersion) {
                 echo 'Failed to find dataset with title ' . $datasetTitle . "\n";
                 $progressbar->advance();
-                sleep(0.1);
                 continue;
             }
 
-            // Find Dataset ID associated to this row
-            $datasetId = $datasetVersion->dataset_id;
+            // Find Dataset Version ID associated to this row
+            $datasetVersionId = $datasetVersion->id;
 
             // Find Publication associated to this row
             $publication = Publication::where('paper_doi', $paperDOI)->first();
             if (!$publication) {
                 echo 'Failed to find paper with doi ' . $paperDOI . "\n";
                 $progressbar->advance();
-                sleep(0.1);
                 continue;
             }
 
@@ -81,32 +79,31 @@ class DatasetPublicationLinkagePostMigration extends Command
             // Check that the supplied Publication name matches the one found
             if ($publication->paper_title != $paperName) {
                 $progressbar->advance();
-                sleep(0.1);
                 echo 'WARNING! Found paper by DOI but titles do not match. Will not create or update this record.' . "\n";
                 echo $publication->paper_title . ' vs ' . $paperName . "\n";
                 continue;
             }
 
-            // Since we have both records, create or update a new record in PublicationHasDataset with the supplied link type.
-            $publication_has_dataset = PublicationHasDataset::where([['publication_id', '=', (int) $publication->id],
-                        ['dataset_id', '=', (int) $datasetId]])->first();
+            // Since we have both records, create or update a new record in PublicationHasDatasetVersion with the supplied link type.
+            $publication_has_dataset = PublicationHasDatasetVersion::where([['publication_id', '=', (int) $publication->id],
+                        ['dataset_version_id', '=', (int) $datasetVersionId]])->first();
             
-            PublicationHasDataset::updateOrCreate(
+            PublicationHasDatasetVersion::updateOrCreate(
                 [
                     'publication_id' => (int) $publicationId,
-                    'dataset_id' => (int) $datasetId
+                    'dataset_version_id' => (int) $datasetVersionId
                 ],
                 ['link_type' => $linkType]
             );
 
-            echo 'Updated or created record with publication_id ' . $publicationId . ', dataset_id ' . $datasetId . ', and link type ' . $linkType . "\n";
+            echo 'Updated or created record with publication_id ' . $publicationId . ', dataset_version_id ' . $datasetVersionId . ', and link type ' . $linkType . "\n";
 
             if ($reindexEnabled) {
                 $publicationController->indexElasticPublication($publicationId);
+                sleep(1);
             }
 
             $progressbar->advance();
-            sleep(0.1);
         }
 
         $progressbar->finish();

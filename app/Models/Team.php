@@ -53,6 +53,7 @@ class Team extends Model
         'mongo_object_id',
         'notification_status',
         'is_question_bank',
+        'team_logo',
     ];
 
     /**

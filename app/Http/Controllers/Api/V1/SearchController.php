@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use CloudLogger;
 use Config;
 use Auditor;
 use Exception;
@@ -15,7 +16,7 @@ use App\Models\License;
 use App\Models\Collection;
 use App\Models\DurHasTool;
 use App\Models\Publication;
-use App\Models\PublicationHasDataset;
+use App\Models\PublicationHasDatasetVersion;
 use App\Models\DataProvider;
 use App\Models\TypeCategory;
 
@@ -26,6 +27,7 @@ use App\Models\DatasetVersion;
 use App\Exports\ToolListExport;
 use App\Models\CollectionHasTool;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 use App\Exports\DatasetListExport;
 use App\Exports\PublicationExport;
@@ -47,6 +49,7 @@ use MetadataManagementController as MMC;
 use App\Models\ToolHasProgrammingPackage;
 use App\Models\ToolHasProgrammingLanguage;
 use Illuminate\Database\Eloquent\Casts\Json;
+use App\Http\Requests\Search\DOISearch;
 use App\Http\Requests\Search\PublicationSearch;
 use App\Models\DataProviderColl;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -787,11 +790,15 @@ class SearchController extends Controller
                 $matchedIds[] = $d['_id'];
             }
 
-            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->with('datasets')->get();
+            $durModels = Dur::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
+
+            foreach ($durModels as $model) {
+                $model->setAttribute('datasets', $model->allDatasets);
+            }
 
             foreach ($durArray as $i => $dur) {
                 $foundFlag = false;
-                foreach ($durModels as $model){
+                foreach ($durModels as $model) {
                     if ((int) $dur['_id'] === $model['id']) {
                         $durArray[$i]['_source']['created_at'] = $model['created_at'];
                         $durArray[$i]['projectTitle'] = $model['project_title'];
@@ -987,7 +994,7 @@ class SearchController extends Controller
 
                 foreach ($pubArray as $i => $p) {
                     $foundFlag = false;
-                    foreach ($pubModels as $model){
+                    foreach ($pubModels as $model) {
                         if ((int) $p['_id'] === $model['id']) {
                             $pubArray[$i]['_source']['created_at'] = $model['created_at'];
                             $pubArray[$i]['paper_title'] = $model['paper_title'];
@@ -999,7 +1006,20 @@ class SearchController extends Controller
                             $pubArray[$i]['year_of_publication'] = $model['year_of_publication'];
                             $pubArray[$i]['full_text_url'] = 'https://doi.org/' . $model['paper_doi'];
                             $pubArray[$i]['url'] = $model['url'];
-                            $pubArray[$i]['datasetLinkTypes'] = PublicationHasDataset::where('publication_id', $model['id'])->pluck('link_type')->all();
+                            
+                            // Use accessor to get datasets and their link types
+                            $datasets = $model->allDatasets;
+                            $datasetLinkTypes = [];
+                            foreach ($datasets as $dataset) {
+                                $linkType = PublicationHasDatasetVersion::where([
+                                    ['publication_id', '=', $model['id']],
+                                    ['dataset_version_id', '=', $dataset->id]
+                                ])->value('link_type') ?? 'UNKNOWN';
+                                $datasetLinkTypes[] = $linkType;
+                            }
+
+                            $pubArray[$i]['datasetLinkTypes'] = $datasetLinkTypes;
+
                             $foundFlag = true;
                             break;
                         }
@@ -1013,7 +1033,6 @@ class SearchController extends Controller
 
                 $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/field_search';
                 $input['field'] = ['TITLE','ABSTRACT','METHODS'];
-                $input['filters'] = isset($request['filters']) ? $request['filters'] : [];
                 $response = Http::post($urlString, $input);
 
                 $pubArray = $response['resultList']['result'];
@@ -1060,6 +1079,94 @@ class SearchController extends Controller
             ]);
 
             return response()->json($final, 200);
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Post(
+     *      path="/api/v1/search/doi",
+     *      summary="DOI search of EuropePMC publications",
+     *      description="Returns publications from EuropePMC matching a give DOI",
+     *      tags={"Search-Publications"},
+     *      summary="Search@publications",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          description="Submit search query",
+     *          @OA\MediaType(
+     *              mediaType="application/json",
+     *              @OA\Schema(
+     *                  @OA\Property(property="query", type="string", example="10.12345/fht"),
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items()
+     *              ),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=204,
+     *          description="No match found",
+     *      )
+     * )
+     */
+    public function doiSearch(DOISearch $request): Response | JsonResponse
+    {
+        try {
+            $input = $request->all();
+            
+            $urlString = env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi';
+            $response = Http::post($urlString, $input);
+
+            if (!isset($response['resultList']['result']) || !is_array($response['resultList']['result'])) {
+                    CloudLogger::write([
+                        'action_type' => 'SEARCH',
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                        'description' => 'Malformed response from search service. Response was: ' . json_encode($response->json()),
+                    ]);
+                    return response()->json([
+                        'message' => 'Malformed response from search service. Response was: ' . json_encode($response->json())
+                    ], 404);
+            } else {
+                $pubMatch = $response['resultList']['result'];
+            }
+
+            $pubResult = array();
+            if (count($pubMatch) === 1) {
+                $result = $pubMatch[0];
+                $pubResult['title'] = $result['title'];
+                $pubResult['authors'] = $result['authorString'];
+                $pubResult['abstract'] = $result['abstractText'];
+                $pubResult['is_preprint'] = str_contains($result['id'], 'PPR') ? true : false;
+                if (!$pubResult['is_preprint']) {
+                    $pubResult['journal_name'] = $result['journalInfo']['journal']['title'];
+                    $pubResult['publication_year'] = $result['pubYear'];
+                } else {
+                    $pubResult['journal_name'] = null;
+                    $pubResult['publication_year'] = null;
+                }
+            } else {
+                return response()->noContent();
+            }
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Search for publication by doi",
+            ]);
+
+            return response()->json([
+                'message' => 'success',
+                'data' => $pubResult
+            ], 200);
 
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
@@ -1509,8 +1616,8 @@ class SearchController extends Controller
         foreach ($provider['teams'] as $team) {
             $datasets = Dataset::where('team_id', $team['id'])->get();
             foreach ($datasets as $dataset) {
-                $dataset->setAttribute('spatialCoverage', $dataset->getLatestSpatialCoverage());
-                foreach ($dataset['spatialCoverage'] as $loc) {
+                $spatialCoverage = $dataset->allSpatialCoverages;
+                foreach ($spatialCoverage as $loc) {
                     if (!in_array($loc['region'], $locations)) {
                         $locations[] = $loc['region'];
                     }

@@ -33,7 +33,7 @@ use Database\Seeders\DatasetVersionHasDatasetVersionSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
 use Database\Seeders\DataProviderCollsSeeder;
 use Database\Seeders\DataProviderSeeder;
@@ -72,7 +72,7 @@ class SearchTest extends TestCase
             ToolSeeder::class,
             CollectionSeeder::class,
             KeywordSeeder::class,
-            CollectionHasDatasetSeeder::class,
+            CollectionHasDatasetVersionSeeder::class,
             CollectionHasKeywordSeeder::class,
             DatasetVersionHasDatasetVersionSeeder::class,
             DatasetVersionHasToolSeeder::class,
@@ -964,6 +964,30 @@ class SearchTest extends TestCase
         ]);
         $this->assertTrue($response['data'][0]['paper_title'] === 'Federated publication two');
         $this->assertTrue($response['data'][1]['paper_title'] === 'Federated publication');
+    }
+
+    /**
+     * Search using a doi with success
+     * 
+     * @return void
+     */
+    public function test_doi_search_with_success(): void
+    {
+        // Test federated search sorted by publication date       
+        $response = $this->json('POST', self::TEST_URL_SEARCH . "/doi", ["query" => "https://doi.org/10.3310/abcde"], ['Accept' => 'application/json']); 
+        $response->assertStatus(200);
+        $response->assertJsonStructure([
+            'data' => [
+                'title',
+                'authors',
+                'abstract',
+                'is_preprint',
+                'journal_name',
+                'publication_year',
+        ]]);
+        $this->assertTrue($response['data']['title'] === 'DOI test publication');
+        $this->assertTrue($response['data']['is_preprint'] === true);
+        $this->assertNull($response['data']['publication_year']);
     }
 
     /**

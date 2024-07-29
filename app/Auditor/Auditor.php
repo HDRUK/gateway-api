@@ -5,9 +5,9 @@ namespace App\Auditor;
 use Config;
 use Exception;
 use App\Models\AuditLog;
-use App\Jobs\SendAuditLogToPubSub;
-use App\Http\Traits\RequestTransformation;
+use App\Jobs\AuditLogJob;
 use Carbon\CarbonImmutable;
+use App\Http\Traits\RequestTransformation;
 
 class Auditor {
 
@@ -31,14 +31,13 @@ class Auditor {
                 'action_name',
                 'description',
             ];
-    
             $data = $this->checkEditArray($log, $arrayKeys);
-
             $data['action_service'] = env('AUDIT_ACTION_SERVICE', 'gateway_api');
             $data['action_name'] = strtolower($data['action_name']);
+            $data['created_at'] = gettimeofday(true) * 1000000;
 
             if (Config::get('services.googlepubsub.enabled')) {
-                SendAuditLogToPubSub::dispatch($data);
+                AuditLogJob::dispatch($data);
             }
 
             $audit = AuditLog::create($data);

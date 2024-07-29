@@ -9,7 +9,6 @@ use Exception;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Dataset;
-use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
 use App\Models\DatasetVersionHasSpatialCoverage;
 use App\Models\SpatialCoverage;
@@ -311,7 +310,12 @@ class IntegrationDatasetController extends Controller
         try {
             $input = $request->all();
             $applicationOverrideDefaultValues = $this->injectApplicationDatasetDefaults($request->header());
-            $dataset = Dataset::with(['collections', 'publications'])->findOrFail($id);
+            $dataset = Dataset::findOrFail($id);
+
+            // inject dataset Version Atributes
+            $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
+            $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
+            $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
 
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
@@ -320,9 +324,6 @@ class IntegrationDatasetController extends Controller
             // Retrieve the latest version 
             $latestVersion = $dataset->versions()->latest('version')->first();
         
-            // inject named entities
-            $dataset->setAttribute('named_entities', $latestVersion ? $latestVersion->namedEntities : collect());
-   
             $this->checkAppCanHandleDataset($dataset->team_id,$request);
         
             $outputSchemaModel = $request->query('schema_model');
