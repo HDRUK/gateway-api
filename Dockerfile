@@ -66,6 +66,7 @@ RUN composer install \
     && php artisan optimize \
     && php artisan config:clear \
     && php artisan ide-helper:generate \
+    && php artisan octane:install \
     && composer dumpautoload
 
 # Generate Swagger
