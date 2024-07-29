@@ -323,7 +323,7 @@ class TeamController extends Controller
                     'id' => $dp->id,
                     'is_provider' => $dp->is_provider,
                     'name' => $dp->name,
-                    'introduction' => $dp->introduction ?? 'Placeholder Intro text until the BE supports it.',
+                    'introduction' => $dp->introduction,
                     'datasets' => $this->datasets,
                     'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
                     'tools' => $tools->toArray(),
