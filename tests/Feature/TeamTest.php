@@ -71,6 +71,7 @@ class TeamTest extends TestCase
                         'is_question_bank',
                         'is_provider',
                         'url',
+                        'introduction',
                     ],
                 ],               
             ]);
@@ -126,6 +127,7 @@ class TeamTest extends TestCase
                 'is_question_bank' => 1,
                 'users' => [],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -223,6 +225,7 @@ class TeamTest extends TestCase
                 'is_question_bank' => 0,
                 'users' => [],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -305,6 +308,7 @@ class TeamTest extends TestCase
                 'is_question_bank' => 0,
                 'users' => [],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -341,6 +345,7 @@ class TeamTest extends TestCase
                 'notifications' => [$notificationID],
                 'is_question_bank' => 1,
                 'users' => [],
+                'introduction' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -425,6 +430,7 @@ class TeamTest extends TestCase
                 'is_question_bank' => 1,
                 'users' => [],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -465,6 +471,7 @@ class TeamTest extends TestCase
                 'notifications' => [$notificationID],
                 'is_question_bank' => 0,
                 'users' => [],
+                'introduction' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,
@@ -595,6 +602,7 @@ class TeamTest extends TestCase
                 'is_question_bank' => 0,
                 'users' => [],
                 'url' => 'https://fakeimg.pl/350x200/ff0000/000',
+                'introduction' => fake()->sentence(),
             ],
             [
                 'Authorization' => 'bearer ' . $this->accessToken,

@@ -75,6 +75,7 @@ class TeamController extends Controller
      *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                    @OA\Property(property="is_provider", type="boolean", example="1"),
      *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *                    @OA\Property(property="introduction", type="string", example="info about the team"),
      *                ),
      *             ),
      *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -191,6 +192,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *              )
      *          ),
      *      ),
@@ -253,6 +255,7 @@ class TeamController extends Controller
      *              @OA\Property(property="data", type="object",
      *                  @OA\Property(property="id", type="integer", example=1),
      *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
      *                  @OA\Property(property="summary", type="string", example="Summary"),
      *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
@@ -276,7 +279,7 @@ class TeamController extends Controller
     {
         try {
             // Get this Team
-            $dp = Team::select('id', 'name', 'is_provider')->where([
+            $dp = Team::select('id', 'name', 'is_provider', 'introduction')->where([
                 'id' => $id,
                 'enabled' => 1,
             ])->first();
@@ -320,7 +323,7 @@ class TeamController extends Controller
                     'id' => $dp->id,
                     'is_provider' => $dp->is_provider,
                     'name' => $dp->name,
-                    'introduction' => 'Placeholder Intro text until the BE supports it. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
+                    'introduction' => $dp->introduction ?? 'Placeholder Intro text until the BE supports it.',
                     'datasets' => $this->datasets,
                     'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
                     'tools' => $tools->toArray(),
@@ -372,6 +375,7 @@ class TeamController extends Controller
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -502,6 +506,7 @@ class TeamController extends Controller
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -534,6 +539,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *              )
      *          ),
      *      ),
@@ -567,6 +573,7 @@ class TeamController extends Controller
                 'is_question_bank',
                 'is_provider',
                 'url',
+                'introduction',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -637,6 +644,7 @@ class TeamController extends Controller
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
      *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -669,6 +677,7 @@ class TeamController extends Controller
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
      *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *              )
      *          ),
      *      ),
@@ -702,6 +711,7 @@ class TeamController extends Controller
                 'is_question_bank',
                 'is_provider',
                 'url',
+                'introduction',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
