@@ -42,6 +42,7 @@ trait TeamTransformation
                 'is_question_bank' => $team['is_question_bank'],
                 'is_provider' => $team['is_provider'],
                 'url' => $team['url'],
+                'introduction' => $team['introduction'],
             ];
 
             $tmpUser = [];
