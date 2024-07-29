@@ -1,7 +1,6 @@
 <?php
 
 namespace Tests\Feature;
-
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
@@ -23,11 +22,12 @@ use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\DatasetVersionSeeder;
+use Database\Seeders\DurHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
 
@@ -63,12 +63,13 @@ class CollectionTest extends TestCase
             ToolSeeder::class,
             TagSeeder::class,
             DurSeeder::class,
+            DurHasDatasetVersionSeeder::class,
             CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetSeeder::class,
+            CollectionHasDatasetVersionSeeder::class,
             CollectionHasToolSeeder::class,
             CollectionHasDurSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             CollectionHasPublicationSeeder::class,
         ]);
     }
@@ -221,6 +222,7 @@ class CollectionTest extends TestCase
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
+            "status" => "ACTIVE",
         ];
         $responseIns = $this->json(
             'POST',
@@ -244,6 +246,7 @@ class CollectionTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "publications" => $this->generatePublications(),
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -280,6 +283,7 @@ class CollectionTest extends TestCase
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
+            "status" => "ACTIVE",
         ];
         $responseIns = $this->json(
             'POST',
@@ -303,6 +307,7 @@ class CollectionTest extends TestCase
             "tools" => $this->generateTools(),
             "keywords" => $this->generateKeywords(),
             "dur" => $this->generateDurs(),
+            "status" => "DRAFT",
         ];
         $responseUpdate = $this->json(
             'PUT',
@@ -356,12 +361,12 @@ class CollectionTest extends TestCase
      *
      * @return void
      */
-    public function test_soft_delete_collection_with_success(): void
+    public function test_soft_delete_and_unarchive_collection_with_success(): void
     {
         $countBefore = Collection::count();
         $countTrashedBefore = Collection::onlyTrashed()->count();
         // create new collection
-        $mockDataIns = [
+        $mockDataIn = [
             "name" => "covid",
             "description" => "Dolorem voluptas consequatur nihil illum et sunt libero.",
             "image_link" => "https://via.placeholder.com/640x480.png/0022bb?text=animals+cumque",
@@ -374,24 +379,43 @@ class CollectionTest extends TestCase
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
         ];
-        $responseIns = $this->json(
+        $responseIn = $this->json(
             'POST',
             self::TEST_URL,
-            $mockDataIns,
+            $mockDataIn,
             $this->header
         );
 
-        $responseIns->assertStatus(201);
-        $idIns = (int) $responseIns['data'];
+        $responseIn->assertStatus(201);
+        $idIn = (int) $responseIn['data'];
 
         $countAfter = Collection::count();
-        $this->assertTrue((bool) ($countAfter - $countBefore), 'Response was successfully');
+        $this->assertEquals($countAfter, $countBefore + 1);
 
         // delete collection
-        $response = $this->json('DELETE', self::TEST_URL . '/' . $idIns, [], $this->header);
+        $response = $this->json('DELETE', self::TEST_URL . '/' . $idIn, [], $this->header);
         $response->assertStatus(200);
-        $countTrasherAfter = Collection::onlyTrashed()->count();
-        $this->assertTrue((bool) ($countTrasherAfter - $countTrashedBefore), 'Response was successfully');
+
+        $countAfter = Collection::count();
+        $countTrashedAfter = Collection::onlyTrashed()->count();
+
+        $this->assertEquals($countAfter, $countBefore);
+        $this->assertEquals($countTrashedAfter, 1);
+
+        $response = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $idIn . '?unarchive',
+            ['status' => 'ACTIVE'],
+            $this->header
+        );
+        $response->assertStatus(200);
+
+        $countTrashedAfterUnarchiving = Collection::onlyTrashed()->count();
+        $countAfterUnarchiving = Collection::count();
+
+        $this->assertEquals($countTrashedAfterUnarchiving, 0);
+        $this->assertTrue($countAfter < $countAfterUnarchiving);
+        $this->assertEquals($countBefore + 1, $countAfterUnarchiving);
     }
 
     private function generateKeywords()

@@ -49,6 +49,10 @@ class RoleSeeder extends Seeder
                     'audit.create',
                     'audit.update',
                     'audit.delete',
+                    'question-bank.create',
+                    'question-bank.read',
+                    'question-bank.update',
+                    'question-bank.delete',
                 ],
             ],
             'hdruk.metadata' => [
@@ -129,6 +133,10 @@ class RoleSeeder extends Seeder
                     'custodians.update',
                     'collections.read',
                     'notifications.update',
+                    'question-bank.create',
+                    'question-bank.read',
+                    'question-bank.update',
+                    'question-bank.delete',
                 ],
             ],
             'developer' => [

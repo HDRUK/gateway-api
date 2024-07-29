@@ -5,13 +5,14 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Dataset;
-use App\Models\DatasetVersion;
-use Database\Seeders\SpatialCoverageSeeder;
-use Tests\Traits\Authorization;
-use Tests\Traits\MockExternalApis;
-use Illuminate\Support\Carbon;
-use App\Http\Enums\TeamMemberOf;
 use App\Models\NamedEntities;
+use App\Models\DatasetVersion;
+use Illuminate\Support\Carbon;
+use Tests\Traits\Authorization;
+use App\Http\Enums\TeamMemberOf;
+use Tests\Traits\MockExternalApis;
+use Illuminate\Support\Facades\Storage;
+use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetTest extends TestCase
@@ -26,6 +27,9 @@ class DatasetTest extends TestCase
     const TEST_URL_TEAM = '/api/v1/teams';
     const TEST_URL_NOTIFICATION = '/api/v1/notifications';
     const TEST_URL_USER = '/api/v1/users';
+
+    protected $metadata;
+    protected $metadataAlt;
 
     public function setUp(): void
     {
@@ -658,8 +662,6 @@ class DatasetTest extends TestCase
         $responseDeleteUser->assertStatus(200);
     }
 
-
-
     /**
      * Create/archive/unarchive Dataset with success
      * 
@@ -790,7 +792,6 @@ class DatasetTest extends TestCase
             'message'
         ]);
 
-        
         $responseUnarchiveDataset->assertStatus(200);
 
         // change dataset status
@@ -1293,6 +1294,67 @@ class DatasetTest extends TestCase
         ]);
         $responseDeleteUser->assertStatus(200);
         
+    }
+
+    public function test_can_download_mock_dataset_structural_metadata_file()
+    {
+        // Mock the storage disk
+        Storage::fake('mock');
+
+        // Put a fake file in the mock disk
+        $filePath = 'structural_metadata_template.xlsx';
+        Storage::disk('mock')->put($filePath, 'fake content');
+
+        // Mock the config
+        Config::set('mock_data.template_dataset_structural_metadata', $filePath);
+        Config::set('statuscodes.STATUS_OK.code', 200);
+
+        // Make the request
+        $response = $this->get('/api/v1/datasets/export/mock?type=template_dataset_structural_metadata');
+
+        // Assert the file is downloaded
+        $response->assertStatus(200);
+        $response->assertHeader('content-disposition', 'attachment; filename=' . $filePath);
+
+        // Clean up
+        Storage::disk('mock')->delete($filePath);
+    }
+
+    public function test_can_download_mock_dataset_metadata_file()
+    {
+        // Mock the storage disk
+        Storage::fake('mock');
+
+        // Put a fake file in the mock disk
+        $filePath = 'example_dataset_metadata.xlsx';
+        Storage::disk('mock')->put($filePath, 'fake content');
+
+        // Mock the config
+        Config::set('mock_data.mock_dataset_metadata', $filePath);
+        Config::set('statuscodes.STATUS_OK.code', 200);
+
+        // Make the request
+        $response = $this->get('/api/v1/datasets/export/mock?type=dataset_metadata');
+
+        // Assert the file is downloaded
+        $response->assertStatus(200);
+        $response->assertHeader('content-disposition', 'attachment; filename=' . $filePath);
+
+        // Clean up
+        Storage::disk('mock')->delete($filePath);
+    }
+
+    public function test_download_mock_file_with_file_not_found()
+    {
+        // Mock the config
+        Config::set('mock_data.dataset_structural_metadata', 'non_existent_file.json');
+
+        // Make the request
+        $response = $this->get('/api/v1/datasets/export/mock?type=dataset_structural_metadata');
+
+        // Assert the file is not found
+        $response->assertStatus(404);
+        $response->assertJson(['error' => 'File not found.']);
     }
 
 }

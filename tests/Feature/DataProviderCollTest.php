@@ -30,9 +30,9 @@ use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
 use Database\Seeders\DataProviderCollsSeeder;
-use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
 
@@ -67,11 +67,11 @@ class DataProviderCollTest extends TestCase
             TagSeeder::class,
             DurSeeder::class,
             CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetSeeder::class,
+            CollectionHasDatasetVersionSeeder::class,
             CollectionHasToolSeeder::class,
             CollectionHasDurSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             CollectionHasPublicationSeeder::class,
 
         ]);
@@ -92,6 +92,7 @@ class DataProviderCollTest extends TestCase
                     'deleted_at',
                     'enabled',
                     'name',
+                    'summary',
                     'img_url',
                     'teams',
                 ],
@@ -124,6 +125,7 @@ class DataProviderCollTest extends TestCase
                 'deleted_at',
                 'enabled',
                 'name',
+                'summary',
                 'img_url',
                 'teams',
             ]
@@ -147,6 +149,7 @@ class DataProviderCollTest extends TestCase
                 'id',
                 'name',
                 'img_url',
+                'summary',
                 'datasets',
                 'durs',
                 'tools',
@@ -162,6 +165,7 @@ class DataProviderCollTest extends TestCase
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',
+            'summary' => fake()->text(255),
             'img_url' => 'https://doesntexist.com/img.jpeg',
             'team_ids' => [
                 1,
@@ -199,6 +203,7 @@ class DataProviderCollTest extends TestCase
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',
+            'summary' => fake()->text(255),
             'img_url' => 'https://doesntexist.com/img.jpeg',
             'team_ids' => [
                 1,
@@ -245,6 +250,7 @@ class DataProviderCollTest extends TestCase
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',
+            'summary' => fake()->text(255),
             'img_url' => 'https://doesntexist.com/img.jpeg',
             'team_ids' => [
                 1,
@@ -283,6 +289,7 @@ class DataProviderCollTest extends TestCase
         $payload = [
             'enabled' => true,
             'name' => 'Loki Data Provider',
+            'summary' => fake()->text(255),
             'img_url' => 'https://doesntexist.com/img.jpeg',
             'team_ids' => [
                 1,
