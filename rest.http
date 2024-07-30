@@ -42,8 +42,8 @@ Content-Type: application/json
 Accept: application/json
 
 {
-    "email": {{uEmailDar}},
-    "password": {{uPasswordDar}}
+    "email": {{uEmail}},
+    "password": {{uPassword}}
 }
 
 # ### Variables jwt token

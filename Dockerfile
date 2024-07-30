@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     zip \
     default-mysql-client \ 
+    supervisor \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql soap zip iconv bcmath \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
@@ -97,11 +98,14 @@ RUN php artisan passport:keys
 # Add symbolic link for public file storage
 RUN php artisan storage:link
 
-# Starts both, laravel server and job queue
-CMD ["/var/www/docker/start.sh"]
+COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose port
 EXPOSE 8000
+
+# Starts both, laravel server and job queue
+# CMD ["/var/www/docker/start.sh"]
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 
 # for study:
 # composer install -q -n --no-ansi --no-dev --no-scripts --no-progress --prefer-dist
