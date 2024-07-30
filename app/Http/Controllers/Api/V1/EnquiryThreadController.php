@@ -130,7 +130,7 @@ class EnquiryThreadController extends Controller
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
-            $enquiryThread = EnquiryThread::findOrFail($id)->get();
+            $enquiryThread = EnquiryThread::where('id', $id)->get();
 
             Auditor::log([
                 'user_id' => (int) $jwtUser['id'],
@@ -242,8 +242,7 @@ class EnquiryThreadController extends Controller
 
                 $enquiryThreadId = EMC::createEnquiryThread($payload['thread']);
                 $enquiryMessageId = EMC::createEnquiryMessage($enquiryThreadId, $payload['message']);
-
-                $usersToNotify[] = EMC::determineDARManagersFromTeamId($t->id, $jwtUser['id']);
+                $usersToNotify[] = EMC::determineDARManagersFromTeamId($t->id, $enquiryThreadId);
             }
 
             if (empty($usersToNotify)) {
@@ -276,14 +275,6 @@ class EnquiryThreadController extends Controller
                 'data' => $enquiryThreadId,
             ], Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
-            Auditor::log([
-                'user_id' => (int) $jwtUser['id'],
-                'action_type' => 'CREATE',
-                'action_name' => class_basename($this) . '@' . __FUNCTION__,
-                'description' => 'EnquiryThread ' . $enquiryThreadId . ' create - FAILED: ' . 
-                    $e->getMessage(),
-            ]);
-        } finally {
             return response()->json([
                 'message' => Config::get('statuscodes.STATUS_BAD_REQUEST.message'),
                 'data' => null,

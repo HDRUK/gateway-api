@@ -2520,5 +2520,23 @@ class EmailTemplatesSeeder extends Seeder
                 </mjml > 
             '
         ]);
+
+        EmailTemplate::create([
+            'identifier' => 'dar.notifymessage',
+            'subject' => 'Reply notification message',
+            'body' => '
+                <mjml>
+                    <mj-body>
+                        <mj-section>
+                            <mj-column>
+                                <mj-text>
+                                    [[DAR_NOTIFY_MESSAGE]]
+                                </mj-text>
+                            </mj-column>
+                        </mj-section>
+                    </mj-body>
+                </mjml>
+            '
+        ]);
     }
 }
