@@ -37,7 +37,7 @@ RUN apt-get update; \
     apt-get install -y libmagickwand-dev
     
 RUN pecl install imagick \
-    docker-php-ext-enable imagick;
+    docker-php-ext-enable imagick
 
 RUN pecl install swoole \
     && docker-php-ext-enable swoole
