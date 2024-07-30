@@ -133,6 +133,13 @@ class ServiceLayerController extends Controller
         );
     }
 
+    public function traser(Request $request){
+        return $this->forwardRequest($request, 
+           env("TRASER_SERVICE_URL"), 
+           "api/services/traser/"
+        );
+    }
+
     private function forwardRequest(Request $request, string $baseUrl, string $apiPath) {
         // Extract the request path
         $path = $request->path();
