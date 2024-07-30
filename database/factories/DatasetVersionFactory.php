@@ -27,7 +27,7 @@ class DatasetVersionFactory extends Factory
         return [
             'dataset_id' => $dataset->id,
             'metadata' => json_encode($this->getMetadata()),
-            'version' => fake()->unique()->numberBetween(1, 50),
+            'version' => fake()->numberBetween(1, 100),
             'provider_team_id' => $dataset->team_id,
             'application_type' => fake()->word(),
         ];
