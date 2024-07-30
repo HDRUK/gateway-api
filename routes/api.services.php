@@ -21,11 +21,6 @@ Route::get('/datasets/{pid}', [ServiceLayerController::class, 'getDatasetFromPid
 Route::post('/audit', [ServiceLayerController::class, 'audit']);
 
 Route::any('/traser', [ServiceLayerController::class, 'traser']);
-    /*MMC::validateDataModelType(
-        json_encode($request->all()), 
-        Config::get('metadata.GWDM.name'),
-        Config::get('metadata.GWDM.version')
-    );*/
 
 foreach (config("service_routes") as $service => $paths) {
     foreach ($paths as $path => $methods) {
