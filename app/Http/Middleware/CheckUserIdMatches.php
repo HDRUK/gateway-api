@@ -21,7 +21,7 @@ class CheckUserIdMatches
 
         $routeId = $request->route('id');
 
-        if ($user && $user->id == $routeId) {
+        if ($user && $user['id'] == $routeId) {
             return $next($request);
         }
 
