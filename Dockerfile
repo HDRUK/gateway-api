@@ -106,8 +106,8 @@ COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 EXPOSE 8000
 
 # Starts both, laravel server and job queue
-CMD ["/var/www/docker/start.sh"]
-# CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# CMD ["/var/www/docker/start.sh"]
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 
 # for study:
 # composer install -q -n --no-ansi --no-dev --no-scripts --no-progress --prefer-dist
