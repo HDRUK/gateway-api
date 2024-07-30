@@ -2836,6 +2836,15 @@ return [
         ],
         'constraint' => [],
     ],
+    [
+        'name' => 'dur.get.template',
+        'method' => 'get',
+        'path' => '/dur/template',
+        'methodController' => 'DurController@exportTemplate',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
+        'constraint' => [],
+    ],
 
 
     // organisations

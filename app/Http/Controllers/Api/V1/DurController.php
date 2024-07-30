@@ -29,6 +29,7 @@ use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Requests\Dur\UploadDur;
 use App\Exceptions\NotFoundException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\DataProviderCollHasTeam;
 use MetadataManagementController AS MMC;
@@ -1506,6 +1507,21 @@ class DurController extends Controller
                 'message' => 'created',
                 'data' => $durId,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public function exportTemplate(Request $request)
+    {
+        try {
+            $file = Config::get('mock_data.data_use_upload_template');
+
+            if (!Storage::disk('mock')->exists($file)) {
+                return response()->json(['error' => 'File not found.'], 404);
+            }
+
+            return Storage::disk('mock')->download($file)->setStatusCode(Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }
