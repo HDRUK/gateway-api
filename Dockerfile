@@ -30,7 +30,12 @@ RUN apt-get update && apt-get install -y \
 
 # Install Redis and Imagick
 # Install Redis
-RUN pecl install redis \
+# RUN pecl install redis \
+#     && docker-php-ext-enable redis
+RUN wget -O redis-5.3.7.tgz 'http://pecl.php.net/get/redis-5.3.7.tgz' \
+    && pecl install redis-5.3.7.tgz \
+    && rm -rf redis-5.3.7.tgz \
+    && rm -rf /tmp/pear \
     && docker-php-ext-enable redis
 
 RUN apt-get update; \
