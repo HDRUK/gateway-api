@@ -18,10 +18,11 @@ class CheckUserIdMatches
     {
         $input = $request->all();
         $user = $input['jwt_user'];
+        $jwtUserIsAdmin = $user['is_admin'];
 
         $routeId = $request->route('id');
 
-        if ($user && $user['id'] == $routeId) {
+        if ($user && ($user['id'] == $routeId || $jwtUserIsAdmin)) {
             return $next($request);
         }
 
