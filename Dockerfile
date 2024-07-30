@@ -21,8 +21,6 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     zip \
     default-mysql-client \ 
-    imagemagick \
-    libmagickwand-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql soap zip iconv bcmath \
     && docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
@@ -31,14 +29,17 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install sockets
 
 # Install Redis and Imagick
-RUN wget -O redis-5.3.7.tgz 'http://pecl.php.net/get/redis-5.3.7.tgz' \
-    && pecl install redis-5.3.7.tgz \
-    && pecl install imagick-3.7.0 \
-    && pecl install swoole \
-    && rm -rf redis-5.3.7.tgz \
-    && rm -rf /tmp/pear \
-    && docker-php-ext-enable redis \
-    && docker-php-ext-enable imagick \
+# Install Redis
+RUN pecl install redis \
+    && docker-php-ext-enable redis
+
+RUN apt-get update; \
+    apt-get install -y libmagickwand-dev
+    
+RUN pecl install imagick \
+    docker-php-ext-enable imagick;
+
+RUN pecl install swoole \
     && docker-php-ext-enable swoole
 
 # Install Composer
