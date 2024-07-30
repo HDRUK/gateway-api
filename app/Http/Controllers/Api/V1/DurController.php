@@ -1512,6 +1512,37 @@ class DurController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *    path="/api/v1/dur/teemplate",
+     *    tags={"Dur"},
+     *    summary="DurController@exportTemplate",
+     *    description="Export Dur upload template",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *       response=200,
+     *       description="File download",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema()
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="File Not Found",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="file_not_found")
+     *       ),
+     *    ),
+     * )
+     */
     public function exportTemplate(Request $request)
     {
         try {
