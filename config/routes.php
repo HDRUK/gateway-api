@@ -981,7 +981,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
+            'check.access.userId',
         ],
         'constraint' => [
             'id' => '[0-9]+',
