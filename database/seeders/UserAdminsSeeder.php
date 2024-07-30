@@ -175,6 +175,11 @@ class UserAdminsSeeder extends Seeder
     private function createUser(string $firstname, string $lastname, string $email,
         string $password, bool $isAdmin, array $roles, bool $assignTeam = false): void
     {
+        $user = User::where('email', $email)->first();
+        if ($user) {
+            return;
+        }
+
         $user = User::factory()->create([
             'name' => $firstname . ' ' . $lastname,
             'firstname' => $firstname,
