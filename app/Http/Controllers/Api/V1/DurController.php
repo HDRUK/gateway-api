@@ -1514,7 +1514,7 @@ class DurController extends Controller
 
     /**
      * @OA\Get(
-     *    path="/api/v1/dur/teemplate",
+     *    path="/api/v1/dur/template",
      *    tags={"Dur"},
      *    summary="DurController@exportTemplate",
      *    description="Export Dur upload template",
