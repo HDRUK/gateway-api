@@ -20,6 +20,8 @@ class UserTest extends TestCase
     const TEST_URL = '/api/v1/users';
 
     protected $header = [];
+    protected $adminJwt = '';
+    protected $nonAdminJwt = '';
 
     /**
      * Set up the database
@@ -36,16 +38,17 @@ class UserTest extends TestCase
             SectorSeeder::class,
         ]);
         $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
+        $this->adminJwt = $this->getAuthorisationJwt();
+        
         $this->header = [
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
+            'Authorization' => 'Bearer ' . $this->adminJwt,
         ];
         $this->authorisationUser(false);
-        $nonAdminJwt = $this->getAuthorisationJwt(false);
+        $this->nonAdminJwt = $this->getAuthorisationJwt(false);
         $this->headerNonAdmin = [
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $nonAdminJwt,
+            'Authorization' => 'Bearer ' . $this->nonAdminJwt,
         ];
     }
 
@@ -465,6 +468,67 @@ class UserTest extends TestCase
             $this->assertTrue(false, 'Response was unsuccessfully');
         }
     }
+
+    public function test_non_admin_user_can_edit_themselves(): void
+    {
+        $nonAdminUser = $this->getUserFromJwt($this->nonAdminJwt);
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $nonAdminUser['id'],
+            [
+                'firstname' => 'Just',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
+                'sector_id' => 1,
+                'organisation' => 'Updated Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 0,
+                'contact_news' => 0,
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
+                'terms' => true,
+            ],
+            $this->headerNonAdmin
+        );
+        $response->assertStatus(202);
+    }
+
+    public function test_non_admin_user_cannot_edit_others(): void
+    {
+        $nonAdminUser = $this->getUserFromJwt($this->nonAdminJwt);
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $nonAdminUser['id'] + 1,
+            [
+                'firstname' => 'Just',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
+                'sector_id' => 1,
+                'organisation' => 'Updated Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 0,
+                'contact_news' => 0,
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
+                'terms' => true,
+            ],
+            $this->headerNonAdmin
+        );
+        $response->assertStatus(403);
+
+
+    }
+
 
 
     /**
