@@ -88,7 +88,7 @@ class PublicationController extends Controller
             $mongoId = $request->query('mongo_id', null);
             $paperTitle = $request->query('paper_title', null);
             $ownerId = $request->query('owner_id', null);
-            $filterStatus = $request->query('status', null);
+            $filterStatus = $request->query('status', 'ACTIVE');
             $perPage = request('per_page', Config::get('constants.per_page'));
             $withRelated = $request->boolean('with_related', true);
 

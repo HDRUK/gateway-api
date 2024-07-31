@@ -990,7 +990,7 @@ class SearchController extends Controller
                     $matchedIds[] = $d['_id'];
                 }
 
-                $pubModels = Publication::whereIn('id', $matchedIds)->get();
+                $pubModels = Publication::whereIn('id', $matchedIds)->where('status', 'ACTIVE')->get();
 
                 foreach ($pubArray as $i => $p) {
                     $foundFlag = false;
