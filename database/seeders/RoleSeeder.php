@@ -21,7 +21,7 @@ class RoleSeeder extends Seeder
                     'perms' => 'all',
                 ]
             ],
-            'hdruk.admin' => [ // done
+            'hdruk.admin' => [
                 'full_name' => 'HDR UK Admin',
                 'permissions' => [
                     'datasets.read',
@@ -213,7 +213,7 @@ class RoleSeeder extends Seeder
                     'datasets.read',
                 ],
             ],
-            'custodian.metadata.manager' => [ // done
+            'custodian.metadata.manager' => [
                 'full_name' => 'Metadata Manager',
                 'permissions' => [
                     'datasets.read',
