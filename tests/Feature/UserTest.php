@@ -71,7 +71,6 @@ class UserTest extends TestCase
                     'email',
                     'secondary_email',
                     'preferred_email',
-                    'providerid',
                     'provider',
                     'created_at',
                     'updated_at',
@@ -201,6 +200,8 @@ class UserTest extends TestCase
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Test Organisation',
+                'provider' => 'open-athens',
+                'providerid' => '123456',
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
@@ -219,6 +220,10 @@ class UserTest extends TestCase
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);
+
+        $userId = $response->decodeResponseJson()['data'];
+        $user = User::findOrFail($userId);
+        $this->assertNotNull($user['providerid']);
     }
 
     public function test_it_can_update_a_user(): void
