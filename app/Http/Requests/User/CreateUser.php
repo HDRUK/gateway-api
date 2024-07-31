@@ -50,6 +50,14 @@ class CreateUser extends BaseFormRequest
                 'nullable', 
                 'string',
             ],
+            'provider' => [
+                'nullable', 
+                'string',
+            ],
+            'providerid' => [
+                'nullable', 
+                'string',
+            ],
             'bio' => [
                 'nullable', 
                 'string',
