@@ -543,7 +543,7 @@ class LibraryController extends Controller
                     throw new UnauthorizedException('You do not have permission to delete this library');
                 }
 
-                if ($library->save()) {
+                if ($library->delete()) {
                     Auditor::log([
                         'user_id' => (int) $jwtUser['id'],
                         'action_type' => 'DELETE',
