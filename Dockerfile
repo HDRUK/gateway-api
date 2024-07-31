@@ -11,6 +11,8 @@ WORKDIR /var/www
 COPY composer.* /var/www/
 
 RUN apt-get update && apt-get install -y \
+    nodejs \
+    npm \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
     libmcrypt-dev \
@@ -61,6 +63,7 @@ COPY . /var/www
 
 # Composer & laravel
 RUN composer install \
+    && npm install --save-dev chokidar \
     && chmod -R 777 storage bootstrap/cache \
     && php artisan optimize:clear \
     && php artisan optimize \
