@@ -21,38 +21,53 @@ class RoleSeeder extends Seeder
                     'perms' => 'all',
                 ]
             ],
-            'hdruk.admin' => [
+            'hdruk.admin' => [ // done
+                'full_name' => 'HDR UK Admin',
                 'permissions' => [
                     'datasets.read',
                     'datasets.delete',
-                    'custodians.create',
-                    'custodians.read',
-                    'custodians.update',
-                    'custodians.delete',
-                    'tools.read',
-                    'tools.create',
-                    'tools.update',
-                    'tools.delete',
-                    'filters.read',
-                    'filters.create',
-                    'filters.update',
-                    'filters.delete',
-                    'features.read',
-                    'features.create',
-                    'features.update',
-                    'features.delete',
-                    'sectors.read',
-                    'sectors.create',
-                    'sectors.update',
-                    'sectors.delete',
-                    'audit.read',
-                    'audit.create',
-                    'audit.update',
-                    'audit.delete',
+
                     'question-bank.create',
                     'question-bank.read',
                     'question-bank.update',
                     'question-bank.delete',
+
+                    'permissions.update',
+
+                    'custodians.create',
+                    'custodians.read',
+                    'custodians.update',
+                    'custodians.delete',
+
+                    'tools.read',
+                    'tools.create',
+                    'tools.update',
+                    'tools.delete',
+
+                    'theme.read',
+                    'theme.create',
+                    'theme.update',
+                    'theme.delete',
+
+                    'filters.read',
+                    'filters.create',
+                    'filters.update',
+                    'filters.delete',
+
+                    'features.read',
+                    'features.create',
+                    'features.update',
+                    'features.delete',
+
+                    'sectors.read',
+                    'sectors.create',
+                    'sectors.update',
+                    'sectors.delete',
+
+                    'audit.read',
+                    'audit.create',
+                    'audit.update',
+                    'audit.delete',
                 ],
             ],
             'hdruk.metadata' => [
@@ -65,39 +80,58 @@ class RoleSeeder extends Seeder
                 ],
             ],
             'hdruk.dar' => [
+                'full_name' => 'HDR UK - DAR Admin',
                 'permissions' => [
                     'integrations.dar',
+
                     'datasets.read',
+
                     'enquiries.read',
-                    'dar.read.assigned',
-                    'dar.decision',
-                    'workflows.update',
+
+                    'question-bank.create',
+                    'question-bank.read',
+                    'question-bank.update',
+                    'question-bank.delete',
+
+                    'dar-form.read',
                     'dar-form.update',
+
                     'dur.read',
                     'dur.create',
                     'dur.update',
                     'dur.delete',
-                    'team-members.update',
+
+                    'permissions.update',
+
                     'roles.mdm.update',
                     'roles.mde.update',
+
+                    'team-members.update',
                 ],
             ],
             'hdruk.custodian' => [
+                'full_name' => 'HDR UK - Custodian Onboarding Admin',
                 'permissions' => [
                     'datasets.read',
-                    'custodians.create',
+
+                    'permissions.update',
+                    
                     'roles.cta.update',
                     'roles.dev.update',
                     'roles.mdm.update',
                     'roles.mde.update',
                     'roles.dar-m.update',
                     'roles.dar-r.update',
+
                     'team-members.create',
                     'team-members.update',
                     'team-members.delete',
+
+                    'custodians.create',
                 ],
             ],
             'hdruk.cohort.admin' => [
+                'full_name' => 'HDR UK - Cohort Discovery Manager',
                 'permissions' => [
                     'cohort.create',
                     'cohort.read',
@@ -112,14 +146,32 @@ class RoleSeeder extends Seeder
                     'applications.create',
                     'applications.update',
                     'applications.delete',
+
                     'integrations.metadata',
                     'integrations.dar',
+
                     'datasets.read',
+
                     'enquiries.read',
-                    'dar.read.all',
+
+                    'question-bank.read',
+
+                    'data-access-template.read',
+
+                    'data-access-applications.provider.read',
+
                     'workflows.read',
+
                     'dar-config.update',
                     'dar-form.read',
+
+                    'dur.read',
+
+                    'permissions.update',  
+
+                    'notifications.read',
+                    'notifications.update',
+
                     'roles.read',
                     'roles.cta.update',
                     'roles.dev.update',
@@ -127,16 +179,24 @@ class RoleSeeder extends Seeder
                     'roles.mde.update',
                     'roles.dar-m.update',
                     'roles.dar-r.update',
+
                     'team-members.create',
                     'team-members.update',
                     'team-members.delete',
+
                     'custodians.update',
+
+                    'tools.read',
+                    'tools.create',
+                    'tools.update',
+                    'tools.delete',
+
                     'collections.read',
-                    'notifications.update',
-                    'question-bank.create',
+                    'collections.create',
+                    'collections.update',
+                    'collections.delete',
+
                     'question-bank.read',
-                    'question-bank.update',
-                    'question-bank.delete',
                 ],
             ],
             'developer' => [
@@ -146,21 +206,27 @@ class RoleSeeder extends Seeder
                     'applications.create',
                     'applications.update',
                     'applications.delete',
+
                     'integrations.metadata',
                     'integrations.dar',
+
                     'datasets.read',
                 ],
             ],
-            'custodian.metadata.manager' => [
+            'custodian.metadata.manager' => [ // done
                 'full_name' => 'Metadata Manager',
                 'permissions' => [
                     'datasets.read',
                     'datasets.create',
                     'datasets.update',
                     'datasets.delete',
+
+                    'permissions.update',
+
                     'roles.read',
                     'roles.mdm.update',
                     'roles.mde.update',
+
                     'team-members.create',
                     'team-members.update',
                 ],
@@ -171,7 +237,9 @@ class RoleSeeder extends Seeder
                     'datasets.read',
                     'datasets.create',
                     'datasets.update',
+
                     'roles.read',
+
                     'team-members.update',
                     'roles.mde.update',
                 ],
@@ -179,54 +247,119 @@ class RoleSeeder extends Seeder
             'custodian.dar.manager' => [
                 'full_name' => 'DAR Manager',
                 'permissions' => [
-                    'integrations.dar',
                     'datasets.read',
-                    'enquiries.create',
+
                     'enquiries.read', 
                     'enquiries.update',
-                    'dar.read.all',
-                    'dar.read.assigned',
-                    'dar.update',
-                    'dar.decision',
+
+                    'question-bank.read',
+
+                    'data-access-template.read',
+                    'data-access-template.create',
+                    'data-access-template.update',
+                    'data-access-template.delete',
+
+                    'data-access-applications.provider.read',
+                    'data-access-applications.provider.update',
+
+                    'data-access-applications.review.read',
+                    'data-access-applications.review.create',
+                    'data-access-applications.review.update',
+                    
+                    'data-access-applications.status.read',
+                    'data-access-applications.status.create',
+
                     'workflows.read',
                     'workflows.create',
                     'workflows.update',
                     'workflows.delete',
                     'workflow.assign',
+
                     'dar-config.update',
+
                     'dar-form.create',
                     'dar-form.read',
                     'dar-form.update',
+
                     'dur.read',
                     'dur.create',
                     'dur.update',
                     'dur.delete',
+
+                    'permissions.update',
+
                     'roles.read',
-                    'team-members.update',
                     'roles.dar-m.update',
                     'roles.dar-r.update',
-                    'team-members.create',               
+
+                    'team-members.update',
+                    'team-members.create',
+
+                    'tools.read',
+                    'tools.create',
+                    'tools.update',
+                    'tools.delete',
                 ],
             ],
             'dar.reviewer' => [
                 'full_name' => 'DAR Reviewer',
                 'permissions' => [
                     'datasets.read',
-                    'dar.read.assigned',
-                    'dar.update', 
+
+                    'question-bank.read',
+
+                    'data-access-template.read',
+
+                    'data-access-applications.provider.read',
+
+                    'data-access-applications.review.read',
+                    'data-access-applications.review.create',
+                    'data-access-applications.review.update',
+
+                    'data-access-applications.status.read',
+                    'data-access-applications.status.create',
+
                     'roles.read',
-                    'team-members.update',
+
                     'roles.dar-r.update',
+
+                    'team-members.update',
                 ],
             ],
         ];
 
+        $perms = [];
         foreach ($roles as $k => $v) {
-            $role = Role::create([
+            if ($k === 'hdruk.superadmin') {
+                continue;
+            }
+
+            $perms = array_unique(array_merge($perms, $v['permissions']));
+        }
+
+        foreach ($perms as $perm) {
+            Permission::updateOrCreate([
+                'name' => trim($perm),
+            ],
+            [
+                'name' => trim($perm),
+                'application' => 'gateway'
+            ]);
+        }
+
+        foreach ($roles as $k => $v) {
+            $role = Role::updateOrCreate([
+                'name' => $k,
+            ], 
+            [
                 'name' => $k,
                 'enabled' => true,
                 'full_name' => array_key_exists('full_name', $v) ? $v['full_name'] : NULL,
             ]);
+
+            RoleHasPermission::where([
+                'role_id' => $role->id,
+            ])->delete();
 
             foreach($v['permissions'] as $p) {
                 $perm = null;
@@ -245,11 +378,12 @@ class RoleSeeder extends Seeder
                     $perm = Permission::where([
                         'application' => 'gateway',
                     ])->get();
+
                     foreach ($perm as $p) {
                         RoleHasPermission::create([
                             'role_id' => $role->id,
                             'permission_id' => $p->id,
-                        ]);                        
+                        ]);                         
                     }
                 }
             }
