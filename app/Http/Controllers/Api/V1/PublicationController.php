@@ -373,7 +373,7 @@ class PublicationController extends Controller
             if($currentPublication->status === Publication::STATUS_ACTIVE){
                 $this->indexElasticPublication($publicationId);
             } else {
-                MMC::deleteFromElastic((int) $publicationId, 'publication');
+                MMC::deleteFromElastic($publicationId, 'publication');
             }
 
             Auditor::log([
@@ -512,7 +512,7 @@ class PublicationController extends Controller
             if($currentPublication->status === Publication::STATUS_ACTIVE){
                 $this->indexElasticPublication((int) $id);
             } else {
-                MMC::deleteFromElastic((int) $id, 'publication');
+                MMC::deleteFromElastic($id, 'publication');
             }
 
             Auditor::log([
@@ -707,7 +707,7 @@ class PublicationController extends Controller
                     // Index the updated publication in Elasticsearch
                     $this->indexElasticPublication((int) $id);
                 } else {
-                    MMC::deleteFromElastic((int) $id, 'publication');
+                    MMC::deleteFromElastic($id, 'publication');
                 }
                 
                 Auditor::log([
@@ -794,7 +794,7 @@ class PublicationController extends Controller
                 $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
 
-                MMC::deleteFromElastic((int) $id, 'publication');
+                MMC::deleteFromElastic($id, 'publication');
 
                 Auditor::log([
                     'user_id' => (int) $jwtUser['id'],
