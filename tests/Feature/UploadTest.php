@@ -5,10 +5,20 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 
+use App\Models\Collection;
+use App\Models\Dataset;
+use App\Models\Dur;
+use App\Models\Team;
 use App\Models\Upload;
 use Tests\Traits\Authorization;
 
+use Database\Seeders\CollectionSeeder;
+use Database\Seeders\DatasetSeeder;
+use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\MinimalUserSeeder;
+use Database\Seeders\SpatialCoverageSeeder;
+
+use MetadataManagementController AS MMC;
 
 use Tests\Traits\MockExternalApis;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,6 +48,10 @@ class UploadTest extends TestCase
 
         $this->seed([
             MinimalUserSeeder::class,
+            SpatialCoverageSeeder::class,
+            DatasetSeeder::class,
+            DatasetVersionSeeder::class,
+            CollectionSeeder::class,
         ]);
     }
 
@@ -186,5 +200,375 @@ class UploadTest extends TestCase
         ]);
         $this->assertEquals($response['message'], 'success');
         $this->assertNotNull($response['data']['content']);
+    }
+
+    /**
+     * Upload a dur with success
+     * 
+     * @return void
+     */
+    public function test_dur_from_upload_with_success(): void
+    {
+        $countBefore = Dur::count();
+        $team = Team::all()->random()->id;
+        $file = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/DataUseUploadTemplate_v2.xlsx', 
+            'DataUseUploadTemplate_v2.xlsx',
+        );
+        // post file to files endpoint
+        $response = $this->json(
+            'POST', 
+            self::TEST_URL . '?entity_flag=dur-from-upload&team_id=' . $team, 
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'created_at',
+                'updated_at',
+                'filename',
+                'file_location',
+                'user_id',
+                'status', 
+                'error'
+            ]
+        ]);
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $durId = $content['data']['entity_id'];
+
+        $countAfter = Dur::count();
+
+        $this->assertTrue($countAfter - $countBefore === 1);
+
+        $dur = Dur::findOrFail($durId);
+
+        $this->assertEquals($dur->team_id, $team);
+        $this->assertEquals($dur->organisation_name, "Test");
+        $this->assertIsArray($dur->non_gateway_applicants);
+    }
+
+    /**
+     * Upload a dataset from file with success
+     * 
+     * @return void
+     */
+    public function test_dataset_from_upload_with_success(): void
+    {
+        $countBefore = Dataset::count();
+        $team = Team::all()->random()->id;
+        $file = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/gwdm_v2_uploaded.json', 
+            'gwdm_v2_uploaded.json',
+        );
+        // post file to files endpoint
+        $response = $this->json(
+            'POST', 
+            self::TEST_URL . '?entity_flag=dataset-from-upload&team_id=' . $team, 
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'created_at',
+                'updated_at',
+                'filename',
+                'file_location',
+                'user_id',
+                'status', 
+                'error'
+            ]
+        ]);
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $datasetId = $content['data']['entity_id'];
+
+        $countAfter = Dataset::count();
+
+        $this->assertTrue($countAfter - $countBefore === 1);
+
+        $dataset = Dataset::findOrFail($datasetId);
+
+        $this->assertEquals($dataset->team_id, $team);
+    }
+
+    /**
+     * Upload structural metadata from file with success
+     * 
+     * @return void
+     */
+    public function test_structural_metadata_from_upload_with_success(): void
+    {
+        $countBefore = Dataset::count();
+        $dataset = Dataset::all()->random()->id;
+        $file = new UploadedFile(
+            getcwd() . '/tests/Unit/test_files/StructuralMetadataTemplate.xlsx', 
+            'StructuralMetadataTemplate.xlsx',
+        );
+        // post file to files endpoint
+        $response = $this->json(
+            'POST', 
+            self::TEST_URL . '?entity_flag=structural-metadata-upload&dataset_id=' . $dataset, 
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'created_at',
+                'updated_at',
+                'filename',
+                'file_location',
+                'user_id',
+                'status', 
+                'error'
+            ]
+        ]);
+        $response->assertStatus(200);
+        $content = $response->decodeResponseJson();
+        $datasetId = $content['data']['entity_id'];
+
+        $this->assertEquals($datasetId, $dataset);
+
+        // Grab the dataset that was just updated
+        $response = $this->json('GET', '/api/v1/datasets' . '/' . $datasetId, [], $this->header);
+        $response->assertJsonStructure([
+            'message',
+            'data' => [
+                'named_entities',
+                'collections',
+                'publications',
+                'versions',
+                'durs_count',
+                'publications_count',
+            ]
+        ]);
+        $response->assertStatus(200);
+
+        // Get the latest version and check that the structural metadata matches test data
+        $latestVersion = $response->decodeResponseJson()['data']['versions'][0]['metadata'];
+
+        $this->assertIsArray($latestVersion['metadata']['structuralMetadata']);
+        $this->assertEquals(
+            $latestVersion['metadata']['structuralMetadata'][0]['name'], 'Test Table'
+        );
+        $this->assertIsArray(
+            $latestVersion['metadata']['structuralMetadata'][0]['columns']
+        );
+        $this->assertEquals(
+            $latestVersion['metadata']['structuralMetadata'][0]['columns'][0]['name'],
+            'Test Column'
+        );        
+    }
+
+    /**
+     * Upload a team image with success
+     * 
+     * @return void
+     */
+    public function test_team_logo_from_upload_with_success(): void
+    {
+        $teamId = Team::all()->random()->id;
+        $file = UploadedFile::fake()->image('team_logo.jpg', 600, 300);
+        // post file to files endpoint
+        $response = $this->json(
+            'POST', 
+            self::TEST_URL . '?entity_flag=teams-media&team_id=' . $teamId, 
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'created_at',
+                'updated_at',
+                'filename',
+                'file_location',
+                'user_id',
+                'status', 
+                'error'
+            ]
+        ]);
+        $response->assertStatus(200);
+
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals($content['data']['status'], 'PROCESSED');
+        $this->assertNull($content['data']['error']);
+
+        $team = Team::findOrFail($teamId);
+
+        $this->assertTrue(str_contains($team->team_logo, 'team_logo.jpg'));
+
+        // restore null logo to team we used
+        $team->update(['team_logo' => null]);
+    }
+
+    /**
+     * Upload a team image with failure
+     * 
+     * @return void
+     */
+    public function test_team_logo_from_upload_failure(): void
+    {
+        $teamId = Team::all()->random()->id;
+        // test an image of the wrong size fails to upload
+        $file = UploadedFile::fake()->image('team_logo.jpg', 400, 300);
+        // post file to files endpoint
+        $response = $this->json(
+            'POST', 
+            self::TEST_URL . '?entity_flag=teams-media&team_id=' . $teamId, 
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'created_at',
+                'updated_at',
+                'filename',
+                'file_location',
+                'user_id',
+                'status', 
+                'error'
+            ]
+        ]);
+        $response->assertStatus(200);
+
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals($content['data']['status'], 'FAILED');
+        $this->assertNotNull($content['data']['error']);
+    }
+
+    /**
+     * Upload a collection image with success
+     * 
+     * @return void
+     */
+    public function test_collection_image_from_upload_with_success(): void
+    {
+        $collectionId = Collection::all()->random()->id;
+        $file = UploadedFile::fake()->image('collection_image.jpg', 600, 300);
+        // post file to files endpoint
+        $response = $this->json(
+            'POST', 
+            self::TEST_URL . '?entity_flag=collections-media&collection_id=' . $collectionId, 
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'created_at',
+                'updated_at',
+                'filename',
+                'file_location',
+                'user_id',
+                'status', 
+                'error'
+            ]
+        ]);
+        $response->assertStatus(200);
+
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals($content['data']['status'], 'PROCESSED');
+        $this->assertNull($content['data']['error']);
+
+        $collection = Collection::findOrFail($collectionId);
+
+        $this->assertTrue(str_contains($collection->image_link, 'collection_image.jpg'));
+
+        // restore null link to collection we used
+        $collection->update(['image_link' => null]);
+    }
+
+    /**
+     * Upload a collection image with failure
+     * 
+     * @return void
+     */
+    public function test_collection_image_from_upload_failure(): void
+    {
+        $collectionId = Collection::all()->random()->id;
+        // test an image of the wrong size fails to upload
+        $file = UploadedFile::fake()->image('collection_image.jpg', 400, 300);
+        // post file to files endpoint
+        $response = $this->json(
+            'POST', 
+            self::TEST_URL . '?entity_flag=collections-media&collection_id=' . $collectionId, 
+            [
+                'file' => $file
+            ],
+            [
+                'Accept' => 'application/json',
+                'Content-Type' => 'multipart/form-data',
+                'Authorization' => $this->header['Authorization']
+            ]
+        );
+        
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'created_at',
+                'updated_at',
+                'filename',
+                'file_location',
+                'user_id',
+                'status', 
+                'error'
+            ]
+        ]);
+        $response->assertStatus(200);
+
+        $content = $response->decodeResponseJson();
+
+        $this->assertEquals($content['data']['status'], 'FAILED');
+        $this->assertNotNull($content['data']['error']);
     }
 }

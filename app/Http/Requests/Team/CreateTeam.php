@@ -88,6 +88,14 @@ class CreateTeam extends BaseFormRequest
             'is_provider' => [
                 'boolean',
             ],
+            'url' => [
+                'nullable',
+                'url:http,https',
+            ],
+            'introduction' => [
+                'nullable', // this is because we have no information at the moment and this information does not exist in mk1 upon migration
+                'string',
+            ],
         ];
     }
 }

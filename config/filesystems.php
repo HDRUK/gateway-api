@@ -36,6 +36,13 @@ return [
             'throw' => false,
         ],
 
+        'mock' => [
+            'driver' => 'local',
+            'root' => storage_path('mock'),
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
         'local_scan' => [
             'unscanned' => [
                 'driver' => 'local',
@@ -48,6 +55,13 @@ return [
                 'driver' => 'local',
                 'root' => storage_path('app/public/scanned'),
                 'url' => env('APP_URL').'/storage/scanned',
+                'visibility' => 'public',
+                'throw' => false,
+            ],
+            'media' => [
+                'driver' => 'local',
+                'root' => storage_path('app/public/media'),
+                'url' => env('APP_URL').'/storage/media',
                 'visibility' => 'public',
                 'throw' => false,
             ],
@@ -96,6 +110,19 @@ return [
                 'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', null),
                 'apiEndpoint' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', null),
                 'visibility' => 'private',
+                'visibility_handler' => null,
+                'metadata' => ['cacheControl'=> 'public,max-age=86400'],
+                'throw' => true,
+            ],
+            'media' => [
+                'driver' => 'gcs',
+                'key_file_path' => env('GOOGLE_APPLICATION_CREDENTIALS'),
+                'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+                'bucket' => env('GOOGLE_CLOUD_MEDIA_BUCKET'),
+                'path_prefix' => env('GOOGLE_CLOUD_STORAGE_PATH_PREFIX', ''),
+                'storage_api_uri' => env('GOOGLE_CLOUD_STORAGE_API_URI', null),
+                'apiEndpoint' => env('GOOGLE_CLOUD_STORAGE_API_ENDPOINT', null),
+                'visibility' => 'public',
                 'visibility_handler' => null,
                 'metadata' => ['cacheControl'=> 'public,max-age=86400'],
                 'throw' => true,

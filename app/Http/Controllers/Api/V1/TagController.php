@@ -54,12 +54,13 @@ class TagController extends Controller
      */
     public function index(): JsonResponse
     {
+        $perPage = request('per_page', Config::get('constants.per_page'));
         try {
-            $tags = Tag::where('enabled', 1)->paginate(Config::get('constants.per_page'), ['*'], 'page');
+            $tags = Tag::where('enabled', 1)->paginate($perPage, ['*'], 'page');
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tag get all",
             ]);
 
@@ -131,7 +132,7 @@ class TagController extends Controller
 
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tag get " . $id,
             ]);
 
@@ -201,9 +202,9 @@ class TagController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tag " . $tag->id . " created",
             ]);
 
@@ -299,9 +300,9 @@ class TagController extends Controller
             ]);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tag " . $id . " updated",
             ]);
 
@@ -400,9 +401,9 @@ class TagController extends Controller
             Tag::where('id', $id)->update($array);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tag " . $id . " updated",
             ]);
 
@@ -473,9 +474,9 @@ class TagController extends Controller
             Tag::where('id', $id)->delete();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Tag " . $id . " deleted",
             ]);
 

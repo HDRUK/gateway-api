@@ -111,6 +111,37 @@ class CreateTool extends BaseFormRequest
                 'nullable',
                 'string',
             ],
+            'collections.*.id'  => [
+                'integer',
+                'exists:collections,id',
+            ],
+            'collections.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'durs.*.id'  => [
+                'integer',
+                'exists:dur,id',
+            ],
+            'durs.*.updated_at'  => [
+                'nullable',
+                'date_format:Y-m-d\TH:i:s', // 2017-09-12T00:00:00
+            ],
+            'dataset.*.id'  => [
+                'integer',
+                'exists:datasets,id',
+            ],
+            'dataset.*.link_type'  => [
+                'string',
+            ],
+            'any_dataset' => [
+                'nullable', 
+                'boolean',
+            ],
+            'status' => [
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
+            ],
         ];
     }
 }

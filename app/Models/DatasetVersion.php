@@ -1,9 +1,10 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Tool;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -50,13 +51,20 @@ class DatasetVersion extends Model
      */
     public function getMetadataAttribute($value): array
     {
-        $normalised = $value;
-
-        if (gettype($normalised) === 'array') {
-            $normalised = json_encode($normalised);
+        // If the value is already an array, return it directly
+        if (is_array($value)) {
+            return $value;
         }
 
-        return json_decode(json_decode($normalised, true), true);
+        // Decode the value if it's a JSON string
+        $decodedValue = json_decode($value, true);
+
+        // If the value is still a JSON string after decoding, decode it again
+        if (is_string($decodedValue)) {
+            return json_decode($decodedValue, true);
+        }
+
+        return $decodedValue;
     }
 
      /**
@@ -71,6 +79,74 @@ class DatasetVersion extends Model
         return $query->whereRaw(
             "LOWER(JSON_EXTRACT(JSON_UNQUOTE(metadata), '$.metadata.summary.title')) LIKE LOWER(?)",
             ["%$filterTitle%"]
+        );
+    }
+
+    /**
+     *  Named entities that belong to the dataset version.
+     */
+    public function namedEntities(): BelongsToMany
+    {
+        return $this->belongsToMany(NamedEntities::class, 'dataset_version_has_named_entities');
+    }
+
+        /**
+     *  Spatial coverage that belong to the dataset version.
+     */
+    public function spatialCoverage(): BelongsToMany
+    {
+        return $this->belongsToMany(NamedEntities::class, 'dataset_version_has_spatial_coverage');
+    }
+
+
+    /**
+     * The tools that belong to the dataset version.
+     */
+    public function tools(): BelongsToMany
+    {
+        return $this->belongsToMany(Tool::class, 'dataset_version_has_tool');
+    }
+    
+    /**
+     * The durs that belong to the dataset version.
+     */
+    public function durHasDatasetVersions(): HasMany
+    {
+        return $this->hasMany(DurHasDatasetVersion::class);
+    }
+
+    /**
+     * The publications that belong to the dataset version.
+     */
+    public function publicationHasDatasetVersions(): HasMany
+    {
+        return $this->hasMany(PublicationHasDatasetVersion::class);
+    }
+
+        /**
+     * The collections that belong to the dataset version.
+     */
+    public function collections(): HasMany
+    {
+        return $this->hasMany(CollectionHasDatasetVersion::class);
+    }
+
+    /**
+     * The dataset versions that belong to the dataset version.
+     */
+    public function linkedDatasetVersions(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            DatasetVersion::class, 
+            'dataset_version_has_dataset_version',
+            'dataset_version_source_id',
+            'dataset_version_target_id'
+        )->withPivot(
+            'dataset_version_source_id', 
+            'dataset_version_target_id', 
+            'linkage_type', 
+            'direct_linkage', 
+            'description'
         );
     }
 

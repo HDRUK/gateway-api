@@ -729,6 +729,7 @@ class TeamUserTest extends TestCase
             ],
             $this->header,
         );
+
         $responseNewUser->assertStatus(201);
         
         return $responseNewUser['data'];

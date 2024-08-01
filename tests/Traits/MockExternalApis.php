@@ -25,7 +25,7 @@ trait MockExternalApis
     protected $header = [];
 
     // Changed visibility. Private functions in shared trait is frowned upon
-    public function getFakeDataset()
+    public function getMetadataV1p0()
     {
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
@@ -34,7 +34,7 @@ trait MockExternalApis
     }
 
 
-    public function getFakeDatasetNew()
+    public function getMetadataV1p1()
     {
         $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1p1_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
@@ -43,12 +43,28 @@ trait MockExternalApis
     }
 
     // Changed visibility. Private functions in shared trait is frowned upon
-    public function getFakeUpdateDataset()
+    public function getMetadataV2p0()
     {
-        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v1_dataset_min_update.json', 0, null);
+        $jsonFile = file_get_contents(getcwd() . '/tests/Unit/test_files/gwdm_v2p0_dataset_min.json', 0, null);
         $json = json_decode($jsonFile, true);
 
         return $json;
+    }
+
+    public function getMetadata()
+    {
+        $version = Config::get('metadata.GWDM.version');
+        switch (true) {
+            case version_compare($version, "1.0", "<="):
+                return $this->getMetadataV1p0();
+    
+            case version_compare($version, "1.2", "<="):
+                #note: v1.1 and v1.2 were not that different so can use this example metadata
+                return $this->getMetadataV1p1();
+    
+            case version_compare($version, "2.0", "<="):
+                return $this->getMetadataV2p0();
+            }
     }
     
     public function setUp(): void
@@ -58,6 +74,7 @@ trait MockExternalApis
         $this->seed([
             SectorSeeder::class,
         ]);
+
         $this->authorisationUser();
         $jwt = $this->getAuthorisationJwt();
         $this->header = [
@@ -829,6 +846,27 @@ trait MockExternalApis
             )
         ]);
 
+        Http::fake([
+            env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/federated_papers/doi' => Http::response([
+                "hitCount" => 1,
+                "resultList" => [
+                    "result" => [
+                        0 => [
+                            "id" => "PPR885146",
+                            "doi" => "10.3310/abcde",
+                            "title" => "DOI test publication",
+                            "authorString" => "",
+                            "journalInfo" => null,
+                            "pubYear" => "2024",
+                            "abstractText" => ""
+                        ]
+                    ]
+                ]
+            ],
+            200,
+            ['application/json'])
+        ]);
+
         // Mock the search service - data providers
         Http::fake([
             env('SEARCH_SERVICE_URL', 'http://localhost:8003') . '/search/data_providers*' => Http::response(
@@ -844,56 +882,60 @@ trait MockExternalApis
                             0 => [
                                 '_explanation' => [],
                                 '_id' => '1',
-                                '_index' => 'dataprovidercoll',
+                                '_index' => 'dataprovider',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 20.0,
-                                '_shard' => '[dataprovidercoll][0]',
+                                '_shard' => '[dataprovider][0]',
                                 '_source' => [
                                     'name' => 'One Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
-                                    'geographicLocations' => ['Scotland', 'Wales']
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
                                 ],
                                 'highlight' => null,
                             ],
                             1 => [
                                 '_explanation' => [],
                                 '_id' => '2',
-                                '_index' => 'dataprovidercoll',
+                                '_index' => 'dataprovider',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 18.0,
-                                '_shard' => '[dataprovidercoll][0]',
+                                '_shard' => '[dataprovider][0]',
                                 '_source' => [
                                     'name' => 'Another Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
-                                    'geographicLocations' => ['Scotland', 'Wales']
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
                                 ],
                                 'highlight' => null,
                             ],
                             2 => [
                                 '_explanation' => [],
                                 '_id' => '3',
-                                '_index' => 'dataprovidercoll',
+                                '_index' => 'dataprovider',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 16.0,
-                                '_shard' => '[dataprovidercoll][0]',
+                                '_shard' => '[dataprovider][0]',
                                 '_source' => [
                                     'name' => 'Third Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
-                                    'geographicLocations' => ['Scotland', 'Wales']
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
                                 ],
                                 'highlight' => null,
                             ],
                             3 => [
                                 '_explanation' => [],
                                 '_id' => '1111',
-                                '_index' => 'dataprovidercoll',
+                                '_index' => 'dataprovider',
                                 '_node' => 'abcd-123-efgh',
                                 '_score' => 16.0,
-                                '_shard' => '[dataprovidercoll][0]',
+                                '_shard' => '[dataprovider][0]',
                                 '_source' => [
                                     'name' => 'Fourth Provider',
                                     'datasetTitles' => ['some', 'dataset', 'titles'],
-                                    'geographicLocations' => ['Scotland', 'Wales']
+                                    'geographicLocations' => ['Scotland', 'Wales'],
+                                    'dataType' => ['Healthdata']
                                 ],
                                 'highlight' => null,
                             ]
@@ -969,16 +1011,6 @@ trait MockExternalApis
         // Mock the MMC getElasticClient method to return the mock client
         // makePartial so other MMC methods are not mocked
         MMC::shouldReceive('getElasticClient')->andReturn($this->testElasticClient);
-        // MMC::shouldReceive("translateDataModelType")
-        //     ->with(json_encode($this->getFakeDataset()), Config::get('metadata.GWDM.name'), Config::get('metadata.GWDM.version'))
-        //     ->andReturnUsing(function(string $metadata){
-        //     return [
-        //         "traser_message" => "",
-        //         "wasTranslated" => true,
-        //         "metadata" => json_decode($metadata,true)["metadata"],
-        //         "statusCode" => "200",
-        //     ];
-        // });
         MMC::shouldReceive("translateDataModelType")
             ->andReturnUsing(function(string $metadata){
             return [
@@ -1009,6 +1041,37 @@ trait MockExternalApis
             )
         ]);
 
+        Http::fake([
+            // DELETE
+            "http://hub.local/contacts/v1/contact/vid/*" => function ($request) {
+                if ($request->method() === 'DELETE') {
+                    return Http::response([], 200);
+                }
+            },
+        
+            // GET (by vid)
+            "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345, 'properties' => []], 200);
+                } elseif ($request->method() === 'POST') {
+                    return Http::response([], 204);
+                }
+            },
+        
+            // GET (by email)
+            "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
+        
+            // POST (create contact)
+            'http://hub.local/contacts/v1/contact' => function ($request) {
+                if ($request->method() === 'POST') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
+        ]);
     }
 
     // Count requests made to the elastic mock client
@@ -1016,5 +1079,4 @@ trait MockExternalApis
     {
         return count($client->getTransport()->getClient()->getRequests());
     }
-
 }

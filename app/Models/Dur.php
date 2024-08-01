@@ -5,20 +5,26 @@ namespace App\Models;
 use App\Models\Team;
 use App\Models\User;
 use App\Models\Sector;
-use App\Models\Dataset;
+use App\Models\DurHasDatasetVersion;
 use App\Models\Keyword;
 use App\Models\Application;
 use App\Models\Publication;
+use App\Http\Traits\DatasetFetch;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Dur extends Model
 {
-    use HasFactory, SoftDeletes, Prunable;
+    use HasFactory, SoftDeletes, Prunable, DatasetFetch;
+
+    public const STATUS_ACTIVE = 'ACTIVE';
+    public const STATUS_DRAFT = 'DRAFT';
+    public const STATUS_ARCHIVED = 'ARCHIVED';
 
     public $timestamps = true;
 
@@ -82,6 +88,7 @@ class Dur extends Model
         'created_at', // for migration from mongo database
         'updated_at', // for migration from mongo database
         'applicant_id',
+        'status',
     ];
 
     /**
@@ -101,25 +108,42 @@ class Dur extends Model
         'non_gateway_outputs' => 'array',
     ];
 
+    // Accessor for all datasets associated with this object
+    public function getAllDatasetsAttribute()
+    {
+        return $this->getDatasetsViaDatasetVersion(
+            DurHasDatasetVersion::class,
+            'dur_id'
+        );
+    }
+
     public function keywords(): BelongsToMany
     {
         return $this->belongsToMany(Keyword::class, 'dur_has_keywords');
     }
 
-    public function datasets(): BelongsToMany
+    public function userDatasets(): HasManyThrough
     {
-        return $this->belongsToMany(Dataset::class, 'dur_has_datasets')
-            ->withPivot('dur_id', 'dataset_id', 'user_id', 'application_id', 'is_locked', 'reason', 'created_at', 'updated_at');
+        return $this->hasManyThrough(
+            User::class,
+            DurHasDatasetVersion::class,
+            'dur_id', // Foreign key on the CollectionHasDatasetVersion table
+            'id',            // Local key on the Collection table
+            'id',            // Local key on the User table
+            'user_id'        // Foreign key on the CollectionHasDatasetVersion table
+        );
     }
 
-    public function userDatasets(): BelongsToMany
+    public function applicationDatasets(): HasManyThrough
     {
-        return $this->belongsToMany(User::class, 'dur_has_datasets');
-    }
-
-    public function applicationDatasets(): BelongsToMany
-    {
-        return $this->belongsToMany(Application::class, 'dur_has_datasets');
+        return $this->hasManyThrough(
+            Application::class,
+            DurHasDatasetVersion::class,
+            'dur_id', // Foreign key on the CollectionHasDatasetVersion table
+            'id',            // Local key on the Collection table
+            'id',            // Local key on the Application table
+            'application_id' // Foreign key on the CollectionHasDatasetVersion table
+        );
     }
 
     public function publications(): BelongsToMany
@@ -177,6 +201,7 @@ class Dur extends Model
             'Project ID',
             'Organisation Name',
             'Organisation Sector',
+            'Sector ID',
             'Lay Summary',
             'Technical Summary',
             'Latest Approval Date',
@@ -200,6 +225,8 @@ class Dur extends Model
             'Request Category Type',
             'Request Frequency',
             'Access Type',
+            'DAR ID', // Intentionally renamed to not reveal our internal field names
+            'Technical Summary',
             'Enabled',
             'Last Activity',
             'Counter',
@@ -210,6 +237,20 @@ class Dur extends Model
             'Created At',
             'Updated At',
             'Applicant ID',
+            'Status',
         ];
+    }
+
+    /**
+     * Retrieve versions associated with this dur
+     */
+    public function versions()
+    {
+        return $this->belongsToMany(DatasetVersion::class, 'dur_has_dataset_version', 'dur_id', 'dataset_version_id');
+    }
+
+    public function datasetVersions()
+    {
+        return $this->hasMany(DurHasDatasetVersion::class, 'dur_id');
     }
 }

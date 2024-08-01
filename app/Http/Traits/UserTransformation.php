@@ -27,7 +27,6 @@ trait UserTransformation
                 'email' => $user['email'],
                 'secondary_email' => $user['secondary_email'],
                 'preferred_email' => $user['preferred_email'],
-                'providerid' => $user['providerid'],
                 'provider' => $user['provider'],
                 'created_at' => $user['created_at'],
                 'updated_at' => $user['updated_at'],
@@ -44,6 +43,7 @@ trait UserTransformation
                 'mongo_object_id' => $user['mongo_object_id'],
                 'terms' => $user['terms'],
                 'roles' => $user['roles'],
+                'hubspot_id' => $user['hubspot_id'],
             ];
 
             $tmpTeam = [];

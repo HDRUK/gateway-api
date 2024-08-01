@@ -27,7 +27,7 @@ class CreateAuditLog extends BaseFormRequest
                 'string',
                 'max:50',
             ],
-            'action_service' => [
+            'action_name' => [
                 'required',
                 'string',
                 'max:255',

@@ -3,12 +3,13 @@
 namespace Tests\Feature;
 
 use Hash;
-use App\Models\User;
 use Tests\TestCase;
-use Database\Seeders\MinimalUserSeeder;
-use Database\Seeders\SectorSeeder;
+use App\Models\User;
 use Tests\Traits\Authorization;
+use Database\Seeders\SectorSeeder;
+use Illuminate\Support\Facades\Http;
 // use Illuminate\Foundation\Testing\WithFaker;
+use Database\Seeders\MinimalUserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class UserTest extends TestCase
@@ -19,6 +20,8 @@ class UserTest extends TestCase
     const TEST_URL = '/api/v1/users';
 
     protected $header = [];
+    protected $adminJwt = '';
+    protected $nonAdminJwt = '';
 
     /**
      * Set up the database
@@ -28,22 +31,24 @@ class UserTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+        $this->runMockHubspot();
 
         $this->seed([
             MinimalUserSeeder::class,
             SectorSeeder::class,
         ]);
         $this->authorisationUser();
-        $jwt = $this->getAuthorisationJwt();
+        $this->adminJwt = $this->getAuthorisationJwt();
+        
         $this->header = [
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $jwt,
+            'Authorization' => 'Bearer ' . $this->adminJwt,
         ];
         $this->authorisationUser(false);
-        $nonAdminJwt = $this->getAuthorisationJwt(false);
+        $this->nonAdminJwt = $this->getAuthorisationJwt(false);
         $this->headerNonAdmin = [
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $nonAdminJwt,
+            'Authorization' => 'Bearer ' . $this->nonAdminJwt,
         ];
     }
 
@@ -66,7 +71,6 @@ class UserTest extends TestCase
                     'email',
                     'secondary_email',
                     'preferred_email',
-                    'providerid',
                     'provider',
                     'created_at',
                     'updated_at',
@@ -87,6 +91,7 @@ class UserTest extends TestCase
                     'terms',
                     'notifications',
                     'roles',
+                    'hubspot_id',
                 ],
             ],   
         ]);
@@ -195,6 +200,8 @@ class UserTest extends TestCase
                 'password' => 'Passw@rd1!',
                 'sector_id' => 1,
                 'organisation' => 'Test Organisation',
+                'provider' => 'open-athens',
+                'providerid' => '123456',
                 'bio' => 'Test Biography',
                 'domain' => 'https://testdomain.com',
                 'link' => 'https://testlink.com/link',
@@ -213,6 +220,10 @@ class UserTest extends TestCase
 
         $this->assertTrue((bool) $countNewRow, 'Response was successfully');
         $response->assertStatus(201);
+
+        $userId = $response->decodeResponseJson()['data'];
+        $user = User::findOrFail($userId);
+        $this->assertNotNull($user['providerid']);
     }
 
     public function test_it_can_update_a_user(): void
@@ -463,6 +474,67 @@ class UserTest extends TestCase
         }
     }
 
+    public function test_non_admin_user_can_edit_themselves(): void
+    {
+        $nonAdminUser = $this->getUserFromJwt($this->nonAdminJwt);
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $nonAdminUser['id'],
+            [
+                'firstname' => 'Just',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
+                'sector_id' => 1,
+                'organisation' => 'Updated Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 0,
+                'contact_news' => 0,
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
+                'terms' => true,
+            ],
+            $this->headerNonAdmin
+        );
+        $response->assertStatus(202);
+    }
+
+    public function test_non_admin_user_cannot_edit_others(): void
+    {
+        $nonAdminUser = $this->getUserFromJwt($this->nonAdminJwt);
+        $response = $this->json(
+            'PUT',
+            self::TEST_URL . '/' . $nonAdminUser['id'] + 1,
+            [
+                'firstname' => 'Just',
+                'lastname' => 'Test',
+                'email' => 'just.test.123456789@test.com',
+                'secondary_email' => 'just.test.1234567890@test.com',
+                'preferred_email' => 'primary',
+                'sector_id' => 1,
+                'organisation' => 'Updated Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' => "https://orcid.org/75697342",
+                'contact_feedback' => 0,
+                'contact_news' => 0,
+                'mongo_id' => 1234567,
+                'mongo_object_id' => "12345abcde",
+                'terms' => true,
+            ],
+            $this->headerNonAdmin
+        );
+        $response->assertStatus(403);
+
+
+    }
+
+
 
     /**
      * SoftDelete User by Id with success
@@ -484,5 +556,40 @@ class UserTest extends TestCase
         } else {
             $this->assertTrue(false, 'Response was unsuccessfully');
         }
+    }
+
+    public function runMockHubspot()
+    {
+        Http::fake([
+            // DELETE
+            "http://hub.local/contacts/v1/contact/vid/*" => function ($request) {
+                if ($request->method() === 'DELETE') {
+                    return Http::response([], 200);
+                }
+            },
+        
+            // GET (by vid)
+            "http://hub.local/contacts/v1/contact/vid/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345, 'properties' => []], 200);
+                } elseif ($request->method() === 'POST') {
+                    return Http::response([], 204);
+                }
+            },
+        
+            // GET (by email)
+            "http://hub.local/contacts/v1/contact/email/*/profile" => function ($request) {
+                if ($request->method() === 'GET') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
+        
+            // POST (create contact)
+            'http://hub.local/contacts/v1/contact' => function ($request) {
+                if ($request->method() === 'POST') {
+                    return Http::response(['vid' => 12345], 200);
+                }
+            },
+        ]);
     }
 }

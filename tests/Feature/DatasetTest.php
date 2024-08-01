@@ -5,13 +5,14 @@ namespace Tests\Feature;
 use Config;
 use Tests\TestCase;
 use App\Models\Dataset;
+use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
-use Database\Seeders\SpatialCoverageSeeder;
-use Tests\Traits\Authorization;
-use Tests\Traits\MockExternalApis;
 use Illuminate\Support\Carbon;
+use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
-
+use Tests\Traits\MockExternalApis;
+use Illuminate\Support\Facades\Storage;
+use Database\Seeders\SpatialCoverageSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class DatasetTest extends TestCase
@@ -27,6 +28,9 @@ class DatasetTest extends TestCase
     const TEST_URL_NOTIFICATION = '/api/v1/notifications';
     const TEST_URL_USER = '/api/v1/users';
 
+    protected $metadata;
+    protected $metadataAlt;
+
     public function setUp(): void
     {
         $this->commonSetUp();
@@ -35,13 +39,10 @@ class DatasetTest extends TestCase
             SpatialCoverageSeeder::class,
         ]);
 
-        $this->metadata = $this->getFakeDataset();
+        $this->metadata = $this->getMetadata();
         $this->metadataAlt = $this->metadata;
         $this->metadataAlt['metadata']['summary']['title'] = 'ABC title';
-
-        $this->metadataUpdate = $this->getFakeUpdateDataset();
     }
-
 
     /**
      * Get All Datasets with success
@@ -96,7 +97,6 @@ class DatasetTest extends TestCase
         // Create the new team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
         
-
         $responseCreateTeam = $this->json(
             'POST',
             self::TEST_URL_TEAM,
@@ -131,7 +131,6 @@ class DatasetTest extends TestCase
 
         $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
         $teamId1 = $contentCreateTeam['data'];
-
 
         //create a 2nd team
         $teamName = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
@@ -192,6 +191,7 @@ class DatasetTest extends TestCase
             ],
             $this->header,
         );
+
         $responseCreateUser->assertStatus(201);
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
         $userId = $contentCreateUser['data'];
@@ -504,9 +504,85 @@ class DatasetTest extends TestCase
         $contentCreateUser = $responseCreateUser->decodeResponseJson();
         $userId = $contentCreateUser['data'];
 
-        // create dataset
-        $labelDataset = 'label dataset ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
-        $responseCreateDataset = $this->json(
+        // create active dataset
+        $responseCreateActiveDataset = $this->json(
+            'POST',
+            self::TEST_URL_DATASET,
+            [
+                'team_id' => $teamId,
+                'user_id' => $userId,
+                'metadata' => $this->metadata,
+                'create_origin' => Dataset::ORIGIN_MANUAL,
+                'status' => Dataset::STATUS_ACTIVE,
+            ],
+            $this->header,
+        );
+
+        $responseCreateActiveDataset->assertStatus(201);
+        $contentCreateActiveDataset = $responseCreateActiveDataset->decodeResponseJson();
+        $activeDatasetId = $contentCreateActiveDataset['data'];
+
+        // get one active dataset
+        $responseGetOneActive = $this->json('GET', self::TEST_URL_DATASET . '/' . $activeDatasetId, [], $this->header);
+
+        $responseGetOneActive->assertJsonStructure([
+            'message',
+            'data' => [
+                'named_entities',
+                'collections',
+                'publications',
+                'versions',
+                'durs_count',
+                'publications_count',
+            ]
+        ]);
+        $responseGetOneActive->assertStatus(200);
+
+        $respArrayActive = $responseGetOneActive->decodeResponseJson();
+        $this->assertArrayHasKey('named_entities', $respArrayActive['data']);
+        
+        // Assert named entities contain name
+
+        foreach ($respArrayActive['data']['named_entities'] as $entity) {
+            // Assert that the array contains a key named 'name'
+            $this->assertArrayHasKey('name', $entity);
+            $this->assertNotNull($entity['name'], 'The "name" key should not have a null value.');
+    
+            // Assert that the array contains a key named 'id'
+            $this->assertArrayHasKey('id', $entity);
+            $this->assertNotNull($entity['id'], 'The "id" key should not have a null value.');
+    
+            // Retrieve the named entity from the database
+            $namedEntity = NamedEntities::find($entity['id']);
+            $this->assertNotNull($namedEntity, 'The named entity should exist in the database.');
+    
+            // Compare each field in the response array with the corresponding field in the database
+            $this->assertEquals($namedEntity->name, $entity['name'], 'The name in the response does not match the name in the database.');
+        }
+        
+
+
+        if(env('TED_ENABLED')){
+            $this->assertNotEmpty($respArrayActive['data']['named_entities']);
+        };
+        $this->assertArrayHasKey(
+            'linked_dataset_versions', $respArrayActive['data']['versions'][0]
+        );
+
+        // delete active dataset
+        $responseDeleteActiveDataset = $this->json(
+            'DELETE',
+            self::TEST_URL_DATASET . '/' . $activeDatasetId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteActiveDataset->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteActiveDataset->assertStatus(200);
+
+        // create draft dataset
+        $responseCreateDraftDataset = $this->json(
             'POST',
             self::TEST_URL_DATASET,
             [
@@ -519,14 +595,14 @@ class DatasetTest extends TestCase
             $this->header,
         );
 
-        $responseCreateDataset->assertStatus(201);
-        $contentCreateDataset = $responseCreateDataset->decodeResponseJson();
-        $datasetId = $contentCreateDataset['data'];
+        $responseCreateDraftDataset->assertStatus(201);
+        $contentCreateDraftDataset = $responseCreateDraftDataset->decodeResponseJson();
+        $draftDatasetId = $contentCreateDraftDataset['data'];
 
-        // get one dataset
-        $responseGetOne = $this->json('GET', self::TEST_URL_DATASET . '/' . $datasetId, [], $this->header);
+        // get one draft dataset
+        $responseGetOneDraft = $this->json('GET', self::TEST_URL_DATASET . '/' . $draftDatasetId, [], $this->header);
 
-        $responseGetOne->assertJsonStructure([
+        $responseGetOneDraft->assertJsonStructure([
             'message',
             'data' => [
                 'named_entities',
@@ -537,24 +613,28 @@ class DatasetTest extends TestCase
                 'publications_count',
             ]
         ]);
-        $responseGetOne->assertStatus(200);
-        
-        $respArray = $responseGetOne->decodeResponseJson();
+        $responseGetOneDraft->assertStatus(200);
 
-        $this->assertArrayHasKey('named_entities', $respArray['data']);
-        $this->assertNotEmpty($respArray['data']['named_entities']);
+        $respArrayDraft = $responseGetOneDraft->decodeResponseJson();
+        $this->assertArrayHasKey('named_entities', $respArrayDraft['data']);
+
+        // The named_entities field is empty for draft datasets. 
+        // The TermExtraction job is responsible for populating the named_entities field,
+        // is not run for draft datasets, thus the field remains empty and the following breaks the code.
         
-        // delete dataset
-        $responseDeleteDataset = $this->json(
+        $this->assertEmpty($respArrayDraft['data']['named_entities']);
+
+        // delete draft dataset
+        $responseDeleteDraftDataset = $this->json(
             'DELETE',
-            self::TEST_URL_DATASET . '/' . $datasetId . '?deletePermanently=true',
+            self::TEST_URL_DATASET . '/' . $draftDatasetId . '?deletePermanently=true',
             [],
             $this->header
         );
-        $responseDeleteDataset->assertJsonStructure([
+        $responseDeleteDraftDataset->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteDataset->assertStatus(200);
+        $responseDeleteDraftDataset->assertStatus(200);
 
         // delete team
         $responseDeleteTeam = $this->json(
@@ -581,7 +661,6 @@ class DatasetTest extends TestCase
         ]);
         $responseDeleteUser->assertStatus(200);
     }
-
 
     /**
      * Create/archive/unarchive Dataset with success
@@ -689,16 +768,16 @@ class DatasetTest extends TestCase
         $datasetId = $contentCreateDataset['data'];
 
         // archive dataset
-        $responseDeleteDataset = $this->json(
+        $responseArchiveDataset = $this->json(
             'DELETE',
             self::TEST_URL_DATASET . '/' . $datasetId,
             [],
             $this->header
         );
-        $responseDeleteDataset->assertJsonStructure([
+        $responseArchiveDataset->assertJsonStructure([
             'message'
         ]);
-        $responseDeleteDataset->assertStatus(200);
+        $responseArchiveDataset->assertStatus(200);
 
         // unarchive dataset
         $responseUnarchiveDataset = $this->json(
@@ -712,6 +791,7 @@ class DatasetTest extends TestCase
         $responseUnarchiveDataset->assertJsonStructure([
             'message'
         ]);
+
         $responseUnarchiveDataset->assertStatus(200);
 
         // change dataset status
@@ -875,7 +955,7 @@ class DatasetTest extends TestCase
             [
                 'team_id' => $teamId,
                 'user_id' => $userId,
-                'metadata' => $this->metadataUpdate,
+                'metadata' => $this->metadata,
                 'create_origin' => Dataset::ORIGIN_MANUAL,
                 'status' => Dataset::STATUS_DRAFT,
             ],
@@ -1214,6 +1294,67 @@ class DatasetTest extends TestCase
         ]);
         $responseDeleteUser->assertStatus(200);
         
+    }
+
+    public function test_can_download_mock_dataset_structural_metadata_file()
+    {
+        // Mock the storage disk
+        Storage::fake('mock');
+
+        // Put a fake file in the mock disk
+        $filePath = 'structural_metadata_template.xlsx';
+        Storage::disk('mock')->put($filePath, 'fake content');
+
+        // Mock the config
+        Config::set('mock_data.template_dataset_structural_metadata', $filePath);
+        Config::set('statuscodes.STATUS_OK.code', 200);
+
+        // Make the request
+        $response = $this->get('/api/v1/datasets/export/mock?type=template_dataset_structural_metadata');
+
+        // Assert the file is downloaded
+        $response->assertStatus(200);
+        $response->assertHeader('content-disposition', 'attachment; filename=' . $filePath);
+
+        // Clean up
+        Storage::disk('mock')->delete($filePath);
+    }
+
+    public function test_can_download_mock_dataset_metadata_file()
+    {
+        // Mock the storage disk
+        Storage::fake('mock');
+
+        // Put a fake file in the mock disk
+        $filePath = 'example_dataset_metadata.xlsx';
+        Storage::disk('mock')->put($filePath, 'fake content');
+
+        // Mock the config
+        Config::set('mock_data.mock_dataset_metadata', $filePath);
+        Config::set('statuscodes.STATUS_OK.code', 200);
+
+        // Make the request
+        $response = $this->get('/api/v1/datasets/export/mock?type=dataset_metadata');
+
+        // Assert the file is downloaded
+        $response->assertStatus(200);
+        $response->assertHeader('content-disposition', 'attachment; filename=' . $filePath);
+
+        // Clean up
+        Storage::disk('mock')->delete($filePath);
+    }
+
+    public function test_download_mock_file_with_file_not_found()
+    {
+        // Mock the config
+        Config::set('mock_data.dataset_structural_metadata', 'non_existent_file.json');
+
+        // Make the request
+        $response = $this->get('/api/v1/datasets/export/mock?type=dataset_structural_metadata');
+
+        // Assert the file is not found
+        $response->assertStatus(404);
+        $response->assertJson(['error' => 'File not found.']);
     }
 
 }

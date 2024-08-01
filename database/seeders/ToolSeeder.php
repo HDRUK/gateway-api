@@ -12,6 +12,14 @@ class ToolSeeder extends Seeder
      */
     public function run(): void
     {
-        Tool::factory(10)->create();
+        // Seed 8 enabled tools
+        Tool::factory()->count(8)->create([
+            'enabled' => 1,
+        ]);
+        
+        // Seed additional tools that are not enabled
+        Tool::factory()->count(2)->create([
+            'enabled' => 0,
+        ]);
     }
 }

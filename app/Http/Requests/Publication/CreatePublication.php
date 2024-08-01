@@ -33,7 +33,10 @@ class CreatePublication extends BaseFormRequest
                 'max:255',
             ],
             'publication_type' => [
-                'required',
+                'string',
+                'max:255',
+            ],
+            'publication_type_mk1' => [
                 'string',
                 'max:255',
             ],
@@ -80,6 +83,10 @@ class CreatePublication extends BaseFormRequest
             'mongo_id' => [
                 'nullable',
                 'string',
+            ],
+            'status' => [
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
             ],
         ];
     }

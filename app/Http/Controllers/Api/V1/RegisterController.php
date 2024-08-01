@@ -5,16 +5,18 @@ namespace App\Http\Controllers\Api\V1;
 use Hash;
 use Config;
 use Exception;
-use Carbon\CarbonImmutable;
 use App\Models\User;
+use Carbon\CarbonImmutable;
+use App\Models\AuthorisationCode;
+use App\Http\Requests\UserRequest;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\HubspotContacts;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Controllers\JwtController;
-use App\Http\Requests\UserRequest;
-use App\Models\AuthorisationCode;
 
 class RegisterController extends Controller
 {
+    use HubspotContacts;
     private JwtController $jwt;
 
     /**
@@ -101,6 +103,8 @@ class RegisterController extends Controller
                 "password" => Hash::make($input['password']),
             ];
             $user = User::create($array);
+
+            $this->updateOrCreateContact($user->id);
 
             $jwt = $this->createJwt($user);
 

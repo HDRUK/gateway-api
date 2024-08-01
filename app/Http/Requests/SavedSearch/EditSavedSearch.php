@@ -24,18 +24,16 @@ class EditSavedSearch extends BaseFormRequest
             'name' => [
                 'string',
             ],
+            'search_term' => [
+                'nullable',
+                'string',
+            ],
             'enabled' => [
                 'boolean',
             ],
             'sort_order' => [
                 'string',
-                Rule::in([
-                    SortOrderSavedSearch::MOST_RELEVANT,
-                    SortOrderSavedSearch::SORT_TITLE_ASC,
-                    SortOrderSavedSearch::SORT_TITLE_DESC,
-                    SortOrderSavedSearch::MOST_RECENTLY_UPDATED,
-                    SortOrderSavedSearch::LEAST_RECENTLY_UPDATED,
-                ]),
+                Rule::in(['score:desc', 'name:asc', 'name:desc', 'created_at:asc', 'created_at:desc']),
             ],
         ];
     }

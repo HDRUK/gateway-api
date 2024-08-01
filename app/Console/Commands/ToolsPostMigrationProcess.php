@@ -11,7 +11,8 @@ use App\Models\License;
 use App\Models\ToolHasTag;
 use App\Models\DataProvider;
 use App\Models\TypeCategory;
-use App\Models\DatasetHasTool;
+use App\Models\DatasetVersionHasTool;
+use App\Models\DatasetVersion;
 use Illuminate\Console\Command;
 use App\Models\DataProviderColl;
 use App\Models\ProgrammingPackage;
@@ -54,7 +55,8 @@ class ToolsPostMigrationProcess extends Command
      */
     public function handle()
     {
-        $this->readMigrationFile(storage_path() . '/migration_files/tool_metadata_export_mapping.csv');
+        // $this->readMigrationFile(storage_path() . '/migration_files/tool_metadata_export_mapping.csv');
+        $this->readMigrationFile(storage_path() . '/migration_files/tool_metadata_export_mapping_IOv2.csv');
 
         // Traverse the CSV data and update migrations accordingly
         foreach ($this->csvData as $csv) {
@@ -122,14 +124,21 @@ class ToolsPostMigrationProcess extends Command
                     /**
                      * Final Step. Set license type for migrated tool and save record
                      */
-                    $tool->license = $csv['License MK2'];
+                    $licenceId = NULL;
+                    if ($csv['license'] !== '') {
+                        $licences = License::where(['code' => trim($csv['license'])])->first();
+                        if (!is_null($licences)) {
+                            $licenceId = $licences->id;
+                        }
+                    }
+                    $tool->license = $licenceId;
                     $tool->save();
 
                     $this->indexElasticTool($tool->id);
 
-                    echo 'completed post-process of migration for tool ' . $tool->id . "\n";
+                    echo 'completed post-process of migration for tool ' . $tool->id . PHP_EOL;
                 } else {
-                    echo 'no tool matching ' . $csv['_id'] . " ignoring\n";
+                    echo 'no tool matching ' . $csv['_id'] . ' ignoring'  . PHP_EOL;
                 }
             } catch (Exception $e) {
                 echo 'unable to process ' . $csv['_id'] . ' because ' . $e->getMessage() . "\n";
@@ -155,12 +164,22 @@ class ToolsPostMigrationProcess extends Command
     }
 
     /**
+     * Get the CSV data for testing purposes.
+     *
+     * @return array
+     */
+    public function getCsvData(): array
+    {
+        return $this->csvData;
+    }
+
+    /**
      * Insert tool document into elastic index
      *
      * @param integer $id
      * @return void
      */
-    private function indexElasticTool(int $id): void 
+    public function indexElasticTool(int $id): void 
     {
         $tool = Tool::where('id', $id)
             ->with(['programmingLanguages', 'programmingPackages', 'tag', 'category', 'typeCategory', 'license'])
@@ -200,13 +219,17 @@ class ToolsPostMigrationProcess extends Command
             ->pluck('description')
             ->all();
 
-        $datasetIDs = DatasetHasTool::where('tool_id', $id)
+        $datasetVersionsIDs = DatasetVersionHasTool::where('tool_id', $id)
+            ->pluck('dataset_version_id')
+            ->all();
+
+        $datasetIDs = DatasetVersion::whereIn('id', $datasetVersionsIDs)
             ->pluck('dataset_id')
             ->all();
 
-        $datasets = Dataset::where('id', $datasetIDs)
+        $datasets = Dataset::whereIn('id', $datasetIDs)
             ->with('versions')
-            ->get();
+            ->get(); 
 
         $dataProviderCollId = DataProviderCollHasTeam::where('team_id', $tool['team_id'])
             ->pluck('data_provider_coll_id')

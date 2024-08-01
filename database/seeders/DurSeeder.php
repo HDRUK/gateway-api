@@ -3,9 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Dataset;
+use App\Models\DatasetVersion;
 use Carbon\Carbon;
 use App\Models\Dur;
-use App\Models\DurHasDataset;
+use App\Models\DurHasDatasetVersion;
 use App\Models\DurHasKeyword;
 use App\Models\DurHasUser;
 use App\Models\Keyword;
@@ -155,11 +156,11 @@ class DurSeeder extends Seeder
             'Research',
         ];
 
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 15; $i++) {
             $userId = User::all()->random()->id;
             $teamId = Team::all()->random()->id;
             $keywordId = Keyword::all()->random()->id;
-            $datasetId = Dataset::all()->random()->id;
+            $datasetVersionId = Dataset::all()->random()->latestVersion()->id;
             $arrayDur =
             [
                 'non_gateway_datasets' => [fake()->randomElement($nonGatewayDatasets)], // nonGatewayDatasets
@@ -167,10 +168,8 @@ class DurSeeder extends Seeder
                 'funders_and_sponsors' => [fake()->randomElement($fundersAndSponsors)], // fundersAndSponsors
                 'other_approval_committees' => [fake()->randomElement($otherApprovalCommittees)], // otherApprovalCommittees
                 'gateway_outputs_tools' => [],
-                'gateway_outputs_papers' => [],
                 'non_gateway_outputs' => [fake()->randomElement($nonGatewayOutputs)], // nonGatewayOutputs
                 'gateway_outputs_papers' => [], // gatewayOutputsPapers
-                'non_gateway_outputs' => [], // nonGatewayOutputs
                 'project_title' => fake()->randomElement($projectTitle), // projectTitle
                 'project_id_text' => fake()->randomElement($projectIdText), // projectIdText
                 'organisation_name' => fake()->randomElement($organisationName), // organisationName
@@ -215,20 +214,18 @@ class DurSeeder extends Seeder
 
                 'mongo_object_id' => fake()->numerify('MOBJID-####'), // _id (mongo)
                 'mongo_id' => fake()->numberBetween(10000000000, 99999999999), // id
+
+                'status' => fake()->randomElement([
+                    Dur::STATUS_ACTIVE,
+                    Dur::STATUS_DRAFT,
+                    Dur::STATUS_ARCHIVED
+                ]),
             ];
             $dur = Dur::create($arrayDur);
 
             DurHasKeyword::create([
                 'dur_id' => $dur->id,
                 'keyword_id' => $keywordId,
-            ]);
-
-            DurHasDataset::create([
-                'dur_id' => $dur->id,
-                'dataset_id' => $datasetId,
-                'user_id' => $userId,
-                'reason' => htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8"),
-                'is_locked' => fake()->randomElement([0, 1])
             ]);
         }
     }

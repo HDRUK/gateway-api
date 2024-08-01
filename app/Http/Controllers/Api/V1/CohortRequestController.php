@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
+use CloudLogger;
 use App\Models\User;
 use App\Jobs\SendEmailJob;
 use App\Models\Permission;
@@ -13,18 +14,24 @@ use App\Models\CohortRequest;
 use App\Models\EmailTemplate;
 use Illuminate\Support\Carbon;
 use App\Models\CohortRequestLog;
+use App\Services\LoggingService;
 use Illuminate\Http\JsonResponse;
 use App\Models\CohortRequestHasLog;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\HubspotContacts;
 use App\Models\CohortRequestHasPermission;
 use App\Http\Requests\CohortRequest\GetCohortRequest;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Http\Requests\CohortRequest\CreateCohortRequest;
 use App\Http\Requests\CohortRequest\DeleteCohortRequest;
 use App\Http\Requests\CohortRequest\UpdateCohortRequest;
+use App\Http\Requests\CohortRequest\AssignAdminCohortRequest;
+use App\Http\Requests\CohortRequest\RemoveAdminCohortRequest;
 
 class CohortRequestController extends Controller
 {
+    use HubspotContacts;
+
     public function __construct()
     {
         //
@@ -115,6 +122,7 @@ class CohortRequestController extends Controller
      *                   @OA\Property(property="updated_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="deleted_at", type="datetime", example="2023-04-03 12:00:00"),
      *                   @OA\Property(property="logs", type="array", example="[]", @OA\Items()),
+     *                   @OA\Property(property="accept_declaration", type="boolean", example="0"),  
      *                ),
      *             ),
      *          @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -146,7 +154,7 @@ class CohortRequestController extends Controller
                 $sort[$tmp[0]]= array_key_exists('1', $tmp) ? $tmp[1] : 'asc';
             }
 
-            $query = CohortRequest::with(['user', 'logs', 'logs.user']);
+            $query = CohortRequest::with(['user', 'logs', 'logs.user', 'permissions']);
 
             // filter by users.email
             $query->filterByEmail($request->has('email') ? $request->query('email') : '');
@@ -184,9 +192,9 @@ class CohortRequestController extends Controller
             $cohortRequests = $query->paginate(Config::get('constants.per_page'), ['*'], 'page');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request get all",
             ]);
 
@@ -262,6 +270,7 @@ class CohortRequestController extends Controller
                         $q->orderBy('id', 'desc');
                     }, 
                     'logs.user',
+                    'permissions',
                     ])
                 ->first()->toArray();
 
@@ -272,9 +281,9 @@ class CohortRequestController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request get " . $id,
             ]);
 
@@ -339,7 +348,7 @@ class CohortRequestController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             $checkRequestByUserId = CohortRequest::where([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
             ])->first();
 
             // keep just one request by user id
@@ -351,7 +360,7 @@ class CohortRequestController extends Controller
 
             if ($id) {
                 CohortRequest::where('id', $id)->update([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'request_status' => 'PENDING',
                     'cohort_status' => false,
                     'request_expire_at' => null,
@@ -360,7 +369,7 @@ class CohortRequestController extends Controller
                 CohortRequestHasPermission::where('id', $id)->delete();
             } else {
                 $cohortRequest = CohortRequest::create([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'request_status' => 'PENDING',
                     'cohort_status' => false,
                     'created_at' => Carbon::now(),
@@ -368,7 +377,7 @@ class CohortRequestController extends Controller
             }
 
             $cohortRequestLog = CohortRequestLog::create([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => 'PENDING',
             ]);
@@ -382,9 +391,9 @@ class CohortRequestController extends Controller
             $this->sendEmail($cohortRequest->id);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request " . ($id ?: $cohortRequest->id) . " created",
             ]);
 
@@ -478,7 +487,7 @@ class CohortRequestController extends Controller
             $currRequestStatus = strtoupper(trim($currCohortRequest['request_status']));
 
             $cohortRequestLog = new CohortRequestLog([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'details' => $input['details'],
                 'request_status' => $requestStatus,
             ]);
@@ -497,6 +506,7 @@ class CohortRequestController extends Controller
                     'request_status' => $requestStatus,
                     'cohort_status' => true,
                     'request_expire_at' => ($requestStatus !== 'APPROVED') ? null : Carbon::now()->addDays(Config::get('cohort.cohort_access_expiry_time_in_days')),
+                    'accept_declaration' => $requestStatus === 'APPROVED',
                 ]);
             }
 
@@ -535,10 +545,12 @@ class CohortRequestController extends Controller
 
             $this->sendEmail($id);
 
+            $this->updateOrCreateContact((int) $jwtUser['id']);
+
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request " . $id . " updated",
             ]);
  
@@ -605,14 +617,19 @@ class CohortRequestController extends Controller
         try {
             $input = $request->all();
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
-
-            CohortRequest::where('id', $id)->delete();
+            
+            $cohortRequest = CohortRequest::withTrashed()->findOrFail($id);
+            $cohortRequest->update(['accept_declaration' => false]);
+            $cohortRequest->delete();
+            
             CohortRequestHasPermission::where('id', $id)->delete();
 
+            $this->updateOrCreateContact($id);
+
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request " . $id . " deleted",
             ]);
 
@@ -733,7 +750,7 @@ class CohortRequestController extends Controller
                     // Open output stream
                     $handle = fopen('php://output', 'w');
                     
-                    $headerRow = ['User ID', 'Name', 'Email address', 'Organisation', 'Status', 'Date Requested', 'Date Actioned'];
+                    $headerRow = ['User ID', 'Name', 'Email address', 'Organisation', 'Status', 'Date Requested', 'Date Actioned','Live'];
 
                     // Add CSV headers
                     fputcsv($handle, $headerRow);
@@ -748,6 +765,7 @@ class CohortRequestController extends Controller
                             (string) $rowDetails['request_status'],
                             (string) $rowDetails['created_at'],
                             (string) $rowDetails['updated_at'],
+                            (string) $rowDetails['accept_declaration'],
                         ];
                         fputcsv($handle, $row);
                     }
@@ -762,9 +780,9 @@ class CohortRequestController extends Controller
             $response->headers->set('Cache-Control','max-age=0');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'EXPORT',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Cohort Request exported",
             ]);
 
@@ -775,7 +793,266 @@ class CohortRequestController extends Controller
         }
     }
 
-    private function sendEmail($cohortId)
+    /**
+     * @OA\POST(
+     *    path="/api/v1/cohort_requests/{id}/admin",
+     *    operationId="assing_admin_permission_cohort_requests",
+     *    tags={"Cohort Requests"},
+     *    summary="CohortRequestController@assignAdminPermission",
+     *    description="Assing admin permission for cohort request by id",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="cohort request id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="cohort request id",
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Error response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource not found"),
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function assignAdminPermission(AssignAdminCohortRequest $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $permissionName = 'SYSTEM_ADMIN';
+            $perms = Permission::where('name', $permissionName)->first();
+            if (!$perms) {
+                throw new Exception($permissionName  . ' permission not found!');
+            }
+
+            // assign role
+            CohortRequestHasPermission::create([
+                'cohort_request_id' => $id,
+                'permission_id' => $perms->id,
+            ]);
+
+            // send email
+            $this->sendEmail($id, 'assing');
+
+            // update HubSpot
+            $this->updateOrCreateContact($id);
+
+            // Audit log
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'CREATE',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Cohort Request assign admin permission for id " . $id,
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Delete(
+     *    path="/api/v1/cohort_requests/{id}/admin",
+     *    operationId="remove_admin_permission_cohort_requests",
+     *    tags={"Cohort Requests"},
+     *    summary="CohortRequestController@removeAdminPermission",
+     *    description="Remove admin permission for cohort request by id",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="id",
+     *       in="path",
+     *       description="cohort request id",
+     *       required=true,
+     *       example="1",
+     *       @OA\Schema(
+     *          type="integer",
+     *          description="cohort request id",
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response="200",
+     *       description="Success response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource deleted successfully."),
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="Error response",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Resource not found"),
+     *       )
+     *    ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthorized",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="unauthorized")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Error",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="error"),
+     *          )
+     *      )
+     * )
+     */
+    public function removeAdminPermission(RemoveAdminCohortRequest $request, int $id): JsonResponse
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            $permissionName = 'SYSTEM_ADMIN';
+            $perms = Permission::where('name', $permissionName)->first();
+            if (!$perms) {
+                throw new Exception($permissionName  . ' permission not found!');
+            }
+
+            // remove admin role
+            CohortRequestHasPermission::where([
+                'cohort_request_id' => $id,
+                'permission_id' => $perms->id,
+            ])->delete();
+
+            // send email
+            $this->sendEmail($id, 'remove');
+
+            // update HubSpot
+            $this->updateOrCreateContact($id);
+
+            // Audit log
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'DELETE',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Cohort Request remove admin permission for id " . $id,
+            ]);
+
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+            ], Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/cohort_requests/access",
+     *    operationId="access_cohort_requests",
+     *    tags={"Cohort Requests"},
+     *    summary="CohortRequestController@checkAccess",
+     *    description="access cohort request by jwt",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *      response=302,
+     *      description="Redirect to external URL",
+     *      @OA\Header(
+     *         header="Location",
+     *         description="URL to which the client should be redirected",
+     *         @OA\Schema(
+     *            type="string"
+     *         )
+     *       }
+     *    )
+     *    @OA\Response(
+     *       response=500,
+     *       description="Error",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="Unauthorized for access :: The request is not approved"),
+     *       )
+     *    )
+     * )
+     */
+    public function checkAccess(Request $request)
+    {
+        try {
+            $input = $request->all();
+            $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
+
+            if (!array_key_exists('id', $jwtUser)) {
+                throw new Exception('Unauthorized');
+            }
+
+            $userId = (int) $jwtUser['id'];
+
+            $checkingCohortRequest = CohortRequest::where([
+                'user_id' => $userId,
+                'request_status' => 'APPROVED',
+                'cohort_status' => 1,
+            ])->first();
+
+            if (!$checkingCohortRequest) {
+                throw new Exception('Unauthorized for access :: The request is not approved');
+            }
+
+            $checkingCohortPerms = CohortRequestHasPermission::where([
+                'cohort_request_id' => $checkingCohortRequest->id
+            ])->count();
+
+            if (!$checkingCohortPerms) {
+                throw new Exception('Unauthorized for access :: There are not enough permissions allocated for the cohort request');
+            }
+
+            // save the user id in session
+            session(['cr_uid' => $userId]);
+
+            // delete after implementation
+            CloudLogger::write('cohort request access :: ' . json_encode([
+                'userId' => $userId,
+                'sessionId' => session()->getId()
+            ]));
+
+            Auditor::log([
+                'user_id' => (int) $jwtUser['id'],
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                'description' => "Access rquest for user",
+            ]);
+
+            $rquestInitUrl = Config::get('services.rquest.init_url');
+            return redirect()->away($rquestInitUrl);
+        } catch (Exception $exception) {
+            throw new Exception("Cohort Request send email :: " . $exception->getMessage());
+        }
+    }
+
+    private function sendEmail($cohortId, $admin = null)
     {
         try {
             $cohort = CohortRequest::where('id', $cohortId)->first();
@@ -783,23 +1060,38 @@ class CohortRequestController extends Controller
             $cohortRequestUserId = $cohort['user_id'];
             $user = User::where('id', $cohortRequestUserId)->first();
             $userEmail = ($user['preferred_email'] === 'primary') ? $user['email'] : $user['secondary_email'];
+
+            // template
             $template = null;
-            switch ($cohortRequestStatus) {
-                case 'PENDING': // submitted
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.submitted')->first();
-                    break;
-                case 'REJECTED':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.rejected')->first();
-                    break;
-                case 'APPROVED':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.approved')->first();
-                    break;
-                case 'BANNED':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.banned')->first();
-                    break;
-                case 'SUSPENDED':
-                    $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.suspended')->first();
-                    break;
+            if (!$admin) {
+                switch ($cohortRequestStatus) {
+                    case 'PENDING': // submitted
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.submitted')->first();
+                        break;
+                    case 'REJECTED':
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.rejected')->first();
+                        break;
+                    case 'APPROVED':
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.approved')->first();
+                        break;
+                    case 'BANNED':
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.banned')->first();
+                        break;
+                    case 'SUSPENDED':
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.discovery.access.suspended')->first();
+                        break;
+                }
+            }
+
+            if ($admin) {
+                switch ($admin) {
+                    case 'assign': // submitted
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.request.admin.approve')->first();
+                        break;
+                    case 'remove':
+                        $template = EmailTemplate::where('identifier', '=', 'cohort.request.admin.remove')->first();
+                        break;
+                }
             }
 
             $to = [
@@ -827,4 +1119,5 @@ class CohortRequestController extends Controller
             throw new Exception("Cohort Request send email :: " . $exception->getMessage());
         }
     }
+
 }

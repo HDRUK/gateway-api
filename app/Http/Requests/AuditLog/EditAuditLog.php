@@ -31,7 +31,7 @@ class EditAuditLog extends BaseFormRequest
                 'string',
                 'max:50',
             ],
-            'action_service' => [
+            'action_name' => [
                 'string',
                 'max:255',
             ],

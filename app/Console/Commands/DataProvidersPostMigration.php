@@ -56,7 +56,12 @@ class DataProvidersPostMigration extends Command
                         'img_url' => 'http://placeholder.com',
                         'enabled' => true
                     ]);
+                    
                     $team = Team::where('name', $csv['name'])->first();
+                    if (!$team) {
+                        continue;
+                    }
+
                     DataProviderCollHasTeam::create([
                         'data_provider_coll_id' => $newProvider['id'],
                         'team_id' => $team['id']
@@ -101,8 +106,9 @@ class DataProvidersPostMigration extends Command
         $datasetTitles = array();
         $locations = array();
         foreach ($provider['teams'] as $team) {
-            $datasets = Dataset::where('team_id', $team['id'])->with(['versions', 'spatialCoverage'])->get();
+            $datasets = Dataset::where('team_id', $team['id'])->with(['versions'])->get();
             foreach ($datasets as $dataset) {
+                $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages);
                 $metadata = $dataset['versions'][0];
                 $datasetTitles[] = $metadata['metadata']['metadata']['summary']['shortTitle'];
                 foreach ($dataset['spatialCoverage'] as $loc) {

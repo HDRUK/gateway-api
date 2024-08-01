@@ -37,6 +37,10 @@ class EditPublication extends BaseFormRequest
                 'string',
                 'max:255',
             ],
+            'publication_type_mk1' => [
+                'string',
+                'max:255',
+            ],
             'journal_name' => [
                 'string',
                 'max:255',
@@ -77,6 +81,11 @@ class EditPublication extends BaseFormRequest
             'mongo_id' => [
                 'nullable',
                 'string',
+            ],
+            'status' => [
+                'sometimes',
+                'string',
+                'in:ACTIVE,ARCHIVED,DRAFT',
             ],
         ];
     }

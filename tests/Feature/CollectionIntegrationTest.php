@@ -1,7 +1,6 @@
 <?php
 
 namespace Tests\Feature;
-
 use App\Models\Dur;
 use Tests\TestCase;
 use App\Models\Tool;
@@ -27,12 +26,13 @@ use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use App\Models\ApplicationHasPermission;
+use App\Models\Publication;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\CollectionHasDurSeeder;
 use Database\Seeders\CollectionHasToolSeeder;
-use Database\Seeders\CollectionHasDatasetSeeder;
+use Database\Seeders\CollectionHasDatasetVersionSeeder;
 use Database\Seeders\CollectionHasKeywordSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Database\Seeders\CollectionHasPublicationSeeder;
 
@@ -70,11 +70,11 @@ class CollectionIntegrationTest extends TestCase
             TagSeeder::class,
             DurSeeder::class,
             CollectionHasKeywordSeeder::class,
-            CollectionHasDatasetSeeder::class,
+            CollectionHasDatasetVersionSeeder::class,
             CollectionHasToolSeeder::class,
             CollectionHasDurSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             CollectionHasPublicationSeeder::class,
         ]);
 
@@ -305,6 +305,7 @@ class CollectionIntegrationTest extends TestCase
             "dur" => $this->generateDurs(),
             "publications" => $this->generatePublications(),
         ];
+
         $responseIns = $this->json(
             'POST',
             self::TEST_URL,
@@ -482,7 +483,7 @@ class CollectionIntegrationTest extends TestCase
 
         for ($i = 1; $i <= $iterations; $i++) {
             $temp = [];
-            $temp['id'] = Dur::all()->random()->id;
+            $temp['id'] = Publication::all()->random()->id;
             $temp['reason'] = htmlentities(implode(" ", fake()->paragraphs(5, false)), ENT_QUOTES | ENT_IGNORE, "UTF-8");
             $return[] = $temp;
         }

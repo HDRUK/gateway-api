@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use Auditor;
 use Config;
+use Auditor;
 use Exception;
 
 use App\Models\Team;
@@ -11,33 +11,40 @@ use App\Models\User;
 use App\Models\Dataset;
 use Illuminate\Support\Str;
 use App\Jobs\TermExtraction;
-use Illuminate\Http\Request;
+use App\Http\Traits\MetadataOnboard;
 
+use App\Models\DataProvider;
+use Illuminate\Http\Request;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
-use App\Models\DataProvider;
-use App\Models\DataProviderHasTeam;
 
 use Illuminate\Support\Carbon;
 use App\Models\SpatialCoverage;
 
 use Illuminate\Http\JsonResponse;
+use App\Models\DataProviderHasTeam;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
-use App\Exceptions\NotFoundException;
-use MetadataManagementController AS MMC;
+use Maatwebsite\Excel\Facades\Excel;
 
+use App\Exceptions\NotFoundException;
+use Illuminate\Support\Facades\Storage;
+use MetadataManagementController AS MMC;
 use App\Http\Requests\Dataset\GetDataset;
-use App\Models\DatasetHasSpatialCoverage;
 use App\Http\Requests\Dataset\EditDataset;
 use App\Http\Requests\Dataset\TestDataset;
 use App\Http\Requests\Dataset\CreateDataset;
 use App\Http\Requests\Dataset\DeleteDataset;
 use App\Http\Requests\Dataset\UpdateDataset;
+use App\Exports\DatasetStructuralMetadataExport;
+use App\Models\DatasetVersionHasSpatialCoverage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DatasetController extends Controller
 {
+    use MetadataOnboard;
+
     /**
      * @OA\Get(
      *    path="/api/v1/datasets",
@@ -127,6 +134,7 @@ class DatasetController extends Controller
             $filterStatus = $request->query('status', null);
             $datasetId = $request->query('dataset_id', null);
             $mongoPId = $request->query('mongo_pid', null);
+            $withMetadata = $request->boolean('with_metadata', true);
     
             $sort = $request->query('sort',"created:desc");   
             
@@ -203,8 +211,8 @@ class DatasetController extends Controller
     
             // perform query for the matching datasets with ordering and pagination. 
             // Include soft-deleted versions.
-            $datasets = Dataset::with('latestMetadata') 
-                ->whereIn('id', $matches)
+            $datasets = Dataset::whereIn('id', $matches)
+                ->when($withMetadata, fn($query) => $query->with('latestMetadata'))
                 ->when($request->has('withTrashed') || $filterStatus === 'ARCHIVED', 
                     function ($query) {
                         return $query->withTrashed();
@@ -217,7 +225,7 @@ class DatasetController extends Controller
     
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dataset get all",
             ]);
             
@@ -249,7 +257,7 @@ class DatasetController extends Controller
      *          description="status field",
      *       ),
      *    ),
-    *    @OA\Parameter(
+     *    @OA\Parameter(
      *       name="team_id",
      *       in="query",
      *       description="team id",
@@ -286,7 +294,7 @@ class DatasetController extends Controller
     
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dataset count",
             ]);
 
@@ -318,6 +326,12 @@ class DatasetController extends Controller
      *       ),
      *    ),
      *    @OA\Parameter(
+     *       name="export",
+     *       in="query",
+     *       description="Alternative output schema model.",
+     *       @OA\Schema(type="string", example="structuralMetadata")
+     *    ),
+      *    @OA\Parameter(
      *       name="schema_model",
      *       in="query",
      *       description="Alternative output schema model.",
@@ -362,30 +376,46 @@ class DatasetController extends Controller
      * )
      * 
      */
-    public function show(GetDataset $request, int $id): JsonResponse
+    public function show(GetDataset $request, int $id): JsonResponse|BinaryFileResponse
     {
         try {
-            $dataset = Dataset::where(['id' => $id])
-                ->with(['namedEntities', 'collections', 'publications'])
-                ->withCount(['durs', 'publications'])
-                ->first();
+            $exportStructuralMetadata = $request->query('export', null);
+
+            // Retrieve the dataset with collections, publications, and counts
+            $dataset = Dataset::find($id);
+
+            if (!$dataset) {
+                return response()->json(['message' => 'Dataset not found'], 404);
+            }
+
+            // Inject attributes via the dataset version table
+            $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
+            $dataset->setAttribute('publications_count', $dataset->latestVersion()->publicationHasDatasetVersions()->count());
+            $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
+            $dataset->setAttribute('durs', $dataset->allDurs  ?? []);
+            $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
+            $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
+            $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
 
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
+            // Retrieve the latest version 
+            $latestVersion = $dataset->latestVersion();
+
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
-                $version = $dataset->latestVersion();
-                if ($version) {
-                    $dataset->versions[] = $version;
+                $withLinks = DatasetVersion::where('id', $latestVersion['id'])
+                    ->with(['linkedDatasetVersions'])
+                    ->first();
+                if ($withLinks) {
+                    $dataset->setAttribute('versions', [$withLinks]);
                 }
-            }            
+            }
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
-                $version = $dataset->latestVersion();
-
                 $translated = MMC::translateDataModelType(
-                    $version->metadata,
+                    json_encode($latestVersion->metadata),
                     $outputSchemaModel,
                     $outputSchemaModelVersion,
                     Config::get('metadata.GWDM.name'),
@@ -393,10 +423,12 @@ class DatasetController extends Controller
                 );
 
                 if ($translated['wasTranslated']) {
-                    $version->metadata = json_decode(json_encode($translated['metadata]']));
-                    $dataset->versions[] = $version;
-                }
-                else {
+                    $withLinks = DatasetVersion::where('id', $latestVersion['id'])
+                        ->with(['linkedDatasetVersions'])
+                        ->first();
+                    $withLinks['metadata'] = json_encode(['metadata' => $translated['metadata']]);
+                    $dataset->setAttribute('versions', [$withLinks]);
+                } else {
                     return response()->json([
                         'message' => 'failed to translate',
                         'details' => $translated
@@ -410,9 +442,34 @@ class DatasetController extends Controller
                 throw new Exception('You have given a schema_version but not schema_model');
             }
             
+            if ($exportStructuralMetadata === 'structuralMetadata') {
+                $arrayDataset = $dataset->toArray();
+                $latestVersionId = $latestVersion->id;
+                $versions = MMC::getValueByPossibleKeys($arrayDataset, ['versions'], []);
+
+                $count = 0;
+                if (count($versions)) {
+                    foreach ($versions as $version) {
+                        if ((int) $version['id'] === (int) $latestVersionId) {
+                            break;
+                        }
+                        $count++;
+                    }
+                }
+                $export = count($versions) ? MMC::getValueByPossibleKeys($arrayDataset, ['versions.' . $count . '.metadata.metadata.structuralMetadata'], []) : [];
+                
+                Auditor::log([
+                    'action_type' => 'GET',
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset get " . $id . " download structural metadata",
+                ]);
+
+                return Excel::download(new DatasetStructuralMetadataExport($export), 'dataset-structural-metadata.csv');
+            }
+
             Auditor::log([
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dataset get " . $id,
             ]);
 
@@ -479,151 +536,48 @@ class DatasetController extends Controller
     {
         try {
             $input = $request->all();
-
-            $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
+            $elasticIndexing = $request->boolean('elastic_indexing', true);
 
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
             $teamId = (int)$input['team_id'];
 
             $team = Team::where('id', $teamId)->first()->toArray();
-            $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
 
-            //send the payload to traser
-            // - traser will return the input unchanged if the data is
-            //   already in the GWDM with GWDM_CURRENT_VERSION
-            // - if it is not, traser will try to work out what the metadata is
-            //   and translate it into the GWDM
-            // - otherwise traser will return a non-200 error 
+            $inputSchema = $request->query("input_schema",null);
+            $inputVersion = $request->query("input_version",null);
 
-            $payload = $input['metadata'];
-            $payload['extra'] = [
-                "id"=>"placeholder",
-                "pid"=>"placeholder",
-                "datasetType"=>"Healthdata",
-                "publisherId"=>$team['pid'],
-                "publisherName"=>$team['name']
-            ];
+            // Ensure title is present for creating a dataset
+            if (empty($input['metadata']['metadata']['summary']['title'])) {
+                return response()->json([
+                    'message' => 'Title is required to save a dataset',
+                ], 400);
+            }
 
-            $traserResponse = MMC::translateDataModelType(
-                json_encode($payload),
-                Config::get('metadata.GWDM.name'),
-                Config::get('metadata.GWDM.version'),
+            $metadataResult = $this->metadataOnboard(
+                $input, $team, $inputSchema, $inputVersion, $elasticIndexing
             );
 
-            if ($traserResponse['wasTranslated']) {
-                $input['metadata']['original_metadata'] = $input['metadata']['metadata'];
-                $input['metadata']['metadata'] = $traserResponse['metadata'];
-
-                $mongo_object_id = array_key_exists('mongo_object_id', $input) ? $input['mongo_object_id'] : null;
-                $mongo_id = array_key_exists('mongo_id', $input) ? $input['mongo_id'] : null;
-                $mongo_pid = array_key_exists('mongo_pid', $input) ? $input['mongo_pid'] : null;
-                $datasetid = array_key_exists('datasetid', $input) ? $input['datasetid'] : null;
-
-                $pid = array_key_exists('pid', $input) ? $input['pid'] : (string) Str::uuid();
-
-                $dataset = MMC::createDataset([
-                    'user_id' => $input['user_id'],
-                    'team_id' => $input['team_id'],
-                    'mongo_object_id' => $mongo_object_id,
-                    'mongo_id' => $mongo_id,
-                    'mongo_pid' => $mongo_pid,
-                    'datasetid' => $datasetid,
-                    'created' => now(),
-                    'updated' => now(),
-                    'submitted' => now(),
-                    'pid' => $pid,
-                    'create_origin' => $input['create_origin'],
-                    'status' => $input['status'],
-                    'is_cohort_discovery' => $isCohortDiscovery,
-                ]);
-
-    
-                $publisher = null;
-                $required = [
-                        'gatewayId' => strval($dataset->id), //note: do we really want this in the GWDM?
-                        'gatewayPid' => $dataset->pid,
-                        'issued' => $dataset->created,
-                        'modified' => $dataset->updated,
-                        'revisions' => []
-                    ];
-
-                // ------------------------------------------------------------------- 
-                // * Create a new 'required' section for the metadata to be saved
-                //    - otherwise this section is filled with placeholders by all translations to GWDM
-                // * Force correct publisher field based on the team associated with 
-                //
-                // Note: 
-                //     - This is hopefully a rare scenario when the BE has to be changed due to an update 
-                //        to the GWDM 
-                //     - future releases of the GWDM will hopefully not modify anything that we need to
-                //       set via the MMC
-                //     - we can't pass the publisherId nor the gatewayPid of the dataset to traser before  
-                //       they have been created, this is why we are doing this..
-                //     - GWDM >= 1.1 versions have a change related to these sections of the GWDM
-                //         - addition of the field 'version' in the required field 
-                //         - restructure of the 'publisher' in the summary field 
-                //            - publisher.publisherId --> publisher.gatewayId
-                //            - publisher.publisherName --> publisher.name
-                // ------------------------------------------------------------------- 
-                if(version_compare(Config::get('metadata.GWDM.version'),"1.1","<")){
-                    $publisher = [
-                        'publisherId' => $team['pid'],
-                        'publisherName' => $team['name'],
-                    ];
-                } else{
-                    $version = $this->getVersion(1);
-                    if(array_key_exists( 'version', $input['metadata']['metadata']['required'])){
-                       $version = $input['metadata']['metadata']['required']['version'];
-                    }
-                    $required['version'] = $version;
-                    $publisher = [
-                        'gatewayId' => $team['pid'],
-                        'name' => $team['name'],
-                    ];
-                }
-
-                $input['metadata']['metadata']['required'] = $required;
-                $input['metadata']['metadata']['summary']['publisher'] = $publisher;
-
-                //include a note of what the metadata was (i.e. which GWDM version)
-                $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
-
-                $version = MMC::createDatasetVersion([
-                    'dataset_id' => $dataset->id,
-                    'metadata' => json_encode($input['metadata']),
-                    'version' => 1,
-                ]);
-
-                // map coverage/spatial field to controlled list for filtering
-                $this->mapCoverage($input['metadata'], $dataset);
-
-                // Dispatch term extraction to a subprocess as it may take some time
-                TermExtraction::dispatch(
-                    $dataset->id,
-                    base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
-                    $elasticIndexing
-                );
+            if ($metadataResult['translated']) {
 
                 Auditor::log([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
                     'action_type' => 'CREATE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset " . $dataset->id . " with version " . $version->id . " created",
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset " . $metadataResult['dataset_id'] . " with version " . $metadataResult['version_id'] . " created",
                 ]);
 
                 return response()->json([
                     'message' => 'created',
-                    'data' => $dataset->id,
-                    'version' => $version->id,
+                    'data' => $metadataResult['dataset_id'],
+                    'version' => $metadataResult['version_id'],
                 ], 201);
-            }
-            else {
+            } else {
                 return response()->json([
                     'message' => 'metadata is in an unknown format and cannot be processed',
-                    'details' => $traserResponse,
+                    'details' => $metadataResult['response'],
                 ], 400);
             }
         } catch (Exception $e) {
@@ -692,6 +646,8 @@ class DatasetController extends Controller
         try {
             $input = $request->all();
 
+            $elasticIndexing = (isset($input['elastic_indexing']) ? $input['elastic_indexing'] : null);
+            
             $isCohortDiscovery = array_key_exists('is_cohort_discovery', $input) ? $input['is_cohort_discovery'] : false;
 
             $teamId = (int)$input['team_id'];
@@ -703,6 +659,13 @@ class DatasetController extends Controller
             $currentPid = $currDataset->pid;
 
             $input['metadata'] = $this->extractMetadata($input['metadata']);
+
+            // Ensure title is present for updating a dataset
+            if (empty($input['metadata']['metadata']['summary']['title'])) {
+                return response()->json([
+                    'message' => 'Title is required to update a dataset',
+                ], 400);
+            }
 
             $payload = $input['metadata'];
             $payload['extra'] = [
@@ -716,7 +679,11 @@ class DatasetController extends Controller
             $traserResponse = MMC::translateDataModelType(
                 json_encode($payload),
                 Config::get('metadata.GWDM.name'),
-                Config::get('metadata.GWDM.version')
+                Config::get('metadata.GWDM.version'),
+                null,
+                null,
+                $request['status'] !== Dataset::STATUS_DRAFT, // Disable input validation if it's a draft
+                $request['status'] !== Dataset::STATUS_DRAFT // Disable output validation if it's a draft
             );
 
             if ($traserResponse['wasTranslated']) {
@@ -725,21 +692,22 @@ class DatasetController extends Controller
 
                 // Update the existing dataset parent record with incoming data
                 $updateTime = now();
-                $updatedDataset = $currDataset->update([
+                $currDataset->update([
                     'user_id' => $input['user_id'],
                     'team_id' => $input['team_id'],
                     'updated' => $updateTime,
                     'pid' => $currentPid,
                     'create_origin' => $input['create_origin'],
-                    'status' => $input['status'],
+                    'status' => $request['status'],
                     'is_cohort_discovery' => $isCohortDiscovery,
                 ]);
 
                 // Determine the last version of metadata
-                $lastVersionNumber = $currDataset->lastMetadataVersionNumber()->version;
-
-                $currentVersionCode = $this->getVersion($lastVersionNumber + 1);
-                $lastVersionCode = $this->getVersion($lastVersionNumber);
+                $versionNumber = $currDataset->lastMetadataVersionNumber()->version;
+                if ($currDataset->status !== Dataset::STATUS_DRAFT) {
+                    $versionNumber = $versionNumber + 1;
+                }
+                $versionCode = $this->getVersion($versionNumber);
 
                 $lastMetadata = $currDataset->lastMetadata();
      
@@ -747,7 +715,7 @@ class DatasetController extends Controller
                 $input['metadata']['metadata']['required']['modified'] = $updateTime;
                 if(version_compare(Config::get('metadata.GWDM.version'),"1.0",">")){   
                     if(version_compare($lastMetadata['gwdmVersion'],"1.0",">")){
-                        $lastVersionCode = $lastMetadata['metadata']['required']['version'];
+                        $versionCode = $lastMetadata['metadata']['required']['version'];
                     }
                 }
                 
@@ -756,28 +724,47 @@ class DatasetController extends Controller
                 //       - url set with a placeholder right now, should be revised before production
                 //       - https://hdruk.atlassian.net/browse/GAT-3392
                 $input['metadata']['metadata']['required']['revisions'][] = [
-                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$lastVersionCode, 
-                    "version"=>$lastVersionCode
+                    "url"=>"https://placeholder.blah/".$currentPid."?version=".$versionCode, 
+                    "version"=>$versionCode
                 ];
 
                 $input['metadata']['gwdmVersion'] =  Config::get('metadata.GWDM.version');
 
-                // Create new metadata version for this dataset
-                $version = DatasetVersion::create([
-                    'dataset_id' => $currDataset->id,
-                    'metadata' => json_encode($input['metadata']),
-                    'version' => ($lastVersionNumber + 1),
-                ]);
+                // Update or create new metadata version based on draft status
+                if ($currDataset->status !== Dataset::STATUS_DRAFT) {
+                    DatasetVersion::create([
+                        'dataset_id' => $currDataset->id,
+                        'metadata' => json_encode($input['metadata']),
+                        'version' => ($versionNumber),
+                    ]);
+                } else {
+                    // Update the existing version
+                    DatasetVersion::where([
+                        'dataset_id' => $currDataset->id,
+                        'version' => $versionNumber,
+                    ])->update([
+                        'metadata' => json_encode($input['metadata']),
+                    ]);
+                    }
 
-
-                MMC::reindexElastic($currDataset->id);
-
+                // Dispatch term extraction to a subprocess if the dataset moves from draft to active
+                if($request['status'] === Dataset::STATUS_ACTIVE){
+                    TermExtraction::dispatch(
+                        $currDataset->id,
+                        $versionNumber,
+                        base64_encode(gzcompress(gzencode(json_encode($input['metadata'])), 6)),
+                        $elasticIndexing
+                    );
+                    
+                    MMC::reindexElastic($currDataset->id);
+                }
+                
                 Auditor::log([
                     'user_id' => $userId,
                     'team_id' => $teamId,
                     'action_type' => 'UPDATE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                    'description' => "Dataset " . $id . " with version " . ($lastVersionNumber + 1) . " updated",
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                    'description' => "Dataset " . $id . " with version " . ($versionNumber + 1) . " updated",
                 ]);
 
                 return response()->json([
@@ -836,41 +823,33 @@ class DatasetController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             if ($request->has('unarchive')) {
-                $datasetModel = Dataset::withTrashed()
-                    ->where(['id' => $id])
-                    ->first();
+                $datasetModel = Dataset::withTrashed() ->where(['id' => $id]) ->first();
 
-                if ($request['status'] !== Dataset::STATUS_ARCHIVED) {
-                    if (in_array($request['status'], [
-                        Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT
-                    ])) {
-                        $datasetModel->status = $request['status'];
-                        $datasetModel->deleted_at = null;
-                        $datasetModel->save();
+                if (in_array($request['status'], [Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT])) {
+                    $datasetModel->status = $request['status'];
+                    $datasetModel->deleted_at = null;
+                    $datasetModel->save();
 
-                        $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)
-                            ->latest()->first();
-                        $metadata->deleted_at = null;
-                        $metadata->save();
+                    $metadata = DatasetVersion::withTrashed()->where('dataset_id', $id)->latest()->first();
+                    $metadata->deleted_at = null;
+                    $metadata->save();
 
-                        if ($request['status'] === Dataset::STATUS_ACTIVE) {
-                            MMC::reindexElastic($id);
-                        }
-
-                        Auditor::log([
-                            'user_id' => $jwtUser['id'],
-                            'team_id' => $datasetModel['team_id'],
-                            'action_type' => 'UPDATE',
-                            'action_service' => class_basename($this) . '@'.__FUNCTION__,
-                            'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
-                        ]);
-                    } else {
-                        throw new Exception('unknown status type');
+                    if ($request['status'] === Dataset::STATUS_ACTIVE) {
+                        MMC::reindexElastic($id);
                     }
+
+                    Auditor::log([
+                        'user_id' => (int) $jwtUser['id'],
+                        'team_id' => $datasetModel['team_id'],
+                        'action_type' => 'UPDATE',
+                        'action_name' => class_basename($this) . '@'.__FUNCTION__,
+                        'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
+                    ]);
+                } else {
+                    throw new Exception('unknown status type');
                 }
             } else {
-                $datasetModel = Dataset::where(['id' => $id])
-                    ->first();
+                $datasetModel = Dataset::where(['id' => $id])->first();
 
                 if ($datasetModel['status'] === Dataset::STATUS_ARCHIVED) {
                     return response()->json([
@@ -881,7 +860,6 @@ class DatasetController extends Controller
                 if (in_array($request['status'], [
                     Dataset::STATUS_ACTIVE, Dataset::STATUS_DRAFT
                 ])) {
-                    $previousDatasetStatus = $datasetModel->status;
                     $datasetModel->status = $request['status'];
                     $datasetModel->save();
                 } else {
@@ -892,10 +870,10 @@ class DatasetController extends Controller
                 // body validate, translate if needed, update Mauro data model, etc. 
 
                 Auditor::log([
-                    'user_id' => $jwtUser['id'],
+                    'user_id' => (int) $jwtUser['id'],
                     'team_id' => $datasetModel['team_id'],
                     'action_type' => 'UPDATE',
-                    'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                    'action_name' => class_basename($this) . '@'.__FUNCTION__,
                     'description' => "Dataset " . $id . " marked as " . strtoupper($request['status']) . " updated",
                 ]);
             }
@@ -958,12 +936,12 @@ class DatasetController extends Controller
             $jwtUser = array_key_exists('jwt_user', $input) ? $input['jwt_user'] : [];
 
             MMC::deleteDataset($id);
-            MMC::deleteFromElastic($id);
+            MMC::deleteFromElastic($id, 'dataset');
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Dataset " . $id . " deleted",
             ]);
 
@@ -986,7 +964,6 @@ class DatasetController extends Controller
         $dataset = Dataset::where('pid', "=", $pid)->first();
         return $this->update($request,$dataset->id);
     }
-
 
     /**
      * @OA\Get(
@@ -1101,18 +1078,77 @@ class DatasetController extends Controller
         return $response;
     }
 
-    private function getVersion(int $version){
-        if($version>999) throw new Exception("too many versions");
+    /**
+     * @OA\Get(
+     *    path="/api/v1/datasets/export/mock",
+     *    operationId="export_mock_dataset",
+     *    tags={"Datasets"},
+     *    summary="DatasetController@exportMock",
+     *    description="Export Mock",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Parameter(
+     *       name="type",
+     *       in="query",
+     *       description="type export",
+     *       required=true,
+     *       @OA\Schema(
+     *          type="string",
+     *          description="type export",
+     *          enum={"template_dataset_structural_metadata", "dataset_metadata"}
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=200,
+     *       description="CSV file",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema(
+     *             type="string",
+     *             example="Title,""Publisher name"",Version,""Last Activity"",""Method of dataset creation"",Status,""Metadata detail""\n""Publications mentioning HDRUK"",""Health Data Research UK"",2.0.0,""2023-04-21T11:31:00.000Z"",MANUAL,ACTIVE,""{""properties\/accessibility\/usage\/dataUseRequirements"":{""id"":""95c37b03-54c4-468b-bda4-4f53f9aaaadd"",""namespace"":""hdruk.profile"",""key"":""properties\/accessibility\/usage\/dataUseRequirements"",""value"":""N\/A"",""lastUpdated"":""2023-12-14T11:31:11.312Z""},""properties\/required\/gatewayId"":{""id"":""8214d549-db98-453f-93e8-d88c6195ad93"",""namespace"":""hdruk.profile"",""key"":""properties\/required\/gatewayId"",""value"":""1234"",""lastUpdated"":""2023-12-14T11:31:11.311Z""}""",
+     *          )
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="File Not Found",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="file_not_found")
+     *       ),
+     *    ),
+     * )
+     */
+    public function exportMock(Request $request)
+    {
+        try {
+            $exportType = $request->query('type', null);
+            $file = '';
 
-        $version = max(0, $version);
+            switch ($exportType) {
+                case 'template_dataset_structural_metadata':
+                    $file = Config::get('mock_data.template_dataset_structural_metadata');
+                    break;
+                case 'dataset_metadata':
+                    $file = Config::get('mock_data.mock_dataset_metadata');
+                    break;
+                default:
+                    return response()->json(['error' => 'File not found.'], 404);
+            }
 
-        $hundreds = floor($version / 100);
-        $tens = floor(($version % 100) / 10);
-        $units = $version % 10;
-
-        $formattedVersion = "{$hundreds}.{$tens}.{$units}";
-
-        return $formattedVersion;
+            if (!Storage::disk('mock')->exists($file)) {
+                return response()->json(['error' => 'File not found.'], 404);
+            }
+            
+            return Storage::disk('mock')->download($file)->setStatusCode(Config::get('statuscodes.STATUS_OK.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     private function extractMetadata (Mixed $metadata){
@@ -1132,40 +1168,5 @@ class DatasetController extends Controller
             $metadata = $tmpMetadata;
         }
         return $metadata;
-    }
-
-
-    private function mapCoverage(array $metadata, Dataset $dataset): void 
-    {
-        $coverage = strtolower($metadata['metadata']['coverage']['spatial']);
-        $ukCoverages = SpatialCoverage::whereNot('region', 'Rest of the world')->get();
-        $worldId = SpatialCoverage::where('region', 'Rest of the world')->first()->id;
-
-        $matchFound = false;
-        foreach ($ukCoverages as $c) {
-            if (str_contains($coverage, strtolower($c['region']))) {
-                DatasetHasSpatialCoverage::updateOrCreate([
-                    'dataset_id' => (int) $dataset['id'],
-                    'spatial_coverage_id' => (int) $c['id'],
-                ]);
-                $matchFound = true;
-            }
-        }
-
-        if (!$matchFound) {
-            if (str_contains($coverage, 'united kingdom')) {
-                foreach ($ukCoverages as $c) {
-                    DatasetHasSpatialCoverage::updateOrCreate([
-                        'dataset_id' => (int) $dataset['id'],
-                        'spatial_coverage_id' => (int) $c['id'],
-                    ]);
-                }
-            } else {
-                DatasetHasSpatialCoverage::updateOrCreate([
-                    'dataset_id' => (int) $dataset['id'],
-                    'spatial_coverage_id' => (int) $worldId,
-                ]);
-            }
-        }
     }
 }

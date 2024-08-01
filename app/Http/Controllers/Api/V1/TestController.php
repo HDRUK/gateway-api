@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Auditor;
+use CloudLogger;
 use Illuminate\Http\Request;
 use App\Services\PubSubService;
 use Illuminate\Http\JsonResponse;
@@ -44,9 +45,23 @@ class TestController extends Controller
         Auditor::log([
             'user_id' => 1,
             'action_type' => 'CREATE',
-            'action_service' => 'action service test',
+            'action_name' => 'action service test',
             'description' => 'description test',
         ]);
+
+        return response()->json(['status' => 'success']);
+    }
+
+    public function testGCPLogger(Request $request): JsonResponse
+    {
+        CloudLogger::write([
+            'type' => 'send array',
+            'user_id' => 1,
+            'action_type' => 'CREATE',
+            'action_name' => 'action service test',
+            'description' => 'description test',
+        ]);
+        CloudLogger::write('send string');
 
         return response()->json(['status' => 'success']);
     }

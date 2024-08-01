@@ -35,23 +35,21 @@ class UpdateLicenses extends Command
             $getVocabulariesLicense = $this->getVocabulariesLicense();
             $vocabulariesLicence = $getVocabulariesLicense['result']['results'];
 
+            // echo 'Team ' . $teamName . ' not found. skipping ...' . PHP_EOL;
             // EU
             foreach ($vocabulariesLicence as $license) {
                 if (!array_key_exists('en', $license['pref_label'])) {
                     continue;
                 }
                 $label = $license['pref_label']['en'];
-                $resource = $license['resource'];
-
-                if (strpos($resource, $this->urlLicense) === false) {
-                    continue;
-                }
 
                 $licenseId = (string) $license['id'];
+                echo 'Licence Id :: ' . $licenseId . ' start ' . PHP_EOL;
 
                 $data = $this->getLicenseDetails($licenseId); // parse resource
 
                 if (!$data) {
+                    echo 'Licence Id :: ' . $licenseId . ' data not found. skipping ...' . PHP_EOL;
                     continue;
                 }
 
@@ -67,15 +65,20 @@ class UpdateLicenses extends Command
                     ],
                     $data
                 );
+                echo 'Licence Id :: ' . $licenseId . ' update or create in db ...' . PHP_EOL;
+                sleep(2);
             }
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage());
         }
+
+        echo 'Completed ...' . PHP_EOL;
     }
 
     public function getVocabulariesLicense()
     {
         try {
+            echo 'Call url :: ' . $this->urlVocabularies . PHP_EOL;
             return Http::timeout(5)->get($this->urlVocabularies);
         } catch (Exception $exception) {
             throw new Exception($exception->getMessage());
@@ -86,6 +89,7 @@ class UpdateLicenses extends Command
     {
         $url = $this->urlLicense . trim($code);
         try {
+            echo 'Get license details :: ' . $url . PHP_EOL;
             $getLicense = Http::retry(3, 100)->timeout(5)->get($url);
 
             if ($getLicense->ok()) {

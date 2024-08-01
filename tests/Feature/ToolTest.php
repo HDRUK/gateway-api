@@ -3,42 +3,49 @@
 namespace Tests\Feature;
 
 use Config;
+use Exception;
 use Tests\TestCase;
-
 use App\Models\Tool;
 use ReflectionClass;
+use App\Http\Enums\TeamMemberOf;
 use App\Models\License;
 use App\Models\DurHasTool;
 use App\Models\ToolHasTag;
 use App\Models\Publication;
+use App\Models\PublicationHasTool;
+use App\Models\Collection;
+use App\Models\CollectionHasTool;
+use App\Models\ToolHasTypeCategory;
+use App\Models\Dataset;
+use App\Models\DatasetVersionHasTool;
+use App\Models\ToolHasProgrammingPackage;
+use App\Models\ToolHasProgrammingLanguage;
 use Database\Seeders\DurSeeder;
 use Database\Seeders\TagSeeder;
 use Tests\Traits\Authorization;
-
 use Database\Seeders\ToolSeeder;
 use App\Http\Requests\ToolRequest;
 use Tests\Traits\MockExternalApis;
-use App\Models\ToolHasTypeCategory;
 use Database\Seeders\DatasetSeeder;
 use Database\Seeders\KeywordSeeder;
 use Database\Seeders\LicenseSeeder;
 use Database\Seeders\CategorySeeder;
+use Database\Seeders\CollectionSeeder;
 use Database\Seeders\DurHasToolSeeder;
-
 use Database\Seeders\ToolHasTagSeeder;
 use Database\Seeders\ApplicationSeeder;
 use Database\Seeders\MinimalUserSeeder;
 use Database\Seeders\PublicationSeeder;
 use Database\Seeders\TypeCategorySeeder;
-use App\Models\ToolHasProgrammingPackage;
-use App\Models\ToolHasProgrammingLanguage;
 use Database\Seeders\DatasetVersionSeeder;
 use Database\Seeders\DurHasPublicationSeeder;
 use Database\Seeders\ProgrammingPackageSeeder;
 use Database\Seeders\PublicationHasToolSeeder;
+use Database\Seeders\CollectionHasToolSeeder;
+use Database\Seeders\DatasetVersionHasToolSeeder;
 use App\Http\Controllers\Api\V1\ToolController;
 use Database\Seeders\ProgrammingLanguageSeeder;
-use Database\Seeders\PublicationHasDatasetSeeder;
+use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ToolTest extends TestCase
@@ -50,6 +57,9 @@ class ToolTest extends TestCase
     }
 
     const TEST_URL = '/api/v1/tools';
+    const TEST_URL_TEAM = '/api/v1/teams';
+    const TEST_URL_NOTIFICATION = '/api/v1/notifications';
+    const TEST_URL_USER = '/api/v1/users';
 
     protected $header = [];
 
@@ -76,12 +86,15 @@ class ToolTest extends TestCase
             ToolSeeder::class,
             ToolHasTagSeeder::class,
             PublicationSeeder::class,
-            PublicationHasDatasetSeeder::class,
+            PublicationHasDatasetVersionSeeder::class,
             PublicationHasToolSeeder::class,
             ApplicationSeeder::class,
             DurSeeder::class,
             DurHasPublicationSeeder::class,
             DurHasToolSeeder::class,
+            CollectionSeeder::class,
+            CollectionHasToolSeeder::class,
+            DatasetVersionHasToolSeeder::class,
         ]);
     }
 
@@ -117,6 +130,9 @@ class ToolTest extends TestCase
                     'contact_address',
                     'publications',
                     'durs',
+                    'collections',
+                    'datasets',
+                    'any_dataset',
                 ]
             ],
             'current_page',
@@ -168,6 +184,9 @@ class ToolTest extends TestCase
                 'contact_address',
                 'publications',
                 'durs',
+                'collections',
+                'datasets',
+                'any_dataset',
             ]
         ]);
         $response->assertStatus(200);
@@ -180,10 +199,13 @@ class ToolTest extends TestCase
      */
     public function test_add_new_tool_with_success(): void
     {
-        $licenseId = License::where('valid_until', null)->get()->random()->id;
-        $countBefore = Tool::withTrashed()->count();
-        $countPivotBefore = ToolHasTag::all()->count();
-        $mockData = array(
+        $licenseId = License::where('valid_until', null)->get()->random()->id ?? null;
+        $this->assertNotNull($licenseId, 'No valid license ID found');
+
+        $initialToolCount = Tool::withTrashed()->count();
+        $initialTagCount = ToolHasTag::count();
+
+        $mockData = [
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Similique sapiente est vero eum.",
             "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
@@ -192,13 +214,17 @@ class ToolTest extends TestCase
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
             "user_id" => 1,
-            "tag" => array(1, 2),
-            "programming_language" => array(1, 2),
-            "programming_package" => array(1, 2),
-            "type_category" => array(1, 2),
+            "tag" => [1, 2],
+            "dataset" => [1, 2],
+            "programming_language" => [1, 2],
+            "programming_package" => [1, 2],
+            "type_category" => [1, 2],
             "enabled" => 1,
             "publications" => $this->generatePublications(),
-        );
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+        ];
 
         $response = $this->json(
             'POST',
@@ -207,19 +233,342 @@ class ToolTest extends TestCase
             $this->header
         );
 
-        $countAfter = Tool::withTrashed()->count();
-        $countPivotAfter = ToolHasTag::all()->count();
-        $countNewRow = $countAfter - $countBefore;
-        $countPivotNewRows = $countPivotAfter - $countPivotBefore;
-
-        $this->assertTrue((bool) $countNewRow, 'Response was successfully');
-        $this->assertEquals(
-            2,
-            $countPivotNewRows,
-            "actual value is equal to expected"
-        );
         $response->assertStatus(201);
+        $toolId = $response['data'];
+
+        $finalToolCount = Tool::withTrashed()->count();
+        $finalTagCount = ToolHasTag::count();
+
+        $newToolCount = $finalToolCount - $initialToolCount;
+        $newTagCount = $finalTagCount - $initialTagCount;
+
+        $this->assertTrue((bool)$newToolCount, 'New tool was not created');
+        $this->assertEquals(2, $newTagCount, 'Number of new tags is not as expected');
+        $count1 = Dataset::where('id', 1)->first()->versions()->count();
+        $count2 = Dataset::where('id', 2)->first()->versions()->count();
+        $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolId)->count();
+        $this->assertEquals($finalDatasetVersions, $count1 + $count2);
     }
+
+
+    /**
+     * Get All tools for a given team with success
+     * 
+     * @return void
+     */
+    public function test_get_all_team_tools_with_success(): void
+    {
+        // First create a notification to be used by the new team
+        $responseNotification = $this->json(
+            'POST',
+            self::TEST_URL_NOTIFICATION,
+            [
+                'notification_type' => 'applicationSubmitted',
+                'message' => 'Some message here',
+                'email' => 'Some@email.com',
+                'opt_in' => 1,
+                'enabled' => 1,
+            ],
+            $this->header,
+        );
+        
+        $contentNotification = $responseNotification->decodeResponseJson();
+        $notificationID = $contentNotification['data'];
+
+        // Create the new team
+        $teamName1 = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => $teamName1,
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        $teamId1 = $contentCreateTeam['data'];
+
+        // Create a 2nd team
+        $teamName2 = 'Team Test ' . fake()->regexify('[A-Z]{5}[0-4]{1}');
+        $responseCreateTeam = $this->json(
+            'POST',
+            self::TEST_URL_TEAM,
+            [
+                'name' => $teamName2,
+                'enabled' => 1,
+                'allows_messaging' => 1,
+                'workflow_enabled' => 1,
+                'access_requests_management' => 1,
+                'uses_5_safes' => 1,
+                'is_admin' => 1,
+                'member_of' => fake()->randomElement([
+                    TeamMemberOf::ALLIANCE,
+                    TeamMemberOf::HUB,
+                    TeamMemberOf::OTHER,
+                    TeamMemberOf::NCS,
+                ]),
+                'contact_point' => 'dinos345@mail.com',
+                'application_form_updated_by' => 'Someone Somewhere',
+                'application_form_updated_on' => '2023-04-06 15:44:41',
+                'notifications' => [$notificationID],
+                'users' => [],
+            ],
+            $this->header,
+        );
+
+        $responseCreateTeam->assertStatus(Config::get('statuscodes.STATUS_OK.code'))
+        ->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $contentCreateTeam = $responseCreateTeam->decodeResponseJson();
+        $teamId2 = $contentCreateTeam['data'];
+
+        // Create user
+        $responseCreateUser = $this->json(
+            'POST',
+            self::TEST_URL_USER,
+            [
+                'firstname' => 'Firstname',
+                'lastname' => 'Lastname',
+                'email' => 'firstname.lastname.123456789@test.com',
+                'password' => 'Passw@rd1!',
+                'sector_id' => 1,
+                'organisation' => 'Test Organisation',
+                'bio' => 'Test Biography',
+                'domain' => 'https://testdomain.com',
+                'link' => 'https://testlink.com/link',
+                'orcid' =>" https://orcid.org/75697342",
+                'contact_feedback' => 1,
+                'contact_news' => 1,
+                'mongo_id' => 1234566,
+                'mongo_object_id' => "12345abcde",
+            ],
+            $this->header,
+        );
+
+        $responseCreateUser->assertStatus(201);
+        $contentCreateUser = $responseCreateUser->decodeResponseJson();
+        $userId = $contentCreateUser['data'];
+
+        // Create Tool A
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'mongo_object_id' => '5ece82082abda8b3a06f1941',
+                'name' => 'Tool A',
+                'url' => 'http://example.com/toolA',
+                'description' => 'Test Tool A Description',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack A',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId1,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [1, 2],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+                'durs' => [],
+                'collections' => [],
+                'any_dataset' => false,
+            ],
+            $this->header
+        );
+        $responseCreateTool->assertStatus(201);
+
+        // Create Tool B
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'mongo_object_id' => '5ece82082abda8b3a06f1942',
+                'name' => 'Tool B',
+                'url' => 'http://example.com/toolB',
+                'description' => 'Test Tool B Description',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack B',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId1,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [2],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+                'durs' => [],
+                'collections' => $this->generateCollections(),
+                'any_dataset' => false,
+            ],
+            $this->header
+        );
+        $responseCreateTool->assertStatus(201);
+
+        // Create Tool C
+        $responseCreateTool = $this->json(
+            'POST',
+            self::TEST_URL,
+            [
+                'mongo_object_id' => '5ece82082abda8b3a06f1943',
+                'name' => 'Tool C',
+                'url' => 'http://example.com/toolC',
+                'description' => 'Test Tool C Description',
+                'license' => 1,
+                'tech_stack' => 'Tech Stack C',
+                'category_id' => 1,
+                'user_id' => $userId,
+                'team_id' => $teamId2,
+                'enabled' => 1,
+                'tag' => [1, 2],
+                'dataset' => [1],
+                'programming_language' => [1, 2],
+                'programming_package' => [1, 2],
+                'type_category' => [1, 2],
+                'publications' => [],
+                'durs' => [1, 2],
+                'collections' => [],
+                'any_dataset' => false,
+            ],
+            $this->header
+        );
+        $responseCreateTool->assertStatus(201);
+
+        // Use the explicit team_id, mongo_id, and name for filtering tests
+        $toolA = Tool::where('name', 'Tool A')->first();
+        $mongoId = $toolA->mongo_id;
+        $teamId = $toolA->team_id;
+        $title = $toolA->name;
+
+        // Filter by mongo_id
+        $response = $this->json('GET', self::TEST_URL . '?mongo_id=' . $mongoId, [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $this->assertNotEmpty($responseData);
+        foreach ($responseData as $tool) {
+            $this->assertEquals($mongoId, $tool['mongo_id']);
+        }
+
+        // Filter by team_id
+        $response = $this->json('GET', self::TEST_URL . '?team_id=' . $teamId, [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $this->assertNotEmpty($responseData);
+        foreach ($responseData as $tool) {
+            $this->assertEquals($teamId, $tool['team_id']);
+        }
+
+        // Filter by user_id
+        $response = $this->json('GET', self::TEST_URL . '?user_id=' . $userId, [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $this->assertNotEmpty($responseData);
+        foreach ($responseData as $tool) {
+            $this->assertEquals($userId, $tool['user_id']);
+        }
+
+        // Filter by title
+        $response = $this->json('GET', self::TEST_URL . '?title=' . urlencode($title), [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $this->assertNotEmpty($responseData);
+        foreach ($responseData as $tool) {
+            $this->assertStringContainsString($title, $tool['name']);
+        }
+
+        // Test ascending order by title
+        $response = $this->json('GET', self::TEST_URL . '?sort=name:asc', [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $titles = array_column($responseData, 'name');
+        $sortedTitles = $titles;
+        sort($sortedTitles);
+        $this->assertEquals($sortedTitles, $titles, "Ascending order sorting by title failed.");
+
+        // Test descending order by title
+        $response = $this->json('GET', self::TEST_URL . '?sort=name:desc', [], $this->header);
+        $response->assertStatus(200);
+        $responseData = $response->json('data');
+        $titles = array_column($responseData, 'name');
+        $sortedTitles = $titles;
+        rsort($sortedTitles);
+        $this->assertEquals($sortedTitles, $titles, "Descending order sorting by title failed.");
+
+        // Cleanup: Delete tools
+        $toolIds = Tool::pluck('id')->toArray();
+        foreach ($toolIds as $toolId) {
+            $responseDeleteTool = $this->json(
+                'DELETE',
+                self::TEST_URL . '/' . $toolId . '?deletePermanently=true',
+                [],
+                $this->header
+            );
+            $responseDeleteTool->assertJsonStructure([
+                'message'
+            ]);
+            $responseDeleteTool->assertStatus(200);
+        }
+
+        // Cleanup: Delete teams
+        for ($i = 1; $i <= 2; $i++) {
+            $responseDeleteTeam = $this->json(
+                'DELETE',
+                self::TEST_URL_TEAM . '/' . ${'teamId' . $i} . '?deletePermanently=true',
+                [],
+                $this->header
+            );
+
+            $responseDeleteTeam->assertJsonStructure([
+                'message'
+            ]);
+            $responseDeleteTeam->assertStatus(200);
+        }
+
+        // Cleanup: Delete user
+        $responseDeleteUser = $this->json(
+            'DELETE',
+            self::TEST_URL_USER . '/' . $userId . '?deletePermanently=true',
+            [],
+            $this->header
+        );
+        $responseDeleteUser->assertJsonStructure([
+            'message'
+        ]);
+        $responseDeleteUser->assertStatus(200);
+    }
+
+
+
 
     /**
      * Insert data into tool_has_tags table with success
@@ -276,6 +625,9 @@ class ToolTest extends TestCase
             "type_category" => array(1, 2),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
         );
         $responseIns = $this->json(
             'POST',
@@ -302,6 +654,8 @@ class ToolTest extends TestCase
         $responseIns->assertStatus(201);
 
         // update
+        $generatedPublications = $this->generatePublications();
+        $generatedCollections = $this->generateCollections();
         $mockDataUpdate = array(
             "mongo_object_id" => "5ece82082abda8b3a06f1941",
             "name" => "Ea fuga ab aperiam nihil quis.",
@@ -312,11 +666,24 @@ class ToolTest extends TestCase
             "category_id" => 1,
             "user_id" => 1,
             "tag" => array(2),
+            "dataset" => [
+                [
+                    'id' => 4,
+                    'link_type' => 'Used on',
+                ],
+                [
+                    'id' => 5,
+                    'link_type' => 'Other',
+                ],
+            ],
             "programming_language" => array(1),
             "programming_package" => array(1),
             "type_category" => array(1),
             "enabled" => 1,
-            "publications" => $this->generatePublications(),
+            "publications" => $generatedPublications,
+            "durs" => [1, 2],
+            "collections" => $generatedCollections,
+            "any_dataset" => false,
         );
 
         $responseUpdate = $this->json(
@@ -326,12 +693,12 @@ class ToolTest extends TestCase
             $this->header
         );
 
+        $responseUpdate->assertStatus(200);
         $responseUpdate->assertJsonStructure([
             'message',
             'data',
         ]);
 
-        $responseUpdate->assertStatus(200);
         $this->assertEquals($responseUpdate['data']['name'], $mockDataUpdate['name']);
         $this->assertEquals($responseUpdate['data']['url'], $mockDataUpdate['url']);
         $this->assertEquals($responseUpdate['data']['description'], $mockDataUpdate['description']);
@@ -358,6 +725,22 @@ class ToolTest extends TestCase
         $toolHasTypeCategories = ToolHasTypeCategory::where('tool_id', $toolIdInsert)->get();
         $this->assertEquals(count($toolHasTypeCategories), 1);
         $this->assertEquals($toolHasTypeCategories[0]['type_category_id'], 1);
+        
+        $publicationHasTool = PublicationHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($publicationHasTool), count($generatedPublications));
+        
+        $durHasTool = DurHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($durHasTool), 2);
+        $this->assertEquals($durHasTool[0]['dur_id'], 1);
+        $this->assertEquals($durHasTool[1]['dur_id'], 2);
+        
+        $collectionHasTool = CollectionHasTool::where('tool_id', $toolIdInsert)->get();
+        $this->assertEquals(count($collectionHasTool), count($generatedCollections));
+
+        $count1 = Dataset::where('id', 4)->first()->versions()->count();
+        $count2 = Dataset::where('id', 5)->first()->versions()->count();
+        $finalDatasetVersions = DatasetVersionHasTool::where('tool_id', $toolIdInsert)->count();
+        $this->assertEquals($finalDatasetVersions, $count1 + $count2);
     }
 
     /**
@@ -378,12 +761,26 @@ class ToolTest extends TestCase
             "tech_stack" => "Cumque molestias excepturi quam at.",
             "category_id" => 1,
             "user_id" => 1,
-            "tag" => array(1),
+            "tag" => array(),
             "programming_language" => array(1),
             "programming_package" => array(1),
             "type_category" => array(1),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "durs" => [],
+            "collections" => $this->generateCollections(),
+            "any_dataset" => false,
+            "dataset" => [
+                [
+                    'id' => 4,
+                    'link_type' => 'Used on',
+                ],
+                [
+                    'id' => 5,
+                    'link_type' => 'Other',
+                ],
+            ],
+
         );
         $responseIns = $this->json(
             'POST',
@@ -497,6 +894,90 @@ class ToolTest extends TestCase
     }
 
     /**
+     * Create, delete, update, delete, edit, and delete a Tool with success
+     *
+     * @return void
+     */
+    public function test_create_archive_unarchive_tool_with_success(): void
+    {
+        $licenseId = License::where('valid_until', null)->get()->random()->id;
+
+        // Insert
+        $mockDataIns = array(
+            "mongo_object_id" => "5ece82082abda8b3a06f1941",
+            "name" => "Similique sapiente est vero eum.",
+            "url" => "http://steuber.info/itaque-rerum-quia-et-odit-dolores-quia-enim",
+            "description" => "Quod maiores id qui iusto. Aut qui velit qui aut nisi et officia. Ab inventore dolores ut quia quo. Quae veritatis fugiat ad vel.",
+            "license" => $licenseId,
+            "tech_stack" => "Cumque molestias excepturi quam at.",
+            "category_id" => 1,
+            "user_id" => 1,
+            "tag" => array(2),
+            "programming_language" => array(1),
+            "programming_package" => array(1),
+            "type_category" => array(1),
+            "enabled" => 1,
+            "publications" => $this->generatePublications(),
+            "any_dataset" => false,
+        );
+
+        $responseIns = $this->json(
+            'POST',
+            self::TEST_URL . '/',
+            $mockDataIns,
+            $this->header
+        );
+        $responseIns->assertStatus(201);
+        $responseIns->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $this->assertEquals(
+            $responseIns['message'],
+            Config::get('statuscodes.STATUS_CREATED.message')
+        );
+        $toolIdInsert = $responseIns['data'];
+
+        // Delete
+        $responseDelete = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $toolIdInsert,
+            [],
+            $this->header
+        );
+        $responseDelete->assertStatus(200);
+
+        // Unarchive tool
+        $responseUnarchive = $this->json(
+            'PATCH',
+            self::TEST_URL . '/' . $toolIdInsert . '?unarchive',
+            ['status' => 'DRAFT'],
+            $this->header
+        );
+        $responseUnarchive->assertJsonStructure([
+            'message',
+            'data',
+        ]);
+
+        $responseUnarchive->assertStatus(200);
+
+        // Verify that the unarchived tool has deleted_at == null
+        $toolData = $responseUnarchive['data'];
+        $this->assertNull($toolData['deleted_at']);
+
+
+        // Delete again
+        $responseDeleteAgain = $this->json(
+            'DELETE',
+            self::TEST_URL . '/' . $toolIdInsert,
+            [],
+            $this->header
+        );
+        $responseDeleteAgain->assertStatus(200);
+    }
+
+    /**
      * Update Tool with success by id and generate an exception
      *
      * @return void
@@ -519,6 +1000,17 @@ class ToolTest extends TestCase
             "type_category" => array(1),
             "enabled" => 1,
             "publications" => $this->generatePublications(),
+            "any_dataset" => false,
+            "dataset" => [
+                [
+                    'id' => 4,
+                    'link_type' => 'Used on',
+                ],
+                [
+                    'id' => 5,
+                    'link_type' => 'Other',
+                ],
+            ],
         );
         $id = 10000;
 
@@ -563,6 +1055,22 @@ class ToolTest extends TestCase
             $return[] = $temp;
         }
 
-        return $return;
+        // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
+        return array_map("unserialize", array_unique(array_map("serialize", $return)));
+    }
+
+    private function generateCollections()
+    {
+        $return = [];
+        $iterations = rand(1, 5);
+
+        for ($i = 1; $i <= $iterations; $i++) {
+            $temp = [];
+            $temp['id'] = Collection::all()->random()->id;
+            $return[] = $temp;
+        }
+
+        // remove duplicate entries - doesn't use array_unique directly as that fails for multi-d arrays.
+        return array_map("unserialize", array_unique(array_map("serialize", $return)));
     }
 }

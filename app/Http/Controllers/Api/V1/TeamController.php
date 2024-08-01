@@ -7,7 +7,15 @@ use Config;
 use Exception;
 use App\Models\Role;
 use App\Models\Team;
+use App\Models\User;
 use App\Models\TeamHasUser;
+use App\Models\Collection;
+use App\Models\Dataset;
+use App\Models\DatasetVersion;
+use App\Models\Dur;
+use App\Models\Tool;
+use App\Models\Publication;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\TeamUserHasRole;
 use Illuminate\Http\JsonResponse;
@@ -21,17 +29,24 @@ use App\Http\Requests\Team\DeleteTeam;
 use App\Http\Requests\Team\UpdateTeam;
 use App\Http\Traits\TeamTransformation;
 use App\Http\Traits\RequestTransformation;
+use MetadataManagementController as MMC;
 
 class TeamController extends Controller
 {
     use TeamTransformation;
     use RequestTransformation;
 
+    private $datasets = [];
+    private $durs = [];
+    private $tools = [];
+    private $publications = [];
+    private $collections = [];
+
     /**
      * @OA\Get(
      *      path="/api/v1/teams",
      *      tags={"Teams"},
-     *      summary="List of teams",
+     *      summary="TeamController@index",
      *      description="Returns a list of teams enabled on the system",
      *      security={{"bearerAuth":{}}},
      *      @OA\Response(
@@ -59,6 +74,8 @@ class TeamController extends Controller
      *                    @OA\Property(property="notifications", type="array", example="[]", @OA\Items()), 
      *                    @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                    @OA\Property(property="is_provider", type="boolean", example="1"),
+     *                    @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *                    @OA\Property(property="introduction", type="string", example="info about the team"),
      *                ),
      *             ),
      *             @OA\Property(property="first_page_url", type="string", example="http:\/\/localhost:8000\/api\/v1\/cohort_requests?page=1"),
@@ -119,9 +136,9 @@ class TeamController extends Controller
             $teams['data'] = $this->getTeams($teams['data']);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Get all",
             ]);
 
@@ -137,7 +154,7 @@ class TeamController extends Controller
      * @OA\Get(
      *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
-     *      summary="Return a single team",
+     *      summary="TeamController@show",
      *      description="Return a single team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -174,6 +191,8 @@ class TeamController extends Controller
      *                  @OA\Property(property="notifications", type="array", example="[]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
+     *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *              )
      *          ),
      *      ),
@@ -195,9 +214,9 @@ class TeamController extends Controller
             $userTeam = Team::where('id', $teamId)->with(['users', 'notifications'])->get()->toArray();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Get by " . $teamId,
             ]);
 
@@ -211,10 +230,118 @@ class TeamController extends Controller
     }
 
     /**
+     * @OA\Get(
+     *      path="/api/v1/teams/{id}/summary",
+     *      summary="TeamController@showSummary",
+     *      description="Return a single team summary for use in Data Provider view",
+     *      tags={"Teams"},
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="DataProviderColl ID - summary",
+     *         required=true,
+     *         example="1",
+     *         @OA\Schema(
+     *            type="integer",
+     *            description="DataProviderColl ID - summary",
+     *         ),
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Success",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string"),
+     *              @OA\Property(property="data", type="object",
+     *                  @OA\Property(property="id", type="integer", example=1),
+     *                  @OA\Property(property="name", type="string", example="Name"),
+     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
+     *                  @OA\Property(property="img_url", type="string", example="http://placeholder"),
+     *                  @OA\Property(property="summary", type="string", example="Summary"),
+     *                  @OA\Property(property="datasets", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="durs", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="publications", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="collections", type="array", example="{}", @OA\Items()),
+     *              )
+     *          ),
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Not found response",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="message", type="string", example="not found"),
+     *          )
+     *      )
+     * )
+     */
+    public function showSummary(Request $request, int $id): JsonResponse
+    {
+        try {
+            // Get this Team
+            $dp = Team::select('id', 'name', 'is_provider', 'introduction')->where([
+                'id' => $id,
+                'enabled' => 1,
+            ])->first();
+
+            if (!$dp) {
+                return response()->json([
+                    'message' => 'Team not found or not enabled',
+                    'data' => null,
+                ], 404);
+            }
+
+            // This sets not only this->datasets, but also this->durs, publications, tools and collections
+            $this->getDatasets($dp->id);
+
+            Auditor::log([
+                'action_type' => 'GET',
+                'action_name' => class_basename($this) . '@' . __FUNCTION__,
+                'description' => 'Team get ' . $id . ' summary',
+            ]);
+
+            $tools = Tool::whereIn('id', $this->tools)->select('id', 'name', 'user_id', 'created_at')->get();
+            foreach ($tools as $tool) {
+                $user = User::where('id', $tool['user_id'])->select('firstname', 'lastname', 'is_admin')->first()->toArray();
+                // Remove names if the user is an admin
+                if ($user['is_admin']) {
+                    $user['firstname'] = '';
+                    $user['lastname'] = '';
+                }
+                // Reduce the amount of data returned to the bare minimum
+                $arrayKeys = [
+                    'firstname',
+                    'lastname',
+                    'rquestroles',
+                ];
+                $user = $this->checkEditArray($user, $arrayKeys);
+                $tool['user'] = $user;
+            }
+            return response()->json([
+                'message' => Config::get('statuscodes.STATUS_OK.message'),
+                'data' => [
+                    'id' => $dp->id,
+                    'is_provider' => $dp->is_provider,
+                    'name' => $dp->name,
+                    'introduction' => $dp->introduction,
+                    'datasets' => $this->datasets,
+                    'durs' => Dur::select('id', 'project_title', 'organisation_name', 'status', 'created_at', 'updated_at')->whereIn('id', $this->durs)->get()->toArray(),
+                    'tools' => $tools->toArray(),
+                    // TODO: need to add in `link_type` from publication_has_dataset table.
+                    'publications' => Publication::select('id', 'paper_title', 'authors', 'url')->whereIn('id', $this->publications)->get()->toArray(),
+                    'collections' => Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray(),
+                ],
+            ]);
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
      * @OA\Post(
      *      path="/api/v1/teams",
      *      tags={"Teams"},
-     *      summary="Create a new team",
+     *      summary="TeamController@store",
      *      description="Creates a new team",
      *      security={{"bearerAuth":{}}},
      *      @OA\RequestBody(
@@ -247,6 +374,8 @@ class TeamController extends Controller
      *              @OA\Property(property="users", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
+     *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -277,7 +406,7 @@ class TeamController extends Controller
             }, ARRAY_FILTER_USE_KEY);
             $arrayTeamNotification = $input['notifications'];
             $arrayTeamUsers = $input['users'];
-
+            $superAdminIds = User::where("is_admin",true)->pluck('id');
             $team = Team::create($arrayTeam);
 
             if ($team) {
@@ -286,6 +415,13 @@ class TeamController extends Controller
                         'team_id' => (int) $team->id,
                         'notification_id' => (int) $value,
                     ]);
+                }
+
+                //make sure the super admin is added to this team on creation
+                foreach($superAdminIds as $adminId){
+                    TeamHasUser::create(
+                        ['team_id' => $team->id, 'user_id' => $adminId],
+                    );
                 }
 
                 $roles = Role::where(['name' => 'custodian.team.admin'])->first();
@@ -305,9 +441,9 @@ class TeamController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $team->id . " created",
             ]);
 
@@ -325,7 +461,7 @@ class TeamController extends Controller
      * @OA\Put(
      *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
-     *      summary="Update a team",
+     *      summary="TeamController@update",
      *      description="Update a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -369,6 +505,8 @@ class TeamController extends Controller
      *              @OA\Property(property="users", type="array", example="[1, 2]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
+     *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -400,6 +538,8 @@ class TeamController extends Controller
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
+     *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *              )
      *          ),
      *      ),
@@ -432,6 +572,8 @@ class TeamController extends Controller
                 'application_form_updated_on',
                 'is_question_bank',
                 'is_provider',
+                'url',
+                'introduction',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -451,9 +593,9 @@ class TeamController extends Controller
             $this->updateTeamAdminUsers($teamId, $users);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $teamId . " updated",
             ]);
 
@@ -470,7 +612,7 @@ class TeamController extends Controller
      * @OA\Patch(
      *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
-     *      summary="Edit a team",
+     *      summary="TeamController@edit",
      *      description="Edit a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -501,6 +643,8 @@ class TeamController extends Controller
      *              @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *              @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *              @OA\Property(property="is_provider", type="boolean", example="1"),
+     *              @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *              @OA\Property(property="introduction", type="string", example="info about the team"),
      *          ),
      *      ),
      *      @OA\Response(
@@ -532,6 +676,8 @@ class TeamController extends Controller
      *                  @OA\Property(property="notifications", type="array", example="[111, 222]", @OA\Items(type="array", @OA\Items())),
      *                  @OA\Property(property="is_question_bank", type="boolean", example="1"),
      *                  @OA\Property(property="is_provider", type="boolean", example="1"),
+     *                  @OA\Property(property="url", type="string", example="https://example/image.jpg"),
+     *                  @OA\Property(property="introduction", type="string", example="info about the team"),
      *              )
      *          ),
      *      ),
@@ -564,6 +710,8 @@ class TeamController extends Controller
                 'application_form_updated_on',
                 'is_question_bank',
                 'is_provider',
+                'url',
+                'introduction',
             ];
 
             $array = $this->checkEditArray($input, $arrayKeys);
@@ -584,9 +732,9 @@ class TeamController extends Controller
             $this->updateTeamAdminUsers($teamId, $users);
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $teamId . " updated",
             ]);
 
@@ -603,7 +751,7 @@ class TeamController extends Controller
      * @OA\Delete(
      *      path="/api/v1/teams/{teamId}",
      *      tags={"Teams"},
-     *      summary="Delete a team",
+     *      summary="TeamController@destroy",
      *      description="Delete a team",
      *      security={{"bearerAuth":{}}},
      *      @OA\Parameter(
@@ -663,9 +811,9 @@ class TeamController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Team " . $teamId . " deleted",
             ]);
 
@@ -706,4 +854,51 @@ class TeamController extends Controller
         }
     }
 
+    public function getDatasets(int $teamId)
+    {
+        $datasetIds = Dataset::where(['team_id' => $teamId])->pluck('id')->toArray();
+
+        foreach ($datasetIds as $datasetId) {
+            $this->checkingDataset($datasetId);
+        }
+    }
+
+    public function checkingDataset(int $datasetId)
+    {
+        $dataset = Dataset::where(['id' => $datasetId])->first();
+
+        if (!$dataset) {
+            return;
+        }
+
+        $version = $dataset->latestVersion();
+        $withLinks = DatasetVersion::where('id', $version['id'])
+            ->with(['linkedDatasetVersions'])
+            ->first(); 
+
+        if (!$withLinks) {
+            return;
+        }
+
+        $dataset->setAttribute('versions', [$withLinks]);
+
+        $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
+
+        $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
+        $populationSize = MMC::getValueByPossibleKeys($metadataSummary, ['populationSize'], -1);
+        $datasetType = MMC::getValueByPossibleKeys($metadataSummary, ['datasetType'], '');
+
+        $this->datasets[] = [
+            'id' => $dataset->id,
+            'status' => $dataset->status,
+            'title' => $title,
+            'populationSize' => $populationSize,
+            'datasetType' => $datasetType,
+        ];
+
+        $this->durs = array_unique(array_merge($this->durs, Arr::pluck($dataset->allDurs, 'id')));
+        $this->publications = array_unique(array_merge($this->publications, Arr::pluck($dataset->allPublications, 'id')));
+        $this->tools = array_unique(array_merge($this->tools, Arr::pluck($dataset->allTools, 'id')));
+        $this->collections = array_unique(array_merge($this->collections, Arr::pluck($dataset->allCollections, 'id')));
+    }
 }

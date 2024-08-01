@@ -19,6 +19,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::rename('authorisation_codes', 'authorization_codes');
+        Schema::rename('authorisation_codes', 'autorization_codes');
     }
 };

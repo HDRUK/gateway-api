@@ -2,22 +2,25 @@
 
 namespace App\Models;
 
-use App\Models\Application;
-use App\Models\Collection;
-use App\Models\DataVersion;
 use App\Models\Dur;
+use App\Models\Tool;
+use App\Models\Collection;
+use App\Models\Application;
+use App\Models\DataVersion;
 use App\Models\NamedEntities;
 use App\Models\Publication;
 use App\Models\SpatialCoverage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Dataset extends Model
 {
@@ -67,14 +70,7 @@ class Dataset extends Model
         'is_cohort_discovery' => 'boolean',
     ];
 
-    /**
-     * The named_entities that belong to the dataset.
-     */
-    public function namedEntities(): BelongsToMany
-    {
-        return $this->belongsToMany(NamedEntities::class, 'dataset_has_named_entities');
-    }
-
+    
     /**
      * The version history of metadata that respond to this dataset.
      */
@@ -84,12 +80,42 @@ class Dataset extends Model
     }
 
     /**
-     * The collections that the dataset belongs to.
-     */
-    public function collections(): BelongsToMany
+     * The very latest version of a DatasetVersion object that corresponds to this dataset.
+     **/
+    public function latestVersion(): DatasetVersion
     {
-        return $this->belongsToMany(Collection::class, 'collection_has_datasets');
+        $version = DatasetVersion::where('dataset_id', $this->id)
+            ->select(['version','id'])
+            ->latest('version')
+            ->first()
+            ->id;
+        return DatasetVersion::findOrFail($version);
     }
+
+    public function latestMetadata(): HasOne
+    {
+        return $this->hasOne(DatasetVersion::class, 'dataset_id')->withTrashed()->latest('version');
+    }
+
+    /**
+     * The very latest version number that corresponds to this dataset.
+     */
+    public function lastMetadataVersionNumber(): DatasetVersion
+    {
+        return DatasetVersion::where('dataset_id', $this->id)
+            ->latest('version')->select('version')->first();
+    }
+
+    /**
+     * The very last metadata as an array
+     */
+    public function lastMetadata(): array
+    {
+        $datasetVersion = DatasetVersion::where('dataset_id', $this->id)
+            ->latest('version')->select('metadata')->first();
+        return  $datasetVersion['metadata'];
+    }
+
 
     /**
      * Helper function to use JSON functions to search by title within metadata.
@@ -105,46 +131,6 @@ class Dataset extends Model
     }
 
     /**
-     * The very latest version of a DatasetVersion object that corresponds to this dataset.
-     **/
-    public function latestVersion(): DatasetVersion
-    {
-        return DatasetVersion::where('dataset_id', $this->id)
-            ->latest('version')->first();
-    }
-
-    /**
-     * The very latest metadata via a hasOne relation
-     */
-    public function latestMetadata(): HasOne
-    {
-        return $this->hasOne(DatasetVersion::class, 'dataset_id')->latest('version');
-    }
-
-    /**
-     * The very latest version number that corresponds to this dataset.
-     */
-    public function lastMetadataVersionNumber(): DatasetVersion
-    {
-        return DatasetVersion::where('dataset_id', $this->id)
-            ->latest('version')->select('version')->first();
-    }
-
-    public function lastMetadata(): array
-    {
-        $datasetVersion = DatasetVersion::where('dataset_id', $this->id)
-            ->latest('version')->select('metadata')->first();
-        return  $datasetVersion['metadata'];
-    }
-    
-    /**
-     * The spatial coverage that belong to the dataset.
-     */
-    public function spatialCoverage(): BelongsToMany
-    {
-        return $this->belongsToMany(SpatialCoverage::class, 'dataset_has_spatial_coverage');
-    }
-    /**
      * Order by raw metadata extract
      */
     public function scopeOrderByMetadata(Builder $query, string $field, string $direction): Builder
@@ -154,16 +140,104 @@ class Dataset extends Model
                             ->latest()->limit(1),$direction);
     }
 
-    public function durs(): BelongsToMany
+    /**
+     * The team for the dataset.
+     */
+    public function team(): BelongsTo
     {
-        return $this->belongsToMany(Dur::class, 'dur_has_datasets');
+        return $this->belongsTo(Team::class, 'team_id');
+    }
+
+    // Accessor for all named entities
+    public function getAllNamedEntitiesAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            DatasetVersionHasNamedEntities::class, 
+            NamedEntities::class, 
+            'named_entities_id' 
+        );
+    }
+
+    // Accessor for all spatial coverages
+    public function getAllSpatialCoveragesAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            DatasetVersionHasSpatialCoverage::class, 
+            SpatialCoverage::class, 
+            'spatial_coverage_id'
+        );
+    }
+
+    // Accessor for all tools
+    public function getAllToolsAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            DatasetVersionHasTool::class, 
+            Tool::class, 
+            'tool_id'
+        );
+    }
+
+    // Accessor for all collections
+    public function getAllCollectionsAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            CollectionHasDatasetVersion::class, 
+            Collection::class, 
+            'collection_id'
+        );
+    }
+
+    // Accessor for all durs
+    public function getAllDursAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            DurHasDatasetVersion::class, 
+            Dur::class, 
+            'dur_id'
+        );
+    }
+
+    // Accessor for all publications
+    public function getAllPublicationsAttribute()
+    {
+        return $this->getRelationsViaDatasetVersion(
+            PublicationHasDatasetVersion::class, 
+            Publication::class, 
+            'publication_id'
+        );
     }
 
     /**
-     * The publications that belong to a dataset.
+     * Helper function to get stuff linked by datasetVersionHasX
      */
-    public function publications(): BelongsToMany
+    public function getRelationsViaDatasetVersion($linkageTable, $targetTable, $foreignTableId)
     {
-        return $this->belongsToMany(Publication::class, 'publication_has_dataset');
+        // Step 1: Get the dataset version IDs 
+        $versionIds = $this->versions()->pluck('id')->toArray();
+
+        // Step 2: Use the version IDs to find all related entityIDs through the linkage table
+        $entityIds = $linkageTable::whereIn('dataset_version_id', $versionIds)
+            ->pluck($foreignTableId)
+            ->unique()
+            ->toArray();
+            
+        // Step 3: Retrieve all entities using the collected entities IDs    
+        $entities = $targetTable::whereIn('id', $entityIds)->get();
+
+        // Iterate through each entity and add associated dataset versions
+        foreach ($entities as $entity) {
+            // Retrieve dataset version IDs associated with the current entity
+            $datasetVersionIds = $linkageTable::where($foreignTableId, $entity->id)
+                ->whereIn('dataset_version_id', $versionIds)
+                ->pluck('dataset_version_id')
+                ->toArray();
+
+            // Add associated dataset versions to the entity object
+            $entity->setAttribute('dataset_version_ids', $datasetVersionIds);  
+        }
+
+        // Return the collection of entities with injected dataset version IDs
+        return $entities->toArray();
     }
 }

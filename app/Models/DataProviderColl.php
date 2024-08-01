@@ -15,6 +15,7 @@ class DataProviderColl extends Model
     protected $fillable = [
         'enabled',
         'name',
+        'summary',
         'img_url',
     ];
 

@@ -33,7 +33,8 @@ class FilterSeeder extends Seeder
             'populationSize',
             'geographicLocation',
             'dataProviderColl',
-            'accessService'
+            'accessService',
+            'sampleAvailability'
         ];
 
         $this->seed_filter("dataset",$filters);
@@ -85,7 +86,8 @@ class FilterSeeder extends Seeder
         $filters = [
             'publicationType',
             'publicationDate',
-            'datasetTitles'
+            'datasetTitles',
+            'datasetLinkTypes'
         ];
 
         $this->seed_filter("paper",$filters);
@@ -94,8 +96,9 @@ class FilterSeeder extends Seeder
     public function seed_data_provider_filters(): void
     {
         $filters = [
-            'geographicLocation',
-            'datasetTitles'
+            'datasetTitles',
+            'dataType',
+            'geographicLocation'
         ];
 
         $this->seed_filter("dataProvider",$filters);

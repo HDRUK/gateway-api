@@ -102,10 +102,10 @@ class FederationController extends Controller
             })->with(['notifications'])->paginate($perPage, ['*'], 'page');
     
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Federation get all",
             ]);
 
@@ -185,10 +185,10 @@ class FederationController extends Controller
             })->where('id', $federationId)->with(['notifications'])->first()->toArray();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'GET',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Federation get " . $federationId,
             ]);
     
@@ -328,10 +328,10 @@ class FederationController extends Controller
             }
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'CREATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Federation " . $federation->id . " created",
             ]);
 
@@ -484,10 +484,10 @@ class FederationController extends Controller
                 })->with(['notifications'])->first();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Federation " . $federationId . " updated",
             ]);
     
@@ -646,10 +646,10 @@ class FederationController extends Controller
             })->with(['notifications'])->first();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'UPDATE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Federation " . $federationId . " updated",
             ]);
 
@@ -745,10 +745,10 @@ class FederationController extends Controller
             ])->delete();
 
             Auditor::log([
-                'user_id' => $jwtUser['id'],
+                'user_id' => (int) $jwtUser['id'],
                 'team_id' => $teamId,
                 'action_type' => 'DELETE',
-                'action_service' => class_basename($this) . '@'.__FUNCTION__,
+                'action_name' => class_basename($this) . '@'.__FUNCTION__,
                 'description' => "Federation " . $federationId . " deleted",
             ]);
 

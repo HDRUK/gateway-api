@@ -41,10 +41,15 @@ trait TeamTransformation
                 'notification_status' => $team['notification_status'],
                 'is_question_bank' => $team['is_question_bank'],
                 'is_provider' => $team['is_provider'],
+                'url' => $team['url'],
+                'introduction' => $team['introduction'],
             ];
 
             $tmpUser = [];
             foreach ($team['users'] as $user) {
+                if ($user['is_admin']){
+                    continue;
+                }    
                 $tmp = [
                     'id' => $user['id'],
                     'name' => $user['name'],
@@ -53,7 +58,6 @@ trait TeamTransformation
                     'email' => $user['email'],
                     'secondary_email' => $user['secondary_email'],
                     'preferred_email' => $user['preferred_email'],
-                    'providerid' => $user['providerid'],
                     'provider' => $user['provider'],
                     'created_at' => $user['created_at'],
                     'updated_at' => $user['updated_at'],
@@ -69,6 +73,7 @@ trait TeamTransformation
                     'mongo_id' => $user['mongo_id'],
                     'mongo_object_id' => $user['mongo_object_id'],
                     'terms' => $user['terms'],
+                    'hubspot_id' => $user['hubspot_id'],
                 ];
 
                 $teamHasUserId = (int) $user['pivot']['id'];
