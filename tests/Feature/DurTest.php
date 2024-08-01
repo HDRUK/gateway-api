@@ -38,6 +38,7 @@ use Database\Seeders\ProgrammingLanguageSeeder;
 use Database\Seeders\PublicationHasDatasetVersionSeeder;
 use Database\Seeders\DurHasDatasetVersionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 
 class DurTest extends TestCase
 {
@@ -771,6 +772,41 @@ class DurTest extends TestCase
         $this->assertTrue((bool) $dur, 'Response was successfully');
     }
 
+    public function test_can_download_template_file()
+    {
+        // Mock the storage disk
+        Storage::fake('mock');
+
+        // Put a fake file in the mock disk
+        $filePath = 'data_use_template_file.xlsx';
+        Storage::disk('mock')->put($filePath, 'file content');
+
+        // Mock the config
+        Config::set('mock_data.data_use_upload_template', $filePath);
+
+        // Make the request
+        $response = $this->get('/api/v1/dur/template');
+
+        // Assert the file is downloaded
+        $response->assertStatus(200);
+        $response->assertHeader('content-disposition', 'attachment; filename=' . $filePath);
+
+        // Clean up
+        Storage::disk('mock')->delete($filePath);
+    }
+
+    public function test_download_template_file_with_file_not_found()
+    {
+        // Mock the config
+        Config::set('mock_data.data_use_upload_template', 'non_existent_file.xlsx');
+
+        // Make the request
+        $response = $this->get('/api/v1/dur/template');
+
+        // Assert the file is not found
+        $response->assertStatus(404);
+        $response->assertJson(['error' => 'File not found.']);
+    }
 
     private function generateKeywords()
     {

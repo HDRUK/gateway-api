@@ -981,7 +981,7 @@ return [
         'middleware' => [
             'jwt.verify',
             'sanitize.input',
-            'check.access:roles,hdruk.superadmin',
+            'check.access.userId',
         ],
         'constraint' => [
             'id' => '[0-9]+',
@@ -2834,6 +2834,15 @@ return [
         'middleware' => [
             'jwt.verify',
         ],
+        'constraint' => [],
+    ],
+    [
+        'name' => 'dur.get.template',
+        'method' => 'get',
+        'path' => '/dur/template',
+        'methodController' => 'DurController@exportTemplate',
+        'namespaceController' => 'App\Http\Controllers\Api\V1',
+        'middleware' => [],
         'constraint' => [],
     ],
 

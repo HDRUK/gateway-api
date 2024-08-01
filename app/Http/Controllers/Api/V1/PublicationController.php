@@ -372,6 +372,8 @@ class PublicationController extends Controller
             $currentPublication = Publication::where('id', $publicationId)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE){
                 $this->indexElasticPublication($publicationId);
+            } else {
+                MMC::deleteFromElastic($publicationId, 'publication');
             }
 
             Auditor::log([
@@ -509,6 +511,8 @@ class PublicationController extends Controller
             $currentPublication = Publication::where('id', $id)->first();
             if($currentPublication->status === Publication::STATUS_ACTIVE){
                 $this->indexElasticPublication((int) $id);
+            } else {
+                MMC::deleteFromElastic($id, 'publication');
             }
 
             Auditor::log([
@@ -650,6 +654,8 @@ class PublicationController extends Controller
                             'description' => "Publication " . $id . " unarchived and marked as " . strtoupper($request['status']),
                         ]);
                     }
+
+                    $this->indexElasticPublication((int)$id);
                 }
 
                 return response()->json([
@@ -702,6 +708,8 @@ class PublicationController extends Controller
 
                     // Index the updated publication in Elasticsearch
                     $this->indexElasticPublication((int) $id);
+                } else {
+                    MMC::deleteFromElastic($id, 'publication');
                 }
                 
                 Auditor::log([
@@ -787,6 +795,8 @@ class PublicationController extends Controller
                 $publication->deleted_at = Carbon::now();
                 $publication->status = Publication::STATUS_ARCHIVED;
                 $publication->save();
+
+                MMC::deleteFromElastic($id, 'publication');
 
                 Auditor::log([
                     'user_id' => (int) $jwtUser['id'],

@@ -54,6 +54,7 @@ class Team extends Model
         'notification_status',
         'is_question_bank',
         'team_logo',
+        'introduction',
     ];
 
     /**

@@ -29,6 +29,7 @@ use App\Http\Requests\Dur\UpdateDur;
 use App\Http\Requests\Dur\UploadDur;
 use App\Exceptions\NotFoundException;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\DataProviderCollHasTeam;
 use MetadataManagementController AS MMC;
@@ -1506,6 +1507,52 @@ class DurController extends Controller
                 'message' => 'created',
                 'data' => $durId,
             ], Config::get('statuscodes.STATUS_CREATED.code'));
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * @OA\Get(
+     *    path="/api/v1/dur/template",
+     *    tags={"Dur"},
+     *    summary="DurController@exportTemplate",
+     *    description="Export Dur upload template",
+     *    security={{"bearerAuth":{}}},
+     *    @OA\Response(
+     *       response=200,
+     *       description="File download",
+     *       @OA\MediaType(
+     *          mediaType="text/csv",
+     *          @OA\Schema()
+     *       )
+     *    ),
+     *    @OA\Response(
+     *       response=401,
+     *       description="Unauthorized",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="unauthorized")
+     *       ),
+     *    ),
+     *    @OA\Response(
+     *       response=404,
+     *       description="File Not Found",
+     *       @OA\JsonContent(
+     *          @OA\Property(property="message", type="string", example="file_not_found")
+     *       ),
+     *    ),
+     * )
+     */
+    public function exportTemplate(Request $request)
+    {
+        try {
+            $file = Config::get('mock_data.data_use_upload_template');
+
+            if (!Storage::disk('mock')->exists($file)) {
+                return response()->json(['error' => 'File not found.'], 404);
+            }
+
+            return Storage::disk('mock')->download($file)->setStatusCode(Config::get('statuscodes.STATUS_OK.code'));
         } catch (Exception $e) {
             throw new Exception($e->getMessage());
         }

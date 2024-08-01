@@ -13,6 +13,8 @@ class AliasReplyScanner extends Command
 {
     use TeamTransformation;
 
+    protected $alias;
+
     /**
      * The name and signature of the console command.
      *
@@ -69,7 +71,6 @@ class AliasReplyScanner extends Command
     private function processThread($message, $thread)
     {
         $response = ARS::scrapeAndStoreContent($message, $thread->id);
-        $this->info("... " . $response->message_body);    
+        $this->info("... " . $response->message_body);
     }
-
 }
