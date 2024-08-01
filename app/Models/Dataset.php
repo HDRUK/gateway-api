@@ -240,4 +240,55 @@ class Dataset extends Model
         // Return the collection of entities with injected dataset version IDs
         return $entities->toArray();
     }
+    
+    public function getAllLinkedDatasetsAttribute()
+    {
+        $linkedDatasets = collect();
+
+        foreach ($this->versions as $version) {
+            // Source linked versions
+            $linkedVersionsAsSource = $version->linkedDatasetVersionsAsSource()
+                ->with('dataset') // Ensure that dataset relationship is loaded
+                ->get();
+
+            foreach ($linkedVersionsAsSource as $item) {
+                $linkedDatasetVersion = DatasetVersion::find($item->pivot_attributes->dataset_version_target_id);
+                if ($linkedDatasetVersion) {
+                    $linkedDataset = $linkedDatasetVersion->dataset;
+                    if ($linkedDataset && $linkedDataset->id !== $this->id) {
+                        $linkedDataset->setAttribute('linkage_type', $item->pivot_attributes->linkage_type);
+                        $linkedDataset->setAttribute('direct_linkage', $item->pivot_attributes->direct_linkage);
+                        $linkedDataset->setAttribute('description', $item->pivot_attributes->description);
+                        $linkedDataset->setAttribute('dataset_version_source_id', $item->pivot_attributes->dataset_version_source_id);
+                        $linkedDataset->setAttribute('dataset_version_target_id', $item->pivot_attributes->dataset_version_target_id);
+
+                        $linkedDatasets->push($linkedDataset);
+                    }
+                }
+            }
+
+            // Target linked versions
+            $linkedVersionsAsTarget = $version->linkedDatasetVersionsAsTarget()
+                ->with('dataset') // Ensure that dataset relationship is loaded
+                ->get();
+
+            foreach ($linkedVersionsAsTarget as $item) {
+                $linkedDatasetVersion = DatasetVersion::find($item->pivot_attributes->dataset_version_source_id);
+                if ($linkedDatasetVersion) {
+                    $linkedDataset = $linkedDatasetVersion->dataset;
+                    if ($linkedDataset && $linkedDataset->id !== $this->id) {
+                        $linkedDataset->setAttribute('linkage_type', $item->pivot_attributes->linkage_type);
+                        $linkedDataset->setAttribute('direct_linkage', $item->pivot_attributes->direct_linkage);
+                        $linkedDataset->setAttribute('description', $item->pivot_attributes->description);
+                        $linkedDataset->setAttribute('dataset_version_source_id', $item->pivot_attributes->dataset_version_source_id);
+                        $linkedDataset->setAttribute('dataset_version_target_id', $item->pivot_attributes->dataset_version_target_id);
+
+                        $linkedDatasets->push($linkedDataset);
+                    }
+                }
+            }
+        }
+
+        return $linkedDatasets->toArray();
+    }
 }

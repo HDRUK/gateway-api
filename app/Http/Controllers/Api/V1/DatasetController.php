@@ -331,10 +331,16 @@ class DatasetController extends Controller
      *       description="Alternative output schema model.",
      *       @OA\Schema(type="string", example="structuralMetadata")
      *    ),
-      *    @OA\Parameter(
+     *    @OA\Parameter(
      *       name="schema_model",
      *       in="query",
      *       description="Alternative output schema model.",
+     *       @OA\Schema(type="string")
+     *    ),
+     *    @OA\Parameter(
+     *       name="linked_dataset",
+     *       in="query",
+     *       description="Return linked datasets.",
      *       @OA\Schema(type="string")
      *    ),
      *    @OA\Parameter(
@@ -387,31 +393,30 @@ class DatasetController extends Controller
             if (!$dataset) {
                 return response()->json(['message' => 'Dataset not found'], 404);
             }
-
+            // Retrieve the latest version 
+            $latestVersion = $dataset->latestVersion();
+            
             // Inject attributes via the dataset version table
-            $dataset->setAttribute('durs_count', $dataset->latestVersion()->durHasDatasetVersions()->count());
-            $dataset->setAttribute('publications_count', $dataset->latestVersion()->publicationHasDatasetVersions()->count());
+            $dataset->setAttribute('durs_count', $latestVersion->durHasDatasetVersions()->count());
+            $dataset->setAttribute('publications_count', $latestVersion->publicationHasDatasetVersions()->count());
             $dataset->setAttribute('spatialCoverage', $dataset->allSpatialCoverages  ?? []);
             $dataset->setAttribute('durs', $dataset->allDurs  ?? []);
             $dataset->setAttribute('publications', $dataset->allPublications  ?? []);
             $dataset->setAttribute('named_entities', $dataset->allNamedEntities  ?? []);
             $dataset->setAttribute('collections', $dataset->allCollections  ?? []);
 
+            $outputLinkedDatasets = $request->query('linked_datasets');
             $outputSchemaModel = $request->query('schema_model');
             $outputSchemaModelVersion = $request->query('schema_version');
 
-            // Retrieve the latest version 
-            $latestVersion = $dataset->latestVersion();
+            if ($outputLinkedDatasets){
+                    $dataset->setAttribute('linked_datasets', $dataset->allLinkedDatasets ?? []);
+            }
 
             // Return the latest metadata for this dataset
             if (!($outputSchemaModel && $outputSchemaModelVersion)) {
-                $withLinks = DatasetVersion::where('id', $latestVersion['id'])
-                    ->with(['linkedDatasetVersions'])
-                    ->first();
-                if ($withLinks) {
-                    $dataset->setAttribute('versions', [$withLinks]);
+                    $dataset->setAttribute('versions', [$latestVersion]);
                 }
-            }
 
             if ($outputSchemaModel && $outputSchemaModelVersion) {
                 $translated = MMC::translateDataModelType(
@@ -423,11 +428,8 @@ class DatasetController extends Controller
                 );
 
                 if ($translated['wasTranslated']) {
-                    $withLinks = DatasetVersion::where('id', $latestVersion['id'])
-                        ->with(['linkedDatasetVersions'])
-                        ->first();
-                    $withLinks['metadata'] = json_encode(['metadata' => $translated['metadata']]);
-                    $dataset->setAttribute('versions', [$withLinks]);
+                    $latestVersion['metadata'] = json_encode(['metadata' => $translated['metadata']]);
+                    $dataset->setAttribute('versions', [$latestVersion]);
                 } else {
                     return response()->json([
                         'message' => 'failed to translate',

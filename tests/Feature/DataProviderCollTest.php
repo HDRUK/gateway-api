@@ -155,6 +155,7 @@ class DataProviderCollTest extends TestCase
                 'tools',
                 'publications',
                 'collections',
+                'linked_datasets'
             ]
         ]);
     }

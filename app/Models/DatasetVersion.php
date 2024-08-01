@@ -4,6 +4,7 @@ namespace App\Models;
 use App\Models\Tool;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Builder;
@@ -149,5 +150,45 @@ class DatasetVersion extends Model
             'description'
         );
     }
+
+    // Dataset versions where this version is the source
+    public function linkedDatasetVersionsAsSource()
+    {
+        return $this->belongsToMany(
+            DatasetVersion::class, 
+            'dataset_version_has_dataset_version',
+            'dataset_version_source_id',
+            'dataset_version_target_id'
+        )->withPivot(
+            'dataset_version_source_id', 
+            'dataset_version_target_id', 
+            'linkage_type', 
+            'direct_linkage', 
+            'description'
+        )->as('pivot_attributes');
+    }
+
+    // Dataset versions where this version is the target
+    public function linkedDatasetVersionsAsTarget()
+    {
+        return $this->belongsToMany(
+            DatasetVersion::class, 
+            'dataset_version_has_dataset_version',
+            'dataset_version_target_id',
+            'dataset_version_source_id'
+        )->withPivot(
+            'dataset_version_source_id', 
+            'dataset_version_target_id', 
+            'linkage_type', 
+            'direct_linkage', 
+            'description'
+        )->as('pivot_attributes');
+    }
+
+     // Define the relationship back to the Dataset
+     public function dataset(): BelongsTo
+     {
+         return $this->belongsTo(Dataset::class, 'dataset_id');
+     }
 
 }

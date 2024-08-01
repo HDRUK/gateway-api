@@ -30,6 +30,7 @@ class DataProviderCollController extends Controller
     private $tools = [];
     private $publications = [];
     private $collections = [];
+    private $linked_datasets = [];
 
     /**
      * @OA\Get(
@@ -184,6 +185,7 @@ class DataProviderCollController extends Controller
      *                  @OA\Property(property="tools", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="publications", type="array", example="{}", @OA\Items()),
      *                  @OA\Property(property="collections", type="array", example="{}", @OA\Items()),
+     *                  @OA\Property(property="linked_datasets", type="array", example="{}", @OA\Items()),
      *              )
      *          ),
      *      ),
@@ -231,6 +233,7 @@ class DataProviderCollController extends Controller
                     'tools' => Tool::select('id', 'name', 'enabled', 'created_at', 'updated_at')->with(['user'])->whereIn('id', $this->tools)->get()->toArray(), //TOFIX: this always returns `user = null` because the syntax is incorrect.
                     'publications' => Publication::select('id', 'paper_title', 'authors', 'publication_type', 'publication_type_mk1', 'created_at', 'updated_at')->whereIn('id', $this->publications)->get()->toArray(),
                     'collections' => Collection::select('id', 'name', 'image_link', 'created_at', 'updated_at')->whereIn('id', $this->collections)->get()->toArray(),
+                    'linked_datasets' => Dataset::select('id','created_at', 'updated_at')->whereIn('id', $this->linked_datasets)->get()->toArray(),
                 ],
             ]);
         } catch (Exception $e) {
@@ -676,14 +679,9 @@ class DataProviderCollController extends Controller
         $collectionIds = array_column($dataset->allCollections, 'id') ?? [];
         $publicationIds = array_column($dataset->allPublications, 'id') ?? [];
         $toolIds = array_column($dataset->allTools, 'id') ?? [];
-
-        $version = $dataset->latestVersion();
-        $withLinks = DatasetVersion::where('id', $version['id'])
-            ->with(['linkedDatasetVersions'])
-            ->first();
-
-        $dataset->setAttribute('versions', [$withLinks]);
-
+        $linkedDatasetIds = array_column($dataset->allLinkedDatasets, 'id') ?? [];
+        
+        $dataset->setAttribute('versions', $dataset->latestVersion());
         $metadataSummary = $dataset['versions'][0]['metadata']['metadata']['summary'] ?? [];
 
         $title = MMC::getValueByPossibleKeys($metadataSummary, ['title'], '');
@@ -706,5 +704,6 @@ class DataProviderCollController extends Controller
         $this->publications = array_unique(array_merge($this->publications, $publicationIds));
         $this->tools = array_unique(array_merge($this->tools, $toolIds));
         $this->collections = array_unique(array_merge($this->collections, $collectionIds));
+        $this->linked_datasets = array_unique(array_merge($this->linked_datasets, $linkedDatasetIds));
     }
 }

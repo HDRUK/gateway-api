@@ -7,6 +7,7 @@ use Tests\TestCase;
 use App\Models\Dataset;
 use App\Models\NamedEntities;
 use App\Models\DatasetVersion;
+use App\Models\DatasetVersionHasDatasetVersion;
 use Illuminate\Support\Carbon;
 use Tests\Traits\Authorization;
 use App\Http\Enums\TeamMemberOf;
@@ -523,7 +524,7 @@ class DatasetTest extends TestCase
         $activeDatasetId = $contentCreateActiveDataset['data'];
 
         // get one active dataset
-        $responseGetOneActive = $this->json('GET', self::TEST_URL_DATASET . '/' . $activeDatasetId, [], $this->header);
+        $responseGetOneActive = $this->json('GET', self::TEST_URL_DATASET . '/' . $activeDatasetId . '?linked_datasets=true', [], $this->header);
 
         $responseGetOneActive->assertJsonStructure([
             'message',
@@ -534,6 +535,7 @@ class DatasetTest extends TestCase
                 'versions',
                 'durs_count',
                 'publications_count',
+                'linked_datasets'
             ]
         ]);
         $responseGetOneActive->assertStatus(200);
@@ -559,15 +561,39 @@ class DatasetTest extends TestCase
             // Compare each field in the response array with the corresponding field in the database
             $this->assertEquals($namedEntity->name, $entity['name'], 'The name in the response does not match the name in the database.');
         }
+        dump($respArrayActive['data']['linked_datasets']);
+
+        // Assert linked datasets contain required fields
+        foreach ($respArrayActive['data']['linked_datasets'] as $linkedDataset) {
+            // Assert that the array contains the key 'linkage_type'
+            $this->assertArrayHasKey('linkage_type', $linkedDataset);
+            $this->assertNotNull($linkedDataset['linkage_type'], 'The "linkage_type" key should not have a null value.');
+
+            // Assert that the array contains the key 'direct_linkage'
+            $this->assertArrayHasKey('direct_linkage', $linkedDataset);
+            $this->assertNotNull($linkedDataset['direct_linkage'], 'The "direct_linkage" key should not have a null value.');
+
+            // Assert that the array contains the key 'dataset_version_source_id'
+            $this->assertArrayHasKey('dataset_version_source_id', $linkedDataset);
+            $this->assertNotNull($linkedDataset['dataset_version_source_id'], 'The "dataset_version_source_id" key should not have a null value.');
+
+            // Assert that the array contains the key 'dataset_version_target_id'
+            $this->assertArrayHasKey('dataset_version_target_id', $linkedDataset);
+            $this->assertNotNull($linkedDataset['dataset_version_target_id'], 'The "dataset_version_target_id" key should not have a null value.');
+
+            // Optionally, if you want to validate the linkage_type and other attributes more deeply
+            $this->assertIsString($linkedDataset['linkage_type'], 'The "linkage_type" key should be a string.');
+            $this->assertIsBool($linkedDataset['direct_linkage'], 'The "direct_linkage" key should be a boolean.');
+            $this->assertIsInt($linkedDataset['dataset_version_source_id'], 'The "dataset_version_source_id" key should be an integer.');
+            $this->assertIsInt($linkedDataset['dataset_version_target_id'], 'The "dataset_version_target_id" key should be an integer.');
+        }
         
 
 
         if(env('TED_ENABLED')){
             $this->assertNotEmpty($respArrayActive['data']['named_entities']);
         };
-        $this->assertArrayHasKey(
-            'linked_dataset_versions', $respArrayActive['data']['versions'][0]
-        );
+        $this->assertArrayHasKey('linked_datasets', $respArrayActive['data']);
 
         // delete active dataset
         $responseDeleteActiveDataset = $this->json(
