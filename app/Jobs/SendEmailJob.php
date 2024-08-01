@@ -21,15 +21,17 @@ class SendEmailJob implements ShouldQueue
     public $to = [];
     private $template = null;
     private $replacements = [];
+    private $fromAddress = '';
 
     /**
      * Create a new job instance.
      */
-    public function __construct(array $to, EmailTemplate $template, array $replacements)
+    public function __construct(array $to, EmailTemplate $template, array $replacements, $fromAddress = null)
     {
         $this->to = $to;
         $this->template = $template;
         $this->replacements = $replacements;
+        $this->fromAddress = $fromAddress;
     }
 
     /**
@@ -37,7 +39,7 @@ class SendEmailJob implements ShouldQueue
      */
     public function handle(): void
     {
-        Mail::to($this->to)
-            ->send(new Email($this->template, $this->replacements));
+         Mail::to($this->to)
+            ->send(new Email($this->template, $this->replacements, $this->fromAddress));
     }
 }

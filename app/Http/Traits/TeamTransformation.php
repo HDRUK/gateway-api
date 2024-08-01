@@ -42,6 +42,7 @@ trait TeamTransformation
                 'is_question_bank' => $team['is_question_bank'],
                 'is_provider' => $team['is_provider'],
                 'url' => $team['url'],
+                'introduction' => $team['introduction'],
             ];
 
             $tmpUser = [];
@@ -57,7 +58,6 @@ trait TeamTransformation
                     'email' => $user['email'],
                     'secondary_email' => $user['secondary_email'],
                     'preferred_email' => $user['preferred_email'],
-                    'providerid' => $user['providerid'],
                     'provider' => $user['provider'],
                     'created_at' => $user['created_at'],
                     'updated_at' => $user['updated_at'],

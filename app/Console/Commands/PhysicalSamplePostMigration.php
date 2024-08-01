@@ -14,7 +14,7 @@ class PhysicalSamplePostMigration extends Command
      *
      * @var string
      */
-    protected $signature = 'app:physical-sample-post-migration {reindex?}';
+    protected $signature = 'app:physical-sample-post-migration {sleep?}';
 
     private $csvData = [];
 
@@ -28,7 +28,8 @@ class PhysicalSamplePostMigration extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->csvData = $this->readMigrationFile(storage_path() . '/migration_files/datasets_physical_samples.csv');
+        $this->csvData = $this->readMigrationFile(storage_path() . '/migration_files/datasets_physical_samples_cleaned.csv');
+
     }
 
     /**
@@ -36,8 +37,8 @@ class PhysicalSamplePostMigration extends Command
      */
     public function handle()
     {
-        $reindex = $this->argument('reindex');
-        $reindexEnabled = $reindex !== null;
+        $sleep = $this->argument("sleep");
+        $sleepTimeInMicroseconds = $sleep !== null ? floatval($sleep) * 1000 * 1000 : null;
 
         $progressbar = $this->output->createProgressBar(count($this->csvData));
         $progressbar->start();
@@ -46,30 +47,6 @@ class PhysicalSamplePostMigration extends Command
             $mongoPid = $csv['mongo_pid'];
             $samples = $csv['physical_samples'];
 
-            //The following $samplesList should have been cleaned and fixed....
-            // - it should be a controlled list
-            // - this is taking directly from Mk1 and contains nonsense...
-            //GAT-4628 has been creaed for someone to do this
-            //See: 
-            // - https://github.com/HDRUK/traser-mapping-files/blob/master/maps/HDRUK/2.2.0/HDRUK/2.1.2/translation.jsonata#L10-L24
-            // - https://github.com/HDRUK/traser-mapping-files/blob/master/maps/HDRUK/2.2.0/HDRUK/2.1.2/translation.jsonata#L39-L45
-            /*
-                $allowedMaterialTypes := [
-                    "Blood",
-                    "DNA",
-                    "Faeces",
-                    "Immortalized Cell Lines",
-                    "Isolated Pathogen",
-                    "Other",
-                    "Plasma",
-                    "RNA",
-                    "Saliva",
-                    "Serum",
-                    "Tissue (Frozen)",
-                    "Tissue (FFPE)",
-                    "Urine"
-                 ];
-            */
             $samplesList = explode(";", $samples); 
 
             $formattedSamplesArray = [];
@@ -99,9 +76,9 @@ class PhysicalSamplePostMigration extends Command
 
                 }
 
-                if ($reindexEnabled) {
+                if ($sleepTimeInMicroseconds !== null) {
                     MMC::reindexElastic($dataset->id);
-                    sleep(1);
+                    usleep($sleepTimeInMicroseconds);
                 }                
             }
             $progressbar->advance();

@@ -7,9 +7,11 @@
 @uFirstName = "John"
 @uLastName = "Doe"
 # @uEmail = "hunter59@example.com"
+@uEmailDar = "dan.nita@hdruk.ac.uk"
 @uEmail = "developers@hdruk.ac.uk"
 @uEmail2 = "john.for.doe.1234567890@example.com"
 @uPassword = "Watch26Task?"
+@uPasswordDar = "Gateway@123"
 # @accessToken=jwt....
 
 ### Login
@@ -40,8 +42,8 @@ Content-Type: application/json
 Accept: application/json
 
 {
-    "email": {{uEmail}},
-    "password": {{uPassword}}
+    "email": {{uEmailDar}},
+    "password": {{uPasswordDar}}
 }
 
 # ### Variables jwt token
@@ -2453,4 +2455,42 @@ Content-Type: application/json
 GET {{baseUrl}}/oauth/.well-known/openid-configuration HTTP/1.1
 Content-Type: application/json
 
-/oauth/.well-known/openid-configuration
+
+### EnquiryThread
+#### get all EnquiryThreads
+GET {{baseUrl}}/api/{{apiVersion}}/enquiry_threads HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### get one EnquiryThread by id
+GET {{baseUrl}}/api/{{apiVersion}}/enquiry_threads/1 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+#### create EnquiryThread
+POST {{baseUrl}}/api/{{apiVersion}}/enquiry_threads HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+    "from": "dan.nita@hdruk.ac.uk",
+    "team_id": 4,
+    "project_title": "project title for test",
+    "is_dar_dialogue": true,
+    "is_dar_review": false,
+    "datasets": [
+        {
+            "dataset_id": 4,
+            "interest_type": "PRIMARY"
+        },
+        {
+            "dataset_id": 6,
+            "interest_type": "SECONDARY"
+        }
+    ],
+    "research_aim": "research aim test",
+    "other_datasets": "NO",
+    "dataset_parts_known": "NO",
+    "funding": "funding test",
+    "potential_research_benefit": "potential research benefit"
+}

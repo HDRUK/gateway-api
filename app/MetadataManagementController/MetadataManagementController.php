@@ -338,15 +338,16 @@ class MetadataManagementController {
      * deleted
      * 
      * @param string $id The id of the dataset to be deleted
+     * @param string $indexType index type: dataset, publication
      * 
      * @return void
      */
-    public function deleteFromElastic(string $id): void
+    public function deleteFromElastic(string $id, string $indexType): void
     {
         try {
 
             $params = [
-                'index' => 'dataset',
+                'index' => $indexType,
                 'id' => $id,
                 'headers' => 'application/json'
             ];

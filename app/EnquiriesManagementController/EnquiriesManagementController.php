@@ -21,7 +21,7 @@ use App\Models\TeamUserHasRole;
 use App\Models\EnquiryThreadHasDatasetVersion;
 
 class EnquiriesManagementController {
-    public function determineDARManagersFromTeamId(int $teamId, int $jwtUser): ?array
+    public function determineDARManagersFromTeamId(int $teamId, int $enquiryThreadId): ?array
     {
         $team = Team::with('users')->where('id', $teamId)->first();
         $teamHasUserIds = TeamHasUser::where('team_id', $team->id)->get();
@@ -48,6 +48,10 @@ class EnquiriesManagementController {
 
                 // we don't care about this as we've found our dar.manager users.
                 unset($team['users']);
+
+                $enquiryThread = EnquiryThread::where([
+                    'id' => $enquiryThreadId,
+                ])->first();
                 
                 $users[] = [
                     'user' => User::where('id', $thu['user_id'])->first()->toArray(),
@@ -74,7 +78,7 @@ class EnquiriesManagementController {
 
         if ($enquiryThread) {
             foreach ($input['datasets'] as $dataset){
-                $datasetVersion = DatasetVersion::where("dataset_id", $dataset["id"])->latest('created_at')->first();
+                $datasetVersion = DatasetVersion::where('dataset_id', $dataset['dataset_id'])->latest('created_at')->first();
                 $enquiryThreadHasDataset = EnquiryThreadHasDatasetVersion::create([
                     'enquiry_thread_id' => $enquiryThread->id,
                     'dataset_version_id' =>  $datasetVersion->id,
@@ -137,7 +141,8 @@ class EnquiriesManagementController {
                         ],
                     ];
 
-                    $something = SendEmailJob::dispatch($to, $template, $replacements);
+                    $from = 'devreply+' . $threadDetail['thread']['unique_key'] . '@healthdatagateway.org';
+                    $something = SendEmailJob::dispatch($to, $template, $replacements, $from);
                 }
             }
         } catch (Exception $e) {

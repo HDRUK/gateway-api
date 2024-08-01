@@ -22,16 +22,18 @@ class Email extends Mailable
     private $template = null;
     private $replacements = [];
     public $subject = '';
+    private $fromAddress = '';
 
     /**
      * Create a new message instance.
      */
-    public function __construct(EmailTemplate $template, array $replacements)
+    public function __construct(EmailTemplate $template, array $replacements, $fromAddress = null)
     {
 
         $this->template = $template;
         $this->replacements = $replacements;
         $this->subject = $this->template['subject'];
+        $this->fromAddress = $fromAddress ?? env('MAIL_FROM_ADDRESS', 'noreply@healthdatagateway.org');
     }
 
     /**
@@ -42,7 +44,7 @@ class Email extends Mailable
         $this->replaceSubjectText();
 
         return new Envelope(
-            from: new Address('noreply@healthdatagateway.org'),
+            from: new Address($this->fromAddress),
             subject: $this->subject,
         );
     }
@@ -74,6 +76,7 @@ class Email extends Mailable
             ->post(env('MJML_RENDER_URL', ''), [
                 'mjml' => $this->template['body'],
             ]);
+
 
         if ($response->successful()) {
             return $response->json()['html'];
