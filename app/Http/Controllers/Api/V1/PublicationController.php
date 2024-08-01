@@ -654,7 +654,8 @@ class PublicationController extends Controller
                             'description' => "Publication " . $id . " unarchived and marked as " . strtoupper($request['status']),
                         ]);
                     }
-                    $this->indexElasticPublication((int) $id);
+
+                    $this->indexElasticPublication((int)$id);
                 }
 
                 return response()->json([
